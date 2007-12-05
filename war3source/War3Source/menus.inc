@@ -29,8 +29,8 @@ public OnAdminMenuReady(Handle:topmenu)
     {
         /* Save the Handle */
         hTopMenu = topmenu;
-        new TopMenuObject:war3_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hTopMenu, "War3Source_Admin", TopMenuObject_Item, War3Source_AdminMenu, war3_commands, "War3Source_Admin", ADMFLAG_GENERIC);
+        new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hTopMenu, "War3Source_Admin", TopMenuObject_Item, War3Source_AdminMenu, server_commands, "War3Source_Admin", ADMFLAG_GENERIC);
     }
 }
 
