@@ -1,5 +1,4 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source_UndeadScourge.sp
  * Description: The Undead Scourge race for War3Source.
  * Author(s): Anthony Iacono 
@@ -12,16 +11,17 @@
 #include <sdktools>
 
 // Defines
+#define MAX_PLAYERS 64
 #define IS_ALIVE !GetLifestate
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new healthOffset[MAXPLAYERS+1];
+new healthOffset[MAX_PLAYERS+1];
 new lifestateOffset;
 new explosionModel;
 
 // Suicide bomber check
-new bool:m_Suicided[MAXPLAYERS+1]={false};
+new bool:m_Suicided[MAX_PLAYERS+1]={false};
 
 public Plugin:myinfo = 
 {
@@ -132,7 +132,7 @@ public Undead_SuicideBomber(client,war3player,race,ult_level)
     }
     new Float:client_location[3];
     GetClientAbsOrigin(client,client_location);
-    for(new x=1;x<MAXPLAYERS+1;x++)
+    for(new x=1;x<MAX_PLAYERS+1;x++)
     {
         if(x<=GetClientCount()&&IsClientConnected(x))
         {
