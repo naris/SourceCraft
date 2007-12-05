@@ -1,0 +1,163 @@
+/**
+ * File: War3Source.sp
+ * Description: The main file for War3Source.
+ * Author(s): Anthony Iacono 
+ */
+ 
+#pragma semicolon 1
+
+#include <sourcemod>
+
+new bool:m_FirstSpawn[65]={true}; // Cheap trick
+#define VERSION_NUM "0.8.6.1"
+#define VERSION "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
+
+// War3Source Includes
+#include "War3Source/War3Source"
+new bool:m_CalledReady=false;
+
+public Plugin:myinfo= 
+{
+    name="War3Source",
+    author="PimpinJuice",
+    description="Brings a Warcraft like gamemode to the Source engine.",
+    version=VERSION_NUM,
+    url="http://pimpinjuice.net/"
+};
+
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+    if(!War3Source_InitNatives())
+    {
+        PrintToServer("[War3Source] There was a failure in creating the native based functions, definately halting.");
+        return false;
+    }
+    if(!War3Source_InitForwards())
+    {
+        PrintToServer("[War3Source] There was a failure in creating the forward based functions, definately halting.");
+        return false;
+    }
+    return true;
+}
+
+public OnPluginStart()
+{
+    PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin loading...");
+    arrayPlayers=CreateArray();
+    if(!War3Source_InitiatearrayRaces())
+        SetFailState("[War3Source] There was a failure in creating the race vector, definately halting.");
+    if(!War3Source_InitiateShopVector())
+        SetFailState("[War3Source] There was a failure in creating the shop vector, definately halting.");
+    if(!War3Source_InitiateHelpVector())
+        SetFailState("[War3Source] There was a failure in creating the help vector, definitely halting.");
+    if(!War3Source_HookEvents())
+        SetFailState("[War3Source] There was a failure in initiating event hooks.");
+    if(!War3Source_InitCVars())
+        SetFailState("[War3Source] There was a failure in initiating console variables.");
+    if(!War3Source_InitHooks())
+        SetFailState("[War3Source] There was a failure in initiating the hooks.");
+    if(!War3Source_InitOffset())
+        SetFailState("[War3Source] There was a failure in finding the offsets required.");
+    if(!War3Source_ParseSettings())
+        SetFailState("[War3Source] There was a failure in parsing the configuration file.");
+    // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
+    CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
+    PrintToServer("[War3Source] Plugin finished loading.\n-------------------------------------------------------------------------");
+}
+
+public OnAllPluginsLoaded()
+{
+    if(!m_CalledReady)
+    {
+        Call_StartForward(g_OnWar3PluginReadyHandle);
+        new res;
+        Call_Finish(res);
+        m_CalledReady=true;
+    }
+    if(SAVE_ENABLED)
+        War3Source_SQLTable();
+    War3Source_InitHelpCommands();
+}
+
+public OnPluginEnd()
+{
+    PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin shutting down...");
+    for(new x=0;x<GetArraySize(arrayPlayers);x++)
+    {
+        new Handle:vec=GetArrayCell(arrayPlayers,x);
+        ClearArray(vec);
+    }
+    ClearArray(arrayPlayers);
+    for(new x=0;x<GetArraySize(arrayRaces);x++)
+    {
+        new Handle:vec=GetArrayCell(arrayRaces,x);
+        ClearArray(vec);
+    }
+    ClearArray(arrayRaces);
+    PrintToServer("[War3Source] Plugin shutdown finished.\n-------------------------------------------------------------------------");
+}
+
+public OnMapStart()
+{
+    for(new x=0;x<GetArraySize(arrayPlayers);x++)
+    {
+        new Handle:vec=GetArrayCell(arrayPlayers,x);
+        ClearArray(vec);
+    }
+    ClearArray(arrayPlayers); // Clear our temporary players vector.
+}
+
+public OnClientPutInServer(client)
+{
+    if(client>0)
+    {
+        new Handle:newPlayer=CreateArray();
+        PushArrayCell(newPlayer,client); // The first thing is client index
+        PushArrayCell(newPlayer,0); // Player race
+        PushArrayCell(newPlayer,-1); // Pending race
+        PushArrayCell(newPlayer,0); // Credits
+        new Handle:temp=CreateArray();
+        PushArrayCell(newPlayer,temp); // Information about speed and gravity
+        for(new x=0;x<IMMUNITY_COUNT;x++)
+            PushArrayCell(newPlayer,0);
+        for(new x=0;x<SHOPITEM_COUNT;x++)
+            PushArrayCell(newPlayer,0); // Owns item x
+        for(new x=0;x<RACE_COUNT;x++)
+            PushArrayCell(newPlayer,0); // Race x XP
+        for(new x=0;x<RACE_COUNT;x++)
+            PushArrayCell(newPlayer,0); // Race x Level
+        for(new x=0;x<RACE_COUNT;x++)
+            for(new y=0;y<SKILL_COUNT;y++)
+                PushArrayCell(newPlayer,0); // Skill level for race x skill y
+        if(GetArraySize(newPlayer)==(IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(RACE_COUNT*SKILL_COUNT)+5))
+        {
+            PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
+            Call_StartForward(g_OnWar3PlayerAuthedHandle);
+            Call_PushCell(client);
+            Call_PushCell(GetClientVectorPosition(client));
+            new res;
+            Call_Finish(res);
+            m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
+            if(SAVE_ENABLED)
+                War3Source_LoadPlayerData(client,GetClientVectorPosition(client));
+            m_FirstSpawn[client]=true;
+        }
+        else
+            SetFailState("[War3Source] There was a failure on processing client, halting.");
+    }
+}
+
+public OnClientDisconnect(client)
+{
+    if(client>0)
+    {
+        new clientVecPos=GetClientVectorPosition(client);
+        if(clientVecPos>-1)
+        {
+            if(SAVE_ENABLED)
+                War3Source_SavePlayerData(client,clientVecPos);
+            RemoveFromArray(arrayPlayers,clientVecPos);
+            m_FirstSpawn[client]=true;
+        }
+    }
+}

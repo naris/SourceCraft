@@ -1,0 +1,97 @@
+[Config]
+Relative path=1
+Compilator.FileName=C:\srcds\cstrike\addons\sourcemod\scripting\War3Source\compile.bat
+Compilator.DefaultDir=C:\srcds\cstrike\addons\sourcemod\scripting\War3Source\
+Compilator.SaveAll=1
+Compilator.Capture=0
+Compilator.HideOutput=0
+Compilator.LogType=0
+DefaultCPIndex=0
+LogtoEnd=1
+DontOpen=0
+FileFormat=0
+[Project tree]
+War3Source
+	+Header Files
+		War3Source\console.inc
+		War3Source\credits.inc
+		War3Source\events.inc
+		War3Source\hooks.inc
+		War3Source\immunity.inc
+		War3Source\menus.inc
+		War3Source\messages.inc
+		War3Source\mysql.inc
+		War3Source\natives.inc
+		War3Source\offsets.inc
+		War3Source\playertracking.inc
+		War3Source\races.inc
+		War3Source\shopmenu.inc
+		War3Source\War3Source.inc
+		War3Source\War3Source_Interface.inc
+		War3Source\xp.inc
+	+Include Folder
+		..\include\admin.inc
+		..\include\adminmenu.inc
+		..\include\adt.inc
+		..\include\adt_array.inc
+		..\include\banning.inc
+		..\include\bitbuffer.inc
+		..\include\clients.inc
+		..\include\commandfilters.inc
+		..\include\console.inc
+		..\include\core.inc
+		..\include\cstrike.inc
+		..\include\datapack.inc
+		..\include\dbi.inc
+		..\include\entity.inc
+		..\include\events.inc
+		..\include\files.inc
+		..\include\float.inc
+		..\include\functions.inc
+		..\include\geoip.inc
+		..\include\halflife.inc
+		..\include\handles.inc
+		..\include\helpers.inc
+		..\include\keyvalues.inc
+		..\include\lang.inc
+		..\include\menus.inc
+		..\include\profiler.inc
+		..\include\sdktools.inc
+		..\include\sdktools_engine.inc
+		..\include\sdktools_entinput.inc
+		..\include\sdktools_functions.inc
+		..\include\sdktools_sound.inc
+		..\include\sdktools_stocks.inc
+		..\include\sdktools_stringtables.inc
+		..\include\sdktools_tempents.inc
+		..\include\sdktools_tempents_stocks.inc
+		..\include\sdktools_trace.inc
+		..\include\sdktools_voice.inc
+		..\include\sorting.inc
+		..\include\sourcemod.inc
+		..\include\string.inc
+		..\include\textparse.inc
+		..\include\timers.inc
+		..\include\topmenus.inc
+		..\include\usermessages.inc
+		..\include\vector.inc
+		..\include\version.inc
+	+Source Files
+		War3Source.sp
+		War3Source_HumanAlliance.sp
+		War3Source_NightElf.sp
+		War3Source_OrcishHorde.sp
+		War3Source_ShopItems.sp
+		War3Source_UndeadScourge.sp
+[Open project files]
+0=..\autokick.sp
+1=War3Source.sp
+[Selected Project Files]
+Main=
+Selected=..\autokick.sp
+[..\autokick.sp]
+TopLine=14
+Caret=46,37
+[War3Source.sp]
+TopLine=91
+Caret=8,110
