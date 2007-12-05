@@ -28,9 +28,10 @@ public bool:War3Source_HookCStrikeEvents()
 
 public War3Source_BombDefusedEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
+        new index=GetClientOfUserId(userid);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GiveDefuseXP(index,vecpos);
@@ -39,9 +40,10 @@ public War3Source_BombDefusedEvent(Handle:event,const String:name[],bool:dontBro
 
 public War3Source_BombPlantedEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
+        new index=GetClientOfUserId(userid);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GivePlantXP(index,vecpos);
@@ -50,9 +52,10 @@ public War3Source_BombPlantedEvent(Handle:event,const String:name[],bool:dontBro
 
 public War3Source_HostageRescuedEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
+        new index=GetClientOfUserId(userid);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GiveHostageRescuedXP(index,vecpos);

@@ -5,16 +5,21 @@
  * Author(s): Anthony Iacono  
  */
 
-public bool:War3Source_HookCStrikeEvents()
+public bool:War3Source_HookTFEvents()
 {
+    if(!HookEvent("player_builtobject", War3Source_EventObjectBuilt))
+    {
+        PrintToServer("[War3Source] Could not hook the player_builtobject event.");
+        return false;
+    }
     if(!HookEvent("object_destroyed", War3Source_EventObjectDestroyed))
     {
         PrintToServer("[War3Source] Could not hook the object_destroyed event.");
         return false;
     }
-    if(!HookEvent("ctf_flag_captured", War3Source_EventFlagCaptured))
+    if(!HookEvent("teamplay_flag_event", War3Source_EventFlagEvent))
     {
-        PrintToServer("[War3Source] Could not hook the ctf_flag_captured event.");
+        PrintToServer("[War3Source] Could not hook the teamplay_flag_event.");
         return false;
     }
     if(!HookEvent("teamplay_point_captured", War3Source_EventPointCaptured))
@@ -27,44 +32,77 @@ public bool:War3Source_HookCStrikeEvents()
         PrintToServer("[War3Source] Could not hook the teadmplay_capture_blocked event.");
         return false;
     }
-    if(!HookEvent("teamplay_round_win", War3Source_Eventteamplayroundwin))
+
+    /*
+    if(!HookEvent("teamplay_round_win", War3Source_RoundWin))
     {
         PrintToServer("[War3Source] Could not hook the teamplay_round_win event.");
         return false;
     }
+    */
 
     return true;
 }
 
+public War3Source_EventObjectBuilt(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
+    {
+        new index=GetClientOfUserId(userid);
+        new vecpos=GetClientVectorPosition(index);
+        if(vecpos!=-1)
+            GiveObjectDestroyedXP(index,vecpos);
+    }
+}
+
 public War3Source_EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
+    {
+        new index=GetClientOfUserId(userid);
+        new vecpos=GetClientVectorPosition(index);
+        if(vecpos!=-1)
+            GiveObjectDestroyedXP(index,vecpos);
+    }
+}
+
+public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     if(GetEventInt(event,"userid")>0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveDefuseXP(index,vecpos);
+        if (GetEventInt(event,"eventtype") == 2) // Point Captured
+        {
+            new index=GetClientOfUserId(GetEventInt(event,"userid"));
+            new vecpos=GetClientVectorPosition(index);
+            if (vecpos!=-1)
+                GiveFlagCapturedXP(index,vecpos);
+        }
     }
 }
 
 public War3Source_EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    /* Need to add code here */
+    /*
+    if (GetEventString(event,"cappers")>0)
     {
         new index=GetClientOfUserId(GetEventInt(event,"userid"));
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
-            GivePlantXP(index,vecpos);
+            GivePointCapturedXP(index,vecpos);
     }
+    */
 }
 
 public War3Source_EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    new index=GetEventInt(event,"blocker");
+    if (index > 0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
-            GiveHostageRescuedXP(index,vecpos);
+            GiveCaptureBlockedXP(index,vecpos);
     }
 }

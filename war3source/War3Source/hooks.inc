@@ -1,4 +1,5 @@
 /*
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
 File: hooks.inc
 Description: Handles hooking functions, will be used to get chat commands.
 Author(s): Anthony Iacono  
@@ -19,9 +20,13 @@ public bool:CommandCheck(String:compare[],String:command[],maxlen)
     decl String:command3[maxlen+1];
     Format(command2,maxlen,"\\%s",command);
     Format(command3,maxlen,"/%s",command);
-    if(!strcmp(compare,command,false)||!strcmp(compare,command2,false)||!strcmp(compare,command3,false))
+    if(!strcmp(compare,command,false) || !strcmp(compare,command2,false) ||
+       !strcmp(compare,command3,false))
+    {
         return true;
-    return false;
+    }
+    else
+	return false;
 }
 
 public Action:War3Source_SayCommand(client,args)
@@ -75,12 +80,14 @@ public Action:War3Source_SayCommand(client,args)
             War3Source_ShopMenu(client,vecpos);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"war3help",63)||CommandCheck(arg1,"help",63)||CommandCheck(arg1,"wchelp",63))
+        else if(CommandCheck(arg1,"war3help",63) || CommandCheck(arg1,"wc3help",63) ||
+	       	CommandCheck(arg1,"wchelp",63)   || CommandCheck(arg1,"help",63))
         {
             War3Source_War3Help(client);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"war3menu",63))
+        else if(CommandCheck(arg1,"war3menu",63) || CommandCheck(arg1,"wc3menu",63) ||
+	       	CommandCheck(arg1,"wcmenu",63))
         {
             War3Source_War3Menu(client,vecpos);
             return Plugin_Handled;
@@ -100,6 +107,7 @@ public Action:War3Source_UltimateCommand(client,args)
         new bool:pressed=false;
         if(!strcmp(command,"+ultimate"))
             pressed=true;
+
         Call_StartForward(g_OnUltimateCommandHandle);
         Call_PushCell(client);
         Call_PushCell(vecpos);
@@ -107,6 +115,6 @@ public Action:War3Source_UltimateCommand(client,args)
         Call_PushCell(pressed);
         new result;
         Call_Finish(result);
-	}
+    }
     return Plugin_Handled;
 }

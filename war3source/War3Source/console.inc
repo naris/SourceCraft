@@ -6,13 +6,19 @@ admin.
 Author(s): Anthony Iacono  
 */
 
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+
+new Handle:hTopMenu = INVALID_HANDLE;
+
 public War3Source_InitCVars()
 {
     m_SaveXPConVar=CreateConVar("war3_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("war3_minimumultimatelevel","8");
     m_MaxCredits=CreateConVar("war3_maxcredits","40");
+
     CreateConVar("war3_version",VERSION,"War3Source version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY);
-    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+
     RegAdminCmd("war3_setxp",War3Source_CMD_SetXP,ADMFLAG_RCON,"Set a player's XP");
     RegAdminCmd("war3_givexp",War3Source_CMD_GiveXP,ADMFLAG_RCON,"Give a player XP");
     RegAdminCmd("war3_removexp",War3Source_CMD_RemoveXP,ADMFLAG_RCON,"Remove some XP from a player");
@@ -22,7 +28,43 @@ public War3Source_InitCVars()
     RegAdminCmd("war3_setcredits",War3Source_CMD_SetCredits,ADMFLAG_RCON,"Set a player's credit count");
     RegAdminCmd("war3_givecredits",War3Source_CMD_GiveCredits,ADMFLAG_RCON,"Give a player credits");
     RegAdminCmd("war3_removecredits",War3Source_CMD_RemoveCredits,ADMFLAG_RCON,"Remove some credits from a player");
+
+    RegAdminCmd("wcadmin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+    RegAdminCmd("wc3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+
+    /* Account for late loading */
+    new Handle:topmenu;
+    if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+    {
+        OnAdminMenuReady(topmenu);
+    }
+
     return true;
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+    /* Block us from being called twice */
+    if (topmenu != hTopMenu)
+    {
+        /* Save the Handle */
+        hTopMenu = topmenu;
+        new TopMenuObject:war3_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hTopMenu, "War3Source_Admin", TopMenuObject_Item, War3Source_AdminMenu, war3_commands, "War3Source_Admin", ADMFLAG_GENERIC);
+    }
+}
+
+public War3Source_AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+{
+    if (action == TopMenuAction_DisplayOption)
+    {
+        Format(buffer, maxlength, "Administer War3Source");
+    }
+    else if (action == TopMenuAction_SelectOption)
+    {
+        War3Source_Admin(param,param);
+    }
 }
 
 public War3Source_PlayerParse(String:matchstr[],&Handle:matchHandle)

@@ -1,4 +1,5 @@
 /**
+* vim: set ai et ts=4 sw=4 syntax=cpp :
 * File: War3Source_NightElf.sp
 * Description: The Night Elf race for War3Source.
 * Author(s): Anthony Iacono 
@@ -10,7 +11,6 @@
 #include "War3Source/War3Source_Interface"
 
 // Defines
-#define MAX_PLAYERS 64
 #define IS_ALIVE !GetLifestate
 
 // Colors
@@ -22,8 +22,8 @@
 new raceID; // The ID we are assigned to
 new lifestateOffset;
 new movetypeOffset;
-new healthOffset[MAX_PLAYERS+1];
-new bool:m_AllowEntangle[MAX_PLAYERS+1];
+new healthOffset[MAXPLAYERS+1];
+new bool:m_AllowEntangle[MAXPLAYERS+1];
  
 public Plugin:myinfo = 
 {

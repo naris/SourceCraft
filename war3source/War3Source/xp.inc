@@ -118,7 +118,7 @@ public GiveHostageRescuedXP(client,vectorpos)
         DoLevelCheck(client,vectorpos);
 }
 
-public GiveDestroyObjectXP(client,vectorpos)
+public GiveObjectDestroyedXP(client,vectorpos)
 {
     // Called when a player captures a flag
     new newxp;
@@ -130,7 +130,7 @@ public GiveDestroyObjectXP(client,vectorpos)
         DoLevelCheck(client,vectorpos);
 }
 
-public GiveCaptureFlagXP(client,vectorpos)
+public GiveFlagCapturedXP(client,vectorpos)
 {
     // Called when a player captures a flag
     new newxp;
@@ -142,7 +142,7 @@ public GiveCaptureFlagXP(client,vectorpos)
         DoLevelCheck(client,vectorpos);
 }
 
-public GiveCapturePointXP(client,vectorpos)
+public GivePointCapturedXP(client,vectorpos)
 {
     // Called when a player captures a point
     new newxp;
@@ -154,12 +154,12 @@ public GiveCapturePointXP(client,vectorpos)
         DoLevelCheck(client,vectorpos);
 }
 
-public GiveBlockPointXP(client,vectorpos)
+public GiveCaptureBlockedXP(client,vectorpos)
 {
     // Called when a player blocks a capture
     new newxp;
     new race=GetRace(vectorpos);
-    newxp=GetXP(vectorpos,race)+BLOCK_POINT_XP;
+    newxp=GetXP(vectorpos,race)+BLOCK_CAPTURE_XP;
     SetXP(vectorpos,race,newxp);
     War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for blocking a point.",COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)

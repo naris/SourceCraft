@@ -23,9 +23,10 @@ public bool:War3Source_HookEvents()
 
 public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
+        new index=GetClientOfUserId(userid);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
         {
@@ -47,7 +48,7 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
 {
     new uid_victim=GetEventInt(event,"userid");
     new uid_attacker=GetEventInt(event,"attacker");
-    if(uid_victim>0)
+    if(uid_victim > 0)
     {
         new victimIndex=GetClientOfUserId(uid_victim);
         new vecposvictim=GetClientVectorPosition(victimIndex);
@@ -59,12 +60,12 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
                 War3Source_SkillMenu(victimIndex,vecposvictim);
         }
     }
-    if(uid_victim!=uid_attacker&&uid_attacker>0)
+    if(uid_victim != uid_attacker && uid_attacker > 0)
     {
         new attackerIndex=GetClientOfUserId(uid_attacker);
         new victimIndex=GetClientOfUserId(uid_victim);
         new vecPos=GetClientVectorPosition(attackerIndex);
-        if(vecPos!=-1&&GetClientTeam(attackerIndex)!=GetClientTeam(victimIndex))
+        if(vecPos != -1 && GetClientTeam(attackerIndex) != GetClientTeam(victimIndex))
         {
             decl String:weapon[64];
             GetEventString(event,"weapon",weapon,63);

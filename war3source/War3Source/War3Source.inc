@@ -16,6 +16,9 @@ new Handle:m_MaxCredits = INVALID_HANDLE;
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
 
+enum Mod { other, tf2, cstrike, dod, hl2mp };
+new Mod:GameType = other;
+
 #define SAVE_ENABLED GetConVarInt(m_SaveXPConVar)==1
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
 #define MAX_CREDITS GetConVarInt(m_MaxCredits)
@@ -27,6 +30,8 @@ new Handle:DBIDB = INVALID_HANDLE;
 #include "War3Source/races"
 #include "War3Source/xp"
 #include "War3Source/events"
+#include "War3Source/events_tf2"
+#include "War3Source/events_cstrike"
 #include "War3Source/credits"
 #include "War3Source/console"
 #include "War3Source/shopmenu"
