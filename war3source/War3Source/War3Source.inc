@@ -1,19 +1,20 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source.inc
  * Description: Holds all the War3Source specific functions.
  * Author(s): Anthony Iacono  
  */
  
 // Temporary Definitions
-new Handle:arrayPlayers;
+new Handle:arrayPlayers = INVALID_HANDLE;
 
 // ConVar definitions
-new Handle:m_SaveXPConVar;
-new Handle:m_MinimumUltimateLevel;
-new Handle:m_MaxCredits;
+new Handle:m_SaveXPConVar = INVALID_HANDLE;
+new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
+new Handle:m_MaxCredits = INVALID_HANDLE;
 
 // DBI
-new Handle:DBIDB;
+new Handle:DBIDB = INVALID_HANDLE;
 
 #define SAVE_ENABLED GetConVarInt(m_SaveXPConVar)==1
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
@@ -33,12 +34,13 @@ new Handle:DBIDB;
 #include "War3Source/natives"
 #include "War3Source/hooks"
 #include "War3Source/menus"
+#include "War3Source/log"
 
 // SourceMod stuff
 #include <keyvalues>
 
-new Handle:vecHelpCommands;
-new Handle:vecLevelConfiguration;
+new Handle:vecHelpCommands       = INVALID_HANDLE;
+new Handle:vecLevelConfiguration = INVALID_HANDLE;
 
 #define HELPCOMMAND_COUNT GetArraySize(vecHelpCommands)
 
@@ -53,24 +55,34 @@ public bool:War3Source_ParseSettings()
     if(!DBIDB)
     {
         // TODO: Tell them that they didn't get a good DBI connection.
+        LogError("Unable to get a Database Connection.");
     }
     // Load level configuration
     KvRewind(keyValue);
     vecLevelConfiguration=CreateArray();
     if(!KvJumpToKey(keyValue,"levels"))
+    {
+        LogError("KvJumpToKey failed in ParseSettings");
         return false;
+    }
     new Handle:longterm_required=CreateArray();
     new Handle:longterm_killxp=CreateArray();
     new Handle:shortterm_required=CreateArray();
     new Handle:shortterm_killxp=CreateArray();
     decl String:temp[2048];
     if(!KvGotoFirstSubKey(keyValue))
+    {
+        LogError("KvJumpToKey failed in ParseSettings");
         return false;
+    }
     // required xp, long term
     KvGetString(keyValue,"required_xp",temp,2047);
     new tokencount=StrTokenCount(temp);
     if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for required xp, long term in ParseSettings");
         return false;
+    }
     decl String:temp_iter[16];
     for(new x=1;x<=tokencount;x++)
     {
@@ -82,7 +94,10 @@ public bool:War3Source_ParseSettings()
     KvGetString(keyValue,"kill_xp",temp,2047);
     tokencount=StrTokenCount(temp);
     if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for kill xp, long term in ParseSettings");
         return false;
+    }
     for(new x=1;x<=tokencount;x++)
     {
         // store it
@@ -90,12 +105,18 @@ public bool:War3Source_ParseSettings()
         PushArrayCell(longterm_killxp,StringToInt(temp_iter));
     }
     if(!KvGotoNextKey(keyValue))
+    {
+        LogError("KvGotoNextKey failed in ParseSettings");
         return false;
+    }
     // required xp, short term
     KvGetString(keyValue,"required_xp",temp,2047);
     tokencount=StrTokenCount(temp);
     if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for required xp, short term in ParseSettings");
         return false;
+    }
     for(new x=1;x<=tokencount;x++)
     {
         // store it
@@ -106,7 +127,10 @@ public bool:War3Source_ParseSettings()
     KvGetString(keyValue,"kill_xp",temp,2047);
     tokencount=StrTokenCount(temp);
     if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for kill xp, short term in ParseSettings");
         return false;
+    }
     for(new x=1;x<=tokencount;x++)
     {
         // store it

@@ -1,4 +1,5 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: events.inc
  * Description: The handler for all the source engine event based stuff.
  * Author(s): Anthony Iacono  
@@ -16,23 +17,7 @@ public bool:War3Source_HookEvents()
         PrintToServer("[War3Source] Could not hook the player_spawn event.");
         return false;
     }
-    #if !defined BUILD_DOD
-    if(!HookEventEx("bomb_defused",War3Source_BombDefusedEvent))
-    {
-        PrintToServer("[War3Source] Could not hook the bomb_defused event.");
-        return false;
-    }
-    if(!HookEventEx("bomb_planted",War3Source_BombPlantedEvent))
-    {
-        PrintToServer("[War3Source] Could not hook the bomb_planted event.");
-        return false;
-    }
-    if(!HookEventEx("hostage_rescued",War3Source_HostageRescuedEvent))
-    {
-        PrintToServer("[War3Source] Could not hook the hostage_rescued event.");
-        return false;
-    }
-    #endif
+
     return true;
 }
 
@@ -57,41 +42,6 @@ public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBro
         }
     }
 }
-
-#if !defined BUILD_DOD
-public War3Source_BombDefusedEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    if(GetEventInt(event,"userid")>0)
-    {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveDefuseXP(index,vecpos);
-    }
-}
-
-public War3Source_BombPlantedEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    if(GetEventInt(event,"userid")>0)
-    {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GivePlantXP(index,vecpos);
-    }
-}
-
-public War3Source_HostageRescuedEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    if(GetEventInt(event,"userid")>0)
-    {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveHostageRescuedXP(index,vecpos);
-    }
-}
-#endif
 
 public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {

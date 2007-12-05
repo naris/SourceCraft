@@ -1,4 +1,5 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source_ShopItems.sp
  * Description: The shop items that come with War3Source.
  * Author(s): Anthony Iacono
@@ -16,6 +17,22 @@
 #define COLOR_DEFAULT 0x01
 #define COLOR_TEAM 0x03
 #define COLOR_GREEN 0x04 // Actually red for DOD
+
+#define ITEM_ANKH             0 // Ankh of Reincarnation - Retrieve Equipment after death -- CStrike
+#define ITEM_BOOTS            1 // Boots of Speed - Move Fastwer
+#define ITEM_CLAWS            2 // Claws of Attack - Extra Damage
+#define ITEM_CLOAK            3 // Cloak of Shadows - Invisibility
+#define ITEM_MASK             4 // Mask of Death - Recieve Health for Hits
+#define ITEM_NECKLACE         5 // Necklace of Immunity - Immune to Untimates
+#define ITEM_ORB              6 // Orb of Frost - Slow Enemy
+#define ITEM_PERIAPT          7 // Periapt of Health - Get Extra Health when Purchased
+#define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
+#define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
+#define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
+#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades over time -- CStrike
+#define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
+#define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
+#define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
 
 // War3Source stuff
 new shopItem[15]; // The ID we are assigned to
@@ -63,14 +80,14 @@ public OnPluginStart()
 
 public OnWar3PluginReady()
 {
-    shopItem[0]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
-    shopItem[1]=War3_CreateShopItem("Boots of Speed","Allows you to move faster.","7");
+    shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
+    shopItem[ITEM_BOOTS]=War3_CreateShopItem("Boots of Speed","Allows you to move faster.","7");
     shopItem[2]=War3_CreateShopItem("Claws of Attack","An additional 8 hp will be removed from the enemy on every successful attack.","3");
     shopItem[3]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife.","2");
     shopItem[4]=War3_CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
     shopItem[5]=War3_CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
     shopItem[6]=War3_CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","5");
-    shopItem[7]=War3_CreateShopItem("Periapt of Health","Receive extra health. (Note: Can\nonly be purchased once on death\nand once on spawn, so you can get 2 per\nround.","3");
+    shopItem[7]=War3_CreateShopItem("Periapt of Health","Receive extra health. (Note: CanScroll of Respawning\nonly be purchased once on death\nand once on spawn, so you can get 2 per\nround.","3");
     shopItem[8]=War3_CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","10");
     shopItem[9]=War3_CreateShopItem("Scroll of Respawning","You will respawn after death.","15");
     shopItem[10]=War3_CreateShopItem("Sock of the Feather","You will be able to jump higher.","4");
@@ -141,27 +158,27 @@ public OnWar3PlayerAuthed(client,war3player)
 
 public OnItemPurchase(client,war3player,item)
 {
-    if(item==shopItem[1]&&IS_ALIVE(client)) // Boots
+    if(item==shopItem[ITEM_BOOTS]&&IS_ALIVE(client)) // Boots of Speed
         War3_SetMaxSpeed(war3player,1.4);
-    if(item==shopItem[5])
+    if(item==shopItem[5])                            // Necklace of Immunity
         War3_SetImmunity(war3player,Immunity_Ultimates,true);
-    if(item==shopItem[7]&&IS_ALIVE(client))
+    if(item==shopItem[7]&&IS_ALIVE(client))          // Periapt of Health
     {
         usedPeriapt[client]=true;
         SetHealth(client,GetClientHealth(client)+50);
     }
-    if(item==shopItem[8])
+    if(item==shopItem[8])                            // Tome of Experience
     {
         War3_SetXP(war3player,War3_GetRace(war3player),War3_GetXP(war3player,War3_GetRace(war3player))+100);
         War3_SetOwnsItem(war3player,shopItem[8],false);
         War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
-    if(item==shopItem[9]&&!IS_ALIVE(client))
+    if(item==shopItem[9]&&!IS_ALIVE(client))         // Scroll of Respawning 
     {
         RespawnPlayer(client);
         War3_SetOwnsItem(war3player,shopItem[9],false);
     }
-    if(item==shopItem[10])
+    if(item==shopItem[10])                           // Sock of the Feather
         War3_SetMinGravity(war3player,0.3);
 }
 
