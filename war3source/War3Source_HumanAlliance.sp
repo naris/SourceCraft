@@ -1,4 +1,5 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source_HumanAlliance.sp
  * Description: The Human Alliance race for War3Source.
  * Author(s): Anthony Iacono 
@@ -11,7 +12,6 @@
 
 // Defines
 #define IS_ALIVE !GetLifestate
-#define MAX_PLAYERS 64
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -19,7 +19,7 @@ new lifestateOffset;
 new colorOffset;
 new renderModeOffset;
 new movetypeOffset;
-new healthOffset[MAX_PLAYERS+1];
+new healthOffset[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {

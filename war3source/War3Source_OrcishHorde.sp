@@ -1,4 +1,5 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source_OrcishHorde.sp
  * Description: The Orcish Horde race for War3Source.
  * Author(s): Anthony Iacono 
@@ -11,16 +12,16 @@
 #include <sdktools>
 
 // Defines
-#define MAX_PLAYERS 64
+#define MAXPLAYERS 64
 #define IS_ALIVE !GetLifestate
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new healthOffset[MAX_PLAYERS+1];
+new healthOffset[MAXPLAYERS+1];
 new lifestateOffset;
-new bool:m_HasRespawned[MAX_PLAYERS+1]={false};
-new Float:m_UseTime[MAX_PLAYERS+1]={0.0,...};
-new bool:m_AllowChainLightning[MAX_PLAYERS+1]={false,...};
+new bool:m_HasRespawned[MAXPLAYERS+1]={false};
+new Float:m_UseTime[MAXPLAYERS+1]={0.0,...};
+new bool:m_AllowChainLightning[MAXPLAYERS+1]={false,...};
 new Handle:cvarChainCooldown;
 new Handle:hGameConf;
 new Handle:hRoundRespawn;
@@ -85,7 +86,7 @@ public GetLifestate(client)
 
 public OnGameFrame()
 {
-    for(new x=0;x<=MAX_PLAYERS;x++)
+    for(new x=0;x<=MAXPLAYERS;x++)
     {
         if(!m_AllowChainLightning[x])
             if(GetEngineTime()>=m_UseTime[x]+GetConVarFloat(cvarChainCooldown))
@@ -225,7 +226,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    for(new x=1;x<=MAX_PLAYERS;x++)
+    for(new x=1;x<=MAXPLAYERS;x++)
         m_HasRespawned[x]=false;
 }
 

@@ -2,6 +2,7 @@
  * vim: set ai ts=4 sw=4 syntax=cpp :
  * File: log.inc
  * Description: Writes message to console and log.
+ * Author(s): Naris (Murray Wilson)
  */
 
 stock Log(String:message[])

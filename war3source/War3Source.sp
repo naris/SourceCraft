@@ -1,7 +1,9 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source.sp
  * Description: The main file for War3Source.
  * Author(s): Anthony Iacono 
+ * Modifications by: Naris (Murray Wilson)
  */
  
 #pragma semicolon 1
@@ -9,8 +11,8 @@
 #include <sourcemod>
 
 new bool:m_FirstSpawn[65]={true}; // Cheap trick
-#define VERSION_NUM "0.8.6.1"
-#define VERSION "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
+#define VERSION_NUM "0.9" // "0.8.6.1"
+#define VERSION     "0.9" // "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
 
 // War3Source Includes
 #include "War3Source/War3Source"
@@ -43,6 +45,20 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 public OnPluginStart()
 {
     PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin loading...");
+
+    new String: game_description[64];
+    GetGameDescription(game_description, 64, true);
+    if (strcmp(game_description, "Counter-Strike: Source") == 0)
+        GameType=cstrike;
+    else if (strcmp(game_description, "Day of Defeat: Source") == 0)
+        GameType=dod;
+    else if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0)
+        GameType=hl2mp;
+    else if (strcmp(game_description, "Team Fortress") == 0)
+        GameType=tf2;
+    else
+        GameType=other;
+
     arrayPlayers=CreateArray();
     if(!War3Source_InitiatearrayRaces())
         SetFailState("[War3Source] There was a failure in creating the race vector, definately halting.");
@@ -50,10 +66,25 @@ public OnPluginStart()
         SetFailState("[War3Source] There was a failure in creating the shop vector, definately halting.");
     if(!War3Source_InitiateHelpVector())
         SetFailState("[War3Source] There was a failure in creating the help vector, definitely halting.");
+
     if(!War3Source_HookEvents())
         SetFailState("[War3Source] There was a failure in initiating event hooks.");
+
+    if (GameType == tf2)
+    {
+        if(!War3Source_HookTFEvents())
+            SetFailState("[War3Source] There was a failure in initiating tf2 event hooks.");
+    }
+    else if(GameType == cstrike)
+    {
+        if(!War3Source_HookCStrikeEvents())
+            SetFailState("[War3Source] There was a failure in initiating cstrike event hooks.");
+    }
+
     if(!War3Source_InitCVars())
         SetFailState("[War3Source] There was a failure in initiating console variables.");
+    if(!War3Source_InitMenus())
+        SetFailState("[War3Source] There was a failure in initiating menus.");
     if(!War3Source_InitHooks())
         SetFailState("[War3Source] There was a failure in initiating the hooks.");
     if(!War3Source_InitOffset())

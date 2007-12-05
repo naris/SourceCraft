@@ -1,13 +1,13 @@
 /*
-File: offsets.inc
-Description: Offset definitions.
-Author(s): Anthony Iacono  
-*/
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * File: offsets.inc
+ * Description: Offset definitions.
+ * Author(s): Anthony Iacono  
+ */
 
 new m_OffsetLifestate;
 new m_OffsetSpeed;
-#define MAX_PLAYERS 64
-new m_OffsetGravity[MAX_PLAYERS+1];
+new m_OffsetGravity[MAXPLAYERS+1];
 
 public bool:War3Source_InitOffset()
 {

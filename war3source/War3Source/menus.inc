@@ -1,8 +1,50 @@
 /*
-File: menus.inc
-Description: This file handles the menu aspects of the plugin.
-Author(s): Anthony Iacono  
-*/
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * File: menus.inc
+ * Description: This file handles the menu aspects of the plugin.
+ * Author(s): Anthony Iacono  
+ * Modifications by: Naris (Murray Wilson)
+ */
+
+public War3Source_InitMenus()
+{
+    /* Account for late loading */
+    new Handle:topmenu;
+    if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+    {
+        OnAdminMenuReady(topmenu);
+    }
+
+    return true;
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+    /************************************************************/
+    /* Add Administer War3Source option to SourceMod Admin Menu */
+    /************************************************************/
+
+    /* Block us from being called twice */
+    if (topmenu != hTopMenu)
+    {
+        /* Save the Handle */
+        hTopMenu = topmenu;
+        new TopMenuObject:war3_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hTopMenu, "War3Source_Admin", TopMenuObject_Item, War3Source_AdminMenu, war3_commands, "War3Source_Admin", ADMFLAG_GENERIC);
+    }
+}
+
+public War3Source_AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+{
+    if (action == TopMenuAction_DisplayOption)
+    {
+        Format(buffer, maxlength, "Administer War3Source");
+    }
+    else if (action == TopMenuAction_SelectOption)
+    {
+        War3Source_Admin(param,param);
+    }
+}
 
 public War3Source_IntroMenu(client)
 {

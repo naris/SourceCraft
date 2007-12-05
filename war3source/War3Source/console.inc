@@ -1,18 +1,25 @@
 /*
-File: console.inc
-Description: This file handles console variables that can be modified from the server console
-or RCON, and it also handles the admin commands that can be called from either server or client
-admin.  
-Author(s): Anthony Iacono  
-*/
+ * File: console.inc
+ * Description: This file handles console variables that can be modified from the server console
+ *              or RCON, and it also handles the admin commands that can be called from either
+ *              server or client admin.  
+ * Author(s): Anthony Iacono  
+ * Modifications by: Naris (Murray Wilson)
+ */
+
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+
+new Handle:hTopMenu = INVALID_HANDLE;
 
 public War3Source_InitCVars()
 {
     m_SaveXPConVar=CreateConVar("war3_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("war3_minimumultimatelevel","8");
     m_MaxCredits=CreateConVar("war3_maxcredits","40");
+
     CreateConVar("war3_version",VERSION,"War3Source version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY);
-    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+
     RegAdminCmd("war3_setxp",War3Source_CMD_SetXP,ADMFLAG_RCON,"Set a player's XP");
     RegAdminCmd("war3_givexp",War3Source_CMD_GiveXP,ADMFLAG_RCON,"Give a player XP");
     RegAdminCmd("war3_removexp",War3Source_CMD_RemoveXP,ADMFLAG_RCON,"Remove some XP from a player");
@@ -22,6 +29,11 @@ public War3Source_InitCVars()
     RegAdminCmd("war3_setcredits",War3Source_CMD_SetCredits,ADMFLAG_RCON,"Set a player's credit count");
     RegAdminCmd("war3_givecredits",War3Source_CMD_GiveCredits,ADMFLAG_RCON,"Give a player credits");
     RegAdminCmd("war3_removecredits",War3Source_CMD_RemoveCredits,ADMFLAG_RCON,"Remove some credits from a player");
+
+    RegAdminCmd("wcadmin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+    RegAdminCmd("wc3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+
     return true;
 }
 

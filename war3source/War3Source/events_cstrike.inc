@@ -3,6 +3,7 @@
  * File: events.inc
  * Description: The handler for all the counter-strike event based stuff.
  * Author(s): Anthony Iacono  
+ * Modifications by: Naris (Murray Wilson)
  */
 
 public bool:War3Source_HookCStrikeEvents()

@@ -1,9 +1,10 @@
 /*
-File: natives.inc
-Description: All the natives that keep us from having to make a C++ extension,
-I <3 SourceMod :) (Note: Forwards are handled here too.)
-Author(s): Anthony Iacono  
-*/
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * File: natives.inc
+ * Description: All the natives that keep us from having to make a C++ extension,
+ *              I <3 SourceMod :) (Note: Forwards are handled here too.)
+ * Author(s): Anthony Iacono  
+ */
 
 // Handles
 new Handle:g_OnWar3PlayerAuthedHandle;
