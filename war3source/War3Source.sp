@@ -1,9 +1,11 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=cpp :
- * File: $Id$
+ * File: War3Source.sp
  * Description: The main file for War3Source.
  * Author(s): Anthony Iacono 
  * Modifications by: Naris (Murray Wilson)
+ *
+ * $Id$
  */
  
 #pragma semicolon 1
@@ -11,7 +13,7 @@
 #include <sourcemod>
 
 new bool:m_FirstSpawn[65]={true}; // Cheap trick
-#define VERSION_NUM "0.9" // "0.8.6.1"
+#define VERSION_NUM "0.9 $Revision$" // "0.8.6.1"
 #define VERSION     "$Revision$" // "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
 
 // War3Source Includes
