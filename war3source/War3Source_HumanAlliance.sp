@@ -13,6 +13,11 @@
 // Defines
 #define IS_ALIVE !GetLifestate
 
+// Colors
+#define COLOR_DEFAULT 0x01
+#define COLOR_TEAM 0x03
+#define COLOR_GREEN 0x04 // DOD = Red
+
 // War3Source stuff
 new raceID; // The ID we are assigned to
 new lifestateOffset;
@@ -80,7 +85,7 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    PrintToChat(client,"%c[War3Source]%c DOH! Teleport has not been implemented yet!",COLOR_GREEN,COLOR_RED);
+    PrintToChat(client,"%c[War3Source]%c DOH! Teleport has not been implemented yet!",COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)

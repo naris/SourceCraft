@@ -16,6 +16,11 @@
 #define MAXPLAYERS 64
 #define IS_ALIVE !GetLifestate
 
+// Colors
+#define COLOR_DEFAULT 0x01
+#define COLOR_TEAM 0x03
+#define COLOR_GREEN 0x04 // DOD = Red
+
 // War3Source stuff
 new raceID; // The ID we are assigned to
 new healthOffset[MAXPLAYERS+1];
@@ -101,7 +106,7 @@ public OnGameFrame()
 public War3Source_ChainLightning(war3player,client,ultlevel)
 {
     // we need traceline :[
-    PrintToChat(client,"%c[War3Source]%c DOH! Chain Lightning has not been implemented yet!",COLOR_GREEN,COLOR_RED);
+    PrintToChat(client,"%c[War3Source]%c DOH! Chain Lightning has not been implemented yet!",COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)

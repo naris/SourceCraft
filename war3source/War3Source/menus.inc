@@ -50,9 +50,9 @@ public War3Source_IntroMenu(client)
 {
     new Handle:introMenu=CreateMenu(War3Source_IntroMenu_Select);
     SetMenuExitButton(introMenu,false);
-    SetMenuTitle(introMenu,"Welcome to this War3Source server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\nVersion: %s",VERSION);
+    SetMenuTitle(introMenu,"Welcome to this War3Source server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\n%s",VERSION);
     AddMenuItem(introMenu,"","Exit");
-    DisplayMenu(introMenu,client,MENU_TIME_FOREVER);
+    DisplayMenu(introMenu,client, 20);
 }
 
 public War3Source_IntroMenu_Select(Handle:menu,MenuAction:action,client,selection)
