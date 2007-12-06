@@ -8,8 +8,9 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include "War3Source/War3Source_Interface"
 #include <sdktools>
+
+#include "War3Source/War3Source_Interface"
 
 // Defines
 #define IS_ALIVE !GetLifestate
@@ -42,9 +43,26 @@ public OnPluginStart()
 
 public OnWar3PluginReady()
 {
-    raceID=War3_CreateRace("Undead Scourge","undead","You are now an Undead Scourge.","You will be an Undead Scourge when you die or respawn.","Vampiric Aura","Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.","Unholy Aura","Gives you a speed boost, 8-36% faster.","Levitation","Allows you to jump higher by \nreducing your gravity by 8-64%.","Suicide Bomber","Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
+    raceID=War3_CreateRace("Undead Scourge",
+                           "undead",
+                           "You are now an Undead Scourge.",
+                           "You will be an Undead Scourge when you die or respawn.",
+                           "Vampiric Aura",
+                           "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.",
+                           "Unholy Aura",
+                           "Gives you a speed boost, 8-36% faster.",
+                           "Levitation",
+                           "Allows you to jump higher by \nreducing your gravity by 8-64%.",
+                           "Suicide Bomber",
+                           "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
+
     lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
+    if(lifestateOffset==-1)
+        SetFailState("Couldn't find LifeState offset");
+
     explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
+    if(explosionModel == -1)
+        SetFailState("Couldn't find Explosion Model");
 }
 
 public OnMapStart()
@@ -341,7 +359,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid=GetEventInt(event,"userid");
     new index=GetClientOfUserId(userid);
     new war3player=War3_GetWar3Player(index);
-    if(war3player>-1&&!m_Suicided[index])
+    if(war3player>-1 && !m_Suicided[index])
     {
         new race=War3_GetRace(war3player);
         if(race==raceID)

@@ -42,11 +42,24 @@ public OnPluginStart()
 
 public OnWar3PluginReady()
 {
-    raceID=War3_CreateRace("Night Elf","nightelf","You are now a Night Elf.","You will be a Night Elf when you die or respawn.","Evasion","Gives you 5-30% chance of evading a shot.","Thorns Aura","Does 30% mirror damage to the person \nwho shot you, chance to activate 15-50%.","Trueshot Aura","Does 10-60% extra damage to the \nenemy, chance is 30%.","Entangled Roots","Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
+    raceID=War3_CreateRace("Night Elf",
+                           "nightelf",
+                           "You are now a Night Elf.",
+                           "You will be a Night Elf when you die or respawn.",
+                           "Evasion",
+                           "Gives you 5-30% chance of evading a shot.",
+                           "Thorns Aura",
+                           "Does 30% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
+                           "Trueshot Aura",
+                           "Does 10-60% extra damage to the \nenemy, chance is 30%.",
+                           "Entangled Roots",
+                           "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
+
     lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    movetypeOffset=FindSendPropOffs("CAI_BaseNPC","movetype");
     if(lifestateOffset==-1)
         SetFailState("Couldn't find LifeState offset");
+
+    movetypeOffset=FindSendPropOffs("CAI_BaseNPC","movetype");
     if(movetypeOffset==-1)
         SetFailState("Couldn't find MoveType offset");
 }

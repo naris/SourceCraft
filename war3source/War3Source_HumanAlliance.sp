@@ -40,21 +40,33 @@ public OnPluginStart()
 public OnWar3PluginReady()
 {
     raceID=War3_CreateRace("Human Alliance",
-                            "human",
-                            "You are now part of the Human Alliance.",
-                            "You will be part of the Human Alliance when you die or respawn.",
-                            "Invisibility",
-                            "Makes you partially invisible, \n62% visibility - 37% visibility.",
-                            "Devotion Aura",
-                            "Gives you additional 15-50 health each round.",
-                            "Bash",
-                            "Have a 15-32% chance to render an \nenemy immobile for 1 second.",
-                            "Teleport",
-                            "Allows you to teleport to where you \naim, 60-105 feet being the range.");
+                           "human",
+                           "You are now part of the Human Alliance.",
+                           "You will be part of the Human Alliance when you die or respawn.",
+                           "Invisibility",
+                           "Makes you partially invisible, \n62% visibility - 37% visibility.",
+                           "Devotion Aura",
+                           "Gives you additional 15-50 health each round.",
+                           "Bash",
+                           "Have a 15-32% chance to render an \nenemy immobile for 1 second.",
+                           "Teleport",
+                           "Allows you to teleport to where you \naim, 60-105 feet being the range.");
+
     lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    colorOffset=FindSendPropOffs("CAI_BaseNPC","m_clrRender");
-    renderModeOffset=FindSendPropOffs("CBaseAnimating","m_nRenderMode");
+    if(lifestateOffset==-1)
+        SetFailState("Couldn't find LifeState offset");
+
     movetypeOffset=FindSendPropOffs("CBaseEntity","movetype");
+    if(movetypeOffset==-1)
+        SetFailState("Couldn't find MoveType offset");
+
+    colorOffset=FindSendPropOffs("CAI_BaseNPC","m_clrRender");
+    if(colorOffset==-1)
+        SetFailState("Couldn't find Color offset");
+
+    renderModeOffset=FindSendPropOffs("CBaseAnimating","m_nRenderMode");
+    if(renderModeOffset==-1)
+        SetFailState("Couldn't find RenderMode offset");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -72,7 +84,8 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race==raceID&&skill==0&&newskilllevel>0&&War3_GetRace(war3player)==raceID&&IS_ALIVE(client))
+    if(race == raceID && skill==0 && newskilllevel > 0 &&
+       War3_GetRace(war3player) == raceID && IS_ALIVE(client))
     {
         // Invisibility
         new alpha;
@@ -155,16 +168,16 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new attacker_userid=GetEventInt(event,"attacker");
-    if(userid&&attacker_userid&&userid!=attacker_userid)
+    if(userid && attacker_userid && userid!=attacker_userid)
     {
         new index=GetClientOfUserId(userid);
         new attacker_index=GetClientOfUserId(attacker_userid);
         new war3player=War3_GetWar3Player(index);
         new war3player_attacker=War3_GetWar3Player(attacker_index);
-        if(war3player!=-1&&war3player_attacker!=-1)
+        if(war3player != -1 && war3player_attacker != -1)
         {
             new race=War3_GetRace(war3player_attacker);
-            if(race==raceID)
+            if(race == raceID)
             {
                 new skill_bash=War3_GetSkillLevel(war3player_attacker,race,2);
                 if(skill_bash)
@@ -251,13 +264,14 @@ stock UnFreezeEntity(entity)
 
 public SetRenderColor(client,r,g,b,a)
 {
-	if(colorOffset==-1)
-        return;
-	SetEntData(client,colorOffset,r,1,true);
-	SetEntData(client,colorOffset+1,g,1,true);
-	SetEntData(client,colorOffset+2,b,1,true);
-	SetEntData(client,colorOffset+3,a,1,true);
-	if(renderModeOffset==-1)
-        return;
-	SetEntData(client,renderModeOffset,3,1,true);
+	if(colorOffset != -1)
+    {
+        SetEntData(client,colorOffset,r,1,true);
+        SetEntData(client,colorOffset+1,g,1,true);
+        SetEntData(client,colorOffset+2,b,1,true);
+        SetEntData(client,colorOffset+3,a,1,true);
+
+        if(renderModeOffset != -1)
+            SetEntData(client,renderModeOffset,3,1,true);
+    }
 }

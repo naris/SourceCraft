@@ -8,8 +8,9 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include "War3Source/War3Source_Interface"
 #include <sdktools>
+
+#include "War3Source/War3Source_Interface"
 
 // Defines
 #define MAXPLAYERS 64
@@ -45,21 +46,24 @@ public OnPluginStart()
 
 public OnWar3PluginReady()
 {
-    raceID=War3_CreateRace(
-                            "Orcish Horde", // Full race name
-                            "orc", // SQLite ID name (short name, no spaces)
-                            "You are now an Orcish Horde.", // Selected Race message
-                            "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                            "Critical Strike", //Skill 1 Name
-                            "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
-                            "Critical Grenade", // Skill 2 Name
-                            "Grenades will always do a 40-240%\nmore damage.", // Skill 2 Description
-                            "Reincarnation", // Skill 3 Name
-                            "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
-                            "Chain Lightning", // Ultimate Name
-                            "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
+    raceID=War3_CreateRace("Orcish Horde", // Full race name
+                           "orc", // SQLite ID name (short name, no spaces)
+                           "You are now an Orcish Horde.", // Selected Race message
+                           "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
+                           "Critical Strike", //Skill 1 Name
+                           "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
+                           "Critical Grenade", // Skill 2 Name
+                           "Grenades will always do a 40-240%\nmore damage.", // Skill 2 Description
+                           "Reincarnation", // Skill 3 Name
+                           "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
+                           "Chain Lightning", // Ultimate Name
+                           "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
+
     LoadSDKToolStuff();
+
     lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
+    if(lifestateOffset==-1)
+        SetFailState("Couldn't find LifeState offset");
 }
 
 public LoadSDKToolStuff()
@@ -101,7 +105,8 @@ public War3Source_ChainLightning(war3player,client,ultlevel)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if(pressed&&m_AllowChainLightning[client]&&race==raceID&&IS_ALIVE(client))
+    if(pressed && m_AllowChainLightning[client] &&
+       race==raceID && IS_ALIVE(client))
     {
         new skill=War3_GetSkillLevel(war3player,race,3);
         if(skill)
@@ -118,13 +123,13 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new attacker_userid=GetEventInt(event,"attacker");
-    if(userid&&attacker_userid&&userid!=attacker_userid)
+    if(userid && attacker_userid && userid!=attacker_userid)
     {
         new index=GetClientOfUserId(userid);
         new attacker_index=GetClientOfUserId(attacker_userid);
         new war3player=War3_GetWar3Player(index);
         new war3player_attacker=War3_GetWar3Player(attacker_index);
-        if(war3player!=-1&&war3player_attacker!=-1)
+        if(war3player != -1 && war3player_attacker != -1)
         {
             new race_attacker=War3_GetRace(war3player_attacker);
             if(race_attacker==raceID)
