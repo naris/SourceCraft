@@ -101,6 +101,7 @@ public OnGameFrame()
 public War3Source_ChainLightning(war3player,client,ultlevel)
 {
     // we need traceline :[
+    PrintToChat(client,"%c[War3Source]%c DOH! Chain Lightning has not been implemented yet!",COLOR_GREEN,COLOR_RED);
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)

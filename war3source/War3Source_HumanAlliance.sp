@@ -80,6 +80,7 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
+    PrintToChat(client,"%c[War3Source]%c DOH! Teleport has not been implemented yet!",COLOR_GREEN,COLOR_RED);
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)

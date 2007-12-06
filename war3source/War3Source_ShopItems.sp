@@ -476,7 +476,7 @@ public Action:Gloves(Handle:timer)
         if(IsClientInGame(x) && IS_ALIVE(x))
         {
             new war3player=War3_GetWar3Player(x);
-            if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
+            if (war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
             {
                 if (GameType == cstrike)
                 {

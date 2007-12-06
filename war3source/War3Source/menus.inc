@@ -112,7 +112,11 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
                     if(GetSkillCount(war3player,race)<GetLevel(war3player,race))
                         War3Source_SkillMenu(client,war3player);
                     else
-                        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
+                    {
+                        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                               "%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",
+                                               COLOR_GREEN,COLOR_DEFAULT);
+                    }
                 }
                 case 5: // showskills
                 {
@@ -167,7 +171,10 @@ public War3Source_SkillMenu(client,vectorpos)
         if(x!=SKILL_ULTIMATE)
             Format(buf,191,"%s (Skill Level %d)",skillname,curlevel+1);
         else
-            Format(buf,191,"Ultimate: %s (Skill Level %d) (Minimum Level %d)",skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
+        {
+            Format(buf,191,"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
+                   skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
+        }
         if(curlevel!=4)
             AddMenuItem(sMenu,sbuf,buf);
     }
@@ -204,13 +211,24 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                                 SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                                 decl String:skillname[64];
                                 GetArrayString(raceHandle,4+(skill*2),skillname,63);
-                                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c\"%s\" is now level %d.",COLOR_GREEN,COLOR_DEFAULT,skillname,GetSkillLevel(vecpos,race,skill));
+                                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                                       "%c[War3Source] %c\"%s\" is now level %d.",
+                                                       COLOR_GREEN,COLOR_DEFAULT,skillname,
+                                                       GetSkillLevel(vecpos,race,skill));
                             }
                             else
-                                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou can not choose a skill without gaining another level.",COLOR_GREEN,COLOR_DEFAULT);
+                            {
+                                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                                       "%c[War3Source] %cYou can not choose a skill without gaining another level.",
+                                                       COLOR_GREEN,COLOR_DEFAULT);
+                            }
                         }
                         else
-                            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou need to be at least level %d to choose an ultimate.",COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
+                        {
+                            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                                   "%c[War3Source] %cYou need to be at least level %d to choose an ultimate.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
+                        }
                         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                             War3Source_SkillMenu(client,vecpos);
                     }
@@ -223,10 +241,18 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                             SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                             decl String:skillname[64];
                             GetArrayString(raceHandle,4+(skill*2),skillname,63);
-                            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c\"%s\" is now level %d.",COLOR_GREEN,COLOR_DEFAULT,skillname,GetSkillLevel(vecpos,race,skill));
+                            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                                   "%c[War3Source] %c\"%s\" is now level %d.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,skillname,
+                                                   GetSkillLevel(vecpos,race,skill));
                         }
                         else
-                            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou can not choose a skill without gaining another level.",COLOR_GREEN,COLOR_DEFAULT);
+                        {
+                            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                                   "%c[War3Source] %cYou can not choose a skill without gaining another level.",
+                                                   COLOR_GREEN,COLOR_DEFAULT);
+                        }
+
                         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                             War3Source_SkillMenu(client,vecpos);
                     }
@@ -262,7 +288,9 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
                     new Handle:race=Race(selection);
                     decl String:buf[192];
                     GetArrayString(race,2,buf,191);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %c%s",
+                                           COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
             }
         }
@@ -305,7 +333,7 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
             new SelectionStyle;
             GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
             new item=StringToInt(SelectionInfo);
-            if(item>-1&&item<SHOPITEM_COUNT)
+            if(item>-1 && item<SHOPITEM_COUNT)
                 War3Source_ShopMenu_Item(client,vecpos,item);
         }
     }
@@ -368,13 +396,27 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                         Call_PushCell(item);
                         new result;
                         Call_Finish(result);
-                        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have successfully purchased the item.",COLOR_GREEN,COLOR_DEFAULT);
+
+                        decl String:itemname[64];
+                        GetArrayString(itemHandle,0,itemname,63);
+
+                        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                               "%c[War3Source] %cYou have successfully purchased the %s.",
+                                               COLOR_GREEN,COLOR_DEFAULT,itemname);
                     }
                     else
-                        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou already own this item.",COLOR_GREEN,COLOR_DEFAULT);
+                    {
+                        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                               "%c[War3Source] %cYou already own this item.",
+                                               COLOR_GREEN,COLOR_DEFAULT);
+                    }
                 }
                 else
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou can not afford this item.",COLOR_GREEN,COLOR_DEFAULT);
+                {
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cYou can not afford this item.",
+                                           COLOR_GREEN,COLOR_DEFAULT);
+                }
             }
             else if(selection==1)
                 War3Source_ShopMenu(client,vecpos);
@@ -403,7 +445,7 @@ public Action:War3Source_Admin(client,args)
 
 public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action==MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -415,7 +457,11 @@ public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
         if(war3player>-1)
             War3Source_Admin_Player(client,war3player);
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player you selected has left the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player you selected has left the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -448,7 +494,8 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new war3player=GetClientVectorPosition(index);
         new String:adminname[64];
@@ -471,10 +518,17 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
                     new race=GetRace(war3player);
                     for(new y=0;y<SKILL_COUNT;y++)
                             SetSkillLevel(war3player,race,y,0);
+
                     if(GetSkillCount(war3player,race)<GetLevel(war3player,race))
                         War3Source_SkillMenu(index,war3player);
-                    War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cAdmin \"%s\" reset your skills.",COLOR_GREEN,COLOR_DEFAULT,adminname);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou reset player \"%s\" skills.",COLOR_GREEN,COLOR_DEFAULT,targetname);
+
+                    War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                           "%c[War3Source] %cAdmin \"%s\" reset your skills.",
+                                           COLOR_GREEN,COLOR_DEFAULT,adminname);
+
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cYou reset player \"%s\" skills.",
+                                           COLOR_GREEN,COLOR_DEFAULT,targetname);
                 }
                 case 2:
                 {
@@ -506,7 +560,11 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
                 War3Source_Admin_Player(client,war3player);
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player you selected has left the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player you selected has left the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -527,14 +585,21 @@ public War3Source_Admin_PlayerInfo(client,target)
         new credits=GetCredits(targetvecpos);
         new xp=GetXP(targetvecpos,race);
         new level=GetLevel(targetvecpos,race);
-        SetMenuTitle(playerInfo,"[War3Source] Info for %s.\nRace: %s\nCredits: %d\nXP: %d\nLevel: %d",playername,race_name,credits,xp,level);
+
+        SetMenuTitle(playerInfo,"[War3Source] Info for %s.\nRace: %s\nCredits: %d\nXP: %d\nLevel: %d",
+                     playername,race_name,credits,xp,level);
+
         decl String:buf[4];
         Format(buf,3,"%d",target);
         AddMenuItem(playerInfo,buf,"Back to options");
         DisplayMenu(playerInfo,client,MENU_TIME_FOREVER);
     }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+    {
+        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                               "%c[War3Source] %cThe player has disconnected from the server.",
+                               COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
@@ -545,13 +610,18 @@ public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new war3player=GetClientVectorPosition(index);
         if(war3player>-1)
             War3Source_Admin_Player(client,war3player);
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player has disconnected from the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -577,7 +647,9 @@ public War3Source_Admin_XP(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                               "%c[War3Source] %cThe player has disconnected from the server.",
+                               COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
@@ -588,7 +660,8 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new targetvecpos=GetClientVectorPosition(index);
         if(targetvecpos>-1)
@@ -612,8 +685,15 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
                 }
                 new newxp=GetXP(targetvecpos,race)+xpadd;
                 SetXP(targetvecpos,race,newxp);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gave \"%s\" %d XP.",COLOR_GREEN,COLOR_DEFAULT,targetname,xpadd);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cYou recieved %d XP from admin \"%s\".",COLOR_GREEN,COLOR_DEFAULT,xpadd,adminname);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou gave \"%s\" %d XP.",
+                                       COLOR_GREEN,COLOR_DEFAULT,targetname,xpadd);
+
+                War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou recieved %d XP from admin \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,xpadd,adminname);
+
                 DoLevelCheck(index,targetvecpos);
                 War3Source_Admin_XP(client,index);
             }
@@ -632,14 +712,26 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
                 new newxp=GetXP(targetvecpos,race)-xprem;
                 if(newxp<0)
                     newxp=0;
+
                 SetXP(targetvecpos,race,newxp);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou removed %d XP from player \"%s\".",COLOR_GREEN,COLOR_DEFAULT,xprem,targetname);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cAdmin \"%s\" removed %d XP from you.",COLOR_GREEN,COLOR_DEFAULT,adminname,xprem);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou removed %d XP from player \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,xprem,targetname);
+
+                War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                       "%c[War3Source] %cAdmin \"%s\" removed %d XP from you.",
+                                       COLOR_GREEN,COLOR_DEFAULT,adminname,xprem);
+
                 War3Source_Admin_XP(client,index);
             }
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player has disconnected from the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -667,7 +759,11 @@ public War3Source_Admin_GiveShopItem(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+    {
+        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                               "%c[War3Source] %cThe player has disconnected from the server.",
+                               COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
@@ -678,7 +774,8 @@ public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selectio
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new targetvecpos=GetClientVectorPosition(index);
         if(targetvecpos>-1)
@@ -700,15 +797,30 @@ public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selectio
                 GetClientName(client,adminname,63);
                 decl String:targetname[64];
                 GetClientName(index,targetname,63);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gave \"%s\" a %s.",COLOR_GREEN,COLOR_DEFAULT,targetname,itemname);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cYou recieved a %s from admin \"%s\".",COLOR_GREEN,COLOR_DEFAULT,itemname,adminname);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou gave \"%s\" a %s.",
+                                       COLOR_GREEN,COLOR_DEFAULT,targetname,itemname);
+
+                War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou recieved a %s from admin \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,itemname,adminname);
+
                 War3Source_Admin_Player(client,targetvecpos);
             }
             else
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player already owns this item.",COLOR_GREEN,COLOR_DEFAULT);
+            {
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cThe player already owns this item.",
+                                       COLOR_GREEN,COLOR_DEFAULT);
+            }
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player has disconnected from the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -736,7 +848,11 @@ public War3Source_Admin_SetRace(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+    {
+        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                               "%c[War3Source] %cThe player has disconnected from the server.",
+                               COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
@@ -747,7 +863,8 @@ public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,sele
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new targetvecpos=GetClientVectorPosition(index);
         if(targetvecpos>-1)
@@ -760,11 +877,21 @@ public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,sele
             GetClientName(client,adminname,63);
             decl String:targetname[64];
             GetClientName(index,targetname,63);
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou set player \"%s\" to race %s.",COLOR_GREEN,COLOR_DEFAULT,targetname,racename);
-            War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cAdmin \"%s\" set you to race %s.",COLOR_GREEN,COLOR_DEFAULT,adminname,racename);
+
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cYou set player \"%s\" to race %s.",
+                                   COLOR_GREEN,COLOR_DEFAULT,targetname,racename);
+
+            War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                   "%c[War3Source] %cAdmin \"%s\" set you to race %s.",
+                                   COLOR_GREEN,COLOR_DEFAULT,adminname,racename);
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player has disconnected from the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -786,7 +913,11 @@ public War3Source_Admin_Level(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+    {
+        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                               "%c[War3Source] %cThe player has disconnected from the server.",
+                               COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
@@ -797,7 +928,8 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new targetvecpos=GetClientVectorPosition(index);
         if(targetvecpos>-1)
@@ -812,28 +944,49 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 // Give a level
                 new newlevel=GetLevel(targetvecpos,race)+1;
                 if(newlevel>MAX_LEVELS)
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cPlayer \"%s\" is already at the max level.",COLOR_GREEN,COLOR_DEFAULT,targetname);
+                {
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cPlayer \"%s\" is already at the max level.",
+                                           COLOR_GREEN,COLOR_DEFAULT,targetname);
+                }
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
                     War3Source_SkillMenu(index,targetvecpos);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gave player \"%s\" a level.",COLOR_GREEN,COLOR_DEFAULT,targetname);
-                    War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cAdmin \"%s\" gave you a level.",COLOR_GREEN,COLOR_DEFAULT,adminname);
+
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cYou gave player \"%s\" a level.",
+                                           COLOR_GREEN,COLOR_DEFAULT,targetname);
+
+                    War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                           "%c[War3Source] %cAdmin \"%s\" gave you a level.",
+                                           COLOR_GREEN,COLOR_DEFAULT,adminname);
                 }
             }
             else
             {
                 // Remove a level
                 new newlevel=GetLevel(targetvecpos,race)-1;
-                if(newlevel<0)
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cPlayer \"%s\" is already level 0.",COLOR_GREEN,COLOR_DEFAULT,targetname);
+                if (newlevel<0)
+                {
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cPlayer \"%s\" is already level 0.",
+                                           COLOR_GREEN,COLOR_DEFAULT,targetname);
+                }
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
                     for(new x=0;x<SKILL_COUNT;x++)
                         SetSkillLevel(targetvecpos,race,x,0);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou removed a level from player \"%s\".",COLOR_GREEN,COLOR_DEFAULT,targetname);
-                    War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cAdmin \"%s\" removed a level from you, re-pick your skills.",COLOR_GREEN,COLOR_DEFAULT,adminname);
+
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cYou removed a level from player \"%s\".",
+                                           COLOR_GREEN,COLOR_DEFAULT,targetname);
+
+                    War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                           "%c[War3Source] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
+                                           COLOR_GREEN,COLOR_DEFAULT,adminname);
+
                     if(newlevel>0)
                         War3Source_SkillMenu(index,targetvecpos);
                 }
@@ -841,7 +994,11 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
             War3Source_Admin_Level(client,index);
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player has disconnected from the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
 
@@ -867,7 +1024,11 @@ public War3Source_Admin_Credits(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+    {
+        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                               "%c[War3Source] %cThe player has disconnected from the server.",
+                               COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
@@ -878,7 +1039,8 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
         new targetvecpos=GetClientVectorPosition(index);
         if(targetvecpos>-1)
@@ -903,8 +1065,15 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                 if(newcred>MAX_CREDITS)
                     newcred=MAX_CREDITS;
                 SetCredits(targetvecpos,newcred);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gave \"%s\" %d credit(s).",COLOR_GREEN,COLOR_DEFAULT,targetname,credadd);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cYou recieved %d credit(s) from admin \"%s\".",COLOR_GREEN,COLOR_DEFAULT,credadd,adminname);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou gave \"%s\" %d credit(s).",
+                                       COLOR_GREEN,COLOR_DEFAULT,targetname,credadd);
+
+                War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou recieved %d credit(s) from admin \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,credadd,adminname);
+
                 War3Source_Admin_Credits(client,index);
             }
             else
@@ -923,12 +1092,23 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                 if(newcred<0)
                     newcred=0;
                 SetCredits(targetvecpos,newcred);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou removed %d credit(s) from player \"%s\".",COLOR_GREEN,COLOR_DEFAULT,credrem,targetname);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,"%c[War3Source] %cAdmin \"%s\" removed %d credit(s) from you.",COLOR_GREEN,COLOR_DEFAULT,adminname,credrem);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cYou removed %d credit(s) from player \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,credrem,targetname);
+
+                War3Source_ChatMessage(index,COLOR_DEFAULT,
+                                       "%c[War3Source] %cAdmin \"%s\" removed %d credit(s) from you.",
+                                       COLOR_GREEN,COLOR_DEFAULT,adminname,credrem);
+
                 War3Source_Admin_Credits(client,index);
             }
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cThe player has disconnected from the server.",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cThe player has disconnected from the server.",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
 }
