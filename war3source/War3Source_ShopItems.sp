@@ -122,8 +122,8 @@ public OnWar3PluginReady()
     {
         shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
         shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding a melee weapon.","2");
-        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death.","15");
-        shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a flame strike attack every 20 seconds.","5");
+        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
+        shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given extra ammo every 20 seconds.","5");
     }
 
     LoadSDKToolStuff();
@@ -359,41 +359,66 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new userid=GetEventInt(event,"userid");
-    new attacker_userid=GetEventInt(event,"attacker");
-    if(userid&&attacker_userid&&userid!=attacker_userid)
+    new userid          = GetEventInt(event,"userid");
+    new attacker_userid = GetEventInt(event,"attacker");
+    new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+    if(userid && attacker_userid && userid != attacker_userid)
     {
-        new index=GetClientOfUserId(userid);
-        new attacker_index=GetClientOfUserId(attacker_userid);
-        new war3player=War3_GetWar3Player(index);
-        new war3player_attacker=War3_GetWar3Player(attacker_index);
-        if(war3player!=-1&&war3player_attacker!=-1)
+        new index               = GetClientOfUserId(userid);
+        new attacker_index      = GetClientOfUserId(attacker_userid);
+
+        new war3player          = War3_GetWar3Player(index);
+        new war3player_attacker = War3_GetWar3Player(attacker_index);
+
+        new assister_index      = -1;
+        new war3player_assister = -1;
+
+        if (assister_userid != 0)
+        {
+            assister_index      = GetClientOfUserId(assister_userid);
+            war3player_assister = War3_GetWar3Player(assister_index);
+        }
+
+        if(war3player !=-1 && war3player_attacker != -1)
         {
             if(!War3_GetImmunity(war3player,Immunity_ShopItems))
             {
-                if(War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_CLAWS]) &&
-                   !War3_GetImmunity(war3player,Immunity_HealthTake))
+                if (!War3_GetImmunity(war3player,Immunity_HealthTake))
                 {
-                    // Claws
-                    new newhealth=GetClientHealth(index)-8;
-                    if(newhealth<0) newhealth=0;
-                    SetHealth(index,newhealth);
+                    if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_CLAWS]))
+                    {
+                        new newhealth=GetClientHealth(index)-8;
+                        if(newhealth<0) newhealth=0;
+                        SetHealth(index,newhealth);
+                    }
+                    if (War3_GetOwnsItem(war3player_assister,shopItem[ITEM_CLAWS]))
+                    {
+                        new newhealth=GetClientHealth(index)-8;
+                        if(newhealth<0) newhealth=0;
+                        SetHealth(index,newhealth);
+                    }
                 }
 
-                if(War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_MASK]))
+                if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_MASK]))
                 {
-                    // Mask
                     new newhealth=GetClientHealth(attacker_index)+2;
                     SetHealth(attacker_index,newhealth);
                 }
 
-                if(War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_ORB]))
+                if (War3_GetOwnsItem(war3player_assister,shopItem[ITEM_MASK]))
+                {
+                    new newhealth=GetClientHealth(assister_index)+2;
+                    SetHealth(assister_index,newhealth);
+                }
+
+                if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_ORB]) ||
+                    War3_GetOwnsItem(war3player_assister,shopItem[ITEM_ORB]))
                 {
                     War3_SetOverrideSpeed(war3player,0.5);
                     AuthTimer(5.0,index,RestoreSpeed);
                 }
 
-                if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE_PROTECTION]))
+                if (War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE_PROTECTION]))
                 {
                     if(isMole[attacker_index])
                     {
@@ -456,6 +481,11 @@ public Action:Gloves(Handle:timer)
                 if (GameType == cstrike)
                 {
                     GiveItem(x,"weapon_hegrenade");
+                }
+                else
+                {
+                    //GiveAmmo(client,ammotype,amount,bool:suppress)
+                    GiveAmmo(x,1,1000,true);
                 }
             }
         }
@@ -567,24 +597,33 @@ public Action:DoMole(Handle:timer,Handle:temp)
     decl String:auth[64];
     GetArrayString(temp,0,auth,63);
     new client=PlayerOfAuth(auth);
-    if(client)
+    if (client)
     {
         new team=GetClientTeam(client);
         new Float:teleLoc[3];
         new searchteam=(team==2)?3:2;
         new Handle:playerList=PlayersOnTeam(searchteam); // <3 SHVector.
-        if(GetArraySize(playerList)>0) // are there any enemies?
+        if (GetArraySize(playerList)>0) // are there any enemies?
         {
-            new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1); // who gets their position mooched off them?
+            // who gets their position mooched off them?
+            new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
             new lucky_player=GetArrayCell(playerList,lucky_player_iter);
             EntityOrigin(lucky_player,teleLoc);
             teleLoc[0]+=40.0;
             SetEntityOrigin(client,teleLoc);
             isMole[client]=true;
-            (team==2)?SetModel(client,"models/player/ct_urban.mdl"):SetModel(client,"models/player/t_phoenix.mdl");
+            if (GameType == cstrike)
+            {
+                SetModel(client, (team == 2) ? "models/player/ct_urban.mdl"
+                                             : "models/player/t_phoenix.mdl");
+            }
         }
         else
-            War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cCould not find a place to mole to, there are no enemies!",COLOR_GREEN,COLOR_DEFAULT);
+        {
+            War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                   "%c[War3Source] %cCould not find a place to mole to, there are no enemies!",
+                                   COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
     ClearArray(temp);
 }
