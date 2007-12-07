@@ -17,7 +17,7 @@ new Handle:m_MaxCredits = INVALID_HANDLE;
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
 
-enum Mod { other, tf2, cstrike, dod, hl2mp };
+enum Mod { other, tf2, cstrike, dod, hl2mp, insurgency };
 new Mod:GameType = other;
 
 #define SAVE_ENABLED GetConVarInt(m_SaveXPConVar)==1
