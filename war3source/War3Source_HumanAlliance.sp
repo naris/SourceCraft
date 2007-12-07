@@ -9,22 +9,10 @@
 
 #include <sourcemod>
 #include "War3Source/War3Source_Interface"
-
-// Defines
-#define IS_ALIVE !GetLifestate
-
-// Colors
-#define COLOR_DEFAULT 0x01
-#define COLOR_TEAM 0x03
-#define COLOR_GREEN 0x04 // DOD = Red
+#include "War3Source/util"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new lifestateOffset;
-new colorOffset;
-new renderModeOffset;
-new movetypeOffset;
-new healthOffset[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -57,26 +45,18 @@ public OnWar3PluginReady()
                            "Teleport",
                            "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
-    lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    if(lifestateOffset==-1)
-        SetFailState("Couldn't find LifeState offset");
-
-    movetypeOffset=FindSendPropOffs("CBaseEntity","movetype");
-    if(movetypeOffset==-1)
-        SetFailState("Couldn't find MoveType offset");
-
-    colorOffset=FindSendPropOffs("CAI_BaseNPC","m_clrRender");
-    if(colorOffset==-1)
-        SetFailState("Couldn't find Color offset");
-
-    renderModeOffset=FindSendPropOffs("CBaseAnimating","m_nRenderMode");
-    if(renderModeOffset==-1)
-        SetFailState("Couldn't find RenderMode offset");
+    FindOffsets();
 }
 
 public OnWar3PlayerAuthed(client,war3player)
 {
     healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
+
+    if (GameType == tf2)
+    {
+        maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
+        maxHealth[client] = GetMaxHealth(client);
+    }
 }
 
 public OnRaceSelected(client,war3player,oldrace,race)
@@ -124,21 +104,21 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new skill_invis=War3_GetSkillLevel(war3player,race,0);
             if(skill_invis)
             {
-                // Invisibility
-                new alpha;
+                new visibility=140;
                 switch(skill_invis)
                 {
                     case 1:
-                        alpha=158;
+                        visibility=158;
                     case 2:
-                        alpha=137;
+                        visibility=137;
                     case 3:
-                        alpha=115;
+                        visibility=115;
                     case 4:
-                        alpha=94;
+                        visibility=94;
                 }
-                SetRenderColor(client,255,255,255,alpha);
+                MakeInvisible(client, war3player, visibility);
             }
+
             new skill_devo=War3_GetSkillLevel(war3player,race,1);
             if(skill_devo)
             {
@@ -161,13 +141,23 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
+
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     new war3player=War3_GetWar3Player(client);
+
+    // Reset invisibility
     if(war3player>-1)
         SetRenderColor(client,255,255,255,255);
+
+    // Reset MaxHealth back to normal
+    if (healthIncreased[client] && GameType == tf2)
+    {
+        SetMaxHealth(client, maxHealth[client]);
+        healthIncreased[client] = false;
+    }
 }
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -232,16 +222,6 @@ public AuthTimer(Float:delay,index,Timer:func)
     CreateTimer(delay,func,temp);
 }
 
-public SetHealth(entity,amount)
-{
-    SetEntData(entity,healthOffset[entity],amount,1);
-}
-
-public GetLifestate(client)
-{
-    return GetEntData(client,lifestateOffset,1);
-}
-
 stock PlayerOfAuth(const String:auth[])
 {
     new max=GetMaxClients();
@@ -266,18 +246,4 @@ stock FreezeEntity(entity)
 stock UnFreezeEntity(entity)
 {
     SetEntData(entity,movetypeOffset,2,1);
-}
-
-public SetRenderColor(client,r,g,b,a)
-{
-	if(colorOffset != -1)
-    {
-        SetEntData(client,colorOffset,r,1,true);
-        SetEntData(client,colorOffset+1,g,1,true);
-        SetEntData(client,colorOffset+2,b,1,true);
-        SetEntData(client,colorOffset+3,a,1,true);
-
-        if(renderModeOffset != -1)
-            SetEntData(client,renderModeOffset,3,1,true);
-    }
 }

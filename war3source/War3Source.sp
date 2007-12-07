@@ -48,16 +48,18 @@ public OnPluginStart()
 {
     PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin loading...");
 
-    new String: game_description[64];
-    GetGameDescription(game_description, 64, true);
-    if (strcmp(game_description, "Counter-Strike: Source") == 0)
+    new String:modname[30];
+    GetGameFolderName(modname, sizeof(modname));
+    if (StrEqual(modname,"cstrike",false))
         GameType=cstrike;
-    else if (strcmp(game_description, "Day of Defeat: Source") == 0)
-        GameType=dod;
-    else if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0)
-        GameType=hl2mp;
-    else if (strcmp(game_description, "Team Fortress") == 0)
+    else if (StrEqual(modname,"tf",false)) 
         GameType=tf2;
+    else if (StrEqual(modname,"dod",false)) 
+        GameType=dod;
+    else if (StrEqual(modname,"hl2mp",false)) 
+        GameType=hl2mp;
+    else if (StrEqual(modname,"Insurgency",false)) 
+        GameType=insurgency;
     else
         GameType=other;
 
@@ -93,6 +95,7 @@ public OnPluginStart()
         SetFailState("[War3Source] There was a failure in finding the offsets required.");
     if(!War3Source_ParseSettings())
         SetFailState("[War3Source] There was a failure in parsing the configuration file.");
+
     // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
     CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
     PrintToServer("[War3Source] Plugin finished loading.\n-------------------------------------------------------------------------");

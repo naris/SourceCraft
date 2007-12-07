@@ -13,12 +13,12 @@
 #include <sdktools>
 
 // Defines
-#define IS_ALIVE !GetLifestate
+#define IS_ALIVE !GetLifeState
 #define COLOR_DEFAULT 0x01
 #define COLOR_TEAM 0x03
 #define COLOR_GREEN 0x04 // Actually red for DOD
 
-#define ITEM_ANKH             0 // Ankh of Reincarnation - Retrieve Equipment after death -- CStrike
+#define ITEM_ANKH             0 // Ankh of Reincarnation - Retrieve Equipment after death
 #define ITEM_BOOTS            1 // Boots of Speed - Move Fastwer
 #define ITEM_CLAWS            2 // Claws of Attack - Extra Damage
 #define ITEM_CLOAK            3 // Cloak of Shadows - Invisibility
@@ -29,38 +29,48 @@
 #define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
-#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades over time -- CStrike
+#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades over time
 #define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
+#define ITEM_GOGGLES         12 // The Goggles - They do nothing!
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
 
 // War3Source stuff
-new shopItem[15]; // The ID we are assigned to
-new lifestateOffset;
-new healthOffset[MAXPLAYERS+1];
-new curWepOffset;
-new myWepsOffset;
-new colorOffset;
-new renderModeOffset;
-new moveparentOffset;
-new ammotypeOffset;
-new originOffset;
-new Handle:vecPlayerWeapons[MAXPLAYERS+1];
-new bool:usedPeriapt[MAXPLAYERS+1];
-new bool:isMole[MAXPLAYERS+1];
 
-enum Mod { other, tf2, cstrike, dod, hl2mp };
-new Mod:GameType = other;
+new lifestateOffset  = 0;
+new curWepOffset     = 0;
+new myWepsOffset     = 0;
+new colorOffset      = 0;
+new renderModeOffset = 0;
+new ownerOffset      = 0;
+new ammotypeOffset   = 0;
+new originOffset     = 0;
+new clipOffset       = 0;
+new clip2Offset      = 0;
+new ammoOffset       = 0;
+new ammo2Offset      = 0;
+new metalOffset      = 0;
 
+new healthOffset[MAXPLAYERS+1]            = { 0, ... };
+new maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
 
-// OmG hAx!!! :] See, I have a sense of humor.
-new Handle:hGameConf;
-new Handle:hRoundRespawn;
-new Handle:hUTILRemove;
-new Handle:hGiveNamedItem;
-new Handle:hWeaponDrop;
-new Handle:hGiveAmmo;
-new Handle:hSetModel;
+new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
+new bool:usedPeriapt[MAXPLAYERS+1]        = { false, ... };
+new bool:isMole[MAXPLAYERS+1]             = { false, ... };
+new maxHealth[MAXPLAYERS+1]               = { 100, ... };
+
+enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
+new Mod:GameType = undetected;
+
+new Handle:hGameConf      = INVALID_HANDLE;
+new Handle:hRoundRespawn  = INVALID_HANDLE;
+new Handle:hUTILRemove    = INVALID_HANDLE;
+new Handle:hGiveNamedItem = INVALID_HANDLE;
+new Handle:hWeaponDrop    = INVALID_HANDLE;
+new Handle:hGiveAmmo      = INVALID_HANDLE;
+new Handle:hSetModel      = INVALID_HANDLE;
+
+new shopItem[15];
 
 public Plugin:myinfo = 
 {
@@ -73,22 +83,25 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    new String: game_description[64];
-    GetGameDescription(game_description, 64, true);
-    if (strcmp(game_description, "Counter-Strike: Source") == 0)
+    new String:modname[30];
+    GetGameFolderName(modname, sizeof(modname));
+    if (StrEqual(modname,"cstrike",false))
         GameType=cstrike;
-    else if (strcmp(game_description, "Day of Defeat: Source") == 0)
-        GameType=dod;
-    else if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0)
-        GameType=hl2mp;
-    else if (strcmp(game_description, "Team Fortress") == 0)
+    else if (StrEqual(modname,"tf",false)) 
         GameType=tf2;
+    else if (StrEqual(modname,"dod",false)) 
+        GameType=dod;
+    else if (StrEqual(modname,"hl2mp",false)) 
+        GameType=hl2mp;
+    else if (StrEqual(modname,"Insurgency",false)) 
+        GameType=insurgency;
     else
         GameType=other;
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
+
     CreateTimer(1.0,ShadowsTrack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(20.0,Gloves,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
@@ -122,7 +135,8 @@ public OnWar3PluginReady()
     {
         shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
         shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding a melee weapon.","2");
-        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
+        //shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
+        shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
         shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given extra ammo every 20 seconds.","5");
     }
 
@@ -131,16 +145,30 @@ public OnWar3PluginReady()
 
 public LoadSDKToolStuff()
 {
-    lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    myWepsOffset=FindSendPropOffs("CAI_BaseNPC","m_hMyWeapons");
-    curWepOffset=FindSendPropOffs("CAI_BaseNPC","m_hActiveWeapon");
-    colorOffset=FindSendPropOffs("CAI_BaseNPC","m_clrRender");
-    renderModeOffset=FindSendPropOffs("CBaseAnimating","m_nRenderMode");
-    moveparentOffset=FindSendPropOffs("CBaseEntity","m_hOwnerEntity");
-    ammotypeOffset=FindSendPropOffs("CBaseCombatWeapon","m_iPrimaryAmmoType");
-    originOffset=FindSendPropOffs("CBaseEntity","m_vecOrigin");
+    lifestateOffset  = FindSendPropOffs("CAI_BaseNPC",       "m_lifeState");
+    myWepsOffset     = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
+    curWepOffset     = FindSendPropOffs("CAI_BaseNPC",       "m_hActiveWeapon");
+    colorOffset      = FindSendPropOffs("CAI_BaseNPC",       "m_clrRender");
+    ownerOffset      = FindSendPropOffs("CBaseEntity",       "m_hOwnerEntity");
+    originOffset     = FindSendPropOffs("CBaseEntity",       "m_vecOrigin");
+    renderModeOffset = FindSendPropOffs("CBaseAnimating",    "m_nRenderMode");
+    ammotypeOffset   = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
+    clipOffset       = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
+    clip2Offset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip2");
+
+    if (GameType == tf2)
+    {
+        ammoOffset   = FindSendPropOffs("CTFPlayer",         "m_iAmmo");
+        ammo2Offset  = ammoOffset  + 4;
+        metalOffset  = ammo2Offset + 4;
+    }
+    else
+    {
+        ammoOffset   = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
+    }
 
     hGameConf=LoadGameConfigFile("plugin.war3source");
+
     StartPrepSDKCall(SDKCall_Player);
     PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
     hRoundRespawn=EndPrepSDKCall();
@@ -190,7 +218,14 @@ public AuthTimer(Float:delay,index,Timer:func)
 public OnWar3PlayerAuthed(client,war3player)
 {
     healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
-    vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
+
+    if (GameType == tf2)
+    {
+        maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
+        maxHealth[client] = GetMaxHealth(client);
+    }
+    else if (GameType == cstrike)
+        vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
 
 public OnItemPurchase(client,war3player,item)
@@ -200,10 +235,7 @@ public OnItemPurchase(client,war3player,item)
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         War3_SetImmunity(war3player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IS_ALIVE(client))       // Periapt of Health
-    {
-        usedPeriapt[client]=true;
-        SetHealth(client,GetClientHealth(client)+50);
-    }
+        UsePeriapt(client);
     else if(item==shopItem[ITEM_TOME])                              // Tome of Experience
     {
         War3_SetXP(war3player,War3_GetRace(war3player),War3_GetXP(war3player,War3_GetRace(war3player))+100);
@@ -250,10 +282,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             War3_SetMaxSpeed(war3player,1.4);
 
         if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client])    // Periapt of Health
-        {
-            SetHealth(client,GetClientHealth(client)+50);
-            usedPeriapt[client]=false;
-        }
+            UsePeriapt(client);
 
         if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))   // Sock of the Feather
             War3_SetMinGravity(war3player,0.3);
@@ -296,7 +325,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if(IsValidEdict(y))
                     {
-                        if(GetEntDataEnt(y,moveparentOffset)==client)
+                        if(GetEntDataEnt(y,ownerOffset)==client)
                             SetRenderColor(y,255,255,255,255);
                     }
                 }
@@ -318,7 +347,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]))
             {
-                usedPeriapt[client]=false;
                 War3_SetOwnsItem(war3player,shopItem[ITEM_PERIAPT],false);
             }
 
@@ -333,6 +361,9 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
                 War3_SetOwnsItem(war3player,shopItem[ITEM_GLOVES],false);
+
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_GOGGLES]))
+                War3_SetOwnsItem(war3player,shopItem[ITEM_GOGGLES],false);
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
                 War3_SetOwnsItem(war3player,shopItem[ITEM_RING],false);
@@ -354,6 +385,12 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
         War3_SetMaxSpeed(war3player,1.0);
         War3_SetMinGravity(war3player,1.0);
+
+        // Reset MaxHealth back to normal
+        if (usedPeriapt[client] && GameType == tf2)
+            SetMaxHealth(client, maxHealth[client]);
+
+        usedPeriapt[client]=false;
     }
 }
 
@@ -461,7 +498,8 @@ public Action:Regeneration(Handle:timer)
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
             {
                 new newhp=GetHealth(x)+1;
-                if(newhp<=100)
+                new maxhp=(GameType == tf2) ? GetMaxHealth(x) : 100;
+                if(newhp<=maxhp)
                     SetHealth(x,newhp);
             }
         }
@@ -471,21 +509,51 @@ public Action:Regeneration(Handle:timer)
 public Action:Gloves(Handle:timer)
 {
     new maxplayers=GetMaxClients();
-    for(new x=1;x<=maxplayers;x++)
+    for(new client=1;client<=maxplayers;client++)
     {
-        if(IsClientInGame(x) && IS_ALIVE(x))
+        //LogMessage("Glove] Checking %d\n", client);
+        if(IsClientInGame(client) && IS_ALIVE(client))
         {
-            new war3player=War3_GetWar3Player(x);
-            if (war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
+            new war3player=War3_GetWar3Player(client);
+            if (war3player>=0) // && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
             {
+                //LogMessage("Glove] Give something to %d\n", client);
+                //War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have been given ammo.",COLOR_GREEN,COLOR_DEFAULT);
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %c clip1=%d,clip2=%d,ammo=%d,ammo2=%d,metal=%d",
+                                       COLOR_GREEN,COLOR_DEFAULT, GetEntData(client, clipOffset, 4),
+                                       GetEntData(client, clip2Offset, 4),
+                                       GetEntData(client, ammoOffset, 4),
+                                       GetEntData(client, ammo2Offset, 4),
+                                       GetEntData(client, metalOffset, 4));
                 if (GameType == cstrike)
                 {
-                    GiveItem(x,"weapon_hegrenade");
+                    GiveItem(client,"weapon_hegrenade");
+                }
+                else if (GameType == tf2)
+                {
+                    new ammo = GetEntData(client, ammo2Offset, 4) + 5;
+                    SetEntData(client, ammo2Offset, ammo, 4, true);
+
+                    new metal = GetEntData(client, metalOffset, 4) + 5;
+                    SetEntData(client, metalOffset, metal, 4, true);
                 }
                 else
                 {
-                    //GiveAmmo(client,ammotype,amount,bool:suppress)
-                    GiveAmmo(x,1,1000,true);
+                    new ammoType  = -2;
+                    new curWeapon = GetEntDataEnt(client, curWepOffset);
+                    if (curWeapon > 0)
+                    {
+                        ammoType = GetAmmoType(curWeapon);
+                        if (ammoType > 0)
+                            GiveAmmo(client,ammoType,1000,true);
+                        else
+                            SetEntData(curWeapon, clipOffset, 5, 4, true);
+                    }
+                    LogMessage("Glove] Client=%d,curWeapon=%d,ammoType=%d\n", client, curWeapon, ammoType);
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %cYou have been given %d ammo for %d.",
+                                           COLOR_GREEN,COLOR_DEFAULT, curWeapon, ammoType);
                 }
             }
         }
@@ -504,19 +572,42 @@ public Action:ShadowsTrack(Handle:timer)
             new war3player=War3_GetWar3Player(x);
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
-                new visibility=160;
+                new visibility=140; // 160;
                 new weaponent=GetEntDataEnt(x,curWepOffset);
                 if(weaponent && IsValidEdict(weaponent) && weaponent<count)
                 {
                     GetEdictClassname(weaponent,wepName,127);
-                    if(StrEqual(wepName,"weapon_knife"))
+                    if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
+                    {
+                        visibility=80; // 90;
+                    }
+                    else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
+                                                StrEqual(wepName,"tf_weapon_shovel") ||
+                                                StrEqual(wepName,"tf_weapon_wrench") ||
+                                                StrEqual(wepName,"tf_weapon_bat") ||
+                                                StrEqual(wepName,"tf_weapon_bonesaw") ||
+                                                StrEqual(wepName,"tf_weapon_bottle") ||
+                                                StrEqual(wepName,"tf_weapon_club") ||
+                                                StrEqual(wepName,"tf_weapon_fireaxe") ||
+                                                StrEqual(wepName,"tf_weapon_fists") ||
+                                                StrEqual(wepName,"tf_weapon_builder") ||
+                                                StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
+                                                StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
+                                                StrEqual(wepName,"tf_weapon_pda_spy")))
+                    {
                         visibility=90;
+                    }
+                    else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
+                                                StrEqual(wepName,"weapon_spade")))
+                    {
+                        visibility=90;
+                    }
                 }
                 for(new y=64;y<count;y++)
                 {
                     if(IsValidEdict(y))
                     {
-                        if(GetEntDataEnt(y,moveparentOffset)==x)
+                        if(GetEntDataEnt(y,ownerOffset)==x)
                             SetRenderColor(y,255,255,255,visibility);
                     }
                 }
@@ -639,7 +730,17 @@ public GetHealth(entity)
     return GetEntData(entity,healthOffset[entity],1);
 }
 
-public GetLifestate(client)
+public SetMaxHealth(entity,amount)
+{
+    SetEntData(entity,maxHealthOffset[entity],amount,1);
+}
+
+public GetMaxHealth(entity)
+{
+    return GetEntData(entity,maxHealthOffset[entity],1);
+}
+
+public GetLifeState(client)
 {
     return GetEntData(client,lifestateOffset,1);
 }
@@ -713,6 +814,17 @@ stock GetAmmoType(weapon)
 stock GiveAmmo(client,ammotype,amount,bool:suppress)
 {
     SDKCall(hGiveAmmo,client,amount,ammotype,suppress);
+}
+
+stock UsePeriapt(client)
+{
+    usedPeriapt[client]=true;
+    new health =GetClientHealth(client)+50;
+    if (GameType == tf2 && health > GetMaxHealth(client))
+    {
+        SetMaxHealth(client, health);
+    }
+    SetHealth(client, health);
 }
 
 stock Float:DistanceBetween(Float:a[3],Float:b[3])
