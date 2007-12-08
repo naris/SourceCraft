@@ -47,12 +47,9 @@ new ownerOffset         = 0;
 new ammotypeOffset      = 0;
 new originOffset        = 0;
 new clipOffset          = 0;
-new clip2Offset         = 0;
 new ammoOffset          = 0; // Primary Ammo
 new ammo2Offset         = 0; // Secondary Ammo
 new metalOffset         = 0; // metal (3rd Ammo)
-
-new resourceEnt         = 0;
 
 new healthOffset[MAXPLAYERS+1]            = { 0, ... };
 new maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
@@ -74,7 +71,6 @@ new Handle:hUTILRemove    = INVALID_HANDLE;
 new Handle:hGiveNamedItem = INVALID_HANDLE;
 new Handle:hWeaponDrop    = INVALID_HANDLE;
 new Handle:hGiveAmmo      = INVALID_HANDLE;
-new Handle:hGetAmmoType   = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
 new shopItem[15];
@@ -178,8 +174,6 @@ public LoadSDKToolStuff()
     else
     {
         clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
-        clip2Offset     = FindSendPropOffs("CBaseCombatWeapon", "m_iClip2");
-
         ammoOffset      = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
         ammo2Offset     = ammoOffset  + 4;
     }
@@ -535,19 +529,7 @@ public Action:Gloves(Handle:timer)
         if(IsClientInGame(player) && IS_ALIVE(player))
         {
             new war3player=War3_GetWar3Player(player);
-
-            new tammo  = GetEntData(player, ammoOffset, 4);
-            new tammo2 = GetEntData(player, ammo2Offset, 4);
-            new tmetal = GetEntData(player, metalOffset, 4);
-
-            LogMessage("Glove] Client=%d,ammo=%d,ammo2=%d,metal=%d,war3player=%d\n",
-                       player, tammo, tammo2, tmetal, war3player);
-
-            War3Source_ChatMessage(player,COLOR_DEFAULT,
-                "%c[War3Source] %c ammo=%d,ammo2=%d,metal=%d, player=%d, war3player=%d",
-                COLOR_GREEN,COLOR_DEFAULT, tammo, tammo2, tmetal, player, war3player);
-
-            if (war3player>=0) // && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
+            if (war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
             {
                 LogMessage("Glove] got war3player for %d\n", player);
                 if (GameType == cstrike)
@@ -594,21 +576,15 @@ public Action:Gloves(Handle:timer)
                 }
                 else
                 {
-                    /* This code is borked **
                     new ammoType  = 0;
-                    //new ammoType2 = 0;
                     new curWeapon = GetEntDataEnt(player, currentWeaponOffset);
                     if (curWeapon > 0)
-                    {
                         ammoType  = GetAmmoType(curWeapon);
-                        //ammoType2 = GetAmmoType2(curWeapon);
-                    }
 
                     if (ammoType > 0)
                         GiveAmmo(player,ammoType,10,true);
                     else if (clipOffset)
                         SetEntData(curWeapon, clipOffset, 5, 4, true);
-                   */
                 }
             }
         }
