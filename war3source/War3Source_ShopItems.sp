@@ -20,7 +20,7 @@
 #define COLOR_GREEN 0x04 // Actually red for DOD
 
 #define ITEM_ANKH             0 // Ankh of Reincarnation - Retrieve Equipment after death
-#define ITEM_BOOTS            1 // Boots of Speed - Move Fastwer
+#define ITEM_BOOTS            1 // Boots of Speed - Move Faster
 #define ITEM_CLAWS            2 // Claws of Attack - Extra Damage
 #define ITEM_CLOAK            3 // Cloak of Shadows - Invisibility
 #define ITEM_MASK             4 // Mask of Death - Recieve Health for Hits
@@ -29,12 +29,13 @@
 #define ITEM_PERIAPT          7 // Periapt of Health - Get Extra Health when Purchased
 #define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
+#define ITEM_GOGGLES          9 // The Goggles - They do nothing!
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
 #define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades over time
 #define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
-#define ITEM_GOGGLES         12 // The Goggles - They do nothing!
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
+#define MAXITEMS             15
 
 // War3Source stuff
 
@@ -73,7 +74,7 @@ new Handle:hWeaponDrop    = INVALID_HANDLE;
 new Handle:hGiveAmmo      = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
-new shopItem[15];
+new shopItem[MAXITEMS];
 
 public Plugin:myinfo = 
 {
