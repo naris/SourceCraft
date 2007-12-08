@@ -11,6 +11,7 @@
 #include <sourcemod>
 #include "War3Source/War3Source_Interface"
 #include <sdktools>
+#include <tf2>
 
 // Defines
 #define IS_ALIVE !GetLifeState
@@ -37,19 +38,21 @@
 
 // War3Source stuff
 
-new lifestateOffset  = 0;
-new curWepOffset     = 0;
-new myWepsOffset     = 0;
-new colorOffset      = 0;
-new renderModeOffset = 0;
-new ownerOffset      = 0;
-new ammotypeOffset   = 0;
-new originOffset     = 0;
-new clipOffset       = 0;
-new clip2Offset      = 0;
-new ammoOffset       = 0;
-new ammo2Offset      = 0;
-new metalOffset      = 0;
+new lifestateOffset     = 0;
+new currentWeaponOffset = 0;
+new myWepsOffset        = 0;
+new colorOffset         = 0;
+new renderModeOffset    = 0;
+new ownerOffset         = 0;
+new ammotypeOffset      = 0;
+new originOffset        = 0;
+new clipOffset          = 0;
+new clip2Offset         = 0;
+new ammoOffset          = 0; // Primary Ammo
+new ammo2Offset         = 0; // Secondary Ammo
+new metalOffset         = 0; // metal (3rd Ammo)
+
+new resourceEnt         = 0;
 
 new healthOffset[MAXPLAYERS+1]            = { 0, ... };
 new maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
@@ -62,12 +65,16 @@ new maxHealth[MAXPLAYERS+1]               = { 100, ... };
 enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
 new Mod:GameType = undetected;
 
+enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
+stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
+
 new Handle:hGameConf      = INVALID_HANDLE;
 new Handle:hRoundRespawn  = INVALID_HANDLE;
 new Handle:hUTILRemove    = INVALID_HANDLE;
 new Handle:hGiveNamedItem = INVALID_HANDLE;
 new Handle:hWeaponDrop    = INVALID_HANDLE;
 new Handle:hGiveAmmo      = INVALID_HANDLE;
+new Handle:hGetAmmoType   = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
 new shopItem[15];
@@ -131,6 +138,14 @@ public OnWar3PluginReady()
         shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn after death.","15");
         shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a high explosive grenade every 20 seconds.","5");
     }
+    else if (GameType == dod)
+    {
+        shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
+        shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife or shovel.","2");
+        //shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
+        shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
+        shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade every 20 seconds.","5");
+    }
     else
     {
         shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
@@ -145,26 +160,28 @@ public OnWar3PluginReady()
 
 public LoadSDKToolStuff()
 {
-    lifestateOffset  = FindSendPropOffs("CAI_BaseNPC",       "m_lifeState");
-    myWepsOffset     = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
-    curWepOffset     = FindSendPropOffs("CAI_BaseNPC",       "m_hActiveWeapon");
-    colorOffset      = FindSendPropOffs("CAI_BaseNPC",       "m_clrRender");
-    ownerOffset      = FindSendPropOffs("CBaseEntity",       "m_hOwnerEntity");
-    originOffset     = FindSendPropOffs("CBaseEntity",       "m_vecOrigin");
-    renderModeOffset = FindSendPropOffs("CBaseAnimating",    "m_nRenderMode");
-    ammotypeOffset   = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
-    clipOffset       = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
-    clip2Offset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip2");
+    lifestateOffset     = FindSendPropOffs("CAI_BaseNPC",       "m_lifeState");
+    myWepsOffset        = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
+    currentWeaponOffset = FindSendPropOffs("CAI_BaseNPC",       "m_hActiveWeapon");
+    colorOffset         = FindSendPropOffs("CAI_BaseNPC",       "m_clrRender");
+    ownerOffset         = FindSendPropOffs("CBaseEntity",       "m_hOwnerEntity");
+    originOffset        = FindSendPropOffs("CBaseEntity",       "m_vecOrigin");
+    renderModeOffset    = FindSendPropOffs("CBaseAnimating",    "m_nRenderMode");
+    ammotypeOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
 
     if (GameType == tf2)
     {
-        ammoOffset   = FindSendPropOffs("CTFPlayer",         "m_iAmmo");
-        ammo2Offset  = ammoOffset  + 4;
-        metalOffset  = ammo2Offset + 4;
+        ammoOffset      = FindSendPropOffs("CTFPlayer",         "m_iAmmo") + 4;
+        ammo2Offset     = ammoOffset  + 4;
+        metalOffset     = ammo2Offset + 4;
     }
     else
     {
-        ammoOffset   = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
+        clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
+        clip2Offset     = FindSendPropOffs("CBaseCombatWeapon", "m_iClip2");
+
+        ammoOffset      = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
+        ammo2Offset     = ammoOffset  + 4;
     }
 
     hGameConf=LoadGameConfigFile("plugin.war3source");
@@ -509,51 +526,89 @@ public Action:Regeneration(Handle:timer)
 public Action:Gloves(Handle:timer)
 {
     new maxplayers=GetMaxClients();
-    for(new client=1;client<=maxplayers;client++)
+    for(new player=1;player<=maxplayers;player++)
     {
-        //LogMessage("Glove] Checking %d\n", client);
-        if(IsClientInGame(client) && IS_ALIVE(client))
+        new ingame = IsClientInGame(player);
+        new alive  = ingame && IS_ALIVE(player);
+        LogMessage("Glove] Checking %d, ingame=%d,alive=%d\n", player, ingame, alive);
+
+        if(IsClientInGame(player) && IS_ALIVE(player))
         {
-            new war3player=War3_GetWar3Player(client);
+            new war3player=War3_GetWar3Player(player);
+
+            new tammo  = GetEntData(player, ammoOffset, 4);
+            new tammo2 = GetEntData(player, ammo2Offset, 4);
+            new tmetal = GetEntData(player, metalOffset, 4);
+
+            LogMessage("Glove] Client=%d,ammo=%d,ammo2=%d,metal=%d,war3player=%d\n",
+                       player, tammo, tammo2, tmetal, war3player);
+
+            War3Source_ChatMessage(player,COLOR_DEFAULT,
+                "%c[War3Source] %c ammo=%d,ammo2=%d,metal=%d, player=%d, war3player=%d",
+                COLOR_GREEN,COLOR_DEFAULT, tammo, tammo2, tmetal, player, war3player);
+
             if (war3player>=0) // && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
             {
-                //LogMessage("Glove] Give something to %d\n", client);
-                //War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have been given ammo.",COLOR_GREEN,COLOR_DEFAULT);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                       "%c[War3Source] %c clip1=%d,clip2=%d,ammo=%d,ammo2=%d,metal=%d",
-                                       COLOR_GREEN,COLOR_DEFAULT, GetEntData(client, clipOffset, 4),
-                                       GetEntData(client, clip2Offset, 4),
-                                       GetEntData(client, ammoOffset, 4),
-                                       GetEntData(client, ammo2Offset, 4),
-                                       GetEntData(client, metalOffset, 4));
+                LogMessage("Glove] got war3player for %d\n", player);
                 if (GameType == cstrike)
                 {
-                    GiveItem(client,"weapon_hegrenade");
+                    GiveItem(player,"weapon_hegrenade");
+                }
+                else if (GameType == dod)
+                {
+                    new team=GetClientTeam(player);
+                    GiveItem(player,team == 2 ? "weapon_frag_us" : "weapon_frag_ger");
                 }
                 else if (GameType == tf2)
                 {
-                    new ammo = GetEntData(client, ammo2Offset, 4) + 5;
-                    SetEntData(client, ammo2Offset, ammo, 4, true);
-
-                    new metal = GetEntData(client, metalOffset, 4) + 5;
-                    SetEntData(client, metalOffset, metal, 4, true);
+                    //new TFClass:tfclass = GetTFClass(player);
+                    new tfclass = TF_GetClass(player);
+                    switch (tfclass)
+                    {
+                        case TF2_HEAVY: 
+                        {
+                            new ammo = GetEntData(player, ammoOffset, 4) + 20;
+                            SetEntData(player, ammoOffset, ammo, 4, true);
+                        }
+                        case TF2_PYRO: 
+                        {
+                            new ammo = GetEntData(player, ammoOffset, 4) + 20;
+                            SetEntData(player, ammoOffset, ammo, 4, true);
+                        }
+                        case TF2_MEDIC: 
+                        {
+                            new ammo = GetEntData(player, ammoOffset, 4) + 10;
+                            SetEntData(player, ammoOffset, ammo, 4, true);
+                        }
+                        case TF2_ENG: // Gets Metal instead of Ammo
+                        {
+                            new metal = GetEntData(player, metalOffset, 4) + 20;
+                            SetEntData(player, metalOffset, metal, 4, true);
+                        }
+                        default:
+                        {
+                            new ammo = GetEntData(player, ammoOffset, 4) + 2;
+                            SetEntData(player, ammoOffset, ammo, 4, true);
+                        }
+                    }
                 }
                 else
                 {
-                    new ammoType  = -2;
-                    new curWeapon = GetEntDataEnt(client, curWepOffset);
+                    /* This code is borked **
+                    new ammoType  = 0;
+                    //new ammoType2 = 0;
+                    new curWeapon = GetEntDataEnt(player, currentWeaponOffset);
                     if (curWeapon > 0)
                     {
-                        ammoType = GetAmmoType(curWeapon);
-                        if (ammoType > 0)
-                            GiveAmmo(client,ammoType,1000,true);
-                        else
-                            SetEntData(curWeapon, clipOffset, 5, 4, true);
+                        ammoType  = GetAmmoType(curWeapon);
+                        //ammoType2 = GetAmmoType2(curWeapon);
                     }
-                    LogMessage("Glove] Client=%d,curWeapon=%d,ammoType=%d\n", client, curWeapon, ammoType);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                           "%c[War3Source] %cYou have been given %d ammo for %d.",
-                                           COLOR_GREEN,COLOR_DEFAULT, curWeapon, ammoType);
+
+                    if (ammoType > 0)
+                        GiveAmmo(player,ammoType,10,true);
+                    else if (clipOffset)
+                        SetEntData(curWeapon, clipOffset, 5, 4, true);
+                   */
                 }
             }
         }
@@ -573,7 +628,7 @@ public Action:ShadowsTrack(Handle:timer)
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
                 new visibility=140; // 160;
-                new weaponent=GetEntDataEnt(x,curWepOffset);
+                new weaponent=GetEntDataEnt(x,currentWeaponOffset);
                 if(weaponent && IsValidEdict(weaponent) && weaponent<count)
                 {
                     GetEdictClassname(weaponent,wepName,127);
@@ -719,6 +774,17 @@ public Action:DoMole(Handle:timer,Handle:temp)
     ClearArray(temp);
 }
 
+stock UsePeriapt(client)
+{
+    usedPeriapt[client]=true;
+    new health =GetClientHealth(client)+50;
+    if (GameType == tf2 && health > GetMaxHealth(client))
+    {
+        SetMaxHealth(client, health);
+    }
+    SetHealth(client, health);
+}
+
 // Non-specific stuff
 public SetHealth(entity,amount)
 {
@@ -814,17 +880,6 @@ stock GetAmmoType(weapon)
 stock GiveAmmo(client,ammotype,amount,bool:suppress)
 {
     SDKCall(hGiveAmmo,client,amount,ammotype,suppress);
-}
-
-stock UsePeriapt(client)
-{
-    usedPeriapt[client]=true;
-    new health =GetClientHealth(client)+50;
-    if (GameType == tf2 && health > GetMaxHealth(client))
-    {
-        SetMaxHealth(client, health);
-    }
-    SetHealth(client, health);
 }
 
 stock Float:DistanceBetween(Float:a[3],Float:b[3])
