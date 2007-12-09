@@ -29,13 +29,13 @@
 #define ITEM_PERIAPT          7 // Periapt of Health - Get Extra Health when Purchased
 #define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
-#define ITEM_GOGGLES          9 // The Goggles - They do nothing!
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
 #define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades over time
 #define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
-#define MAXITEMS             15
+#define ITEM_GOGGLES         15 // The Goggles - They do nothing!
+#define MAXITEMS             16
 
 // War3Source stuff
 
@@ -127,6 +127,7 @@ public OnWar3PluginReady()
     shopItem[ITEM_RING]=War3_CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't excede 100 HP.","3");
     shopItem[ITEM_MOLE]=War3_CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
     shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
+    shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
 
     if (GameType == cstrike)
     {
@@ -139,16 +140,14 @@ public OnWar3PluginReady()
     {
         shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
         shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife or shovel.","2");
-        //shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
-        shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
+        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
         shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade every 20 seconds.","5");
     }
     else
     {
         shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
         shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding a melee weapon.","2");
-        //shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
-        shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
+        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
         shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given extra ammo every 20 seconds.","5");
     }
 
@@ -815,7 +814,10 @@ public DropWeapon(client,weapon)
 
 public RespawnPlayer(client)
 {
-    SDKCall(hRoundRespawn,client);
+    if (GameType == cstrike)
+        SDKCall(hRoundRespawn,client);
+    else
+        DispatchSpawn(client);
 }
 
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)
