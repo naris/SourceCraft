@@ -25,6 +25,8 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
+    GetGameType();
+
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
@@ -43,20 +45,14 @@ public OnWar3PluginReady()
                            "Bash",
                            "Have a 15-32% chance to render an \nenemy immobile for 1 second.",
                            "Teleport",
-                           "Allows you to teleport to where you \naim, 60-105 feet being the range.");
+                           "Allows you to teleport to where you \naim, 60-105 feet being the range.\nNOT IMPLEMENTED YET!");
 
     FindOffsets();
 }
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
-
-    if (GameType == tf2)
-    {
-        maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
-        maxHealth[client] = GetMaxHealth(client);
-    }
+    SetupHealth(client,war3player);
 }
 
 public OnRaceSelected(client,war3player,oldrace,race)
@@ -135,7 +131,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     case 4:
                         hpadd=50;
                 }
-                SetHealth(client,GetClientHealth(client)+hpadd);
+                IncreaseHealth(client,hpadd);
             }
         }
     }
@@ -203,6 +199,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 }
 
 // Misc stuff
+
 public Action:UnfreezePlayer(Handle:timer,Handle:temp)
 {
     decl String:auth[64];
@@ -211,39 +208,4 @@ public Action:UnfreezePlayer(Handle:timer,Handle:temp)
     if(client)
         UnFreezeEntity(client);
     ClearArray(temp);
-}
-
-public AuthTimer(Float:delay,index,Timer:func)
-{
-    new Handle:temp=CreateArray(ByteCountToCells(64));
-    decl String:auth[64];
-    GetClientAuthString(index,auth,63);
-    PushArrayString(temp,auth);
-    CreateTimer(delay,func,temp);
-}
-
-stock PlayerOfAuth(const String:auth[])
-{
-    new max=GetMaxClients();
-    decl String:authStr[64];
-    for(new x=1;x<=max;x++)
-    {
-        if(IsClientConnected(x))
-        {
-            GetClientAuthString(x,authStr,63);
-            if(StrEqual(auth,authStr))
-                return x;
-        }
-    }
-    return 0;
-}
-
-stock FreezeEntity(entity)
-{
-    SetEntData(entity,movetypeOffset,0,1);
-}
-
-stock UnFreezeEntity(entity)
-{
-    SetEntData(entity,movetypeOffset,2,1);
 }

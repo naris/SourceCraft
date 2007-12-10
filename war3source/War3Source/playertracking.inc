@@ -195,8 +195,8 @@ public Action:PlayerProperties(Handle:timer)
                         speed=overridespeed;
                         overrideplayerspeed=true;
                     }
-                    else
-                        if(maxspeed>speed) speed=maxspeed;
+                    else if(maxspeed>speed)
+                        speed=maxspeed;
                 }
                 if(!overrideplayergravity)
                 {
@@ -205,14 +205,32 @@ public Action:PlayerProperties(Handle:timer)
                         gravity=overridegravity;
                         overrideplayergravity=true;
                     }
-                    else
-                        if(mingravity<gravity) gravity=mingravity;
+                    else if(mingravity<gravity)
+                        gravity=mingravity;
                 }
             }
-            if(GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                SetEntDataFloat(client,m_OffsetSpeed,speed);
-            if(GetEntDataFloat(client,m_OffsetGravity[client])!=gravity)
-                SetEntDataFloat(client,m_OffsetGravity[client],gravity);
+
+            if (GameType == tf2)
+            {
+                if (m_BaseSpeed[client] > 1.0)
+                {
+                    // Speed for heavy firing == 80, not firing == 230; other classes > 230
+                    // ensure we don't accelerate firing heavy too much!
+                    new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                    new Float:newSpeed = ((curSpeed < 230.0) ? 80.0 : m_BaseSpeed[client]) * speed;
+
+                    if (GetEntDataFloat(client,m_OffsetMaxSpeed[client]) != newSpeed)
+                        SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                }
+            }
+            else
+            {
+                if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                    SetEntDataFloat(client,m_OffsetSpeed,speed);
+            }
+
+            if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
+                SetEntDataFloat(client,m_OffsetGravity[client], gravity);
         }
     }
 }

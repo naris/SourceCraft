@@ -25,11 +25,11 @@ stock maxHealth[MAXPLAYERS+1]               = { 0, ... };
 stock bool:healthIncreased[MAXPLAYERS+1]    = { false, ... };
 
 stock lifestateOffset  = 0;
-stock colorOffset      = 0;
 stock renderModeOffset = 0;
 stock movetypeOffset   = 0;
-stock ownerOffset      = 0;
 stock curWepOffset     = 0;
+stock ownerOffset      = 0;
+stock colorOffset      = 0;
 
 stock Mod:GetGameType()
 {
@@ -57,7 +57,7 @@ stock FindOffsets()
 {
     lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
     if(lifestateOffset==-1)
-    SetFailState("Couldn't find LifeState offset");
+        SetFailState("Couldn't find LifeState offset");
 
     movetypeOffset=FindSendPropOffs("CBaseEntity","movetype");
     if(movetypeOffset==-1)
@@ -80,9 +80,45 @@ stock FindOffsets()
         SetFailState("Couldn't find ActiveWeapon offset");
 }
 
+stock AuthTimer(Float:delay,index,Timer:func)
+{
+    new Handle:temp=CreateArray(ByteCountToCells(64));
+    decl String:auth[64];
+    GetClientAuthString(index,auth,63);
+    PushArrayString(temp,auth);
+    CreateTimer(delay,func,temp);
+}
+
+stock PlayerOfAuth(const String:auth[])
+{
+    new max=GetMaxClients();
+    decl String:authStr[64];
+    for(new x=1;x<=max;x++)
+    {
+        if(IsClientConnected(x))
+        {
+            GetClientAuthString(x,authStr,63);
+            if(StrEqual(auth,authStr))
+                return x;
+        }
+    }
+    return 0;
+}
+
+stock SetupHealth(client,war3player)
+{
+    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
+
+    if (GameType == tf2)
+    {
+        maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
+        maxHealth[client] = GetMaxHealth(client);
+    }
+}
+
 stock IncreaseHealth(client, amount)
 {
-    new health =GetClientHealth(client)+amount;
+    new health = GetClientHealth(client)+amount;
     if (GameType == tf2 && health > GetMaxHealth(client))
     {
         SetMaxHealth(client, health);
@@ -94,6 +130,11 @@ stock IncreaseHealth(client, amount)
 stock SetHealth(entity,amount)
 {
     SetEntData(entity,healthOffset[entity],amount,1);
+}
+
+stock GetHealth(entity)
+{
+    return GetEntData(entity,healthOffset[entity],1);
 }
 
 stock SetMaxHealth(entity,amount)
@@ -109,6 +150,16 @@ stock GetMaxHealth(entity)
 stock GetLifestate(client)
 {
     return GetEntData(client,lifestateOffset,1);
+}
+
+stock FreezeEntity(entity)
+{
+    SetEntData(entity,movetypeOffset,0,1);
+}
+
+stock UnFreezeEntity(entity)
+{
+    SetEntData(entity,movetypeOffset,2,1);
 }
 
 stock MakeInvisible(client, war3player, visibility)
@@ -169,3 +220,35 @@ stock SetRenderColor(client,r,g,b,a)
             SetEntData(client,renderModeOffset,3,1,true);
     }
 }
+
+stock War3Source_ChatMessage(target,color,const String:szMsg[],any:...)
+{
+    if(strlen(szMsg)>191)
+    {
+        LogError("Disallow string len(%d)>191",strlen(szMsg));
+        return;
+    }
+    else
+    {
+        decl String:buffer[192];
+        VFormat(buffer,sizeof(buffer),szMsg,4);
+        Format(buffer,191,"%s\n",buffer);
+        new Handle:hBf;
+        if(target==0)
+            hBf=StartMessageAll("SayText");
+        else
+            hBf=StartMessageOne("SayText",target);
+        if(hBf!=INVALID_HANDLE)
+        {
+            BfWriteByte(hBf, 0); 
+            BfWriteString(hBf, buffer);
+            EndMessage();
+        }
+    }
+}
+
+stock Float:DistanceBetween(Float:a[3],Float:b[3])
+{
+    return SquareRoot((b[0]-a[0])*(b[0]-a[0])+(b[1]-a[1])*(b[1]-a[1])+(b[2]-a[2])*(b[2]-a[2]));
+}
+

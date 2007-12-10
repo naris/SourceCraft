@@ -9,15 +9,13 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include "War3Source/War3Source_Interface"
 #include <sdktools>
 #include <tf2>
 
+#include "War3Source/War3Source_Interface"
+#include "War3Source/util"
+
 // Defines
-#define IS_ALIVE !GetLifeState
-#define COLOR_DEFAULT 0x01
-#define COLOR_TEAM 0x03
-#define COLOR_GREEN 0x04 // Actually red for DOD
 
 #define ITEM_ANKH             0 // Ankh of Reincarnation - Retrieve Equipment after death
 #define ITEM_BOOTS            1 // Boots of Speed - Move Faster
@@ -39,12 +37,7 @@
 
 // War3Source stuff
 
-new lifestateOffset     = 0;
-new currentWeaponOffset = 0;
 new myWepsOffset        = 0;
-new colorOffset         = 0;
-new renderModeOffset    = 0;
-new ownerOffset         = 0;
 new ammotypeOffset      = 0;
 new originOffset        = 0;
 new clipOffset          = 0;
@@ -52,16 +45,9 @@ new ammoOffset          = 0; // Primary Ammo
 new ammo2Offset         = 0; // Secondary Ammo
 new metalOffset         = 0; // metal (3rd Ammo)
 
-new healthOffset[MAXPLAYERS+1]            = { 0, ... };
-new maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
-
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new bool:usedPeriapt[MAXPLAYERS+1]        = { false, ... };
 new bool:isMole[MAXPLAYERS+1]             = { false, ... };
-new maxHealth[MAXPLAYERS+1]               = { 100, ... };
-
-enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
-new Mod:GameType = undetected;
 
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
@@ -87,20 +73,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    new String:modname[30];
-    GetGameFolderName(modname, sizeof(modname));
-    if (StrEqual(modname,"cstrike",false))
-        GameType=cstrike;
-    else if (StrEqual(modname,"tf",false)) 
-        GameType=tf2;
-    else if (StrEqual(modname,"dod",false)) 
-        GameType=dod;
-    else if (StrEqual(modname,"hl2mp",false)) 
-        GameType=hl2mp;
-    else if (StrEqual(modname,"Insurgency",false)) 
-        GameType=insurgency;
-    else
-        GameType=other;
+    GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
@@ -156,13 +129,10 @@ public OnWar3PluginReady()
 
 public LoadSDKToolStuff()
 {
-    lifestateOffset     = FindSendPropOffs("CAI_BaseNPC",       "m_lifeState");
+
+    FindOffsets();
     myWepsOffset        = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
-    currentWeaponOffset = FindSendPropOffs("CAI_BaseNPC",       "m_hActiveWeapon");
-    colorOffset         = FindSendPropOffs("CAI_BaseNPC",       "m_clrRender");
-    ownerOffset         = FindSendPropOffs("CBaseEntity",       "m_hOwnerEntity");
     originOffset        = FindSendPropOffs("CBaseEntity",       "m_vecOrigin");
-    renderModeOffset    = FindSendPropOffs("CBaseAnimating",    "m_nRenderMode");
     ammotypeOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
 
     if (GameType == tf2)
@@ -217,25 +187,11 @@ public LoadSDKToolStuff()
     hSetModel=EndPrepSDKCall();
 }
 
-public AuthTimer(Float:delay,index,Timer:func)
-{
-    new Handle:temp=CreateArray(ByteCountToCells(64));
-    decl String:auth[64];
-    GetClientAuthString(index,auth,63);
-    PushArrayString(temp,auth);
-    CreateTimer(delay,func,temp);
-}
-
 public OnWar3PlayerAuthed(client,war3player)
 {
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
+    SetupHealth(client,war3player);
 
-    if (GameType == tf2)
-    {
-        maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
-        maxHealth[client] = GetMaxHealth(client);
-    }
-    else if (GameType == cstrike)
+    if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
 
@@ -453,14 +409,15 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     SetHealth(attacker_index,newhealth);
                 }
 
-                if (War3_GetOwnsItem(war3player_assister,shopItem[ITEM_MASK]))
+                if (war3player_assister != -1 && War3_GetOwnsItem(war3player_assister,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(assister_index)+2;
                     SetHealth(assister_index,newhealth);
                 }
 
                 if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_ORB]) ||
-                    War3_GetOwnsItem(war3player_assister,shopItem[ITEM_ORB]))
+                    (war3player_assister != -1 &&
+                     War3_GetOwnsItem(war3player_assister,shopItem[ITEM_ORB])))
                 {
                     War3_SetOverrideSpeed(war3player,0.5);
                     AuthTimer(5.0,index,RestoreSpeed);
@@ -522,16 +479,11 @@ public Action:Gloves(Handle:timer)
     new maxplayers=GetMaxClients();
     for(new player=1;player<=maxplayers;player++)
     {
-        new ingame = IsClientInGame(player);
-        new alive  = ingame && IS_ALIVE(player);
-        LogMessage("Glove] Checking %d, ingame=%d,alive=%d\n", player, ingame, alive);
-
         if(IsClientInGame(player) && IS_ALIVE(player))
         {
             new war3player=War3_GetWar3Player(player);
             if (war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
             {
-                LogMessage("Glove] got war3player for %d\n", player);
                 if (GameType == cstrike)
                 {
                     GiveItem(player,"weapon_hegrenade");
@@ -543,9 +495,7 @@ public Action:Gloves(Handle:timer)
                 }
                 else if (GameType == tf2)
                 {
-                    //new TFClass:tfclass = GetTFClass(player);
-                    new tfclass = TF_GetClass(player);
-                    switch (tfclass)
+                    switch (TF_GetClass(player))
                     {
                         case TF2_HEAVY: 
                         {
@@ -577,7 +527,7 @@ public Action:Gloves(Handle:timer)
                 else
                 {
                     new ammoType  = 0;
-                    new curWeapon = GetEntDataEnt(player, currentWeaponOffset);
+                    new curWeapon = GetEntDataEnt(player, curWepOffset);
                     if (curWeapon > 0)
                         ammoType  = GetAmmoType(curWeapon);
 
@@ -594,17 +544,19 @@ public Action:Gloves(Handle:timer)
 public Action:ShadowsTrack(Handle:timer)
 {
     new maxplayers=GetMaxClients();
-    decl String:wepName[128];
-    new count=GetEntityCount();
-    for(new x=1;x<=maxplayers;x++)
+    //decl String:wepName[128];
+    //new count=GetEntityCount();
+    for(new player=1;player<=maxplayers;player++)
     {
-        if(IsClientInGame(x) && IS_ALIVE(x))
+        if(IsClientInGame(player) && IS_ALIVE(player))
         {
-            new war3player=War3_GetWar3Player(x);
+            new war3player=War3_GetWar3Player(player);
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
-                new visibility=140; // 160;
-                new weaponent=GetEntDataEnt(x,currentWeaponOffset);
+                new visibility = (GameType == tf2) ? 140 : 160;
+                MakeInvisible(player, war3player, visibility);
+                /*
+                new weaponent=GetEntDataEnt(x,curWepOffset);
                 if(weaponent && IsValidEdict(weaponent) && weaponent<count)
                 {
                     GetEdictClassname(weaponent,wepName,127);
@@ -643,6 +595,7 @@ public Action:ShadowsTrack(Handle:timer)
                     }
                 }
                 SetRenderColor(x,255,255,255,visibility);
+                */
             }
         }
     }
@@ -752,40 +705,11 @@ public Action:DoMole(Handle:timer,Handle:temp)
 
 stock UsePeriapt(client)
 {
+    IncreaseHealth(client, 50);
     usedPeriapt[client]=true;
-    new health =GetClientHealth(client)+50;
-    if (GameType == tf2 && health > GetMaxHealth(client))
-    {
-        SetMaxHealth(client, health);
-    }
-    SetHealth(client, health);
 }
 
 // Non-specific stuff
-public SetHealth(entity,amount)
-{
-    SetEntData(entity,healthOffset[entity],amount,1);
-}
-
-public GetHealth(entity)
-{
-    return GetEntData(entity,healthOffset[entity],1);
-}
-
-public SetMaxHealth(entity,amount)
-{
-    SetEntData(entity,maxHealthOffset[entity],amount,1);
-}
-
-public GetMaxHealth(entity)
-{
-    return GetEntData(entity,maxHealthOffset[entity],1);
-}
-
-public GetLifeState(client)
-{
-    return GetEntData(client,lifestateOffset,1);
-}
 
 stock RemoveEntity(entity)
 {
@@ -814,10 +738,7 @@ public DropWeapon(client,weapon)
 
 public RespawnPlayer(client)
 {
-    if (GameType == cstrike)
-        SDKCall(hRoundRespawn,client);
-    else
-        DispatchSpawn(client);
+    SDKCall(hRoundRespawn,client);
 }
 
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)
@@ -828,22 +749,6 @@ public Action:RespawnPlayerHandle(Handle:timer,any:temp)
     if(client)
         RespawnPlayer(client);
     ClearArray(temp);
-}
-
-stock PlayerOfAuth(const String:auth[])
-{
-    new max=GetMaxClients();
-    decl String:authStr[64];
-    for(new x=1;x<=max;x++)
-    {
-        if(IsClientConnected(x))
-        {
-            GetClientAuthString(x,authStr,63);
-            if(StrEqual(auth,authStr))
-                return x;
-        }
-    }
-    return 0;
 }
 
 stock SetModel(entity,const String:model[])
@@ -861,11 +766,6 @@ stock GiveAmmo(client,ammotype,amount,bool:suppress)
     SDKCall(hGiveAmmo,client,amount,ammotype,suppress);
 }
 
-stock Float:DistanceBetween(Float:a[3],Float:b[3])
-{
-    return SquareRoot((b[0]-a[0])*(b[0]-a[0])+(b[1]-a[1])*(b[1]-a[1])+(b[2]-a[2])*(b[2]-a[2]));
-}
-
 stock Handle:PlayersOnTeam(team)
 {
     new count=GetMaxClients();
@@ -876,45 +776,4 @@ stock Handle:PlayersOnTeam(team)
             PushArrayCell(temp,x);
     }
     return temp;
-}
-
-public SetRenderColor(client,r,g,b,a)
-{
-    if(colorOffset != -1)
-    {
-        SetEntData(client,colorOffset,r,1,true);
-        SetEntData(client,colorOffset+1,g,1,true);
-        SetEntData(client,colorOffset+2,b,1,true);
-        SetEntData(client,colorOffset+3,a,1,true);
-        if(renderModeOffset==-1)
-            return;
-        else
-            SetEntData(client,renderModeOffset,3,1,true);
-    }
-}
-
-stock War3Source_ChatMessage(target,color,const String:szMsg[],any:...)
-{
-    if(strlen(szMsg)>191)
-    {
-        LogError("Disallow string len(%d)>191",strlen(szMsg));
-        return;
-    }
-    else
-    {
-        decl String:buffer[192];
-        VFormat(buffer,sizeof(buffer),szMsg,4);
-        Format(buffer,191,"%s\n",buffer);
-        new Handle:hBf;
-        if(target==0)
-            hBf=StartMessageAll("SayText");
-        else
-            hBf=StartMessageOne("SayText",target);
-        if(hBf!=INVALID_HANDLE)
-        {
-            BfWriteByte(hBf, 0); 
-            BfWriteString(hBf, buffer);
-            EndMessage();
-        }
-    }
 }

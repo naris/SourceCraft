@@ -62,7 +62,7 @@ public OnWar3PluginReady()
                            "Reincarnation", // Skill 3 Name
                            "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
                            "Chain Lightning", // Ultimate Name
-                           "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
+                           "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.\nNOT IMPLEMENTED YET!"); // Ultimate Description
 
     LoadSDKToolStuff();
 

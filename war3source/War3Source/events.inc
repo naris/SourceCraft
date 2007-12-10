@@ -6,6 +6,8 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
+new Float:m_BaseSpeed[MAXPLAYERS+1];
+
 public bool:War3Source_HookEvents()
 {
     if(!HookEventEx("player_spawn",War3Source_PlayerSpawnEvent))
@@ -17,6 +19,15 @@ public bool:War3Source_HookEvents()
     {
         PrintToServer("[War3Source] Could not hook the player_spawn event.");
         return false;
+    }
+
+    if (GameType == tf2)
+    {
+        if(!HookEventEx("teamplay_round_active",War3Source_RoundActive))
+        {
+            PrintToServer("[War3Source] Could not hook the teamplay_round_active event.");
+            return false;
+        }
     }
 
     return true;
@@ -72,6 +83,23 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
             GetEventString(event,"weapon",weapon,63);
             GiveKillXP(attackerIndex,vecPos,victimIndex,GetEventBool(event,"headshot"),StrEqual(weapon,"knife"));
             GiveKillCredits(attackerIndex,vecPos);
+        }
+    }
+}
+
+public War3Source_RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    if (GameType == tf2)
+    {
+        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        {
+            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
+            new client=GetArrayCell(playerHandle,0);
+            if(IsClientInGame(client))
+            {
+                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
+                m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+            }
         }
     }
 }
