@@ -543,9 +543,10 @@ public Action:Gloves(Handle:timer)
 
 public Action:ShadowsTrack(Handle:timer)
 {
+    return;
     new maxplayers=GetMaxClients();
-    //decl String:wepName[128];
-    //new count=GetEntityCount();
+    decl String:wepName[128];
+    new count=GetEntityCount();
     for(new player=1;player<=maxplayers;player++)
     {
         if(IsClientInGame(player) && IS_ALIVE(player))
@@ -554,9 +555,9 @@ public Action:ShadowsTrack(Handle:timer)
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
                 new visibility = (GameType == tf2) ? 140 : 160;
-                MakeInvisible(player, war3player, visibility);
-                /*
-                new weaponent=GetEntDataEnt(x,curWepOffset);
+                //MakeInvisible(player, war3player, visibility);
+                /**/
+                new weaponent=GetEntDataEnt(player,curWepOffset);
                 if(weaponent && IsValidEdict(weaponent) && weaponent<count)
                 {
                     GetEdictClassname(weaponent,wepName,127);
@@ -590,12 +591,12 @@ public Action:ShadowsTrack(Handle:timer)
                 {
                     if(IsValidEdict(y))
                     {
-                        if(GetEntDataEnt(y,ownerOffset)==x)
+                        if(GetEntDataEnt(y,ownerOffset)==player)
                             SetRenderColor(y,255,255,255,visibility);
                     }
                 }
-                SetRenderColor(x,255,255,255,visibility);
-                */
+                SetRenderColor(player,255,255,255,visibility);
+                /**/
             }
         }
     }
