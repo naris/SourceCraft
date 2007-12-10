@@ -44,7 +44,12 @@ public Action:War3Source_SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"changerace",63))
         {
-            War3Source_ChangeRaceMenu(client);
+            War3Source_RaceMenu(client, true);
+            return Plugin_Handled;
+        }
+        else if(CommandCheck(arg1,"raceinfo",63))
+        {
+            War3Source_RaceMenu(client, false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"skillsinfo",63))

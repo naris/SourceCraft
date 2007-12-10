@@ -100,11 +100,16 @@ public War3Source_ShowSkills_Selected(Handle:menu,MenuAction:action,client,selec
 
 public War3Source_SkillsInfo(client,vecpos)
 {
-    new Handle:menu=CreateMenu(War3Source_SkillsInfo_Selected);
     new race=GetRace(vecpos);
+    new Handle:raceHandle=Race(race);
+    War3Source_ShowSkillsInfo(client, raceHandle);
+}
+
+public War3Source_ShowSkillsInfo(client, Handle:raceHandle)
+{
+    new Handle:menu=CreateMenu(War3Source_SkillsInfo_Selected);
     SetMenuExitButton(menu,true);
     SetMenuTitle(menu,"[War3Source] Select a skill for more info.");
-    new Handle:raceHandle=Race(race);
     decl String:buf[64];
     for(new x=0;x<SKILL_COUNT;x++)
     {

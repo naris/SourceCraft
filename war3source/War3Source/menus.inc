@@ -131,11 +131,13 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_ChangeRaceMenu(client)
+public War3Source_RaceMenu(client, bool:change)
 {
-    new Handle:crMenu=CreateMenu(War3Source_CRMenu_Selected);
+    new Handle:crMenu=CreateMenu(change ? War3Source_CRMenu_Selected
+                                        : War3Source_RIMenu_Selected);
+    SetMenuTitle(crMenu,change ? "[War3Source] Select your desired race.\n"
+                               : "[War3Source] Select a race to view.");
     SetMenuExitButton(crMenu,true);
-    SetMenuTitle(crMenu,"[War3Source] Select your desired race.\n");
     // Iteriate through the races and print them out
     new Handle:race;
     decl String:rbuf[4];
@@ -148,6 +150,58 @@ public War3Source_ChangeRaceMenu(client)
         AddMenuItem(crMenu,rbuf,rname);
     }
     DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
+}
+
+public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+{
+    if(action==MenuAction_Select)
+    {
+        ClientCommand(client,"play buttons/button14.wav");
+        new vecpos=GetClientVectorPosition(client);
+        if(vecpos >- 1)
+        {
+            if(selection >= 0&&selection<RACE_COUNT)
+            {
+                // Okay, they selected a valid race
+                if(IS_ALIVE(client))
+                {
+                    SetPendingRace(vecpos,selection);
+                    new Handle:race=Race(selection);
+                    decl String:buf[192];
+                    GetArrayString(race,3,buf,191);
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+                }
+                else
+                {
+                    SetPendingRace(vecpos,-1);
+                    SetRace(vecpos,selection);
+                    new Handle:race=Race(selection);
+                    decl String:buf[192];
+                    GetArrayString(race,2,buf,191);
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %c%s",
+                                           COLOR_GREEN,COLOR_DEFAULT,buf);
+                }
+            }
+        }
+    }
+}
+public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+{
+    if(action==MenuAction_Select)
+    {
+        ClientCommand(client,"play buttons/button14.wav");
+        new vecpos=GetClientVectorPosition(client);
+        if(vecpos > -1)
+        {
+            if(selection >= 0 && selection < RACE_COUNT)
+            {
+                // Okay, they selected a valid race
+                new Handle:race=Race(selection);
+                War3Source_ShowSkillsInfo(client, race);
+            }
+        }
+    }
 }
 
 public War3Source_SkillMenu(client,vectorpos)
@@ -262,41 +316,6 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
-{
-    if(action==MenuAction_Select)
-    {
-        ClientCommand(client,"play buttons/button14.wav");
-        new vecpos=GetClientVectorPosition(client);
-        if(vecpos>-1)
-        {
-            if(selection>=0&&selection<RACE_COUNT)
-            {
-                // Okay, they selected a valid race
-                if(IS_ALIVE(client))
-                {
-                    SetPendingRace(vecpos,selection);
-                    new Handle:race=Race(selection);
-                    decl String:buf[192];
-                    GetArrayString(race,3,buf,191);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
-                }
-                else
-                {
-                    SetPendingRace(vecpos,-1);
-                    SetRace(vecpos,selection);
-                    new Handle:race=Race(selection);
-                    decl String:buf[192];
-                    GetArrayString(race,2,buf,191);
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                           "%c[War3Source] %c%s",
-                                           COLOR_GREEN,COLOR_DEFAULT,buf);
-                }
-            }
-        }
-    }
-}
-
 public War3Source_ShopMenu(client,vectorpos)
 {
     new Handle:shopMenu=CreateMenu(War3Source_ShopMenu_Selected);
@@ -381,6 +400,10 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                 new credits=GetCredits(vecpos);
                 decl String:cost[4];
                 new Handle:itemHandle=ShopItem(item);
+
+                decl String:itemname[64];
+                GetArrayString(itemHandle,0,itemname,63);
+
                 GetArrayString(itemHandle,2,cost,3);
                 new cost_num=StringToInt(cost);
                 if(credits>=cost_num)
@@ -397,9 +420,6 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                         new result;
                         Call_Finish(result);
 
-                        decl String:itemname[64];
-                        GetArrayString(itemHandle,0,itemname,63);
-
                         War3Source_ChatMessage(client,COLOR_DEFAULT,
                                                "%c[War3Source] %cYou have successfully purchased the %s.",
                                                COLOR_GREEN,COLOR_DEFAULT,itemname);
@@ -407,15 +427,15 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                     else
                     {
                         War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                               "%c[War3Source] %cYou already own this item.",
-                                               COLOR_GREEN,COLOR_DEFAULT);
+                                               "%c[War3Source] %cYou already own the %s.",
+                                               COLOR_GREEN,COLOR_DEFAULT, itemname);
                     }
                 }
                 else
                 {
                     War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                           "%c[War3Source] %cYou can not afford this item.",
-                                           COLOR_GREEN,COLOR_DEFAULT);
+                                           "%c[War3Source] %cYou can not afford the %s.",
+                                           COLOR_GREEN,COLOR_DEFAULT,itemname);
                 }
             }
             else if(selection==1)

@@ -51,7 +51,9 @@ public War3Source_PlayerParse(String:matchstr[],&Handle:matchHandle)
     else
     {
         // Team?
-        if(StrEqual(matchstr,"@ct",false))
+        if(StrEqual(matchstr,"@ct",false) ||
+	   StrEqual(matchstr,"@red",false) ||
+	   StrEqual(matchstr,"@axis",false))
         {
             for(new x=0;x<GetArraySize(arrayPlayers);x++)
             {
@@ -61,7 +63,9 @@ public War3Source_PlayerParse(String:matchstr[],&Handle:matchHandle)
                     PushArrayCell(matchHandle,index);
             }
         }
-        else if(StrEqual(matchstr,"@t",false))
+        else if(StrEqual(matchstr,"@t",false) ||
+	       	StrEqual(matchstr,"@blue",false) ||
+	       	StrEqual(matchstr,"@allies",false))
         {
             for(new x=0;x<GetArraySize(arrayPlayers);x++)
             {
