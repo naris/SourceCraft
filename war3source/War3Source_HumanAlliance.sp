@@ -82,7 +82,7 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
             case 4:
                 alpha=94;
         }
-        SetRenderColor(client,255,255,255,alpha);
+        MakeInvisible(client, war3player, alpha);
     }
 }
 
@@ -142,17 +142,18 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(client);
 
-    // Reset invisibility
-    if(war3player>-1)
-        SetRenderColor(client,255,255,255,255);
-
-    // Reset MaxHealth back to normal
-    if (healthIncreased[client] && GameType == tf2)
+    if (client > -1)
     {
-        SetMaxHealth(client, maxHealth[client]);
-        healthIncreased[client] = false;
+        // Reset invisibility
+        MakeVisible(client);
+
+        // Reset MaxHealth back to normal
+        if (healthIncreased[client] && GameType == tf2)
+        {
+            SetMaxHealth(client, maxHealth[client]);
+            healthIncreased[client] = false;
+        }
     }
 }
 

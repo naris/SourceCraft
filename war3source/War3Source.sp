@@ -180,7 +180,14 @@ public OnClientPutInServer(client)
             {
                 m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
                 m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cSet Base Speed=%d.",COLOR_GREEN,COLOR_DEFAULT,m_BaseSpeed[client]);
+
+                /*
+                LogMessage("[War3Source] Set Base Speed=%f\n", m_BaseSpeed[client]);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cSet Base Speed=%f.",
+                                       COLOR_GREEN,COLOR_DEFAULT,m_BaseSpeed[client]);
+                */
             }
 
             if(SAVE_ENABLED)

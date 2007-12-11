@@ -5,6 +5,8 @@
  * Author(s): Anthony Iacono  
  */
 
+#include <tf2>
+
 #define IS_ALIVE !GetLifestate
 
 // Global definition
@@ -214,12 +216,29 @@ public Action:PlayerProperties(Handle:timer)
             {
                 if (m_BaseSpeed[client] > 1.0)
                 {
-                    // Speed for heavy firing == 80, not firing == 230; other classes > 230
-                    // ensure we don't accelerate firing heavy too much!
+                    new Float:newSpeed;
                     new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                    new Float:newSpeed = ((curSpeed < 230.0) ? 80.0 : m_BaseSpeed[client]) * speed;
+                    if (curSpeed < 100.0 && TF_GetClass(client) == TF2_HEAVY)
+                    {
+                        // Speed for heavy while firing == 80, while not firing == 230
+                        // ensure we don't accelerate firing heavy too much!
+                        newSpeed = 80.0 * speed;
+                    }
+                    else
+                    {
+                        newSpeed = m_BaseSpeed[client] * speed;
+                    }
 
-                    if (GetEntDataFloat(client,m_OffsetMaxSpeed[client]) != newSpeed)
+                    /*
+                    LogMessage("[War3Source] BaseSpeed=%f, curSpeed=%f, newSpeed=%f\n",
+                               m_BaseSpeed[client], curSpeed, newSpeed);
+
+                    War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                           "%c[War3Source] %c BaseSpeed=%f, speed=%f, curSpeed=%f, newSpeed=%f",
+                                           COLOR_GREEN,COLOR_DEFAULT, m_BaseSpeed[client], speed, curSpeed, newSpeed);
+                    */
+
+                    if (curSpeed != newSpeed)
                         SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
                 }
             }

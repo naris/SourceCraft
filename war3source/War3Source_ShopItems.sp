@@ -33,7 +33,7 @@
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
 #define ITEM_GOGGLES         15 // The Goggles - They do nothing!
-#define MAXITEMS             16
+#define MAXITEMS             14
 
 // War3Source stuff
 
@@ -60,7 +60,7 @@ new Handle:hWeaponDrop    = INVALID_HANDLE;
 new Handle:hGiveAmmo      = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
-new shopItem[MAXITEMS];
+new shopItem[MAXITEMS+1];
 
 public Plugin:myinfo = 
 {
@@ -100,7 +100,7 @@ public OnWar3PluginReady()
     shopItem[ITEM_RING]=War3_CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't excede 100 HP.","3");
     shopItem[ITEM_MOLE]=War3_CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
     shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
-    shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
+    //shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
 
     if (GameType == cstrike)
     {
@@ -145,7 +145,6 @@ public LoadSDKToolStuff()
     {
         clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
         ammoOffset      = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
-        ammo2Offset     = ammoOffset  + 4;
     }
 
     hGameConf=LoadGameConfigFile("plugin.war3source");
@@ -287,16 +286,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
-                new count=GetEntityCount();
-                for(new y=64;y<count;y++)
-                {
-                    if(IsValidEdict(y))
-                    {
-                        if(GetEntDataEnt(y,ownerOffset)==client)
-                            SetRenderColor(y,255,255,255,255);
-                    }
-                }
-                SetRenderColor(client,255,255,255,255);
+                MakeVisible(client);
                 War3_SetOwnsItem(war3player,shopItem[3],false);
             }
 
@@ -329,8 +319,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
                 War3_SetOwnsItem(war3player,shopItem[ITEM_GLOVES],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_GOGGLES]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_GOGGLES],false);
+            //if(War3_GetOwnsItem(war3player,shopItem[ITEM_GOGGLES]))
+            //    War3_SetOwnsItem(war3player,shopItem[ITEM_GOGGLES],false);
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
                 War3_SetOwnsItem(war3player,shopItem[ITEM_RING],false);
@@ -543,10 +533,7 @@ public Action:Gloves(Handle:timer)
 
 public Action:ShadowsTrack(Handle:timer)
 {
-    return;
     new maxplayers=GetMaxClients();
-    decl String:wepName[128];
-    new count=GetEntityCount();
     for(new player=1;player<=maxplayers;player++)
     {
         if(IsClientInGame(player) && IS_ALIVE(player))
@@ -555,48 +542,7 @@ public Action:ShadowsTrack(Handle:timer)
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
                 new visibility = (GameType == tf2) ? 140 : 160;
-                //MakeInvisible(player, war3player, visibility);
-                /**/
-                new weaponent=GetEntDataEnt(player,curWepOffset);
-                if(weaponent && IsValidEdict(weaponent) && weaponent<count)
-                {
-                    GetEdictClassname(weaponent,wepName,127);
-                    if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
-                    {
-                        visibility=80; // 90;
-                    }
-                    else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
-                                                StrEqual(wepName,"tf_weapon_shovel") ||
-                                                StrEqual(wepName,"tf_weapon_wrench") ||
-                                                StrEqual(wepName,"tf_weapon_bat") ||
-                                                StrEqual(wepName,"tf_weapon_bonesaw") ||
-                                                StrEqual(wepName,"tf_weapon_bottle") ||
-                                                StrEqual(wepName,"tf_weapon_club") ||
-                                                StrEqual(wepName,"tf_weapon_fireaxe") ||
-                                                StrEqual(wepName,"tf_weapon_fists") ||
-                                                StrEqual(wepName,"tf_weapon_builder") ||
-                                                StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
-                                                StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
-                                                StrEqual(wepName,"tf_weapon_pda_spy")))
-                    {
-                        visibility=90;
-                    }
-                    else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
-                                                StrEqual(wepName,"weapon_spade")))
-                    {
-                        visibility=90;
-                    }
-                }
-                for(new y=64;y<count;y++)
-                {
-                    if(IsValidEdict(y))
-                    {
-                        if(GetEntDataEnt(y,ownerOffset)==player)
-                            SetRenderColor(y,255,255,255,visibility);
-                    }
-                }
-                SetRenderColor(player,255,255,255,visibility);
-                /**/
+                MakeInvisible(player, war3player, visibility);
             }
         }
     }

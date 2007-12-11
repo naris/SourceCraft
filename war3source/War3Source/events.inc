@@ -95,10 +95,18 @@ public War3Source_RoundActive(Handle:event,const String:name[],bool:dontBroadcas
         {
             new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
             new client=GetArrayCell(playerHandle,0);
-            if(IsClientInGame(client))
+            if(m_BaseSpeed[client] < 100.0 && IsClientInGame(client))
             {
                 m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
                 m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+
+                /*
+                LogMessage("[War3Source] Changed Base Speed=%f\n", m_BaseSpeed[client]);
+
+                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                       "%c[War3Source] %cChanged Base Speed=%f.",
+                                       COLOR_GREEN,COLOR_DEFAULT,m_BaseSpeed[client]);
+                */
             }
         }
     }

@@ -164,38 +164,36 @@ stock UnFreezeEntity(entity)
 
 stock MakeInvisible(client, war3player, visibility)
 {
-    new count=GetEntityCount();
-    new weaponent=GetEntDataEnt(client,curWepOffset);
-    if(weaponent && IsValidEdict(weaponent) && weaponent<count)
+    decl String:wepName[128];
+    GetClientWeapon(client, wepName, 127);
+
+    if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
     {
-        decl String:wepName[128];
-        GetEdictClassname(weaponent,wepName,127);
-        if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
-        {
-            visibility /=2;
-        }
-        else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
-                                    StrEqual(wepName,"tf_weapon_shovel") ||
-                                    StrEqual(wepName,"tf_weapon_wrench") ||
-                                    StrEqual(wepName,"tf_weapon_bat") ||
-                                    StrEqual(wepName,"tf_weapon_bonesaw") ||
-                                    StrEqual(wepName,"tf_weapon_bottle") ||
-                                    StrEqual(wepName,"tf_weapon_club") ||
-                                    StrEqual(wepName,"tf_weapon_fireaxe") ||
-                                    StrEqual(wepName,"tf_weapon_fists") ||
-                                    StrEqual(wepName,"tf_weapon_builder") ||
-                                    StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
-                                    StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
-                                    StrEqual(wepName,"tf_weapon_pda_spy")))
-        {
-            visibility /=2;
-        }
-        else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
-                                    StrEqual(wepName,"weapon_spade")))
-        {
-            visibility /=2;
-        }
+        visibility /=2;
     }
+    else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
+                                StrEqual(wepName,"tf_weapon_shovel") ||
+                                StrEqual(wepName,"tf_weapon_wrench") ||
+                                StrEqual(wepName,"tf_weapon_bat") ||
+                                StrEqual(wepName,"tf_weapon_bonesaw") ||
+                                StrEqual(wepName,"tf_weapon_bottle") ||
+                                StrEqual(wepName,"tf_weapon_club") ||
+                                StrEqual(wepName,"tf_weapon_fireaxe") ||
+                                StrEqual(wepName,"tf_weapon_fists") ||
+                                StrEqual(wepName,"tf_weapon_builder") ||
+                                StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
+                                StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
+                                StrEqual(wepName,"tf_weapon_pda_spy")))
+    {
+        visibility /=2;
+    }
+    else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
+                                StrEqual(wepName,"weapon_spade")))
+    {
+        visibility /=2;
+    }
+
+    new count=GetEntityCount();
     for(new obj = 64; obj < count; obj++)
     {
         if(IsValidEdict(obj))
@@ -207,17 +205,35 @@ stock MakeInvisible(client, war3player, visibility)
     SetRenderColor(client,255,255,255,visibility);
 }
 
-stock SetRenderColor(client,r,g,b,a)
+stock MakeVisible(client)
+{
+    if(client>-1)
+    {
+        new count=GetEntityCount();
+        for(new y=64;y<count;y++)
+        {
+            if(IsValidEdict(y))
+            {
+                if(GetEntDataEnt(y,ownerOffset)==client)
+                    SetRenderColor(y,255,255,255,255);
+            }
+        }
+        SetRenderColor(client,255,255,255,255);
+    }
+}
+
+
+stock SetRenderColor(entity,r,g,b,a)
 {
 	if(colorOffset != -1)
     {
-        SetEntData(client,colorOffset,r,1,true);
-        SetEntData(client,colorOffset+1,g,1,true);
-        SetEntData(client,colorOffset+2,b,1,true);
-        SetEntData(client,colorOffset+3,a,1,true);
+        SetEntData(entity,colorOffset,r,1,true);
+        SetEntData(entity,colorOffset+1,g,1,true);
+        SetEntData(entity,colorOffset+2,b,1,true);
+        SetEntData(entity,colorOffset+3,a,1,true);
 
         if(renderModeOffset != -1)
-            SetEntData(client,renderModeOffset,3,1,true);
+            SetEntData(entity,renderModeOffset,3,1,true);
     }
 }
 

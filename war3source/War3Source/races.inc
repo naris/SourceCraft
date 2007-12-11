@@ -1,4 +1,5 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: races.inc
  * Description: The root of all race specific stuff.
  * Author(s): Anthony Iacono  
@@ -10,6 +11,8 @@
 
 // A vector of race infomation
 new Handle:arrayRaces;
+
+new Handle:currentRaceForSkills[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
 public Handle:CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[])
 {
@@ -59,9 +62,16 @@ public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection
     if(action==MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        new vecpos=GetClientVectorPosition(client);
-        if(vecpos>-1)
-            War3Source_SkillsInfo(client,vecpos);
+
+        new Handle:raceHandle = currentRaceForSkills[client];
+        if(raceHandle != INVALID_HANDLE)
+            War3Source_ShowSkillsInfo(client,raceHandle);
+        else
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos>-1)
+                War3Source_SkillsInfo(client,vecpos);
+        }
     }
 }
 
@@ -116,6 +126,7 @@ public War3Source_ShowSkillsInfo(client, Handle:raceHandle)
         GetArrayString(raceHandle,4+(x*2),buf,63);
         AddMenuItem(menu,"",buf);
     }
+    currentRaceForSkills[client] = raceHandle;
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 

@@ -96,7 +96,7 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
                 }
                 case 1: // changerace
                 {
-                    War3Source_ChangeRaceMenu(client);
+                    War3Source_RaceMenu(client, true);
                 }
                 case 2: // skillsinfo
                 {
@@ -133,10 +133,19 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
 
 public War3Source_RaceMenu(client, bool:change)
 {
-    new Handle:crMenu=CreateMenu(change ? War3Source_CRMenu_Selected
-                                        : War3Source_RIMenu_Selected);
-    SetMenuTitle(crMenu,change ? "[War3Source] Select your desired race.\n"
-                               : "[War3Source] Select a race to view.");
+    new Handle:crMenu;
+    
+    if (change)
+    {
+        crMenu=CreateMenu(War3Source_CRMenu_Selected);
+        SetMenuTitle(crMenu, "[War3Source] Select your desired race.\n");
+    }
+    else
+    {
+        crMenu=CreateMenu(War3Source_RIMenu_Selected);
+        SetMenuTitle(crMenu, "[War3Source] Select a race to view.");
+    }
+
     SetMenuExitButton(crMenu,true);
     // Iteriate through the races and print them out
     new Handle:race;
