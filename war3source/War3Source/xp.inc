@@ -21,6 +21,9 @@
 #define CAPTURE_FLAG_XP 20
 #define CAPTURE_POINT_XP 20
 
+// Functions called from menus.inc
+public War3Source_SkillMenu(client,vectorpos);
+
 public DoLevelCheck(client,vectorpos)
 {
     new bool:m_Go=true;

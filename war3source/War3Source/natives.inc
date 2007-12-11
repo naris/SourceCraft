@@ -70,7 +70,8 @@ public Native_War3_GetWar3Player(Handle:plugin,numParams)
 {
     if(numParams==1)
         return GetClientVectorPosition(GetNativeCell(1));
-    return -1;
+    else
+        return -1;
 }
 
 public Native_War3_GetRace(Handle:plugin,numParams)
@@ -203,7 +204,7 @@ public Native_War3_SetMaxSpeed(Handle:plugin,numParams)
     {
         new war3player=GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        if(war3player!=-1&&speed>0)
+        if(war3player != -1 && speed > 0)
         {
             new Handle:temp=GetPropertyInfo(war3player);
             new indice=-1,Handle:indiceHandle;
@@ -230,8 +231,10 @@ public Native_War3_SetMaxSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,plugin); // plugin handle
                 PushArrayCell(indiceHandle,speed); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
+                PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             SetPropertyInfo(war3player,temp);
@@ -272,8 +275,54 @@ public Native_War3_SetMinGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,plugin); // plugin handle
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,gravity); // mingravity gravity
+                PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(temp,indiceHandle); // insert into the property info
+            }
+            SetPropertyInfo(war3player,temp);
+        }
+    }
+}
+
+public Native_War3_SetMinVisibility(Handle:plugin,numParams)
+{
+    if(numParams==2)
+    {
+        new war3player=GetNativeCell(1);
+        new visibility=GetNativeCell(2);
+        if(war3player != -1 && visibility > -1)
+        {
+            new Handle:temp=GetPropertyInfo(war3player);
+            new indice=-1,Handle:indiceHandle;
+            for(new x=0;x<GetArraySize(temp);x++)
+            {
+                new Handle:t=GetArrayCell(temp,x);
+                if(plugin==GetArrayCell(t,0))
+                {
+                    indice=x;
+                    indiceHandle=t;
+                    break;
+                }
+            }
+            if(indice>-1)
+            {
+                // update existing entry
+                SetArrayCell(indiceHandle,3,visibility);
+                SetArrayCell(temp,indice,indiceHandle);
+            }
+            else
+            {
+                // create a new entry
+                indiceHandle=CreateArray();
+                PushArrayCell(indiceHandle,plugin); // plugin handle
+                PushArrayCell(indiceHandle,1.0); // maxspeed speed
+                PushArrayCell(indiceHandle,1.0); // mingravity gravity
+                PushArrayCell(indiceHandle,visibility); // minvisibility 
+                PushArrayCell(indiceHandle,0.0); // force speed?
+                PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             SetPropertyInfo(war3player,temp);
@@ -304,7 +353,7 @@ public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,3,speed);
+                SetArrayCell(indiceHandle,4,speed);
                 SetArrayCell(temp,indice,indiceHandle);
             }
             else
@@ -314,8 +363,10 @@ public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,plugin); // plugin handle
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
+                PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,speed); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             SetPropertyInfo(war3player,temp);
@@ -346,7 +397,7 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,4,gravity);
+                SetArrayCell(indiceHandle,5,gravity);
                 SetArrayCell(temp,indice,indiceHandle);
             }
             else
@@ -356,8 +407,54 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,plugin); // plugin handle
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
+                PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,gravity); // force gravity?
+                PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(temp,indiceHandle); // insert into the property info
+            }
+            SetPropertyInfo(war3player,temp);
+        }
+    }
+}
+
+public Native_War3_SetOverrideVisibile(Handle:plugin,numParams)
+{
+    if(numParams==2)
+    {
+        new war3player=GetNativeCell(1);
+        new visibility=GetNativeCell(2);
+        if(war3player!=-1)
+        {
+            new Handle:temp=GetPropertyInfo(war3player);
+            new indice=-1,Handle:indiceHandle;
+            for(new x=0;x<GetArraySize(temp);x++)
+            {
+                new Handle:t=GetArrayCell(temp,x);
+                if(plugin==GetArrayCell(t,0))
+                {
+                    indice=x;
+                    indiceHandle=t;
+                    break;
+                }
+            }
+            if(indice>-1)
+            {
+                // update existing entry
+                SetArrayCell(indiceHandle,6,visibility);
+                SetArrayCell(temp,indice,indiceHandle);
+            }
+            else
+            {
+                // create a new entry
+                indiceHandle=CreateArray();
+                PushArrayCell(indiceHandle,plugin); // plugin handle
+                PushArrayCell(indiceHandle,1.0); // maxspeed speed
+                PushArrayCell(indiceHandle,1.0); // mingravity gravity
+                PushArrayCell(indiceHandle,255); // minvisibility 
+                PushArrayCell(indiceHandle,0.0); // force speed?
+                PushArrayCell(indiceHandle,0); // force gravity?
+                PushArrayCell(indiceHandle,visibility); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             SetPropertyInfo(war3player,temp);
@@ -382,8 +479,10 @@ public bool:War3Source_InitNatives()
     CreateNative("War3_SetImmunity",Native_War3_SetImmunity);
     CreateNative("War3_SetMaxSpeed",Native_War3_SetMaxSpeed);
     CreateNative("War3_SetMinGravity",Native_War3_SetMinGravity);
+    CreateNative("War3_SetMinVisibility",Native_War3_SetMinVisibility);
     CreateNative("War3_SetOverrideSpeed",Native_War3_SetOverrideSpeed);
     CreateNative("War3_SetOverrideGravity",Native_War3_SetOverrideGravity);
+    CreateNative("War3_SetOverrideVisibile",Native_War3_SetOverrideVisibile);
     return true;
 }
 

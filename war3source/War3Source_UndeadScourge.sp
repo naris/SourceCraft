@@ -11,6 +11,7 @@
 #include <sdktools>
 
 #include "War3Source/War3Source_Interface"
+#include "War3Source/messages"
 
 // Defines
 #define IS_ALIVE !GetLifestate
@@ -87,33 +88,6 @@ public PowerOfRange(Float:location[3],Float:radius,Float:check_location[3])
     if(distance<radius)
         healthtakeaway=1-FloatDiv(distance,radius)+0.20;
     return RoundFloat(100*healthtakeaway);
-}
-
-// Stocks
-#define COLOR_DEFAULT 0x01
-#define COLOR_TEAM 0x03
-#define COLOR_GREEN 0x04 // Actually red for DOD
-stock War3Source_ChatMessage(target,color,const String:szMsg[],any:...)
-{
-    if(strlen(szMsg)>191)
-    {
-        LogError("Disallow string len(%d)>191",strlen(szMsg));
-        return;
-    }
-    decl String:buffer[192];
-    VFormat(buffer,sizeof(buffer),szMsg,4);
-    Format(buffer,191,"%s\n",buffer);
-    new Handle:hBf;
-    if(target==0)
-        hBf=StartMessageAll("SayText");
-    else
-        hBf=StartMessageOne("SayText",target);
-    if(hBf!=INVALID_HANDLE)
-    {
-        BfWriteByte(hBf, 0); 
-        BfWriteString(hBf, buffer);
-        EndMessage();
-    }
 }
 
 public GetLifestate(client)

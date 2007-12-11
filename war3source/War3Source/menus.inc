@@ -195,6 +195,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
         }
     }
 }
+
 public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)

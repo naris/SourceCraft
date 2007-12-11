@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=cpp :
- * File: events.inc
+ * File: events_tf2.inc
  * Description: The handler for all the Team Fortress event based stuff.
  * Author(s): Naris (Murray Wilson)
  */

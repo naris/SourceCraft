@@ -1,8 +1,14 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: War3Source_Interface.inc
  * Description: The file to be included for creating races and whatnot.
  * Author(s): Anthony Iacono  
  */
+
+#if defined _war3source_interface_included
+ #endinput
+#endif
+#define _war3source_interface_included
 
 // The types of immunities you can get/set from.
 enum War3Immunity
@@ -149,6 +155,15 @@ native War3_SetMaxSpeed(war3player,Float:speed);
 native War3_SetMinGravity(war3player,Float:gravity);
 
 /**
+ * Sets the (in)visibility for the player that is handled within the War3Source system, good for skills and items that set (in)visibility so you don't end up making the player more visibile.
+ * Pass 255 as visibility when they no longer should use the (in)visibility, make sure to do this when they no longer have the skill or item, or whatever.
+ * @param war3player: The War3Player ID to use. Can be retrieved with War3_GetWar3Player.
+ * @param visibility: The visibility you want to pass.
+ * @noreturn
+ */
+native War3_SetMinVisibility(war3player,visibility);
+
+/**
  * Overrides the speed for War3Source, useful for punishing them or whatever.
  * Pass 0.0 as speed when you want the War3Source system to take over again, make sure to do this when they are no longer supposed to follow!
  * @param war3player: The War3Player ID to use. Can be retrieved with War3_GetWar3Player.
@@ -165,6 +180,15 @@ native War3_SetOverrideSpeed(war3player,Float:speed);
  * @noreturn
  */
 native War3_SetOverrideGravity(war3player,Float:gravity);
+
+/**
+ * Overrides the (in)visibility for War3Source, useful for punishing them or whatever.
+ * Pass -1 as visibility when you want the War3Source system to take over again, make sure to do this when they are no longer supposed to follow!
+ * @param war3player: The War3Player ID to use. Can be retrieved with War3_GetWar3Player.
+ * @param visibility: The visibility you want to pass.
+ * @noreturn
+ */
+native War3_SetOverrideVisibility(war3player,visibility);
 
 /**
  * Called when the plugin is ready.

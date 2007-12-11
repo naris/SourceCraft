@@ -9,6 +9,7 @@
 
 #include <sourcemod>
 #include "War3Source/War3Source_Interface"
+#include "War3Source/messages"
 #include "War3Source/util"
 
 // War3Source stuff
@@ -82,7 +83,7 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
             case 4:
                 alpha=94;
         }
-        MakeInvisible(client, war3player, alpha);
+        War3_SetMinVisibility(war3player,alpha);
     }
 }
 
@@ -112,7 +113,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     case 4:
                         visibility=94;
                 }
-                MakeInvisible(client, war3player, visibility);
+                War3_SetMinVisibility(war3player,visibility);
             }
 
             new skill_devo=War3_GetSkillLevel(war3player,race,1);

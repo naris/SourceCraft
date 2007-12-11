@@ -1,4 +1,5 @@
 /*
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: console.inc
  * Description: This file handles console variables that can be modified from the server console
  *              or RCON, and it also handles the admin commands that can be called from either

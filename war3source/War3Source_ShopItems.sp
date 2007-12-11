@@ -13,6 +13,7 @@
 #include <tf2>
 
 #include "War3Source/War3Source_Interface"
+#include "War3Source/messages"
 #include "War3Source/util"
 
 // Defines
@@ -33,7 +34,7 @@
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
 #define ITEM_GOGGLES         15 // The Goggles - They do nothing!
-#define MAXITEMS             14
+#define MAXITEMS             15
 
 // War3Source stuff
 
@@ -100,7 +101,7 @@ public OnWar3PluginReady()
     shopItem[ITEM_RING]=War3_CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't excede 100 HP.","3");
     shopItem[ITEM_MOLE]=War3_CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
     shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
-    //shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
+    shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
 
     if (GameType == cstrike)
     {
@@ -319,8 +320,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
                 War3_SetOwnsItem(war3player,shopItem[ITEM_GLOVES],false);
 
-            //if(War3_GetOwnsItem(war3player,shopItem[ITEM_GOGGLES]))
-            //    War3_SetOwnsItem(war3player,shopItem[ITEM_GOGGLES],false);
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_GOGGLES]))
+                War3_SetOwnsItem(war3player,shopItem[ITEM_GOGGLES],false);
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
                 War3_SetOwnsItem(war3player,shopItem[ITEM_RING],false);
@@ -490,27 +491,42 @@ public Action:Gloves(Handle:timer)
                         case TF2_HEAVY: 
                         {
                             new ammo = GetEntData(player, ammoOffset, 4) + 20;
-                            SetEntData(player, ammoOffset, ammo, 4, true);
+                            if (ammo < 400.0)
+                            {
+                                SetEntData(player, ammoOffset, ammo, 4, true);
+                            }
                         }
                         case TF2_PYRO: 
                         {
                             new ammo = GetEntData(player, ammoOffset, 4) + 20;
-                            SetEntData(player, ammoOffset, ammo, 4, true);
+                            if (ammo < 400.0)
+                            {
+                                SetEntData(player, ammoOffset, ammo, 4, true);
+                            }
                         }
                         case TF2_MEDIC: 
                         {
                             new ammo = GetEntData(player, ammoOffset, 4) + 10;
-                            SetEntData(player, ammoOffset, ammo, 4, true);
+                            if (ammo < 300.0)
+                            {
+                                SetEntData(player, ammoOffset, ammo, 4, true);
+                            }
                         }
                         case TF2_ENG: // Gets Metal instead of Ammo
                         {
                             new metal = GetEntData(player, metalOffset, 4) + 20;
-                            SetEntData(player, metalOffset, metal, 4, true);
+                            if (metal < 400.0)
+                            {
+                                SetEntData(player, metalOffset, metal, 4, true);
+                            }
                         }
                         default:
                         {
                             new ammo = GetEntData(player, ammoOffset, 4) + 2;
-                            SetEntData(player, ammoOffset, ammo, 4, true);
+                            if (ammo < 60.0)
+                            {
+                                SetEntData(player, ammoOffset, ammo, 4, true);
+                            }
                         }
                     }
                 }
@@ -542,7 +558,7 @@ public Action:ShadowsTrack(Handle:timer)
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
                 new visibility = (GameType == tf2) ? 140 : 160;
-                MakeInvisible(player, war3player, visibility);
+                War3_SetMinVisibility(war3player,visibility);
             }
         }
     }

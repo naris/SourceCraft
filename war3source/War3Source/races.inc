@@ -9,6 +9,9 @@
 #define SKILL_COUNT 4
 #define SKILL_ULTIMATE 3 // Yes, its the 4th, but 3th when you are talking iteriators
 
+// Functions called from menus.inc
+public War3Source_SkillMenu(client,vectorpos);
+
 // A vector of race infomation
 new Handle:arrayRaces;
 

@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=cpp :
- * File: events.inc
+ * File: eventsi_cstrike.inc
  * Description: The handler for all the counter-strike event based stuff.
  * Author(s): Anthony Iacono  
  * Modifications by: Naris (Murray Wilson)

@@ -1,8 +1,9 @@
 /*
-File: credits.inc
-Description: The shopmenu credit system. 
-Author(s): Anthony Iacono  
-*/
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * File: credits.inc
+ * Description: The shopmenu credit system. 
+ * Author(s): Anthony Iacono  
+ */
  
 #define KILL_CREDITS_LONGTERM 2
 #define KILL_CREDITS_SHORTTERM 3

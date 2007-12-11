@@ -1,9 +1,15 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: messages.inc
  * Description: This file is the user message function handler.  
  * Author(s): Anthony Iacono
  * Note(s): The stocks in this file were created by jopmako, thanks =) 
  */
+
+#if defined _messages_included
+ #endinput
+#endif
+#define _messages_included
 
 // Colors
 #define COLOR_DEFAULT 0x01

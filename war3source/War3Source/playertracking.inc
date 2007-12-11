@@ -89,62 +89,62 @@ public SetCredits(vectorpos,credits)
 public GetImmunity(vectorpos,immunity)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,5+immunity);
+    return GetArrayCell(vec,7+immunity);
 }
 
 public SetImmunity(vectorpos,immunity,imm_state)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,5+immunity,imm_state);
+    SetArrayCell(vec,7+immunity,imm_state);
 }
 
 public GetOwnsItem(vectorpos,item)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,5+IMMUNITY_COUNT+item);
+    return GetArrayCell(vec,7+IMMUNITY_COUNT+item);
 }
 
 public SetOwnsItem(vectorpos,item,owns)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,5+IMMUNITY_COUNT+item,owns);
+    SetArrayCell(vec,7+IMMUNITY_COUNT+item,owns);
 }
 
 public GetXP(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,5+IMMUNITY_COUNT+SHOPITEM_COUNT+race);
+    return GetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+race);
 }
 
 public SetXP(vectorpos,race,xp)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,5+IMMUNITY_COUNT+SHOPITEM_COUNT+race,xp);
+    SetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+race,xp);
 }
 
 public GetLevel(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,5+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race);
+    return GetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race);
 }
 
 public SetLevel(vectorpos,race,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,5+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race,level);
+    SetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race,level);
 }
 
 public GetSkillLevel(vectorpos,race,skill)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new num=5+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
+    new num=7+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
     return GetArrayCell(vec,num);
 }
 
 public SetSkillLevel(vectorpos,race,skill,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new num=5+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
+    new num=7+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
     new old=GetArrayCell(vec,num);
     SetArrayCell(vec,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
@@ -162,8 +162,8 @@ public GetSkillCount(vectorpos,race)
 {
     new ret=0;
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new num1=5+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT);
-    new num2=5+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+SKILL_COUNT;
+    new num1=7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT);
+    new num2=7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+SKILL_COUNT;
     for(new x=num1;x<num2;x++)
         ret+=GetArrayCell(vec,x);
     return ret;
@@ -179,17 +179,20 @@ public Action:PlayerProperties(Handle:timer)
         if(IsClientInGame(client))
         {
             new Handle:pinfo=GetPropertyInfo(x);
-            new Float:gravity=1.0,Float:speed=1.0;
+            new Float:gravity=1.0,Float:speed=1.0,visibility=255;
             new bool:overrideplayerspeed=false;
             new bool:overrideplayergravity=false;
+            new bool:overrideplayervisibility=false;
             for(new y=0;y<GetArraySize(pinfo);y++)
             {
                 // check which plugin is the highest/lowest bidder, but first, override?
                 new Handle:temp=GetArrayCell(pinfo,y);
                 new Float:maxspeed=GetArrayCell(temp,1);
                 new Float:mingravity=GetArrayCell(temp,2);
-                new Float:overridespeed=GetArrayCell(temp,3);
-                new Float:overridegravity=GetArrayCell(temp,4);
+                new minvisibility=GetArrayCell(temp,3);
+                new Float:overridespeed=GetArrayCell(temp,4);
+                new Float:overridegravity=GetArrayCell(temp,5);
+                new overridevisibility=GetArrayCell(temp,6);
                 if(!overrideplayerspeed)
                 {
                     if(overridespeed>0.0)
@@ -209,6 +212,16 @@ public Action:PlayerProperties(Handle:timer)
                     }
                     else if(mingravity<gravity)
                         gravity=mingravity;
+                }
+                if(!overrideplayervisibility)
+                {
+                    if(overridevisibility>-1)
+                    {
+                        visibility=overridevisibility;
+                        overrideplayervisibility=true;
+                    }
+                    else if(visibility>minvisibility)
+                        visibility=minvisibility;
                 }
             }
 
@@ -248,9 +261,92 @@ public Action:PlayerProperties(Handle:timer)
                     SetEntDataFloat(client,m_OffsetSpeed,speed);
             }
 
+            if (visibility >= 255)
+            {
+                MakeVisible(client);
+            }
+            else
+            {
+                MakeInvisible(client, visibility);
+            }
+
             if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
                 SetEntDataFloat(client,m_OffsetGravity[client], gravity);
         }
+    }
+}
+
+stock MakeVisible(client)
+{
+    if(client>-1)
+    {
+        new count=GetEntityCount();
+        for(new y=64;y<count;y++)
+        {
+            if(IsValidEdict(y))
+            {
+                if(GetEntDataEnt(y,m_OwnerOffset)==client)
+                    SetRenderColor(y,255,255,255,255);
+            }
+        }
+        SetRenderColor(client,255,255,255,255);
+    }
+}
+
+stock MakeInvisible(client, visibility)
+{
+    decl String:wepName[128];
+    GetClientWeapon(client, wepName, 127);
+
+    if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
+    {
+        visibility /=2;
+    }
+    else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
+                                StrEqual(wepName,"tf_weapon_shovel") ||
+                                StrEqual(wepName,"tf_weapon_wrench") ||
+                                StrEqual(wepName,"tf_weapon_bat") ||
+                                StrEqual(wepName,"tf_weapon_bonesaw") ||
+                                StrEqual(wepName,"tf_weapon_bottle") ||
+                                StrEqual(wepName,"tf_weapon_club") ||
+                                StrEqual(wepName,"tf_weapon_fireaxe") ||
+                                StrEqual(wepName,"tf_weapon_fists") ||
+                                StrEqual(wepName,"tf_weapon_builder") ||
+                                StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
+                                StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
+                                StrEqual(wepName,"tf_weapon_pda_spy")))
+    {
+        visibility /=2;
+    }
+    else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
+                                StrEqual(wepName,"weapon_spade")))
+    {
+        visibility /=2;
+    }
+
+    new count=GetEntityCount();
+    for(new obj = 64; obj < count; obj++)
+    {
+        if(IsValidEdict(obj))
+        {
+            if(GetEntDataEnt(obj,m_OwnerOffset) == client)
+                SetRenderColor(obj,255,255,255,visibility);
+        }
+    }
+    SetRenderColor(client,255,255,255,visibility);
+}
+
+stock SetRenderColor(entity,r,g,b,a)
+{
+	if(m_ColorOffset != -1)
+    {
+        SetEntData(entity,m_ColorOffset,r,1,true);
+        SetEntData(entity,m_ColorOffset+1,g,1,true);
+        SetEntData(entity,m_ColorOffset+2,b,1,true);
+        SetEntData(entity,m_ColorOffset+3,a,1,true);
+
+        if(m_RenderModeOffset != -1)
+            SetEntData(entity,m_RenderModeOffset,3,1,true);
     }
 }
 

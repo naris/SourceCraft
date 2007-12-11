@@ -5,6 +5,11 @@
  * Author(s): Naris (Murray Wilson)
  */
 
+#if defined _log_included
+ #endinput
+#endif
+#define _log_included
+
 stock Log(String:message[])
 {
     PrintToServer(message);

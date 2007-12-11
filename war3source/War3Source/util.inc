@@ -5,15 +5,15 @@
  * Author(s): Naris (Murray Wilson)
  */
  
+#if defined _util_included
+ #endinput
+#endif
+#define _util_included
+
 #pragma semicolon 1
 
 // Defines
 #define IS_ALIVE !GetLifestate
-
-// Colors
-#define COLOR_DEFAULT 0x01
-#define COLOR_TEAM 0x03
-#define COLOR_GREEN 0x04 // DOD = Red
 
 enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
 stock Mod:GameType = undetected;
@@ -162,7 +162,7 @@ stock UnFreezeEntity(entity)
     SetEntData(entity,movetypeOffset,2,1);
 }
 
-stock MakeInvisible(client, war3player, visibility)
+stock MakeInvisible(client, visibility)
 {
     decl String:wepName[128];
     GetClientWeapon(client, wepName, 127);
@@ -234,32 +234,6 @@ stock SetRenderColor(entity,r,g,b,a)
 
         if(renderModeOffset != -1)
             SetEntData(entity,renderModeOffset,3,1,true);
-    }
-}
-
-stock War3Source_ChatMessage(target,color,const String:szMsg[],any:...)
-{
-    if(strlen(szMsg)>191)
-    {
-        LogError("Disallow string len(%d)>191",strlen(szMsg));
-        return;
-    }
-    else
-    {
-        decl String:buffer[192];
-        VFormat(buffer,sizeof(buffer),szMsg,4);
-        Format(buffer,191,"%s\n",buffer);
-        new Handle:hBf;
-        if(target==0)
-            hBf=StartMessageAll("SayText");
-        else
-            hBf=StartMessageOne("SayText",target);
-        if(hBf!=INVALID_HANDLE)
-        {
-            BfWriteByte(hBf, 0); 
-            BfWriteString(hBf, buffer);
-            EndMessage();
-        }
     }
 }
 
