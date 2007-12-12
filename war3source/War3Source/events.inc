@@ -81,7 +81,40 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
         {
             decl String:weapon[64];
             GetEventString(event,"weapon",weapon,63);
-            GiveKillXP(attackerIndex,vecPos,victimIndex,GetEventBool(event,"headshot"),StrEqual(weapon,"knife"));
+
+            new bool:backstab = false;
+            new bool:headshot = false;
+            new bool:melee    = false;
+            if (GameType == cstrike)
+            {
+                headshot = GetEventBool(event,"headshot");
+                melee    = StrEqual(weapon,"knife");
+            }
+            else if(GameType == tf2)
+            {
+                decl String:customkill[64];
+                GetEventString(event,"customkill",customkill,63);
+
+                headshot = StrEqual(customkill,"headshot");
+                backstab = StrEqual(customkill,"backstab");
+                melee    = (StrEqual(weapon,"knife") ||
+                            StrEqual(weapon,"shovel") ||
+                            StrEqual(weapon,"wrench") ||
+                            StrEqual(weapon,"bat") ||
+                            StrEqual(weapon,"bonesaw") ||
+                            StrEqual(weapon,"bottle") ||
+                            StrEqual(weapon,"club") ||
+                            StrEqual(weapon,"fireaxe") ||
+                            StrEqual(weapon,"fists"));
+            }
+            else if(GameType == dod)
+            {
+                headshot = GetEventBool(event,"headshot");
+                melee    = (StrEqual(weapon,"amerknife") ||
+                            StrEqual(weapon,"spade"));
+            }
+
+            GiveKillXP(attackerIndex,vecPos,victimIndex,headshot,melee,backstab);
             GiveKillCredits(attackerIndex,vecPos);
         }
     }

@@ -95,7 +95,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                         GetClientName(client,name,63);
                         PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                         SetEntData(index,movetypeOffset,0,1);
-                        AuthTimer(10.0,index,Unfreeze);
+                        AuthTimer(10.0,index,UnfreezePlayer);
                     }
                 }
             }
@@ -104,6 +104,11 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
             CreateTimer(45.0,AllowEntangle,client);
         }
     }
+}
+
+public Action:UnfreezePlayer(Handle:timer,Handle:temp)
+{
+    Unfreeze(timer, temp);
 }
 
 public Action:AllowEntangle(Handle:timer,any:index)

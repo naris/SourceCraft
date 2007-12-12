@@ -11,13 +11,15 @@
 #define MAX_LEVELS 16
 #define HEADSHOT_XP 10
 #define KNIFE_XP 40
+#define BACKSTAB_XP 60
 
 #define DEFUSE_XP 20
 #define PLANT_XP 20
 #define HOSTAGERESCUED_XP 20
 
-#define DESTROY_OBJECT_XP 20
-#define BLOCK_CAPTURE_XP 20
+#define BUILD_XP 20
+#define DESTROY_XP 20
+#define BLOCK_XP 20
 #define CAPTURE_FLAG_XP 20
 #define CAPTURE_POINT_XP 20
 
@@ -60,7 +62,7 @@ public ShowXP(client,vecpos)
         War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c%s - Level %d - %d XP.",COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race));
 }
  
-public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife)
+public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife,bool:backstab)
 {
     new newxp,killxp;
     new race=GetRace(vectorpos);
@@ -71,17 +73,25 @@ public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife)
     }
     else
         killxp=KillXP(GetLevel(vectorpos,GetRace(vectorpos)));
+
     newxp+=GetXP(vectorpos,GetRace(vectorpos))+killxp;
-    if(headshot)
+
+    if (headshot)
     {
         newxp+=HEADSHOT_XP;
         War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou get %d additional XP for a headshot.",COLOR_GREEN,COLOR_DEFAULT,HEADSHOT_XP);
     }
-    if(knife)
+    else if (backstab)
+    {
+        newxp+=BACKSTAB_XP;
+        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou get %d additional XP for a backstab.",COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
+    }
+    else if (knife)
     {
         newxp+=KNIFE_XP;
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou get %d additional XP for a knife kill.",COLOR_GREEN,COLOR_DEFAULT,KNIFE_XP);
+        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou get %d additional XP for a knife/shovel/wrench/etc kill.",COLOR_GREEN,COLOR_DEFAULT,KNIFE_XP);
     }
+
     SetXP(vectorpos,race,newxp);
     War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for getting a kill.",COLOR_GREEN,COLOR_DEFAULT,killxp);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
@@ -124,14 +134,26 @@ public GiveHostageRescuedXP(client,vectorpos)
         DoLevelCheck(client,vectorpos);
 }
 
+public GiveObjectBuiltXP(client,vectorpos)
+{
+    // Called when a player captures a flag
+    new newxp;
+    new race=GetRace(vectorpos);
+    newxp=GetXP(vectorpos,race)+DESTROY_XP;
+    SetXP(vectorpos,race,newxp);
+    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for building something.",COLOR_GREEN,COLOR_DEFAULT,BUILD_XP);
+    if(GetLevel(vectorpos,race)!=MAX_LEVELS)
+        DoLevelCheck(client,vectorpos);
+}
+
 public GiveObjectDestroyedXP(client,vectorpos)
 {
     // Called when a player captures a flag
     new newxp;
     new race=GetRace(vectorpos);
-    newxp=GetXP(vectorpos,race)+DESTROY_OBJECT_XP;
+    newxp=GetXP(vectorpos,race)+DESTROY_XP;
     SetXP(vectorpos,race,newxp);
-    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for capturing the flag.",COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
+    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for destroying something.",COLOR_GREEN,COLOR_DEFAULT,DESTROY_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -143,7 +165,7 @@ public GiveFlagCapturedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+CAPTURE_FLAG_XP;
     SetXP(vectorpos,race,newxp);
-    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for capturing the flag.",COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
+    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for capturing the flag.",COLOR_GREEN,COLOR_DEFAULT,CAPTURE_FLAG_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -155,7 +177,7 @@ public GivePointCapturedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+CAPTURE_POINT_XP;
     SetXP(vectorpos,race,newxp);
-    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for capturing a point.",COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
+    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for capturing a point.",COLOR_GREEN,COLOR_DEFAULT,CAPTURE_POINT_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -165,9 +187,9 @@ public GiveCaptureBlockedXP(client,vectorpos)
     // Called when a player blocks a capture
     new newxp;
     new race=GetRace(vectorpos);
-    newxp=GetXP(vectorpos,race)+BLOCK_CAPTURE_XP;
+    newxp=GetXP(vectorpos,race)+BLOCK_XP;
     SetXP(vectorpos,race,newxp);
-    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for blocking a point.",COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
+    War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have gained %d XP for blocking a point.",COLOR_GREEN,COLOR_DEFAULT,BLOCK_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }

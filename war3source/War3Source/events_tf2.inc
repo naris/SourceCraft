@@ -52,16 +52,25 @@ public War3Source_EventObjectBuilt(Handle:event,const String:name[],bool:dontBro
         new index=GetClientOfUserId(userid);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
-            GiveObjectDestroyedXP(index,vecpos);
+            GiveObjectBuiltXP(index,vecpos);
     }
 }
 
 public War3Source_EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new userid = GetEventInt(event,"userid");
-    if (userid > 0)
+    new attacker = GetEventInt(event,"attacker");
+    if (attacker > 0)
     {
-        new index=GetClientOfUserId(userid);
+        new index=GetClientOfUserId(attacker);
+        new vecpos=GetClientVectorPosition(index);
+        if(vecpos!=-1)
+            GiveObjectDestroyedXP(index,vecpos);
+    }
+
+    new assister = GetEventInt(event,"assister");
+    if (assister> 0)
+    {
+        new index=GetClientOfUserId(assister);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GiveObjectDestroyedXP(index,vecpos);
@@ -70,7 +79,7 @@ public War3Source_EventObjectDestroyed(Handle:event,const String:name[],bool:don
 
 public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"userid")>0)
+    if(GetEventInt(event,"player")>0)
     {
         if (GetEventInt(event,"eventtype") == 2) // Point Captured
         {
@@ -84,16 +93,18 @@ public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroad
 
 public War3Source_EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    /* Need to add code here */
-    /*
-    if (GetEventString(event,"cappers")>0)
+    decl String:cappers[MAXPLAYERS+1] = "";
+    if (GetEventString(event,"cappers", cappers, MAXPLAYERS)>0)
     {
-        new index=GetClientOfUserId(GetEventInt(event,"userid"));
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GivePointCapturedXP(index,vecpos);
+        new len = strlen(cappers);
+        for(new i=0;i<len;i++)
+        {
+            new index  = cappers{i};
+            new vecpos = GetClientVectorPosition(index);
+            if (vecpos != -1)
+                GivePointCapturedXP(index,vecpos);
+        }
     }
-    */
 }
 
 public War3Source_EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
