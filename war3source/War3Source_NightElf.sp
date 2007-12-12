@@ -8,6 +8,7 @@
 #pragma semicolon 1
  
 #include <sourcemod>
+#include <sdktools>
 
 #include "War3Source/War3Source_Interface"
 #include "War3Source/util"
@@ -25,6 +26,8 @@ new raceID; // The ID we are assigned to
 
 new bool:m_AllowEntangle[MAXPLAYERS+1];
  
+new Glow;
+
 public Plugin:myinfo = 
 {
     name = "War3Source Race - Night Elf",
@@ -56,6 +59,11 @@ public OnWar3PluginReady()
                            "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
     FindOffsets();
+}
+
+public OnMapStart()
+{
+	Glow = PrecacheModel("sprites/blueglow1.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -96,6 +104,13 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                         PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                         SetEntData(index,movetypeOffset,0,1);
                         AuthTimer(10.0,index,UnfreezePlayer);
+
+                        new Float:Origin[3];
+                        GetClientAbsOrigin(client, Origin);
+                        Origin[2] += 5;
+
+                        TE_SetupGlowSprite(Origin,Glow,1.0,1.0,20);
+                        TE_SendToAll();
                     }
                 }
             }
@@ -249,6 +264,13 @@ public DoThornsAura(Handle:event, index, war3player, victimindex, war3playervict
                 if(newhp<0)
                     newhp=0;
                 SetHealth(index,newhp);
+
+                new Float:Origin[3];
+                GetClientAbsOrigin(victimindex, Origin);
+                Origin[2] += 5;
+
+                TE_SetupSparks(Origin,Origin,255,1);
+                TE_SendToAll();
                 return damage;
             }
         }
@@ -262,7 +284,7 @@ public DoTrueshotAura(Handle:event, war3player, victimindex, evaded)
     new skill_level_trueshot=War3_GetSkillLevel(war3player,raceID,2);
     if (skill_level_trueshot)
     {
-        if (GetRandomInt(1,100)<=30)
+        if (GetRandomInt(1,100) <= (evaded) ? 10 : 30)
         {
             new Float:percent;
             switch(skill_level_trueshot)
@@ -277,14 +299,18 @@ public DoTrueshotAura(Handle:event, war3player, victimindex, evaded)
                     percent=0.60;
             }
 
-            if (evaded)
-                percent /= 2;
-
             new damage=RoundFloat(float(GetEventInt(event,"dmg_health"))*percent);
             new newhp=GetClientHealth(victimindex)-damage;
             if(newhp<0)
                 newhp=0;
             SetHealth(victimindex,newhp);
+
+            new Float:Origin[3];
+            GetClientAbsOrigin(victimindex, Origin);
+            Origin[2] += 5;
+
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
             return damage;
         }
     }

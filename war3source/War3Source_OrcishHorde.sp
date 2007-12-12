@@ -183,6 +183,13 @@ public DoCriticalStrike(Handle:event, war3player, victim)
             if(new_health<0)
                 new_health=0;
             SetHealth(victim,new_health);
+
+            new Float:Origin[3];
+            GetClientAbsOrigin(victim, Origin);
+            Origin[2] += 5;
+
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
         }
     }
 }
@@ -220,6 +227,13 @@ public DoCriticalGrenade(Handle:event, war3player, victim)
             if(new_health<0)
                 new_health=0;
             SetHealth(victim,new_health);
+
+            new Float:Origin[3];
+            GetClientAbsOrigin(victim, Origin);
+            Origin[2] += 5;
+
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
         }
     }
 }

@@ -81,7 +81,10 @@ public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroad
 {
     if(GetEventInt(event,"player")>0)
     {
-        if (GetEventInt(event,"eventtype") == 2) // Point Captured
+        new eventtype = GetEventInt(event,"eventtype");
+        LogMessage("[War3Source] FlagEvent eventtype=%d\n", eventtype);
+
+        if (eventtype == 1) // Point Captured
         {
             new index=GetClientOfUserId(GetEventInt(event,"userid"));
             new vecpos=GetClientVectorPosition(index);
