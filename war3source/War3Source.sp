@@ -145,7 +145,7 @@ public OnMapStart()
 
 public OnClientPutInServer(client)
 {
-    if(client>0)
+    if (client>0 && !IsFakeClient(client))
     {
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
@@ -165,7 +165,7 @@ public OnClientPutInServer(client)
         for(new x=0;x<RACE_COUNT;x++)
             for(new y=0;y<SKILL_COUNT;y++)
                 PushArrayCell(newPlayer,0); // Skill level for race x skill y
-        if(GetArraySize(newPlayer)==(IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(RACE_COUNT*SKILL_COUNT)+5))
+        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(RACE_COUNT*SKILL_COUNT)))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
             Call_StartForward(g_OnWar3PlayerAuthedHandle);
@@ -202,13 +202,14 @@ public OnClientPutInServer(client)
 
 public OnClientDisconnect(client)
 {
-    if(client>0)
+    if (client>0 && !IsFakeClient(client))
     {
         new clientVecPos=GetClientVectorPosition(client);
-        if(clientVecPos>-1)
+        if (clientVecPos>-1)
         {
-            if(SAVE_ENABLED)
+            if (SAVE_ENABLED)
                 War3Source_SavePlayerData(client,clientVecPos);
+
             RemoveFromArray(arrayPlayers,clientVecPos);
             m_FirstSpawn[client]=true;
         }

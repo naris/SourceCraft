@@ -29,3 +29,17 @@ public Handle:ShopItem(itemnum)
 {
     return GetArrayCell(shopVector,itemnum);
 }
+
+public GetShopItem(const String:name[])
+{
+    decl String:curName[64]="";
+    new size = GetArraySize(shopVector);
+    for(new x=0;x<size;x++)
+    {
+        new Handle:item=GetArrayCell(shopVector,x);
+        GetArrayString(item,0,curName,63);
+        if(!StrEqual(name,curName,false))
+            return x;
+    }
+    return -1;
+}

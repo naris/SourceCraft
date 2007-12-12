@@ -35,7 +35,7 @@
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
 #define ITEM_GOGGLES         15 // The Goggles - They do nothing!
 #define MAXITEMS             15
-
+ 
 // War3Source stuff
 
 new myWepsOffset        = 0;
@@ -80,7 +80,6 @@ public OnPluginStart()
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
 
-    CreateTimer(1.0,ShadowsTrack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(20.0,Gloves,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 
@@ -199,6 +198,8 @@ public OnItemPurchase(client,war3player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IS_ALIVE(client))              // Boots of Speed
         War3_SetMaxSpeed(war3player,1.4);
+    else if(item==shopItem[ITEM_CLOAK] && IS_ALIVE(client))         // Cloak of Shadows
+        War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         War3_SetImmunity(war3player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IS_ALIVE(client))       // Periapt of Health
@@ -245,16 +246,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             War3_SetOwnsItem(war3player,shopItem[ITEM_ANKH],false);
         }
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_BOOTS]))  // Boots of Speed
+        if(War3_GetOwnsItem(war3player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
             War3_SetMaxSpeed(war3player,1.4);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client])    // Periapt of Health
+        if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
+            War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
+
+        if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
             UsePeriapt(client);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))   // Sock of the Feather
+        if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
             War3_SetMinGravity(war3player,0.3);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE]))   // Mole
+        if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE]))                            // Mole
         {
             // We need to check to use mole, or did we JUST use it?
             if(isMole[client])
@@ -287,7 +291,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
             {
-                MakeVisible(client);
+                War3_SetMinVisibility(war3player, 255, 1.0);
                 War3_SetOwnsItem(war3player,shopItem[3],false);
             }
 
@@ -542,23 +546,6 @@ public Action:Gloves(Handle:timer)
                     else if (clipOffset)
                         SetEntData(curWeapon, clipOffset, 5, 4, true);
                 }
-            }
-        }
-    }
-}
-
-public Action:ShadowsTrack(Handle:timer)
-{
-    new maxplayers=GetMaxClients();
-    for(new player=1;player<=maxplayers;player++)
-    {
-        if(IsClientInGame(player) && IS_ALIVE(player))
-        {
-            new war3player=War3_GetWar3Player(player);
-            if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
-            {
-                new visibility = (GameType == tf2) ? 140 : 160;
-                War3_SetMinVisibility(war3player,visibility);
             }
         }
     }

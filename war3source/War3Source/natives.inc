@@ -66,6 +66,23 @@ public Native_War3_CreateShopItem(Handle:plugin,numParams)
     return -1;
 }
 
+/**
+ * Get the ShopItem ID of a shop item
+ * @param name: The name of the item. (max 64)
+ * @return The return value will be the item index or -1 if there was a problem.
+ */         
+public Native_War3_GetShopItem(Handle:plugin,numParams)
+{
+    if(numParams==1)
+    {
+        decl String:name[64];
+        GetNativeString(1,name,63);
+        return GetShopItem(name);
+    }
+    else
+        return -1;
+}
+
 public Native_War3_GetWar3Player(Handle:plugin,numParams)
 {
     if(numParams==1)
@@ -232,6 +249,7 @@ public Native_War3_SetMaxSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,speed); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
+                PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -276,6 +294,7 @@ public Native_War3_SetMinGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,gravity); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
+                PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -288,10 +307,11 @@ public Native_War3_SetMinGravity(Handle:plugin,numParams)
 
 public Native_War3_SetMinVisibility(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if(numParams >= 2 && numParams <= 3)
     {
         new war3player=GetNativeCell(1);
         new visibility=GetNativeCell(2);
+        new Float:meleeFactor = (numParams > 2) ? GetNativeCell(3) : 1.0;
         if(war3player != -1 && visibility > -1)
         {
             new Handle:temp=GetPropertyInfo(war3player);
@@ -320,6 +340,7 @@ public Native_War3_SetMinVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,visibility); // minvisibility 
+                PushArrayCell(indiceHandle,meleeFactor); // visibility melee factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -364,6 +385,7 @@ public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
+                PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,speed); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -408,6 +430,7 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
+                PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,gravity); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -452,6 +475,7 @@ public Native_War3_SetOverrideVisibile(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // maxspeed speed
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
+                PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0); // force gravity?
                 PushArrayCell(indiceHandle,visibility); // force visibility?
@@ -467,6 +491,7 @@ public bool:War3Source_InitNatives()
     CreateNative("War3_CreateRace",Native_War3_CreateRace);
     CreateNative("War3_CreateShopItem",Native_War3_CreateShopItem);
     CreateNative("War3_CreateHelpCommand",Native_War3_CreateHelpCommand);
+    CreateNative("War3_GetShopItem",Native_War3_GetShopItem);
     CreateNative("War3_GetWar3Player",Native_War3_GetWar3Player);
     CreateNative("War3_GetRace",Native_War3_GetRace);
     CreateNative("War3_GetLevel",Native_War3_GetLevel);

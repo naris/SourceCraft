@@ -83,7 +83,17 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
             case 4:
                 alpha=94;
         }
-        War3_SetMinVisibility(war3player,alpha);
+
+        /* If the Player also has the Boots of Speed,
+         * Decrease the visibility further
+         */
+        new boots = War3_GetShopItem("Boots of Speed");
+        if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+        {
+            alpha /= 2;
+        }
+
+        War3_SetMinVisibility(war3player,alpha, 0.50);
     }
 }
 
@@ -113,7 +123,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     case 4:
                         visibility=94;
                 }
-                War3_SetMinVisibility(war3player,visibility);
+                War3_SetMinVisibility(war3player,visibility, 1.0);
             }
 
             new skill_devo=War3_GetSkillLevel(war3player,race,1);

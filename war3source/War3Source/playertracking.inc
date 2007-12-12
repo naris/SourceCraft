@@ -9,13 +9,17 @@
 
 #define IS_ALIVE !GetLifestate
 
+#define INFO_COUNT     5
+#define TRACKING_COUNT 8
+
 // Global definition
 new Handle:g_OnRaceSelectedHandle;
 new Handle:g_OnSkillLevelChangedHandle;
 
 public GetClientVectorPosition(client)
 {
-    for(new x=0;x<GetArraySize(arrayPlayers);x++)
+    new size=GetArraySize(arrayPlayers);
+    for(new x=0;x<size;x++)
     {
         new Handle:ply=GetArrayCell(arrayPlayers,x);
         new curClient=GetArrayCell(ply,0);
@@ -89,62 +93,62 @@ public SetCredits(vectorpos,credits)
 public GetImmunity(vectorpos,immunity)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,7+immunity);
+    return GetArrayCell(vec,INFO_COUNT+immunity);
 }
 
 public SetImmunity(vectorpos,immunity,imm_state)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,7+immunity,imm_state);
+    SetArrayCell(vec,INFO_COUNT+immunity,imm_state);
 }
 
 public GetOwnsItem(vectorpos,item)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,7+IMMUNITY_COUNT+item);
+    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+item);
 }
 
 public SetOwnsItem(vectorpos,item,owns)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,7+IMMUNITY_COUNT+item,owns);
+    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+item,owns);
 }
 
 public GetXP(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+race);
+    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+race);
 }
 
 public SetXP(vectorpos,race,xp)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+race,xp);
+    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+race,xp);
 }
 
 public GetLevel(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race);
+    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race);
 }
 
 public SetLevel(vectorpos,race,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race,level);
+    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+race,level);
 }
 
 public GetSkillLevel(vectorpos,race,skill)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new num=7+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
+    new num=INFO_COUNT+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
     return GetArrayCell(vec,num);
 }
 
 public SetSkillLevel(vectorpos,race,skill,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new num=7+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
+    new num=INFO_COUNT+SHOPITEM_COUNT+IMMUNITY_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
     new old=GetArrayCell(vec,num);
     SetArrayCell(vec,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
@@ -162,8 +166,8 @@ public GetSkillCount(vectorpos,race)
 {
     new ret=0;
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new num1=7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT);
-    new num2=7+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+SKILL_COUNT;
+    new num1=INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT);
+    new num2=INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+SKILL_COUNT;
     for(new x=num1;x<num2;x++)
         ret+=GetArrayCell(vec,x);
     return ret;
@@ -179,7 +183,7 @@ public Action:PlayerProperties(Handle:timer)
         if(IsClientInGame(client))
         {
             new Handle:pinfo=GetPropertyInfo(x);
-            new Float:gravity=1.0,Float:speed=1.0,visibility=255;
+            new Float:gravity=1.0,Float:speed=1.0,visibility=255,Float:meleefactor=1.0;
             new bool:overrideplayerspeed=false;
             new bool:overrideplayergravity=false;
             new bool:overrideplayervisibility=false;
@@ -190,9 +194,10 @@ public Action:PlayerProperties(Handle:timer)
                 new Float:maxspeed=GetArrayCell(temp,1);
                 new Float:mingravity=GetArrayCell(temp,2);
                 new minvisibility=GetArrayCell(temp,3);
-                new Float:overridespeed=GetArrayCell(temp,4);
-                new Float:overridegravity=GetArrayCell(temp,5);
-                new overridevisibility=GetArrayCell(temp,6);
+                new Float:maxmeleefactor=GetArrayCell(temp,4);
+                new Float:overridespeed=GetArrayCell(temp,5);
+                new Float:overridegravity=GetArrayCell(temp,6);
+                new overridevisibility=GetArrayCell(temp,7);
                 if(!overrideplayerspeed)
                 {
                     if(overridespeed>0.0)
@@ -217,11 +222,15 @@ public Action:PlayerProperties(Handle:timer)
                 {
                     if(overridevisibility>-1)
                     {
+                        meleefactor=1.0;
                         visibility=overridevisibility;
                         overrideplayervisibility=true;
                     }
                     else if(visibility>minvisibility)
+                    {
                         visibility=minvisibility;
+                        meleefactor=maxmeleefactor;
+                    }
                 }
             }
 
@@ -267,7 +276,7 @@ public Action:PlayerProperties(Handle:timer)
             }
             else
             {
-                MakeInvisible(client, visibility);
+                MakeInvisible(client, visibility, meleefactor);
             }
 
             if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
@@ -293,35 +302,38 @@ stock MakeVisible(client)
     }
 }
 
-stock MakeInvisible(client, visibility)
+stock MakeInvisible(client, visibility, Float:meleeFactor)
 {
     decl String:wepName[128];
     GetClientWeapon(client, wepName, 127);
 
-    if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
+    if (meleeFactor != 1.0 && meleeFactor != -1.0)
     {
-        visibility /=2;
-    }
-    else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
-                                StrEqual(wepName,"tf_weapon_shovel") ||
-                                StrEqual(wepName,"tf_weapon_wrench") ||
-                                StrEqual(wepName,"tf_weapon_bat") ||
-                                StrEqual(wepName,"tf_weapon_bonesaw") ||
-                                StrEqual(wepName,"tf_weapon_bottle") ||
-                                StrEqual(wepName,"tf_weapon_club") ||
-                                StrEqual(wepName,"tf_weapon_fireaxe") ||
-                                StrEqual(wepName,"tf_weapon_fists") ||
-                                StrEqual(wepName,"tf_weapon_builder") ||
-                                StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
-                                StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
-                                StrEqual(wepName,"tf_weapon_pda_spy")))
-    {
-        visibility /=2;
-    }
-    else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
-                                StrEqual(wepName,"weapon_spade")))
-    {
-        visibility /=2;
+        if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
+        {
+            visibility *= meleeFactor;
+        }
+        else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
+                                    StrEqual(wepName,"tf_weapon_shovel") ||
+                                    StrEqual(wepName,"tf_weapon_wrench") ||
+                                    StrEqual(wepName,"tf_weapon_bat") ||
+                                    StrEqual(wepName,"tf_weapon_bonesaw") ||
+                                    StrEqual(wepName,"tf_weapon_bottle") ||
+                                    StrEqual(wepName,"tf_weapon_club") ||
+                                    StrEqual(wepName,"tf_weapon_fireaxe") ||
+                                    StrEqual(wepName,"tf_weapon_fists") ||
+                                    StrEqual(wepName,"tf_weapon_builder") ||
+                                    StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
+                                    StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
+                                    StrEqual(wepName,"tf_weapon_pda_spy")))
+        {
+            visibility *= meleeFactor;
+        }
+        else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
+                                    StrEqual(wepName,"weapon_spade")))
+        {
+            visibility *= meleeFactor;
+        }
     }
 
     new count=GetEntityCount();

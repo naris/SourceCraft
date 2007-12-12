@@ -55,6 +55,13 @@ native War3_CreateShopItem(String:name[],String:desc[],String:cost[]);
 native War3_CreateHelpCommand(String:name[],String:desc[]);
 
 /**
+ * Get the ShopItem ID of a shop item
+ * @param name: The name of the item. (max 64)
+ * @return The return value will be the item index or -1 if there was a problem.
+ */         
+native War3_GetShopItem(String:name[]);
+
+/**
  * Gets the War3Player ID used for the rest of the War3 interface natives.
  * @param client: The client's index you want.
  * @return The return value will be the War3Player ID, -1 on failure.
@@ -117,7 +124,7 @@ native War3_GetOwnsItem(war3player,item);
  * @param owns: 1 if you want them to own it, 0 if you want them not to own it 
  * @noreturn
  */
-native War3_SetOwnsItem(war3player,item,owns);
+native War3_SetOwnsItem(war3player,item,owns=1);
 
 /**
  * Gets the state of a certain immunity.
@@ -134,7 +141,7 @@ native War3_GetImmunity(war3player,War3Immunity:immunity);
  * @param imm_state: The state of immunity, 1 if they are, 0 if they aren't.
  * @noreturn
  */
-native War3_SetImmunity(war3player,War3Immunity:immunity,imm_state);
+native War3_SetImmunity(war3player,War3Immunity:immunity,imm_state=1);
 
 /**
  * Sets the speed for the player that is handled within the War3Source system, good for skills and items that set speed so you don't end up making the player slower.
@@ -143,7 +150,7 @@ native War3_SetImmunity(war3player,War3Immunity:immunity,imm_state);
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native War3_SetMaxSpeed(war3player,Float:speed);
+native War3_SetMaxSpeed(war3player,Float:speed=1.0);
 
 /**
  * Sets the gravity for the player that is handled within the War3Source system, good for skills and items that set gravity so you don't end up making the player jump lower.
@@ -152,16 +159,17 @@ native War3_SetMaxSpeed(war3player,Float:speed);
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native War3_SetMinGravity(war3player,Float:gravity);
+native War3_SetMinGravity(war3player,Float:gravity=1.0);
 
 /**
  * Sets the (in)visibility for the player that is handled within the War3Source system, good for skills and items that set (in)visibility so you don't end up making the player more visibile.
  * Pass 255 as visibility when they no longer should use the (in)visibility, make sure to do this when they no longer have the skill or item, or whatever.
  * @param war3player: The War3Player ID to use. Can be retrieved with War3_GetWar3Player.
  * @param visibility: The visibility you want to pass.
+ * @param melee_factor: The value to multiply the visibility by when player uses a melee weapon (Pass 1.0 to not check for melee weapons)
  * @noreturn
  */
-native War3_SetMinVisibility(war3player,visibility);
+native War3_SetMinVisibility(war3player,visibility=255,Float:melee_factor=1.0);
 
 /**
  * Overrides the speed for War3Source, useful for punishing them or whatever.
@@ -170,7 +178,7 @@ native War3_SetMinVisibility(war3player,visibility);
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native War3_SetOverrideSpeed(war3player,Float:speed);
+native War3_SetOverrideSpeed(war3player,Float:speed=0.0);
 
 /**
  * Overrides the gravity for War3Source, useful for punishing them or whatever.
@@ -179,7 +187,7 @@ native War3_SetOverrideSpeed(war3player,Float:speed);
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native War3_SetOverrideGravity(war3player,Float:gravity);
+native War3_SetOverrideGravity(war3player,Float:gravity=0.0);
 
 /**
  * Overrides the (in)visibility for War3Source, useful for punishing them or whatever.
@@ -188,7 +196,7 @@ native War3_SetOverrideGravity(war3player,Float:gravity);
  * @param visibility: The visibility you want to pass.
  * @noreturn
  */
-native War3_SetOverrideVisibility(war3player,visibility);
+native War3_SetOverrideVisibility(war3player,visibility=-1);
 
 /**
  * Called when the plugin is ready.
