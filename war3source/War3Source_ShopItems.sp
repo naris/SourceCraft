@@ -23,13 +23,13 @@
 #define ITEM_CLAWS            2 // Claws of Attack - Extra Damage
 #define ITEM_CLOAK            3 // Cloak of Shadows - Invisibility
 #define ITEM_MASK             4 // Mask of Death - Recieve Health for Hits
-#define ITEM_NECKLACE         5 // Necklace of Immunity - Immune to Untimates
+#define ITEM_NECKLACE         5 // Necklace of Immunity - Immune to Ultimates
 #define ITEM_ORB              6 // Orb of Frost - Slow Enemy
 #define ITEM_PERIAPT          7 // Periapt of Health - Get Extra Health when Purchased
 #define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
-#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades over time
+#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades or ammo or metal over time
 #define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
@@ -347,6 +347,9 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
         War3_SetMaxSpeed(war3player,1.0);
         War3_SetMinGravity(war3player,1.0);
+
+        // Reset Overrides when players die
+        War3_SetOverrideSpeed(war3player,1.0);
 
         // Reset MaxHealth back to normal
         if (usedPeriapt[client] && GameType == tf2)

@@ -70,30 +70,21 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     if(race == raceID && skill==0 && newskilllevel > 0 &&
        War3_GetRace(war3player) == raceID && IS_ALIVE(client))
     {
-        // Invisibility
-        new alpha;
-        switch(newskilllevel)
-        {
-            case 1:
-                alpha=158;
-            case 2:
-                alpha=137;
-            case 3:
-                alpha=115;
-            case 4:
-                alpha=94;
-        }
+        SetVisibility(war3player, newskilllevel);
+    }
+}
 
-        /* If the Player also has the Boots of Speed,
-         * Decrease the visibility further
-         */
+public OnItemPurchase(client,war3player,item)
+{
+    new race=War3_GetRace(war3player);
+    if(race == raceID && IS_ALIVE(client))
+    {
         new boots = War3_GetShopItem("Boots of Speed");
-        if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+        if (item == boots)
         {
-            alpha /= 2;
+            new skill_invis=War3_GetSkillLevel(war3player,race,0);
+            SetVisibility(war3player, skill_invis);
         }
-
-        War3_SetMinVisibility(war3player,alpha, 0.50);
     }
 }
 
@@ -111,19 +102,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new skill_invis=War3_GetSkillLevel(war3player,race,0);
             if(skill_invis)
             {
-                new visibility=140;
-                switch(skill_invis)
-                {
-                    case 1:
-                        visibility=158;
-                    case 2:
-                        visibility=137;
-                    case 3:
-                        visibility=115;
-                    case 4:
-                        visibility=94;
-                }
-                War3_SetMinVisibility(war3player,visibility, 1.0);
+                SetVisibility(war3player, skill_invis);
             }
 
             new skill_devo=War3_GetSkillLevel(war3player,race,1);
@@ -156,15 +135,20 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
     if (client > -1)
     {
-        // Reset invisibility
-        MakeVisible(client);
-
         // Reset MaxHealth back to normal
         if (healthIncreased[client] && GameType == tf2)
         {
             SetMaxHealth(client, maxHealth[client]);
             healthIncreased[client] = false;
         }
+
+        // Reset invisibility
+        new war3player=War3_GetWar3Player(client);
+        if (war3player != -1)
+        {
+            War3_SetMinVisibility(war3player, 255, 1.0);
+        }
+
     }
 }
 
@@ -220,4 +204,32 @@ public Action:UnfreezePlayer(Handle:timer,Handle:temp)
     if(client)
         UnFreezeEntity(client);
     ClearArray(temp);
+}
+
+public SetVisibility(war3player, skilllevel)
+{
+    // Invisibility
+    new alpha;
+    switch(skilllevel)
+    {
+        case 1:
+            alpha=158;
+        case 2:
+            alpha=137;
+        case 3:
+            alpha=115;
+        case 4:
+            alpha=94;
+    }
+
+    /* If the Player also has the Boots of Speed,
+     * Decrease the visibility further
+     */
+    new boots = War3_GetShopItem("Boots of Speed");
+    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    {
+        alpha /= 2;
+    }
+
+    War3_SetMinVisibility(war3player,alpha, 0.50);
 }
