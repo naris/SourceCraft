@@ -11,6 +11,7 @@
 #include <sdktools>
 
 #include "War3Source/War3Source_Interface"
+#include "War3Source/util"
 
 // Defines
 #define MAXPLAYERS 64
@@ -23,8 +24,6 @@
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new healthOffset[MAXPLAYERS+1];
-new lifestateOffset;
 new bool:m_HasRespawned[MAXPLAYERS+1]={false};
 new Float:m_UseTime[MAXPLAYERS+1]={0.0,...};
 new bool:m_AllowChainLightning[MAXPLAYERS+1]={false,...};
@@ -58,17 +57,15 @@ public OnWar3PluginReady()
                            "Critical Strike", //Skill 1 Name
                            "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
                            "Critical Grenade", // Skill 2 Name
-                           "Grenades will always do a 40-240%\nmore damage.", // Skill 2 Description
+                           "Grenades and Rockets will always do a 40-240%\nmore damage.", // Skill 2 Description
                            "Reincarnation", // Skill 3 Name
                            "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
                            "Chain Lightning", // Ultimate Name
                            "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.\nNOT IMPLEMENTED YET!"); // Ultimate Description
 
-    LoadSDKToolStuff();
+    FindOffsets();
 
-    lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    if(lifestateOffset==-1)
-        SetFailState("Couldn't find LifeState offset");
+    LoadSDKToolStuff();
 }
 
 public LoadSDKToolStuff()
@@ -81,16 +78,11 @@ public LoadSDKToolStuff()
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
+    SetupHealth(client,war3player);
 }
 
 public OnRaceSelected(client,war3player,oldrace,newrace)
 {
-}
-
-public GetLifestate(client)
-{
-    return GetEntData(client,lifestateOffset,1);
 }
 
 public OnGameFrame()
@@ -128,69 +120,106 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
-    new attacker_userid=GetEventInt(event,"attacker");
-    if(userid && attacker_userid && userid!=attacker_userid)
+    if (userid)
     {
-        new index=GetClientOfUserId(userid);
-        new attacker_index=GetClientOfUserId(attacker_userid);
-        new war3player=War3_GetWar3Player(index);
-        new war3player_attacker=War3_GetWar3Player(attacker_index);
-        if(war3player != -1 && war3player_attacker != -1)
+        new index      = GetClientOfUserId(userid);
+        new war3player = War3_GetWar3Player(index);
+        if (war3player != -1)
         {
-            new race_attacker=War3_GetRace(war3player_attacker);
-            if(race_attacker==raceID)
+            new attacker_userid = GetEventInt(event,"attacker");
+            if (attacker_userid && userid != attacker_userid)
             {
-                new skill_cs_attacker=War3_GetSkillLevel(war3player_attacker,race_attacker,0);
-                if(skill_cs_attacker>0)
+                new attacker_index      = GetClientOfUserId(attacker_userid);
+                new war3player_attacker = War3_GetWar3Player(attacker_index);
+                if (war3player_attacker != -1)
                 {
-                    if(GetRandomInt(1,100)<=15)
+                    if (War3_GetRace(war3player_attacker) == raceID)
                     {
-                        new Float:percent;
-                        switch(skill_cs_attacker)
-                        {
-                            case 1:
-                                percent=0.4;
-                            case 2:
-                                percent=1.067;
-                            case 3:
-                                percent=1.733;
-                            case 4:
-                                percent=2.4;
-                        }
-                        new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
-                        new new_health=GetClientHealth(index)-health_take;
-                        if(new_health<0)
-                            new_health=0;
-                        SetHealth(index,new_health);
-                    }
-                }
-                new skill_cg_attacker=War3_GetSkillLevel(war3player_attacker,race_attacker,1);
-                if(skill_cg_attacker>0)
-                {
-                    decl String:weapon[64];
-                    GetEventString(event,"weapon",weapon,63);
-                    if(StrEqual(weapon,"hegrenade",false))
-                    {
-                        new Float:percent;
-                        switch(skill_cg_attacker)
-                        {
-                            case 1:
-                                percent=0.4;
-                            case 2:
-                                percent=1.067;
-                            case 3:
-                                percent=1.733;
-                            case 4:
-                                percent=2.4;
-                        }
-                        new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
-                        new new_health=GetClientHealth(index)-health_take;
-                        if(new_health<0)
-                            new_health=0;
-                        SetHealth(index,new_health);
+                        DoCriticalStrike(event, war3player_attacker, index);
+                        DoCriticalGrenade(event, war3player_attacker, index);
                     }
                 }
             }
+
+            new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assister_userid && userid != assister_userid)
+            {
+                new assister_index      = GetClientOfUserId(assister_userid);
+                new war3player_assister = War3_GetWar3Player(assister_index);
+                if (war3player_assister != -1)
+                {
+                    if (War3_GetRace(war3player_assister) == raceID)
+                    {
+                        DoCriticalStrike(event, war3player_assister, index);
+                        DoCriticalGrenade(event, war3player_assister, index);
+                    }
+                }
+            }
+        }
+    }
+}
+
+public DoCriticalStrike(Handle:event, war3player, victim)
+{
+    new skill_cs = War3_GetSkillLevel(war3player,raceID,0);
+    if (skill_cs > 0)
+    {
+        if(GetRandomInt(1,100)<=15)
+        {
+            new Float:percent;
+            switch(skill_cs)
+            {
+                case 1:
+                    percent=0.4;
+                case 2:
+                    percent=1.067;
+                case 3:
+                    percent=1.733;
+                case 4:
+                    percent=2.4;
+            }
+            new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
+            new new_health=GetClientHealth(victim)-health_take;
+            if(new_health<0)
+                new_health=0;
+            SetHealth(victim,new_health);
+        }
+    }
+}
+
+public DoCriticalGrenade(Handle:event, war3player, victim)
+{
+    new skill_cg = War3_GetSkillLevel(war3player,raceID,1);
+    if (skill_cg > 0)
+    {
+        decl String:weapon[64];
+        GetEventString(event,"weapon",weapon,63);
+        if (StrEqual(weapon,"hegrenade",false) ||
+            StrEqual(weapon,"tf_projectile_pipe",false) ||
+            StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
+            StrEqual(weapon,"tf_projectile_rocket",false) ||
+            StrEqual(weapon,"weapon_frag_us",false) ||
+            StrEqual(weapon,"weapon_frag_ger",false) ||
+            StrEqual(weapon,"weapon_bazooka",false) ||
+            StrEqual(weapon,"weapon_pschreck",false))
+        {
+            new Float:percent;
+            switch(skill_cg)
+            {
+                case 1:
+                    percent=0.4;
+                case 2:
+                    percent=1.067;
+                case 3:
+                    percent=1.733;
+                case 4:
+                    percent=2.4;
+            }
+            new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
+            new new_health=GetClientHealth(victim)-health_take;
+            if(new_health<0)
+                new_health=0;
+            SetHealth(victim,new_health);
         }
     }
 }
@@ -239,10 +268,4 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     for(new x=1;x<=MAXPLAYERS;x++)
         m_HasRespawned[x]=false;
-}
-
-// Generic
-public SetHealth(entity,amount)
-{
-    SetEntData(entity,healthOffset[entity],amount,true);
 }

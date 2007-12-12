@@ -8,7 +8,9 @@
 #pragma semicolon 1
  
 #include <sourcemod>
+
 #include "War3Source/War3Source_Interface"
+#include "War3Source/util"
 
 // Defines
 #define IS_ALIVE !GetLifestate
@@ -20,9 +22,7 @@
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new lifestateOffset;
-new movetypeOffset;
-new healthOffset[MAXPLAYERS+1];
+
 new bool:m_AllowEntangle[MAXPLAYERS+1];
  
 public Plugin:myinfo = 
@@ -55,31 +55,15 @@ public OnWar3PluginReady()
                            "Entangled Roots",
                            "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
-    lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    if(lifestateOffset==-1)
-        SetFailState("Couldn't find LifeState offset");
-
-    movetypeOffset=FindSendPropOffs("CAI_BaseNPC","movetype");
-    if(movetypeOffset==-1)
-        SetFailState("Couldn't find MoveType offset");
+    FindOffsets();
 }
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
+    SetupHealth(client,war3player);
     m_AllowEntangle[client]=true;
 }
 
-public GetLifestate(client)
-{
-    return GetEntData(client,lifestateOffset,1);
-}
-
-public SetHealth(entity,amount)
-{
-    SetEntData(entity,healthOffset[entity],amount,true);
-}
- 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if(race==raceID&&pressed&&IS_ALIVE(client)&&m_AllowEntangle[client])
@@ -122,16 +106,6 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
     }
 }
 
-public Action:Unfreeze(Handle:timer,any:temp)
-{
-    decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
-    new client=PlayerOfAuth(auth);
-    if(client)
-        SetEntData(client,movetypeOffset,2,1);
-    ClearArray(temp);
-}
-
 public Action:AllowEntangle(Handle:timer,any:index)
 {
     m_AllowEntangle[index]=true;
@@ -143,13 +117,8 @@ public bool:IsInRange(client,index,Float:maxdistance)
     new Float:endclient[3];
     GetClientAbsOrigin(client,startclient);
     GetClientAbsOrigin(index,endclient);
-    new Float:distance=GetDistanceBetween(startclient,endclient);
+    new Float:distance=DistanceBetween(startclient,endclient);
     return (distance<maxdistance);
-}
-
-public Float:GetDistanceBetween(Float:startvec[3],Float:endvec[3])
-{
-    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+(startvec[1]-endvec[1])*(startvec[1]-endvec[1])+(startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -162,95 +131,58 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new victimuserid=GetEventInt(event,"userid");
-    new attackeruserid=GetEventInt(event,"attacker");
-    if(victimuserid&&attackeruserid&&victimuserid!=attackeruserid)
+    new victimuserid = GetEventInt(event,"userid");
+    if (victimuserid)
     {
-        new victimindex=GetClientOfUserId(victimuserid);
-        new attackerindex=GetClientOfUserId(attackeruserid);
-        new war3playervictim=War3_GetWar3Player(victimindex);
-        new war3playerattacker=War3_GetWar3Player(attackerindex);
-        if(war3playervictim!=-1&&war3playerattacker!=-1)
+        new victimindex      = GetClientOfUserId(victimuserid);
+        new war3playervictim = War3_GetWar3Player(victimindex);
+        if (war3playervictim != -1)
         {
-            if(War3_GetRace(war3playervictim)==raceID)
+            new bool:evaded = false;
+            new victimrace = War3_GetRace(war3playervictim);
+            if (victimrace == raceID)
             {
-                new skill_level_evasion=War3_GetSkillLevel(war3playervictim,raceID,0);
-                new skill_level_thorns=War3_GetSkillLevel(war3playervictim,raceID,1);
-                // Evasion
-                if(skill_level_evasion)
+                evaded = DoEvasion(event, victimindex, war3playervictim);
+            }
+
+            new attackeruserid = GetEventInt(event,"attacker");
+            if (attackeruserid && victimuserid != attackeruserid)
+            {
+                new attackerindex=GetClientOfUserId(attackeruserid);
+                new war3playerattacker=War3_GetWar3Player(attackerindex);
+                if (war3playerattacker != -1)
                 {
-                    new chance;
-                    switch(skill_level_evasion)
+                    new damage = 0;
+                    if (War3_GetRace(war3playerattacker)==raceID)
                     {
-                        case 1:
-                            chance=5;
-                        case 2:
-                            chance=15;
-                        case 3:
-                            chance=20;
-                        case 4:
-                            chance=30;
+                        damage = DoTrueshotAura(event, war3playerattacker, victimindex, evaded);
                     }
-                    if(GetRandomInt(1,100)<=chance)
+
+                    if (victimrace == raceID && (!evaded || damage))
                     {
-                        new losthp=GetEventInt(event,"dmg_health");
-                        new newhp=GetClientHealth(victimindex)+losthp;
-                        SetHealth(victimindex,newhp);
-                    }
-                }
-                // Thorns Aura
-                if(skill_level_thorns)
-                {
-                    if(!War3_GetImmunity(war3playerattacker,Immunity_HealthTake))
-                    {
-                        new chance;
-                        switch(skill_level_thorns)
-                        {
-                            case 1:
-                                chance=15;
-                            case 2:
-                                chance=25;
-                            case 3:
-                                chance=35;
-                            case 4:
-                                chance=50;
-                        }
-                        if(GetRandomInt(1,100)<=chance)
-                        {
-                            new damage=RoundToNearest(GetEventInt(event,"dmg_health")*0.30);
-                            new newhp=GetClientHealth(attackerindex)-damage;
-                            if(newhp<0)
-                                newhp=0;
-                            SetHealth(attackerindex,newhp);
-                        }
+                        DoThornsAura(event, attackerindex, war3playerattacker,
+                                     victimindex, war3playervictim, evaded, damage);
                     }
                 }
             }
-            if(War3_GetRace(war3playerattacker)==raceID)
+
+            new assisteruserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assisteruserid && victimuserid != assisteruserid)
             {
-                new skill_level_trueshot=War3_GetSkillLevel(war3playerattacker,raceID,2);
-                // Trueshot Aura
-                if(skill_level_trueshot)
+                new assisterindex=GetClientOfUserId(assisteruserid);
+                new war3playerassister=War3_GetWar3Player(assisterindex);
+                if (war3playerassister != -1)
                 {
-                    if(GetRandomInt(1,100)<=30)
+                    new damage = 0;
+                    if (War3_GetRace(war3playerassister)==raceID)
                     {
-                        new Float:percent;
-                        switch(skill_level_trueshot)
-                        {
-                            case 1:
-                                percent=0.10;
-                            case 2:
-                                percent=0.25;
-                            case 3:
-                                percent=0.40;
-                            case 4:
-                                percent=0.60;
-                        }
-                        new damage=RoundFloat(float(GetEventInt(event,"dmg_health"))*percent);
-                        new newhp=GetClientHealth(victimindex)-damage;
-                        if(newhp<0)
-                            newhp=0;
-                        SetHealth(victimindex,newhp);
+                        damage = DoTrueshotAura(event, war3playerassister, victimindex, evaded);
+                    }
+
+                    if (victimrace == raceID && (!evaded || damage))
+                    {
+                        DoThornsAura(event, assisterindex, war3playerassister,
+                                     victimindex, war3playervictim, evaded, damage);
                     }
                 }
             }
@@ -258,28 +190,100 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-// Misc
-public AuthTimer(Float:delay,index,Timer:func)
+public bool:DoEvasion(Handle:event, victimindex, war3playervictim)
 {
-    new Handle:temp=CreateArray(ByteCountToCells(64));
-    decl String:auth[64];
-    GetClientAuthString(index,auth,63);
-    PushArrayString(temp,auth);
-    CreateTimer(delay,func,temp);
+    new skill_level_evasion = War3_GetSkillLevel(war3playervictim,raceID,0);
+    if (skill_level_evasion)
+    {
+        new chance;
+        switch(skill_level_evasion)
+        {
+            case 1:
+                chance=5;
+            case 2:
+                chance=15;
+            case 3:
+                chance=20;
+            case 4:
+                chance=30;
+        }
+        if (GetRandomInt(1,100) <= chance)
+        {
+            new losthp=GetEventInt(event,"dmg_health");
+            new newhp=GetClientHealth(victimindex)+losthp;
+            SetHealth(victimindex,newhp);
+            return true;
+        }
+    }
+    return false;
 }
 
-stock PlayerOfAuth(const String:auth[])
+public DoThornsAura(Handle:event, index, war3player, victimindex, war3playervictim, evaded, damage)
 {
-    new max=GetMaxClients();
-    decl String:authStr[64];
-    for(new x=1;x<=max;x++)
+    new skill_level_thorns = War3_GetSkillLevel(war3playervictim,raceID,1);
+    if (skill_level_thorns)
     {
-        if(IsClientConnected(x))
+        if (!War3_GetImmunity(war3player,Immunity_HealthTake))
         {
-            GetClientAuthString(x,authStr,63);
-            if(StrEqual(auth,authStr))
-                return x;
+            new chance;
+            switch(skill_level_thorns)
+            {
+                case 1:
+                    chance=15;
+                case 2:
+                    chance=25;
+                case 3:
+                    chance=35;
+                case 4:
+                    chance=50;
+            }
+            if(GetRandomInt(1,100) <= chance)
+            {
+                new amount=RoundToNearest((damage + (evaded ? 0 : GetEventInt(event,"dmg_health"))) * 0.30);
+                new newhp=GetClientHealth(index)-amount;
+                if(newhp<0)
+                    newhp=0;
+                SetHealth(index,newhp);
+                return damage;
+            }
         }
     }
     return 0;
 }
+
+public DoTrueshotAura(Handle:event, war3player, victimindex, evaded)
+{
+    // Trueshot Aura
+    new skill_level_trueshot=War3_GetSkillLevel(war3player,raceID,2);
+    if (skill_level_trueshot)
+    {
+        if (GetRandomInt(1,100)<=30)
+        {
+            new Float:percent;
+            switch(skill_level_trueshot)
+            {
+                case 1:
+                    percent=0.10;
+                case 2:
+                    percent=0.25;
+                case 3:
+                    percent=0.40;
+                case 4:
+                    percent=0.60;
+            }
+
+            if (evaded)
+                percent /= 2;
+
+            new damage=RoundFloat(float(GetEventInt(event,"dmg_health"))*percent);
+            new newhp=GetClientHealth(victimindex)-damage;
+            if(newhp<0)
+                newhp=0;
+            SetHealth(victimindex,newhp);
+            return damage;
+        }
+    }
+    return 0;
+}
+
+// Misc

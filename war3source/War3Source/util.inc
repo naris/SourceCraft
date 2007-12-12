@@ -162,6 +162,16 @@ stock UnFreezeEntity(entity)
     SetEntData(entity,movetypeOffset,2,1);
 }
 
+stock Action:Unfreeze(Handle:timer,Handle:temp)
+{
+    decl String:auth[64];
+    GetArrayString(temp,0,auth,63);
+    new client=PlayerOfAuth(auth);
+    if(client)
+        UnFreezeEntity(client);
+    ClearArray(temp);
+}
+
 stock MakeInvisible(client, visibility)
 {
     decl String:wepName[128];
@@ -237,8 +247,10 @@ stock SetRenderColor(entity,r,g,b,a)
     }
 }
 
-stock Float:DistanceBetween(Float:a[3],Float:b[3])
+stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
 {
-    return SquareRoot((b[0]-a[0])*(b[0]-a[0])+(b[1]-a[1])*(b[1]-a[1])+(b[2]-a[2])*(b[2]-a[2]));
+    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
+                      (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
+                      (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
 }
 

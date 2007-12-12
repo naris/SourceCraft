@@ -8,6 +8,7 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
 #include "War3Source/util"
@@ -127,6 +128,33 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
+public SetVisibility(war3player, skilllevel)
+{
+    // Invisibility
+    new alpha;
+    switch(skilllevel)
+    {
+        case 1:
+            alpha=158;
+        case 2:
+            alpha=137;
+        case 3:
+            alpha=115;
+        case 4:
+            alpha=94;
+    }
+
+    /* If the Player also has the Boots of Speed,
+     * Decrease the visibility further
+     */
+    new boots = War3_GetShopItem("Boots of Speed");
+    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    {
+        alpha /= 2;
+    }
+
+    War3_SetMinVisibility(war3player,alpha, 0.50);
+}
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
@@ -155,38 +183,36 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
-    new attacker_userid=GetEventInt(event,"attacker");
-    if(userid && attacker_userid && userid!=attacker_userid)
+    if (userid)
     {
-        new index=GetClientOfUserId(userid);
-        new attacker_index=GetClientOfUserId(attacker_userid);
-        new war3player=War3_GetWar3Player(index);
-        new war3player_attacker=War3_GetWar3Player(attacker_index);
-        if(war3player != -1 && war3player_attacker != -1)
+        new index      = GetClientOfUserId(userid);
+        new war3player = War3_GetWar3Player(index);
+        if (war3player != -1)
         {
-            new race=War3_GetRace(war3player_attacker);
-            if(race == raceID)
+            new attacker_userid = GetEventInt(event,"attacker");
+            if (attacker_userid && userid != attacker_userid)
             {
-                new skill_bash=War3_GetSkillLevel(war3player_attacker,race,2);
-                if(skill_bash)
+                new attacker_index      = GetClientOfUserId(attacker_userid);
+                new war3player_attacker = War3_GetWar3Player(attacker_index);
+                if (war3player_attacker != -1)
                 {
-                    // Bash
-                    new percent;
-                    switch(skill_bash)
+                    if (War3_GetRace(war3player_attacker) == raceID)
                     {
-                        case 1:
-                            percent=15;
-                        case 2:
-                            percent=21;
-                        case 3:
-                            percent=27;
-                        case 4:
-                            percent=32;
+                        DoBash(war3player_attacker, index);
                     }
-                    if(GetRandomInt(1,100)<=percent)
+                }
+            }
+
+            new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assister_userid != 0)
+            {
+                new assister_index      = GetClientOfUserId(assister_userid);
+                new war3player_assister = War3_GetWar3Player(assister_index);
+                if (war3player_assister != -1)
+                {
+                    if (War3_GetRace(war3player_assister) == raceID)
                     {
-                        FreezeEntity(index);
-                        AuthTimer(1.0,index,UnfreezePlayer);
+                        DoBash(war3player_assister, index);
                     }
                 }
             }
@@ -194,42 +220,33 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-// Misc stuff
+public DoBash(war3player, victim)
+{
+    new skill_bash=War3_GetSkillLevel(war3player,raceID,2);
+    if (skill_bash)
+    {
+        // Bash
+        new percent;
+        switch(skill_bash)
+        {
+            case 1:
+                percent=15;
+            case 2:
+                percent=21;
+            case 3:
+                percent=27;
+            case 4:
+                percent=32;
+        }
+        if (GetRandomInt(1,100)<=percent)
+        {
+            FreezeEntity(victim);
+            AuthTimer(1.0,victim,UnfreezePlayer);
+        }
+    }
+}
 
 public Action:UnfreezePlayer(Handle:timer,Handle:temp)
 {
-    decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
-    new client=PlayerOfAuth(auth);
-    if(client)
-        UnFreezeEntity(client);
-    ClearArray(temp);
-}
-
-public SetVisibility(war3player, skilllevel)
-{
-    // Invisibility
-    new alpha;
-    switch(skilllevel)
-    {
-        case 1:
-            alpha=158;
-        case 2:
-            alpha=137;
-        case 3:
-            alpha=115;
-        case 4:
-            alpha=94;
-    }
-
-    /* If the Player also has the Boots of Speed,
-     * Decrease the visibility further
-     */
-    new boots = War3_GetShopItem("Boots of Speed");
-    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
-    {
-        alpha /= 2;
-    }
-
-    War3_SetMinVisibility(war3player,alpha, 0.50);
+    Unfreeze(timer, temp);
 }

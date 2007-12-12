@@ -89,40 +89,22 @@ public OnPluginStart()
 
 public OnWar3PluginReady()
 {
+    shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
     shopItem[ITEM_BOOTS]=War3_CreateShopItem("Boots of Speed","Allows you to move faster.","7");
     shopItem[ITEM_CLAWS]=War3_CreateShopItem("Claws of Attack","An additional 8 hp will be removed from the enemy on every successful attack.","3");
+    shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
     shopItem[ITEM_MASK]=War3_CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
     shopItem[ITEM_NECKLACE]=War3_CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
     shopItem[ITEM_ORB]=War3_CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","5");
-    shopItem[ITEM_PERIAPT]=War3_CreateShopItem("Periapt of Health","Receive extra health. (Note: CanScroll of Respawning\nonly be purchased once on death\nand once on spawn, so you can get 2 per\nround.","3");
+    shopItem[ITEM_PERIAPT]=War3_CreateShopItem("Periapt of Health","Receive extra health.","3");
     shopItem[ITEM_TOME]=War3_CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","10");
+    shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=War3_CreateShopItem("Sock of the Feather","You will be able to jump higher.","4");
-    shopItem[ITEM_RING]=War3_CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't excede 100 HP.","3");
+    shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade or ammo or metal every 20 seconds.","5");
+    shopItem[ITEM_RING]=War3_CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","3");
     shopItem[ITEM_MOLE]=War3_CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
     shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
     shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
-
-    if (GameType == cstrike)
-    {
-        shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
-        shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife.","2");
-        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn after death.","15");
-        shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a high explosive grenade every 20 seconds.","5");
-    }
-    else if (GameType == dod)
-    {
-        shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
-        shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife or shovel.","2");
-        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
-        shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade every 20 seconds.","5");
-    }
-    else
-    {
-        shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your shopitems the following round.","4");
-        shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding a melee weapon.","2");
-        shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?","15");
-        shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given extra ammo every 20 seconds.","5");
-    }
 
     LoadSDKToolStuff();
 }
