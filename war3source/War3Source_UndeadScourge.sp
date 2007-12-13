@@ -55,7 +55,11 @@ public OnWar3PluginReady()
 
     FindOffsets();
 
-    explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
+    if (GameType == tf2)
+        explosionModel=PrecacheModel("materials/particles/explosion/explosionfiresmoke.vmt",false);
+    else
+        explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
+
     if(explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 }
@@ -305,7 +309,6 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                         SetHealth(x,newhealth);
                         if (newhealth<=0)
                         {
-                            //FakeClientCommand(x,"kill\n");
                             ForcePlayerSuicide(x);
                             if (GetClientTeam(client) != GetClientTeam(x))
                             {
@@ -327,7 +330,6 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
     if (!ondeath)
     {
         m_Suicided[client]=true;
-        //FakeClientCommand(client,"kill\n");
         ForcePlayerSuicide(client);
     }
 }
