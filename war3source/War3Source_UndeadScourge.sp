@@ -12,14 +12,10 @@
 
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
-
-// Defines
-#define IS_ALIVE !GetLifestate
+#include "War3Source/util"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new healthOffset[MAXPLAYERS+1];
-new lifestateOffset;
 new explosionModel;
 
 // Suicide bomber check
@@ -57,9 +53,7 @@ public OnWar3PluginReady()
                            "Suicide Bomber",
                            "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
 
-    lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    if(lifestateOffset==-1)
-        SetFailState("Couldn't find LifeState offset");
+    FindOffsets();
 
     explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
     if(explosionModel == -1)
@@ -73,12 +67,269 @@ public OnMapStart()
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
+    SetupHealth(client);
 }
 
-public Float:DistanceBetween(Float:a[3],Float:b[3])
+public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    return SquareRoot((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2]));
+    if (pressed)
+    {
+        if (race == raceID && IS_ALIVE(client))
+        {
+            new ult_level = War3_GetSkillLevel(war3player,race,3);
+            if (ult_level)
+                Undead_SuicideBomber(client,war3player,ult_level,false);
+        }
+    }
+}
+
+public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid     = GetEventInt(event,"userid");
+    new index      = GetClientOfUserId(userid);
+    new war3player = War3_GetWar3Player(index);
+    if (war3player > -1 && !m_Suicided[index])
+    {
+        if(War3_GetRace(war3player) == raceID)
+        {
+            new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+            if (ult_level)
+                Undead_SuicideBomber(index,war3player,ult_level,true);
+        }
+    }
+}
+
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid     = GetEventInt(event,"userid");
+    new index      = GetClientOfUserId(userid);
+    new war3player = War3_GetWar3Player(index);
+    if (war3player > -1)
+    {
+        m_Suicided[index]=false;
+        new race=War3_GetRace(war3player);
+        if(race==raceID)
+        {
+            new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
+            if (skilllevel_unholy)
+                Undead_UnholyAura(war3player, skilllevel_unholy);
+
+            new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
+            if (skilllevel_levi)
+                Undead_Levitation(war3player, skilllevel_levi);
+        }
+    }
+}
+
+public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
+{
+    if(race == raceID && War3_GetRace(war3player) == raceID)
+    {
+        if (skill==1)
+            Undead_UnholyAura(war3player, newskilllevel);
+        else if (skill==2)
+            Undead_Levitation(war3player, newskilllevel);
+    }
+}
+
+public OnRaceSelected(client,war3player,oldrace,newrace)
+{
+    if (oldrace == raceID && newrace != raceID)
+    {
+        War3_SetMaxSpeed(war3player,1.0);
+        War3_SetMinGravity(war3player,1.0);
+    }
+}
+
+public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new victimUserid = GetEventInt(event,"userid");
+    if (victimUserid)
+    {
+        new victimIndex      = GetClientOfUserId(victimUserid);
+        new victimWar3player = War3_GetWar3Player(victimIndex);
+        if (victimWar3player != -1)
+        {
+            new attackerUserid = GetEventInt(event,"attacker");
+            if (attackerUserid && victimUserid != attackerUserid)
+            {
+                new attackerIndex      = GetClientOfUserId(attackerUserid);
+                new attackerWar3player = War3_GetWar3Player(attackerIndex);
+                if (attackerWar3player != -1)
+                {
+                    if (War3_GetRace(attackerWar3player) == raceID)
+                    {
+                        Undead_VampiricAura(event, attackerIndex, attackerWar3player,
+                                       victimIndex, victimWar3player);
+                    }
+                }
+            }
+
+            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assisterUserid && victimUserid != assisterUserid)
+            {
+                new assisterIndex      = GetClientOfUserId(assisterUserid);
+                new assisterWar3player = War3_GetWar3Player(assisterIndex);
+                if (assisterWar3player != -1)
+                {
+                    if (War3_GetRace(assisterWar3player) == raceID)
+                    {
+                        Undead_VampiricAura(event, assisterIndex, assisterWar3player,
+                                       victimIndex, victimWar3player);
+                    }
+                }
+            }
+        }
+    }
+}
+
+public Undead_UnholyAura(war3player, skilllevel)
+{
+    new Float:speed=1.0;
+    switch (skilllevel)
+    {
+        case 1:
+            speed=1.08;
+        case 2:
+            speed=1.1733;
+        case 3:
+            speed=1.266;
+        case 4:
+            speed=1.36;
+    }
+    War3_SetMaxSpeed(war3player,speed);
+}
+
+public Undead_Levitation(war3player, skilllevel)
+{
+    new Float:gravity=1.0;
+    switch (skilllevel)
+    {
+        case 1:
+            gravity=0.92;
+        case 2:
+            gravity=0.733;
+        case 3:
+            gravity=0.5466;
+        case 4:
+            gravity=0.36;
+    }
+    War3_SetMinGravity(war3player,gravity);
+}
+
+public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3player)
+{
+    new skill = War3_GetSkillLevel(war3player,raceID,0);
+    if (skill > 0 && GetRandomInt(1,10) <= 6 &&
+        !War3_GetImmunity(victim_war3player, Immunity_HealthTake))
+    {
+        new Float:percent_health;
+        switch(skill)
+        {
+            case 1:
+                percent_health=0.12;
+            case 2:
+                percent_health=0.18;
+            case 3:
+                percent_health=0.24;
+            case 4:
+                percent_health=0.30;
+        }
+        new Float:damage=float(GetEventInt(event,"dmg_health"));
+        new leechhealth=RoundFloat(damage*percent_health);
+        if(leechhealth)
+        {
+            new victim_health=GetClientHealth(index)-leechhealth;
+            if (victim_health < 0)
+                victim_health = 0;
+            SetHealth(victim,victim_health);
+
+            new health=GetClientHealth(index)+leechhealth;
+            SetHealth(index,health);
+        }
+    }
+}
+
+public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
+{
+    new Float:radius;
+    new r_int;
+    switch(ult_level)
+    {
+        case 1:
+        {
+            radius = 200.0;
+            r_int  = 200;
+        }
+        case 2:
+        {
+            radius = 250.0;
+            r_int  = 250;
+        }
+        case 3:
+        {
+            radius = 300.0;
+            r_int  = 300;
+        }
+        case 4:
+        {
+            radius = 350.0;
+            r_int  = 350;
+        }
+    }
+
+    new Float:client_location[3];
+    GetClientAbsOrigin(client,client_location);
+
+    for(new x=1;x<MAXPLAYERS+1;x++)
+    {
+        if (x <= GetClientCount() && IsClientConnected(x))
+        {
+            TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
+            TE_SendToAll();
+            EmitSoundToAll("weapons/explode5.wav",client);
+
+            if (x != client && IS_ALIVE(x))
+            {
+                new war3player_check=War3_GetWar3Player(x);
+                if (war3player_check>-1)
+                {
+                    if (!War3_GetImmunity(war3player_check,Immunity_Ultimates) &&
+                        !War3_GetImmunity(war3player_check,Immunity_Explosion))
+                    {
+                        new Float:location_check[3];
+                        GetClientAbsOrigin(x,location_check);
+
+                        new hp=PowerOfRange(client_location,radius,location_check);
+                        new newhealth=GetClientHealth(x)-hp;
+                        SetHealth(x,newhealth);
+                        if (newhealth<=0)
+                        {
+                            //FakeClientCommand(x,"kill\n");
+                            ForcePlayerSuicide(x);
+                            if (GetClientTeam(client) != GetClientTeam(x))
+                            {
+                                new level=War3_GetLevel(war3player,raceID);
+                                new addxp=5+level;
+                                new newxp=War3_GetXP(war3player,raceID)+addxp;
+                                War3_SetXP(war3player,raceID,newxp);
+                                War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                                       "%c[War3Source] %cYou gained %d XP for killing someone with a suicide bomb.",
+                                                       COLOR_GREEN,COLOR_DEFAULT,addxp);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (!ondeath)
+    {
+        m_Suicided[client]=true;
+        //FakeClientCommand(client,"kill\n");
+        ForcePlayerSuicide(client);
+    }
 }
 
 public PowerOfRange(Float:location[3],Float:radius,Float:check_location[3])
@@ -90,257 +341,3 @@ public PowerOfRange(Float:location[3],Float:radius,Float:check_location[3])
     return RoundFloat(100*healthtakeaway);
 }
 
-public GetLifestate(client)
-{
-    return GetEntData(client,lifestateOffset,1);
-}
-
-public Undead_SuicideBomber(client,war3player,race,ult_level)
-{
-    new Float:radius=0.0;
-    new r_int;
-    switch(ult_level)
-    {
-        case 1:
-        {
-            radius=200.0;
-            r_int=200;
-        }
-        case 2:
-        {
-            radius=250.0;
-            r_int=250;
-        }
-        case 3:
-        {
-            radius=300.0;
-            r_int=300;
-        }
-        case 4:
-        {
-            radius=350.0;
-            r_int=350;
-        }
-    }
-    new Float:client_location[3];
-    GetClientAbsOrigin(client,client_location);
-    for(new x=1;x<MAXPLAYERS+1;x++)
-    {
-        if(x<=GetClientCount()&&IsClientConnected(x))
-        {
-            TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
-            TE_SendToAll();
-            EmitSoundToAll("weapons/explode5.wav",client);
-            if(x!=client&&IS_ALIVE(x))
-            {
-                new war3player_check=War3_GetWar3Player(x);
-                if(war3player_check>-1)
-                {
-                    if(!War3_GetImmunity(war3player_check,Immunity_Ultimates)&&!War3_GetImmunity(war3player_check,Immunity_Explosion))
-                    {
-                        new Float:location_check[3];
-                        GetClientAbsOrigin(x,location_check);
-                        new hp=PowerOfRange(client_location,radius,location_check);
-                        new newhealth=GetClientHealth(x)-hp;
-                        SetHealth(x,newhealth);
-                        if(newhealth<=0)
-                        {
-                            FakeClientCommand(x,"kill\n");
-                            if(GetClientTeam(client)!=GetClientTeam(x))
-                            {
-                                new addxp;
-                                new level=War3_GetLevel(war3player,race);
-                                addxp=5+level;
-                                new newxp=War3_GetXP(war3player,race)+addxp;
-                                War3_SetXP(war3player,race,newxp);
-                                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gained %d XP for killing someone with a suicide bomb.",COLOR_GREEN,COLOR_DEFAULT,addxp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    m_Suicided[client]=true;
-    FakeClientCommand(client,"kill\n");
-}
-
-public OnUltimateCommand(client,war3player,race,bool:pressed)
-{
-    if(pressed)
-    {
-        if(race==raceID&&IS_ALIVE(client))
-        {
-            new ult_level=War3_GetSkillLevel(war3player,race,3);
-            if(ult_level)
-                Undead_SuicideBomber(client,war3player,race,ult_level);
-        }
-    }
-}
-
-public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
-{
-    if(War3_GetRace(war3player)==raceID)
-    {
-        if(race==raceID&&skill==1)
-        {
-            new Float:speed=1.0;
-            switch(newskilllevel)
-            {
-                case 1:
-                    speed=1.08;
-                case 2:
-                    speed=1.1733;
-                case 3:
-                    speed=1.266;
-                case 4:
-                    speed=1.36;
-            }
-            War3_SetMaxSpeed(war3player,speed);
-        }
-        else if(race==raceID&&skill==2)
-        {
-            new Float:gravity=1.0;
-            switch(newskilllevel)
-            {
-                case 1:
-                    gravity=0.92;
-                case 2:
-                    gravity=0.733;
-                case 3:
-                    gravity=0.5466;
-                case 4:
-                    gravity=0.36;
-            }
-            War3_SetMinGravity(war3player,gravity);
-        }
-    }
-}
-
-public OnRaceSelected(client,war3player,oldrace,newrace)
-{
-    if(oldrace==raceID&&newrace!=raceID)
-    {
-        War3_SetMaxSpeed(war3player,1.0);
-        War3_SetMinGravity(war3player,1.0);
-    }
-}
-
-// Generic
-public SetHealth(entity,amount)
-{
-    SetEntData(entity,healthOffset[entity],amount,true);
-}
-
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new attacker_userid=GetEventInt(event,"attacker");
-    if(userid&&attacker_userid&&userid!=attacker_userid)
-    {
-        new index=GetClientOfUserId(userid);
-        new attacker_index=GetClientOfUserId(attacker_userid);
-        new war3player=War3_GetWar3Player(index);
-        new war3player_attacker=War3_GetWar3Player(attacker_index);
-        if(war3player!=-1&&war3player_attacker!=-1)
-        {
-            new race_attacker=War3_GetRace(war3player_attacker);
-            if(race_attacker==raceID)
-            {
-                new skill_attacker=War3_GetSkillLevel(war3player_attacker,race_attacker,0);
-                if(skill_attacker>0&&GetRandomInt(1,10)<=6&&!War3_GetImmunity(war3player,Immunity_HealthTake))
-                {
-                    new Float:percent_health;
-                    switch(skill_attacker)
-                    {
-                        case 1:
-                            percent_health=0.12;
-                        case 2:
-                            percent_health=0.18;
-                        case 3:
-                            percent_health=0.24;
-                        case 4:
-                            percent_health=0.30;
-                    }
-                    new Float:damage=float(GetEventInt(event,"dmg_health"));
-                    new leechhealth=RoundFloat(damage*percent_health);
-                    if(leechhealth)
-                    {
-                        new newhealth=GetClientHealth(index)-leechhealth;
-                        if(newhealth<0)
-                            newhealth=0;
-                        SetHealth(index,newhealth);
-                        new newhealth_attacker=GetClientHealth(attacker_index)+leechhealth;
-                        SetHealth(attacker_index,newhealth_attacker);
-                    }
-                }
-            }
-        }
-    }
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(index);
-    if(war3player>-1)
-    {
-        m_Suicided[index]=false;
-        new race=War3_GetRace(war3player);
-        if(race==raceID)
-        {
-            new skilllevel_unholy=War3_GetSkillLevel(war3player,race,1);
-            if(skilllevel_unholy)
-            {
-                new Float:speed=1.0;
-                switch(skilllevel_unholy)
-                {
-                    case 1:
-                        speed=1.08;
-                    case 2:
-                        speed=1.1733;
-                    case 3:
-                        speed=1.266;
-                    case 4:
-                        speed=1.36;
-                }
-                War3_SetMaxSpeed(war3player,speed);
-            }
-            new skilllevel_levi=War3_GetSkillLevel(war3player,race,2);
-            if(skilllevel_levi)
-            {
-                new Float:gravity=1.0;
-                switch(skilllevel_levi)
-                {
-                    case 1:
-                        gravity=0.92;
-                    case 2:
-                        gravity=0.733;
-                    case 3:
-                        gravity=0.5466;
-                    case 4:
-                        gravity=0.36;
-                }
-                War3_SetMinGravity(war3player,gravity);
-            }
-        }
-    }
-}
-
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(index);
-    if(war3player>-1 && !m_Suicided[index])
-    {
-        new race=War3_GetRace(war3player);
-        if(race==raceID)
-        {
-            new ult_level=War3_GetSkillLevel(war3player,race,3);
-            if(ult_level)
-                Undead_SuicideBomber(index,war3player,race,ult_level);
-        }
-    }
-}

@@ -11,15 +11,8 @@
 #include <sdktools>
 
 #include "War3Source/War3Source_Interface"
+#include "War3Source/messages"
 #include "War3Source/util"
-
-// Defines
-#define IS_ALIVE !GetLifestate
-
-// Colors
-#define COLOR_DEFAULT 0x01
-#define COLOR_TEAM 0x03
-#define COLOR_GREEN 0x04 // DOD = Red
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -68,13 +61,14 @@ public OnMapStart()
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    SetupHealth(client,war3player);
+    SetupHealth(client);
     m_AllowEntangle[client]=true;
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if(race==raceID&&pressed&&IS_ALIVE(client)&&m_AllowEntangle[client])
+    if (race==raceID && pressed && IS_ALIVE(client) &&
+        m_AllowEntangle[client])
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
         if(ult_level)
@@ -121,26 +115,6 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
     }
 }
 
-public Action:UnfreezePlayer(Handle:timer,Handle:temp)
-{
-    Unfreeze(timer, temp);
-}
-
-public Action:AllowEntangle(Handle:timer,any:index)
-{
-    m_AllowEntangle[index]=true;
-}
-
-public bool:IsInRange(client,index,Float:maxdistance)
-{
-    new Float:startclient[3];
-    new Float:endclient[3];
-    GetClientAbsOrigin(client,startclient);
-    GetClientAbsOrigin(index,endclient);
-    new Float:distance=DistanceBetween(startclient,endclient);
-    return (distance<maxdistance);
-}
-
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -162,7 +136,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new victimrace = War3_GetRace(war3playervictim);
             if (victimrace == raceID)
             {
-                evaded = DoEvasion(event, victimindex, war3playervictim);
+                evaded = NightElf_Evasion(event, victimindex, war3playervictim);
             }
 
             new attackeruserid = GetEventInt(event,"attacker");
@@ -175,13 +149,13 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     new damage = 0;
                     if (War3_GetRace(war3playerattacker)==raceID)
                     {
-                        damage = DoTrueshotAura(event, war3playerattacker, victimindex, evaded);
+                        damage = NightElf_TrueshotAura(event, war3playerattacker, victimindex, evaded);
                     }
 
                     if (victimrace == raceID && (!evaded || damage))
                     {
-                        DoThornsAura(event, attackerindex, war3playerattacker,
-                                     victimindex, war3playervictim, evaded, damage);
+                        NightElf_ThornsAura(event, attackerindex, war3playerattacker,
+                                            victimindex, war3playervictim, evaded, damage);
                     }
                 }
             }
@@ -196,13 +170,13 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     new damage = 0;
                     if (War3_GetRace(war3playerassister)==raceID)
                     {
-                        damage = DoTrueshotAura(event, war3playerassister, victimindex, evaded);
+                        damage = NightElf_TrueshotAura(event, war3playerassister, victimindex, evaded);
                     }
 
                     if (victimrace == raceID && (!evaded || damage))
                     {
-                        DoThornsAura(event, assisterindex, war3playerassister,
-                                     victimindex, war3playervictim, evaded, damage);
+                        NightElf_ThornsAura(event, assisterindex, war3playerassister,
+                                            victimindex, war3playervictim, evaded, damage);
                     }
                 }
             }
@@ -210,7 +184,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public bool:DoEvasion(Handle:event, victimindex, war3playervictim)
+public bool:NightElf_Evasion(Handle:event, victimindex, war3playervictim)
 {
     new skill_level_evasion = War3_GetSkillLevel(war3playervictim,raceID,0);
     if (skill_level_evasion)
@@ -238,7 +212,7 @@ public bool:DoEvasion(Handle:event, victimindex, war3playervictim)
     return false;
 }
 
-public DoThornsAura(Handle:event, index, war3player, victimindex, war3playervictim, evaded, damage)
+public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3playervictim, evaded, damage)
 {
     new skill_level_thorns = War3_GetSkillLevel(war3playervictim,raceID,1);
     if (skill_level_thorns)
@@ -278,7 +252,7 @@ public DoThornsAura(Handle:event, index, war3player, victimindex, war3playervict
     return 0;
 }
 
-public DoTrueshotAura(Handle:event, war3player, victimindex, evaded)
+public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
 {
     // Trueshot Aura
     new skill_level_trueshot=War3_GetSkillLevel(war3player,raceID,2);
@@ -318,3 +292,24 @@ public DoTrueshotAura(Handle:event, war3player, victimindex, evaded)
 }
 
 // Misc
+
+public Action:UnfreezePlayer(Handle:timer,Handle:temp)
+{
+    Unfreeze(timer, temp);
+}
+
+public Action:AllowEntangle(Handle:timer,any:index)
+{
+    m_AllowEntangle[index]=true;
+}
+
+public bool:IsInRange(client,index,Float:maxdistance)
+{
+    new Float:startclient[3];
+    new Float:endclient[3];
+    GetClientAbsOrigin(client,startclient);
+    GetClientAbsOrigin(index,endclient);
+    new Float:distance=DistanceBetween(startclient,endclient);
+    return (distance<maxdistance);
+}
+

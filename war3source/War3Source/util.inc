@@ -105,7 +105,7 @@ stock PlayerOfAuth(const String:auth[])
     return 0;
 }
 
-stock SetupHealth(client,war3player)
+stock SetupHealth(client)
 {
     healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
 

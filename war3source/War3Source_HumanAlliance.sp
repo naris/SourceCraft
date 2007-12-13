@@ -54,7 +54,7 @@ public OnWar3PluginReady()
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    SetupHealth(client,war3player);
+    SetupHealth(client);
 }
 
 public OnRaceSelected(client,war3player,oldrace,race)
@@ -71,20 +71,20 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     if(race == raceID && skill==0 && newskilllevel > 0 &&
        War3_GetRace(war3player) == raceID && IS_ALIVE(client))
     {
-        SetVisibility(war3player, newskilllevel);
+        HumanAlliance_Invisibility(war3player, newskilllevel);
     }
 }
 
 public OnItemPurchase(client,war3player,item)
 {
     new race=War3_GetRace(war3player);
-    if(race == raceID && IS_ALIVE(client))
+    if (race == raceID && IS_ALIVE(client))
     {
         new boots = War3_GetShopItem("Boots of Speed");
-        if (item == boots)
+        if (boots == item)
         {
             new skill_invis=War3_GetSkillLevel(war3player,race,0);
-            SetVisibility(war3player, skill_invis);
+            HumanAlliance_Invisibility(war3player, skill_invis);
         }
     }
 }
@@ -95,19 +95,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     new war3player=War3_GetWar3Player(client);
-    if(war3player>-1)
+    if (war3player>-1)
     {
-        new race=War3_GetRace(war3player);
-        if(race==raceID)
+        new race = War3_GetRace(war3player);
+        if (race == raceID)
         {
             new skill_invis=War3_GetSkillLevel(war3player,race,0);
-            if(skill_invis)
+            if (skill_invis)
             {
-                SetVisibility(war3player, skill_invis);
+                HumanAlliance_Invisibility(war3player, skill_invis);
             }
 
             new skill_devo=War3_GetSkillLevel(war3player,race,1);
-            if(skill_devo)
+            if (skill_devo)
             {
                 // Devotion Aura
                 new hpadd;
@@ -126,34 +126,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
-}
-
-public SetVisibility(war3player, skilllevel)
-{
-    // Invisibility
-    new alpha;
-    switch(skilllevel)
-    {
-        case 1:
-            alpha=158;
-        case 2:
-            alpha=137;
-        case 3:
-            alpha=115;
-        case 4:
-            alpha=94;
-    }
-
-    /* If the Player also has the Boots of Speed,
-     * Decrease the visibility further
-     */
-    new boots = War3_GetShopItem("Boots of Speed");
-    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
-    {
-        alpha /= 2;
-    }
-
-    War3_SetMinVisibility(war3player,alpha, 0.50);
 }
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -182,45 +154,69 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new userid=GetEventInt(event,"userid");
-    if (userid)
+    new victimUserid=GetEventInt(event,"userid");
+    if (victimUserid)
     {
-        new index      = GetClientOfUserId(userid);
-        new war3player = War3_GetWar3Player(index);
-        if (war3player != -1)
+        new victimIndex      = GetClientOfUserId(victimUserid);
+        new victimWar3player = War3_GetWar3Player(victimIndex);
+        if (victimWar3player != -1)
         {
-            new attacker_userid = GetEventInt(event,"attacker");
-            if (attacker_userid && userid != attacker_userid)
+            new attackerUserid = GetEventInt(event,"attacker");
+            if (attackerUserid && victimUserid != attackerUserid)
             {
-                new attacker_index      = GetClientOfUserId(attacker_userid);
-                new war3player_attacker = War3_GetWar3Player(attacker_index);
-                if (war3player_attacker != -1)
+                new attackerIndex      = GetClientOfUserId(attackerUserid);
+                new attackerWar3player = War3_GetWar3Player(attackerIndex);
+                if (attackerWar3player != -1)
                 {
-                    if (War3_GetRace(war3player_attacker) == raceID)
-                    {
-                        DoBash(war3player_attacker, index);
-                    }
+                    if (War3_GetRace(attackerWar3player) == raceID)
+                        HumanAlliance_Bash(attackerWar3player, victimIndex);
                 }
             }
 
-            new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assister_userid != 0)
+            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assisterUserid != 0)
             {
-                new assister_index      = GetClientOfUserId(assister_userid);
-                new war3player_assister = War3_GetWar3Player(assister_index);
-                if (war3player_assister != -1)
+                new assisterIndex      = GetClientOfUserId(assisterUserid);
+                new assisterWar3player = War3_GetWar3Player(assisterIndex);
+                if (assisterWar3player != -1)
                 {
-                    if (War3_GetRace(war3player_assister) == raceID)
-                    {
-                        DoBash(war3player_assister, index);
-                    }
+                    if (War3_GetRace(assisterWar3player) == raceID)
+                        HumanAlliance_Bash(assisterWar3player, victimIndex);
                 }
             }
         }
     }
 }
 
-public DoBash(war3player, victim)
+public HumanAlliance_Invisibility(war3player, skilllevel)
+{
+    // Invisibility
+    new alpha;
+    switch(skilllevel)
+    {
+        case 1:
+            alpha=158;
+        case 2:
+            alpha=137;
+        case 3:
+            alpha=115;
+        case 4:
+            alpha=94;
+    }
+
+    /* If the Player also has the Boots of Speed,
+     * Decrease the visibility further
+     */
+    new boots = War3_GetShopItem("Boots of Speed");
+    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    {
+        alpha /= 2;
+    }
+
+    War3_SetMinVisibility(war3player,alpha, 0.50);
+}
+
+public HumanAlliance_Bash(war3player, victim)
 {
     new skill_bash=War3_GetSkillLevel(war3player,raceID,2);
     if (skill_bash)

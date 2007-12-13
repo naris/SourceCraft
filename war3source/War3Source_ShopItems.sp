@@ -170,7 +170,7 @@ public LoadSDKToolStuff()
 
 public OnWar3PlayerAuthed(client,war3player)
 {
-    SetupHealth(client,war3player);
+    SetupHealth(client);
 
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
