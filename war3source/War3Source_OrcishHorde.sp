@@ -16,9 +16,9 @@
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
-new bool:m_HasRespawned[MAXPLAYERS+1]={false};
-new Float:m_UseTime[MAXPLAYERS+1]={0.0,...};
-new bool:m_AllowChainLightning[MAXPLAYERS+1]={false,...};
+new bool:m_HasRespawned[MAXPLAYERS+1]        = {false};
+new Float:m_UseTime[MAXPLAYERS+1]            = {0.0,...};
+new bool:m_AllowChainLightning[MAXPLAYERS+1] = {true,...};
 new Handle:cvarChainCooldown;
 new Handle:hGameConf;
 new Handle:hRoundRespawn;
@@ -82,6 +82,7 @@ public OnMapStart()
 public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
+    m_AllowChainLightning[client]=true;
 }
 
 public OnRaceSelected(client,war3player,oldrace,newrace)
@@ -94,7 +95,7 @@ public OnGameFrame()
     {
         if (!m_AllowChainLightning[x])
         {
-            if (GetEngineTime()>=m_UseTime[x]+GetConVarFloat(cvarChainCooldown))
+            if (GetEngineTime() >= m_UseTime[x] + GetConVarFloat(cvarChainCooldown))
                 m_AllowChainLightning[x]=true;
         }
     }
@@ -102,8 +103,8 @@ public OnGameFrame()
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if(pressed && m_AllowChainLightning[client] &&
-       race == raceID && IS_ALIVE(client))
+    if (pressed && m_AllowChainLightning[client] &&
+        race == raceID && IS_ALIVE(client))
     {
         new skill = War3_GetSkillLevel(war3player,race,3);
         if (skill)

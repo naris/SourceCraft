@@ -63,7 +63,10 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    PrintToChat(client,"%c[War3Source]%c DOH! Teleport has not been implemented yet!",COLOR_GREEN,COLOR_DEFAULT);
+    if (race==raceID && IS_ALIVE(client))
+    {
+        PrintToChat(client,"%c[War3Source]%c DOH! Teleport has not been implemented yet!",COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)

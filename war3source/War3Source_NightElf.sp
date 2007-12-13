@@ -17,7 +17,7 @@
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
-new bool:m_AllowEntangle[MAXPLAYERS+1];
+new bool:m_AllowEntangle[MAXPLAYERS+1] = {true, ...};
  
 new Glow;
 
