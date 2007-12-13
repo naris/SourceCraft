@@ -131,11 +131,6 @@ public LoadSDKToolStuff()
 
     hGameConf=LoadGameConfigFile("plugin.war3source");
 
-    StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
-    hRoundRespawn=EndPrepSDKCall();
-    StartPrepSDKCall(SDKCall_Player);
-
     PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveNamedItem");
     PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity,SDKPass_Pointer);
     PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
@@ -166,6 +161,14 @@ public LoadSDKToolStuff()
     PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
     PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
     hSetModel=EndPrepSDKCall();
+
+    if (GameType == cstrike)
+    {
+        StartPrepSDKCall(SDKCall_Player);
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
+        hRoundRespawn=EndPrepSDKCall();
+        StartPrepSDKCall(SDKCall_Player);
+    }
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -673,7 +676,10 @@ public DropWeapon(client,weapon)
 
 public RespawnPlayer(client)
 {
-    SDKCall(hRoundRespawn,client);
+    if (GameType == cstrike)
+        SDKCall(hRoundRespawn,client);
+    else
+        DispatchSpawn(client);
 }
 
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)

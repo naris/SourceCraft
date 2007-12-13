@@ -56,7 +56,7 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-	Glow = PrecacheModel("sprites/blueglow1.vmt");
+	Glow = PrecacheModel("materials/sprites/redglow1.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -103,7 +103,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                         GetClientAbsOrigin(client, Origin);
                         Origin[2] += 5;
 
-                        TE_SetupGlowSprite(Origin,Glow,1.0,1.0,20);
+                        TE_SetupGlowSprite(Origin,Glow,10.0,100.0,50);
                         TE_SendToAll();
                     }
                 }

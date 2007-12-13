@@ -22,6 +22,8 @@ new bool:m_AllowChainLightning[MAXPLAYERS+1]={false,...};
 new Handle:cvarChainCooldown;
 new Handle:hGameConf;
 new Handle:hRoundRespawn;
+new g_beamSprite;
+new g_haloSprite;
 
 public Plugin:myinfo = 
 {
@@ -62,10 +64,19 @@ public OnWar3PluginReady()
 
 public LoadSDKToolStuff()
 {
-    hGameConf=LoadGameConfigFile("plugin.war3source");
-    StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
-    hRoundRespawn=EndPrepSDKCall();
+    if (GameType == cstrike)
+    {
+        hGameConf=LoadGameConfigFile("plugin.war3source");
+        StartPrepSDKCall(SDKCall_Player);
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
+        hRoundRespawn=EndPrepSDKCall();
+    }
+}
+
+public OnMapStart()
+{
+    g_beamSprite = PrecacheModel("materials/particles/rockettrail/rockettrail.vmt");
+    g_haloSprite = PrecacheModel("materials/sprites/glow02.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -217,7 +228,8 @@ public OrcishHorde_CriticalStrike(Handle:event, war3player, victimIndex)
             GetClientAbsOrigin(victimIndex, Origin);
             Origin[2] += 5;
 
-            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SetupEnergySplash(Origin,Origin,false);
+            TE_SetupSparks(Origin,Origin,255,100);
             TE_SendToAll();
         }
     }
@@ -261,7 +273,8 @@ public OrcishHorde_CriticalGrenade(Handle:event, war3player, victimIndex)
             GetClientAbsOrigin(victimIndex, Origin);
             Origin[2] += 5;
 
-            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SetupSparks(Origin,Origin,255,100);
+            TE_SetupEnergySplash(Origin,Origin,true);
             TE_SendToAll();
         }
     }
@@ -269,12 +282,70 @@ public OrcishHorde_CriticalGrenade(Handle:event, war3player, victimIndex)
 
 public OrcishHorde_ChainLightning(war3player,client,ultlevel)
 {
-    // we need traceline :[
-    PrintToChat(client,"%c[War3Source]%c DOH! Chain Lightning has not been implemented yet!",COLOR_GREEN,COLOR_DEFAULT);
+    new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+    if(ult_level)
+    {
+        new Float:range=1.0;
+        switch(ult_level)
+        {
+            case 1:
+                range=300.0;
+            case 2:
+                range=450.0;
+            case 3:
+                range=650.0;
+            case 4:
+                range=800.0;
+        }
+        new last=client;
+        new count=0;
+        new maxplayers=GetMaxClients();
+        for(new index=1;index<=maxplayers;index++)
+        {
+            if(IsClientConnected(index)&&client!=index&&IS_ALIVE(index))
+            {
+                new bool:inrange=IsInRange(client,index,range);
+                if (inrange)
+                {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(client, Origin);
+                    Origin[2] += 5;
+                    new color[4] = { 10, 200, 255, 255 };
+                    TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
+                                      0, 50, 50.0, 3.0,10.0,50,50.0,color,255);
+                    TE_SendToAll();
+
+                    new new_health=GetClientHealth(index)-32;
+                    if(new_health<0)
+                        new_health=0;
+                    SetHealth(index,new_health);
+
+                    last=index;
+                    if (++count > 4)
+                        break;
+                }
+            }
+        }
+        PrintToChat(client,"%c[War3Source]%c You have used your ultimate \"Chained Lightning\", you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT);
+    }
 }
 
 public Action:RespawnPlayer(Handle:timer,any:client)
 {
-    SDKCall(hRoundRespawn,client);
+    if (GameType == cstrike)
+        SDKCall(hRoundRespawn,client);
+    else
+        DispatchSpawn(client);
+}
+
+
+public bool:IsInRange(client,index,Float:maxdistance)
+{
+    new Float:startclient[3];
+    new Float:endclient[3];
+    GetClientAbsOrigin(client,startclient);
+    GetClientAbsOrigin(index,endclient);
+    new Float:distance=DistanceBetween(startclient,endclient);
+    return (distance<maxdistance);
 }
 
