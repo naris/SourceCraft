@@ -10,7 +10,7 @@
 // A vector of shopmenu infomation
 new Handle:shopVector;
 
-public Handle:CreateShopItem(String:name[],String:desc[],String:cost[])
+public Handle:CreateShopItem(const String:name[], const String:desc[], const String:cost[])
 {
     new Handle:ret=CreateArray(ByteCountToCells(256));
     PushArrayString(ret,name);

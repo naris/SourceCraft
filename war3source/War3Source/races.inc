@@ -17,7 +17,12 @@ new Handle:arrayRaces;
 
 new Handle:currentRaceForSkills[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
-public Handle:CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[])
+public Handle:CreateRace(const String:name[],                  const String:short[],
+                         const String:switchmessage_instant[], const String:switchmessage_dead[],
+                         const String:skill1[],                const String:skill1_desc[],
+                         const String:skill2[],                const String:skill2_desc[],
+                         const String:skill3[],                const String:skill3_desc[],
+                         const String:ult[],                   const String:ult_desc[])
 {
     new Handle:ret=CreateArray(ByteCountToCells(192));
     PushArrayString(ret,name);

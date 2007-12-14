@@ -172,6 +172,13 @@ stock Action:Unfreeze(Handle:timer,Handle:temp)
     ClearArray(temp);
 }
 
+stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
+{
+    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
+                      (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
+                      (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
+}
+
 stock MakeInvisible(client, visibility)
 {
     decl String:wepName[128];
@@ -245,12 +252,5 @@ stock SetRenderColor(entity,r,g,b,a)
         if(renderModeOffset != -1)
             SetEntData(entity,renderModeOffset,3,1,true);
     }
-}
-
-stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
-{
-    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
-                      (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
-                      (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
 }
 

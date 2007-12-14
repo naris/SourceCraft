@@ -10,7 +10,7 @@
 #define IS_ALIVE !GetLifestate
 
 #define INFO_COUNT     5
-#define TRACKING_COUNT 8
+#define TRACKING_COUNT 11
 
 // Global definition
 new Handle:g_OnRaceSelectedHandle;
@@ -183,106 +183,171 @@ public Action:PlayerProperties(Handle:timer)
         if(IsClientInGame(client))
         {
             new Handle:pinfo=GetPropertyInfo(x);
-            new Float:gravity=1.0,Float:speed=1.0,visibility=255,Float:meleefactor=1.0;
-            new bool:overrideplayerspeed=false;
-            new bool:overrideplayergravity=false;
-            new bool:overrideplayervisibility=false;
+            new Float:gravity=1.0,Float:speed=1.0,visibility=255,Float:meleeFactor=1.0;
+            new bool:overridePlayerSpeed=false;
+            new bool:overridePlayerGravity=false;
+            new bool:overridePlayerVisibility=false;
+            new bool:speedAltered=false;
+            new bool:gravityAltered=false;
+            new bool:visibilityAltered=false;
+            new speedIndex=0;
+            new gravityIndex=0;
+            new visibilityIndex=0;
             for(new y=0;y<GetArraySize(pinfo);y++)
             {
                 // check which plugin is the highest/lowest bidder, but first, override?
-                new Handle:temp=GetArrayCell(pinfo,y);
-                new Float:maxspeed=GetArrayCell(temp,1);
-                new Float:mingravity=GetArrayCell(temp,2);
-                new minvisibility=GetArrayCell(temp,3);
-                new Float:maxmeleefactor=GetArrayCell(temp,4);
-                new Float:overridespeed=GetArrayCell(temp,5);
-                new Float:overridegravity=GetArrayCell(temp,6);
-                new overridevisibility=GetArrayCell(temp,7);
-                if(!overrideplayerspeed)
+                new Handle:temp           = GetArrayCell(pinfo,y);
+                new Float:maxSpeed        = GetArrayCell(temp,1);
+                new Float:minGravity      = GetArrayCell(temp,2);
+                new minVisibility         = GetArrayCell(temp,3);
+                new Float:maxmeleeFactor  = GetArrayCell(temp,4);
+                new Float:overridespeed   = GetArrayCell(temp,5);
+                new Float:overridegravity = GetArrayCell(temp,6);
+                new overridevisibility    = GetArrayCell(temp,7);
+
+                if(!overridePlayerSpeed)
                 {
                     if(overridespeed>0.0)
                     {
                         speed=overridespeed;
-                        overrideplayerspeed=true;
+                        overridePlayerSpeed=true;
+                        speedAltered=true;
+                        speedIndex=y;
                     }
-                    else if(maxspeed>speed)
-                        speed=maxspeed;
+                    else if(maxSpeed>speed)
+                    {
+                        speed=maxSpeed;
+                        speedIndex=y;
+                        speedAltered=true;
+                    }
+                    else if (GetArrayCell(temp,8)) // Speed Altered flag set?
+                    {
+                        speedIndex=y;
+                        speedAltered=true;
+                    }
                 }
-                if(!overrideplayergravity)
+                if(!overridePlayerGravity)
                 {
                     if(overridespeed>0.0)
                     {
                         gravity=overridegravity;
-                        overrideplayergravity=true;
+                        overridePlayerGravity=true;
+                        gravityAltered=true;
+                        gravityIndex=y;
                     }
-                    else if(mingravity<gravity)
-                        gravity=mingravity;
+                    else if(minGravity<gravity)
+                    {
+                        gravity=minGravity;
+                        gravityIndex=y;
+                        gravityAltered=true;
+                    }
+                    else if (GetArrayCell(temp,9)) // Gravity Altered flag set?
+                    {
+                        gravityIndex=y;
+                        gravityAltered=true;
+                    }
                 }
-                if(!overrideplayervisibility)
+                if(!overridePlayerVisibility)
                 {
                     if(overridevisibility>-1)
                     {
-                        meleefactor=1.0;
+                        meleeFactor=1.0;
                         visibility=overridevisibility;
-                        overrideplayervisibility=true;
+                        overridePlayerVisibility=true;
+                        visibilityAltered=true;
+                        visibilityIndex=y;
                     }
-                    else if(visibility>minvisibility)
+                    else if(visibility>minVisibility)
                     {
-                        visibility=minvisibility;
-                        meleefactor=maxmeleefactor;
+                        visibility=minVisibility;
+                        meleeFactor=maxmeleeFactor;
+                        visibilityIndex=y;
+                        visibilityAltered=true;
+                    }
+                    else if (GetArrayCell(temp,10)) // Visibility Altered flag set?
+                    {
+                        visibilityIndex=y;
+                        visibilityAltered=true;
                     }
                 }
             }
 
-            if (GameType == tf2)
+            if (speedAltered || overridePlayerSpeed || speed != 1.0)
             {
-                if (m_BaseSpeed[client] > 1.0)
+                if (GameType == tf2)
                 {
-                    new Float:newSpeed;
-                    new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                    if (curSpeed < 100.0) // && TF_GetClass(client) == TF2_HEAVY)
+                    if (m_BaseSpeed[client] > 1.0)
                     {
-                        // Speed for heavy  while firing == 80, while not firing == 230
-                        // Speed for sniper while zoomed == 80, while not zoomed == 300
-                        // ensure we don't accelerate firing heavy or zoomed sniper too much!
-                        newSpeed = 80.0 * speed;
+                        new Float:newSpeed;
+                        new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                        if (curSpeed < 100.0) // && TF_GetClass(client) == TF2_HEAVY)
+                        {
+                            // Speed for heavy  while firing == 80, while not firing == 230
+                            // Speed for sniper while zoomed == 80, while not zoomed == 300
+                            // ensure we don't accelerate firing heavy or zoomed sniper too much!
+                            newSpeed = 80.0 * speed;
+                        }
+                        else
+                        {
+                            newSpeed = m_BaseSpeed[client] * speed;
+                        }
+
+                        /**/
+                        LogMessage("[War3Source] BaseSpeed=%f, curSpeed=%f, newSpeed=%f\n",
+                                   m_BaseSpeed[client], curSpeed, newSpeed);
+
+                        /*
+                        War3Source_ChatMessage(client,COLOR_DEFAULT,
+                                               "%c[War3Source] %c BaseSpeed=%f, speed=%f, curSpeed=%f, newSpeed=%f",
+                                               COLOR_GREEN,COLOR_DEFAULT, m_BaseSpeed[client], speed, curSpeed, newSpeed);
+                        */
+
+                        if (curSpeed != newSpeed)
+                            SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
                     }
-                    else
-                    {
-                        newSpeed = m_BaseSpeed[client] * speed;
-                    }
+                }
+                else
+                {
+                    if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                        SetEntDataFloat(client,m_OffsetSpeed,speed);
+                }
 
-                    /**/
-                    LogMessage("[War3Source] BaseSpeed=%f, curSpeed=%f, newSpeed=%f\n",
-                               m_BaseSpeed[client], curSpeed, newSpeed);
-
-                    /*
-                    War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                           "%c[War3Source] %c BaseSpeed=%f, speed=%f, curSpeed=%f, newSpeed=%f",
-                                           COLOR_GREEN,COLOR_DEFAULT, m_BaseSpeed[client], speed, curSpeed, newSpeed);
-                    */
-
-                    if (curSpeed != newSpeed)
-                        SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                if (speed == 1.0)
+                {
+                    // Speed is back to normal, Reset the altered flag
+                    new Handle:temp = GetArrayCell(pinfo,speedIndex);
+                    SetArrayCell(temp,8,false);
                 }
             }
-            else
+
+            if (visibilityAltered || overridePlayerVisibility || visibility != 255)
             {
-                if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                    SetEntDataFloat(client,m_OffsetSpeed,speed);
+                if (visibility >= 255)
+                {
+                    MakeVisible(client);
+
+                    // Visibility is back to normal, Reset the altered flag
+                    new Handle:temp = GetArrayCell(pinfo,visibilityIndex);
+                    SetArrayCell(temp,10,false);
+                }
+                else
+                {
+                    MakeInvisible(client, visibility, meleeFactor);
+                }
             }
 
-            if (visibility >= 255)
+            if (gravityAltered || overridePlayerGravity || gravity != 1.0)
             {
-                MakeVisible(client);
-            }
-            else
-            {
-                MakeInvisible(client, visibility, meleefactor);
-            }
+                if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
+                    SetEntDataFloat(client,m_OffsetGravity[client], gravity);
 
-            if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
-                SetEntDataFloat(client,m_OffsetGravity[client], gravity);
+                if (gravity == 1.0)
+                {
+                    // Gravity is back to normal, Reset the altered flag
+                    new Handle:temp = GetArrayCell(pinfo,gravityIndex);
+                    SetArrayCell(temp,9,false);
+                }
+            }
         }
     }
 }

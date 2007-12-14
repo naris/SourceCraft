@@ -15,7 +15,7 @@ public bool:War3Source_InitHooks()
     return true;
 }
 
-public bool:CommandCheck(String:compare[],String:command[],maxlen)
+public bool:CommandCheck(const String:compare[], const String:command[], maxlen)
 {
     decl String:command2[maxlen+1];
     decl String:command3[maxlen+1];
@@ -27,7 +27,7 @@ public bool:CommandCheck(String:compare[],String:command[],maxlen)
         return true;
     }
     else
-	return false;
+	    return false;
 }
 
 public Action:War3Source_SayCommand(client,args)
