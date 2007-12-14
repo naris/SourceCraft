@@ -140,6 +140,29 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     }
 }
 
+public OnItemPurchase(client,war3player,item)
+{
+    new race=War3_GetRace(war3player);
+    if (race == raceID && IS_ALIVE(client))
+    {
+        new boots = War3_GetShopItem("Boots of Speed");
+        if (boots == item)
+        {
+            new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
+            Undead_UnholyAura(war3player, skilllevel_unholy);
+        }
+        else
+        {
+            new sock = War3_GetShopItem("Sock of the Feather");
+            if (sock == item)
+            {
+                new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
+                Undead_Levitation(war3player, skilllevel_levi);
+            }
+        }
+    }
+}
+
 public OnRaceSelected(client,war3player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
@@ -205,6 +228,16 @@ public Undead_UnholyAura(war3player, skilllevel)
         case 4:
             speed=1.36;
     }
+
+    /* If the Player also has the Boots of Speed,
+     * Increase the speed further
+     */
+    new boots = War3_GetShopItem("Boots of Speed");
+    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    {
+        speed *= 1.2;
+    }
+
     War3_SetMaxSpeed(war3player,speed);
 }
 
@@ -222,6 +255,16 @@ public Undead_Levitation(war3player, skilllevel)
         case 4:
             gravity=0.36;
     }
+
+    /* If the Player also has the Sock of the Feather,
+     * Decrease the gravity further.
+     */
+    new sock = War3_GetShopItem("Sock of the Feather");
+    if (sock != -1 && War3_GetOwnsItem(war3player,sock))
+    {
+        sock *= 0.8;
+    }
+
     War3_SetMinGravity(war3player,gravity);
 }
 

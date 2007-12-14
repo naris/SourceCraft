@@ -83,8 +83,8 @@ public OnItemPurchase(client,war3player,item)
     new race=War3_GetRace(war3player);
     if (race == raceID && IS_ALIVE(client))
     {
-        new boots = War3_GetShopItem("Boots of Speed");
-        if (boots == item)
+        new cloak = War3_GetShopItem("Cloak of Shadows");
+        if (cloak == item)
         {
             new skill_invis=War3_GetSkillLevel(war3player,race,0);
             HumanAlliance_Invisibility(war3player, skill_invis);
@@ -207,16 +207,16 @@ public HumanAlliance_Invisibility(war3player, skilllevel)
             alpha=94;
     }
 
-    /* If the Player also has the Boots of Speed,
+    /* If the Player also has the Cloak of Shadows,
      * Decrease the visibility further
      */
-    new boots = War3_GetShopItem("Boots of Speed");
-    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    new cloak = War3_GetShopItem("Cloak of Shadows");
+    if (cloak != -1 && War3_GetOwnsItem(war3player,cloak))
     {
-        alpha /= 2;
+        alpha *= 0.75;
     }
 
-    War3_SetMinVisibility(war3player,alpha, 0.50);
+    War3_SetMinVisibility(war3player,alpha, 0.75);
 }
 
 public HumanAlliance_Bash(war3player, victim)
