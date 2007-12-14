@@ -205,15 +205,13 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         if (GetRandomInt(1,100) <= chance)
         {
             new losthp=GetEventInt(event,"dmg_health");
-            new newhp=GetClientHealth(victimindex)+losthp;
+            new newhp=GetClientHealth(victimIndex)+losthp;
             SetHealth(victimIndex,newhp);
 
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
 
-            decl String:name[64];
-            GetClientName(index,name,63);
-            PrintToChat(victim,"%c[War3Source] %s %cyou have evaded an attack!",
+            PrintToChat(victimIndex,"%c[War3Source] %s %cyou have evaded an attack!",
                         COLOR_GREEN,victimName,COLOR_DEFAULT);
             LogMessage("[War3Source] %s evaded an attack!\n", victimName);
             return true;

@@ -13,6 +13,7 @@
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
 #include "War3Source/util"
+#include "War3Source/log"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -253,7 +254,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
 
             decl String:name[64];
             GetClientName(index,name,63);
-            PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura.%c",i
+            PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura.%c",
                         COLOR_GREEN,name,COLOR_DEFAULT,leechhealth,COLOR_GREEN,COLOR_DEFAULT);
 
             decl String:victimName[64];
@@ -329,12 +330,12 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                                 new newxp=War3_GetXP(war3player,raceID)+addxp;
                                 War3_SetXP(war3player,raceID,newxp);
 
-                                LogKill(client, victim, "suicide_bomb", "Suicide Bomb", hp, addxp)
+                                LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
                             }
                         }
                         else
                         {
-                            LogDamage(client, victim, "suicide_bomb", "Suicide Bomb", hp)
+                            LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
                         }
                     }
                 }

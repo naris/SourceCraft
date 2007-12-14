@@ -28,7 +28,7 @@ stock Fail(String:message[])
     SetFailState(message);
 }
 
-stock LogDamage(client, victim, weapon, description, hp, xp=0)
+stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
 {
     decl String:name[64];
     GetClientName(client,name,63);
@@ -46,11 +46,10 @@ stock LogDamage(client, victim, weapon, description, hp, xp=0)
 
     new victimTeam=GetClientTeam(victim);
 
-    PrintToChat(victim,"%c[War3Source] %s %chas damaged you for %d with a %c%s%c",
+    PrintToChat(victim, "%c[War3Source] %s %chas damaged you for %d with a %c%s%c",
                 COLOR_GREEN,name,COLOR_DEFAULT,hp,COLOR_GREEN,description,COLOR_DEFAULT);
 
-    PrintToChat(client,COLOR_DEFAULT,
-                "%c[War3Source] %cYou damaged %s for %d hp with a %c%s%c.",
+    PrintToChat(client, "%c[War3Source] %cYou damaged %s for %d hp with a %c%s%c.",
                 COLOR_GREEN,COLOR_DEFAULT,victimName, hp, COLOR_GREEN,weapon,COLOR_DEFAULT);
 
     LogToGame("[War3Source] \"%s\"<%d><%s><%s> damaged \"%s\"<%d><%s><%s> for %d with %s\n",
@@ -58,7 +57,7 @@ stock LogDamage(client, victim, weapon, description, hp, xp=0)
               victimName, victim, victimID, (victimTeam == 2) ? "Red" : "Blue", hp, weapon);
 }
 
-stock LogKill(client, victim, weapon, description, hp=0, xp=0)
+stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
 {
     decl String:name[64];
     GetClientName(client,name,63);
@@ -76,13 +75,12 @@ stock LogKill(client, victim, weapon, description, hp=0, xp=0)
 
     new victimTeam=GetClientTeam(victim);
 
-    PrintToChat(victim,"%c[War3Source] %s %c killed you with a %c%s%c",
+    PrintToChat(victim, "%c[War3Source] %s %c killed you with a %c%s%c",
                 COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,description,COLOR_DEFAULT);
 
     if (xp)
     {
-        PrintToChat(client,COLOR_DEFAULT,
-                    "%c[War3Source] %cYou gained %d XP for killing %s with a %c%s%c.",
+        PrintToChat(client, "%c[War3Source] %cYou gained %d XP for killing %s with a %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,xp,victimName, COLOR_GREEN,description,COLOR_DEFAULT);
 
         LogToGame("[War3Source] \"%s\"<%d><%s><%s> killed \"%s\"<%d><%s><%s> with %s (%d XP)\n",
@@ -90,8 +88,7 @@ stock LogKill(client, victim, weapon, description, hp=0, xp=0)
     }
     else
     {
-        PrintToChat(client,COLOR_DEFAULT,
-                    "%c[War3Source] %cYou killed %s with a %c%s%c.",
+        PrintToChat(client, "%c[War3Source] %cYou killed %s with a %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,victimName, COLOR_GREEN,weapon,COLOR_DEFAULT);
 
         LogToGame("[War3Source] \"%s\"<%d><%s><%s> killed \"%s\"<%d><%s><%s> with %s\n",
