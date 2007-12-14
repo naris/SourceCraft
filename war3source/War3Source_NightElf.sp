@@ -108,7 +108,8 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                     }
                 }
             }
-            PrintToChat(client,"%c[War3Source]%c You have used your ultimate \"Entangled Roots\", you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT);
+            PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             m_AllowEntangle[client]=false;
             CreateTimer(45.0,AllowEntangle,client);
         }
@@ -184,9 +185,9 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public bool:NightElf_Evasion(Handle:event, victimindex, war3playervictim)
+public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
 {
-    new skill_level_evasion = War3_GetSkillLevel(war3playervictim,raceID,0);
+    new skill_level_evasion = War3_GetSkillLevel(victimWar3player,raceID,0);
     if (skill_level_evasion)
     {
         new chance;
@@ -205,7 +206,16 @@ public bool:NightElf_Evasion(Handle:event, victimindex, war3playervictim)
         {
             new losthp=GetEventInt(event,"dmg_health");
             new newhp=GetClientHealth(victimindex)+losthp;
-            SetHealth(victimindex,newhp);
+            SetHealth(victimIndex,newhp);
+
+            decl String:victimName[64];
+            GetClientName(victimIndex,victimName,63);
+
+            decl String:name[64];
+            GetClientName(index,name,63);
+            PrintToChat(victim,"%c[War3Source] %s %cyou have evaded an attack!",
+                        COLOR_GREEN,victimName,COLOR_DEFAULT);
+            LogMessage("[War3Source] %s evaded an attack!\n", victimName);
             return true;
         }
     }

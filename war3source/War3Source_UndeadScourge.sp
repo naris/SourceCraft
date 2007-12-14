@@ -164,7 +164,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     if (War3_GetRace(attackerWar3player) == raceID)
                     {
                         Undead_VampiricAura(event, attackerIndex, attackerWar3player,
-                                       victimIndex, victimWar3player);
+                                            victimIndex, victimWar3player);
                     }
                 }
             }
@@ -179,7 +179,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     if (War3_GetRace(assisterWar3player) == raceID)
                     {
                         Undead_VampiricAura(event, assisterIndex, assisterWar3player,
-                                       victimIndex, victimWar3player);
+                                            victimIndex, victimWar3player);
                     }
                 }
             }
@@ -250,6 +250,18 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
 
             new health=GetClientHealth(index)+leechhealth;
             SetHealth(index,health);
+
+            decl String:name[64];
+            GetClientName(index,name,63);
+            PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura.%c",i
+                        COLOR_GREEN,name,COLOR_DEFAULT,leechhealth,COLOR_GREEN,COLOR_DEFAULT);
+
+            decl String:victimName[64];
+            GetClientName(index,victimName,63);
+            PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %s using %cEntangled Roots%c.",
+                        COLOR_GREEN,COLOR_DEFAULT,leechhealth,victimName,COLOR_GREEN,COLOR_DEFAULT);
+
+            LogMessage("[War3Source] %s leeched %d health from %s\n", name, leechhealth, victimName);
         }
     }
 }
@@ -316,10 +328,13 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                                 new addxp=5+level;
                                 new newxp=War3_GetXP(war3player,raceID)+addxp;
                                 War3_SetXP(war3player,raceID,newxp);
-                                War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                                       "%c[War3Source] %cYou gained %d XP for killing someone with a suicide bomb.",
-                                                       COLOR_GREEN,COLOR_DEFAULT,addxp);
+
+                                LogKill(client, victim, "suicide_bomb", "Suicide Bomb", hp, addxp)
                             }
+                        }
+                        else
+                        {
+                            LogDamage(client, victim, "suicide_bomb", "Suicide Bomb", hp)
                         }
                     }
                 }

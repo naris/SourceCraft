@@ -251,14 +251,14 @@ public Action:PlayerProperties(Handle:timer)
                         newSpeed = m_BaseSpeed[client] * speed;
                     }
 
-                    /*
+                    /**/
                     LogMessage("[War3Source] BaseSpeed=%f, curSpeed=%f, newSpeed=%f\n",
                                m_BaseSpeed[client], curSpeed, newSpeed);
 
                     War3Source_ChatMessage(client,COLOR_DEFAULT,
                                            "%c[War3Source] %c BaseSpeed=%f, speed=%f, curSpeed=%f, newSpeed=%f",
                                            COLOR_GREEN,COLOR_DEFAULT, m_BaseSpeed[client], speed, curSpeed, newSpeed);
-                    */
+                    /**/
 
                     if (curSpeed != newSpeed)
                         SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
