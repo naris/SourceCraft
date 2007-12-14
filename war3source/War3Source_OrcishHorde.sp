@@ -13,6 +13,7 @@
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
 #include "War3Source/util"
+#include "War3Source/log"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -75,8 +76,9 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
-    g_beamSprite = PrecacheModel("materials/particles/rockettrail/rockettrail.vmt");
-    g_haloSprite = PrecacheModel("materials/sprites/glow02.vmt");
+    g_beamSprite = PrecacheModel("materials/sprites/lgtning.vmt");
+    //g_beamSprite = PrecacheModel("materials/sprites/laser.vmt");
+    g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -135,8 +137,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (War3_GetRace(attackerWar3player) == raceID)
                     {
-                        OrcishHorde_CriticalStrike(event, attackerWar3player, victimIndex);
-                        OrcishHorde_CriticalGrenade(event, attackerWar3player, victimIndex);
+                        OrcishHorde_CriticalStrike(event, attackerIndex, attackerWar3player, victimIndex);
+                        OrcishHorde_CriticalGrenade(event, attackerIndex, attackerWar3player, victimIndex);
                     }
                 }
             }
@@ -150,8 +152,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (War3_GetRace(assisterWar3player) == raceID)
                     {
-                        OrcishHorde_CriticalStrike(event, assisterWar3player, victimIndex);
-                        OrcishHorde_CriticalGrenade(event, assisterWar3player, victimIndex);
+                        OrcishHorde_CriticalStrike(event, assisterIndex, assisterWar3player, victimIndex);
+                        OrcishHorde_CriticalGrenade(event, assisterIndex, assisterWar3player, victimIndex);
                     }
                 }
             }
@@ -200,7 +202,7 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
         m_HasRespawned[x]=false;
 }
 
-public OrcishHorde_CriticalStrike(Handle:event, war3player, victimIndex)
+public OrcishHorde_CriticalStrike(Handle:event, index, war3player, victimIndex)
 {
     new skill_cs = War3_GetSkillLevel(war3player,raceID,0);
     if (skill_cs > 0)
@@ -221,8 +223,14 @@ public OrcishHorde_CriticalStrike(Handle:event, war3player, victimIndex)
             }
             new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
             new new_health=GetClientHealth(victimIndex)-health_take;
-            if(new_health<0)
+            if (new_health<0)
+            {
                 new_health=0;
+                LogKill(index, victimIndex, "critical_strike", "Critical Strike", health_take);
+            }
+            else
+                LogDamage(index, victimIndex, "critical_strike", "Critical Strike", health_take);
+
             SetHealth(victimIndex,new_health);
 
             new Float:Origin[3];
@@ -236,7 +244,7 @@ public OrcishHorde_CriticalStrike(Handle:event, war3player, victimIndex)
     }
 }
 
-public OrcishHorde_CriticalGrenade(Handle:event, war3player, victimIndex)
+public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
 {
     new skill_cg = War3_GetSkillLevel(war3player,raceID,1);
     if (skill_cg > 0)
@@ -266,8 +274,14 @@ public OrcishHorde_CriticalGrenade(Handle:event, war3player, victimIndex)
             }
             new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
             new new_health=GetClientHealth(victimIndex)-health_take;
-            if(new_health<0)
+            if (new_health<0)
+            {
                 new_health=0;
+                LogKill(index, victimIndex, "critical_grenade", "Critical Grenade", health_take);
+            }
+            else
+                LogDamage(index, victimIndex, "critical_grenade", "Critical Grenade", health_take);
+
             SetHealth(victimIndex,new_health);
 
             new Float:Origin[3];
@@ -316,9 +330,20 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                                       0, 50, 50.0, 3.0,10.0,50,50.0,color,255);
                     TE_SendToAll();
 
-                    new new_health=GetClientHealth(index)-32;
-                    if(new_health<0)
+                    new new_health=GetClientHealth(index)-40;
+                    if (new_health<0)
+                    {
                         new_health=0;
+
+                        new addxp=5+ultlevel;
+                        new newxp=War3_GetXP(war3player,raceID)+addxp;
+                        War3_SetXP(war3player,raceID,newxp);
+
+                        LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                    }
+                    else
+                        LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
+
                     SetHealth(index,new_health);
 
                     last=index;
@@ -327,7 +352,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                 }
             }
         }
-        PrintToChat(client,"%c[War3Source]%c You have used your ultimate \"Chained Lightning\", you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT);
+        PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 

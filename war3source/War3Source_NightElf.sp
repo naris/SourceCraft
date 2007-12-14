@@ -56,7 +56,7 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-	Glow = PrecacheModel("materials/sprites/redglow1.vmt");
+	Glow = PrecacheModel("materials/sprites/blueglow1.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
