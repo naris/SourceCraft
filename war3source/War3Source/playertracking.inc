@@ -16,6 +16,10 @@
 new Handle:g_OnRaceSelectedHandle;
 new Handle:g_OnSkillLevelChangedHandle;
 
+new bool:speedAltered[MAXPLAYERS+1]      = { false, ... };
+new bool:gravityAltered[MAXPLAYERS+1]    = { false, ... };
+new bool:visibilityAltered[MAXPLAYERS+1] = { false, ... };
+
 public GetClientVectorPosition(client)
 {
     new size=GetArraySize(arrayPlayers);
@@ -187,12 +191,6 @@ public Action:PlayerProperties(Handle:timer)
             new bool:overridePlayerSpeed=false;
             new bool:overridePlayerGravity=false;
             new bool:overridePlayerVisibility=false;
-            new bool:speedAltered=false;
-            new bool:gravityAltered=false;
-            new bool:visibilityAltered=false;
-            new speedIndex=0;
-            new gravityIndex=0;
-            new visibilityIndex=0;
             for(new y=0;y<GetArraySize(pinfo);y++)
             {
                 // check which plugin is the highest/lowest bidder, but first, override?
@@ -211,19 +209,12 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         speed=overridespeed;
                         overridePlayerSpeed=true;
-                        speedAltered=true;
-                        speedIndex=y;
+                        speedAltered[client]=true;
                     }
                     else if(maxSpeed>speed)
                     {
                         speed=maxSpeed;
-                        speedIndex=y;
-                        speedAltered=true;
-                    }
-                    else if (GetArrayCell(temp,8)) // Speed Altered flag set?
-                    {
-                        speedIndex=y;
-                        speedAltered=true;
+                        speedAltered[client]=true;
                     }
                 }
                 if(!overridePlayerGravity)
@@ -232,19 +223,12 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         gravity=overridegravity;
                         overridePlayerGravity=true;
-                        gravityAltered=true;
-                        gravityIndex=y;
+                        gravityAltered[client]=true;
                     }
                     else if(minGravity<gravity)
                     {
                         gravity=minGravity;
-                        gravityIndex=y;
-                        gravityAltered=true;
-                    }
-                    else if (GetArrayCell(temp,9)) // Gravity Altered flag set?
-                    {
-                        gravityIndex=y;
-                        gravityAltered=true;
+                        gravityAltered[client]=true;
                     }
                 }
                 if(!overridePlayerVisibility)
@@ -254,25 +238,18 @@ public Action:PlayerProperties(Handle:timer)
                         meleeFactor=1.0;
                         visibility=overridevisibility;
                         overridePlayerVisibility=true;
-                        visibilityAltered=true;
-                        visibilityIndex=y;
+                        visibilityAltered[client]=true;
                     }
                     else if(visibility>minVisibility)
                     {
                         visibility=minVisibility;
                         meleeFactor=maxmeleeFactor;
-                        visibilityIndex=y;
-                        visibilityAltered=true;
-                    }
-                    else if (GetArrayCell(temp,10)) // Visibility Altered flag set?
-                    {
-                        visibilityIndex=y;
-                        visibilityAltered=true;
+                        visibilityAltered[client]=true;
                     }
                 }
             }
 
-            if (speedAltered || overridePlayerSpeed || speed != 1.0)
+            if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
             {
                 if (GameType == tf2)
                 {
@@ -315,20 +292,18 @@ public Action:PlayerProperties(Handle:timer)
                 if (speed == 1.0)
                 {
                     // Speed is back to normal, Reset the altered flag
-                    new Handle:temp = GetArrayCell(pinfo,speedIndex);
-                    SetArrayCell(temp,8,false);
+                    speedAltered[client]=false;
                 }
             }
 
-            if (visibilityAltered || overridePlayerVisibility || visibility != 255)
+            if (visibilityAltered[client] || overridePlayerVisibility || visibility != 255)
             {
                 if (visibility >= 255)
                 {
                     MakeVisible(client);
 
                     // Visibility is back to normal, Reset the altered flag
-                    new Handle:temp = GetArrayCell(pinfo,visibilityIndex);
-                    SetArrayCell(temp,10,false);
+                    visibilityAltered[client]=false;
                 }
                 else
                 {
@@ -336,7 +311,7 @@ public Action:PlayerProperties(Handle:timer)
                 }
             }
 
-            if (gravityAltered || overridePlayerGravity || gravity != 1.0)
+            if (gravityAltered[client] || overridePlayerGravity || gravity != 1.0)
             {
                 if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
                     SetEntDataFloat(client,m_OffsetGravity[client], gravity);
@@ -344,8 +319,7 @@ public Action:PlayerProperties(Handle:timer)
                 if (gravity == 1.0)
                 {
                     // Gravity is back to normal, Reset the altered flag
-                    new Handle:temp = GetArrayCell(pinfo,gravityIndex);
-                    SetArrayCell(temp,9,false);
+                    gravityAltered[client]=false;
                 }
             }
         }
