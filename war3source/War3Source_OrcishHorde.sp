@@ -251,9 +251,14 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
     {
         decl String:weapon[64];
         GetEventString(event,"weapon",weapon,63);
+
+        PrintToChat(index, "%c[War3Source] %cweapon=%s.", COLOR_GREEN,COLOR_DEFAULT,weapon);
+        LogMessage("%c[War3Source] %cweapon=%s.", COLOR_GREEN,COLOR_DEFAULT,weapon);
+
         if (StrEqual(weapon,"hegrenade",false) ||
             StrEqual(weapon,"tf_projectile_pipe",false) ||
             StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
+            StrEqual(weapon,"tf_weapon_rocketlauncher",false) ||
             StrEqual(weapon,"tf_projectile_rocket",false) ||
             StrEqual(weapon,"weapon_frag_us",false) ||
             StrEqual(weapon,"weapon_frag_ger",false) ||
