@@ -203,18 +203,22 @@ public War3Source_InitHelpCommands()
     NewHelpCommand("say resetskills","Resets all your skill levels for the current race and allows you to rechoose.");
     NewHelpCommand("say spendskills","Spend any unused skill points you have.");
     NewHelpCommand("say showskills","Show which skill levels you currently have.");
-    NewHelpCommand("say showcredits","Show your current shop credit count.");
     NewHelpCommand("say shopmenu","Bring up the shop menu at which you can buy items.");
     NewHelpCommand("+ultimate","Use an ultimate that required a bind.");
     NewHelpCommand("war3admin","Bring up the admin menu at which you can modify player info.");
 
+    NewHelpCommand("say showcredits","Show your current shop credit count.");
+
     decl String:currency[64];
     GetConVarString(m_Currency, currency, 63);
-    decl String:name[64];
-    Format(name,63,"say show%ss", currency);
-    decl String:desc[128];
-    Format(desc,127,"Show your current shop %s count.", currency,127);
-    NewHelpCommand(name,desc);
+    if (!StrEqual(currency, "credit"))
+    {
+        decl String:name[64];
+        Format(name,63,"say show%ss", currency);
+        decl String:desc[128];
+        Format(desc,127,"Show your current shop %s count.", currency,127);
+        NewHelpCommand(name,desc);
+    }
 }
 
 public War3Source_War3Help(client)
