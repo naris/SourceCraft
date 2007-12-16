@@ -252,9 +252,7 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
         decl String:weapon[64];
         GetEventString(event,"weapon",weapon,63);
         if (!strlen(weapon))
-        {
             GetClientWeapon(index, weapon, 63);
-        }
 
         if (StrEqual(weapon,"hegrenade",false) ||
             StrEqual(weapon,"tf_projectile_pipe",false) ||

@@ -81,6 +81,8 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
         {
             decl String:weapon[64];
             GetEventString(event,"weapon",weapon,63);
+            if (!strlen(weapon))
+                GetClientWeapon(attackerIndex, weapon, 63);
 
             new bool:backstab = false;
             new bool:headshot = false;
