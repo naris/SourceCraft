@@ -256,9 +256,6 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
             GetClientWeapon(index, weapon, 63);
         }
 
-        PrintToChat(index, "%c[War3Source] %cweapon=%s.", COLOR_GREEN,COLOR_DEFAULT,weapon);
-        LogMessage("%c[War3Source] %cweapon=%s.", COLOR_GREEN,COLOR_DEFAULT,weapon);
-
         if (StrEqual(weapon,"hegrenade",false) ||
             StrEqual(weapon,"tf_projectile_pipe",false) ||
             StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
@@ -281,7 +278,12 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
                 case 4:
                     percent=2.4;
             }
-            new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
+
+            new Float:damage=float(GetEventInt(event,"damage"));
+            if (!damage)
+                damage = float(GetEventInt(event,"dmg_health"));
+
+            new health_take=RoundFloat(damage*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health<0)
             {

@@ -286,7 +286,10 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
             case 4:
                 percent_health=0.30;
         }
-        new Float:damage=float(GetEventInt(event,"dmg_health"));
+        new Float:damage=float(GetEventInt(event,"damage"));
+        if (!damage)
+            damage = float(GetEventInt(event,"dmg_health"));
+
         new leechhealth=RoundFloat(damage*percent_health);
         if(leechhealth)
         {

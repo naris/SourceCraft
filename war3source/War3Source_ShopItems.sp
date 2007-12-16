@@ -410,7 +410,11 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if(isMole[attacker_index])
                     {
-                        new h1=GetEventInt(event,"health")+GetEventInt(event,"dmg_health");
+                        new damage=GetEventInt(event,"damage");
+                        if (!damage)
+                            damage = GetEventInt(event,"dmg_health");
+
+                        new h1=GetEventInt(event,"health")+damage;
                         new h2=GetClientHealth(index);
                         if(h2<h1)
                             SetHealth(index,(h1+h2)/2);

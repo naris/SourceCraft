@@ -204,7 +204,10 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         }
         if (GetRandomInt(1,100) <= chance)
         {
-            new losthp=GetEventInt(event,"dmg_health");
+            new losthp=GetEventInt(event,"damage");
+            if (!losthp)
+                losthp = GetEventInt(event,"dmg_health");
+
             new newhp=GetClientHealth(victimIndex)+losthp;
             SetHealth(victimIndex,newhp);
 
