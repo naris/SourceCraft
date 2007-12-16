@@ -251,6 +251,10 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
     {
         decl String:weapon[64];
         GetEventString(event,"weapon",weapon,63);
+        if (!strlen(weapon))
+        {
+            GetClientWeapon(index, weapon, 63);
+        }
 
         PrintToChat(index, "%c[War3Source] %cweapon=%s.", COLOR_GREEN,COLOR_DEFAULT,weapon);
         LogMessage("%c[War3Source] %cweapon=%s.", COLOR_GREEN,COLOR_DEFAULT,weapon);
