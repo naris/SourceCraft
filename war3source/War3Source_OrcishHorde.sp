@@ -26,6 +26,8 @@ new Handle:hRoundRespawn;
 new g_beamSprite;
 new g_haloSprite;
 
+new String:thunderWav[] = "ambient/weather/thunder1.wav";
+
 public Plugin:myinfo = 
 {
     name = "War3Source Race - Orcish Horde",
@@ -76,9 +78,11 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
-    g_beamSprite = PrecacheModel("materials/sprites/lgtning.vmt");
-    //g_beamSprite = PrecacheModel("materials/sprites/laser.vmt");
+    g_beamSprite = PrecacheModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
     g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");
+
+    PrecacheSound(thunderWav);
+    AddFileToDownloadsTable(thunderWav);
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -343,6 +347,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                     TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
                                       0, 50, 50.0, 3.0,10.0,50,50.0,color,255);
                     TE_SendToAll();
+                    EmitSoundToAll(thunderWav,client);
 
                     new new_health=GetClientHealth(index)-40;
                     if (new_health<0)
