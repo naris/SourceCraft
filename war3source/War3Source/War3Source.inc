@@ -10,9 +10,10 @@
 new Handle:arrayPlayers = INVALID_HANDLE;
 
 // ConVar definitions
-new Handle:m_SaveXPConVar = INVALID_HANDLE;
+new Handle:m_SaveXPConVar         = INVALID_HANDLE;
 new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
-new Handle:m_MaxCredits = INVALID_HANDLE;
+new Handle:m_MaxCredits           = INVALID_HANDLE;
+new Handle:m_Currency             = INVALID_HANDLE; 
 
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
@@ -20,9 +21,9 @@ new Handle:DBIDB = INVALID_HANDLE;
 enum Mod { other, tf2, cstrike, dod, hl2mp, insurgency };
 new Mod:GameType = other;
 
-#define SAVE_ENABLED GetConVarInt(m_SaveXPConVar)==1
+#define SAVE_ENABLED       GetConVarInt(m_SaveXPConVar)==1
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
-#define MAX_CREDITS GetConVarInt(m_MaxCredits)
+#define MAX_CREDITS        GetConVarInt(m_MaxCredits)
 
 // War3Source Includes
 #include "War3Source/immunity"
@@ -206,6 +207,14 @@ public War3Source_InitHelpCommands()
     NewHelpCommand("say shopmenu","Bring up the shop menu at which you can buy items.");
     NewHelpCommand("+ultimate","Use an ultimate that required a bind.");
     NewHelpCommand("war3admin","Bring up the admin menu at which you can modify player info.");
+
+    decl String:currency[64];
+    GetConVarString(m_Currency, currency, 63);
+    decl String:name[64];
+    Format(name,63,"say show%ss", currency);
+    decl String:desc[128];
+    Format(desc,127,"Show your current shop %s count.", currency,127);
+    NewHelpCommand(name,desc);
 }
 
 public War3Source_War3Help(client)

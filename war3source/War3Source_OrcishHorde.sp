@@ -49,9 +49,9 @@ public OnWar3PluginReady()
                            "orc", // SQLite ID name (short name, no spaces)
                            "You are now an Orcish Horde.", // Selected Race message
                            "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                           "Critical Strike", //Skill 1 Name
+                           "Captious Strike", //Skill 1 Name
                            "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
-                           "Critical Grenade", // Skill 2 Name
+                           "Captious Grenade", // Skill 2 Name
                            "Grenades and Rockets will always do a 40-240%\nmore damage.", // Skill 2 Description
                            "Reincarnation", // Skill 3 Name
                            "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
@@ -137,8 +137,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (War3_GetRace(attackerWar3player) == raceID)
                     {
-                        OrcishHorde_CriticalStrike(event, attackerIndex, attackerWar3player, victimIndex);
-                        OrcishHorde_CriticalGrenade(event, attackerIndex, attackerWar3player, victimIndex);
+                        OrcishHorde_CaptiousStrike(event, attackerIndex, attackerWar3player, victimIndex);
+                        OrcishHorde_CaptiousGrenade(event, attackerIndex, attackerWar3player, victimIndex);
                     }
                 }
             }
@@ -152,8 +152,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (War3_GetRace(assisterWar3player) == raceID)
                     {
-                        OrcishHorde_CriticalStrike(event, assisterIndex, assisterWar3player, victimIndex);
-                        OrcishHorde_CriticalGrenade(event, assisterIndex, assisterWar3player, victimIndex);
+                        OrcishHorde_CaptiousStrike(event, assisterIndex, assisterWar3player, victimIndex);
+                        OrcishHorde_CaptiousGrenade(event, assisterIndex, assisterWar3player, victimIndex);
                     }
                 }
             }
@@ -202,7 +202,7 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
         m_HasRespawned[x]=false;
 }
 
-public OrcishHorde_CriticalStrike(Handle:event, index, war3player, victimIndex)
+public OrcishHorde_CaptiousStrike(Handle:event, index, war3player, victimIndex)
 {
     new skill_cs = War3_GetSkillLevel(war3player,raceID,0);
     if (skill_cs > 0)
@@ -231,10 +231,10 @@ public OrcishHorde_CriticalStrike(Handle:event, index, war3player, victimIndex)
             if (new_health<0)
             {
                 new_health=0;
-                LogKill(index, victimIndex, "critical_strike", "Critical Strike", health_take);
+                LogKill(index, victimIndex, "captious_strike", "Captious Strike", health_take);
             }
             else
-                LogDamage(index, victimIndex, "critical_strike", "Critical Strike", health_take);
+                LogDamage(index, victimIndex, "captious_strike", "Captious Strike", health_take);
 
             SetHealth(victimIndex,new_health);
 
@@ -249,7 +249,7 @@ public OrcishHorde_CriticalStrike(Handle:event, index, war3player, victimIndex)
     }
 }
 
-public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
+public OrcishHorde_CaptiousGrenade(Handle:event, index, war3player, victimIndex)
 {
     new skill_cg = War3_GetSkillLevel(war3player,raceID,1);
     if (skill_cg > 0)
@@ -291,10 +291,10 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
             if (new_health<0)
             {
                 new_health=0;
-                LogKill(index, victimIndex, "critical_grenade", "Critical Grenade", health_take);
+                LogKill(index, victimIndex, "captious_grenade", "Captious Grenade", health_take);
             }
             else
-                LogDamage(index, victimIndex, "critical_grenade", "Critical Grenade", health_take);
+                LogDamage(index, victimIndex, "captious_grenade", "Captious Grenade", health_take);
 
             SetHealth(victimIndex,new_health);
 

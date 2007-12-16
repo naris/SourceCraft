@@ -37,6 +37,11 @@ public Action:War3Source_SayCommand(client,args)
     new vecpos=GetClientVectorPosition(client);
     if(vecpos>-1)
     {
+        decl String:currency[64];
+        GetConVarString(m_Currency, currency, 63);
+        decl String:showCurrency[64];
+        Format(showCurrency,63,"show%ss",currency);
+
         if(CommandCheck(arg1,"showxp",63))
         {
             ShowXP(client,vecpos);
@@ -76,7 +81,7 @@ public Action:War3Source_SayCommand(client,args)
             War3Source_ShowSkills(client,vecpos);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"showcredits",63))
+        else if(CommandCheck(arg1,"showcredits",63)|| CommandCheck(arg1,showCurrency,63))
         {
             War3Source_ShowCredits(client,vecpos);
             return Plugin_Handled;
@@ -87,13 +92,13 @@ public Action:War3Source_SayCommand(client,args)
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"war3help",63) || CommandCheck(arg1,"wc3help",63) ||
-	       	CommandCheck(arg1,"wchelp",63)   || CommandCheck(arg1,"help",63))
+	       	    CommandCheck(arg1,"wchelp",63)   || CommandCheck(arg1,"help",63))
         {
             War3Source_War3Help(client);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"war3menu",63) || CommandCheck(arg1,"wc3menu",63) ||
-	       	CommandCheck(arg1,"wcmenu",63))
+	       	    CommandCheck(arg1,"wcmenu",63))
         {
             War3Source_War3Menu(client,vecpos);
             return Plugin_Handled;

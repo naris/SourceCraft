@@ -328,10 +328,12 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
 public War3Source_ShopMenu(client,vectorpos)
 {
+    decl String:currency[64];
+    GetConVarString(m_Currency, currency, 63);
     new Handle:shopMenu=CreateMenu(War3Source_ShopMenu_Selected);
     SetMenuExitButton(shopMenu,true);
     new credits=GetCredits(vectorpos);
-    SetMenuTitle(shopMenu,"[War3Source] Select an item to look at. - You have %d credits",credits);
+    SetMenuTitle(shopMenu,"[War3Source] Select an item to look at. - You have %d %s",credits,currency);
     decl String:itemname[64];
     decl String:itembuf[4];
     decl String:linestr[96];
@@ -343,7 +345,7 @@ public War3Source_ShopMenu(client,vectorpos)
         itemHandle=ShopItem(x);
         GetArrayString(itemHandle,0,itemname,63);
         GetArrayString(itemHandle,2,cost,7);
-        Format(linestr,95,"%s - %s Credits",itemname,cost);
+        Format(linestr,95,"%s - %s %s",itemname,cost,currency);
         AddMenuItem(shopMenu,itembuf,linestr);
     }
     DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
@@ -370,6 +372,8 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
 
 public War3Source_ShopMenu_Item(client,vecpos,item)
 {
+    decl String:currency[64];
+    GetConVarString(m_Currency, currency, 63);
     new Handle:shopMenu_Item=CreateMenu(War3Source_ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
     new credits=GetCredits(vecpos);
@@ -383,7 +387,7 @@ public War3Source_ShopMenu_Item(client,vecpos,item)
     decl String:cost[32];
     GetArrayString(itemHandle,2,cost,31);
     Format(cost,31,"Cost: %s Credit(s)",cost);
-    SetMenuTitle(shopMenu_Item,"[War3Source] Shop Item - %s - You have %d Credits\n%s\n%s",itemname,credits,desc,cost);
+    SetMenuTitle(shopMenu_Item,"[War3Source] Shop Item - %s - You have %d %s\n%s\n%s",itemname,credits,currency,desc,cost);
     decl String:buf[4];
     Format(buf,3,"%d",item);
     AddMenuItem(shopMenu_Item,buf,"Purchase");
@@ -603,6 +607,8 @@ public War3Source_Admin_PlayerInfo(client,target)
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
+        decl String:currency[64];
+        GetConVarString(m_Currency, currency, 63);
         new Handle:playerInfo=CreateMenu(War3Source_Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
         decl String:playername[64];
@@ -616,8 +622,8 @@ public War3Source_Admin_PlayerInfo(client,target)
         new xp=GetXP(targetvecpos,race);
         new level=GetLevel(targetvecpos,race);
 
-        SetMenuTitle(playerInfo,"[War3Source] Info for %s.\nRace: %s\nCredits: %d\nXP: %d\nLevel: %d",
-                     playername,race_name,credits,xp,level);
+        SetMenuTitle(playerInfo,"[War3Source] Info for %s.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
+                     playername,race_name,currency,credits,xp,level);
 
         decl String:buf[4];
         Format(buf,3,"%d",target);
@@ -1043,14 +1049,32 @@ public War3Source_Admin_Credits(client,target)
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,63);
         SetMenuTitle(menu,"[War3Source] Select an option for %s.",playername);
+
         decl String:buf[4];
         Format(buf,3,"%d",target);
-        AddMenuItem(menu,buf,"Give 1 credit");
-        AddMenuItem(menu,buf,"Give 5 credits");
-        AddMenuItem(menu,buf,"Give 10 credits");
-        AddMenuItem(menu,buf,"Remove 1 credit");
-        AddMenuItem(menu,buf,"Remove 5 credits");
-        AddMenuItem(menu,buf,"Remove 10 credits");
+
+        decl String:display[64];
+        decl String:currency[64];
+        GetConVarString(m_Currency, currency, 63);
+
+        Format(display,63,"Give 1 %s", currency);
+        AddMenuItem(menu,buf,display);
+
+        Format(display,63,"Give 5 %ss", currency);
+        AddMenuItem(menu,buf,display);
+
+        Format(display,63,"Give 10 %ss", currency);
+        AddMenuItem(menu,buf,display);
+
+        Format(display,63,"Remove 1 %s", currency);
+        AddMenuItem(menu,buf,display);
+
+        Format(display,63,"Remove 5 %ss", currency);
+        AddMenuItem(menu,buf,display);
+
+        Format(display,63,"Remove 10 %ss", currency);
+        AddMenuItem(menu,buf,display);
+
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
@@ -1075,6 +1099,8 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
         new targetvecpos=GetClientVectorPosition(index);
         if(targetvecpos>-1)
         {
+            decl String:currency[64];
+            GetConVarString(m_Currency, currency, 63);
             decl String:adminname[64];
             GetClientName(client,adminname,63);
             decl String:targetname[64];
@@ -1097,12 +1123,12 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                 SetCredits(targetvecpos,newcred);
 
                 War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                       "%c[War3Source] %cYou gave \"%s\" %d credit(s).",
-                                       COLOR_GREEN,COLOR_DEFAULT,targetname,credadd);
+                                       "%c[War3Source] %cYou gave \"%s\" %d %s(s).",
+                                       COLOR_GREEN,COLOR_DEFAULT,targetname,credadd,currency);
 
                 War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cYou recieved %d credit(s) from admin \"%s\".",
-                                       COLOR_GREEN,COLOR_DEFAULT,credadd,adminname);
+                                       "%c[War3Source] %cYou recieved %d %s(s) from admin \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,credadd,currency,adminname);
 
                 War3Source_Admin_Credits(client,index);
             }
@@ -1124,12 +1150,12 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                 SetCredits(targetvecpos,newcred);
 
                 War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                       "%c[War3Source] %cYou removed %d credit(s) from player \"%s\".",
-                                       COLOR_GREEN,COLOR_DEFAULT,credrem,targetname);
+                                       "%c[War3Source] %cYou removed %d %s(s) from player \"%s\".",
+                                       COLOR_GREEN,COLOR_DEFAULT,credrem,currency,targetname);
 
                 War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" removed %d credit(s) from you.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,credrem);
+                                       "%c[War3Source] %cAdmin \"%s\" removed %d %s(s) from you.",
+                                       COLOR_GREEN,COLOR_DEFAULT,adminname,credrem,currency);
 
                 War3Source_Admin_Credits(client,index);
             }
