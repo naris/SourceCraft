@@ -324,7 +324,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                 {
                     new Float:Origin[3];
                     GetClientAbsOrigin(client, Origin);
-                    Origin[2] += 5;
+                    //Origin[2] += 5;
                     new color[4] = { 10, 200, 255, 255 };
                     TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
                                       0, 50, 50.0, 3.0,10.0,50,50.0,color,255);
