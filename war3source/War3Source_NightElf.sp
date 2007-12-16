@@ -223,7 +223,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
     return false;
 }
 
-public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3playervictim, evaded, damage)
+public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3playervictim, evaded, prev_damage)
 {
     new skill_level_thorns = War3_GetSkillLevel(war3playervictim,raceID,1);
     if (skill_level_thorns)
@@ -244,7 +244,11 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new amount=RoundToNearest((damage + (evaded ? 0 : GetEventInt(event,"dmg_health"))) * 0.30);
+                new damage=GetEventInt(event,"damage");
+                if (!damage)
+                    damage = GetEventInt(event,"dmg_health");
+
+                new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
                 if(newhp<0)
                     newhp=0;
@@ -256,7 +260,7 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
 
                 TE_SetupSparks(Origin,Origin,255,1);
                 TE_SendToAll();
-                return damage;
+                return amount;
             }
         }
     }
@@ -284,8 +288,12 @@ public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
                     percent=0.60;
             }
 
-            new damage=RoundFloat(float(GetEventInt(event,"dmg_health"))*percent);
-            new newhp=GetClientHealth(victimindex)-damage;
+            new damage=GetEventInt(event,"damage");
+            if (!damage)
+                damage = GetEventInt(event,"dmg_health");
+
+            new amount=RoundFloat(float(damage)*percent);
+            new newhp=GetClientHealth(victimindex)-amount;
             if(newhp<0)
                 newhp=0;
             SetHealth(victimindex,newhp);
@@ -296,7 +304,7 @@ public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
 
             TE_SetupSparks(Origin,Origin,255,1);
             TE_SendToAll();
-            return damage;
+            return amount;
         }
     }
     return 0;

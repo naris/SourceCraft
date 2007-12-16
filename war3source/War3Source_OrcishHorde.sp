@@ -221,7 +221,12 @@ public OrcishHorde_CriticalStrike(Handle:event, index, war3player, victimIndex)
                 case 4:
                     percent=2.4;
             }
-            new health_take=RoundFloat((float(GetEventInt(event,"dmg_health"))*percent));
+
+            new damage=GetEventInt(event,"damage");
+            if (!damage)
+                damage = GetEventInt(event,"dmg_health");
+
+            new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health<0)
             {
@@ -277,11 +282,11 @@ public OrcishHorde_CriticalGrenade(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new Float:damage=float(GetEventInt(event,"damage"));
+            new damage=GetEventInt(event,"damage");
             if (!damage)
-                damage = float(GetEventInt(event,"dmg_health"));
+                damage = GetEventInt(event,"dmg_health");
 
-            new health_take=RoundFloat(damage*percent);
+            new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health<0)
             {
