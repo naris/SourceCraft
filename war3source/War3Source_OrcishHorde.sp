@@ -86,7 +86,7 @@ public OnMapStart()
     PrecacheSound(thunderWav);
 
     decl String:thunderFile[256];
-    Format(thunderFile, "sound/%s", thunderWav);
+    Format(thunderFile, 255, "sound/%s", thunderWav);
     AddFileToDownloadsTable(thunderFile);
 }
 

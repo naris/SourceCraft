@@ -79,17 +79,21 @@ public War3Source_EventObjectDestroyed(Handle:event,const String:name[],bool:don
 
 public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    if(GetEventInt(event,"player")>0)
+    new player=GetEventInt(event,"player");
+    new eventtype = GetEventInt(event,"eventtype");
+    new index=GetClientOfUserId(player);
+    LogMessage("[War3Source] FlagEvent eventtype=%d, player=%d, index=%d\n", eventtype, player, index);
+
+    if (player>0)
     {
-        new eventtype = GetEventInt(event,"eventtype");
-        LogMessage("[War3Source] FlagEvent eventtype=%d\n", eventtype);
+        PrintToChat(player, "%c[War3Source] %cFlagEvent=%d, player=%d, index=%d.",
+                    COLOR_GREEN,COLOR_DEFAULT,eventtype, player, index);
 
         if (eventtype == 1) // Point Captured
         {
-            new index=GetClientOfUserId(GetEventInt(event,"userid"));
-            new vecpos=GetClientVectorPosition(index);
+            new vecpos=GetClientVectorPosition(player);
             if (vecpos!=-1)
-                GiveFlagCapturedXP(index,vecpos);
+                GiveFlagCapturedXP(player,vecpos);
         }
     }
 }

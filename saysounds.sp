@@ -77,17 +77,22 @@ File Format:
 #include <sourcemod>
 #include <sdktools>
 
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.5"
+#define PLUGIN_VERSION "1.6"
 #define MAX_PLAYERS 64
 
 new Handle:cvarsoundenable;
 new Handle:cvarsoundlimit;
 new Handle:cvarsoundwarn;
 new Handle:cvarjoinexit;
+new Handle:cvarpersonaljoinexit;
 new Handle:cvartimebetween;
 new Handle:listfile;
+new Handle:hTopMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH];
 new restrict_playing_sounds[MAX_PLAYERS+1];
 new SndOn[MAX_PLAYERS+1];
@@ -109,6 +114,7 @@ public OnPluginStart(){
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at",FCVAR_PLUGIN);
 	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person",FCVAR_PLUGIN);
 	cvarjoinexit = CreateConVar("sm_join_exit","0","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
+	cvarpersonaljoinexit = CreateConVar("sm_personal_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
@@ -116,6 +122,44 @@ public OnPluginStart(){
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say2", Command_InsurgencySay);
 	RegConsoleCmd("say_team", Command_Say);
+	RegConsoleCmd("soundlist", Command_Sound_List, "List available sounds to console");
+	RegConsoleCmd("soundmenu", Command_Sound_Menu, "Display a menu of sounds to play");
+	RegAdminCmd("adminsounds", Command_Admin_Sounds,ADMFLAG_RCON, "Display a menu of Admin sounds to play");
+
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+    /*************************************************************/
+    /* Add a Play Admin Sound option to the SourceMod Admin Menu */
+    /*************************************************************/
+
+    /* Block us from being called twice */
+    if (topmenu != hTopMenu)
+    {
+        /* Save the Handle */
+        hTopMenu = topmenu;
+        new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hTopMenu, "Play_Admin_Sound", TopMenuObject_Item, Play_Admin_Sound, server_commands, "Play_Admin_Sound", ADMFLAG_GENERIC);
+    }
+}
+
+public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+{
+    if (action == TopMenuAction_DisplayOption)
+    {
+        Format(buffer, maxlength, "Play Admin Sound");
+    }
+    else if (action == TopMenuAction_SelectOption)
+    {
+	Sound_Menu(param,true);
+    }
 }
 
 public OnMapStart(){
@@ -152,44 +196,63 @@ public OnClientAuthorized(client, const String:auth[]){
 			SndCount[client] = 0;
 			LastSound[client] = 0.0;
 			
-			if(!GetConVarInt(cvarjoinexit))
-				return;
-				
-			decl String:filelocation[255];
-			new adminonly;
-			KvJumpToKey(listfile, "JoinSound");
-			KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-			adminonly = KvGetNum(listfile, "admin");
-			
-			new Handle:pack;
-			CreateDataTimer(0.2,Command_Play_Sound,pack);
-			WritePackCell(pack, client);
-			WritePackCell(pack, adminonly);
-			WritePackString(pack, filelocation);
-			
-			SndCount[client] = 0;
+			if(GetConVarInt(cvarjoinexit)){
+				decl String:filelocation[255];
+				if (KvJumpToKey(listfile, "JoinSound")){
+					KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+					new adminonly = KvGetNum(listfile, "admin");
+					new singleonly = KvGetNum(listfile, "single");
+
+					new Handle:pack;
+					CreateDataTimer(0.2,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
+
+					SndCount[client] = 0;
+				}
+			}
+
+			if(GetConVarInt(cvarpersonaljoinexit)){
+				decl String:filelocation[255];
+				if (KvJumpToKey(listfile, auth)){
+					KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+					new adminonly = KvGetNum(listfile, "admin");
+					new singleonly = KvGetNum(listfile, "single");
+
+					new Handle:pack;
+					CreateDataTimer(0.2,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
+
+					SndCount[client] = 0;
+				}
+			}
 		}
 	}
 }
 
 public OnClientDisconnect(client){
-	if(!GetConVarInt(cvarjoinexit))
-		return;
-		
-	SndCount[client] = 0;
-				
-	decl String:filelocation[255];
-	new adminonly;
-	KvJumpToKey(listfile, "ExitSound");
-	KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-	adminonly = KvGetNum(listfile, "admin");
-	
-	new Handle:pack;
-	CreateDataTimer(0.2,Command_Play_Sound,pack);
-	WritePackCell(pack, client);
-	WritePackCell(pack, adminonly);
-	WritePackString(pack, filelocation);
-	
+	if(GetConVarInt(cvarjoinexit)){
+		SndCount[client] = 0;
+
+		decl String:filelocation[255];
+		if (KvJumpToKey(listfile, "ExitSound")){
+			KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+			new adminonly = KvGetNum(listfile, "admin");
+			new singleonly = KvGetNum(listfile, "single");
+
+			new Handle:pack;
+			CreateDataTimer(0.2,Command_Play_Sound,pack);
+			WritePackCell(pack, client);
+			WritePackCell(pack, adminonly);
+			WritePackCell(pack, singleonly);
+			WritePackString(pack, filelocation);
+		}
+	}
 }
 
 public Action:Command_Say(client,args){
@@ -240,15 +303,18 @@ public Action:Command_Say(client,args){
 		decl String:buffer[255];
 		decl String:filelocation[255];
 		new adminonly;
+		new singleonly;
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
 				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
 				adminonly = KvGetNum(listfile, "admin");
+				singleonly = KvGetNum(listfile, "single");
 				new Handle:pack;
 				CreateDataTimer(0.1,Command_Play_Sound,pack);
 				WritePackCell(pack, client);
 				WritePackCell(pack, adminonly);
+				WritePackCell(pack, singleonly);
 				WritePackString(pack, filelocation);
 				break;
 			}
@@ -301,21 +367,34 @@ public Action:Command_InsurgencySay(client,args){
 			return Plugin_Handled;
 		}
 		
+		if(strcmp(speech[startidx],"!soundmenu",false) == 0){
+			Sound_Menu(client,false);
+			return Plugin_Handled;
+		}
+		
+		if(strcmp(speech[startidx],"!adminsounds",false) == 0){
+			Sound_Menu(client,true);
+			return Plugin_Handled;
+		}
+		
 			
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		decl String:buffer[255];
 		decl String:filelocation[255];
 		new adminonly;
+		new singleonly;
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
 				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
 				adminonly = KvGetNum(listfile, "admin");
+				singleonly = KvGetNum(listfile, "single");
 				new Handle:pack;
 				CreateDataTimer(0.1,Command_Play_Sound,pack);
 				WritePackCell(pack, client);
 				WritePackCell(pack, adminonly);
+				WritePackCell(pack, singleonly);
 				WritePackString(pack, filelocation);
 				break;
 			}
@@ -331,6 +410,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	ResetPack(pack);
 	new client = ReadPackCell(pack);
 	new adminonly = ReadPackCell(pack);
+	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	
 	if(adminonly){
@@ -349,12 +429,20 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	if ((SndCount[client] < GetConVarInt(cvarsoundlimit)) && (LastSound[client] < thetime)){
 		SndCount[client] = (SndCount[client] + 1);
 		LastSound[client] = thetime + waitTime;
-		new playersconnected;
-		playersconnected = GetMaxClients();
-		for (new i = 1; i <= playersconnected; i++){
-			if(IsClientInGame(i)){
-				if(SndOn[i]){
-					EmitSoundToClient(i, filelocation);
+		if (singleonly){
+			if(IsClientInGame(client)){
+				if(SndOn[client]){
+					EmitSoundToClient(client, filelocation);
+				}
+			}
+		}else{
+			new playersconnected;
+			playersconnected = GetMaxClients();
+			for (new i = 1; i <= playersconnected; i++){
+				if(IsClientInGame(i)){
+					if(SndOn[i]){
+						EmitSoundToClient(i, filelocation);
+					}
 				}
 			}
 		}
@@ -487,6 +575,10 @@ public Action:Command_Sound_Unban(client, args){
 }
 
 
+public Action:Command_Sound_List(client, args){
+	List_Sounds(client);
+}
+
 List_Sounds(client){
 	KvRewind(listfile);
 	KvJumpToKey(listfile, "ExitSound", false);
@@ -497,6 +589,89 @@ List_Sounds(client){
 		PrintToConsole(client, buffer);
 	} while (KvGotoNextKey(listfile));
 	
+}
+
+public Action:Command_Sound_Menu(client, args){
+	Sound_Menu(client,false);
+}
+
+public Action:Command_Admin_Sounds(client, args){
+	Sound_Menu(client,true);
+}
+
+public Sound_Menu(client, bool:adminsounds){
+	new bool:isadmin = (GetUserAdmin(client) != INVALID_ADMIN_ID);
+	if (!isadmin)
+		adminsounds=false;
+
+	new Handle:soundmenu=CreateMenu(Menu_Select);
+	SetMenuExitButton(soundmenu,true);
+	SetMenuTitle(soundmenu,"Choose a sound to play.");
+
+	KvRewind(listfile);
+	KvJumpToKey(listfile, "ExitSound", false);
+	KvGotoNextKey(listfile, true);
+
+	decl String:num[4];
+	decl String:buffer[255];
+	new count=1;
+
+	do{
+		Format(num,3,"%d",count);
+		KvGetSectionName(listfile, buffer, sizeof(buffer));
+
+		if (adminsounds)
+		{
+			if (KvGetNum(listfile, "admin"))
+			{
+				AddMenuItem(soundmenu,num,buffer);
+				count++;
+			}
+		}
+		else
+		{
+			if (!KvGetNum(listfile, "admin") || isadmin)
+			{
+				AddMenuItem(soundmenu,num,buffer);
+				count++;
+			}
+		}
+	} while (KvGotoNextKey(listfile));
+
+	DisplayMenu(soundmenu,client,MENU_TIME_FOREVER);
+}
+
+public Menu_Select(Handle:menu,MenuAction:action,client,selection)
+{
+    if(action==MenuAction_Select)
+    {
+	    decl String:SelectionInfo[4];
+	    decl String:SelectionDispText[256];
+	    new SelectionStyle;
+	    if (GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText))){
+		    KvRewind(listfile);
+		    KvGotoFirstSubKey(listfile);
+		    decl String:buffer[255];
+		    decl String:filelocation[255];
+		    new adminonly;
+		    new singleonly;
+		    do{
+			    KvGetSectionName(listfile, buffer, sizeof(buffer));
+			    if (strcmp(SelectionDispText,buffer,false) == 0){
+				    KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+				    adminonly = KvGetNum(listfile, "admin");
+				    singleonly = KvGetNum(listfile, "single");
+				    new Handle:pack;
+				    CreateDataTimer(0.1,Command_Play_Sound,pack);
+				    WritePackCell(pack, client);
+				    WritePackCell(pack, adminonly);
+				    WritePackCell(pack, singleonly);
+				    WritePackString(pack, filelocation);
+				    break;
+			    }
+		    } while (KvGotoNextKey(listfile));
+	    }
+    }
 }
 
 public OnPluginEnd(){
