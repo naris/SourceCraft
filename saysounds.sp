@@ -196,12 +196,13 @@ public OnClientAuthorized(client, const String:auth[]){
 			SndCount[client] = 0;
 			LastSound[client] = 0.0;
 			
-			if(GetConVarInt(cvarjoinexit)){
+			if(GetConVarInt(cvarpersonaljoinexit)){
 				decl String:filelocation[255];
-				if (KvJumpToKey(listfile, "JoinSound")){
+				KvRewind(listfile);
+				if (KvJumpToKey(listfile, auth)){
 					KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-					new adminonly = KvGetNum(listfile, "admin");
-					new singleonly = KvGetNum(listfile, "single");
+					new adminonly = KvGetNum(listfile, "admin",0);
+					new singleonly = KvGetNum(listfile, "single",0);
 
 					new Handle:pack;
 					CreateDataTimer(0.2,Command_Play_Sound,pack);
@@ -211,15 +212,17 @@ public OnClientAuthorized(client, const String:auth[]){
 					WritePackString(pack, filelocation);
 
 					SndCount[client] = 0;
+					return;
 				}
 			}
 
-			if(GetConVarInt(cvarpersonaljoinexit)){
+			if(GetConVarInt(cvarjoinexit)){
 				decl String:filelocation[255];
-				if (KvJumpToKey(listfile, auth)){
+				KvRewind(listfile);
+				if (KvJumpToKey(listfile, "JoinSound")){
 					KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-					new adminonly = KvGetNum(listfile, "admin");
-					new singleonly = KvGetNum(listfile, "single");
+					new adminonly = KvGetNum(listfile, "admin",0);
+					new singleonly = KvGetNum(listfile, "single",0);
 
 					new Handle:pack;
 					CreateDataTimer(0.2,Command_Play_Sound,pack);
@@ -240,10 +243,11 @@ public OnClientDisconnect(client){
 		SndCount[client] = 0;
 
 		decl String:filelocation[255];
+		KvRewind(listfile);
 		if (KvJumpToKey(listfile, "ExitSound")){
 			KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-			new adminonly = KvGetNum(listfile, "admin");
-			new singleonly = KvGetNum(listfile, "single");
+			new adminonly = KvGetNum(listfile, "admin",0);
+			new singleonly = KvGetNum(listfile, "single",0);
 
 			new Handle:pack;
 			CreateDataTimer(0.2,Command_Play_Sound,pack);
@@ -314,8 +318,8 @@ public Action:Command_Say(client,args){
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
 				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-				adminonly = KvGetNum(listfile, "admin");
-				singleonly = KvGetNum(listfile, "single");
+				adminonly = KvGetNum(listfile, "admin",0);
+				singleonly = KvGetNum(listfile, "single",0);
 				new Handle:pack;
 				CreateDataTimer(0.1,Command_Play_Sound,pack);
 				WritePackCell(pack, client);
@@ -390,8 +394,8 @@ public Action:Command_InsurgencySay(client,args){
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
 				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-				adminonly = KvGetNum(listfile, "admin");
-				singleonly = KvGetNum(listfile, "single");
+				adminonly = KvGetNum(listfile, "admin",0);
+				singleonly = KvGetNum(listfile, "single",0);
 				new Handle:pack;
 				CreateDataTimer(0.1,Command_Play_Sound,pack);
 				WritePackCell(pack, client);
@@ -624,7 +628,7 @@ public Sound_Menu(client, bool:adminsounds){
 
 		if (adminsounds)
 		{
-			if (KvGetNum(listfile, "admin"))
+			if (KvGetNum(listfile, "admin",0))
 			{
 				AddMenuItem(soundmenu,num,buffer);
 				count++;
@@ -632,7 +636,7 @@ public Sound_Menu(client, bool:adminsounds){
 		}
 		else
 		{
-			if (!KvGetNum(listfile, "admin") || isadmin)
+			if (!KvGetNum(listfile, "admin",0) || isadmin)
 			{
 				AddMenuItem(soundmenu,num,buffer);
 				count++;
@@ -661,8 +665,8 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 			    KvGetSectionName(listfile, buffer, sizeof(buffer));
 			    if (strcmp(SelectionDispText,buffer,false) == 0){
 				    KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-				    adminonly = KvGetNum(listfile, "admin");
-				    singleonly = KvGetNum(listfile, "single");
+				    adminonly = KvGetNum(listfile, "admin",0);
+				    singleonly = KvGetNum(listfile, "single",0);
 				    new Handle:pack;
 				    CreateDataTimer(0.1,Command_Play_Sound,pack);
 				    WritePackCell(pack, client);
