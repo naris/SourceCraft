@@ -290,13 +290,19 @@ public Action:Command_Say(client,args){
 				}
 				return Plugin_Handled;
 		}
-		
-		if(strcmp(speech[startidx],"!soundlist",false) == 0){
+		else if(strcmp(speech[startidx],"!soundlist",false) == 0){
 			List_Sounds(client);
 			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 			return Plugin_Handled;
 		}
-			
+		else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
+			Sound_Menu(client,false);
+			return Plugin_Handled;
+		}
+		else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
+			Sound_Menu(client,true);
+			return Plugin_Handled;
+		}
 		
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
@@ -360,23 +366,19 @@ public Action:Command_InsurgencySay(client,args){
 				}
 				return Plugin_Handled;
 		}
-		
-		if(strcmp(speech[startidx],"!soundlist",false) == 0){
+		else if(strcmp(speech[startidx],"!soundlist",false) == 0){
 			List_Sounds(client);
 			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 			return Plugin_Handled;
 		}
-		
-		if(strcmp(speech[startidx],"!soundmenu",false) == 0){
+		else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
 			Sound_Menu(client,false);
 			return Plugin_Handled;
 		}
-		
-		if(strcmp(speech[startidx],"!adminsounds",false) == 0){
+		else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
 		}
-		
 			
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
