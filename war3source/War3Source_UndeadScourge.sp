@@ -18,6 +18,8 @@
 // War3Source stuff
 new raceID; // The ID we are assigned to
 new explosionModel;
+new g_beamSprite;
+new g_haloSprite;
 
 // Suicide bomber check
 new bool:m_Suicided[MAXPLAYERS+1]={false};
@@ -70,6 +72,9 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
+    g_beamSprite    = PrecacheModel("models/props_lab/airlock_laser.vmt");
+    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
+
     PrecacheSound("weapons/explode5.wav",false);
 }
 
@@ -312,6 +317,19 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
                         COLOR_GREEN,COLOR_DEFAULT,leechhealth,victimName,COLOR_GREEN,COLOR_DEFAULT);
 
             LogMessage("[War3Source] %s leeched %d health from %s\n", name, leechhealth, victimName);
+
+            new Float:start[3];
+            GetClientAbsOrigin(index, start);
+            start[2] += 1620;
+
+            new Float:end[3];
+            GetClientAbsOrigin(index, end);
+            end[2] += 20;
+
+            new color[4] = { 255, 10, 25, 255 };
+            TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
+                              0, 50, 3.0, 20.0,10.0,50,50.0,color,255);
+            TE_SendToAll();
         }
     }
 }

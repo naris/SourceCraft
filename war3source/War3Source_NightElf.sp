@@ -18,8 +18,8 @@
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowEntangle[MAXPLAYERS+1] = {true, ...};
- 
-new Glow;
+new g_beamSprite;
+new g_haloSprite;
 
 public Plugin:myinfo = 
 {
@@ -56,7 +56,8 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-	Glow = PrecacheModel("materials/sprites/blueglow1.vmt");
+    g_beamSprite    = PrecacheModel("materials/sprites/lgtning.vmt");
+    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -95,15 +96,14 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                     {
                         decl String:name[64];
                         GetClientName(client,name,63);
-                        PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                        PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",
+                                    COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                         SetEntData(index,movetypeOffset,0,1);
                         AuthTimer(10.0,index,UnfreezePlayer);
 
-                        new Float:Origin[3];
-                        GetClientAbsOrigin(client, Origin);
-                        Origin[2] += 5;
-
-                        TE_SetupGlowSprite(Origin,Glow,10.0,100.0,50);
+                        new color[4] = { 0, 255, 0, 255 };
+                        TE_SetupBeamLaser(client,index,g_beamSprite,g_haloSprite,
+                                          0, 1, 1.0, 10.0,10.0,45,50.0,color,255);
                         TE_SendToAll();
                     }
                 }

@@ -25,6 +25,7 @@ new Handle:hGameConf;
 new Handle:hRoundRespawn;
 new g_beamSprite;
 new g_haloSprite;
+new g_crystalSprite;
 
 new String:thunderWav[] = "ambient/weather/thunder1.wav";
 
@@ -78,11 +79,15 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
-    g_beamSprite = PrecacheModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
-    g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");
+    g_beamSprite    = PrecacheModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
+    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
+    g_crystalSprite = PrecacheModel("sprites/crystal_beam1.vmt");
 
     PrecacheSound(thunderWav);
-    AddFileToDownloadsTable(thunderWav);
+
+    decl String:thunderFile[256];
+    Format(thunderFile, "sound/%s", thunderWav);
+    AddFileToDownloadsTable(thunderFile);
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -91,9 +96,9 @@ public OnWar3PlayerAuthed(client,war3player)
     m_AllowChainLightning[client]=true;
 }
 
-public OnRaceSelected(client,war3player,oldrace,newrace)
-{
-}
+//public OnRaceSelected(client,war3player,oldrace,newrace)
+//{
+//}
 
 public OnGameFrame()
 {
@@ -242,12 +247,9 @@ public OrcishHorde_CaptiousStrike(Handle:event, index, war3player, victimIndex)
 
             SetHealth(victimIndex,new_health);
 
-            new Float:Origin[3];
-            GetClientAbsOrigin(victimIndex, Origin);
-            Origin[2] += 5;
-
-            TE_SetupEnergySplash(Origin,Origin,false);
-            TE_SetupSparks(Origin,Origin,255,100);
+            new color[4] = { 100, 255, 55, 255 };
+            TE_SetupBeamLaser(index,victimIndex,g_beamSprite,g_haloSprite,
+                              0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
         }
     }
@@ -306,8 +308,7 @@ public OrcishHorde_CaptiousGrenade(Handle:event, index, war3player, victimIndex)
             GetClientAbsOrigin(victimIndex, Origin);
             Origin[2] += 5;
 
-            TE_SetupSparks(Origin,Origin,255,100);
-            TE_SetupEnergySplash(Origin,Origin,true);
+            TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
             TE_SendToAll();
         }
     }
@@ -340,14 +341,10 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                 new bool:inrange=IsInRange(client,index,range);
                 if (inrange)
                 {
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(client, Origin);
-                    //Origin[2] += 5;
                     new color[4] = { 10, 200, 255, 255 };
                     TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
-                                      0, 50, 50.0, 3.0,10.0,50,50.0,color,255);
+                                      0, 50, 50.0, 6.0,10.0,50,50.0,color,255);
                     TE_SendToAll();
-                    EmitSoundToAll(thunderWav,client);
 
                     new new_health=GetClientHealth(index)-40;
                     if (new_health<0)
@@ -371,6 +368,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                 }
             }
         }
+        EmitSoundToAll(thunderWav,client);
         PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     }
 }
