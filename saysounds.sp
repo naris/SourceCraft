@@ -104,7 +104,7 @@ new Handle:cvarsoundwarn;
 new Handle:cvarjoinexit;
 new Handle:cvarpersonaljoinexit;
 new Handle:cvartimebetween;
-new Handle:listfile;
+new Handle:listfile - INVALID_HANDLE;
 new Handle:hTopMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH];
 new restrict_playing_sounds[MAX_PLAYERS+1];
@@ -751,8 +751,10 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 
 public OnMapEnd(){
   CloseHandle(listfile);
+  listfile=INVALID_HANDLE;
 }
 
 public OnPluginEnd(){
   CloseHandle(listfile);
+  listfile=INVALID_HANDLE;
 }
