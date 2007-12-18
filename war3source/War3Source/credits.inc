@@ -31,7 +31,7 @@ public GiveKillCredits(client,vectorpos)
         {
             SetCredits(vectorpos,newcredits);
             War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                   "%c[War3Source] %cYou have gained %d %sfor getting a kill.",
+                                   "%c[War3Source] %cYou have gained %d %s for getting a kill.",
                                    COLOR_GREEN,COLOR_DEFAULT,KILL_CREDITS_LONGTERM, currency);
         }
         else
