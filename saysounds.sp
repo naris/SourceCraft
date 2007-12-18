@@ -38,6 +38,14 @@ Versions:
 		* Added a cvar to control how long between each sound to wait and a message to the user
 	1.5.5 Oct 9, 2007
 		* Fixed small memory leak from not closing handle at the end of each map
+	1.6   Dec 17, 2007
+		* Modified by -=|JFH|=-Naris
+		* Added soundmenu (Menu of sounds to play)
+		* Added adminsounds (Menu of admon-only sounds for admins to play)
+		* Added adminsounds menu to sourcemods admin menu
+		* Added sm_personal_join_exit (Join/Exit for specific STEAM IDs)
+		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
+		* Fixed non-admins playing admin sounds by checking for generic admin bits.
 
 Todo:
 	* Multiple sound files for trigger word
@@ -49,16 +57,19 @@ Cvarlist (default value):
 	sm_sound_warn 3							Number of sounds to warn person at
 	sm_sound_limit 5 						Maximum sounds per person
 	sm_join_exit 0 							Play sounds when someone joins or exits the game
+	sm_personal_join_exit 0 					Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	Time between each sound trigger, 0.0 to disable checking
 
 Admin Commands:
 	sm_sound_ban <user>
 	sm_sound_unban <user>
 	sm_sound_reset <all|user>
+	!adminsounds - when used in chat will present a menu to choose an admin sound to play.
 	
 User Commands:
 	!sounds - when used in chat turns sounds on/off for that client
 	!soundlist - when used in chat will print all the trigger words to the console
+	!soundmenu - when used in chat will present a menu to choose a sound to play.
 
 	
 Make sure "saysounds.cfg" is in your addons/sourcemod/configs/ directory.
@@ -115,8 +126,8 @@ public OnPluginStart(){
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at",FCVAR_PLUGIN);
 	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person",FCVAR_PLUGIN);
-	cvarjoinexit = CreateConVar("sm_join_exit","1","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
-	cvarpersonaljoinexit = CreateConVar("sm_personal_join_exit","1","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
+	cvarjoinexit = CreateConVar("sm_join_exit","0","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
+	cvarpersonaljoinexit = CreateConVar("sm_personal_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
@@ -174,12 +185,24 @@ public Action:Load_Sounds(Handle:timer){
 		do{
 			decl String:filelocation[255];
 			decl String:dl[255];
-			KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
-			if (strlen(filelocation)){
-				Format(dl, sizeof(filelocation), "sound/%s", filelocation);
-				if(FileExists(dl)){
-					PrecacheSound(filelocation, true);
-					AddFileToDownloadsTable(dl);
+			decl String:file[8];
+			new count = KvGetNum(listfile, "count", 1);
+			new download = KvGetNum(listfile, "download", 1);
+			for (new i = 1; i <= count; i++){
+				if (i > 1){
+					Format(file, 7, "file%d", i);
+				}else{
+					strcopy(file, 8, "file");
+				}
+				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+				if (strlen(filelocation)){
+					Format(dl, sizeof(filelocation), "sound/%s", filelocation);
+					if(FileExists(dl)){
+						PrecacheSound(filelocation, true);
+						if (download){
+							AddFileToDownloadsTable(dl);
+						}
+					}
 				}
 			}
 		} while (KvGotoNextKey(listfile));
@@ -201,7 +224,13 @@ public OnClientPostAdminCheck(client){
 				decl String:filelocation[255];
 				KvRewind(listfile);
 				if (KvJumpToKey(listfile, auth)){
-					KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+					decl String:file[8] = "file";
+					new count = KvGetNum(listfile, "count", 1);
+					if (count > 1){
+						new number = (count > 1) ? GetRandomInt(1,count) : 1;
+						Format(file, 8, "file%d", number);
+					}
+					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 					if (strlen(filelocation)){
 						new adminonly = KvGetNum(listfile, "admin",0);
 						new singleonly = KvGetNum(listfile, "single",0);
@@ -223,7 +252,13 @@ public OnClientPostAdminCheck(client){
 				decl String:filelocation[255];
 				KvRewind(listfile);
 				if (KvJumpToKey(listfile, "JoinSound")){
-					KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+					decl String:file[8] = "file";
+					new count = KvGetNum(listfile, "count", 1);
+					if (count > 1){
+						new number = (count > 1) ? GetRandomInt(1,count) : 1;
+						Format(file, 8, "file%d", number);
+					}
+					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 					if (strlen(filelocation)){
 						new adminonly = KvGetNum(listfile, "admin",0);
 						new singleonly = KvGetNum(listfile, "single",0);
@@ -250,7 +285,13 @@ public OnClientDisconnect(client){
 		decl String:filelocation[255];
 		KvRewind(listfile);
 		if (KvJumpToKey(listfile, "ExitSound")){
-			KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+			decl String:file[8] = "file";
+			new count = KvGetNum(listfile, "count", 1);
+			if (count > 1){
+				new number = (count > 1) ? GetRandomInt(1,count) : 1;
+				Format(file, 8, "file%d", number);
+			}
+			KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 			if (strlen(filelocation)){
 				new adminonly = KvGetNum(listfile, "admin",0);
 				new singleonly = KvGetNum(listfile, "single",0);
@@ -324,7 +365,13 @@ public Action:Command_Say(client,args){
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
-				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+				decl String:file[8] = "file";
+				new count = KvGetNum(listfile, "count", 1);
+				if (count > 1){
+					new number = (count > 1) ? GetRandomInt(1,count) : 1;
+					Format(file, 8, "file%d", number);
+				}
+				KvGetString(listfile, file, filelocation, sizeof(filelocation));
 				if (strlen(filelocation)){
 					adminonly = KvGetNum(listfile, "admin",0);
 					singleonly = KvGetNum(listfile, "single",0);
@@ -402,7 +449,13 @@ public Action:Command_InsurgencySay(client,args){
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
-				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+				decl String:file[8] = "file";
+				new count = KvGetNum(listfile, "count", 1);
+				if (count > 1){
+					new number = (count > 1) ? GetRandomInt(1,count) : 1;
+					Format(file, 8, "file%d", number);
+				}
+				KvGetString(listfile, file, filelocation, sizeof(filelocation));
 				if (strlen(filelocation)){
 					adminonly = KvGetNum(listfile, "admin",0);
 					singleonly = KvGetNum(listfile, "single",0);
@@ -434,6 +487,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		new AdminId:aid = GetUserAdmin(client);
 		if (aid == INVALID_ADMIN_ID)
 			return Plugin_Handled;
+    		else if(!GetAdminFlag(aid, Admin_Generic, Access_Effective))
+        		return Plugin_Handled;
 	}
 	
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
@@ -617,7 +672,8 @@ public Action:Command_Admin_Sounds(client, args){
 }
 
 public Sound_Menu(client, bool:adminsounds){
-	new bool:isadmin = (GetUserAdmin(client) != INVALID_ADMIN_ID);
+	new AdminId:aid = GetUserAdmin(client);
+	new bool:isadmin = (aid != INVALID_ADMIN_ID) && !GetAdminFlag(aid, Admin_Generic, Access_Effective);
 	if (!isadmin)
 		adminsounds=false;
 
@@ -669,7 +725,13 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 		    do{
 			    KvGetSectionName(listfile, buffer, sizeof(buffer));
 			    if (strcmp(SelectionDispText,buffer,false) == 0){
-				    KvGetString(listfile, "file", filelocation, sizeof(filelocation));
+				    decl String:file[8] = "file";
+				    new count = KvGetNum(listfile, "count", 1);
+				    if (count > 1){
+					    new number = (count > 1) ? GetRandomInt(1,count) : 1;
+					    Format(file, 8, "file%d", number);
+				    }
+				    KvGetString(listfile, file, filelocation, sizeof(filelocation));
 				    if (strlen(filelocation)){
 					    adminonly = KvGetNum(listfile, "admin",0);
 					    singleonly = KvGetNum(listfile, "single",0);
