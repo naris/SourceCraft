@@ -36,6 +36,8 @@ Versions:
 				cfg file...IE. change sound/misc/wazza.wav to misc/wazza.wav
 		* Clients using "!soundlist" in chat will get a list of triggers in their console
 		* Added a cvar to control how long between each sound to wait and a message to the user
+	1.5.5 Oct 9, 2007
+		* Fixed small memory leak from not closing handle at the end of each map
 
 Todo:
 	* Multiple sound files for trigger word
@@ -129,9 +131,7 @@ public OnPluginStart(){
 	/* Account for late loading */
 	new Handle:topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
-	{
 		OnAdminMenuReady(topmenu);
-	}
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -141,8 +141,7 @@ public OnAdminMenuReady(Handle:topmenu)
     /*************************************************************/
 
     /* Block us from being called twice */
-    if (topmenu != hTopMenu)
-    {
+    if (topmenu != hTopMenu){
         /* Save the Handle */
         hTopMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
@@ -153,13 +152,9 @@ public OnAdminMenuReady(Handle:topmenu)
 public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
-    {
         Format(buffer, maxlength, "Play Admin Sound");
-    }
     else if (action == TopMenuAction_SelectOption)
-    {
 	Sound_Menu(param,true);
-    }
 }
 
 public OnMapStart(){
@@ -179,17 +174,20 @@ public Action:Load_Sounds(Handle:timer){
 		do{
 			decl String:filelocation[255];
 			decl String:dl[255];
-			KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-			Format(dl, sizeof(filelocation), "sound/%s", filelocation);
-			if(FileExists(dl)){
-				PrecacheSound(filelocation, true);
-				AddFileToDownloadsTable(dl);
+			KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+			if (strlen(filelocation)){
+				Format(dl, sizeof(filelocation), "sound/%s", filelocation);
+				if(FileExists(dl)){
+					PrecacheSound(filelocation, true);
+					AddFileToDownloadsTable(dl);
+				}
 			}
 		} while (KvGotoNextKey(listfile));
 	}
 }
 
-public OnClientAuthorized(client, const String:auth[]){
+//public OnClientAuthorized(client, const String:auth[]){
+public OnClientPostAdminCheck(client){
 	if(!IsFakeClient(client)){
 		if(client != 0){
 			SndOn[client] = 1;
@@ -197,22 +195,27 @@ public OnClientAuthorized(client, const String:auth[]){
 			LastSound[client] = 0.0;
 			
 			if(GetConVarInt(cvarpersonaljoinexit)){
+				decl String:auth[64];
+				GetClientAuthString(client,auth,63);
+
 				decl String:filelocation[255];
 				KvRewind(listfile);
 				if (KvJumpToKey(listfile, auth)){
-					KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-					new adminonly = KvGetNum(listfile, "admin",0);
-					new singleonly = KvGetNum(listfile, "single",0);
+					KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+					if (strlen(filelocation)){
+						new adminonly = KvGetNum(listfile, "admin",0);
+						new singleonly = KvGetNum(listfile, "single",0);
 
-					new Handle:pack;
-					CreateDataTimer(0.2,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
+						new Handle:pack;
+						CreateDataTimer(0.2,Command_Play_Sound,pack);
+						WritePackCell(pack, client);
+						WritePackCell(pack, adminonly);
+						WritePackCell(pack, singleonly);
+						WritePackString(pack, filelocation);
 
-					SndCount[client] = 0;
-					return;
+						SndCount[client] = 0;
+						return;
+					}
 				}
 			}
 
@@ -220,18 +223,20 @@ public OnClientAuthorized(client, const String:auth[]){
 				decl String:filelocation[255];
 				KvRewind(listfile);
 				if (KvJumpToKey(listfile, "JoinSound")){
-					KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-					new adminonly = KvGetNum(listfile, "admin",0);
-					new singleonly = KvGetNum(listfile, "single",0);
+					KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+					if (strlen(filelocation)){
+						new adminonly = KvGetNum(listfile, "admin",0);
+						new singleonly = KvGetNum(listfile, "single",0);
 
-					new Handle:pack;
-					CreateDataTimer(0.2,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
+						new Handle:pack;
+						CreateDataTimer(0.2,Command_Play_Sound,pack);
+						WritePackCell(pack, client);
+						WritePackCell(pack, adminonly);
+						WritePackCell(pack, singleonly);
+						WritePackString(pack, filelocation);
 
-					SndCount[client] = 0;
+						SndCount[client] = 0;
+					}
 				}
 			}
 		}
@@ -245,16 +250,18 @@ public OnClientDisconnect(client){
 		decl String:filelocation[255];
 		KvRewind(listfile);
 		if (KvJumpToKey(listfile, "ExitSound")){
-			KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-			new adminonly = KvGetNum(listfile, "admin",0);
-			new singleonly = KvGetNum(listfile, "single",0);
+			KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+			if (strlen(filelocation)){
+				new adminonly = KvGetNum(listfile, "admin",0);
+				new singleonly = KvGetNum(listfile, "single",0);
 
-			new Handle:pack;
-			CreateDataTimer(0.2,Command_Play_Sound,pack);
-			WritePackCell(pack, client);
-			WritePackCell(pack, adminonly);
-			WritePackCell(pack, singleonly);
-			WritePackString(pack, filelocation);
+				new Handle:pack;
+				CreateDataTimer(0.2,Command_Play_Sound,pack);
+				WritePackCell(pack, client);
+				WritePackCell(pack, adminonly);
+				WritePackCell(pack, singleonly);
+				WritePackString(pack, filelocation);
+			}
 		}
 	}
 }
@@ -318,18 +325,20 @@ public Action:Command_Say(client,args){
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
 				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-				adminonly = KvGetNum(listfile, "admin",0);
-				singleonly = KvGetNum(listfile, "single",0);
-				new Handle:pack;
-				CreateDataTimer(0.1,Command_Play_Sound,pack);
-				WritePackCell(pack, client);
-				WritePackCell(pack, adminonly);
-				WritePackCell(pack, singleonly);
-				WritePackString(pack, filelocation);
+				if (strlen(filelocation)){
+					adminonly = KvGetNum(listfile, "admin",0);
+					singleonly = KvGetNum(listfile, "single",0);
+					new Handle:pack;
+					CreateDataTimer(0.1,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
+				}
 				break;
 			}
 		} while (KvGotoNextKey(listfile));
- 
+
 		return Plugin_Continue;
 	}	
 	return Plugin_Continue;
@@ -394,18 +403,20 @@ public Action:Command_InsurgencySay(client,args){
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
 				KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-				adminonly = KvGetNum(listfile, "admin",0);
-				singleonly = KvGetNum(listfile, "single",0);
-				new Handle:pack;
-				CreateDataTimer(0.1,Command_Play_Sound,pack);
-				WritePackCell(pack, client);
-				WritePackCell(pack, adminonly);
-				WritePackCell(pack, singleonly);
-				WritePackString(pack, filelocation);
+				if (strlen(filelocation)){
+					adminonly = KvGetNum(listfile, "admin",0);
+					singleonly = KvGetNum(listfile, "single",0);
+					new Handle:pack;
+					CreateDataTimer(0.1,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
+				}
 				break;
 			}
 		} while (KvGotoNextKey(listfile));
-		
+
 		return Plugin_Continue;
 	}	
 	return Plugin_Continue;
@@ -626,18 +637,13 @@ public Sound_Menu(client, bool:adminsounds){
 		Format(num,3,"%d",count);
 		KvGetSectionName(listfile, buffer, sizeof(buffer));
 
-		if (adminsounds)
-		{
-			if (KvGetNum(listfile, "admin",0))
-			{
+		if (adminsounds){
+			if (KvGetNum(listfile, "admin",0)){
 				AddMenuItem(soundmenu,num,buffer);
 				count++;
 			}
-		}
-		else
-		{
-			if (!KvGetNum(listfile, "admin",0) || isadmin)
-			{
+		}else{
+			if (!KvGetNum(listfile, "admin",0) || isadmin){
 				AddMenuItem(soundmenu,num,buffer);
 				count++;
 			}
@@ -649,8 +655,7 @@ public Sound_Menu(client, bool:adminsounds){
 
 public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
-    {
+    if(action==MenuAction_Select){
 	    decl String:SelectionInfo[4];
 	    decl String:SelectionDispText[256];
 	    new SelectionStyle;
@@ -665,19 +670,25 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 			    KvGetSectionName(listfile, buffer, sizeof(buffer));
 			    if (strcmp(SelectionDispText,buffer,false) == 0){
 				    KvGetString(listfile, "file", filelocation, sizeof(filelocation));
-				    adminonly = KvGetNum(listfile, "admin",0);
-				    singleonly = KvGetNum(listfile, "single",0);
-				    new Handle:pack;
-				    CreateDataTimer(0.1,Command_Play_Sound,pack);
-				    WritePackCell(pack, client);
-				    WritePackCell(pack, adminonly);
-				    WritePackCell(pack, singleonly);
-				    WritePackString(pack, filelocation);
+				    if (strlen(filelocation)){
+					    adminonly = KvGetNum(listfile, "admin",0);
+					    singleonly = KvGetNum(listfile, "single",0);
+					    new Handle:pack;
+					    CreateDataTimer(0.1,Command_Play_Sound,pack);
+					    WritePackCell(pack, client);
+					    WritePackCell(pack, adminonly);
+					    WritePackCell(pack, singleonly);
+					    WritePackString(pack, filelocation);
+				    }
 				    break;
 			    }
 		    } while (KvGotoNextKey(listfile));
 	    }
     }
+}
+
+public OnMapEnd(){
+  CloseHandle(listfile);
 }
 
 public OnPluginEnd(){
