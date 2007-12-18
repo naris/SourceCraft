@@ -42,10 +42,14 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added soundmenu (Menu of sounds to play)
 		* Added adminsounds (Menu of admon-only sounds for admins to play)
-		* Added adminsounds menu to sourcemods admin menu
+		* Added adminsounds menu to SourceMod's admin menu
 		* Added sm_personal_join_exit (Join/Exit for specific STEAM IDs)
 		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
 		* Fixed non-admins playing admin sounds by checking for generic admin bits.
+		* Used SourceMod's MANPLAYERS instread of recreating another MAX_PLAYERS constant.
+		* Fix the sounds go away bug introduced in 1.5.5,
+		*	don't close listfile on mapchange,
+		*	check it and close in in Load_Sounds instead if it has already been opened.
 
 Todo:
 	* Multiple sound files for trigger word
@@ -96,21 +100,22 @@ File Format:
 #pragma semicolon 1
 
 #define PLUGIN_VERSION "1.6"
-#define MAX_PLAYERS 64
 
-new Handle:cvarsoundenable;
-new Handle:cvarsoundlimit;
-new Handle:cvarsoundwarn;
-new Handle:cvarjoinexit;
-new Handle:cvarpersonaljoinexit;
-new Handle:cvartimebetween;
-new Handle:listfile - INVALID_HANDLE;
+#define SS_CHANNEL 200
+
+new Handle:cvarsoundenable = INVALID_HANDLE;
+new Handle:cvarsoundlimit = INVALID_HANDLE;
+new Handle:cvarsoundwarn = INVALID_HANDLE;
+new Handle:cvarjoinexit = INVALID_HANDLE;
+new Handle:cvarpersonaljoinexit = INVALID_HANDLE;
+new Handle:cvartimebetween = INVALID_HANDLE;
+new Handle:listfile = INVALID_HANDLE;
 new Handle:hTopMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH];
-new restrict_playing_sounds[MAX_PLAYERS+1];
-new SndOn[MAX_PLAYERS+1];
-new SndCount[MAX_PLAYERS+1];
-new Float:LastSound[MAX_PLAYERS+1];
+new restrict_playing_sounds[MAXPLAYERS+1];
+new SndOn[MAXPLAYERS+1];
+new SndCount[MAXPLAYERS+1];
+new Float:LastSound[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -178,6 +183,9 @@ public Action:Load_Sounds(Handle:timer){
 	if(!FileExists(soundlistfile)) {
 		LogMessage("saysounds.cfg not parsed...file doesnt exist!");
 	}else{
+		if (listfile != INVALID_HANDLE){
+			CloseHandle(listfile);
+		}
 		listfile = CreateKeyValues("soundlist");
 		FileToKeyValues(listfile,soundlistfile);
 		KvRewind(listfile);
@@ -307,6 +315,28 @@ public OnClientDisconnect(client){
 	}
 }
 
+Submit_Sound(client)
+{
+	decl String:filelocation[255];
+	decl String:file[8] = "file";
+	new count = KvGetNum(listfile, "count", 1);
+	if (count > 1){
+		new number = (count > 1) ? GetRandomInt(1,count) : 1;
+		Format(file, 8, "file%d", number);
+	}
+	KvGetString(listfile, file, filelocation, sizeof(filelocation));
+	if (strlen(filelocation)){
+		new adminonly = KvGetNum(listfile, "admin",0);
+		new singleonly = KvGetNum(listfile, "single",0);
+		new Handle:pack;
+		CreateDataTimer(0.1,Command_Play_Sound,pack);
+		WritePackCell(pack, client);
+		WritePackCell(pack, adminonly);
+		WritePackCell(pack, singleonly);
+		WritePackString(pack, filelocation);
+	}
+}
+
 public Action:Command_Say(client,args){
 	if(client != 0){
 		// If sounds are not enabled, then skip this whole thing
@@ -359,29 +389,10 @@ public Action:Command_Say(client,args){
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		decl String:buffer[255];
-		decl String:filelocation[255];
-		new adminonly;
-		new singleonly;
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
-				decl String:file[8] = "file";
-				new count = KvGetNum(listfile, "count", 1);
-				if (count > 1){
-					new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					Format(file, 8, "file%d", number);
-				}
-				KvGetString(listfile, file, filelocation, sizeof(filelocation));
-				if (strlen(filelocation)){
-					adminonly = KvGetNum(listfile, "admin",0);
-					singleonly = KvGetNum(listfile, "single",0);
-					new Handle:pack;
-					CreateDataTimer(0.1,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
-				}
+				Submit_Sound(client);
 				break;
 			}
 		} while (KvGotoNextKey(listfile));
@@ -443,29 +454,10 @@ public Action:Command_InsurgencySay(client,args){
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		decl String:buffer[255];
-		decl String:filelocation[255];
-		new adminonly;
-		new singleonly;
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
-				decl String:file[8] = "file";
-				new count = KvGetNum(listfile, "count", 1);
-				if (count > 1){
-					new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					Format(file, 8, "file%d", number);
-				}
-				KvGetString(listfile, file, filelocation, sizeof(filelocation));
-				if (strlen(filelocation)){
-					adminonly = KvGetNum(listfile, "admin",0);
-					singleonly = KvGetNum(listfile, "single",0);
-					new Handle:pack;
-					CreateDataTimer(0.1,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
-				}
+				Submit_Sound(client);
 				break;
 			}
 		} while (KvGotoNextKey(listfile));
@@ -491,8 +483,12 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
         		return Plugin_Handled;
 	}
 	
+	new Float:soundTime = GetSoundDuration(filelocation); // Doesn't work for mp3s :(
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	new Float:thetime = GetGameTime();
+
+	if (waitTime < soundTime)
+		waitTime = soundTime;
 	
 	if (LastSound[client] >= thetime){
 		PrintToChat(client,"[Say Sounds] Please dont spam the sounds!");
@@ -502,20 +498,22 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		SndCount[client] = (SndCount[client] + 1);
 		LastSound[client] = thetime + waitTime;
 		if (singleonly){
-			if(IsClientInGame(client)){
-				if(SndOn[client]){
-					EmitSoundToClient(client, filelocation);
-				}
+			if(IsClientInGame(client) && SndOn[client]){
+				EmitSoundToClient(client, filelocation, adminonly ? SOUND_FROM_WORLD : client, SS_CHANNEL);
 			}
 		}else{
+			new clientlist[MAXPLAYERS+1];
+			new clientcount = 0;
 			new playersconnected;
 			playersconnected = GetMaxClients();
 			for (new i = 1; i <= playersconnected; i++){
-				if(IsClientInGame(i)){
-					if(SndOn[i]){
-						EmitSoundToClient(i, filelocation);
-					}
+				if(IsClientInGame(i) && SndOn[i]){
+					clientlist[++clientcount] = i;
 				}
+			}
+			if (clientcount){
+				StopSound(adminonly ? SOUND_FROM_WORLD : client, SS_CHANNEL, "");
+				EmitSound(clientlist, clientcount, filelocation, adminonly ? SOUND_FROM_WORLD : client, SS_CHANNEL);
 			}
 		}
 	}
@@ -540,7 +538,7 @@ public Action:Command_Sound_Reset(client, args){
 	GetCmdArg(1, arg, sizeof(arg));	
 	
 	if(strcmp(arg,"all",false) == 0 ){
-		for (new i = 1; i <= MAX_PLAYERS; i++)
+		for (new i = 1; i <= MAXPLAYERS; i++)
 			SndCount[i] = 0;
 		ReplyToCommand(client, "[Say Sounds] Quota has been reset for all players");	
 	}else{
@@ -563,7 +561,7 @@ public Action:Command_Sound_Reset(client, args){
 			
 		SndCount[user[0]] = 0;
 		new String:clientname[64];
-		GetClientName(user[0],clientname,MAX_PLAYERS);
+		GetClientName(user[0],clientname,MAXPLAYERS);
 		ReplyToCommand(client, "[Say Sounds] Quota has been reset for %s", clientname);
 	}
 	return Plugin_Handled;
@@ -596,7 +594,7 @@ public Action:Command_Sound_Ban(client, args){
 	}
 	
 	new String:BanClient2[64];
-	GetClientName(user[0],BanClient2,MAX_PLAYERS);
+	GetClientName(user[0],BanClient2,MAXPLAYERS);
 	
 	if (restrict_playing_sounds[user[0]] == 1){
 		ReplyToCommand(client, "[Say Sounds] %s is already banned!", BanClient2);
@@ -635,7 +633,7 @@ public Action:Command_Sound_Unban(client, args){
 	}
 	
 	new String:BanClient2[64];
-	GetClientName(user[0],BanClient2,MAX_PLAYERS);
+	GetClientName(user[0],BanClient2,MAXPLAYERS);
 	
 	if (restrict_playing_sounds[user[0]] == 0){
 		ReplyToCommand(client,"[Say Sounds] %s is not banned!", BanClient2);
@@ -719,29 +717,10 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 		    KvRewind(listfile);
 		    KvGotoFirstSubKey(listfile);
 		    decl String:buffer[255];
-		    decl String:filelocation[255];
-		    new adminonly;
-		    new singleonly;
 		    do{
 			    KvGetSectionName(listfile, buffer, sizeof(buffer));
 			    if (strcmp(SelectionDispText,buffer,false) == 0){
-				    decl String:file[8] = "file";
-				    new count = KvGetNum(listfile, "count", 1);
-				    if (count > 1){
-					    new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					    Format(file, 8, "file%d", number);
-				    }
-				    KvGetString(listfile, file, filelocation, sizeof(filelocation));
-				    if (strlen(filelocation)){
-					    adminonly = KvGetNum(listfile, "admin",0);
-					    singleonly = KvGetNum(listfile, "single",0);
-					    new Handle:pack;
-					    CreateDataTimer(0.1,Command_Play_Sound,pack);
-					    WritePackCell(pack, client);
-					    WritePackCell(pack, adminonly);
-					    WritePackCell(pack, singleonly);
-					    WritePackString(pack, filelocation);
-				    }
+				    Submit_Sound(client);
 				    break;
 			    }
 		    } while (KvGotoNextKey(listfile));
@@ -749,10 +728,12 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
+/*
 public OnMapEnd(){
   CloseHandle(listfile);
   listfile=INVALID_HANDLE;
 }
+*/
 
 public OnPluginEnd(){
   CloseHandle(listfile);
