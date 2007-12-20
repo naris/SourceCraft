@@ -502,11 +502,10 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		}else{
 			new clientlist[MAXPLAYERS+1];
 			new clientcount = 0;
-			new playersconnected;
-			playersconnected = GetMaxClients();
+			new playersconnected = GetMaxClients();
 			for (new i = 1; i <= playersconnected; i++){
 				if(IsClientInGame(i) && SndOn[i]){
-					clientlist[++clientcount] = i;
+					clientlist[clientcount++] = i;
 				}
 			}
 			if (clientcount){
