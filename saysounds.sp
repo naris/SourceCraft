@@ -47,7 +47,7 @@ Versions:
 		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
 		* Fixed non-admins playing admin sounds by checking for generic admin bits.
 		* Used SourceMod's MANPLAYERS instread of recreating another MAX_PLAYERS constant.
-		* Fix the sounds go away bug introduced in 1.5.5,
+		* Fix the sounds go away bug
 		*	don't close listfile on mapchange,
 		*	check it and close in in Load_Sounds instead if it has already been opened.
 
@@ -219,67 +219,65 @@ public Action:Load_Sounds(Handle:timer){
 
 //public OnClientAuthorized(client, const String:auth[]){
 public OnClientPostAdminCheck(client){
-	if(!IsFakeClient(client)){
-		if(client != 0){
-			SndOn[client] = 1;
-			SndCount[client] = 0;
-			LastSound[client] = 0.0;
-			
-			if(GetConVarInt(cvarpersonaljoinexit)){
-				decl String:auth[64];
-				GetClientAuthString(client,auth,63);
+	if(client && !IsFakeClient(client)){
+		SndOn[client] = 1;
+		SndCount[client] = 0;
+		LastSound[client] = 0.0;
 
-				decl String:filelocation[255];
-				KvRewind(listfile);
-				if (KvJumpToKey(listfile, auth)){
-					decl String:file[8] = "file";
-					new count = KvGetNum(listfile, "count", 1);
-					if (count > 1){
-						new number = (count > 1) ? GetRandomInt(1,count) : 1;
-						Format(file, 8, "file%d", number);
-					}
-					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-					if (strlen(filelocation)){
-						new adminonly = KvGetNum(listfile, "admin",0);
-						new singleonly = KvGetNum(listfile, "single",0);
+		if(GetConVarInt(cvarpersonaljoinexit)){
+			decl String:auth[64];
+			GetClientAuthString(client,auth,63);
 
-						new Handle:pack;
-						CreateDataTimer(0.2,Command_Play_Sound,pack);
-						WritePackCell(pack, client);
-						WritePackCell(pack, adminonly);
-						WritePackCell(pack, singleonly);
-						WritePackString(pack, filelocation);
+			decl String:filelocation[255];
+			KvRewind(listfile);
+			if (KvJumpToKey(listfile, auth)){
+				decl String:file[8] = "file";
+				new count = KvGetNum(listfile, "count", 1);
+				if (count > 1){
+					new number = (count > 1) ? GetRandomInt(1,count) : 1;
+					Format(file, 8, "file%d", number);
+				}
+				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+				if (strlen(filelocation)){
+					new adminonly = KvGetNum(listfile, "admin",0);
+					new singleonly = KvGetNum(listfile, "single",0);
 
-						SndCount[client] = 0;
-						return;
-					}
+					new Handle:pack;
+					CreateDataTimer(0.2,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
+
+					SndCount[client] = 0;
+					return;
 				}
 			}
+		}
 
-			if(GetConVarInt(cvarjoinexit)){
-				decl String:filelocation[255];
-				KvRewind(listfile);
-				if (KvJumpToKey(listfile, "JoinSound")){
-					decl String:file[8] = "file";
-					new count = KvGetNum(listfile, "count", 1);
-					if (count > 1){
-						new number = (count > 1) ? GetRandomInt(1,count) : 1;
-						Format(file, 8, "file%d", number);
-					}
-					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-					if (strlen(filelocation)){
-						new adminonly = KvGetNum(listfile, "admin",0);
-						new singleonly = KvGetNum(listfile, "single",0);
+		if(GetConVarInt(cvarjoinexit)){
+			decl String:filelocation[255];
+			KvRewind(listfile);
+			if (KvJumpToKey(listfile, "JoinSound")){
+				decl String:file[8] = "file";
+				new count = KvGetNum(listfile, "count", 1);
+				if (count > 1){
+					new number = (count > 1) ? GetRandomInt(1,count) : 1;
+					Format(file, 8, "file%d", number);
+				}
+				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+				if (strlen(filelocation)){
+					new adminonly = KvGetNum(listfile, "admin",0);
+					new singleonly = KvGetNum(listfile, "single",0);
 
-						new Handle:pack;
-						CreateDataTimer(0.2,Command_Play_Sound,pack);
-						WritePackCell(pack, client);
-						WritePackCell(pack, adminonly);
-						WritePackCell(pack, singleonly);
-						WritePackString(pack, filelocation);
+					new Handle:pack;
+					CreateDataTimer(0.2,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
 
-						SndCount[client] = 0;
-					}
+					SndCount[client] = 0;
 				}
 			}
 		}
