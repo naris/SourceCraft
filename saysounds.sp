@@ -57,11 +57,11 @@ Todo:
 	* Save user settings
  
 Cvarlist (default value):
-	sm_sound_enable 1						Turns Sounds On/Off
-	sm_sound_warn 3							Number of sounds to warn person at
-	sm_sound_limit 5 						Maximum sounds per person
-	sm_join_exit 0 							Play sounds when someone joins or exits the game
-	sm_personal_join_exit 0 					Play sounds when a specific STEAM ID joins or exits the game
+	sm_sound_enable 1		Turns Sounds On/Off
+	sm_sound_warn 3			Number of sounds to warn person at
+	sm_sound_limit 5 		Maximum sounds per person
+	sm_join_exit 0 			Play sounds when someone joins or exits the game
+	sm_personal_join_exit 0 	Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	Time between each sound trigger, 0.0 to disable checking
 
 Admin Commands:
@@ -101,8 +101,6 @@ File Format:
 
 #define PLUGIN_VERSION "1.6"
 
-#define SS_CHANNEL 200
-
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
 new Handle:cvarsoundwarn = INVALID_HANDLE;
@@ -116,6 +114,7 @@ new restrict_playing_sounds[MAXPLAYERS+1];
 new SndOn[MAXPLAYERS+1];
 new SndCount[MAXPLAYERS+1];
 new Float:LastSound[MAXPLAYERS+1];
+new Float:globalLastSound = 0.0;
 
 public Plugin:myinfo = 
 {
@@ -448,7 +447,10 @@ public Action:Command_InsurgencySay(client,args){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
 		}
-			
+
+		KvRewind(listfile);
+		KvGotoFirstSubKey(listfile);
+
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		decl String:buffer[255];
@@ -492,12 +494,14 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		PrintToChat(client,"[Say Sounds] Please dont spam the sounds!");
 	}
 	
-	if ((SndCount[client] < GetConVarInt(cvarsoundlimit)) && (LastSound[client] < thetime)){
-		SndCount[client] = (SndCount[client] + 1);
+	if ((SndCount[client] < GetConVarInt(cvarsoundlimit)) && (LastSound[client] < thetime) && globalLastSound < thetime){
+		SndCount[client]  = (SndCount[client] + 1);
 		LastSound[client] = thetime + waitTime;
+		globalLastSound   = thetime + soundTime;
+
 		if (singleonly){
 			if(IsClientInGame(client) && SndOn[client]){
-				EmitSoundToClient(client, filelocation, adminonly ? SOUND_FROM_WORLD : client, SS_CHANNEL);
+				EmitSoundToClient(client, filelocation);
 			}
 		}else{
 			new clientlist[MAXPLAYERS+1];
@@ -509,8 +513,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 				}
 			}
 			if (clientcount){
-				StopSound(adminonly ? SOUND_FROM_WORLD : client, SS_CHANNEL, "");
-				EmitSound(clientlist, clientcount, filelocation, adminonly ? SOUND_FROM_WORLD : client, SS_CHANNEL);
+				EmitSound(clientlist, clientcount, filelocation);
 			}
 		}
 	}
@@ -669,8 +672,10 @@ public Action:Command_Admin_Sounds(client, args){
 public Sound_Menu(client, bool:adminsounds){
 	new AdminId:aid = GetUserAdmin(client);
 	new bool:isadmin = (aid != INVALID_ADMIN_ID) && !GetAdminFlag(aid, Admin_Generic, Access_Effective);
+	/*
 	if (!isadmin)
 		adminsounds=false;
+	*/
 
 	new Handle:soundmenu=CreateMenu(Menu_Select);
 	SetMenuExitButton(soundmenu,true);
@@ -724,13 +729,6 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 	    }
     }
 }
-
-/*
-public OnMapEnd(){
-  CloseHandle(listfile);
-  listfile=INVALID_HANDLE;
-}
-*/
 
 public OnPluginEnd(){
   CloseHandle(listfile);
