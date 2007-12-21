@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: log.inc
  * Description: Writes message to console and log.
  * Author(s): Naris (Murray Wilson)

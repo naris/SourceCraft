@@ -1,5 +1,5 @@
 /*
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: menus.inc
  * Description: This file handles the menu aspects of the plugin.
  * Author(s): Anthony Iacono  

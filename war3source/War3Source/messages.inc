@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: messages.inc
  * Description: This file is the user message function handler.  
  * Author(s): Anthony Iacono

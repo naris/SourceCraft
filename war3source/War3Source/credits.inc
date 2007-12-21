@@ -1,5 +1,5 @@
 /*
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: credits.inc
  * Description: The shopmenu credit system. 
  * Author(s): Anthony Iacono  

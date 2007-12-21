@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: War3Source_ShopItems.sp
  * Description: The shop items that come with War3Source.
  * Author(s): Anthony Iacono

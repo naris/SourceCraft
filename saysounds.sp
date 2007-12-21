@@ -190,8 +190,8 @@ public Action:Load_Sounds(Handle:timer){
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		do{
-			decl String:filelocation[255];
-			decl String:dl[255];
+			decl String:filelocation[PLATFORM_MAX_PATH+1];
+			decl String:dl[PLATFORM_MAX_PATH+1];
 			decl String:file[8];
 			new count = KvGetNum(listfile, "count", 1);
 			new download = KvGetNum(listfile, "download", 1);
@@ -227,7 +227,7 @@ public OnClientPostAdminCheck(client){
 			decl String:auth[64];
 			GetClientAuthString(client,auth,63);
 
-			decl String:filelocation[255];
+			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
@@ -258,7 +258,7 @@ public OnClientPostAdminCheck(client){
 		}
 
 		if(GetConVarInt(cvarjoinexit)){
-			decl String:filelocation[255];
+			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, "JoinSound")){
 				decl String:file[8] = "file";
@@ -294,7 +294,7 @@ public OnClientDisconnect(client){
 			decl String:auth[64];
 			GetClientAuthString(client,auth,63);
 
-			decl String:filelocation[255];
+			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "exit", filelocation, sizeof(filelocation), "");
@@ -315,7 +315,7 @@ public OnClientDisconnect(client){
 			}
 		}
 
-		decl String:filelocation[255];
+		decl String:filelocation[PLATFORM_MAX_PATH+1];
 		KvRewind(listfile);
 		if (KvJumpToKey(listfile, "ExitSound")){
 			decl String:file[8] = "file";
@@ -342,7 +342,7 @@ public OnClientDisconnect(client){
 
 Submit_Sound(client)
 {
-	decl String:filelocation[255];
+	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:file[8] = "file";
 	new count = KvGetNum(listfile, "count", 1);
 	if (count > 1){
@@ -413,7 +413,7 @@ public Action:Command_Say(client,args){
 		
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
-		decl String:buffer[255];
+		decl String:buffer[PLATFORM_MAX_PATH+1];
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
@@ -481,7 +481,7 @@ public Action:Command_InsurgencySay(client,args){
 
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
-		decl String:buffer[255];
+		decl String:buffer[PLATFORM_MAX_PATH+1];
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
@@ -496,7 +496,7 @@ public Action:Command_InsurgencySay(client,args){
 }
 
 public Action:Command_Play_Sound(Handle:timer,Handle:pack){
-	decl String:filelocation[255];
+	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	ResetPack(pack);
 	new client = ReadPackCell(pack);
 	new adminonly = ReadPackCell(pack);
@@ -681,7 +681,7 @@ List_Sounds(client){
 	KvRewind(listfile);
 	KvJumpToKey(listfile, "ExitSound", false);
 	KvGotoNextKey(listfile, true);
-	decl String:buffer[255];
+	decl String:buffer[PLATFORM_MAX_PATH+1];
 	do{
 		KvGetSectionName(listfile, buffer, sizeof(buffer));
 		PrintToConsole(client, buffer);
@@ -714,7 +714,7 @@ public Sound_Menu(client, bool:adminsounds){
 	SetMenuTitle(soundmenu,"Choose a sound to play.");
 
 	decl String:num[4];
-	decl String:buffer[255];
+	decl String:buffer[PLATFORM_MAX_PATH+1];
 	new count=1;
 
 	KvRewind(listfile);
@@ -746,12 +746,12 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select){
 	    decl String:SelectionInfo[4];
-	    decl String:SelectionDispText[256];
+	    decl String:SelectionDispText[PLATFORM_MAX_PATH+1];
 	    new SelectionStyle;
 	    if (GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText))){
 		    KvRewind(listfile);
 		    KvGotoFirstSubKey(listfile);
-		    decl String:buffer[255];
+		    decl String:buffer[PLATFORM_MAX_PATH];
 		    do{
 			    KvGetSectionName(listfile, buffer, sizeof(buffer));
 			    if (strcmp(SelectionDispText,buffer,false) == 0){

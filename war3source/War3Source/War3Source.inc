@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: War3Source.inc
  * Description: Holds all the War3Source specific functions.
  * Author(s): Anthony Iacono  

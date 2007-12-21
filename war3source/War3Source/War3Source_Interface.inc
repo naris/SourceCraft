@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: War3Source_Interface.inc
  * Description: The file to be included for creating races and whatnot.
  * Author(s): Anthony Iacono  

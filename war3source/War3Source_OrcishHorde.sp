@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: War3Source_OrcishHorde.sp
  * Description: The Orcish Horde race for War3Source.
  * Author(s): Anthony Iacono 

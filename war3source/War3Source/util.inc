@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: util.inc
  * Description: Utility functions and variables
  * Author(s): Naris (Murray Wilson)

@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: races.inc
  * Description: The root of all race specific stuff.
  * Author(s): Anthony Iacono  

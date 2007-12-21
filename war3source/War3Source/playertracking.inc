@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 syntax=cpp :
+ * vim: set ai et ts=4 sw=4 :
  * File: playertracking.inc
  * Description: Holds all the storage for players, temporary and long term.
  * Author(s): Anthony Iacono  
