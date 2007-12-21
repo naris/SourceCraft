@@ -230,13 +230,16 @@ public OnClientPostAdminCheck(client){
 			decl String:filelocation[255];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
-				decl String:file[8] = "file";
-				new count = KvGetNum(listfile, "count", 1);
-				if (count > 1){
-					new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					Format(file, 8, "file%d", number);
+				KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
+				if (!strlen(filelocation)){
+					decl String:file[8] = "file";
+					new count = KvGetNum(listfile, "count", 1);
+					if (count > 1){
+						new number = (count > 1) ? GetRandomInt(1,count) : 1;
+						Format(file, 8, "file%d", number);
+					}
+					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				}
-				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
 					new singleonly = KvGetNum(listfile, "single",0);
@@ -286,6 +289,31 @@ public OnClientPostAdminCheck(client){
 public OnClientDisconnect(client){
 	if(GetConVarInt(cvarjoinexit)){
 		SndCount[client] = 0;
+
+		if(GetConVarInt(cvarpersonaljoinexit)){
+			decl String:auth[64];
+			GetClientAuthString(client,auth,63);
+
+			decl String:filelocation[255];
+			KvRewind(listfile);
+			if (KvJumpToKey(listfile, auth)){
+				KvGetString(listfile, "exit", filelocation, sizeof(filelocation), "");
+				if (strlen(filelocation)){
+					new adminonly = KvGetNum(listfile, "admin",0);
+					new singleonly = KvGetNum(listfile, "single",0);
+
+					new Handle:pack;
+					CreateDataTimer(0.2,Command_Play_Sound,pack);
+					WritePackCell(pack, client);
+					WritePackCell(pack, adminonly);
+					WritePackCell(pack, singleonly);
+					WritePackString(pack, filelocation);
+
+					SndCount[client] = 0;
+					return;
+				}
+			}
+		}
 
 		decl String:filelocation[255];
 		KvRewind(listfile);
