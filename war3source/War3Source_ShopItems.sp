@@ -47,6 +47,7 @@ new ammo2Offset         = 0; // Secondary Ammo
 new metalOffset         = 0; // metal (3rd Ammo)
 
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
+new Float:spawnLoc[MAXPLAYERS+1][3];
 new bool:usedPeriapt[MAXPLAYERS+1]        = { false, ... };
 new bool:isMole[MAXPLAYERS+1]             = { false, ... };
 
@@ -208,52 +209,58 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(client);
-    if(war3player>-1)
+    if (client)
     {
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_ANKH]))        // Ankh of Reincarnation
+        //GetClientAbsOrigin(client,spawnLoc[client]);
+        EntityOrigin(client,spawnLoc[client]);
+
+        new war3player=War3_GetWar3Player(client);
+        if(war3player>-1)
         {
-            if (GameType == cstrike)
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_ANKH]))        // Ankh of Reincarnation
             {
-                new Handle:temp=CreateArray(ByteCountToCells(128));
-                new size=GetArraySize(vecPlayerWeapons[client]);
-                decl String:wepName[128];
-                decl String:auth[64];
-                GetClientAuthString(client,auth,63);
-                PushArrayString(temp,auth);
-                for(new x=0;x<size;x++)
+                if (GameType == cstrike)
                 {
-                    GetArrayString(vecPlayerWeapons[client],x,wepName,127);
-                    PushArrayString(temp,wepName);
+                    new Handle:temp=CreateArray(ByteCountToCells(128));
+                    new size=GetArraySize(vecPlayerWeapons[client]);
+                    decl String:wepName[128];
+                    decl String:auth[64];
+                    GetClientAuthString(client,auth,63);
+                    PushArrayString(temp,auth);
+                    for(new x=0;x<size;x++)
+                    {
+                        GetArrayString(vecPlayerWeapons[client],x,wepName,127);
+                        PushArrayString(temp,wepName);
+                    }
+                    CreateTimer(0.2,War3Source_Ankh,temp);
                 }
-                CreateTimer(0.2,War3Source_Ankh,temp);
+                War3_SetOwnsItem(war3player,shopItem[ITEM_ANKH],false);
             }
-            War3_SetOwnsItem(war3player,shopItem[ITEM_ANKH],false);
-        }
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
-            War3_SetMaxSpeed(war3player,1.4);
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
+                War3_SetMaxSpeed(war3player,1.4);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
-            War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
+                War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
-            UsePeriapt(client);
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
+                UsePeriapt(client);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
-            War3_SetMinGravity(war3player,0.3);
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
+                War3_SetMinGravity(war3player,0.3);
 
-        if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE]))                            // Mole
-        {
-            // We need to check to use mole, or did we JUST use it?
-            if(isMole[client])
+            if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE]))                            // Mole
             {
-                // we already used it, take it away
-                isMole[client]=false;
-                War3_SetOwnsItem(war3player,shopItem[13],false);
+                // We need to check to use mole, or did we JUST use it?
+                if(isMole[client])
+                {
+                    // we already used it, take it away
+                    isMole[client]=false;
+                    War3_SetOwnsItem(war3player,shopItem[13],false);
+                }
+                else
+                    AuthTimer(1.0,client,DoMole);
             }
-            else
-                AuthTimer(1.0,client,DoMole);
         }
     }
 }
@@ -625,7 +632,8 @@ public Action:DoMole(Handle:timer,Handle:temp)
             // who gets their position mooched off them?
             new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
             new lucky_player=GetArrayCell(playerList,lucky_player_iter);
-            EntityOrigin(lucky_player,teleLoc);
+            //EntityOrigin(lucky_player,teleLoc);
+            teleLoc=spawnLoc[lucky_player];
             teleLoc[0]+=40.0;
             SetEntityOrigin(client,teleLoc);
             isMole[client]=true;

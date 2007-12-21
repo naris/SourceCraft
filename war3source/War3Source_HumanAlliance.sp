@@ -8,6 +8,7 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <sdktools>
 
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
@@ -15,6 +16,17 @@
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
+
+// Offset variables
+new OriginOffset;
+new GetVelocityOffset_0;
+new GetVelocityOffset_1;
+new GetVelocityOffset_2;
+
+// SDK Handles
+new Handle:hGameConf;
+new Handle:hEyePosition;
+new Handle:hEyeAngles;
 
 public Plugin:myinfo = 
 {
@@ -47,9 +59,37 @@ public OnWar3PluginReady()
                            "Bash",
                            "Have a 15-32% chance to render an \nenemy immobile for 1 second.",
                            "Teleport",
-                           "Allows you to teleport to where you \naim, 60-105 feet being the range.\nNOT IMPLEMENTED YET!");
+                           "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
     FindOffsets();
+
+    hGameConf=LoadGameConfigFile("plugin.hgrsource"); // Game configuration file
+
+    // Find offsets
+    OriginOffset=FindSendPropOffs("CBaseEntity","m_vecOrigin");
+    if(OriginOffset==-1)
+        SetFailState("[HGR:Source] Error: Failed to find the Origin offset, aborting");
+    GetVelocityOffset_0=FindSendPropOffs("CBasePlayer","m_vecVelocity[0]");
+    if(GetVelocityOffset_0==-1)
+        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_0 offset, aborting");
+    GetVelocityOffset_1=FindSendPropOffs("CBasePlayer","m_vecVelocity[1]");
+    if(GetVelocityOffset_1==-1)
+        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_1 offset, aborting");
+    GetVelocityOffset_2=FindSendPropOffs("CBasePlayer","m_vecVelocity[2]");
+    if(GetVelocityOffset_2==-1)
+        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_2 offset, aborting");
+
+    // EyePosition SDK call
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Virtual,"EyePosition");
+    PrepSDKCall_SetReturnInfo(SDKType_QAngle,SDKPass_ByValue);
+    hEyePosition=EndPrepSDKCall();
+
+    // EyeAngles SDK call
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Virtual,"EyeAngles");
+    PrepSDKCall_SetReturnInfo(SDKType_QAngle,SDKPass_ByValue);
+    hEyeAngles=EndPrepSDKCall();
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -65,7 +105,17 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if (race==raceID && IS_ALIVE(client))
     {
-        PrintToChat(client,"%c[War3Source]%c DOH! Teleport has not been implemented yet!",COLOR_GREEN,COLOR_DEFAULT);
+        new Float:clientloc[3],Float:clientang[3],Float:teleportloc[3];
+        GetEyePosition(client,clientloc); // Get the position of the player's eyes
+        GetAngles(client,clientang); // Get the angle the player is looking
+        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
+        //SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
+        TR_GetEndPosition(teleportloc); // Get the end xyz coordinate of where a player is looking
+
+        //EmitSoundFromOrigin("weapons/crossbow/hit1.wav",gHookEndloc[client]); // Emit sound from where the hook landed
+        //TeleportEntity(client,teleportloc,NULL_VECTOR,NULL_VECTOR); // Push the client
+        PrintToChat(client,"%c[War3Source]%c Location=%f,%f,%f",
+                    COLOR_GREEN,COLOR_DEFAULT,teleportloc[0],teleportloc[1],teleportloc[2]);
     }
 }
 
@@ -248,4 +298,45 @@ public HumanAlliance_Bash(war3player, victim)
 public Action:UnfreezePlayer(Handle:timer,Handle:temp)
 {
     Unfreeze(timer, temp);
+}
+/*********
+ *Helpers*
+**********/
+
+public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
+{
+  EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,NULL_VECTOR,true,0.0);
+}
+
+public GetEntityOrigin(entity,Float:output[3])
+{
+  GetEntDataVector(entity,OriginOffset,output);
+}
+
+public GetAngles(client,Float:output[3])
+{
+  SDKCall(hEyeAngles,client,output);
+}
+
+public GetEyePosition(client,Float:output[3])
+{
+  SDKCall(hEyePosition,client,output);
+}
+
+public GetVelocity(client,Float:output[3])
+{
+  output[0]=GetEntDataFloat(client,GetVelocityOffset_0);
+  output[1]=GetEntDataFloat(client,GetVelocityOffset_1);
+  output[2]=GetEntDataFloat(client,GetVelocityOffset_2);
+}
+
+/***************
+ *Trace Filters*
+****************/
+
+public bool:TraceRayTryToHit(entity,mask)
+{
+  if(entity>0&&entity<=64) // Check if the beam hit a player and tell it to keep tracing if it did
+    return false;
+  return true;
 }
