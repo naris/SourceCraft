@@ -670,38 +670,43 @@ public Action:Command_Admin_Sounds(client, args){
 }
 
 public Sound_Menu(client, bool:adminsounds){
-	new AdminId:aid = GetUserAdmin(client);
-	new bool:isadmin = (aid != INVALID_ADMIN_ID) && !GetAdminFlag(aid, Admin_Generic, Access_Effective);
-	/*
-	if (!isadmin)
-		adminsounds=false;
-	*/
+	if (adminsounds){
+		new AdminId:aid = GetUserAdmin(client);
+		new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+
+		if (!isadmin){
+			PrintToChat(client,"[Say Sounds] You must be an admin to play admin sounds!");
+			return;
+		}
+	}
+
 
 	new Handle:soundmenu=CreateMenu(Menu_Select);
 	SetMenuExitButton(soundmenu,true);
 	SetMenuTitle(soundmenu,"Choose a sound to play.");
 
-	KvRewind(listfile);
-	KvJumpToKey(listfile, "ExitSound", false);
-	KvGotoNextKey(listfile, true);
-
 	decl String:num[4];
 	decl String:buffer[255];
 	new count=1;
 
-	do{
-		Format(num,3,"%d",count);
-		KvGetSectionName(listfile, buffer, sizeof(buffer));
+	KvRewind(listfile);
 
-		if (adminsounds){
-			if (KvGetNum(listfile, "admin",0)){
-				AddMenuItem(soundmenu,num,buffer);
-				count++;
-			}
-		}else{
-			if (!KvGetNum(listfile, "admin",0) || isadmin){
-				AddMenuItem(soundmenu,num,buffer);
-				count++;
+	do{
+		KvGetSectionName(listfile, buffer, sizeof(buffer));
+		if (!StrEqual(buffer, "JoinSound") && !StrEqual(buffer, "ExitSound") && strncmp(buffer,"STEAM_",6,false))
+		{
+			if (adminsounds){
+				if (KvGetNum(listfile, "admin",0)){
+					Format(num,3,"%d",count);
+					AddMenuItem(soundmenu,num,buffer);
+					count++;
+				}
+			}else{
+				if (!KvGetNum(listfile, "admin",0)){
+					Format(num,3,"%d",count);
+					AddMenuItem(soundmenu,num,buffer);
+					count++;
+				}
 			}
 		}
 	} while (KvGotoNextKey(listfile));
