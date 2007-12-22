@@ -149,7 +149,7 @@ public War3Source_ResetSkills(client,vecpos)
     if(IsPlayerAlive(client))
     {
         SetPendingSkillReset(vecpos,1);
-        PrintToChat(client,"%c[War3Source] %cYour skill will be reset when you die or respawn.",
+        PrintToChat(client,"%c[War3Source] %cYour skills for your current race will be reset when you die or respawn.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
     else
