@@ -39,6 +39,7 @@
 // War3Source stuff
 
 new myWepsOffset        = 0;
+new curWepOffset        = 0;
 new ammotypeOffset      = 0;
 new clipOffset          = 0;
 new ammoOffset          = 0; // Primary Ammo
@@ -53,6 +54,7 @@ new bool:isMole[MAXPLAYERS+1]             = { false, ... };
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
 
+new Handle:hGameConf      = INVALID_HANDLE;
 new Handle:hUTILRemove    = INVALID_HANDLE;
 new Handle:hGiveNamedItem = INVALID_HANDLE;
 new Handle:hWeaponDrop    = INVALID_HANDLE;
@@ -104,24 +106,35 @@ public OnWar3PluginReady()
     shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
     shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
 
-    FindOffsets();
     LoadSDKToolStuff();
-    LoadMoreSDKToolStuff();
 }
 
-public LoadMoreSDKToolStuff()
+public LoadSDKToolStuff()
 {
+    hGameConf=LoadGameConfigFile("plugin.war3source");
+
+    ammoOffset = FindSendPropOffs("CBasePlayer", "m_iAmmo");
+    if(curWepOffset==-1)
+        SetFailState("Couldn't find Ammo offset");
+
     if (GameType == tf2)
     {
-        ammoOffset      = FindSendPropOffs("CTFPlayer",         "m_iAmmo") + 4;
         ammo2Offset     = ammoOffset  + 4;
         metalOffset     = ammo2Offset + 4;
     }
     else
     {
-        clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
-        ammoOffset      = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
         ammotypeOffset  = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
+        if(curWepOffset==-1)
+            SetFailState("Couldn't find PrimaryAmmoType offset");
+
+        clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
+        if(curWepOffset==-1)
+            SetFailState("Couldn't find Clip offset");
+
+        curWepOffset=FindSendPropOffs("CAI_BaseNPC","m_hActiveWeapon");
+        if(curWepOffset==-1)
+            SetFailState("Couldn't find ActiveWeapon offset");
 
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveAmmo");
         PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
@@ -174,13 +187,13 @@ public OnWar3PlayerAuthed(client,war3player)
 
 public OnItemPurchase(client,war3player,item)
 {
-    if(item==shopItem[ITEM_BOOTS] && IS_ALIVE(client))              // Boots of Speed
+    if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
         War3_SetMaxSpeed(war3player,1.4);
-    else if(item==shopItem[ITEM_CLOAK] && IS_ALIVE(client))         // Cloak of Shadows
+    else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
         War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         War3_SetImmunity(war3player,Immunity_Ultimates,true);
-    else if(item==shopItem[ITEM_PERIAPT] && IS_ALIVE(client))       // Periapt of Health
+    else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health
         UsePeriapt(client);
     else if(item==shopItem[ITEM_TOME])                              // Tome of Experience
     {
@@ -188,7 +201,7 @@ public OnItemPurchase(client,war3player,item)
         War3_SetOwnsItem(war3player,shopItem[8],false);
         War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
-    else if(item==shopItem[ITEM_SCROLL] && !IS_ALIVE(client))       // Scroll of Respawning 
+    else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
         RespawnPlayer(client);
         War3_SetOwnsItem(war3player,shopItem[9],false);
@@ -445,7 +458,7 @@ public Action:Regeneration(Handle:timer)
     new maxplayers=GetMaxClients();
     for(new x=1;x<=maxplayers;x++)
     {
-        if(IsClientInGame(x) && IS_ALIVE(x))
+        if(IsClientInGame(x) && IsPlayerAlive(x))
         {
             new war3player=War3_GetWar3Player(x);
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
@@ -464,7 +477,7 @@ public Action:Gloves(Handle:timer)
     new maxplayers=GetMaxClients();
     for(new player=1;player<=maxplayers;player++)
     {
-        if(IsClientInGame(player) && IS_ALIVE(player))
+        if(IsClientInGame(player) && IsPlayerAlive(player))
         {
             new war3player=War3_GetWar3Player(player);
             if (war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
@@ -549,7 +562,7 @@ public Action:TrackWeapons(Handle:timer)
         decl String:wepName[128];
         for(new x=1;x<=maxplayers;x++)
         {
-            if(IsClientInGame(x) && IS_ALIVE(x))
+            if(IsClientInGame(x) && IsPlayerAlive(x))
             {
                 ClearArray(vecPlayerWeapons[x]);
                 new iterOffset=myWepsOffset;

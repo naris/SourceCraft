@@ -61,7 +61,6 @@ public OnWar3PluginReady()
                            "Teleport",
                            "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
-    FindOffsets();
     FindMoveTypeOffset();
 
     hHGRConf=LoadGameConfigFile("plugin.hgrsource"); // Game configuration file
@@ -103,7 +102,7 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && IS_ALIVE(client))
+    if (race==raceID && IsPlayerAlive(client))
     {
         new Float:clientloc[3],Float:clientang[3],Float:teleportloc[3];
         GetEyePosition(client,clientloc); // Get the position of the player's eyes
@@ -122,7 +121,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
 {
     if(race == raceID && skill==0 && newskilllevel > 0 &&
-       War3_GetRace(war3player) == raceID && IS_ALIVE(client))
+       War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
     {
         HumanAlliance_Invisibility(war3player, newskilllevel);
     }
@@ -131,7 +130,7 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
 public OnItemPurchase(client,war3player,item)
 {
     new race=War3_GetRace(war3player);
-    if (race == raceID && IS_ALIVE(client))
+    if (race == raceID && IsPlayerAlive(client))
     {
         new cloak = War3_GetShopItem("Cloak of Shadows");
         if (cloak == item)

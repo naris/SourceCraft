@@ -62,9 +62,6 @@ public OnWar3PluginReady()
                            "Chain Lightning", // Ultimate Name
                            "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.\nNOT IMPLEMENTED YET!"); // Ultimate Description
 
-    FindOffsets();
-
-    LoadSDKToolStuff();
 }
 
 public OnMapStart()
@@ -105,7 +102,7 @@ public OnGameFrame()
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if (pressed && m_AllowChainLightning[client] &&
-        race == raceID && IS_ALIVE(client))
+        race == raceID && IsPlayerAlive(client))
     {
         new skill = War3_GetSkillLevel(war3player,race,3);
         if (skill)
@@ -326,7 +323,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
-            if(IsClientConnected(index)&&client!=index&&IS_ALIVE(index))
+            if(IsClientConnected(index)&&client!=index&&IsPlayerAlive(index))
             {
                 new bool:inrange=IsInRange(client,index,range);
                 if (inrange)

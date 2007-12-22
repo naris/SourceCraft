@@ -52,7 +52,6 @@ public OnWar3PluginReady()
                            "Entangled Roots",
                            "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
-    FindOffsets();
     FindMoveTypeOffset();
 }
 
@@ -70,7 +69,7 @@ public OnWar3PlayerAuthed(client,war3player)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && pressed && IS_ALIVE(client) &&
+    if (race==raceID && pressed && IsPlayerAlive(client) &&
         m_AllowEntangle[client])
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
@@ -91,7 +90,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
             new maxplayers=GetMaxClients();
             for(new index=1;index<=maxplayers;index++)
             {
-                if(IsClientConnected(index)&&client!=index&&IS_ALIVE(index))
+                if(IsClientConnected(index)&&client!=index&&IsPlayerAlive(index))
                 {
                     new bool:inrange=IsInRange(client,index,range);
                     if(inrange)

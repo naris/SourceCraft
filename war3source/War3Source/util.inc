@@ -12,9 +12,6 @@
 
 #include <cstrike>
 
-// Defines
-#define IS_ALIVE !GetLifestate
-
 enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
 stock Mod:GameType = undetected;
 
@@ -23,14 +20,6 @@ stock maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
 
 stock maxHealth[MAXPLAYERS+1]               = { 0, ... };
 stock bool:healthIncreased[MAXPLAYERS+1]    = { false, ... };
-
-stock lifestateOffset  = 0;
-stock renderModeOffset = 0;
-stock curWepOffset     = 0;
-stock ownerOffset      = 0;
-stock colorOffset      = 0;
-
-stock Handle:hGameConf     = INVALID_HANDLE;
 
 stock Mod:GetGameType()
 {
@@ -52,34 +41,6 @@ stock Mod:GetGameType()
             GameType=other;
     }
     return GameType;
-}
-
-stock FindOffsets()
-{
-    lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    if(lifestateOffset==-1)
-        SetFailState("Couldn't find LifeState offset");
-
-    ownerOffset = FindSendPropOffs("CBaseEntity",       "m_hOwnerEntity");
-    if(ownerOffset==-1)
-        SetFailState("Couldn't find OwnerEntity offset");
-
-    colorOffset=FindSendPropOffs("CAI_BaseNPC","m_clrRender");
-    if(colorOffset==-1)
-        SetFailState("Couldn't find Color offset");
-
-    renderModeOffset=FindSendPropOffs("CBaseAnimating","m_nRenderMode");
-    if(renderModeOffset==-1)
-        SetFailState("Couldn't find RenderMode offset");
-
-    curWepOffset=FindSendPropOffs("CAI_BaseNPC","m_hActiveWeapon");
-    if(curWepOffset==-1)
-        SetFailState("Couldn't find ActiveWeapon offset");
-}
-
-stock LoadSDKToolStuff()
-{
-    hGameConf=LoadGameConfigFile("plugin.war3source");
 }
 
 stock AuthTimer(Float:delay,index,Timer:func)
@@ -147,11 +108,6 @@ stock SetMaxHealth(entity,amount)
 stock GetMaxHealth(entity)
 {
     return GetEntData(entity,maxHealthOffset[entity],1);
-}
-
-stock GetLifestate(client)
-{
-    return GetEntData(client,lifestateOffset,1);
 }
 
 stock RespawnPlayer(client)

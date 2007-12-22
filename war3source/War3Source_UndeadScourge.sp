@@ -56,8 +56,6 @@ public OnWar3PluginReady()
                            "Suicide Bomber",
                            "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
 
-    FindOffsets();
-
     /*
     if (GameType == tf2)
         explosionModel=PrecacheModel("materials/particles/explosion/explosionfiresmoke.vmt",false);
@@ -87,7 +85,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if (pressed)
     {
-        if (race == raceID && IS_ALIVE(client))
+        if (race == raceID && IsPlayerAlive(client))
         {
             new ult_level = War3_GetSkillLevel(war3player,race,3);
             if (ult_level)
@@ -148,7 +146,7 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
 public OnItemPurchase(client,war3player,item)
 {
     new race=War3_GetRace(war3player);
-    if (race == raceID && IS_ALIVE(client))
+    if (race == raceID && IsPlayerAlive(client))
     {
         new boots = War3_GetShopItem("Boots of Speed");
         if (boots == item)
@@ -373,7 +371,7 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
             TE_SendToAll();
             EmitSoundToAll("weapons/explode5.wav",client);
 
-            if (x != client && IS_ALIVE(x))
+            if (x != client && IsPlayerAlive(x))
             {
                 new war3player_check=War3_GetWar3Player(x);
                 if (war3player_check>-1)
