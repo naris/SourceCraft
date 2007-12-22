@@ -73,7 +73,9 @@ public Action:War3Source_SayCommand(client,args)
             if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                 War3Source_SkillMenu(client,vecpos);
             else
-                War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
+            {
+                PrintToChat(client,"%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
+            }
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showskills",63))

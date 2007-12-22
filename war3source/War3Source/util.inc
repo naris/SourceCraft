@@ -15,12 +15,6 @@
 enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
 stock Mod:GameType = undetected;
 
-stock healthOffset[MAXPLAYERS+1]            = { 0, ... };
-stock maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
-
-stock maxHealth[MAXPLAYERS+1]               = { 0, ... };
-stock bool:healthIncreased[MAXPLAYERS+1]    = { false, ... };
-
 stock Mod:GetGameType()
 {
     if (GameType == undetected)
@@ -41,73 +35,6 @@ stock Mod:GetGameType()
             GameType=other;
     }
     return GameType;
-}
-
-stock AuthTimer(Float:delay,index,Timer:func)
-{
-    new Handle:temp=CreateArray(ByteCountToCells(64));
-    decl String:auth[64];
-    GetClientAuthString(index,auth,63);
-    PushArrayString(temp,auth);
-    CreateTimer(delay,func,temp);
-}
-
-stock PlayerOfAuth(const String:auth[])
-{
-    new max=GetMaxClients();
-    decl String:authStr[64];
-    for(new x=1;x<=max;x++)
-    {
-        if(IsClientConnected(x))
-        {
-            GetClientAuthString(x,authStr,63);
-            if(StrEqual(auth,authStr))
-                return x;
-        }
-    }
-    return 0;
-}
-
-stock SetupHealth(client)
-{
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
-
-    if (GameType == tf2)
-    {
-        maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
-        maxHealth[client] = GetMaxHealth(client);
-    }
-}
-
-stock IncreaseHealth(client, amount)
-{
-    new health = GetClientHealth(client)+amount;
-    if (GameType == tf2 && health > GetMaxHealth(client))
-    {
-        SetMaxHealth(client, health);
-        healthIncreased[client] = true;
-    }
-    SetHealth(client, health);
-}
-
-stock SetHealth(entity,amount)
-{
-    SetEntData(entity,healthOffset[entity],amount,1);
-}
-
-stock GetHealth(entity)
-{
-    return GetEntData(entity,healthOffset[entity],1);
-}
-
-stock SetMaxHealth(entity,amount)
-{
-    SetEntData(entity,maxHealthOffset[entity],amount,1);
-}
-
-stock GetMaxHealth(entity)
-{
-    return GetEntData(entity,maxHealthOffset[entity],1);
 }
 
 stock RespawnPlayer(client)

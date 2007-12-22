@@ -13,8 +13,11 @@
 #include <tf2>
 
 #include "War3Source/War3Source_Interface"
-#include "War3Source/messages"
+
 #include "War3Source/util"
+#include "War3Source/health"
+#include "War3Source/messages"
+#include "War3Source/authtimer"
 
 // Defines
 
@@ -199,7 +202,7 @@ public OnItemPurchase(client,war3player,item)
     {
         War3_SetXP(war3player,War3_GetRace(war3player),War3_GetXP(war3player,War3_GetRace(war3player))+100);
         War3_SetOwnsItem(war3player,shopItem[8],false);
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
+        PrintToChat(client,"%c[War3Source] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
@@ -652,9 +655,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
         }
         else
         {
-            War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                   "%c[War3Source] %cCould not find a place to mole to, there are no enemies!",
-                                   COLOR_GREEN,COLOR_DEFAULT);
+            PrintToChat(client, "%c[War3Source] %cCould not find a place to mole to, there are no enemies!", COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     ClearArray(temp);

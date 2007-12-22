@@ -139,9 +139,8 @@ public Action:War3Source_CMD_SetXP(client,args)
                 new race=GetRace(vecpos);
                 SetXP(vecpos,race,xp);
                 PrintToConsole(client,"[War3Source] You just set \"%s's\" XP to %d.",name,xp);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" set your XP to %d.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" set your XP to %d.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
@@ -182,9 +181,8 @@ public Action:War3Source_CMD_GiveXP(client,args)
                 new race=GetRace(vecpos);
                 SetXP(vecpos,race,GetXP(vecpos,race)+xp);
                 PrintToConsole(client,"[War3Source] You just gave %d XP to \"%s\".",xp,name);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" gave you %d XP.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" gave you %d XP.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
@@ -228,9 +226,8 @@ public Action:War3Source_CMD_RemoveXP(client,args)
                     newxp=0;
                 SetXP(vecpos,race,newxp);
                 PrintToConsole(client,"[War3Source] You just removed %d XP from \"%s\".",xp,name);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" removed %d XP from you.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" removed %d XP from you.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
@@ -277,9 +274,8 @@ public Action:War3Source_CMD_SetLevel(client,args)
                     level=0;
                 SetLevel(vecpos,race,level);
                 PrintToConsole(client,"[War3Source] You just set player \"%s's\" level to %d.",name,level);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,level);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,level);
                 if(level>0)
                     War3Source_SkillMenu(index,vecpos);
             }
@@ -321,9 +317,8 @@ public Action:War3Source_CMD_GiveLevel(client,args)
                 {
                     SetLevel(vecpos,race,newlevel);
                     PrintToConsole(client,"[War3Source] You just gave player \"%s\" a level.",name);
-                    War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                           "%c[War3Source] %cAdmin \"%s\" gave you a level.",
-                                           COLOR_GREEN,COLOR_DEFAULT,adminname);
+                    PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" gave you a level.",
+                                COLOR_GREEN,COLOR_DEFAULT,adminname);
                     War3Source_SkillMenu(index,vecpos);
                 }
             }
@@ -367,9 +362,8 @@ public Action:War3Source_CMD_RemoveLevel(client,args)
                         SetSkillLevel(vecpos,race,y,0);
                     SetLevel(vecpos,race,newlevel);
                     PrintToConsole(client,"[War3Source] You just removed a level from player \"%s\".",name);
-                    War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                           "%c[War3Source] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
-                                           COLOR_GREEN,COLOR_DEFAULT,adminname);
+                    PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
+                                COLOR_GREEN,COLOR_DEFAULT,adminname);
                     if(newlevel>0)
                         War3Source_SkillMenu(index,vecpos);
                 }
@@ -416,9 +410,8 @@ public Action:War3Source_CMD_SetCredits(client,args)
             {
                 SetCredits(vecpos,credits);
                 PrintToConsole(client,"[War3Source] You just set player \"%s's\" credits to %d.",name,credits);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" set your credits to %d.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" set your credits to %d.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -465,9 +458,8 @@ public Action:War3Source_CMD_GiveCredits(client,args)
                     newcreds=MAX_CREDITS;
                 SetCredits(vecpos,newcreds);
                 PrintToConsole(client,"[War3Source] You just gave player \"%s\" %d %s.",name,credits,currency);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" give you %d %s.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currency);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" give you %d %s.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currency);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -514,9 +506,8 @@ public Action:War3Source_CMD_RemoveCredits(client,args)
                     newcreds=MAX_CREDITS;
                 SetCredits(vecpos,newcreds);
                 PrintToConsole(client,"[War3Source] You just removed %d %s from player \"%s\".",credits,currency,name);
-                War3Source_ChatMessage(index,COLOR_DEFAULT,
-                                       "%c[War3Source] %cAdmin \"%s\" removed %d %s from you.",
-                                       COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currency);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" removed %d %s from you.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currency);
             }
         }
         if(GetArraySize(matchHandle)==0)

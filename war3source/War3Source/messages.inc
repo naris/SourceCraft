@@ -16,6 +16,7 @@
 #define COLOR_TEAM 0x03
 #define COLOR_GREEN 0x04 // Actually red for DOD
 
+/*
 stock War3Source_ChatMessage(target,color,const String:szMsg[],any:...)
 {
     if(strlen(szMsg)>191)
@@ -38,3 +39,4 @@ stock War3Source_ChatMessage(target,color,const String:szMsg[],any:...)
         EndMessage();
     }
 }
+*/

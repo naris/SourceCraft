@@ -11,9 +11,12 @@
 #include <sdktools>
 
 #include "War3Source/War3Source_Interface"
-#include "War3Source/messages"
+
 #include "War3Source/util"
+#include "War3Source/health"
 #include "War3Source/freeze"
+#include "War3Source/messages"
+#include "War3Source/authtimer"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to

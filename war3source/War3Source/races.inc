@@ -61,7 +61,7 @@ public War3Source_PendingCheck(client,vectorpos)
         decl String:buf[192];
         new Handle:race=Race(GetRace(vectorpos));
         GetArrayString(race,2,buf,191);
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+        PrintToChat(client,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
 }
 
@@ -142,12 +142,18 @@ public War3Source_ResetSkills(client,vecpos)
 {
     new race=GetRace(vecpos);
     if(!GetLifestate(client))
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou are not allowed to resetskills while alive.",COLOR_GREEN,COLOR_DEFAULT);
+    {
+        PrintToChat(client,"%c[War3Source] %cYou are not allowed to resetskills while alive.",
+                    COLOR_GREEN,COLOR_DEFAULT);
+    }
     else
     {
         for(new x=0;x<SKILL_COUNT;x++)
             SetSkillLevel(vecpos,race,x,0);
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYour skills have been reset for your current race.",COLOR_GREEN,COLOR_DEFAULT);
+
+        PrintToChat(client,"%c[War3Source] %cYour skills have been reset for your current race.",
+                    COLOR_GREEN,COLOR_DEFAULT);
+
         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
             War3Source_SkillMenu(client,vecpos);
     }

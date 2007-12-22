@@ -14,50 +14,36 @@ public War3Source_ShowCredits(client,vecpos)
     GetConVarString(m_Currency, currency, 63);
     new credits=GetCredits(vecpos);
     if(credits!=1)
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have %d shop %s.",COLOR_GREEN,COLOR_DEFAULT,credits, currency);
+    {
+        PrintToChat(client,"%c[War3Source] %cYou have %d %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,credits, currency);
+    }
     else
-        War3Source_ChatMessage(client,COLOR_DEFAULT,"%c[War3Source] %cYou have %d shop %s.",COLOR_GREEN,COLOR_DEFAULT,credits, currency);
+    {
+        PrintToChat(client,"%c[War3Source] %cYou have %d %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,credits, currency);
+    }
 }
 
 public GiveKillCredits(client,vectorpos)
 {
+    new curcredits=GetCredits(vectorpos);
+    new addcredits= (SAVE_ENABLED) ? KILL_CREDITS_LONGTERM : KILL_CREDITS_SHORTTERM;
+    new newcredits=curcredits+addcredits;
+
     decl String:currency[64];
     GetConVarString(m_Currency, currency, 63);
-    new newcredits;
-    if(SAVE_ENABLED)
+
+    if(newcredits <= MAX_CREDITS || MAX_CREDITS == 0)
     {
-        newcredits=GetCredits(vectorpos)+KILL_CREDITS_LONGTERM;
-        if(newcredits<=MAX_CREDITS||MAX_CREDITS==0)
-        {
-            SetCredits(vectorpos,newcredits);
-            War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                   "%c[War3Source] %cYou have gained %d %s for getting a kill.",
-                                   COLOR_GREEN,COLOR_DEFAULT,KILL_CREDITS_LONGTERM, currency);
-        }
-        else
-        {
-            War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                   "%c[War3Source] %cThe max amount of %s is %d, so you have gained %d %s.",
-                                   COLOR_GREEN,COLOR_DEFAULT,MAX_CREDITS,currency,MAX_CREDITS-GetCredits(vectorpos),currency);
-            SetCredits(vectorpos,MAX_CREDITS);
-        }
+        SetCredits(vectorpos,newcredits);
+        PrintToChat(client, "%c[War3Source] %cYou have gained %d %s for getting a kill.",
+                    COLOR_GREEN,COLOR_DEFAULT,addcredits, currency);
     }
     else
     {
-        newcredits=GetCredits(vectorpos)+KILL_CREDITS_SHORTTERM;
-        if(newcredits<=MAX_CREDITS||MAX_CREDITS==0)
-        {
-            SetCredits(vectorpos,newcredits);
-            War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                   "%c[War3Source] %cYou have gained %d %s for getting a kill.",
-                                   COLOR_GREEN,COLOR_DEFAULT,KILL_CREDITS_LONGTERM,currency);
-        }
-        else
-        {
-            War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                   "%c[War3Source] %cThe max amount of %s is %d, so you have gained %d %s.",
-                                   MAX_CREDITS,currency,MAX_CREDITS-GetCredits(vectorpos),currency);
-            SetCredits(vectorpos,MAX_CREDITS);
-        }
-    }  
+        SetCredits(vectorpos,MAX_CREDITS);
+        PrintToChat(client, "%c[War3Source] %cThe max amount of %s is %d, so you have gained %d %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,MAX_CREDITS,currency,MAX_CREDITS-curcredits,currency);
+    }
 }
