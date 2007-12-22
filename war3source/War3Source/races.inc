@@ -63,6 +63,12 @@ public War3Source_PendingCheck(client,vectorpos)
         GetArrayString(race,2,buf,191);
         PrintToChat(client,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
+
+    if (GetPendingSkillReset(vectorpos))
+    {
+        SetPendingSkillReset(vectorpos,0);
+        ResetSkills(client,vectorpos);
+    }
 }
 
 public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
@@ -140,23 +146,14 @@ public War3Source_ShowSkillsInfo(client, Handle:raceHandle)
 
 public War3Source_ResetSkills(client,vecpos)
 {
-    new race=GetRace(vecpos);
     if(IsPlayerAlive(client))
     {
-        for(new x=0;x<SKILL_COUNT;x++)
-            SetSkillLevel(vecpos,race,x,0);
-
-        PrintToChat(client,"%c[War3Source] %cYour skills have been reset for your current race.",
+        SetPendingSkillReset(vecpos,1);
+        PrintToChat(client,"%c[War3Source] %cYour skill will be reset when you die or respawn.",
                     COLOR_GREEN,COLOR_DEFAULT);
-
-        if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-            War3Source_SkillMenu(client,vecpos);
     }
     else
-    {
-        PrintToChat(client,"%c[War3Source] %cYou are not allowed to resetskills while alive.",
-                    COLOR_GREEN,COLOR_DEFAULT);
-    }
+        ResetSkills(client,vecpos);
 }
 
 public War3Source_ShowSkills(client,vecpos)
@@ -177,4 +174,19 @@ public War3Source_ShowSkills(client,vecpos)
     DrawPanelText(panel,"-----------------------------");
     DrawPanelItem(panel,"Close");
     SendPanelToClient(panel,client,War3Source_ShowSkills_Selected,0);
+}
+
+ResetSkills(client,vecpos)
+{
+    {
+        new race=GetRace(vecpos);
+        for(new x=0;x<SKILL_COUNT;x++)
+            SetSkillLevel(vecpos,race,x,0);
+
+        PrintToChat(client,"%c[War3Source] %cYour skills have been reset for your current race.",
+                    COLOR_GREEN,COLOR_DEFAULT);
+
+        if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+            War3Source_SkillMenu(client,vecpos);
+    }
 }

@@ -7,7 +7,7 @@
 
 #include <tf2>
 
-#define INFO_COUNT     5
+#define INFO_COUNT     6 // 1)client index, 2)race, 3)pending race, 4)pending skill reset, 5)credits, 6)tracking array
 #define TRACKING_COUNT 11
 
 // Global definition
@@ -51,18 +51,6 @@ public SetRace(vectorpos,race)
     Call_Finish(result);
 }
 
-public Handle:GetPropertyInfo(vectorpos)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,4);
-}
-
-public SetPropertyInfo(vectorpos,Handle:info)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,4,info);
-}
-
 public GetPendingRace(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
@@ -75,16 +63,40 @@ public SetPendingRace(vectorpos,pend)
     SetArrayCell(vec,2,pend);
 }
 
-public GetCredits(vectorpos)
+public GetPendingSkillReset(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     return GetArrayCell(vec,3);
 }
 
+public SetPendingSkillReset(vectorpos,pend)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    SetArrayCell(vec,3,pend);
+}
+
+public GetCredits(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,4);
+}
+
 public SetCredits(vectorpos,credits)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,3,credits);
+    SetArrayCell(vec,4,credits);
+}
+
+public Handle:GetPropertyInfo(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,5);
+}
+
+public SetPropertyInfo(vectorpos,Handle:info)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    SetArrayCell(vec,5,info);
 }
 
 public GetImmunity(vectorpos,immunity)

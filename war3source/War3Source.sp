@@ -151,6 +151,7 @@ public OnClientPutInServer(client)
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,0); // Player race
         PushArrayCell(newPlayer,-1); // Pending race
+        PushArrayCell(newPlayer,0); // Pending skill reset
         PushArrayCell(newPlayer,0); // Credits
         new Handle:temp=CreateArray();
         PushArrayCell(newPlayer,temp); // Information about speed and gravity
