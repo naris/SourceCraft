@@ -54,8 +54,6 @@ new bool:isMole[MAXPLAYERS+1]             = { false, ... };
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
 
-new Handle:hGameConf      = INVALID_HANDLE;
-new Handle:hRoundRespawn  = INVALID_HANDLE;
 new Handle:hUTILRemove    = INVALID_HANDLE;
 new Handle:hGiveNamedItem = INVALID_HANDLE;
 new Handle:hWeaponDrop    = INVALID_HANDLE;
@@ -107,13 +105,13 @@ public OnWar3PluginReady()
     shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
     shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
 
+    FindOffsets();
     LoadSDKToolStuff();
+    LoadMoreSDKToolStuff();
 }
 
-public LoadSDKToolStuff()
+public LoadMoreSDKToolStuff()
 {
-
-    FindOffsets();
     myWepsOffset        = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
     originOffset        = FindSendPropOffs("CBaseEntity",       "m_vecOrigin");
     ammotypeOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
@@ -130,26 +128,30 @@ public LoadSDKToolStuff()
         ammoOffset      = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
     }
 
-    hGameConf=LoadGameConfigFile("plugin.war3source");
+    if (GameType == cstrike || GameType == dod)
+    {
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveNamedItem");
+        PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity,SDKPass_Pointer);
+        PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
+        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
+        hGiveNamedItem=EndPrepSDKCall();
+        StartPrepSDKCall(SDKCall_Static);
+    }
 
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveNamedItem");
-    PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity,SDKPass_Pointer);
-    PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
-    PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-    hGiveNamedItem=EndPrepSDKCall();
-    StartPrepSDKCall(SDKCall_Static);
+    if (GameType == cstrike)
+    {
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_Remove");
+        PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
+        hUTILRemove=EndPrepSDKCall();
+        StartPrepSDKCall(SDKCall_Entity);
 
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_Remove");
-    PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
-    hUTILRemove=EndPrepSDKCall();
-    StartPrepSDKCall(SDKCall_Entity);
-
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"Weapon_Drop");
-    PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
-    PrepSDKCall_AddParameter(SDKType_Vector,SDKPass_Pointer,VDECODE_FLAG_ALLOWNULL);
-    PrepSDKCall_AddParameter(SDKType_Vector,SDKPass_Pointer,VDECODE_FLAG_ALLOWNULL);
-    hWeaponDrop=EndPrepSDKCall();
-    StartPrepSDKCall(SDKCall_Entity);
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"Weapon_Drop");
+        PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
+        PrepSDKCall_AddParameter(SDKType_Vector,SDKPass_Pointer,VDECODE_FLAG_ALLOWNULL);
+        PrepSDKCall_AddParameter(SDKType_Vector,SDKPass_Pointer,VDECODE_FLAG_ALLOWNULL);
+        hWeaponDrop=EndPrepSDKCall();
+        StartPrepSDKCall(SDKCall_Entity);
+    }
 
     PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveAmmo");
     PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
@@ -162,14 +164,6 @@ public LoadSDKToolStuff()
     PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
     PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
     hSetModel=EndPrepSDKCall();
-
-    if (GameType == cstrike)
-    {
-        StartPrepSDKCall(SDKCall_Player);
-        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
-        hRoundRespawn=EndPrepSDKCall();
-        StartPrepSDKCall(SDKCall_Player);
-    }
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -198,7 +192,7 @@ public OnItemPurchase(client,war3player,item)
     }
     else if(item==shopItem[ITEM_SCROLL] && !IS_ALIVE(client))       // Scroll of Respawning 
     {
-        RespawnPlayer(client);
+        Respawn(client);
         War3_SetOwnsItem(war3player,shopItem[9],false);
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
@@ -211,6 +205,15 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
+        new Float:origin[3],Float:absorigin[3];
+        GetClientAbsOrigin(client,absorigin);
+        EntityOrigin(client,origin);
+
+        PrintToChat(client,"%c[War3Source]%c You have spawned @ %d,%d,%d, absorigin=%d,%d,%d.",
+                    COLOR_GREEN,COLOR_DEFAULT,
+                    origin[0],origin[1],origin[2],
+                    absorigin[0],absorigin[1],absorigin[2]);
+
         //GetClientAbsOrigin(client,spawnLoc[client]);
         EntityOrigin(client,spawnLoc[client]);
 
@@ -686,21 +689,13 @@ public DropWeapon(client,weapon)
     SDKCall(hWeaponDrop,client,weapon,NULL_VECTOR,NULL_VECTOR);
 }
 
-public RespawnPlayer(client)
-{
-    if (GameType == cstrike)
-        SDKCall(hRoundRespawn,client);
-    else
-        DispatchSpawn(client);
-}
-
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)
 {
     decl String:auth[64];
     GetArrayString(temp,0,auth,63);
     new client=PlayerOfAuth(auth);
     if(client)
-        RespawnPlayer(client);
+        Respawn(client);
     ClearArray(temp);
 }
 

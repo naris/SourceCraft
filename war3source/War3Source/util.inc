@@ -31,6 +31,9 @@ stock curWepOffset     = 0;
 stock ownerOffset      = 0;
 stock colorOffset      = 0;
 
+stock Handle:hGameConf     = INVALID_HANDLE;
+stock Handle:hRoundRespawn = INVALID_HANDLE;
+
 stock Mod:GetGameType()
 {
     if (GameType == undetected)
@@ -78,6 +81,19 @@ stock FindOffsets()
     curWepOffset=FindSendPropOffs("CAI_BaseNPC","m_hActiveWeapon");
     if(curWepOffset==-1)
         SetFailState("Couldn't find ActiveWeapon offset");
+}
+
+stock LoadSDKToolStuff()
+{
+    hGameConf=LoadGameConfigFile("plugin.war3source");
+
+    if (GameType == cstrike)
+    {
+        hGameConf=LoadGameConfigFile("plugin.war3source");
+        StartPrepSDKCall(SDKCall_Player);
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
+        hRoundRespawn=EndPrepSDKCall();
+    }
 }
 
 stock AuthTimer(Float:delay,index,Timer:func)
@@ -177,6 +193,14 @@ stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
     return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
                       (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
                       (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
+}
+
+stock Respawn(client)
+{
+    if (GameType == cstrike)
+        SDKCall(hRoundRespawn,client);
+    else
+        DispatchSpawn(client);
 }
 
 stock MakeInvisible(client, visibility)

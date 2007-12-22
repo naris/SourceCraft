@@ -24,7 +24,7 @@ new GetVelocityOffset_1;
 new GetVelocityOffset_2;
 
 // SDK Handles
-new Handle:hGameConf;
+new Handle:hHGRConf;
 new Handle:hEyePosition;
 new Handle:hEyeAngles;
 
@@ -63,7 +63,7 @@ public OnWar3PluginReady()
 
     FindOffsets();
 
-    hGameConf=LoadGameConfigFile("plugin.hgrsource"); // Game configuration file
+    hHGRConf=LoadGameConfigFile("plugin.hgrsource"); // Game configuration file
 
     // Find offsets
     OriginOffset=FindSendPropOffs("CBaseEntity","m_vecOrigin");
@@ -81,13 +81,13 @@ public OnWar3PluginReady()
 
     // EyePosition SDK call
     StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Virtual,"EyePosition");
+    PrepSDKCall_SetFromConf(hHGRConf,SDKConf_Virtual,"EyePosition");
     PrepSDKCall_SetReturnInfo(SDKType_QAngle,SDKPass_ByValue);
     hEyePosition=EndPrepSDKCall();
 
     // EyeAngles SDK call
     StartPrepSDKCall(SDKCall_Player);
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Virtual,"EyeAngles");
+    PrepSDKCall_SetFromConf(hHGRConf,SDKConf_Virtual,"EyeAngles");
     PrepSDKCall_SetReturnInfo(SDKType_QAngle,SDKPass_ByValue);
     hEyeAngles=EndPrepSDKCall();
 }
