@@ -1,5 +1,5 @@
 /*
- * vim: set ai et ts=4 sw=4 :
+ * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: xp.inc
  * Description: The name of the file is somewhat deciving... it is basically the
  *              file that handles all the XP you get for killing people and other

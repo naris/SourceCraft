@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 :
+ * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: events_tf2.inc
  * Description: The handler for all the Team Fortress event based stuff.
  * Author(s): Naris (Murray Wilson)

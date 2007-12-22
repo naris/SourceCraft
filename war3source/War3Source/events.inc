@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 :
+ * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: events.inc
  * Description: The handler for all the source engine event based stuff.
  * Author(s): Anthony Iacono  

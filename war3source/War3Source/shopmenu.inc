@@ -1,5 +1,5 @@
 /**
- * vim: set ai et ts=4 sw=4 :
+ * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: shopmenu.inc
  * Description: The root of all shopmenu specific stuff.
  * Author(s): Anthony Iacono  

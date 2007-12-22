@@ -1,5 +1,5 @@
 /*
- * vim: set ai et ts=4 sw=4 :
+ * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: hooks.inc
  * Description: Handles hooking functions, will be used to get chat commands.
  * Author(s): Anthony Iacono  
