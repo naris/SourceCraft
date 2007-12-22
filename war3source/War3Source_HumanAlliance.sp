@@ -13,12 +13,12 @@
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
 #include "War3Source/util"
+#include "War3Source/freeze"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
 // Offset variables
-new OriginOffset;
 new GetVelocityOffset_0;
 new GetVelocityOffset_1;
 new GetVelocityOffset_2;
@@ -62,19 +62,19 @@ public OnWar3PluginReady()
                            "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
     FindOffsets();
+    FindMoveTypeOffset();
 
     hHGRConf=LoadGameConfigFile("plugin.hgrsource"); // Game configuration file
 
     // Find offsets
-    OriginOffset=FindSendPropOffs("CBaseEntity","m_vecOrigin");
-    if(OriginOffset==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the Origin offset, aborting");
     GetVelocityOffset_0=FindSendPropOffs("CBasePlayer","m_vecVelocity[0]");
     if(GetVelocityOffset_0==-1)
         SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_0 offset, aborting");
+
     GetVelocityOffset_1=FindSendPropOffs("CBasePlayer","m_vecVelocity[1]");
     if(GetVelocityOffset_1==-1)
         SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_1 offset, aborting");
+
     GetVelocityOffset_2=FindSendPropOffs("CBasePlayer","m_vecVelocity[2]");
     if(GetVelocityOffset_2==-1)
         SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_2 offset, aborting");
@@ -295,10 +295,6 @@ public HumanAlliance_Bash(war3player, victim)
     }
 }
 
-public Action:UnfreezePlayer(Handle:timer,Handle:temp)
-{
-    Unfreeze(timer, temp);
-}
 /*********
  *Helpers*
 **********/
@@ -306,11 +302,6 @@ public Action:UnfreezePlayer(Handle:timer,Handle:temp)
 public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
 {
   EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,NULL_VECTOR,true,0.0);
-}
-
-public GetEntityOrigin(entity,Float:output[3])
-{
-  GetEntDataVector(entity,OriginOffset,output);
 }
 
 public GetAngles(client,Float:output[3])

@@ -26,7 +26,6 @@ stock bool:healthIncreased[MAXPLAYERS+1]    = { false, ... };
 
 stock lifestateOffset  = 0;
 stock renderModeOffset = 0;
-stock movetypeOffset   = 0;
 stock curWepOffset     = 0;
 stock ownerOffset      = 0;
 stock colorOffset      = 0;
@@ -60,10 +59,6 @@ stock FindOffsets()
     lifestateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
     if(lifestateOffset==-1)
         SetFailState("Couldn't find LifeState offset");
-
-    movetypeOffset=FindSendPropOffs("CBaseEntity","movetype");
-    if(movetypeOffset==-1)
-        SetFailState("Couldn't find MoveType offset");
 
     ownerOffset = FindSendPropOffs("CBaseEntity",       "m_hOwnerEntity");
     if(ownerOffset==-1)
@@ -157,26 +152,6 @@ stock GetMaxHealth(entity)
 stock GetLifestate(client)
 {
     return GetEntData(client,lifestateOffset,1);
-}
-
-stock FreezeEntity(entity)
-{
-    SetEntData(entity,movetypeOffset,0,1);
-}
-
-stock UnFreezeEntity(entity)
-{
-    SetEntData(entity,movetypeOffset,2,1);
-}
-
-stock Action:Unfreeze(Handle:timer,Handle:temp)
-{
-    decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
-    new client=PlayerOfAuth(auth);
-    if(client)
-        UnFreezeEntity(client);
-    ClearArray(temp);
 }
 
 stock RespawnPlayer(client)

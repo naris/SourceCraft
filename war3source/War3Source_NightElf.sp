@@ -13,6 +13,7 @@
 #include "War3Source/War3Source_Interface"
 #include "War3Source/messages"
 #include "War3Source/util"
+#include "War3Source/freeze"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -52,6 +53,7 @@ public OnWar3PluginReady()
                            "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
     FindOffsets();
+    FindMoveTypeOffset();
 }
 
 public OnMapStart()
@@ -311,11 +313,6 @@ public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
 }
 
 // Misc
-
-public Action:UnfreezePlayer(Handle:timer,Handle:temp)
-{
-    Unfreeze(timer, temp);
-}
 
 public Action:AllowEntangle(Handle:timer,any:index)
 {
