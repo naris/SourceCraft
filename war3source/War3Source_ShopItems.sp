@@ -17,6 +17,7 @@
 #include "War3Source/util"
 #include "War3Source/health"
 #include "War3Source/authtimer"
+#include "War3Source/respawn"
 
 // Defines
 
@@ -681,16 +682,6 @@ public GiveItem(client,const String:item[])
 public DropWeapon(client,weapon)
 {
     SDKCall(hWeaponDrop,client,weapon,NULL_VECTOR,NULL_VECTOR);
-}
-
-public Action:RespawnPlayerHandle(Handle:timer,any:temp)
-{
-    decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
-    new client=PlayerOfAuth(auth);
-    if(client)
-        RespawnPlayer(client);
-    ClearArray(temp);
 }
 
 stock SetModel(entity,const String:model[])

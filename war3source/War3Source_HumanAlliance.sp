@@ -22,6 +22,8 @@
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
+new String:teleportWav[] = "beams/beamstart5.wav";
+
 public Plugin:myinfo = 
 {
     name = "War3Source Race - Human Alliance",
@@ -56,6 +58,11 @@ public OnWar3PluginReady()
                            "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
     FindMoveTypeOffset();
+}
+
+public OnMapStart()
+{
+    SetupSound(teleportWav);
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -125,24 +132,8 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
             }
         }
 
-        LogMessage("start=(%1.0f,%1.0f,%1.0f);",
-                   clientloc[0], clientloc[1], clientloc[2]);
-        LogMessage("end=(%1.0f,%1.0f,%1.0f);",
-                   save[0], save[1], save[2]);
-        LogMessage("dest=(%1.0f,%1.0f,%1.0f)",
-                   destloc[0],destloc[1],destloc[2]);
-
-        PrintToChat(client,"%c[War3Source]%c start=(%1.0f,%1.0f,%1.0f);",
-                    COLOR_GREEN,COLOR_DEFAULT,clientloc[0], clientloc[1], clientloc[2]);
-
-        PrintToChat(client,"%c[War3Source]%c end=(%1.0f,%1.0f,%1.0f);",
-                    COLOR_GREEN,COLOR_DEFAULT, save[0], save[1], save[2]);
-
-        PrintToChat(client,"%c[War3Source]%c dest=(%1.0f,%1.0f,%1.0f)",
-                    COLOR_GREEN,COLOR_DEFAULT, destloc[0],destloc[1],destloc[2]);
-
         TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
-        EmitSoundToAll("beams/beamstart5.wav",client);
+        EmitSoundToAll(teleportWav,client);
     }
 }
 

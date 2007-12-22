@@ -37,6 +37,8 @@ public Plugin:myinfo =
 // War3Source Functions
 public OnPluginStart()
 {
+    GetGameType();
+
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);

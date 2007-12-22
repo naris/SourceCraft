@@ -48,21 +48,8 @@ public OnPluginStart()
 {
     PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin loading...");
 
-    new String:modname[30];
-    GetGameFolderName(modname, sizeof(modname));
-    if (StrEqual(modname,"cstrike",false))
-        GameType=cstrike;
-    else if (StrEqual(modname,"tf",false)) 
-        GameType=tf2;
-    else if (StrEqual(modname,"dod",false)) 
-        GameType=dod;
-    else if (StrEqual(modname,"hl2mp",false)) 
-        GameType=hl2mp;
-    else if (StrEqual(modname,"Insurgency",false)) 
-        GameType=insurgency;
-    else
-        GameType=other;
-
+    GetGameType();
+    
     arrayPlayers=CreateArray();
     if(!War3Source_InitiatearrayRaces())
         SetFailState("[War3Source] There was a failure in creating the race vector, definately halting.");

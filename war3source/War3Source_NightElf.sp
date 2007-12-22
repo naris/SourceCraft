@@ -35,6 +35,8 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
+    GetGameType();
+
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
 }

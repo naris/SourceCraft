@@ -14,6 +14,8 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
+#include "War3Source/authtimer"
+#include "War3Source/respawn"
 #include "War3Source/log"
 
 // War3Source stuff
@@ -29,7 +31,7 @@ new g_beamSprite;
 new g_haloSprite;
 new g_crystalSprite;
 
-new String:thunderWav[] = "ambient/weather/thunder1.wav";
+new String:thunderWav[] = "war3/thunder1Long.wav"; // "ambient/weather/thunder1.wav";
 
 public Plugin:myinfo = 
 {
@@ -42,6 +44,8 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
+    GetGameType();
+
     cvarChainCooldown=CreateConVar("war3_chainlightningcooldown","30"); // Chain Lightning Cooldown, default: 30 seconds
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_death",PlayerDeathEvent);
@@ -71,11 +75,7 @@ public OnMapStart()
     g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
     g_crystalSprite = PrecacheModel("sprites/crystal_beam1.vmt");
 
-    PrecacheSound(thunderWav);
-
-    decl String:thunderFile[256];
-    Format(thunderFile, 255, "sound/%s", thunderWav);
-    AddFileToDownloadsTable(thunderFile);
+    SetupSound(thunderWav);
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -84,9 +84,11 @@ public OnWar3PlayerAuthed(client,war3player)
     m_AllowChainLightning[client]=true;
 }
 
-//public OnRaceSelected(client,war3player,oldrace,newrace)
-//{
-//}
+public OnRaceSelected(client,war3player,oldrace,newrace)
+{
+    m_AllowChainLightning[client]=true;
+    m_HasRespawned[client]=false;
+}
 
 public OnGameFrame()
 {
@@ -185,7 +187,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
                 if (GetRandomInt(1,100)<=percent)
                 {
-                    CreateTimer(0.5,RespawnPlayerHandle,index);
+                    AuthTimer(0.5,index,RespawnPlayerHandle);
                     m_HasRespawned[index]=true;
                 }
             }
@@ -359,11 +361,6 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
         EmitSoundToAll(thunderWav,client);
         PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     }
-}
-
-public Action:RespawnPlayerHandle(Handle:timer,any:client)
-{
-    RespawnPlayer(client);
 }
 
 public bool:IsInRange(client,index,Float:maxdistance)

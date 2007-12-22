@@ -10,9 +10,6 @@
 #endif
 #define _util_included
 
-#undef REQUIRE_EXTENSIONS
-#include <cstrike>
-
 // Colors
 #define COLOR_DEFAULT 0x01
 #define COLOR_TEAM 0x03
@@ -43,12 +40,13 @@ stock Mod:GetGameType()
     return GameType;
 }
 
-stock RespawnPlayer(client)
+stock SetupSound(String:wav[])
 {
-    if (GameType == cstrike)
-        CS_RespawnPlayer(client);
-    else
-        DispatchSpawn(client);
+    PrecacheSound(wav);
+
+    decl String:file[PLATFORM_MAX_PATH+1];
+    Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+    AddFileToDownloadsTable(file);
 }
 
 stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
