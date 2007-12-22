@@ -500,13 +500,17 @@ public War3Source_Admin_Player(client,targetvecpos)
     SetMenuTitle(adminMenu_Player,"[War3Source] Administration options for %s.",playername);
     decl String:buf[4];
     Format(buf,3,"%d",GetArrayCell(playerHandle,0));
+    decl String:currencies[64];
+    GetConVarString(m_Currencies, currencies, 63);
+    decl String:changeCredits[128];
+    Format(changeCredits,127,"Increase/Decrease %s", currencies);
     AddMenuItem(adminMenu_Player,buf,"View detailed information");
     AddMenuItem(adminMenu_Player,buf,"Reset skills");
     AddMenuItem(adminMenu_Player,buf,"Set race");
     AddMenuItem(adminMenu_Player,buf,"Give shop item");
     AddMenuItem(adminMenu_Player,buf,"Increase/Decrease XP");
     AddMenuItem(adminMenu_Player,buf,"Increase/Decrease Level");
-    AddMenuItem(adminMenu_Player,buf,"Increase/Decrease Credits");
+    AddMenuItem(adminMenu_Player,buf,changeCredits);
     DisplayMenu(adminMenu_Player,client,MENU_TIME_FOREVER);
 }
 
@@ -1025,19 +1029,19 @@ public War3Source_Admin_Credits(client,target)
         Format(display,63,"Give 1 %s", currency);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Give 5 %ss", currencies);
+        Format(display,63,"Give 5 %s", currencies);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Give 10 %ss", currencies);
+        Format(display,63,"Give 10 %s", currencies);
         AddMenuItem(menu,buf,display);
 
         Format(display,63,"Remove 1 %s", currency);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Remove 5 %ss", currencies);
+        Format(display,63,"Remove 5 %s", currencies);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Remove 10 %ss", currencies);
+        Format(display,63,"Remove 10 %s", currencies);
         AddMenuItem(menu,buf,display);
 
         DisplayMenu(menu,client,MENU_TIME_FOREVER);

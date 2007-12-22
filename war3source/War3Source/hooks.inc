@@ -40,7 +40,7 @@ public Action:War3Source_SayCommand(client,args)
         decl String:currencies[64];
         GetConVarString(m_Currencies, currencies, 63);
         decl String:showCurrency[64];
-        Format(showCurrency,63,"show%ss",currencies);
+        Format(showCurrency,63,"show%s",currencies);
 
         if(CommandCheck(arg1,"showxp",63))
         {
