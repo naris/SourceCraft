@@ -40,7 +40,6 @@
 
 new myWepsOffset        = 0;
 new ammotypeOffset      = 0;
-new originOffset        = 0;
 new clipOffset          = 0;
 new ammoOffset          = 0; // Primary Ammo
 new ammo2Offset         = 0; // Secondary Ammo
@@ -112,10 +111,6 @@ public OnWar3PluginReady()
 
 public LoadMoreSDKToolStuff()
 {
-    myWepsOffset        = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
-    originOffset        = FindSendPropOffs("CBaseEntity",       "m_vecOrigin");
-    ammotypeOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
-
     if (GameType == tf2)
     {
         ammoOffset      = FindSendPropOffs("CTFPlayer",         "m_iAmmo") + 4;
@@ -126,20 +121,25 @@ public LoadMoreSDKToolStuff()
     {
         clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
         ammoOffset      = FindSendPropOffs("CBasePlayer",       "m_iAmmo");
-    }
+        ammotypeOffset  = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
 
-    if (GameType == cstrike || GameType == dod)
-    {
-        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveNamedItem");
-        PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity,SDKPass_Pointer);
-        PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveAmmo");
         PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-        hGiveNamedItem=EndPrepSDKCall();
+        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
+        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
+        hGiveAmmo=EndPrepSDKCall();
+
         StartPrepSDKCall(SDKCall_Static);
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_SetModel");
+        PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
+        PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
+        hSetModel=EndPrepSDKCall();
     }
 
     if (GameType == cstrike)
     {
+        myWepsOffset    = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
+
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_Remove");
         PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
         hUTILRemove=EndPrepSDKCall();
@@ -153,17 +153,15 @@ public LoadMoreSDKToolStuff()
         StartPrepSDKCall(SDKCall_Entity);
     }
 
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveAmmo");
-    PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-    PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-    PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-    hGiveAmmo=EndPrepSDKCall();
-
-    StartPrepSDKCall(SDKCall_Static);
-    PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_SetModel");
-    PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
-    PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
-    hSetModel=EndPrepSDKCall();
+    if (GameType == cstrike || GameType == dod)
+    {
+        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveNamedItem");
+        PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity,SDKPass_Pointer);
+        PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
+        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
+        hGiveNamedItem=EndPrepSDKCall();
+        StartPrepSDKCall(SDKCall_Static);
+    }
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -205,17 +203,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new Float:origin[3],Float:absorigin[3];
-        GetClientAbsOrigin(client,absorigin);
-        EntityOrigin(client,origin);
-
-        PrintToChat(client,"%c[War3Source]%c You have spawned @ %d,%d,%d, absorigin=%d,%d,%d.",
-                    COLOR_GREEN,COLOR_DEFAULT,
-                    origin[0],origin[1],origin[2],
-                    absorigin[0],absorigin[1],absorigin[2]);
-
-        //GetClientAbsOrigin(client,spawnLoc[client]);
-        EntityOrigin(client,spawnLoc[client]);
+        GetClientAbsOrigin(client,spawnLoc[client]);
 
         new war3player=War3_GetWar3Player(client);
         if(war3player>-1)
@@ -583,39 +571,42 @@ public Action:TrackWeapons(Handle:timer)
 
 public Action:War3Source_Ankh(Handle:timer,any:temp)
 {
-    decl String:wepName[128];
-    decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
-    new client=PlayerOfAuth(auth);
-    if(client)
+    if (GameType == cstrike)
     {
-        new Float:playerPos[3];
-        GetClientAbsOrigin(client,playerPos);
-        playerPos[2]+=5.0;
-        new iter=myWepsOffset;
-        for(new x=0;x<48;x++)
+        decl String:wepName[128];
+        decl String:auth[64];
+        GetArrayString(temp,0,auth,63);
+        new client=PlayerOfAuth(auth);
+        if(client)
         {
-            new ent=GetEntDataEnt(client,iter);
-            if(ent>0&&IsValidEdict(ent))
+            new Float:playerPos[3];
+            GetClientAbsOrigin(client,playerPos);
+            playerPos[2]+=5.0;
+            new iter=myWepsOffset;
+            for(new x=0;x<48;x++)
             {
-                GetEdictClassname(ent,wepName,127);
-                if(!StrEqual(wepName,"weapon_c4"))
+                new ent=GetEntDataEnt(client,iter);
+                if(ent>0&&IsValidEdict(ent))
                 {
-                    DropWeapon(client,ent);
-                    RemoveEntity(ent);
+                    GetEdictClassname(ent,wepName,127);
+                    if(!StrEqual(wepName,"weapon_c4"))
+                    {
+                        DropWeapon(client,ent);
+                        RemoveEntity(ent);
+                    }
                 }
+                iter+=4;
             }
-            iter+=4;
+            for(new x=1;x<GetArraySize(temp);x++)
+            {
+                GetArrayString(temp,x,wepName,127);
+                new ent=GiveItem(client,wepName);
+                new ammotype=GetAmmoType(ent);
+                if(ammotype!=-1)
+                    GiveAmmo(client,ammotype,1000,true);
+            }
+            ClearArray(temp);
         }
-        for(new x=1;x<GetArraySize(temp);x++)
-        {
-            GetArrayString(temp,x,wepName,127);
-            new ent=GiveItem(client,wepName);
-            new ammotype=GetAmmoType(ent);
-            if(ammotype!=-1)
-                GiveAmmo(client,ammotype,1000,true);
-        }
-        ClearArray(temp);
     }
 }
 
@@ -638,7 +629,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
             //EntityOrigin(lucky_player,teleLoc);
             teleLoc=spawnLoc[lucky_player];
             teleLoc[0]+=40.0;
-            SetEntityOrigin(client,teleLoc);
+            TeleportEntity(client,teleLoc, NULL_VECTOR, NULL_VECTOR);
             isMole[client]=true;
             if (GameType == cstrike)
             {
@@ -667,16 +658,6 @@ stock UsePeriapt(client)
 stock RemoveEntity(entity)
 {
     SDKCall(hUTILRemove,entity);
-}
-
-stock EntityOrigin(entity,Float:origin[3])
-{
-    GetEntDataVector(entity,originOffset,origin);
-}
-
-stock SetEntityOrigin(entity,Float:origin[3])
-{
-    SetEntDataVector(entity,originOffset,origin);
 }
 
 public GiveItem(client,const String:item[])
