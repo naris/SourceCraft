@@ -320,12 +320,12 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
 public War3Source_ShopMenu(client,vectorpos)
 {
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
+    new credits=GetCredits(vectorpos);
+    decl String:currencies[64];
+    GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
     new Handle:shopMenu=CreateMenu(War3Source_ShopMenu_Selected);
     SetMenuExitButton(shopMenu,true);
-    new credits=GetCredits(vectorpos);
-    SetMenuTitle(shopMenu,"[War3Source] Select an item to look at. - You have %d %s",credits,currency);
+    SetMenuTitle(shopMenu,"[War3Source] Select an item to look at. - You have %d %s",credits,currencies);
     decl String:itemname[64];
     decl String:itembuf[4];
     decl String:linestr[96];
@@ -337,7 +337,7 @@ public War3Source_ShopMenu(client,vectorpos)
         itemHandle=ShopItem(x);
         GetArrayString(itemHandle,0,itemname,63);
         GetArrayString(itemHandle,2,cost,7);
-        Format(linestr,95,"%s - %s %s",itemname,cost,currency);
+        Format(linestr,95,"%s - %s %s",itemname,cost,currencies);
         AddMenuItem(shopMenu,itembuf,linestr);
     }
     DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
@@ -365,11 +365,11 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
 
 public War3Source_ShopMenu_Item(client,vecpos,item)
 {
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
+    new credits=GetCredits(vecpos);
+    decl String:currencies[64];
+    GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
     new Handle:shopMenu_Item=CreateMenu(War3Source_ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
-    new credits=GetCredits(vecpos);
     decl String:itemname[64];
     new Handle:itemHandle;
     itemHandle=ShopItem(item);
@@ -381,7 +381,7 @@ public War3Source_ShopMenu_Item(client,vecpos,item)
     GetArrayString(itemHandle,2,cost,31);
     Format(cost,31,"Cost: %s Credit(s)",cost);
     SetMenuTitle(shopMenu_Item,"[War3Source] Shop Item - %s - You have %d %s\n%s\n%s",
-                 itemname,credits,currency,desc,cost);
+                 itemname,credits,currencies,desc,cost);
     decl String:buf[4];
     Format(buf,3,"%d",item);
     AddMenuItem(shopMenu_Item,buf,"Purchase");
@@ -596,7 +596,7 @@ public War3Source_Admin_PlayerInfo(client,target)
     if(targetvecpos>-1)
     {
         decl String:currency[64];
-        GetConVarString(m_Currency, currency, 63);
+        GetConVarString(m_Currencies, currency, 63);
         new Handle:playerInfo=CreateMenu(War3Source_Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
         decl String:playername[64];
@@ -1018,24 +1018,26 @@ public War3Source_Admin_Credits(client,target)
 
         decl String:display[64];
         decl String:currency[64];
+        decl String:currencies[64];
         GetConVarString(m_Currency, currency, 63);
+        GetConVarString(m_Currencies, currencies, 63);
 
         Format(display,63,"Give 1 %s", currency);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Give 5 %ss", currency);
+        Format(display,63,"Give 5 %ss", currencies);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Give 10 %ss", currency);
+        Format(display,63,"Give 10 %ss", currencies);
         AddMenuItem(menu,buf,display);
 
         Format(display,63,"Remove 1 %s", currency);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Remove 5 %ss", currency);
+        Format(display,63,"Remove 5 %ss", currencies);
         AddMenuItem(menu,buf,display);
 
-        Format(display,63,"Remove 10 %ss", currency);
+        Format(display,63,"Remove 10 %ss", currencies);
         AddMenuItem(menu,buf,display);
 
         DisplayMenu(menu,client,MENU_TIME_FOREVER);

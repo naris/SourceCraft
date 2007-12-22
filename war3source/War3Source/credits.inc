@@ -10,19 +10,11 @@
 
 public War3Source_ShowCredits(client,vecpos)
 {
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
     new credits=GetCredits(vecpos);
-    if(credits!=1)
-    {
-        PrintToChat(client,"%c[War3Source] %cYou have %d %s.",
-                    COLOR_GREEN,COLOR_DEFAULT,credits, currency);
-    }
-    else
-    {
-        PrintToChat(client,"%c[War3Source] %cYou have %d %s.",
-                    COLOR_GREEN,COLOR_DEFAULT,credits, currency);
-    }
+    decl String:currencies[64];
+    GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
+    PrintToChat(client,"%c[War3Source] %cYou have %d %s.",
+                COLOR_GREEN,COLOR_DEFAULT,credits, currencies);
 }
 
 public GiveKillCredits(client,vectorpos)
@@ -32,7 +24,7 @@ public GiveKillCredits(client,vectorpos)
     new newcredits=curcredits+addcredits;
 
     decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
+    GetConVarString((addcredits == 1) ? m_Currency : m_Currencies, currency, 63);
 
     if(newcredits <= MAX_CREDITS || MAX_CREDITS == 0)
     {

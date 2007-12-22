@@ -37,10 +37,10 @@ public Action:War3Source_SayCommand(client,args)
     new vecpos=GetClientVectorPosition(client);
     if(vecpos>-1)
     {
-        decl String:currency[64];
-        GetConVarString(m_Currency, currency, 63);
+        decl String:currencies[64];
+        GetConVarString(m_Currencies, currencies, 63);
         decl String:showCurrency[64];
-        Format(showCurrency,63,"show%ss",currency);
+        Format(showCurrency,63,"show%ss",currencies);
 
         if(CommandCheck(arg1,"showxp",63))
         {

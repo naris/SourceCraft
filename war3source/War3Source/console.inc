@@ -20,7 +20,8 @@ public War3Source_InitCVars()
     m_SaveXPConVar=CreateConVar("war3_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("war3_minimumultimatelevel","8");
     m_MaxCredits=CreateConVar("war3_maxcredits","40");
-    m_Currency=CreateConVar("war3_currency","Baht", "Name of the currency");
+    m_Currency=CreateConVar("war3_currency","credit", "Name of the currency");
+    m_Currencies=CreateConVar("war3_currencies","credits", "Name of the currency in plural form");
 
     RegAdminCmd("war3_setxp",War3Source_CMD_SetXP,ADMFLAG_RCON,"Set a player's XP");
     RegAdminCmd("war3_givexp",War3Source_CMD_GiveXP,ADMFLAG_RCON,"Give a player XP");
@@ -377,11 +378,8 @@ public Action:War3Source_CMD_RemoveLevel(client,args)
 
 public Action:War3Source_CMD_SetCredits(client,args)
 {
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
-
     if(args!=2)
-        PrintToConsole(client,"[War3Source] The syntax of the command is: war3_setcredits <player> <%s>", currency);
+        PrintToConsole(client,"[War3Source] The syntax of the command is: war3_setcredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -398,6 +396,10 @@ public Action:War3Source_CMD_SetCredits(client,args)
             credits=0;
         if(credits>MAX_CREDITS)
             credits=MAX_CREDITS;
+            
+        decl String:currencies[64];
+        GetConVarString(m_Currencies, currencies, 63);
+
         new Handle:matchHandle=CreateArray();
         War3Source_PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
@@ -409,9 +411,9 @@ public Action:War3Source_CMD_SetCredits(client,args)
             if(vecpos>-1)
             {
                 SetCredits(vecpos,credits);
-                PrintToConsole(client,"[War3Source] You just set player \"%s's\" credits to %d.",name,credits);
-                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" set your credits to %d.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
+                PrintToConsole(client,"[War3Source] You just set player \"%s's\" %s to %d.",name,currencies,credits);
+                PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" set your %s to %d.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,currencies,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -422,11 +424,8 @@ public Action:War3Source_CMD_SetCredits(client,args)
 
 public Action:War3Source_CMD_GiveCredits(client,args)
 {
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
-
     if(args!=2)
-        PrintToConsole(client,"[War3Source] The syntax of the command is: war3_givecredits <player> <%s>");
+        PrintToConsole(client,"[War3Source] The syntax of the command is: war3_givecredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -441,6 +440,10 @@ public Action:War3Source_CMD_GiveCredits(client,args)
         new credits=StringToInt(buf);
         if(credits<0)
             credits=0;
+            
+        decl String:currencies[64];
+        GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
+
         new Handle:matchHandle=CreateArray();
         War3Source_PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
@@ -457,9 +460,9 @@ public Action:War3Source_CMD_GiveCredits(client,args)
                 if(newcreds>MAX_CREDITS)
                     newcreds=MAX_CREDITS;
                 SetCredits(vecpos,newcreds);
-                PrintToConsole(client,"[War3Source] You just gave player \"%s\" %d %s.",name,credits,currency);
+                PrintToConsole(client,"[War3Source] You just gave player \"%s\" %d %s.",name,credits,currencies);
                 PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" give you %d %s.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currency);
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -470,11 +473,8 @@ public Action:War3Source_CMD_GiveCredits(client,args)
 
 public Action:War3Source_CMD_RemoveCredits(client,args)
 {
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
-
     if(args!=2)
-        PrintToConsole(client,"[War3Source] The syntax of the command is: war3_givecredits <player> <%s>", currency);
+        PrintToConsole(client,"[War3Source] The syntax of the command is: war3_givecredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -489,6 +489,10 @@ public Action:War3Source_CMD_RemoveCredits(client,args)
         new credits=StringToInt(buf);
         if(credits<0)
             credits=0;
+            
+        decl String:currencies[64];
+        GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
+
         new Handle:matchHandle=CreateArray();
         War3Source_PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
@@ -505,9 +509,9 @@ public Action:War3Source_CMD_RemoveCredits(client,args)
                 if(newcreds>MAX_CREDITS)
                     newcreds=MAX_CREDITS;
                 SetCredits(vecpos,newcreds);
-                PrintToConsole(client,"[War3Source] You just removed %d %s from player \"%s\".",credits,currency,name);
+                PrintToConsole(client,"[War3Source] You just removed %d %s from player \"%s\".",credits,currencies,name);
                 PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" removed %d %s from you.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currency);
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
             }
         }
         if(GetArraySize(matchHandle)==0)

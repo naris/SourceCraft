@@ -14,6 +14,7 @@ new Handle:m_SaveXPConVar         = INVALID_HANDLE;
 new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
 new Handle:m_MaxCredits           = INVALID_HANDLE;
 new Handle:m_Currency             = INVALID_HANDLE; 
+new Handle:m_Currencies           = INVALID_HANDLE; 
 
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
