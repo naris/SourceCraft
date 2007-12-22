@@ -10,6 +10,7 @@
 #endif
 #define _util_included
 
+#undef REQUIRE_EXTENSIONS
 #include <cstrike>
 
 // Colors
