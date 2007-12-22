@@ -190,7 +190,7 @@ public OnItemPurchase(client,war3player,item)
     }
     else if(item==shopItem[ITEM_SCROLL] && !IS_ALIVE(client))       // Scroll of Respawning 
     {
-        Respawn(client);
+        RespawnPlayer(client);
         War3_SetOwnsItem(war3player,shopItem[9],false);
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
@@ -676,7 +676,7 @@ public Action:RespawnPlayerHandle(Handle:timer,any:temp)
     GetArrayString(temp,0,auth,63);
     new client=PlayerOfAuth(auth);
     if(client)
-        Respawn(client);
+        RespawnPlayer(client);
     ClearArray(temp);
 }
 

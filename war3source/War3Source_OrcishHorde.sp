@@ -187,7 +187,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
                 if (GetRandomInt(1,100)<=percent)
                 {
-                    CreateTimer(0.5,RespawnPlayer,index);
+                    CreateTimer(0.5,RespawnPlayerHandle,index);
                     m_HasRespawned[index]=true;
                 }
             }
@@ -363,9 +363,9 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
     }
 }
 
-public Action:RespawnPlayer(Handle:timer,any:client)
+public Action:RespawnPlayerHandle(Handle:timer,any:client)
 {
-    Respawn(client);
+    RespawnPlayer(client);
 }
 
 public bool:IsInRange(client,index,Float:maxdistance)

@@ -10,6 +10,8 @@
 #endif
 #define _util_included
 
+#include <cstrike>
+
 // Defines
 #define IS_ALIVE !GetLifestate
 
@@ -30,7 +32,6 @@ stock ownerOffset      = 0;
 stock colorOffset      = 0;
 
 stock Handle:hGameConf     = INVALID_HANDLE;
-stock Handle:hRoundRespawn = INVALID_HANDLE;
 
 stock Mod:GetGameType()
 {
@@ -84,14 +85,6 @@ stock FindOffsets()
 stock LoadSDKToolStuff()
 {
     hGameConf=LoadGameConfigFile("plugin.war3source");
-
-    if (GameType == cstrike)
-    {
-        hGameConf=LoadGameConfigFile("plugin.war3source");
-        StartPrepSDKCall(SDKCall_Player);
-        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"RoundRespawn");
-        hRoundRespawn=EndPrepSDKCall();
-    }
 }
 
 stock AuthTimer(Float:delay,index,Timer:func)
@@ -186,10 +179,10 @@ stock Action:Unfreeze(Handle:timer,Handle:temp)
     ClearArray(temp);
 }
 
-stock Respawn(client)
+stock RespawnPlayer(client)
 {
     if (GameType == cstrike)
-        SDKCall(hRoundRespawn,client);
+        CS_RespawnPlayer(client);
     else
         DispatchSpawn(client);
 }
