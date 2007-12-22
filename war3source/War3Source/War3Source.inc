@@ -18,17 +18,14 @@ new Handle:m_Currency             = INVALID_HANDLE;
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
 
-enum Mod { other, tf2, cstrike, dod, hl2mp, insurgency };
-new Mod:GameType = other;
-
 #define SAVE_ENABLED       GetConVarInt(m_SaveXPConVar)==1
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
 #define MAX_CREDITS        GetConVarInt(m_MaxCredits)
 
 // War3Source Includes
+#include "War3Source/util"
 #include "War3Source/immunity"
 #include "War3Source/offsets"
-#include "War3Source/messages"
 #include "War3Source/races"
 #include "War3Source/xp"
 #include "War3Source/events"

@@ -12,6 +12,11 @@
 
 #include <cstrike>
 
+// Colors
+#define COLOR_DEFAULT 0x01
+#define COLOR_TEAM 0x03
+#define COLOR_GREEN 0x04 // Actually red for DOD
+
 enum Mod { undetected, tf2, cstrike, dod, hl2mp, insurgency, other };
 stock Mod:GameType = undetected;
 

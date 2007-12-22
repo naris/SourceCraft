@@ -14,7 +14,6 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
-#include "War3Source/messages"
 #include "War3Source/log"
 
 // War3Source stuff
