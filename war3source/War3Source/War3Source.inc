@@ -205,18 +205,18 @@ public War3Source_InitHelpCommands()
     NewHelpCommand("+ultimate","Use an ultimate that required a bind.");
     NewHelpCommand("war3admin","Bring up the admin menu at which you can modify player info.");
 
-    NewHelpCommand("say showcredits","Show your current shop credit count.");
-
-    decl String:currency[64];
-    GetConVarString(m_Currency, currency, 63);
-    if (!StrEqual(currency, "credit"))
+    decl String:currencies[64];
+    GetConVarString(m_Currencies, currencies, 63);
+    if (!StrEqual(currencies, "credits"))
     {
         decl String:name[64];
-        Format(name,63,"say show%ss", currency);
+        Format(name,63,"say show%s", currencies);
         decl String:desc[128];
-        Format(desc,127,"Show your current shop %s count.", currency,127);
+        Format(desc,127,"Show your current %s count.", currencies,127);
         NewHelpCommand(name,desc);
     }
+    else
+        NewHelpCommand("say showcredits","Show your current shop credit count.");
 }
 
 public War3Source_War3Help(client)
