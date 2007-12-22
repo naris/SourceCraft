@@ -106,7 +106,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 
                         new color[4] = { 0, 255, 0, 255 };
                         TE_SetupBeamLaser(client,index,g_beamSprite,g_haloSprite,
-                                          0, 1, 1.0, 10.0,10.0,45,50.0,color,255);
+                                          0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                         TE_SendToAll();
                     }
                 }

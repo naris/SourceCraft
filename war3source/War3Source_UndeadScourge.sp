@@ -57,6 +57,18 @@ public OnWar3PluginReady()
                            "Suicide Bomber",
                            "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
 
+}
+
+public OnMapStart()
+{
+    g_beamSprite    = PrecacheModel("models/props_lab/airlock_laser.vmt");
+    if (g_beamSprite == -1)
+        SetFailState("Couldn't find laser Model");
+
+    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
+
     /*
     if (GameType == tf2)
         explosionModel=PrecacheModel("materials/particles/explosion/explosionfiresmoke.vmt",false);
@@ -67,12 +79,6 @@ public OnWar3PluginReady()
     explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
-}
-
-public OnMapStart()
-{
-    g_beamSprite    = PrecacheModel("models/props_lab/airlock_laser.vmt");
-    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
 
     PrecacheSound("weapons/explode5.wav",false);
 }
@@ -327,7 +333,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
 
             new color[4] = { 255, 10, 25, 255 };
             TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
-                              0, 50, 3.0, 20.0,10.0,50,50.0,color,255);
+                              0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
             TE_SendToAll();
         }
     }
