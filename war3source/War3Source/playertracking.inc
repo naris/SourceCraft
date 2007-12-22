@@ -7,8 +7,6 @@
 
 #include <tf2>
 
-#define IS_ALIVE !GetLifestate
-
 #define INFO_COUNT     5
 #define TRACKING_COUNT 11
 
@@ -51,11 +49,6 @@ public SetRace(vectorpos,race)
     Call_PushCell(race);
     new result;
     Call_Finish(result);
-}
-
-public GetLifestate(client)
-{
-    return GetEntData(client,m_OffsetLifestate,1);
 }
 
 public Handle:GetPropertyInfo(vectorpos)

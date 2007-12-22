@@ -170,7 +170,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
             if(selection >= 0&&selection<RACE_COUNT)
             {
                 // Okay, they selected a valid race
-                if(IS_ALIVE(client))
+                if(IsPlayerAlive(client))
                 {
                     SetPendingRace(vecpos,selection);
                     new Handle:race=Race(selection);

@@ -141,12 +141,7 @@ public War3Source_ShowSkillsInfo(client, Handle:raceHandle)
 public War3Source_ResetSkills(client,vecpos)
 {
     new race=GetRace(vecpos);
-    if(!GetLifestate(client))
-    {
-        PrintToChat(client,"%c[War3Source] %cYou are not allowed to resetskills while alive.",
-                    COLOR_GREEN,COLOR_DEFAULT);
-    }
-    else
+    if(IsPlayerAlive(client))
     {
         for(new x=0;x<SKILL_COUNT;x++)
             SetSkillLevel(vecpos,race,x,0);
@@ -156,6 +151,11 @@ public War3Source_ResetSkills(client,vecpos)
 
         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
             War3Source_SkillMenu(client,vecpos);
+    }
+    else
+    {
+        PrintToChat(client,"%c[War3Source] %cYou are not allowed to resetskills while alive.",
+                    COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
