@@ -10,8 +10,6 @@
 #endif
 #define _util_included
 
-#pragma semicolon 1
-
 // Defines
 #define IS_ALIVE !GetLifestate
 
@@ -188,13 +186,6 @@ stock Action:Unfreeze(Handle:timer,Handle:temp)
     ClearArray(temp);
 }
 
-stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
-{
-    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
-                      (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
-                      (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
-}
-
 stock Respawn(client)
 {
     if (GameType == cstrike)
@@ -203,78 +194,9 @@ stock Respawn(client)
         DispatchSpawn(client);
 }
 
-stock MakeInvisible(client, visibility)
+stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
 {
-    decl String:wepName[128];
-    GetClientWeapon(client, wepName, 127);
-
-    if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
-    {
-        visibility /=2;
-    }
-    else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
-                                StrEqual(wepName,"tf_weapon_shovel") ||
-                                StrEqual(wepName,"tf_weapon_wrench") ||
-                                StrEqual(wepName,"tf_weapon_bat") ||
-                                StrEqual(wepName,"tf_weapon_bonesaw") ||
-                                StrEqual(wepName,"tf_weapon_bottle") ||
-                                StrEqual(wepName,"tf_weapon_club") ||
-                                StrEqual(wepName,"tf_weapon_fireaxe") ||
-                                StrEqual(wepName,"tf_weapon_fists") ||
-                                StrEqual(wepName,"tf_weapon_builder") ||
-                                StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
-                                StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
-                                StrEqual(wepName,"tf_weapon_pda_spy")))
-    {
-        visibility /=2;
-    }
-    else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
-                                StrEqual(wepName,"weapon_spade")))
-    {
-        visibility /=2;
-    }
-
-    new count=GetEntityCount();
-    for(new obj = 64; obj < count; obj++)
-    {
-        if(IsValidEdict(obj))
-        {
-            if(GetEntDataEnt(obj,ownerOffset) == client)
-                SetRenderColor(obj,255,255,255,visibility);
-        }
-    }
-    SetRenderColor(client,255,255,255,visibility);
+    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
+                      (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
+                      (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
 }
-
-stock MakeVisible(client)
-{
-    if(client>-1)
-    {
-        new count=GetEntityCount();
-        for(new y=64;y<count;y++)
-        {
-            if(IsValidEdict(y))
-            {
-                if(GetEntDataEnt(y,ownerOffset)==client)
-                    SetRenderColor(y,255,255,255,255);
-            }
-        }
-        SetRenderColor(client,255,255,255,255);
-    }
-}
-
-
-stock SetRenderColor(entity,r,g,b,a)
-{
-	if(colorOffset != -1)
-    {
-        SetEntData(entity,colorOffset,r,1,true);
-        SetEntData(entity,colorOffset+1,g,1,true);
-        SetEntData(entity,colorOffset+2,b,1,true);
-        SetEntData(entity,colorOffset+3,a,1,true);
-
-        if(renderModeOffset != -1)
-            SetEntData(entity,renderModeOffset,3,1,true);
-    }
-}
-
