@@ -49,6 +49,12 @@ stock SetupSound(String:wav[])
     AddFileToDownloadsTable(file);
 }
 
+stock SetupModel(String:model[])
+{
+    AddFileToDownloadsTable(model);
+    return PrecacheModel(model);
+}
+
 stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
 {
     return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+

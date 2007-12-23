@@ -17,12 +17,14 @@
 #include "War3Source/freeze"
 #include "War3Source/authtimer"
 
-#define TELEPORT_RANGE 600
-
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
 new String:teleportWav[] = "beams/beamstart5.wav";
+
+new g_beamSprite;
+new g_haloSprite;
+new g_smokeSprite;
 
 public Plugin:myinfo = 
 {
@@ -63,7 +65,20 @@ public OnWar3PluginReady()
 public OnMapStart()
 {
     SetupSound(teleportWav);
+
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    if (g_smokeSprite == -1)
+        SetFailState("Couldn't find smoke Model");
+
+    g_beamSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_beamSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
+
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
 }
+
 
 public OnWar3PlayerAuthed(client,war3player)
 {
@@ -78,62 +93,82 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
-        new Float:clientloc[3],Float:clientang[3],Float:destloc[3];
-        GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
-        GetClientEyeAngles(client,clientang); // Get the angle the player is looking
-        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
-        TR_GetEndPosition(destloc); // Get the end xyz coordinate of where a player is looking
-
-        new Float:save[3];
-        save[0] = destloc[0];
-        save[1] = destloc[1];
-        save[2] = destloc[2];
-
-        new Float:distance[3];
-        distance[0] = destloc[0]-clientloc[0];
-        distance[1] = destloc[1]-clientloc[1];
-        distance[2] = destloc[2]-clientloc[2];
-        if (distance[0] < 0)
-            distance[0] *= -1;
-        if (distance[1] < 0)
-            distance[1] *= -1;
-        if (distance[2] < 0)
-            distance[2] *= -1;
-
-        // Linit the teleport location to remain within the TELEPORT_RANGE
-        for (new i = 0; i<=2; i++)
+        new ult_level=War3_GetSkillLevel(war3player,race,3);
+        if(ult_level)
         {
-            if (distance[i] > TELEPORT_RANGE)
+            new Float:origin[3];
+            GetClientAbsOrigin(client, origin);
+            TE_SetupSmoke(origin,g_smokeSprite,40.0,1);
+            TE_SendToAll();
+
+            new Float:range=1.0;
+            switch(ult_level)
             {
-                if (clientloc[i] >= 0)
+                case 1:
+                    range=300.0;
+                case 2:
+                    range=450.0;
+                case 3:
+                    range=650.0;
+                case 4:
+                    range=800.0;
+            }
+
+            new Float:clientloc[3],Float:clientang[3],Float:destloc[3];
+            GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
+            GetClientEyeAngles(client,clientang); // Get the angle the player is looking
+            TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
+            TR_GetEndPosition(destloc); // Get the end xyz coordinate of where a player is looking
+
+            new Float:distance[3];
+            distance[0] = destloc[0]-clientloc[0];
+            distance[1] = destloc[1]-clientloc[1];
+            distance[2] = destloc[2]-clientloc[2];
+            if (distance[0] < 0)
+                distance[0] *= -1;
+            if (distance[1] < 0)
+                distance[1] *= -1;
+            if (distance[2] < 0)
+                distance[2] *= -1;
+
+            // Linit the teleport location to remain within the range
+            for (new i = 0; i<=2; i++)
+            {
+                if (distance[i] > range)
                 {
-                    if (destloc[i] >= 0)
+                    if (clientloc[i] >= 0)
                     {
-                        if (clientloc[i] <= destloc[i])
-                            destloc[i] = clientloc[i] + TELEPORT_RANGE;
-                        if (clientloc[i] > destloc[i])
-                            destloc[i] = clientloc[i] - TELEPORT_RANGE;
+                        if (destloc[i] >= 0)
+                        {
+                            if (clientloc[i] <= destloc[i])
+                                destloc[i] = clientloc[i] + range;
+                            if (clientloc[i] > destloc[i])
+                                destloc[i] = clientloc[i] - range;
+                        }
+                        else
+                            destloc[i] = clientloc[i] - range;
                     }
                     else
-                        destloc[i] = clientloc[i] - TELEPORT_RANGE;
-                }
-                else
-                {
-                    if (destloc[i] < 0)
                     {
-                        if (clientloc[i] <= destloc[i])
-                            destloc[i] = clientloc[i] + TELEPORT_RANGE;
-                        if (clientloc[i] > destloc[i])
-                            destloc[i] = clientloc[i] - TELEPORT_RANGE;
+                        if (destloc[i] < 0)
+                        {
+                            if (clientloc[i] <= destloc[i])
+                                destloc[i] = clientloc[i] + range;
+                            if (clientloc[i] > destloc[i])
+                                destloc[i] = clientloc[i] - range;
+                        }
+                        else
+                            destloc[i] = clientloc[i] + range;
                     }
-                    else
-                        destloc[i] = clientloc[i] + TELEPORT_RANGE;
                 }
             }
-        }
 
-        TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
-        EmitSoundToAll(teleportWav,client);
+            TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
+            EmitSoundToAll(teleportWav,client);
+
+            TE_SetupSmoke(destloc,g_smokeSprite,40.0,1);
+            TE_SendToAll();
+        }
     }
 }
 
@@ -194,6 +229,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         hpadd=50;
                 }
                 IncreaseHealth(client,hpadd);
+
+                new Float:start[3];
+                GetClientAbsOrigin(client, start);
+
+                new Float:end[3];
+                end[0] = start[0];
+                end[1] = start[1];
+                end[2] = start[2] + 150;
+
+                new color[4] = { 200, 255, 205, 255 };
+                TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
+                        0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
+                TE_SendToAll();
             }
         }
     }
@@ -307,6 +355,10 @@ public HumanAlliance_Bash(war3player, victim)
         }
         if (GetRandomInt(1,100)<=percent)
         {
+            new Float:Origin[3];
+            GetClientAbsOrigin(victim, Origin);
+            TE_SetupGlowSprite(Origin,g_beamSprite,1.0,2.3,90);
+
             FreezeEntity(victim);
             AuthTimer(1.0,victim,UnfreezePlayer);
         }

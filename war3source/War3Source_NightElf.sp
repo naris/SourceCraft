@@ -61,8 +61,8 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite    = PrecacheModel("materials/sprites/lgtning.vmt");
-    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
+    g_beamSprite = SetupModel("materials/sprites/lgtning.vmt");
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -99,17 +99,18 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                     new bool:inrange=IsInRange(client,index,range);
                     if(inrange)
                     {
-                        decl String:name[64];
-                        GetClientName(client,name,63);
-                        PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",
-                                    COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-                        SetEntData(index,movetypeOffset,0,1);
-                        AuthTimer(10.0,index,UnfreezePlayer);
-
                         new color[4] = { 0, 255, 0, 255 };
                         TE_SetupBeamLaser(client,index,g_beamSprite,g_haloSprite,
                                           0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                         TE_SendToAll();
+
+                        decl String:name[64];
+                        GetClientName(client,name,63);
+                        PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",
+                                    COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+
+                        SetEntData(index,movetypeOffset,0,1);
+                        AuthTimer(10.0,index,UnfreezePlayer);
                     }
                 }
             }

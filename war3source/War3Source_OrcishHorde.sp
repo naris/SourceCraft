@@ -71,9 +71,9 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite    = PrecacheModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
-    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
-    g_crystalSprite = PrecacheModel("sprites/crystal_beam1.vmt");
+    g_beamSprite    = SetupModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
+    g_haloSprite    = SetupModel("materials/sprites/halo01.vmt");
+    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
 
     SetupSound(thunderWav);
 }

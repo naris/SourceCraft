@@ -63,11 +63,11 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite    = PrecacheModel("models/props_lab/airlock_laser.vmt");
+    g_beamSprite = SetupModel("materials/models/props_lab/airlock_laser.vmt");
     if (g_beamSprite == -1)
         SetFailState("Couldn't find laser Model");
 
-    g_haloSprite    = PrecacheModel("materials/sprites/halo01.vmt");
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
@@ -75,10 +75,10 @@ public OnMapStart()
     if (GameType == tf2)
         explosionModel=PrecacheModel("materials/particles/explosion/explosionfiresmoke.vmt",false);
     else
-        explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
+        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt",false);
     */
 
-    explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt",false);
+    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
