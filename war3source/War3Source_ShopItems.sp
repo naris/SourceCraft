@@ -83,6 +83,9 @@ public OnPluginStart()
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
 
+    if (GameType == tf2)
+        HookEvent("player_changeclass",PlayerChangeClassEvent);
+
     CreateTimer(20.0,Gloves,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 
@@ -211,6 +214,16 @@ public OnItemPurchase(client,war3player,item)
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
         War3_SetMinGravity(war3player,0.3);
+}
+
+public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        SetupMaxHealth(client);
+    }
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)

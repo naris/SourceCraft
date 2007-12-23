@@ -25,6 +25,16 @@ stock SetupHealth(client)
         maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
         maxHealth[client] = GetMaxHealth(client);
     }
+    else
+        maxHealth[client] = GetHealth(client);
+}
+
+stock SetupMaxHealth(client)
+{
+    if (GameType == tf2)
+        maxHealth[client] = GetMaxHealth(client);
+    else
+        maxHealth[client] = GetHealth(client);
 }
 
 stock IncreaseHealth(client, amount)
@@ -50,10 +60,16 @@ stock GetHealth(entity)
 
 stock SetMaxHealth(entity,amount)
 {
-    SetEntData(entity,maxHealthOffset[entity],amount,1);
+    if (GameType == tf2)
+        SetEntData(entity,maxHealthOffset[entity],amount,1);
+    else
+        maxHealth[entity] = amount;
 }
 
 stock GetMaxHealth(entity)
 {
-    return GetEntData(entity,maxHealthOffset[entity],1);
+    if (GameType == tf2)
+        return GetEntData(entity,maxHealthOffset[entity],1);
+    else
+        return maxHealth[entity];
 }

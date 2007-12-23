@@ -42,6 +42,9 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
+
+    if (GameType == tf2)
+        HookEvent("player_changeclass",PlayerChangeClassEvent);
 }
 
 public OnWar3PluginReady()
@@ -196,6 +199,16 @@ public OnItemPurchase(client,war3player,item)
 }
 
 // Events
+public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        SetupMaxHealth(client);
+    }
+}
+
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -252,7 +265,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
 
-    if (client > -1)
+    if (client)
     {
         // Reset MaxHealth back to normal
         if (healthIncreased[client] && GameType == tf2)
