@@ -261,7 +261,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 War3_SetMaxSpeed(war3player,1.4);
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
-                War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
+                War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.80);
 
             if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
                 UsePeriapt(client);

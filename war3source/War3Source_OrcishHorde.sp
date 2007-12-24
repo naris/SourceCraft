@@ -31,7 +31,7 @@ new g_beamSprite;
 new g_haloSprite;
 new g_crystalSprite;
 
-new String:thunderWav[] = "war3/thunder1Long.wav"; // "ambient/weather/thunder1.wav";
+new String:thunderWav[] = "war3/thunder1Long.mp3"; // "ambient/weather/thunder1.wav";
 
 public Plugin:myinfo = 
 {

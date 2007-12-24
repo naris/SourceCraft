@@ -345,10 +345,10 @@ public HumanAlliance_Invisibility(war3player, skilllevel)
     new cloak = War3_GetShopItem("Cloak of Shadows");
     if (cloak != -1 && War3_GetOwnsItem(war3player,cloak))
     {
-        alpha *= 0.75;
+        alpha *= 0.80;
     }
 
-    War3_SetMinVisibility(war3player,alpha, 0.75);
+    War3_SetMinVisibility(war3player,alpha, 0.80);
 }
 
 public HumanAlliance_Bash(war3player, victim)
