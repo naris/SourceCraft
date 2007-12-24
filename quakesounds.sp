@@ -318,10 +318,8 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 	if(gameType == CSS)
 		headshot = GetEventBool(event, "headshot");
-	else if(gameType == TF2)
-	{
-		headshot = GetEventInt(event, "customkill") == 1;
-	}
+	//else if(gameType == TF2)
+	//	headshot = GetEventInt(event, "customkill") == 1; // ??
 	else
 		headshot = false;
 		
@@ -631,6 +629,10 @@ public IsGrenade(String:weapon[])
 		
 	// HL2:Deathmatch grenades
 	if(StrEqual(weapon, "grenade_frag"))
+		return 1;
+		
+	// TF2 grenades
+	if(StrEqual(weapon, "tf_projectile_pipe") || StrEqual(weapon, "tf_projectile_pipe_remote"))
 		return 1;
 		
 	return 0;
