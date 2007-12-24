@@ -373,17 +373,23 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
         }
     }
 
+    if (!ondeath)
+    {
+        m_Suicided[client]=true;
+        ForcePlayerSuicide(client);
+    }
+
     new Float:client_location[3];
     GetClientAbsOrigin(client,client_location);
+
+    TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
+    TE_SendToAll();
+    EmitSoundToAll("weapons/explode5.wav",client);
 
     for(new x=1;x<MAXPLAYERS+1;x++)
     {
         if (x <= GetClientCount() && IsClientConnected(x))
         {
-            TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
-            TE_SendToAll();
-            EmitSoundToAll("weapons/explode5.wav",client);
-
             if (x != client && IsPlayerAlive(x))
             {
                 new war3player_check=War3_GetWar3Player(x);
@@ -421,12 +427,6 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                 }
             }
         }
-    }
-
-    if (!ondeath)
-    {
-        m_Suicided[client]=true;
-        ForcePlayerSuicide(client);
     }
 }
 
