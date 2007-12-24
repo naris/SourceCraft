@@ -252,7 +252,11 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
             {
                 new damage=GetEventInt(event,"damage");
                 if (!damage)
+                {
                     damage = GetEventInt(event,"dmg_health");
+                    if (!damage)
+                        damage = GetRandomInt(10,20);
+                }
 
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
@@ -296,7 +300,11 @@ public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
 
             new damage=GetEventInt(event,"damage");
             if (!damage)
+            {
                 damage = GetEventInt(event,"dmg_health");
+                if (!damage)
+                    damage = GetRandomInt(10,20);
+            }
 
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimindex)-amount;

@@ -223,7 +223,11 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
 
             new damage=GetEventInt(event,"damage");
             if (!damage)
+            {
                 damage = GetEventInt(event,"dmg_health");
+                if (!damage)
+                    damage = GetRandomInt(5,20);
+            }
 
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
@@ -280,7 +284,11 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
 
             new damage=GetEventInt(event,"damage");
             if (!damage)
+            {
                 damage = GetEventInt(event,"dmg_health");
+                if (!damage)
+                    damage = GetRandomInt(10,30);
+            }
 
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
@@ -328,8 +336,8 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
         {
             if(IsClientConnected(index)&&client!=index&&IsPlayerAlive(index))
             {
-                new bool:inrange=IsInRange(client,index,range);
-                if (inrange)
+                if (GetClientTeam(client) != GetClientTeam(index) &&
+                    IsInRange(client,index,range))
                 {
                     new color[4] = { 10, 200, 255, 255 };
                     TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,

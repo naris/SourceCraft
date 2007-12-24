@@ -439,7 +439,11 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     {
                         new damage=GetEventInt(event,"damage");
                         if (!damage)
+                        {
                             damage = GetEventInt(event,"dmg_health");
+                            if (!damage)
+                                damage = GetRandomInt(5,20);
+                        }
 
                         new h1=GetEventInt(event,"health")+damage;
                         new h2=GetClientHealth(index);
