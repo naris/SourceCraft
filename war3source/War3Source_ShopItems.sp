@@ -221,9 +221,7 @@ public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcas
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     if (client)
-    {
-        SetupMaxHealth(client);
-    }
+        ResetMaxHealth(client);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -232,6 +230,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
+        SetupMaxHealth(client);
+
         GetClientAbsOrigin(client,spawnLoc[client]);
 
         new war3player=War3_GetWar3Player(client);

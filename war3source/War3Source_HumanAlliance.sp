@@ -204,57 +204,60 @@ public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcas
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     if (client)
-    {
-        SetupMaxHealth(client);
-    }
+        ResetMaxHealth(client);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(client);
-    if (war3player>-1)
+    if (client)
     {
-        new race = War3_GetRace(war3player);
-        if (race == raceID)
+        SetupMaxHealth(client);
+
+        new war3player=War3_GetWar3Player(client);
+        if (war3player>-1)
         {
-            new skill_invis=War3_GetSkillLevel(war3player,race,0);
-            if (skill_invis)
+            new race = War3_GetRace(war3player);
+            if (race == raceID)
             {
-                HumanAlliance_Invisibility(war3player, skill_invis);
-            }
-
-            new skill_devo=War3_GetSkillLevel(war3player,race,1);
-            if (skill_devo)
-            {
-                // Devotion Aura
-                new hpadd;
-                switch(skill_devo)
+                new skill_invis=War3_GetSkillLevel(war3player,race,0);
+                if (skill_invis)
                 {
-                    case 1:
-                        hpadd=15;
-                    case 2:
-                        hpadd=26;
-                    case 3:
-                        hpadd=38;
-                    case 4:
-                        hpadd=50;
+                    HumanAlliance_Invisibility(war3player, skill_invis);
                 }
-                IncreaseHealth(client,hpadd);
 
-                new Float:start[3];
-                GetClientAbsOrigin(client, start);
+                new skill_devo=War3_GetSkillLevel(war3player,race,1);
+                if (skill_devo)
+                {
+                    // Devotion Aura
+                    new hpadd;
+                    switch(skill_devo)
+                    {
+                        case 1:
+                            hpadd=15;
+                        case 2:
+                            hpadd=26;
+                        case 3:
+                            hpadd=38;
+                        case 4:
+                            hpadd=50;
+                    }
+                    IncreaseHealth(client,hpadd);
 
-                new Float:end[3];
-                end[0] = start[0];
-                end[1] = start[1];
-                end[2] = start[2] + 150;
+                    new Float:start[3];
+                    GetClientAbsOrigin(client, start);
 
-                new color[4] = { 200, 255, 205, 255 };
-                TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
-                        0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
-                TE_SendToAll();
+                    new Float:end[3];
+                    end[0] = start[0];
+                    end[1] = start[1];
+                    end[2] = start[2] + 150;
+
+                    new color[4] = { 200, 255, 205, 255 };
+                    TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
+                            0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
+                    TE_SendToAll();
+                }
             }
         }
     }

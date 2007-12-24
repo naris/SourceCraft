@@ -31,10 +31,18 @@ stock SetupHealth(client)
 
 stock SetupMaxHealth(client)
 {
-    if (GameType == tf2)
-        maxHealth[client] = GetMaxHealth(client);
-    else
-        maxHealth[client] = GetHealth(client);
+    if (maxHealth[client] <= 0)
+    {
+        if (GameType == tf2)
+            maxHealth[client] = GetMaxHealth(client);
+        else
+            maxHealth[client] = GetHealth(client);
+    }
+}
+
+stock ResetMaxHealth(client)
+{
+    maxHealth[client] = 0;
 }
 
 stock IncreaseHealth(client, amount)
