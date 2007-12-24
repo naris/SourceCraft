@@ -341,7 +341,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                 {
                     new color[4] = { 10, 200, 255, 255 };
                     TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
-                                      0, 50, 50.0, 6.0,10.0,50,50.0,color,255);
+                                      0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                     TE_SendToAll();
 
                     new new_health=GetClientHealth(index)-40;

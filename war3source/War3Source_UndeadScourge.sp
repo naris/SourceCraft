@@ -247,7 +247,7 @@ public Undead_UnholyAura(war3player, skilllevel)
     new boots = War3_GetShopItem("Boots of Speed");
     if (boots != -1 && War3_GetOwnsItem(war3player,boots))
     {
-        speed *= 1.2;
+        speed *= 1.1;
     }
 
     War3_SetMaxSpeed(war3player,speed);
@@ -303,7 +303,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
         {
             damage = float(GetEventInt(event,"dmg_health"));
             if (!damage)
-                damage = GetRandomInt(5,20);
+                damage = GetRandomFloat(5.0,20.0);
         }
 
         new leechhealth=RoundFloat(damage*percent_health);
@@ -319,12 +319,12 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
 
             decl String:name[64];
             GetClientName(index,name,63);
-            PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura.%c",
+            PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura%c.",
                         COLOR_GREEN,name,COLOR_DEFAULT,leechhealth,COLOR_GREEN,COLOR_DEFAULT);
 
             decl String:victimName[64];
-            GetClientName(index,victimName,63);
-            PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %s using %cEntangled Roots%c.",
+            GetClientName(victim,victimName,63);
+            PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %s using %cVampiric Aura%c.",
                         COLOR_GREEN,COLOR_DEFAULT,leechhealth,victimName,COLOR_GREEN,COLOR_DEFAULT);
 
             LogMessage("[War3Source] %s leeched %d health from %s\n", name, leechhealth, victimName);
@@ -339,7 +339,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
 
             new color[4] = { 255, 10, 25, 255 };
             TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
-                              0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
+                               0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
             TE_SendToAll();
         }
     }
@@ -396,23 +396,26 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                         GetClientAbsOrigin(x,location_check);
 
                         new hp=PowerOfRange(client_location,radius,location_check);
-                        new newhealth=GetClientHealth(x)-hp;
-                        SetHealth(x,newhealth);
-                        if (newhealth<=0)
+                        if (hp)
                         {
-                            ForcePlayerSuicide(x);
-                            if (GetClientTeam(client) != GetClientTeam(x))
+                            new newhealth=GetClientHealth(x)-hp;
+                            if (newhealth<=0)
                             {
-                                new addxp=5+ult_level;
-                                new newxp=War3_GetXP(war3player,raceID)+addxp;
-                                War3_SetXP(war3player,raceID,newxp);
+                                ForcePlayerSuicide(x);
+                                if (GetClientTeam(client) != GetClientTeam(x))
+                                {
+                                    new addxp=5+ult_level;
+                                    new newxp=War3_GetXP(war3player,raceID)+addxp;
+                                    War3_SetXP(war3player,raceID,newxp);
 
-                                LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                    LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                }
                             }
-                        }
-                        else
-                        {
-                            LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                            else
+                            {
+                                SetHealth(x,newhealth);
+                                LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                            }
                         }
                     }
                 }

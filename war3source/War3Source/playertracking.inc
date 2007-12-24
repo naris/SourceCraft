@@ -262,7 +262,7 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         new Float:newSpeed;
                         new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                        if (curSpeed < 100.0) // && TF_GetClass(client) == TF2_HEAVY)
+                        if (curSpeed < 200.0) // && TF_GetClass(client) == TF2_HEAVY)
                         {
                             // Speed for heavy  while firing == 80, while not firing == 230
                             // Speed for sniper while zoomed == 80, while not zoomed == 300

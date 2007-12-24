@@ -17,9 +17,9 @@
 #define PLANT_XP 20
 #define HOSTAGERESCUED_XP 20
 
-#define BUILD_XP 20
-#define DESTROY_XP 20
-#define BLOCK_XP 20
+#define BUILD_XP 5
+#define DESTROY_XP 5
+#define BLOCK_XP 5
 #define CAPTURE_FLAG_XP 20
 #define CAPTURE_POINT_XP 20
 
