@@ -48,7 +48,7 @@ public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBro
             if(m_FirstSpawn[index])
             {
                 War3Source_IntroMenu(index);
-                m_FirstSpawn[index]=false;
+                m_FirstSpawn[index]=0;
             }
             if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                 War3Source_SkillMenu(index,vecpos);

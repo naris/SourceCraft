@@ -12,7 +12,7 @@
 
 #include <sourcemod>
 
-new bool:m_FirstSpawn[65]={true}; // Cheap trick
+new m_FirstSpawn[65] = {1, ...}; // Cheap trick
 #define VERSION_NUM "0.9 $Revision$" // "0.8.6.1"
 #define VERSION     "$Revision$" // "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
 
@@ -168,20 +168,12 @@ public OnClientPutInServer(client)
             {
                 m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
                 m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-
-                /*
-                LogMessage("[War3Source] Set Base Speed=%f\n", m_BaseSpeed[client]);
-
-                War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                       "%c[War3Source] %cSet Base Speed=%f.",
-                                       COLOR_GREEN,COLOR_DEFAULT,m_BaseSpeed[client]);
-                */
             }
 
             if(SAVE_ENABLED)
-                War3Source_LoadPlayerData(client,GetClientVectorPosition(client));
-
-            m_FirstSpawn[client]=true;
+                m_FirstSpawn[client]=War3Source_LoadPlayerData(client,GetClientVectorPosition(client));
+            else
+                m_FirstSpawn[client]=2;
         }
         else
             SetFailState("[War3Source] There was a failure on processing client, halting.");
@@ -199,7 +191,7 @@ public OnClientDisconnect(client)
                 War3Source_SavePlayerData(client,clientVecPos);
 
             RemoveFromArray(arrayPlayers,clientVecPos);
-            m_FirstSpawn[client]=true;
+            m_FirstSpawn[client]=2;
         }
     }
 }

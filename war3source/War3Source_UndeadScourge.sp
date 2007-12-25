@@ -18,6 +18,7 @@
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
+
 new explosionModel;
 new g_beamSprite;
 new g_haloSprite;
@@ -98,7 +99,9 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
         {
             new ult_level = War3_GetSkillLevel(war3player,race,3);
             if (ult_level)
+            {
                 Undead_SuicideBomber(client,war3player,ult_level,false);
+            }
         }
     }
 }
@@ -347,6 +350,12 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
 
 public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
 {
+    if (!ondeath)
+    {
+        m_Suicided[client]=true;
+        ForcePlayerSuicide(client);
+    }
+
     new Float:radius;
     new r_int;
     switch(ult_level)
@@ -371,12 +380,6 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
             radius = 350.0;
             r_int  = 350;
         }
-    }
-
-    if (!ondeath)
-    {
-        m_Suicided[client]=true;
-        ForcePlayerSuicide(client);
     }
 
     new Float:client_location[3];

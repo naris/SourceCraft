@@ -57,6 +57,13 @@ public War3Source_IntroMenu(client)
 
 public War3Source_IntroMenu_Select(Handle:menu,MenuAction:action,client,selection)
 {
+    if (action==MenuAction_Select)
+    {
+        if (m_FirstSpawn[client] > 1)
+        {
+            War3Source_RaceMenu(client, true);
+        }
+    }
 }
 
 public War3Source_War3Menu(client,vecpos)

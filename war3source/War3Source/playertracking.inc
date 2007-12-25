@@ -260,38 +260,31 @@ public Action:PlayerProperties(Handle:timer)
                 {
                     if (m_BaseSpeed[client] > 1.0)
                     {
-                        new Float:newSpeed;
                         new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                        if (curSpeed < 200.0) // && TF_GetClass(client) == TF2_HEAVY)
+                        if (curSpeed > 1.0) // Don't alter initial map freeze
                         {
-                            // Speed for heavy  while firing == 80, while not firing == 230
-                            // Speed for sniper while zoomed == 80, while not zoomed == 300
-                            // ensure we don't accelerate firing heavy or zoomed sniper too much!
-                            newSpeed = 80.0 * speed;
+                            new Float:newSpeed;
+                            if (curSpeed < 200.0) // && TF_GetClass(client) == TF2_HEAVY)
+                            {
+                                // Speed for heavy  while firing == 80, while not firing == 230
+                                // Speed for sniper while zoomed == 80, while not zoomed == 300
+                                // ensure we don't accelerate firing heavy or zoomed sniper too much!
+                                newSpeed = 80.0 * speed;
+                            }
+                            else
+                            {
+                                newSpeed = m_BaseSpeed[client] * speed;
+                            }
+
+                            if (curSpeed != newSpeed)
+                                SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
                         }
-                        else
-                        {
-                            newSpeed = m_BaseSpeed[client] * speed;
-                        }
-
-                        /**/
-                        LogMessage("[War3Source] BaseSpeed=%f, curSpeed=%f, newSpeed=%f\n",
-                                   m_BaseSpeed[client], curSpeed, newSpeed);
-
-                        /*
-                        War3Source_ChatMessage(client,COLOR_DEFAULT,
-                                               "%c[War3Source] %c BaseSpeed=%f, speed=%f, curSpeed=%f, newSpeed=%f",
-                                               COLOR_GREEN,COLOR_DEFAULT, m_BaseSpeed[client], speed, curSpeed, newSpeed);
-                        */
-
-                        if (curSpeed != newSpeed)
-                            SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
                     }
                 }
                 else
                 {
                     if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                        SetEntDataFloat(client,m_OffsetSpeed,speed);
+                    SetEntDataFloat(client,m_OffsetSpeed,speed);
                 }
 
                 if (speed == 1.0)
@@ -486,6 +479,7 @@ public War3Source_InsertPlayer(Handle:db,client)
 
 public War3Source_LoadPlayerData(client,vectorpos)
 {
+    new bool:fetch=false;
     if(DBIDB)
     {
         decl String:steamid[64];
@@ -497,37 +491,39 @@ public War3Source_LoadPlayerData(client,vectorpos)
             if(query)
             {
                 SQL_Rewind(query);
-                new bool:fetch=SQL_FetchRow(query);
-                if(!fetch)
-                    War3Source_InsertPlayer(DBIDB,client);
-                else
+                fetch = SQL_FetchRow(query);
+                if(fetch)
                 {
-                    if(fetch)
+                    SetRace(vectorpos,SQLPlayerInt(query,"race"));
+                    SetCredits(vectorpos,SQLPlayerInt(query,"credits"));
+                    for(new x=0;x<RACE_COUNT;x++)
                     {
-                        SetRace(vectorpos,SQLPlayerInt(query,"race"));
-                        SetCredits(vectorpos,SQLPlayerInt(query,"credits"));
-                        for(new x=0;x<RACE_COUNT;x++)
+                        new Handle:race=Race(x);
+                        decl String:short[16];
+                        GetArrayString(race,1,short,15);
+                        decl String:buffer[64];
+                        Format(buffer,63,"%s_xp",short);
+                        SetXP(vectorpos,x,SQLPlayerInt(query,buffer));
+                        Format(buffer,63,"%s_level",short);
+                        SetLevel(vectorpos,x,SQLPlayerInt(query,buffer));
+                        for(new y=0;y<SKILL_COUNT;y++)
                         {
-                            new Handle:race=Race(x);
-                            decl String:short[16];
-                            GetArrayString(race,1,short,15);
-                            decl String:buffer[64];
-                            Format(buffer,63,"%s_xp",short);
-                            SetXP(vectorpos,x,SQLPlayerInt(query,buffer));
-                            Format(buffer,63,"%s_level",short);
-                            SetLevel(vectorpos,x,SQLPlayerInt(query,buffer));
-                            for(new y=0;y<SKILL_COUNT;y++)
-                            {
-                                Format(buffer,63,"%s_skilllevel_%d",short,y);
-                                SetSkillLevel(vectorpos,x,y,SQLPlayerInt(query,buffer));
-                            }
+                            Format(buffer,63,"%s_skilllevel_%d",short,y);
+                            SetSkillLevel(vectorpos,x,y,SQLPlayerInt(query,buffer));
                         }
-                        CloseHandle(query);
                     }
                 }
+                else
+                {
+                    War3Source_InsertPlayer(DBIDB,client);
+                }
+
+                CloseHandle(query);
             }
         }
     }
+    // Return 2 if not fetched so race selection menu will be displayed
+    return (fetch) ? 1 : 2;
 }
 
 public War3Source_SavePlayerData(client,vectorpos)
