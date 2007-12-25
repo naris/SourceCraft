@@ -48,21 +48,38 @@ public War3Source_AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:
 
 public War3Source_IntroMenu(client)
 {
-    new Handle:introMenu=CreateMenu(War3Source_IntroMenu_Select);
+    new Handle:introMenu=CreateMenu(War3Source_IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
     SetMenuTitle(introMenu,"Welcome to this War3Source server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\n%s",VERSION);
     AddMenuItem(introMenu,"","Exit");
     DisplayMenu(introMenu,client, 20);
 }
 
-public War3Source_IntroMenu_Select(Handle:menu,MenuAction:action,client,selection)
+public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
 {
-    if (action==MenuAction_Select)
+    decl String:actionName[64]="";
+    switch (action)
+    {
+        case MenuAction_Select: strcopy(actionName, 63, "Select");
+        case MenuAction_Start: strcopy(actionName, 63, "Start");
+        case MenuAction_Display: strcopy(actionName, 63, "Display");
+        case MenuAction_Cancel: strcopy(actionName, 63, "Cancel");
+        case MenuAction_End: strcopy(actionName, 63, "End");
+    }
+
+    LogMessage("IntroMenu Action=%d(%s), client=%d, firstspawn=%d, param=%d.\n",
+               action, actionName, client, m_FirstSpawn[client], param);
+    PrintToChat(client, "%c[War3Source] %cIntroMenu Action=%d(%s), client=%d, firstspawn=%d, param=%d.",
+                COLOR_GREEN,COLOR_DEFAULT, action, actionName, client, m_FirstSpawn[client], param);
+
+    if (action == MenuAction_Select ||
+        (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
         if (m_FirstSpawn[client] > 1)
         {
             War3Source_RaceMenu(client, true);
         }
+        m_FirstSpawn[client]=0;
     }
 }
 
