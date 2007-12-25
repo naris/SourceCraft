@@ -57,21 +57,6 @@ public War3Source_IntroMenu(client)
 
 public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
 {
-    decl String:actionName[64]="";
-    switch (action)
-    {
-        case MenuAction_Select: strcopy(actionName, 63, "Select");
-        case MenuAction_Start: strcopy(actionName, 63, "Start");
-        case MenuAction_Display: strcopy(actionName, 63, "Display");
-        case MenuAction_Cancel: strcopy(actionName, 63, "Cancel");
-        case MenuAction_End: strcopy(actionName, 63, "End");
-    }
-
-    LogMessage("IntroMenu Action=%d(%s), client=%d, firstspawn=%d, param=%d.\n",
-               action, actionName, client, m_FirstSpawn[client], param);
-    PrintToChat(client, "%c[War3Source] %cIntroMenu Action=%d(%s), client=%d, firstspawn=%d, param=%d.",
-                COLOR_GREEN,COLOR_DEFAULT, action, actionName, client, m_FirstSpawn[client], param);
-
     if (action == MenuAction_Select ||
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
