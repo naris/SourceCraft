@@ -66,6 +66,10 @@ public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         }
         m_FirstSpawn[client]=0;
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_War3Menu(client,vecpos)
@@ -87,7 +91,7 @@ public War3Source_War3Menu(client,vecpos)
 
 public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -136,6 +140,10 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_RaceMenu(client, bool:change)
@@ -170,7 +178,7 @@ public War3Source_RaceMenu(client, bool:change)
 
 public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         new vecpos=GetClientVectorPosition(client);
@@ -199,11 +207,15 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         new vecpos=GetClientVectorPosition(client);
@@ -217,6 +229,10 @@ public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_SkillMenu(client,vectorpos)
@@ -252,7 +268,7 @@ public War3Source_SkillMenu(client,vectorpos)
 
 public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         new vecpos=GetClientVectorPosition(client);
@@ -325,6 +341,10 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
             }
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_ShopMenu(client,vectorpos)
@@ -354,7 +374,7 @@ public War3Source_ShopMenu(client,vectorpos)
 
 public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         new vecpos=GetClientVectorPosition(client);
@@ -370,6 +390,10 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
                 War3Source_ShopMenu_Item(client,vecpos,item);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_ShopMenu_Item(client,vecpos,item)
@@ -400,7 +424,7 @@ public War3Source_ShopMenu_Item(client,vecpos,item)
 
 public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         new vecpos=GetClientVectorPosition(client);
@@ -456,6 +480,10 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                 War3Source_ShopMenu(client,vecpos);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public Action:War3Source_Admin(client,args)
@@ -479,7 +507,7 @@ public Action:War3Source_Admin(client,args)
 
 public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if (action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -497,6 +525,10 @@ public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_Player(client,targetvecpos)
@@ -526,7 +558,7 @@ public War3Source_Admin_Player(client,targetvecpos)
 public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
 {
     // This is gonna be fun... NOT.
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -601,6 +633,10 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_PlayerInfo(client,target)
@@ -640,7 +676,7 @@ public War3Source_Admin_PlayerInfo(client,target)
 
 public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -658,6 +694,10 @@ public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_XP(client,target)
@@ -688,7 +728,7 @@ public War3Source_Admin_XP(client,target)
 
 public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -762,6 +802,10 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_GiveShopItem(client,target)
@@ -796,7 +840,7 @@ public War3Source_Admin_GiveShopItem(client,target)
 
 public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -846,6 +890,10 @@ public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selectio
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_SetRace(client,target)
@@ -880,7 +928,7 @@ public War3Source_Admin_SetRace(client,target)
 
 public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -913,6 +961,10 @@ public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,sele
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_Level(client,target)
@@ -941,7 +993,7 @@ public War3Source_Admin_Level(client,target)
 
 public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -1012,6 +1064,10 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
 public War3Source_Admin_Credits(client,target)
@@ -1064,7 +1120,7 @@ public War3Source_Admin_Credits(client,target)
 
 public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         decl String:SelectionInfo[4];
@@ -1139,4 +1195,8 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
