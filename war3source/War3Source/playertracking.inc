@@ -261,7 +261,7 @@ public Action:PlayerProperties(Handle:timer)
                     if (m_BaseSpeed[client] > 1.0)
                     {
                         new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                        if (curSpeed > 1.0) // Don't alter initial map freeze
+                        if (curSpeed > 1.0 && !speedAltered[client]) // Don't alter initial map freeze
                         {
                             new Float:newSpeed;
                             if (curSpeed < 200.0) // && TF_GetClass(client) == TF2_HEAVY)
@@ -517,7 +517,6 @@ public War3Source_LoadPlayerData(client,vectorpos)
                 {
                     War3Source_InsertPlayer(DBIDB,client);
                 }
-
                 CloseHandle(query);
             }
         }
