@@ -221,17 +221,10 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetEventInt(event,"damage");
-            if (!damage)
-            {
-                damage = GetEventInt(event,"dmg_health");
-                if (!damage)
-                    damage = GetRandomInt(5,20);
-            }
-
+            new damage=GetDamage(event, index, 5, 20);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
-            if (new_health<0)
+            if (new_health <= 0)
             {
                 new_health=0;
                 LogKill(index, victimIndex, "acute_strike", "Acute Strike", health_take);
@@ -282,17 +275,10 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetEventInt(event,"damage");
-            if (!damage)
-            {
-                damage = GetEventInt(event,"dmg_health");
-                if (!damage)
-                    damage = GetRandomInt(10,30);
-            }
-
+            new damage=GetDamage(event, index, 10, 30);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
-            if (new_health<0)
+            if (new_health <= 0)
             {
                 new_health=0;
                 LogKill(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
@@ -345,7 +331,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                     TE_SendToAll();
 
                     new new_health=GetClientHealth(index)-40;
-                    if (new_health<0)
+                    if (new_health <= 0)
                     {
                         new_health=0;
 

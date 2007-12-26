@@ -61,3 +61,28 @@ stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
                       (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
                       (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
 }
+
+stock GetDamage(Handle:event, attacker=0, min=5, max=20)
+{
+    new damage=GetEventInt(event,"damage");
+    if (!damage)
+    {
+        damage = GetEventInt(event,"dmg_health");
+        if (!damage)
+        {
+            damage = GetEventInt(event,"health");
+            if (!damage)
+            {
+                if (attacker)
+                {
+                    decl String:weapon[64];
+                    GetClientWeapon(attacker, weapon, sizeof(weapon));
+                    damage = GetRandomInt(min,max); // for now...
+                }
+                else
+                    damage = GetRandomInt(min,max);
+            }
+        }
+    }
+    return damage;
+}

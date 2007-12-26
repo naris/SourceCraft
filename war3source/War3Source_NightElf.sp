@@ -156,7 +156,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     new damage = 0;
                     if (War3_GetRace(war3playerattacker)==raceID)
                     {
-                        damage = NightElf_TrueshotAura(event, war3playerattacker, victimindex, evaded);
+                        damage = NightElf_TrueshotAura(event, attackerindex,
+                                                       war3playerattacker, victimindex, evaded);
                     }
 
                     if (victimrace == raceID && (!evaded || damage))
@@ -177,7 +178,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     new damage = 0;
                     if (War3_GetRace(war3playerassister)==raceID)
                     {
-                        damage = NightElf_TrueshotAura(event, war3playerassister, victimindex, evaded);
+                        damage = NightElf_TrueshotAura(event, assisterindex,
+                                                       war3playerassister, victimindex, evaded);
                     }
 
                     if (victimrace == raceID && (!evaded || damage))
@@ -210,10 +212,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         }
         if (GetRandomInt(1,100) <= chance)
         {
-            new losthp=GetEventInt(event,"damage");
-            if (!losthp)
-                losthp = GetEventInt(event,"dmg_health");
-
+            new losthp=GetDamage(event);
             new newhp=GetClientHealth(victimIndex)+losthp;
             SetHealth(victimIndex,newhp);
 
@@ -250,14 +249,7 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new damage=GetEventInt(event,"damage");
-                if (!damage)
-                {
-                    damage = GetEventInt(event,"dmg_health");
-                    if (!damage)
-                        damage = GetRandomInt(10,20);
-                }
-
+                new damage=GetDamage(event, index, 10, 20);
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
                 if(newhp<0)
@@ -277,7 +269,7 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
     return 0;
 }
 
-public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
+public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evaded)
 {
     // Trueshot Aura
     new skill_level_trueshot=War3_GetSkillLevel(war3player,raceID,2);
@@ -298,14 +290,7 @@ public NightElf_TrueshotAura(Handle:event, war3player, victimindex, evaded)
                     percent=0.60;
             }
 
-            new damage=GetEventInt(event,"damage");
-            if (!damage)
-            {
-                damage = GetEventInt(event,"dmg_health");
-                if (!damage)
-                    damage = GetRandomInt(10,20);
-            }
-
+            new damage=GetDamage(event, index, 10, 20);
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimindex)-amount;
             if(newhp<0)

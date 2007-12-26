@@ -301,14 +301,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
             case 4:
                 percent_health=0.30;
         }
-        new Float:damage=float(GetEventInt(event,"damage"));
-        if (!damage)
-        {
-            damage = float(GetEventInt(event,"dmg_health"));
-            if (!damage)
-                damage = GetRandomFloat(5.0,20.0);
-        }
-
+        new Float:damage=float(GetDamage(event, index, 5, 20));
         new leechhealth=RoundFloat(damage*percent_health);
         if(leechhealth)
         {
@@ -407,10 +400,11 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                         new hp=PowerOfRange(client_location,radius,location_check);
                         if (hp)
                         {
-                            new newhealth=GetClientHealth(x)-hp;
-                            if (newhealth<=0)
+                            new newhealth = GetClientHealth(x)-hp;
+                            if (newhealth <= 0)
                             {
-                                ForcePlayerSuicide(x);
+                                newhealth=0;
+                                //ForcePlayerSuicide(x);
                                 if (GetClientTeam(client) != GetClientTeam(x))
                                 {
                                     new addxp=5+ult_level;
@@ -422,9 +416,9 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                             }
                             else
                             {
-                                SetHealth(x,newhealth);
                                 LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
                             }
+                            SetHealth(x,newhealth);
                         }
                     }
                 }

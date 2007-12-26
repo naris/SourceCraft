@@ -18,6 +18,7 @@
 #include "War3Source/health"
 #include "War3Source/authtimer"
 #include "War3Source/respawn"
+#include "War3Source/log"
 
 // Defines
 
@@ -393,6 +394,17 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             war3player_assister = War3_GetWar3Player(assister_index);
         }
 
+        /***********************************************************/
+        new dmg1 = GetEventInt(event,"damage");
+        new dmg2 = GetEventInt(event,"dmg_health");
+        new dmg3 = GetEventInt(event,"health");
+        LogMessage("player_hurt; damage=%d,dmg_health=%d,health=%d\n", dmg1, dmg2, dmg3);
+        PrintToChat(index, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
+                    COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
+        PrintToChat(attacker_index, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
+                    COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
+        /***********************************************************/
+
         if(war3player !=-1 && war3player_attacker != -1)
         {
             if(!War3_GetImmunity(war3player,Immunity_ShopItems))
@@ -402,13 +414,28 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_CLAWS]))
                     {
                         new newhealth=GetClientHealth(index)-8;
-                        if(newhealth<0) newhealth=0;
+                        if (newhealth <= 0)
+                        {
+                            newhealth=0;
+                            LogKill(attacker_index, index, "item_claws", "Claws of Attack", 8);
+                        }
+                        else
+                            LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
+
                         SetHealth(index,newhealth);
                     }
+
                     if (War3_GetOwnsItem(war3player_assister,shopItem[ITEM_CLAWS]))
                     {
-                        new newhealth=GetClientHealth(index)-8;
-                        if(newhealth<0) newhealth=0;
+                        new newhealth = GetClientHealth(index)-8;
+                        if (newhealth <= 0)
+                        {
+                            newhealth=0;
+                            LogKill(assister_index, index, "item_claws", "Claws of Attack", 8);
+                        }
+                        else
+                            LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
+
                         SetHealth(index,newhealth);
                     }
                 }
@@ -437,14 +464,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if(isMole[attacker_index])
                     {
-                        new damage=GetEventInt(event,"damage");
-                        if (!damage)
-                        {
-                            damage = GetEventInt(event,"dmg_health");
-                            if (!damage)
-                                damage = GetRandomInt(5,20);
-                        }
-
+                        new damage=GetDamage(event, attacker_index, 5, 20);
                         new h1=GetEventInt(event,"health")+damage;
                         new h2=GetClientHealth(index);
                         if(h2<h1)
