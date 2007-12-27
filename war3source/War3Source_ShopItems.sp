@@ -377,6 +377,18 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid          = GetEventInt(event,"userid");
     new attacker_userid = GetEventInt(event,"attacker");
     new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+
+    /***********************************************************/
+    new dmg1 = GetEventInt(event,"damage");
+    new dmg2 = GetEventInt(event,"dmg_health");
+    new dmg3 = GetEventInt(event,"health");
+    LogMessage("player_hurt; damage=%d,dmg_health=%d,health=%d\n", dmg1, dmg2, dmg3);
+    PrintToChat(index, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
+                COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
+    PrintToChat(attacker_index, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
+                COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
+    /***********************************************************/
+
     if(userid && attacker_userid && userid != attacker_userid)
     {
         new index               = GetClientOfUserId(userid);
@@ -393,17 +405,6 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             assister_index      = GetClientOfUserId(assister_userid);
             war3player_assister = War3_GetWar3Player(assister_index);
         }
-
-        /***********************************************************/
-        new dmg1 = GetEventInt(event,"damage");
-        new dmg2 = GetEventInt(event,"dmg_health");
-        new dmg3 = GetEventInt(event,"health");
-        LogMessage("player_hurt; damage=%d,dmg_health=%d,health=%d\n", dmg1, dmg2, dmg3);
-        PrintToChat(index, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
-                    COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
-        PrintToChat(attacker_index, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
-                    COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
-        /***********************************************************/
 
         if(war3player !=-1 && war3player_attacker != -1)
         {
