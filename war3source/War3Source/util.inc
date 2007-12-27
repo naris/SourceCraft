@@ -89,7 +89,7 @@ stock GetDamage(Handle:event, attacker=0, min=5, max=20)
                     damage = GetRandomInt(3,110);
                 else if (StrEqual(weapon, "flamethrower"))
                     damage = GetRandomInt(5,15);
-                else if (StrEqual(weapon, "sniperrifle "))
+                else if (StrEqual(weapon, "sniperrifle"))
                     damage = GetRandomInt(30,190);
                 else if (StrEqual(weapon, "syringegun_medic"))
                     damage = GetRandomInt(8,13);

@@ -325,15 +325,18 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new assister_dominated = GetEventInt(event, "assister_dominated");
 	new revenge = GetEventInt(event, "revenge");
 	new assister_revenge = GetEventInt(event, "assister_revenge");
-	LogMessage("player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n", damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge,weapon);
-	PrintToChat(victimClient, "%c[Debug] %cplayer_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n", damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge,weapon);
-	PrintToChat(attackerClient, "%c[Debug] %cplayer_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n", damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge,weapon);
+	LogMessage("player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n",
+                   damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge, weapon);
+	PrintToChat(victimClient, "player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n",
+                    damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge, weapon);
+	PrintToChat(attackerClient, "player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n",
+                    damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge, weapon);
 	/***********************************************************/
 
 	if(gameType == CSS)
 		headshot = GetEventBool(event, "headshot");
-	//else if(gameType == TF2)
-	//	headshot = GetEventInt(event, "customkill") == 1; // ??
+	else if(gameType == TF2)
+		headshot = (GetEventInt(event, "customkill") == 1) && StrEqual(weapon, "sniperrifle");
 	else
 		headshot = false;
 		
