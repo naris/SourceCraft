@@ -499,7 +499,7 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		soundId = TEAMKILL;
 	
 	// Play the appropriate sound if there was a reason to do so 
-	if(soundId != NO_KILLS) {
+	if(soundId != -1) {
 		PlayQuakeSound(soundId, attackerClient, assisterClient, victimClient);
 		PrintQuakeText(soundId, attackerClient, assisterClient, victimClient);
 	}
