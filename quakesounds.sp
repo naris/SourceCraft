@@ -116,13 +116,14 @@ Versions:
 #define DISABLE_CHOICE 3
 #define NO_KILLS -1.0
 #define MAX_NUM_SETS 5
+#define MAX_MELEE 9
 
-#define NUM_SOUNDS 24
+#define NUM_SOUNDS 51
 #define HEADSHOT 0
 #define GRENADE 1
 #define SELFKILL 2
 #define ROUND_PLAY 3
-#define KNIFE 4
+#define MELEE 4
 #define KILLS_1 5
 #define KILLS_2 6
 #define KILLS_3 7
@@ -142,6 +143,33 @@ Versions:
 #define MONSTERCOMBO 21
 #define HEADSHOT3 22
 #define HEADSHOT5 23
+#define BACKSTAB 24
+#define BACKSTAB3 25
+#define BACKSTAB5 26
+#define KNIFE 27
+#define KNIFE3 28
+#define KNIFE5 29
+#define FISTS 30
+#define FISTS3 31
+#define FISTS5 32
+#define BAT 33
+#define BAT3 34
+#define BAT5 35
+#define WRENCH 36
+#define WRENCH3 37
+#define WRENCH5 38
+#define BOTTLE 39
+#define BOTTLE3 40
+#define BOTTLE5 41
+#define BONESAW 42
+#define BONESAW3 43
+#define BONESAW5 44
+#define SHOVEL 45
+#define SHOVEL3 46
+#define SHOVEL5 47
+#define FIREAXE 48
+#define FIREAXE3 49
+#define FIREAXE5 50
 
 #define NUM_EVENT_SOUNDS 1
 #define JOINSERVER 0
@@ -177,6 +205,8 @@ new eventSettingsArray[NUM_EVENT_SOUNDS];
 new totalKills;
 new gameType = OTHER;
 new headShotCount[MAXPLAYERS + 1];
+new backStabCount[MAXPLAYERS + 1];
+new meleeCount[MAX_MELEE + 1][MAXPLAYERS + 1];
 new Handle:kvQUS;
 new String:fileQUS[MAX_FILE_LEN];
 new	Handle:cvarEnabled = INVALID_HANDLE;
@@ -188,10 +218,13 @@ new numSets;
 new bool:lateLoaded;
 new bool:IsHooked = false;
 static const String:eventSoundNames[NUM_EVENT_SOUNDS][] = {"join server"};
-static const String:soundNames[NUM_SOUNDS][] = {"headshot", "grenade", "selfkill", "round play", "knife",
+static const String:soundNames[NUM_SOUNDS][] = {"headshot", "grenade", "selfkill", "round play", "melee",
 "killsound 1", "killsound 2", "killsound 3", "killsound 4", "killsound 5", "killsound 6", "killsound 7",
 "killsound 8", "killsound 9", "killsound 10", "killsound 11", "first blood", "teamkill", "double combo",
-"triple combo", "quad combo", "monster combo", "headshot 3", "headshot 5"};
+"triple combo", "quad combo", "monster combo", "headshot 3", "headshot 5", "backstab", "backstab 3",
+"backstab 5", "knife", "knife 3", "knife 5", "fists", "fists 3", "fists 5", "bat", "bat 3", "bat 5",
+"wrench", "wrench 3", "wrench 5","bottle", "bottle 3", "bottle 5", "bonesaw", "bonesaw 3", "bonesaw 5",
+"shovel", "shovel 3", "shovel 5", "fireaxe", "fireaxe 3", "fireaxe 5"};
 
 // We need to capture if the plugin was late loaded so we can make sure initializations
 // are handled properly
@@ -315,27 +348,44 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new assisterClient = GetClientOfUserId(assisterId);
 	new victimClient = GetClientOfUserId(victimId);
 	new bool:headshot;
+	new bool:backstab;
+	new melee;
 	GetEventString(event, "weapon", weapon, sizeof(weapon));
 	new soundId = -1;
 
 	if(gameType == CSS)
+	{
 		headshot = GetEventBool(event, "headshot");
+		backstab = false;
+	}
 	else if(gameType == TF2)
+	{
 		headshot = (GetEventInt(event, "customkill") == 1) && StrEqual(weapon, "sniperrifle");
+		backstab = (GetEventInt(event, "customkill") == 1) && StrEqual(weapon, "knife");
+	}
 	else
+	{
 		headshot = false;
-		
+		backstab = false;
+	}
+
 	totalKills++;
-	
+
 	if(attackerClient)
 		consecutiveKills[attackerClient]++;
-	
+
 	if(victimClient)
 		consecutiveKills[victimClient] = 0;
-	
+
+	if(IsGrenade(weapon) && settingsArray[GRENADE])
+		soundId = GRENADE;
+
 	if(attackerId == victimId && settingsArray[SELFKILL])
 		soundId = SELFKILL;
-		
+
+	if(totalKills == 1 && settingsArray[FIRSTBLOOD])
+		soundId = FIRSTBLOOD;
+
 	if(headshot && attackerClient > 0 && attackerClient <= MAXPLAYERS)
 		switch(++headShotCount[attackerClient]) {
 			case 3:
@@ -349,21 +399,60 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 					soundId = HEADSHOT;
 		}
 		
-	if(totalKills == 1 && settingsArray[FIRSTBLOOD])
-		soundId = FIRSTBLOOD;
-		
+	if(backstab && attackerClient > 0 && attackerClient <= MAXPLAYERS)
+	{
+		switch(++backStabCount[attackerClient]) {
+			case 3:
+				if(settingsArray[BACKSTAB3])
+					soundId = BACKSTAB3;
+			case 5:
+				if(settingsArray[BACKSTAB5])
+					soundId = BACKSTAB5;
+			default:
+				if(settingsArray[BACKSTAB])
+					soundId = BACKSTAB;
+		}
+	}
+	else
+	{
+		melee = IsKnife(weapon);
+		if(melee && attackerClient > 0 && attackerClient <= MAXPLAYERS)
+		{
+			new index = ((melee - 1) * 3) + KNIFE;
+			switch(++meleeCount[melee][attackerClient]) {
+				case 3:
+					if(settingsArray[index + 1])
+						soundId = index + 1;
+					else if (settingsArray[KNIFE3])
+						soundId = KNIFE3;
+					else if (settingsArray[MELEE])
+						soundId = MELEE;
+				case 5:
+					if(settingsArray[index + 2])
+						soundId = index + 2;
+					else if (settingsArray[KNIFE5])
+						soundId = KNIFE5;
+					else if (settingsArray[MELEE])
+						soundId = MELEE;
+				default:
+					if(settingsArray[index])
+						soundId = index;
+					else if (settingsArray[KNIFE])
+						soundId = KNIFE;
+					else if (settingsArray[MELEE])
+						soundId = MELEE;
+			}
+		}
+		else if(melee && settingsArray[MELEE])
+			soundId = MELEE;
+	}
+
 	if(assisterClient && killNumSetting[consecutiveKills[assisterClient]])
-			soundId = killNumSetting[consecutiveKills[assisterClient]];
+		soundId = killNumSetting[consecutiveKills[assisterClient]];
 
 	if(attackerClient && killNumSetting[consecutiveKills[attackerClient]])
 			soundId = killNumSetting[consecutiveKills[attackerClient]];
 
-	if(IsGrenade(weapon) && settingsArray[GRENADE])
-		soundId = GRENADE;
-		
-	if(IsKnife(weapon) && settingsArray[KNIFE])
-		soundId = KNIFE;
-		
 	if(assisterClient && assisterClient != victimClient && (settingsArray[DOUBLECOMBO] || settingsArray[TRIPLECOMBO] || settingsArray[QUADCOMBO] || settingsArray[MONSTERCOMBO]))
 	{
 		if(lastKillTime[assisterClient] != -1.0) {
@@ -696,9 +785,21 @@ public IsKnife(String:weapon[])
 		return 1;
 
 	// TF2 melee weapons
-        if(StrEqual(weapon,"shovel") || StrEqual(weapon,"wrench") || StrEqual(weapon,"bat") ||
-	   StrEqual(weapon,"bonesaw") || StrEqual(weapon,"bottle") || StrEqual(weapon,"club") ||
-	   StrEqual(weapon,"fireaxe") || StrEqual(weapon,"fists"))
+        if(StrEqual(weapon,"fists"))
+		return 2;
+        else if(StrEqual(weapon,"bat"))
+		return 3;
+        else if(StrEqual(weapon,"wrench"))
+		return 4;
+        else if(StrEqual(weapon,"bottle"))
+		return 5;
+        else if(StrEqual(weapon,"bonesaw"))
+		return 6;
+        else if(StrEqual(weapon,"shovel"))
+		return 7;
+        else if(StrEqual(weapon,"fireaxe"))
+		return 8;
+        else if(StrEqual(weapon,"club"))
 		return 1;
 		
 	return 0;
@@ -731,6 +832,7 @@ public NewRoundInitialization()
 	totalKills = 0;
 	for(new i; i <= MAXPLAYERS; i++) {
 		headShotCount[i] = 0;
+		backStabCount[i] = 0;
 		lastKillCount[i] = -1;
 	}
 	ResetLastKillTime();
