@@ -361,7 +361,7 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	else if(gameType == TF2)
 	{
 		headshot = (GetEventInt(event, "customkill") == 1) && StrEqual(weapon, "sniperrifle");
-		backstab = (GetEventInt(event, "customkill") == 1) && StrEqual(weapon, "knife");
+		backstab = (GetEventInt(event, "customkill") == 2) && StrEqual(weapon, "knife");
 	}
 	else
 	{
