@@ -57,9 +57,14 @@ stock SetupModel(String:model[])
 
 stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
 {
-    return SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
-                      (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
-                      (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
+    new Float:distance = SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
+                                    (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
+                                    (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
+
+    if (distance < 0)
+        distance *= -1;
+
+    return distance;                                  
 }
 
 stock GetDamage(Handle:event, attacker=0, min=5, max=20)
