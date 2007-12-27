@@ -310,11 +310,25 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	decl String:weapon[64];
 	new victimId = GetEventInt(event, "userid");
 	new attackerId = GetEventInt(event, "attacker");
+	new assisterId = GetEventInt(event, "assister");
 	new attackerClient = GetClientOfUserId(attackerId);
+	new assisterClient = GetClientOfUserId(assisterId);
 	new victimClient = GetClientOfUserId(victimId);
 	new bool:headshot;
 	GetEventString(event, "weapon", weapon, sizeof(weapon));
 	new soundId = -1;
+
+	/***********************************************************/
+	new damagebits = GetEventInt(event, "damagebit");
+	new customkill = GetEventInt(event, "customkill");
+	new dominated = GetEventInt(event, "dominated");
+	new assister_dominated = GetEventInt(event, "assister_dominated");
+	new revenge = GetEventInt(event, "revenge");
+	new assister_revenge = GetEventInt(event, "assister_revenge");
+	LogMessage("player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n", damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge,weapon);
+	PrintToChat(victimClient, "%c[Debug] %cplayer_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n", damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge,weapon);
+	PrintToChat(attackerClient, "%c[Debug] %cplayer_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n", damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge,weapon);
+	/***********************************************************/
 
 	if(gameType == CSS)
 		headshot = GetEventBool(event, "headshot");
@@ -350,6 +364,9 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(totalKills == 1 && settingsArray[FIRSTBLOOD])
 		soundId = FIRSTBLOOD;
 		
+	if(assisterClient && killNumSetting[consecutiveKills[assisterClient]])
+			soundId = killNumSetting[consecutiveKills[assisterClient]];
+
 	if(attackerClient && killNumSetting[consecutiveKills[attackerClient]])
 			soundId = killNumSetting[consecutiveKills[attackerClient]];
 
@@ -359,6 +376,27 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(IsKnife(weapon) && settingsArray[KNIFE])
 		soundId = KNIFE;
 		
+	if(assisterClient && assisterClient != victimClient && (settingsArray[DOUBLECOMBO] || settingsArray[TRIPLECOMBO] || settingsArray[QUADCOMBO] || settingsArray[MONSTERCOMBO]))
+	{
+		if(lastKillTime[assisterClient] != -1.0) {
+			if((GetEngineTime() - lastKillTime[assisterClient]) < 1.5) {
+				switch(++lastKillCount[assisterClient])
+				{
+					case 2:
+						soundId = DOUBLECOMBO;
+					case 3:
+						soundId = TRIPLECOMBO;
+					case 4:
+						soundId = QUADCOMBO;
+					case 5:
+						soundId = MONSTERCOMBO;
+				}
+			}
+		} else
+			lastKillCount[assisterClient] = 1;
+		lastKillTime[assisterClient] = GetEngineTime();
+	}
+			
 	if(attackerClient && attackerClient != victimClient && (settingsArray[DOUBLECOMBO] || settingsArray[TRIPLECOMBO] || settingsArray[QUADCOMBO] || settingsArray[MONSTERCOMBO]))
 	{
 		if(lastKillTime[attackerClient] != -1.0) {
@@ -385,8 +423,8 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	
 	// Play the appropriate sound if there was a reason to do so 
 	if(soundId != NO_KILLS) {
-		PlayQuakeSound(soundId, attackerClient, victimClient);
-		PrintQuakeText(soundId, attackerClient, victimClient);
+		PlayQuakeSound(soundId, attackerClient, assisterClient, victimClient);
+		PrintQuakeText(soundId, attackerClient, assisterClient, victimClient);
 	}
 }
 
@@ -530,7 +568,7 @@ public PrepareEventSounds()
 }
 
 // This plays the quake sounds based on soundPreference
-public PlayQuakeSound(soundKey, attackerClient, victimClient)
+public PlayQuakeSound(soundKey, attackerClient, assisterClient, victimClient)
 {
 	new playersConnected = GetMaxClients();
 	
@@ -544,20 +582,34 @@ public PlayQuakeSound(soundKey, attackerClient, victimClient)
 	if(soundPreference[attackerClient] && (settingsArray[soundKey] & 2) && attackerClient && !StrEqual(soundsList[soundPreference[attackerClient]-1][soundKey], ""))
 		EmitSoundToClient(attackerClient, soundsList[soundPreference[attackerClient]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
 	
+	if(soundPreference[assisterClient] && (settingsArray[soundKey] & 2) && assisterClient && !StrEqual(soundsList[soundPreference[assisterClient]-1][soundKey], ""))
+		EmitSoundToClient(assisterClient, soundsList[soundPreference[assisterClient]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
+	
 	if(soundPreference[victimClient] && (settingsArray[soundKey] & 4) && victimClient && !StrEqual(soundsList[soundPreference[victimClient]-1][soundKey], ""))
 		EmitSoundToClient(victimClient, soundsList[soundPreference[victimClient]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
 }
 
 // This prints the quake text
-public PrintQuakeText(soundKey, attackerClient, victimClient)
+public PrintQuakeText(soundKey, attackerClient, assisterClient, victimClient)
 {
 	new playersConnected = GetMaxClients();
-	decl String:attackerName[30];
+	decl String:attackerName[62];
 	decl String:victimName[30];
 	
 	// Get the names of the victim and the attacker
 	if(attackerClient && IsClientInGame(attackerClient))
+	{
 		GetClientName(attackerClient, attackerName, 30);
+		if(assisterClient && IsClientInGame(assisterClient))
+		{
+			decl String:assisterName[30];
+			GetClientName(assisterClient, assisterName, 30);
+			StrCat(attackerName, sizeof(attackerName), "+");
+			StrCat(attackerName, sizeof(attackerName), assisterName);
+		}
+	}
+	else if(assisterClient && IsClientInGame(assisterClient))
+		GetClientName(assisterClient, attackerName, 30);
 	else
 		attackerName = "Nobody";
 	if(victimClient && IsClientInGame(victimClient))
@@ -574,6 +626,9 @@ public PrintQuakeText(soundKey, attackerClient, victimClient)
 	if(textPreference[attackerClient] && (settingsArray[soundKey] & 16) && attackerClient)
 		PrintCenterText(attackerClient, "%t", soundNames[soundKey], attackerName, victimName);
 	
+	if(textPreference[assisterClient] && (settingsArray[soundKey] & 16) && assisterClient)
+		PrintCenterText(assisterClient, "%t", soundNames[soundKey], attackerName, victimName);
+	
 	if(textPreference[victimClient] && (settingsArray[soundKey] & 32) && victimClient)
 		PrintCenterText(victimClient, "%t", soundNames[soundKey], attackerName, victimName);
 }
@@ -581,8 +636,8 @@ public PrintQuakeText(soundKey, attackerClient, victimClient)
 // Play the starting sound
 public EventRoundFreezeEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	PlayQuakeSound(ROUND_PLAY, 0, 0);
-	PrintQuakeText(ROUND_PLAY, 0, 0);
+	PlayQuakeSound(ROUND_PLAY, 0, 0, 0);
+	PrintQuakeText(ROUND_PLAY, 0, 0, 0);
 }
 
 // Initializations to be done at the beginning of the round
@@ -739,8 +794,12 @@ public EnableChanged(Handle:convar, const String:oldValue[], const String:newVal
 			HookEvent("round_freeze_end", EventRoundFreezeEnd, EventHookMode_PostNoCopy);
 		else if(gameType == DODS)
 			HookEvent("dod_warmup_ends", EventRoundFreezeEnd, EventHookMode_PostNoCopy);
+		else if(gameType == TF2)
+			HookEvent("teamplay_round_active", EventRoundFreezeEnd, EventHookMode_PostNoCopy);
 		if(gameType == DODS)
 			HookEvent("dod_round_start", EventRoundStart, EventHookMode_PostNoCopy);
+		else if(gameType == TF2)
+			HookEvent("teamplay_round_start", EventRoundStart, EventHookMode_PostNoCopy);
 		else
 			HookEvent("round_start", EventRoundStart, EventHookMode_PostNoCopy);
 		IsHooked = true;
@@ -750,8 +809,12 @@ public EnableChanged(Handle:convar, const String:oldValue[], const String:newVal
 			UnhookEvent("round_freeze_end", EventRoundFreezeEnd, EventHookMode_PostNoCopy);
 		else if(gameType == DODS)
 			UnhookEvent("dod_warmup_ends", EventRoundFreezeEnd, EventHookMode_PostNoCopy);
+		else if(gameType == TF2)
+			UnhookEvent("teamplay_round_active", EventRoundFreezeEnd, EventHookMode_PostNoCopy);
 		if(gameType == DODS)
 			UnhookEvent("dod_round_start", EventRoundStart, EventHookMode_PostNoCopy);
+		else if(gameType == TF2)
+			UnhookEvent("teamplay_round_start", EventRoundStart, EventHookMode_PostNoCopy);
 		else
 			UnhookEvent("round_start", EventRoundStart, EventHookMode_PostNoCopy);
 		IsHooked = false;
