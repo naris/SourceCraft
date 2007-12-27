@@ -383,12 +383,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new aindex = GetClientOfUserId(attacker_userid);
     new dmg1 = GetEventInt(event,"damage");
     new dmg2 = GetEventInt(event,"dmg_health");
-    new dmg3 = GetEventInt(event,"health");
-    LogMessage("player_hurt; damage=%d,dmg_health=%d,health=%d\n", dmg1, dmg2, dmg3);
-    PrintToChat(vindex, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
-                COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
-    PrintToChat(aindex, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d",
-                COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, dmg3);
+    new ehp  = GetEventInt(event,"health");
+    new chp  = GetClientHealth(vindex);
+    new dmg3 = chp-ehp;
+    LogMessage("player_hurt; damage=%d,dmg_health=%d,health=%d,chealth=%d,dmg=%d\n", dmg1, dmg2, ehp, chp, dmg3);
+    PrintToChat(vindex, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d,chealth=%d,dmg=%d",
+                COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, ehp, chp, dmg3);
+    PrintToChat(aindex, "%c[War3Source] %cplayer_hurt; damage=%d,dmg_health=%d,health=%d,chealth=%d,dmg=%d",
+                COLOR_GREEN,COLOR_DEFAULT, dmg1, dmg2, ehp, chp, dmg3);
     /***********************************************************/
 
     if(userid && attacker_userid && userid != attacker_userid)
