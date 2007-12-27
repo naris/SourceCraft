@@ -415,7 +415,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         SetHealth(index,newhealth);
                     }
 
-                    if (War3_GetOwnsItem(war3player_assister,shopItem[ITEM_CLAWS]))
+                    if (war3player_assister != -1 && War3_GetOwnsItem(war3player_assister,shopItem[ITEM_CLAWS]))
                     {
                         new newhealth = GetClientHealth(index)-8;
                         if (newhealth <= 0)

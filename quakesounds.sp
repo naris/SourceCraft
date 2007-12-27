@@ -318,21 +318,6 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	GetEventString(event, "weapon", weapon, sizeof(weapon));
 	new soundId = -1;
 
-	/***********************************************************/
-	new damagebits = GetEventInt(event, "damagebit");
-	new customkill = GetEventInt(event, "customkill");
-	new dominated = GetEventInt(event, "dominated");
-	new assister_dominated = GetEventInt(event, "assister_dominated");
-	new revenge = GetEventInt(event, "revenge");
-	new assister_revenge = GetEventInt(event, "assister_revenge");
-	LogMessage("player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n",
-                   damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge, weapon);
-	PrintToChat(victimClient, "player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n",
-                    damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge, weapon);
-	PrintToChat(attackerClient, "player_death; damagebits=%d,customkill=%d,dominated=%d,revenge=%d,assister_dominated=%d,assister_revenge=%d,weapon=%s\n",
-                    damagebits, customkill, dominated, revenge, assister_dominated, assister_revenge, weapon);
-	/***********************************************************/
-
 	if(gameType == CSS)
 		headshot = GetEventBool(event, "headshot");
 	else if(gameType == TF2)
