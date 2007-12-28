@@ -133,7 +133,7 @@ public OnPluginStart(){
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at",FCVAR_PLUGIN);
 	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person",FCVAR_PLUGIN);
 	cvarjoinexit = CreateConVar("sm_join_exit","0","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
-	cvarjoinspawn = CreateConVar("sm_join_spawn","1","Play join sounds when the player spawns",FCVAR_PLUGIN);
+	cvarjoinspawn = CreateConVar("sm_join_spawn","0","Play join sounds when the player spawns",FCVAR_PLUGIN);
 	cvarpersonaljoinexit = CreateConVar("sm_personal_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
@@ -231,7 +231,6 @@ public OnClientAuthorized(client, const String:auth[]){
 }
 
 public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
-	LogMessage("PlayerSpawn\n");
 	if(GetConVarInt(cvarjoinspawn)){
 		new userid = GetEventInt(event,"userid");
 		if (userid){
