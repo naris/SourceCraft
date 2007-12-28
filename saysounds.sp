@@ -222,12 +222,16 @@ public Action:Load_Sounds(Handle:timer){
 }
 
 public OnClientAuthorized(client, const String:auth[]){
+	firstSpawn[client]=true;
+	LogMessage("ClientAuthorized, client=%d,auth=%s,firstSpawn=%d\n",
+		   client, auth, firstSpawn[client]);
 	if(!GetConVarInt(cvarjoinspawn)){
 		CheckJoin(client, auth);
 	}
 }
 
 public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
+	LogMessage("PlayerSpawn\n");
 	if(GetConVarInt(cvarjoinspawn)){
 		new userid = GetEventInt(event,"userid");
 		if (userid){
@@ -236,6 +240,8 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 				if (firstSpawn[index]){
 					decl String:auth[64];
 					GetClientAuthString(index,auth,63);
+					LogMessage("PlayerSpawn, client=%d,auth=%s,firstSpawn=%d\n",
+						   index, auth, firstSpawn[index]);
 					CheckJoin(index, auth);
 					firstSpawn[index] = false;
 				}
@@ -249,7 +255,7 @@ public CheckJoin(client, const String:auth[]){
 		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
-		firstSpawn[client]=true;
+		LogMessage("CheckJoin, client=%d,auth=%s\n", client, auth);
 
 		if(GetConVarInt(cvarpersonaljoinexit)){
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
@@ -265,6 +271,7 @@ public CheckJoin(client, const String:auth[]){
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				}
+				LogMessage("CheckJoin, personal join file=%s\n", filelocation);
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
 					new singleonly = KvGetNum(listfile, "single",0);
@@ -293,6 +300,7 @@ public CheckJoin(client, const String:auth[]){
 					Format(file, 8, "file%d", number);
 				}
 				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+				LogMessage("CheckJoin, join file=%s\n", filelocation);
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
 					new singleonly = KvGetNum(listfile, "single",0);
@@ -313,7 +321,9 @@ public CheckJoin(client, const String:auth[]){
 
 public OnClientDisconnect(client){
 	if(GetConVarInt(cvarjoinexit)){
+		SndOn[client] = 1;
 		SndCount[client] = 0;
+		LastSound[client] = 0.0;
 		firstSpawn[client]=true;
 
 		if(GetConVarInt(cvarpersonaljoinexit)){
@@ -529,6 +539,9 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	
+	LogMessage("Command_Play_Sound, client=%d,admin=%d,single=%d,file=%s\n",
+                   client, adminonly, singleonly, filelocation);
+
 	if(adminonly){
 		new AdminId:aid = GetUserAdmin(client);
 		if (aid == INVALID_ADMIN_ID)
