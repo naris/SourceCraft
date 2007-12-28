@@ -43,7 +43,7 @@ Versions:
 		* Added soundmenu (Menu of sounds to play)
 		* Added adminsounds (Menu of admon-only sounds for admins to play)
 		* Added adminsounds menu to SourceMod's admin menu
-		* Added sm_personal_join_exit (Join/Exit for specific STEAM IDs)
+		* Added sm_specific_join_exit (Join/Exit for specific STEAM IDs)
 		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
 		* Fixed non-admins playing admin sounds by checking for generic admin bits.
 		* Used SourceMod's MANPLAYERS instread of recreating another MAX_PLAYERS constant.
@@ -61,19 +61,22 @@ Cvarlist (default value):
 	sm_sound_warn 3			Number of sounds to warn person at
 	sm_sound_limit 5 		Maximum sounds per person
 	sm_join_exit 0 			Play sounds when someone joins or exits the game
-	sm_personal_join_exit 0 	Play sounds when a specific STEAM ID joins or exits the game
+	sm_specific_join_exit 0 	Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	Time between each sound trigger, 0.0 to disable checking
 
 Admin Commands:
-	sm_sound_ban <user>
-	sm_sound_unban <user>
-	sm_sound_reset <all|user>
-	!adminsounds - when used in chat will present a menu to choose an admin sound to play.
+	sm_sound_ban <user>		Bans a player from using sounds
+	sm_sound_unban <user>		Unbans a player os they can play sounds
+	sm_sound_reset <all|user>	Resets sound quota for user, or everyone if all
+	sm_admin_sounds 		Display a menu of all admin sounds to play
+	!adminsounds 			When used in chat will present a menu of all admin sound to play.
 	
 User Commands:
-	!sounds - when used in chat turns sounds on/off for that client
-	!soundlist - when used in chat will print all the trigger words to the console
-	!soundmenu - when used in chat will present a menu to choose a sound to play.
+	sm_sound_menu 			Display a menu of all sounds (trigger words) to play
+	sm_sound_list  			Print all trigger words to the console
+	!sounds  			When used in chat turns sounds on/off for that client
+	!soundlist  			When used in chat will print all the trigger words to the console
+	!soundmenu  			When used in chat will present a menu to choose a sound to play.
 
 	
 Make sure "saysounds.cfg" is in your addons/sourcemod/configs/ directory.
@@ -106,15 +109,15 @@ new Handle:cvarsoundlimit = INVALID_HANDLE;
 new Handle:cvarsoundwarn = INVALID_HANDLE;
 new Handle:cvarjoinexit = INVALID_HANDLE;
 new Handle:cvarjoinspawn = INVALID_HANDLE;
-new Handle:cvarpersonaljoinexit = INVALID_HANDLE;
+new Handle:cvarspecificjoinexit = INVALID_HANDLE;
 new Handle:cvartimebetween = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hTopMenu = INVALID_HANDLE;
-new String:soundlistfile[PLATFORM_MAX_PATH];
-new restrict_playing_sounds[MAXPLAYERS+1];
-new SndOn[MAXPLAYERS+1];
-new SndCount[MAXPLAYERS+1];
-new Float:LastSound[MAXPLAYERS+1];
+new String:soundlistfile[PLATFORM_MAX_PATH] = "";
+new restrict_playing_sounds[MAXPLAYERS+1] = {0, ...};
+new SndOn[MAXPLAYERS+1] = {1, ...};
+new SndCount[MAXPLAYERS+1] = {0, ...};
+new Float:LastSound[MAXPLAYERS+1] = {0.0, ...};
 new bool:firstSpawn[MAXPLAYERS+1] = {true, ...};
 new Float:globalLastSound = 0.0;
 
@@ -134,17 +137,17 @@ public OnPluginStart(){
 	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person",FCVAR_PLUGIN);
 	cvarjoinexit = CreateConVar("sm_join_exit","0","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
 	cvarjoinspawn = CreateConVar("sm_join_spawn","1","Wait until the player spawns before playing the join sound",FCVAR_PLUGIN);
-	cvarpersonaljoinexit = CreateConVar("sm_personal_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
+	cvarspecificjoinexit = CreateConVar("sm_specific_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_BAN, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
+	RegAdminCmd("sm_admin_sounds", Command_Admin_Sounds,ADMFLAG_RCON, "Display a menu of Admin sounds to play");
+	RegConsoleCmd("sm_sound_list", Command_Sound_List, "List available sounds to console");
+	RegConsoleCmd("sm_sound_menu", Command_Sound_Menu, "Display a menu of sounds to play");
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say2", Command_InsurgencySay);
 	RegConsoleCmd("say_team", Command_Say);
-	RegConsoleCmd("soundlist", Command_Sound_List, "List available sounds to console");
-	RegConsoleCmd("soundmenu", Command_Sound_Menu, "Display a menu of sounds to play");
-	RegAdminCmd("adminsounds", Command_Admin_Sounds,ADMFLAG_RCON, "Display a menu of Admin sounds to play");
 
 	HookEventEx("player_spawn",PlayerSpawn);
 
@@ -165,11 +168,13 @@ public OnAdminMenuReady(Handle:topmenu)
         /* Save the Handle */
         hTopMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hTopMenu, "Play_Admin_Sound", TopMenuObject_Item, Play_Admin_Sound, server_commands, "Play_Admin_Sound", ADMFLAG_GENERIC);
+        AddToTopMenu(hTopMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
+                     server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
     }
 }
 
-public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
+                        param, String:buffer[], maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
         Format(buffer, maxlength, "Play Admin Sound");
@@ -251,7 +256,7 @@ public CheckJoin(client, const String:auth[]){
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
 
-		if(GetConVarBool(cvarpersonaljoinexit)){
+		if(GetConVarBool(cvarspecificjoinexit)){
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
@@ -318,7 +323,7 @@ public OnClientDisconnect(client){
 		LastSound[client] = 0.0;
 		firstSpawn[client]=true;
 
-		if(GetConVarBool(cvarpersonaljoinexit)){
+		if(GetConVarBool(cvarspecificjoinexit)){
 			decl String:auth[64];
 			GetClientAuthString(client,auth,63);
 
@@ -539,7 +544,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
         		return Plugin_Handled;
 	}
 	
-	new Float:soundTime = GetSoundDuration(filelocation); // Doesn't work for mp3s :(
+	new Float:soundTime = GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	new Float:thetime = GetGameTime();
 
@@ -557,7 +562,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		globalLastSound   = thetime + soundTime;
 
 		if (singleonly){
-			if(IsClientInGame(client) && SndOn[client]){
+			if(SndOn[client] && IsClientInGame(client)){
 				EmitSoundToClient(client, filelocation);
 			}
 		}else{
@@ -565,7 +570,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 			new clientcount = 0;
 			new playersconnected = GetMaxClients();
 			for (new i = 1; i <= playersconnected; i++){
-				if(IsClientInGame(i) && SndOn[i]){
+				if(SndOn[i] && IsClientInGame(i)){
 					clientlist[clientcount++] = i;
 				}
 			}
