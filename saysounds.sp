@@ -133,7 +133,7 @@ public OnPluginStart(){
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at",FCVAR_PLUGIN);
 	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person",FCVAR_PLUGIN);
 	cvarjoinexit = CreateConVar("sm_join_exit","0","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
-	cvarjoinspawn = CreateConVar("sm_join_spawn","1","Play join sounds when the player spawns instead of when player joins",FCVAR_PLUGIN);
+	cvarjoinspawn = CreateConVar("sm_join_spawn","1","Wait until the player spawns before playing the join sound",FCVAR_PLUGIN);
 	cvarpersonaljoinexit = CreateConVar("sm_personal_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
@@ -223,8 +223,6 @@ public Action:Load_Sounds(Handle:timer){
 
 public OnClientAuthorized(client, const String:auth[]){
 	firstSpawn[client]=true;
-	LogMessage("ClientAuthorized, client=%d,auth=%s,firstSpawn=%d\n",
-		   client, auth, firstSpawn[client]);
 	if(!GetConVarBool(cvarjoinspawn)){
 		CheckJoin(client, auth);
 	}
@@ -239,8 +237,6 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 				if (firstSpawn[index]){
 					decl String:auth[64];
 					GetClientAuthString(index,auth,63);
-					LogMessage("PlayerSpawn, client=%d,auth=%s,firstSpawn=%d\n",
-						   index, auth, firstSpawn[index]);
 					CheckJoin(index, auth);
 					firstSpawn[index] = false;
 				}
@@ -250,12 +246,10 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 }
 
 public CheckJoin(client, const String:auth[]){
-	LogMessage("CheckJoin, client=%d,auth=%s\n", client, auth);
 	if(client && !IsFakeClient(client)){
 		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
-		LogMessage("CheckJoin, client=%d,auth=%s, Not Fake\n", client, auth);
 
 		if(GetConVarBool(cvarpersonaljoinexit)){
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
@@ -271,7 +265,6 @@ public CheckJoin(client, const String:auth[]){
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				}
-				LogMessage("CheckJoin, personal join file=%s\n", filelocation);
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
 					new singleonly = KvGetNum(listfile, "single",0);
@@ -300,7 +293,6 @@ public CheckJoin(client, const String:auth[]){
 					Format(file, 8, "file%d", number);
 				}
 				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-				LogMessage("CheckJoin, join file=%s\n", filelocation);
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
 					new singleonly = KvGetNum(listfile, "single",0);
@@ -539,9 +531,6 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	
-	LogMessage("Command_Play_Sound, client=%d,admin=%d,single=%d,file=%s\n",
-                   client, adminonly, singleonly, filelocation);
-
 	if(adminonly){
 		new AdminId:aid = GetUserAdmin(client);
 		if (aid == INVALID_ADMIN_ID)
