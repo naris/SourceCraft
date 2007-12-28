@@ -736,16 +736,18 @@ public Action:Command_Admin_Sounds(client, args){
 }
 
 public Sound_Menu(client, bool:adminsounds){
+	LogMessage("Sound_Menu client=%d, admin=%d\n", client, adminsounds);
+
 	if (adminsounds){
 		new AdminId:aid = GetUserAdmin(client);
 		new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
 
 		if (!isadmin){
+			LogMessage("Sound_Menu Denied! client=%d, admin=%d\n", client, adminsounds);
 			PrintToChat(client,"[Say Sounds] You must be an admin to play admin sounds!");
 			return;
 		}
 	}
-
 
 	new Handle:soundmenu=CreateMenu(Menu_Select);
 	SetMenuExitButton(soundmenu,true);
@@ -756,6 +758,7 @@ public Sound_Menu(client, bool:adminsounds){
 	new count=1;
 
 	KvRewind(listfile);
+	KvGotoFirstSubKey(listfile);
 
 	do{
 		KvGetSectionName(listfile, buffer, sizeof(buffer));
@@ -765,16 +768,24 @@ public Sound_Menu(client, bool:adminsounds){
 				if (KvGetNum(listfile, "admin",0)){
 					Format(num,3,"%d",count);
 					AddMenuItem(soundmenu,num,buffer);
+					LogMessage("Adding %s to admin menu, num=%d\n", listfile, count);
 					count++;
 				}
+				else
+					LogMessage("Omitting %s from admin menu, not admin sound\n", listfile);
 			}else{
 				if (!KvGetNum(listfile, "admin",0)){
 					Format(num,3,"%d",count);
 					AddMenuItem(soundmenu,num,buffer);
+					LogMessage("Adding %s to menu, num=%d\n", listfile, count);
 					count++;
 				}
+				else
+					LogMessage("Omitting %s from menu, is admin sound\n", listfile);
 			}
 		}
+		else
+			LogMessage("Omitting %s from menu\n", listfile);
 	} while (KvGotoNextKey(listfile));
 
 	DisplayMenu(soundmenu,client,MENU_TIME_FOREVER);
