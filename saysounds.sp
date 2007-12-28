@@ -225,13 +225,13 @@ public OnClientAuthorized(client, const String:auth[]){
 	firstSpawn[client]=true;
 	LogMessage("ClientAuthorized, client=%d,auth=%s,firstSpawn=%d\n",
 		   client, auth, firstSpawn[client]);
-	if(!GetConVarInt(cvarjoinspawn)){
+	//if(!GetConVarBool(cvarjoinspawn)){
 		CheckJoin(client, auth);
-	}
+	//}
 }
 
 public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
-	if(GetConVarInt(cvarjoinspawn)){
+	if(GetConVarBool(cvarjoinspawn)){
 		new userid = GetEventInt(event,"userid");
 		if (userid){
 			new index=GetClientOfUserId(userid);
@@ -241,7 +241,7 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 					GetClientAuthString(index,auth,63);
 					LogMessage("PlayerSpawn, client=%d,auth=%s,firstSpawn=%d\n",
 						   index, auth, firstSpawn[index]);
-					CheckJoin(index, auth);
+					//CheckJoin(index, auth);
 					firstSpawn[index] = false;
 				}
 			}
@@ -250,13 +250,14 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 }
 
 public CheckJoin(client, const String:auth[]){
+	LogMessage("CheckJoin, client=%d,auth=%s\n", client, auth);
 	if(client && !IsFakeClient(client)){
 		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
-		LogMessage("CheckJoin, client=%d,auth=%s\n", client, auth);
+		LogMessage("CheckJoin, client=%d,auth=%s, Not Fake\n", client, auth);
 
-		if(GetConVarInt(cvarpersonaljoinexit)){
+		if(GetConVarBool(cvarpersonaljoinexit)){
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
@@ -288,7 +289,7 @@ public CheckJoin(client, const String:auth[]){
 			}
 		}
 
-		if(GetConVarInt(cvarjoinexit)){
+		if(GetConVarBool(cvarjoinexit)){
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, "JoinSound")){
@@ -319,13 +320,13 @@ public CheckJoin(client, const String:auth[]){
 }
 
 public OnClientDisconnect(client){
-	if(GetConVarInt(cvarjoinexit)){
+	if(GetConVarBool(cvarjoinexit)){
 		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
 		firstSpawn[client]=true;
 
-		if(GetConVarInt(cvarpersonaljoinexit)){
+		if(GetConVarBool(cvarpersonaljoinexit)){
 			decl String:auth[64];
 			GetClientAuthString(client,auth,63);
 
@@ -400,7 +401,7 @@ Submit_Sound(client)
 public Action:Command_Say(client,args){
 	if(client != 0){
 		// If sounds are not enabled, then skip this whole thing
-		if (!GetConVarInt(cvarsoundenable))
+		if (!GetConVarBool(cvarsoundenable))
 			return Plugin_Continue;
 	
 		// player is banned from playing sounds
@@ -465,7 +466,7 @@ public Action:Command_Say(client,args){
 public Action:Command_InsurgencySay(client,args){
 	if(client != 0){
 		// If sounds are not enabled, then skip this whole thing
-		if (!GetConVarInt(cvarsoundenable))
+		if (!GetConVarBool(cvarsoundenable))
 			return Plugin_Continue;
 	
 		// player is banned from playing sounds
@@ -559,8 +560,9 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	if (LastSound[client] >= thetime){
 		PrintToChat(client,"[Say Sounds] Please dont spam the sounds!");
 	}
-	
-	if ((SndCount[client] < GetConVarInt(cvarsoundlimit)) && (LastSound[client] < thetime) && globalLastSound < thetime){
+
+	new soundLimit = GetConVarInt(cvarsoundlimit);	
+	if ((SndCount[client] < soundLimit) && (LastSound[client] < thetime) && globalLastSound < thetime){
 		SndCount[client]  = (SndCount[client] + 1);
 		LastSound[client] = thetime + waitTime;
 		globalLastSound   = thetime + soundTime;
@@ -584,12 +586,15 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		}
 	}
 
-	if ((SndCount[client]) >= GetConVarInt(cvarsoundlimit)){
+	if ((SndCount[client]) >= soundLimit){
 		PrintToChat(client,"[Say Sounds] Sorry you have reached your sound quota!");
-	}else if ((SndCount[client]) == GetConVarInt(cvarsoundwarn)){
-		new numberleft;
-		numberleft = (GetConVarInt(cvarsoundlimit) - GetConVarInt(cvarsoundwarn));
-		PrintToChat(client,"[Say Sounds] You only have %d sounds left!",numberleft);
+	}else{
+		new soundWarn = GetConVarInt(cvarsoundwarn);	
+		if ((SndCount[client]) == soundWarn){
+			new numberleft;
+			numberleft = (soundLimit - soundWarn);
+			PrintToChat(client,"[Say Sounds] You only have %d sounds left!",numberleft);
+		}
 	}
 	return Plugin_Handled;
 }
@@ -736,14 +741,11 @@ public Action:Command_Admin_Sounds(client, args){
 }
 
 public Sound_Menu(client, bool:adminsounds){
-	LogMessage("Sound_Menu client=%d, admin=%d\n", client, adminsounds);
-
 	if (adminsounds){
 		new AdminId:aid = GetUserAdmin(client);
 		new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
 
 		if (!isadmin){
-			LogMessage("Sound_Menu Denied! client=%d, admin=%d\n", client, adminsounds);
 			PrintToChat(client,"[Say Sounds] You must be an admin to play admin sounds!");
 			return;
 		}
@@ -768,24 +770,16 @@ public Sound_Menu(client, bool:adminsounds){
 				if (KvGetNum(listfile, "admin",0)){
 					Format(num,3,"%d",count);
 					AddMenuItem(soundmenu,num,buffer);
-					LogMessage("Adding %s to admin menu, num=%d\n", listfile, count);
 					count++;
 				}
-				else
-					LogMessage("Omitting %s from admin menu, not admin sound\n", listfile);
 			}else{
 				if (!KvGetNum(listfile, "admin",0)){
 					Format(num,3,"%d",count);
 					AddMenuItem(soundmenu,num,buffer);
-					LogMessage("Adding %s to menu, num=%d\n", listfile, count);
 					count++;
 				}
-				else
-					LogMessage("Omitting %s from menu, is admin sound\n", listfile);
 			}
 		}
-		else
-			LogMessage("Omitting %s from menu\n", listfile);
 	} while (KvGotoNextKey(listfile));
 
 	DisplayMenu(soundmenu,client,MENU_TIME_FOREVER);
