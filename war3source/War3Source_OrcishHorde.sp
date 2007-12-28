@@ -320,40 +320,47 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
-            if(IsClientConnected(index)&&client!=index&&IsPlayerAlive(index))
+            if (client != index && IsClientConnected(index) &&
+                IsPlayerAlive(index) && GetClientTeam(client) != GetClientTeam(index))
             {
-                if (GetClientTeam(client) != GetClientTeam(index) &&
-                    IsInRange(client,index,range))
+                new war3player_check=War3_GetWar3Player(index);
+                if (war3player_check>-1)
                 {
-                    new color[4] = { 10, 200, 255, 255 };
-                    TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
-                                      0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                    TE_SendToAll();
-
-                    new new_health=GetClientHealth(index)-40;
-                    if (new_health <= 0)
+                    if (!War3_GetImmunity(war3player_check,Immunity_Ultimates))
                     {
-                        new_health=0;
+                        if ( IsInRange(client,index,range))
+                        {
+                            new color[4] = { 10, 200, 255, 255 };
+                            TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
+                                              0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                            TE_SendToAll();
 
-                        new addxp=5+ultlevel;
-                        new newxp=War3_GetXP(war3player,raceID)+addxp;
-                        War3_SetXP(war3player,raceID,newxp);
+                            new new_health=GetClientHealth(index)-40;
+                            if (new_health <= 0)
+                            {
+                                new_health=0;
 
-                        LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                                new addxp=5+ultlevel;
+                                new newxp=War3_GetXP(war3player,raceID)+addxp;
+                                War3_SetXP(war3player,raceID,newxp);
+
+                                LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                            }
+                            else
+                                LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
+
+                            SetHealth(index,new_health);
+
+                            last=index;
+                            if (++count > 4)
+                                break;
+                        }
                     }
-                    else
-                        LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-
-                    SetHealth(index,new_health);
-
-                    last=index;
-                    if (++count > 4)
-                        break;
                 }
             }
         }
         EmitSoundToAll(thunderWav,client);
-        PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+        PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
     }
 }
 

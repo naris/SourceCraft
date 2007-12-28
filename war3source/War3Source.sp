@@ -12,7 +12,7 @@
 
 #include <sourcemod>
 
-new m_FirstSpawn[65] = {1, ...}; // Cheap trick
+new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
 #define VERSION_NUM "0.9 $Revision$" // "0.8.6.1"
 #define VERSION     "$Revision$" // "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
 

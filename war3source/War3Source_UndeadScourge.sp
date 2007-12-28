@@ -316,12 +316,12 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
             decl String:name[64];
             GetClientName(index,name,63);
             PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura%c.",
-                        COLOR_GREEN,name,COLOR_DEFAULT,leechhealth,COLOR_GREEN,COLOR_DEFAULT);
+                        COLOR_GREEN,name,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
 
             decl String:victimName[64];
             GetClientName(victim,victimName,63);
             PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %s using %cVampiric Aura%c.",
-                        COLOR_GREEN,COLOR_DEFAULT,leechhealth,victimName,COLOR_GREEN,COLOR_DEFAULT);
+                        COLOR_GREEN,COLOR_DEFAULT,leechhealth,victimName,COLOR_TEAM,COLOR_DEFAULT);
 
             LogMessage("[War3Source] %s leeched %d health from %s\n", name, leechhealth, victimName);
 
@@ -384,42 +384,36 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
 
     for(new x=1;x<MAXPLAYERS+1;x++)
     {
-        if (x <= GetClientCount() && IsClientConnected(x))
+        if (x != client && x <= GetClientCount() && IsClientConnected(x) &&
+            IsPlayerAlive(x) && GetClientTeam(x) != GetClientTeam(client))
         {
-            if (x != client && IsPlayerAlive(x))
+            new war3player_check=War3_GetWar3Player(x);
+            if (war3player_check>-1)
             {
-                new war3player_check=War3_GetWar3Player(x);
-                if (war3player_check>-1)
+                if (!War3_GetImmunity(war3player_check,Immunity_Ultimates) &&
+                    !War3_GetImmunity(war3player_check,Immunity_Explosion))
                 {
-                    if (!War3_GetImmunity(war3player_check,Immunity_Ultimates) &&
-                        !War3_GetImmunity(war3player_check,Immunity_Explosion))
+                    new Float:location_check[3];
+                    GetClientAbsOrigin(x,location_check);
+
+                    new hp=PowerOfRange(client_location,radius,location_check);
+                    if (hp)
                     {
-                        new Float:location_check[3];
-                        GetClientAbsOrigin(x,location_check);
-
-                        new hp=PowerOfRange(client_location,radius,location_check);
-                        if (hp)
+                        new newhealth = GetClientHealth(x)-hp;
+                        if (newhealth <= 0)
                         {
-                            new newhealth = GetClientHealth(x)-hp;
-                            if (newhealth <= 0)
-                            {
-                                newhealth=0;
-                                //ForcePlayerSuicide(x);
-                                if (GetClientTeam(client) != GetClientTeam(x))
-                                {
-                                    new addxp=5+ult_level;
-                                    new newxp=War3_GetXP(war3player,raceID)+addxp;
-                                    War3_SetXP(war3player,raceID,newxp);
+                            newhealth=0;
+                            new addxp=5+ult_level;
+                            new newxp=War3_GetXP(war3player,raceID)+addxp;
+                            War3_SetXP(war3player,raceID,newxp);
 
-                                    LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                }
-                            }
-                            else
-                            {
-                                LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
-                            }
-                            SetHealth(x,newhealth);
+                            LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
                         }
+                        else
+                        {
+                            LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                        }
+                        SetHealth(x,newhealth);
                     }
                 }
             }

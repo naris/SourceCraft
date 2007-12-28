@@ -92,30 +92,37 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                     range=800.0;
             }
             new maxplayers=GetMaxClients();
-            for(new index=1;index<=maxplayers;index++)
+            for (new index=1;index<=maxplayers;index++)
             {
-                if(IsClientConnected(index)&&client!=index&&IsPlayerAlive(index))
+                if (client != index && IsClientConnected(index) && IsPlayerAlive(index) &&
+                    GetClientTeam(index) != GetClientTeam(client))
                 {
-                    new bool:inrange=IsInRange(client,index,range);
-                    if(inrange)
+                    new war3player_check=War3_GetWar3Player(index);
+                    if (war3player_check>-1)
                     {
-                        new color[4] = { 0, 255, 0, 255 };
-                        TE_SetupBeamLaser(client,index,g_beamSprite,g_haloSprite,
-                                          0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                        TE_SendToAll();
+                        if (!War3_GetImmunity(war3player_check,Immunity_Ultimates))
+                        {
+                            if (IsInRange(client,index,range))
+                            {
+                                new color[4] = { 0, 255, 0, 255 };
+                                TE_SetupBeamLaser(client,index,g_beamSprite,g_haloSprite,
+                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                TE_SendToAll();
 
-                        decl String:name[64];
-                        GetClientName(client,name,63);
-                        PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",
-                                    COLOR_GREEN,name,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                                decl String:name[64];
+                                GetClientName(client,name,63);
+                                PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",
+                                            COLOR_GREEN,name,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                        SetEntData(index,movetypeOffset,0,1);
-                        AuthTimer(10.0,index,UnfreezePlayer);
+                                SetEntData(index,movetypeOffset,0,1);
+                                AuthTimer(10.0,index,UnfreezePlayer);
+                            }
+                        }
                     }
                 }
             }
             PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
             m_AllowEntangle[client]=false;
             CreateTimer(45.0,AllowEntangle,client);
         }

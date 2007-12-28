@@ -114,6 +114,7 @@ new restrict_playing_sounds[MAXPLAYERS+1];
 new SndOn[MAXPLAYERS+1];
 new SndCount[MAXPLAYERS+1];
 new Float:LastSound[MAXPLAYERS+1];
+new bool:firstSpawn[MAXPLAYERS+1] = {true, ...};
 new Float:globalLastSound = 0.0;
 
 public Plugin:myinfo = 
@@ -217,11 +218,12 @@ public Action:Load_Sounds(Handle:timer){
 }
 
 //public OnClientAuthorized(client, const String:auth[]){
-public OnClientPostAdminCheck(client){
+public OnClientPutInServer(client){
 	if(client && !IsFakeClient(client)){
 		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
+		firstSpawn[client]=true;
 
 		if(GetConVarInt(cvarpersonaljoinexit)){
 			decl String:auth[64];
@@ -289,6 +291,7 @@ public OnClientPostAdminCheck(client){
 public OnClientDisconnect(client){
 	if(GetConVarInt(cvarjoinexit)){
 		SndCount[client] = 0;
+		firstSpawn[client]=true;
 
 		if(GetConVarInt(cvarpersonaljoinexit)){
 			decl String:auth[64];
