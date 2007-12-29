@@ -141,8 +141,8 @@ public OnPluginStart(){
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
-	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_BAN, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
-	RegAdminCmd("sm_admin_sounds", Command_Admin_Sounds,ADMFLAG_RCON, "Display a menu of Admin sounds to play");
+	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
+	RegAdminCmd("sm_admin_sounds", Command_Admin_Sounds,ADMFLAG_GENERIC, "Display a menu of Admin sounds to play");
 	RegConsoleCmd("sm_sound_list", Command_Sound_List, "List available sounds to console");
 	RegConsoleCmd("sm_sound_menu", Command_Sound_Menu, "Display a menu of sounds to play");
 	RegConsoleCmd("say", Command_Say);
@@ -171,19 +171,28 @@ public OnAdminMenuReady(Handle:topmenu)
     /* Add a Play Admin Sound option to the SourceMod Admin Menu */
     /*************************************************************/
 
+    LogMessage("OnAdminMenuReady topmenu=%d,hAdminMenu=%d\n", topmenu, hAdminMenu);
+
     /* Block us from being called twice */
     if (topmenu != hAdminMenu){
         /* Save the Handle */
         hAdminMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
-                     server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
+        new TopMenuObject:menu = AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item,
+                                              Play_Admin_Sound, server_commands, "sm_admin_sounds",
+                                              ADMFLAG_GENERIC);
+
+	LogMessage("OnAdminMenuReady topmenu=%d, hAdminMenu=%d, server_commands=%d, menu=%d\n",
+                   topmenu, hAdminMenu, server_commands, menu);
     }
 }
 
 public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
                         param, String:buffer[], maxlength)
 {
+    LogMessage("Play_Admin_Sound topmenu=%d,action=%d,object_id=%d,param=%d\n",
+	       topmenu, action, object_id, param);
+
     if (action == TopMenuAction_DisplayOption)
         Format(buffer, maxlength, "Play Admin Sound");
     else if (action == TopMenuAction_SelectOption)
@@ -191,6 +200,7 @@ public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:obje
 }
 
 public OnMapStart(){
+	globalLastSound = 0.0;
 	CreateTimer(0.1, Load_Sounds);
 }
 
@@ -543,7 +553,15 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new adminonly = ReadPackCell(pack);
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
-	
+
+	LogMessage("Command_Play_Sound client=%d,admin=%d,single=%d,file=%s\n",
+                   client, adminonly, singleonly, filelocation);
+
+	if(IsClientInGame(client)){
+		PrintToChat(client,"Command_Play_Sound client=%d,admin=%d,single=%d,file=%s",
+				client, adminonly, singleonly, filelocation);
+	}
+
 	if(adminonly){
 		new AdminId:aid = GetUserAdmin(client);
 		if (aid == INVALID_ADMIN_ID)
@@ -551,16 +569,16 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
     		else if(!GetAdminFlag(aid, Admin_Generic, Access_Effective))
         		return Plugin_Handled;
 	}
-	
+
 	new Float:soundTime = GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	new Float:thetime = GetGameTime();
 
 	if (waitTime < soundTime)
 		waitTime = soundTime;
-	
+
 	if (LastSound[client] >= thetime){
-		PrintToChat(client,"[Say Sounds] Please dont spam the sounds!");
+		PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
 	}
 
 	new soundLimit = GetConVarInt(cvarsoundlimit);	
@@ -584,18 +602,34 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 			}
 			if (clientcount){
 				EmitSound(clientlist, clientcount, filelocation);
+			}else{
+				LogMessage("Sound not played - no clients found\n");
+
+				if(IsClientInGame(client)){
+					PrintToChat(client,"Sound not played no clients found");
+				}
 			}
+		}
+	}else{
+		LogMessage("Sound not played - client=%d,count=%d,limit=%d,lastTime=%d,gLastTime=%d,thetime=%d\n",
+				client, SndCount[client], soundLimit, LastSound[client], globalLastSound, thetime);
+
+		if(IsClientInGame(client)){
+			PrintToChat(client,"Sound not played - client=%d,count=%d,limit=%d,lastTime=%d,gLastTime=%d,thetime=%d",
+				    client, SndCount[client], soundLimit, LastSound[client], globalLastSound, thetime);
 		}
 	}
 
-	if ((SndCount[client]) >= soundLimit){
-		PrintToChat(client,"[Say Sounds] Sorry you have reached your sound quota!");
-	}else{
-		new soundWarn = GetConVarInt(cvarsoundwarn);	
-		if ((SndCount[client]) == soundWarn){
-			new numberleft;
-			numberleft = (soundLimit - soundWarn);
-			PrintToChat(client,"[Say Sounds] You only have %d sounds left!",numberleft);
+	if(IsClientInGame(client)){
+		if ((SndCount[client]) >= soundLimit){
+			PrintToChat(client,"[Say Sounds] Sorry you have reached your sound quota!");
+		}else{
+			new soundWarn = GetConVarInt(cvarsoundwarn);	
+			if ((SndCount[client]) == soundWarn){
+				new numberleft;
+				numberleft = (soundLimit - soundWarn);
+				PrintToChat(client,"[Say Sounds] You only have %d sounds left!",numberleft);
+			}
 		}
 	}
 	return Plugin_Handled;
@@ -790,6 +824,10 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 			    }
 		    } while (KvGotoNextKey(listfile));
 	    }
+    }
+    else if (action == MenuAction_End)
+    {
+	    CloseHandle(menu);
     }
 }
 
