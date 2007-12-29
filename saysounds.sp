@@ -160,9 +160,7 @@ public OnPluginStart(){
 public OnLibraryRemoved(const String:name[])
 {
 	if (StrEqual(name, "adminmenu"))
-	{
 		hAdminMenu = INVALID_HANDLE;
-	}
 }
  
 public OnAdminMenuReady(Handle:topmenu)
@@ -171,28 +169,19 @@ public OnAdminMenuReady(Handle:topmenu)
     /* Add a Play Admin Sound option to the SourceMod Admin Menu */
     /*************************************************************/
 
-    LogMessage("OnAdminMenuReady topmenu=%d,hAdminMenu=%d\n", topmenu, hAdminMenu);
-
     /* Block us from being called twice */
     if (topmenu != hAdminMenu){
         /* Save the Handle */
         hAdminMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        new TopMenuObject:menu = AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item,
-                                              Play_Admin_Sound, server_commands, "sm_admin_sounds",
-                                              ADMFLAG_GENERIC);
-
-	LogMessage("OnAdminMenuReady topmenu=%d, hAdminMenu=%d, server_commands=%d, menu=%d\n",
-                   topmenu, hAdminMenu, server_commands, menu);
+        AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
+                     server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
     }
 }
 
 public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
                         param, String:buffer[], maxlength)
 {
-    LogMessage("Play_Admin_Sound topmenu=%d,action=%d,object_id=%d,param=%d\n",
-	       topmenu, action, object_id, param);
-
     if (action == TopMenuAction_DisplayOption)
         Format(buffer, maxlength, "Play Admin Sound");
     else if (action == TopMenuAction_SelectOption)
@@ -554,14 +543,6 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 
-	LogMessage("Command_Play_Sound client=%d,admin=%d,single=%d,file=%s\n",
-                   client, adminonly, singleonly, filelocation);
-
-	if(IsClientInGame(client)){
-		PrintToChat(client,"Command_Play_Sound client=%d,admin=%d,single=%d,file=%s",
-				client, adminonly, singleonly, filelocation);
-	}
-
 	if(adminonly){
 		new AdminId:aid = GetUserAdmin(client);
 		if (aid == INVALID_ADMIN_ID)
@@ -602,21 +583,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 			}
 			if (clientcount){
 				EmitSound(clientlist, clientcount, filelocation);
-			}else{
-				LogMessage("Sound not played - no clients found\n");
-
-				if(IsClientInGame(client)){
-					PrintToChat(client,"Sound not played no clients found");
-				}
 			}
-		}
-	}else{
-		LogMessage("Sound not played - client=%d,count=%d,limit=%d,lastTime=%d,gLastTime=%d,thetime=%d\n",
-				client, SndCount[client], soundLimit, LastSound[client], globalLastSound, thetime);
-
-		if(IsClientInGame(client)){
-			PrintToChat(client,"Sound not played - client=%d,count=%d,limit=%d,lastTime=%d,gLastTime=%d,thetime=%d",
-				    client, SndCount[client], soundLimit, LastSound[client], globalLastSound, thetime);
 		}
 	}
 
