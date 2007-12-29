@@ -41,7 +41,7 @@ Versions:
 	1.6   Dec 28, 2007
 		* Modified by -=|JFH|=-Naris
 		* Added soundmenu (Menu of sounds to play)
-		* Added adminsounds (Menu of admon-only sounds for admins to play)
+		* Added adminsounds (Menu of admin-only sounds for admins to play)
 		* Added adminsounds menu to SourceMod's admin menu
 		* Added sm_specific_join_exit (Join/Exit for specific STEAM IDs)
 		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
