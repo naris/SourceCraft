@@ -10,22 +10,30 @@
 #endif
 #define _respawn_included
 
-#undef REQUIRE_EXTENSIONS
-#include <cstrike>
-#define REQUIRE_EXTENSIONS
+#if defined USE_CS_RESPAWN
+    #undef REQUIRE_EXTENSIONS
+    #include <cstrike>
+    #define REQUIRE_EXTENSIONS
+#endif
 
 stock SetupRespawn()
 {
-    if (GameType != cstrike)
-        MarkNativeAsOptional("CS_RespawnPlayer");
+    #if defined USE_CS_RESPAWN
+        if (GetGameType() != cstrike)
+            MarkNativeAsOptional("CS_RespawnPlayer");
+    #endif
 }
 
 stock RespawnPlayer(client)
 {
-    if (GameType == cstrike)
-        CS_RespawnPlayer(client);
-    else
+    #if defined USE_CS_RESPAWN
+        if (GameType == cstrike)
+            CS_RespawnPlayer(client);
+        else
+            DispatchSpawn(client);
+    #else
         DispatchSpawn(client);
+    #endif
 }
 
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)
