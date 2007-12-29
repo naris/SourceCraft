@@ -38,7 +38,7 @@ Versions:
 		* Added a cvar to control how long between each sound to wait and a message to the user
 	1.5.5 Oct 9, 2007
 		* Fixed small memory leak from not closing handle at the end of each map
-	1.6   Dec 17, 2007
+	1.6   Dec 28, 2007
 		* Modified by -=|JFH|=-Naris
 		* Added soundmenu (Menu of sounds to play)
 		* Added adminsounds (Menu of admon-only sounds for admins to play)
@@ -47,9 +47,9 @@ Versions:
 		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
 		* Fixed non-admins playing admin sounds by checking for generic admin bits.
 		* Used SourceMod's MANPLAYERS instread of recreating another MAX_PLAYERS constant.
+		* Added globalLastSound which is set to duration of last sound played to reduce possibility of overlapping sounds.
 		* Fix the sounds go away bug
-		*	don't close listfile on mapchange,
-		*	check it and close in in Load_Sounds instead if it has already been opened.
+		* Moved close of listfile from mapchange to Load_Sounds (if handle is valid)
 
 Todo:
 	* Multiple sound files for trigger word
@@ -190,6 +190,11 @@ public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:obje
 
 public OnMapStart(){
 	globalLastSound = 0.0;
+	for (new i = 1; i <= MAXPLAYERS; i++)
+	{
+		SndCount[i] = 0;
+		LastSound[i] = 0.0;
+	}
 	CreateTimer(0.1, Load_Sounds);
 }
 
