@@ -772,7 +772,7 @@ public IsGrenade(String:weapon[])
 		return 1;
 		
 	// TF2 grenades
-	if(StrEqual(weapon, "tf_projectile_pipe") || StrEqual(weapon, "tf_projectile_pipe_remote"))
+	if(StrEqual(weapon, "tf_projectile_pipe") || StrEqual(weapon, "tf_projectile_pipe_remote") || StrEqual(weapon, "tf_projectile_rocket"))
 		return 1;
 		
 	return 0;
