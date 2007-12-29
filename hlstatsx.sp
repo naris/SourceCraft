@@ -24,6 +24,8 @@
 #include <menus>
 #include <sdktools>
 
+enum mod_id { css, dods, hl2mp, tf, insurgency };
+new mod_id: game_mod_id;
 new String: game_mod[32];
 new String: team_list[16][64];
 
@@ -68,40 +70,51 @@ public Plugin:myinfo = {
 
 public OnPluginStart() 
 {
-	new String: game_description[64];
+	decl String: game_description[64];
 	GetGameDescription(game_description, 64, true);
 	
 	if (strcmp(game_description, "Counter-Strike: Source") == 0) {
 		game_mod = "CSS";
+		game_mod_id = css;
 	}
-	if (strcmp(game_description, "Day of Defeat: Source") == 0) {
+	else if (strcmp(game_description, "Day of Defeat: Source") == 0) {
 		game_mod = "DODS";
+		game_mod_id = dods;
 	}
-	if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0) {
+	else if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0) {
 		game_mod = "HL2MP";
+		game_mod_id = hl2mp;
 	}
-	if (strcmp(game_description, "Team Fortress") == 0) {
+	else if (strcmp(game_description, "Team Fortress") == 0) {
 		game_mod = "TF";
+		game_mod_id = tf;
+	}
+	else if (strcmp(game_description, "Insurgency") == 0) {
+		game_mod = "INS";
+		game_mod_id = insurgency;
 	}
 
 	LogToGame("Mod Detection: %s [%s]", game_description, game_mod);
 	
 	HandleGameConf = LoadGameConfigFile("hlstatsx.sdktools");
 
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "SwitchTeam");
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	HandleSwitchTeam = EndPrepSDKCall();	
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id ==  css) {
+		StartPrepSDKCall(SDKCall_Player);
+		PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "SwitchTeam");
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		HandleSwitchTeam = EndPrepSDKCall();	
 
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "RoundRespawn");
-	HandleRoundRespawn = EndPrepSDKCall();	
+		StartPrepSDKCall(SDKCall_Player);
+		PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "RoundRespawn");
+		HandleRoundRespawn = EndPrepSDKCall();	
 
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "SetModel");
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	HandleSetModel = EndPrepSDKCall();
-	
+		StartPrepSDKCall(SDKCall_Player);
+		PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "SetModel");
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		HandleSetModel = EndPrepSDKCall();
+	}
+
 	CreateHLstatsXMenuMain(HLstatsXMenuMain);
 	CreateHLstatsXMenuAuto(HLstatsXMenuAuto);
 	CreateHLstatsXMenuEvents(HLstatsXMenuEvents);
@@ -149,7 +162,7 @@ public OnMapStart()
 	for (new entity_index = 0; (entity_index < max_entities); entity_index++) {
 		if (IsValidEntity(entity_index)) {
 
-			new String: entity_classname[64];
+			decl String: entity_classname[64];
 			GetEntityNetClass(entity_index, entity_classname, 64);
 			
 			// LogToGame("Entity: %s", entity_classname);
@@ -159,7 +172,7 @@ public OnMapStart()
 				new index_offset = FindSendPropOffs("CCSTeam", "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs("CCSTeam", "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
@@ -168,12 +181,12 @@ public OnMapStart()
 				}
 			}
 
-			if (strcmp(entity_classname, "CDODTeam") == 0) {
+			else if (strcmp(entity_classname, "CDODTeam") == 0) {
 				new team_index;
 				new index_offset = FindSendPropOffs("CDODTeam", "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs("CDODTeam", "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
@@ -182,12 +195,13 @@ public OnMapStart()
 				}
 			}
 
-			if ((strcmp(entity_classname, "CDODTeam_Allies") == 0) || (strcmp(entity_classname, "CDODTeam_Axis") == 0)) {
+			else if ((strcmp(entity_classname, "CDODTeam_Allies") == 0) ||
+                                 (strcmp(entity_classname, "CDODTeam_Axis") == 0)) {
 				new team_index;
 				new index_offset = FindSendPropOffs(entity_classname, "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs(entity_classname, "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
@@ -196,12 +210,12 @@ public OnMapStart()
 				}
 			}
 
-			if (strcmp(entity_classname, "CTFTeam") == 0) {
+			else if (strcmp(entity_classname, "CTFTeam") == 0) {
 				new team_index;
 				new index_offset = FindSendPropOffs("CTFTeam", "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs("CTFTeam", "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
@@ -215,12 +229,14 @@ public OnMapStart()
 	
 	clear_message_cache();
 
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 		ct_player_color = -1;
 		ts_player_color = -1;
 		find_player_team_slot("CT");
 		find_player_team_slot("TERRORIST");
-	} else if (strcmp(game_mod, "TF") == 0) {
+	//} else if (strcmp(game_mod, "TF") == 0) {
+	} else if (game_mod_id == tf) {
 		blue_player_color = -1;
 		red_player_color = -1;
 		find_player_team_slot("Blue");
@@ -228,8 +244,9 @@ public OnMapStart()
 	}
 }
 
-stock find_player_team_slot(String: team[64]) {
-	if (strcmp(game_mod, "CSS") == 0) {
+find_player_team_slot(String: team[64]) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 		new team_index = get_team_index(team);
 		if (team_index > -1) {
 			if (strcmp(team, "CT") == 0) {
@@ -238,8 +255,7 @@ stock find_player_team_slot(String: team[64]) {
 				ts_player_color = -1;
 			}
 			new max_clients = GetMaxClients();
-			for(new i = 1; i <= max_clients; i++) {
-				new player_index = i;
+			for(new player_index = 1; player_index <= max_clients; player_index++) {
 				if ((IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 					new player_team_index = GetClientTeam(player_index);
 					if (player_team_index == team_index) {
@@ -271,8 +287,7 @@ stock find_player_team_slot(String: team[64]) {
 				red_player_color = -1;
 			}
 			new max_clients = GetMaxClients();
-			for(new i = 1; i <= max_clients; i++) {
-				new player_index = i;
+			for(new player_index = 1; player_index <= max_clients; player_index++) {
 				if ((IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 					new player_team_index = GetClientTeam(player_index);
 					if (player_team_index == team_index) {
@@ -300,11 +315,12 @@ stock find_player_team_slot(String: team[64]) {
 
 public validate_team_colors() 
 {
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 		if (ct_player_color > -1) {
 			if ((IsClientConnected(ct_player_color)) && (IsClientInGame(ct_player_color))) {
 				new player_team_index = GetClientTeam(ct_player_color);
-				new String:player_team[64];
+				decl String:player_team[64];
 				player_team = team_list[player_team_index];
 				if (strcmp("CT", player_team) != 0) {
 					ct_player_color = -1;
@@ -315,7 +331,7 @@ public validate_team_colors()
 		} else if (ts_player_color > -1) {
 			if ((IsClientConnected(ts_player_color)) && (IsClientInGame(ts_player_color))) {
 				new player_team_index = GetClientTeam(ts_player_color);
-				new String:player_team[64];
+				decl String:player_team[64];
 				player_team = team_list[player_team_index];
 				if (strcmp("TERRORIST", player_team) != 0) {
 					ts_player_color = -1;
@@ -332,11 +348,12 @@ public validate_team_colors()
 				find_player_team_slot("TERRORIST");
 			}
 		}
-	} else if (strcmp(game_mod, "TF") == 0) {
+	//} else if (strcmp(game_mod, "TF") == 0) {
+	} else if (game_mod_id == tf) {
 		if (blue_player_color > -1) {
 			if ((IsClientConnected(blue_player_color)) && (IsClientInGame(blue_player_color))) {
 				new player_team_index = GetClientTeam(blue_player_color);
-				new String:player_team[64];
+				decl String:player_team[64];
 				player_team = team_list[player_team_index];
 				if (strcmp("Blue", player_team) != 0) {
 					blue_player_color = -1;
@@ -347,7 +364,7 @@ public validate_team_colors()
 		} else if (red_player_color > -1) {
 			if ((IsClientConnected(red_player_color)) && (IsClientInGame(red_player_color))) {
 				new player_team_index = GetClientTeam(red_player_color);
-				new String:player_team[64];
+				decl String:player_team[64];
 				player_team = team_list[player_team_index];
 				if (strcmp("Red", player_team) != 0) {
 					red_player_color = -1;
@@ -373,11 +390,12 @@ public add_message_cache(String: message[192], String: parsed_message[192], colo
 	cached_color_index = color_index;
 }
 
-public is_message_cached(String: message[192]) {
-	if (strcmp(message, message_cache) == 0) {
-		return 1;
-	}
-	return 0;
+public bool:is_message_cached(String: message[192]) {
+	//if (strcmp(message, message_cache) == 0) {
+	//	return 1;
+	//}
+	//return 0;
+	return (strcmp(message, message_cache) == 0);
 }
 
 public clear_message_cache() {
@@ -390,7 +408,8 @@ public clear_message_cache() {
 public OnClientDisconnect(client)
 {
 	if (client > 0) {
-		if (strcmp(game_mod, "CSS") == 0) {
+		//if (strcmp(game_mod, "CSS") == 0) {
+		if (game_mod_id == css) {
 			if ((ct_player_color == -1) || (client == ct_player_color)) {
 				ct_player_color = -1;
 				clear_message_cache();
@@ -398,7 +417,8 @@ public OnClientDisconnect(client)
 				ts_player_color = -1;
 				clear_message_cache();
 			}
-		} else if (strcmp(game_mod, "TF") == 0) {
+		//} else if (strcmp(game_mod, "TF") == 0) {
+		} else if (game_mod_id == tf) {
 			if ((blue_player_color == -1) || (client == blue_player_color)) {
 				blue_player_color = -1;
 				clear_message_cache();
@@ -411,20 +431,21 @@ public OnClientDisconnect(client)
 }
 
 
-stock color_player(color_type, player_index, String: client_message[192]) 
+color_player(color_type, player_index, String: client_message[192]) 
 {
 	new color_player_index = -1;
-	if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
-		new String:client_name[192];
+	//if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
+	if (game_mod_id == css || game_mod_id == tf) {
+		decl String:client_name[192];
 		GetClientName(player_index, client_name, 192);
 		if (color_type == 1) {
-			new String:colored_player_name[192];
+			decl String:colored_player_name[192];
 			Format(colored_player_name, 192, "\x03%s\x01", client_name);
 			if (ReplaceString(client_message, 192, client_name, colored_player_name) > 0) {
 				return player_index;
 			}
 		} else {
-			new String:colored_player_name[192];
+			decl String:colored_player_name[192];
 			Format(colored_player_name, 192, "\x04%s\x01", client_name);
 			if (ReplaceString(client_message, 192, client_name, colored_player_name) > 0) {
 			}
@@ -433,14 +454,15 @@ stock color_player(color_type, player_index, String: client_message[192])
 	return color_player_index;
 }
 
-stock color_all_players(String: message[192]) 
+color_all_players(String: message[192]) 
 {
 	new color_index = -1;
 
 	if (PlayerColorArray != INVALID_HANDLE) {
 
 		ClearArray(PlayerColorArray);
-		if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
+		//if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
+		if (game_mod_id == css || game_mod_id == tf) {
 
 			new lowest_matching_pos = 192;
 			new lowest_matching_pos_client = -1;
@@ -449,7 +471,7 @@ stock color_all_players(String: message[192])
 			for(new i = 1; i <= max_clients; i++) {
 				new client = i;
 				if ((IsClientConnected(client)) && (IsClientInGame(client))) {
-					new String:client_name[192];
+					decl String:client_name[192];
 					GetClientName(client, client_name, 192);
 					new message_pos = StrContains(message, client_name);
 					if (message_pos > -1) {
@@ -457,7 +479,7 @@ stock color_all_players(String: message[192])
 							lowest_matching_pos = message_pos;
 							lowest_matching_pos_client = client;
 						}
-						new TempPlayerColorArray[1];
+						decl TempPlayerColorArray[1];
 						TempPlayerColorArray[0] = client;
 						PushArrayArray(PlayerColorArray, TempPlayerColorArray);
 					}
@@ -465,7 +487,7 @@ stock color_all_players(String: message[192])
 			}
 			new size = GetArraySize(PlayerColorArray);
 			for (new i = 0; i < size; i++) {
-				new temp_player_array[1];
+				decl temp_player_array[1];
 				GetArrayArray(PlayerColorArray, i, temp_player_array);
 				new temp_client = temp_player_array[0];
 				if (temp_client == lowest_matching_pos_client) {
@@ -482,40 +504,44 @@ stock color_all_players(String: message[192])
 	return color_index;
 }
 
-stock get_team_index(String: team_name[])
+get_team_index(const String: team_name[])
 {
-	new loop_break = 0;
+	//new loop_break = 0;
 	new index = 0;
-	while ((loop_break == 0) && (index < sizeof(team_list))) {
+	//while ((loop_break == 0) && (index < sizeof(team_list))) {
+	while (index < sizeof(team_list)) {
    	    if (strcmp(team_name, team_list[index], true) == 0) {
-       		loop_break++;
-        }
+       		//loop_break++;
+		return index - 1;
+            }
    	    index++;
 	}
-	if (loop_break == 0) {
-		return -1;
-	} else {
-		return index - 1;
-	}
+	return -1;
+	//if (loop_break == 0) {
+	//	return -1;
+	//} else {
+	//	return index - 1;
+	//}
 }
 
-stock remove_color_entities(String: message[192])
+remove_color_entities(String: message[192])
 {
 	ReplaceString(message, 192, "x04", "");
 	ReplaceString(message, 192, "x03", "");
 	ReplaceString(message, 192, "x01", "");
 }
 
-stock color_entities(String: message[192])
+color_entities(String: message[192])
 {
 	ReplaceString(message, 192, "x04", "\x04");
 	ReplaceString(message, 192, "x03", "\x03");
 	ReplaceString(message, 192, "x01", "\x01");
 }
 
-stock color_team_entities(String: message[192])
+color_team_entities(String: message[192])
 {
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 		if (ts_player_color > -1) {
 			if (ReplaceString(message, 192, "TERRORIST", "\x03TERRORIST\x01") == 0) {
 				if (ct_player_color > -1) {
@@ -533,7 +559,8 @@ stock color_team_entities(String: message[192])
 				}
 			}
 		}
-	} else if (strcmp(game_mod, "TF") == 0) {
+	//} else if (strcmp(game_mod, "TF") == 0) {
+	} else if (game_mod_id == tf) {
 		if (red_player_color > -1) {
 			if (ReplaceString(message, 192, "Red", "\x03Red\x01") == 0) {
 				if (blue_player_color > -1) {
@@ -556,15 +583,15 @@ stock color_team_entities(String: message[192])
 	return -1;
 }
 
-stock display_menu(player_index, time, String: full_message[1024])
+display_menu(player_index, time, const String: full_message[1024])
 {
-	new String: display_message[1024];
+	decl String: display_message[1024];
 	new offset = 0;
 	new message_length = strlen(full_message); 
 	for(new i = 0; i < message_length; i++) {
 		if (i > 0) {
 			if ((full_message[i-1] == 92) && (full_message[i] == 110)) {
-				new String: buffer[1024];
+				decl String: buffer[1024];
 				strcopy(buffer, (i - offset), full_message[offset]);
 				if (strlen(display_message) == 0) {
 					strcopy(display_message[strlen(display_message)], strlen(buffer) + 1, buffer); 
@@ -588,10 +615,10 @@ public Action:hlx_sm_psay(args)
 		return Plugin_Handled;
 	}
 
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(1, client_id, 32);
 
-	new String:colored_param[32];
+	decl String:colored_param[32];
 	GetCmdArg(2, colored_param, 32);
 	new is_colored = 0;
 	new ignore_param = 0;
@@ -599,23 +626,30 @@ public Action:hlx_sm_psay(args)
 		is_colored = 1;
 		ignore_param = 1;
 	}
-	if (strcmp(colored_param, "0") == 0) {
+	else if (strcmp(colored_param, "0") == 0) {
 		ignore_param = 1;
 	}
 
-	new String:client_message[192];
+	decl String:client_message[192];
 	new argument_count = GetCmdArgs();
 
 	for(new i = (1 + ignore_param); i < argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i+1, temp_argument, 192);
 
 		if (i > (1 + ignore_param)) {
 			if ((191 - strlen(client_message)) > strlen(temp_argument)) {
 				if ((temp_argument[0] == 41) || (temp_argument[0] == 125)) {
 					strcopy(client_message[strlen(client_message)], 191, temp_argument);
-				} else if ((strlen(client_message) > 0) && (client_message[strlen(client_message)-1] != 40) && (client_message[strlen(client_message)-1] != 123) && (client_message[strlen(client_message)-1] != 58) && (client_message[strlen(client_message)-1] != 39) && (client_message[strlen(client_message)-1] != 44)) {
-					if ((strcmp(temp_argument, ":") != 0) && (strcmp(temp_argument, ",") != 0) && (strcmp(temp_argument, "'") != 0)) {
+				} else if ((strlen(client_message) > 0) &&
+					   (client_message[strlen(client_message)-1] != 40) &&
+					   (client_message[strlen(client_message)-1] != 123) &&
+					   (client_message[strlen(client_message)-1] != 58) &&
+					   (client_message[strlen(client_message)-1] != 39) &&
+					   (client_message[strlen(client_message)-1] != 44)) {
+					if ((strcmp(temp_argument, ":") != 0) &&
+					   (strcmp(temp_argument, ",") != 0) &&
+                                            (strcmp(temp_argument, "'") != 0)) {
 						client_message[strlen(client_message)] = 32;
 					}
 					strcopy(client_message[strlen(client_message)], 192, temp_argument);
@@ -633,18 +667,20 @@ public Action:hlx_sm_psay(args)
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+                    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 			new color_index = player_index;
 
-			new String:display_message[192];
-			if (strcmp(game_mod, "CSS") == 0) {
+			//decl String:display_message[192];
+			//if (strcmp(game_mod, "CSS") == 0) {
+			if (game_mod_id == css) {
 				
 				if (is_colored > 0) {
-					if (is_message_cached(client_message) > 0) {
+					if (is_message_cached(client_message)) {
 						client_message = parsed_message_cache;
 						color_index = cached_color_index;
 					} else {
-						new String: client_message_backup[192];
+						decl String: client_message_backup[192];
 						strcopy(client_message_backup, 192, client_message);
 					
 						new player_color_index = color_all_players(client_message);
@@ -658,24 +694,25 @@ public Action:hlx_sm_psay(args)
 						add_message_cache(client_message_backup, client_message, color_index);
 					}
 				}
-				Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
-
-				new Handle:hBf;
-				hBf = StartMessageOne("SayText2", player_index);
-				if (hBf != INVALID_HANDLE) {
-					BfWriteByte(hBf, color_index); 
-					BfWriteByte(hBf, 0); 
-					BfWriteString(hBf, display_message);
-					EndMessage();
-				}
-			} else if (strcmp(game_mod, "TF") == 0) {
+				PrintToChat(player_index, "\x04HLstatsX:\x01 %s", client_message);
+				//Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
+				//
+				//new Handle:hBf;
+				//hBf = StartMessageOne("SayText2", player_index);
+				//if (hBf != INVALID_HANDLE) {
+				//	BfWriteByte(hBf, color_index); 
+				//	BfWriteByte(hBf, 0); 
+				//	BfWriteString(hBf, display_message);
+				//	EndMessage();
+				//}
+			} else if (game_mod_id == tf) {
 				
 				if (is_colored > 0) {
-					if (is_message_cached(client_message) > 0) {
+					if (is_message_cached(client_message)) {
 						client_message = parsed_message_cache;
 						color_index = cached_color_index;
 					} else {
-						new String: client_message_backup[192];
+						decl String: client_message_backup[192];
 						strcopy(client_message_backup, 192, client_message);
 					
 						new player_color_index = color_all_players(client_message);
@@ -689,19 +726,21 @@ public Action:hlx_sm_psay(args)
 						add_message_cache(client_message_backup, client_message, color_index);
 					}
 				}
-				Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
-
-				new Handle:hBf;
-				hBf = StartMessageOne("SayText2", player_index);
-				if (hBf != INVALID_HANDLE) {
-					BfWriteByte(hBf, color_index); 
-					BfWriteByte(hBf, 0); 
-					BfWriteString(hBf, display_message);
-					EndMessage();
-				}
+				PrintToChat(player_index, "\x04HLstatsX:\x01 %s", client_message);
+				//Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
+				//
+				//new Handle:hBf;
+				//hBf = StartMessageOne("SayText2", player_index);
+				//if (hBf != INVALID_HANDLE) {
+				//	BfWriteByte(hBf, color_index); 
+				//	BfWriteByte(hBf, 0); 
+				//	BfWriteString(hBf, display_message);
+				//	EndMessage();
+				//}
 			} else {
-				Format(display_message, 192, "HLstatsX: %s", client_message);
-				PrintToChat(player_index, display_message);
+				PrintToChat(player_index, "HLstatsX: %s", client_message);
+				//Format(display_message, 192, "HLstatsX: %s", client_message);
+				//PrintToChat(player_index, display_message);
 			}
 			
 		}	
@@ -717,10 +756,10 @@ public Action:hlx_sm_psay2(args)
 		return Plugin_Handled;
 	}
 	
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(1, client_id, 32);
 
-	new String:colored_param[32];
+	decl String:colored_param[32];
 	GetCmdArg(2, colored_param, 32);
 	new ignore_param = 0;
 	if (strcmp(colored_param, "1") == 0) {
@@ -730,18 +769,25 @@ public Action:hlx_sm_psay2(args)
 		ignore_param = 1;
 	}
 
-	new String:client_message[192];
+	decl String:client_message[192];
 	new argument_count = GetCmdArgs();
 
 	for(new i = (1 + ignore_param); i < argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i+1, temp_argument, 192);
 		if (i > (1 + ignore_param)) {
 			if ((191 - strlen(client_message)) > strlen(temp_argument)) {
 				if ((temp_argument[0] == 41) || (temp_argument[0] == 125)) {
 					strcopy(client_message[strlen(client_message)], 191, temp_argument);
-				} else if ((strlen(client_message) > 0) && (client_message[strlen(client_message)-1] != 40) && (client_message[strlen(client_message)-1] != 123) && (client_message[strlen(client_message)-1] != 58) && (client_message[strlen(client_message)-1] != 39) && (client_message[strlen(client_message)-1] != 44)) {
-					if ((strcmp(temp_argument, ":") != 0) && (strcmp(temp_argument, ",") != 0) && (strcmp(temp_argument, "'") != 0)) {
+				} else if ((strlen(client_message) > 0) &&
+					   (client_message[strlen(client_message)-1] != 40) &&
+					   (client_message[strlen(client_message)-1] != 123) &&
+					   (client_message[strlen(client_message)-1] != 58) &&
+					   (client_message[strlen(client_message)-1] != 39) &&
+					   (client_message[strlen(client_message)-1] != 44)) {
+					if ((strcmp(temp_argument, ":") != 0) &&
+					    (strcmp(temp_argument, ",") != 0) &&
+					    (strcmp(temp_argument, "'") != 0)) {
 						client_message[strlen(client_message)] = 32;
 					}
 					strcopy(client_message[strlen(client_message)], 192, temp_argument);
@@ -759,16 +805,20 @@ public Action:hlx_sm_psay2(args)
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 
-			new String:display_message[192];
-			if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
+			//decl String:display_message[192];
+			//if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
+			if (game_mod_id == css || game_mod_id == tf) {
 				remove_color_entities(client_message);
-				Format(display_message, 192, "\x04HLstatsX: %s", client_message);
-				PrintToChat(player_index, display_message);
+				//Format(display_message, 192, "\x04HLstatsX: %s", client_message);
+				//PrintToChat(player_index, display_message);
+				PrintToChat(player_index, "\x04HLstatsX: %s", client_message);
 			} else {
-				Format(display_message, 192, "HLstatsX: %s", client_message);
-				PrintToChat(player_index, display_message);
+				//Format(display_message, 192, "HLstatsX: %s", client_message);
+				//PrintToChat(player_index, display_message);
+				PrintToChat(player_index, "HLstatsX: %s", client_message);
 			}
 		}	
 	}
@@ -783,10 +833,10 @@ public Action:hlx_sm_csay(args)
 		return Plugin_Handled;
 	}
 
-	new String:display_message[192];
+	decl String:display_message[192];
 	new argument_count = GetCmdArgs();
 	for(new i = 1; i <= argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i, temp_argument, 192);
 
 		if (i > 1) {
@@ -817,15 +867,15 @@ public Action:hlx_sm_msay(args)
 		return Plugin_Handled;
 	}
 	
-	new String:display_time[16];
+	decl String:display_time[16];
 	GetCmdArg(1, display_time, 16);
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(2, client_id, 32);
 
-	new String:client_message[1024];
+	decl String:client_message[1024];
 	new argument_count = GetCmdArgs();
 	for(new i = 3; i <= argument_count; i++) {
-		new String:temp_argument[1024];
+		decl String:temp_argument[1024];
 		GetCmdArg(i, temp_argument, 1024);
 
 		if (i > 3) {
@@ -848,8 +898,9 @@ public Action:hlx_sm_msay(args)
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
-			new String: display_message[1024];
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+			decl String: display_message[1024];
 			strcopy(display_message, 1024, client_message);
 			display_menu(player_index, time, display_message);			
 		}	
@@ -865,15 +916,15 @@ public Action:hlx_sm_tsay(args)
 		return Plugin_Handled;
 	}
 
-	new String:display_time[16];
+	decl String:display_time[16];
 	GetCmdArg(1, display_time, 16);
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(2, client_id, 32);
 
-	new String:client_message[192];
+	decl String:client_message[192];
 	new argument_count = GetCmdArgs();
 	for(new i = 2; i < argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i+1, temp_argument, 192);
 
 		if (i > 2) {
@@ -891,7 +942,8 @@ public Action:hlx_sm_tsay(args)
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 			new Handle:values = CreateKeyValues("msg");
 			KvSetString(values, "title", client_message);
 			KvSetNum(values, "level", 1); 
@@ -916,21 +968,28 @@ public Action:hlx_sm_hint(args)
 		return Plugin_Handled;
 	}
 
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(1, client_id, 32);
 
-	new String:client_message[192];
+	decl String:client_message[192];
 	new argument_count = GetCmdArgs();
 	for(new i = 1; i < argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i+1, temp_argument, 192);
 
 		if (i > 1) {
 			if ((191 - strlen(client_message)) > strlen(temp_argument)) {
 				if ((temp_argument[0] == 41) || (temp_argument[0] == 125)) {
 					strcopy(client_message[strlen(client_message)], 191, temp_argument);
-				} else if ((strlen(client_message) > 0) && (client_message[strlen(client_message)-1] != 40) && (client_message[strlen(client_message)-1] != 123) && (client_message[strlen(client_message)-1] != 58) && (client_message[strlen(client_message)-1] != 39) && (client_message[strlen(client_message)-1] != 44)) {
-					if ((strcmp(temp_argument, ":") != 0) && (strcmp(temp_argument, ",") != 0) && (strcmp(temp_argument, "'") != 0)) {
+				} else if ((strlen(client_message) > 0) &&
+					   (client_message[strlen(client_message)-1] != 40) &&
+					   (client_message[strlen(client_message)-1] != 123) &&
+					   (client_message[strlen(client_message)-1] != 58) &&
+					   (client_message[strlen(client_message)-1] != 39) &&
+					   (client_message[strlen(client_message)-1] != 44)) {
+					if ((strcmp(temp_argument, ":") != 0) &&
+					    (strcmp(temp_argument, ",") != 0) &&
+					    (strcmp(temp_argument, "'") != 0)) {
 						client_message[strlen(client_message)] = 32;
 					}
 					strcopy(client_message[strlen(client_message)], 192, temp_argument);
@@ -948,7 +1007,8 @@ public Action:hlx_sm_hint(args)
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 			PrintHintText(player_index, client_message);
 		}	
 	}		
@@ -963,18 +1023,18 @@ public Action:hlx_sm_browse(args)
 		return Plugin_Handled;
 	}
 
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(1, client_id, 32);
 
-	new String:client_url[192];
-	new String:argument_string[512];
+	decl String:client_url[192];
+	decl String:argument_string[512];
 	GetCmdArgString(argument_string, 512);
 
 	new find_pos = StrContains(argument_string, "http://", true);
 	if (find_pos == -1) {
 		new argument_count = GetCmdArgs();
 		for(new i = 1; i < argument_count; i++) {
-			new String:temp_argument[192];
+			decl String:temp_argument[192];
 			GetCmdArg(i+1, temp_argument, 192);
 
 			if ((192 - strlen(client_url)) > strlen(temp_argument)) {
@@ -989,7 +1049,8 @@ public Action:hlx_sm_browse(args)
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 			ShowMOTDPanel(player_index, "HLstatsX", client_url, MOTDPANEL_TYPE_URL);
 		}	
 	}		
@@ -1004,7 +1065,7 @@ public Action:hlx_sm_swap(args)
 		return Plugin_Handled;
 	}
 
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(1, client_id, 32);
 
 	new client = StringToInt(client_id);
@@ -1025,18 +1086,18 @@ public Action:hlx_sm_redirect(args)
 		return Plugin_Handled;
 	}
 
-	new String:display_time[16];
+	decl String:display_time[16];
 	GetCmdArg(1, display_time, 16);
 
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(2, client_id, 32);
 
-	new String:server_address[192];
+	decl String:server_address[192];
 	new argument_count = GetCmdArgs();
 	new break_address = argument_count;
 
 	for(new i = 2; i < argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i+1, temp_argument, 192);
 		if (strcmp(temp_argument, ":") == 0) {
 			break_address = i + 1;
@@ -1050,9 +1111,9 @@ public Action:hlx_sm_redirect(args)
 		}
 	}	
 
-	new String:redirect_reason[192];
+	decl String:redirect_reason[192];
 	for(new i = break_address + 1; i < argument_count; i++) {
-		new String:temp_argument[192];
+		decl String:temp_argument[192];
 		GetCmdArg(i+1, temp_argument, 192);
 		if ((192 - strlen(redirect_reason)) > strlen(temp_argument)) {
 			redirect_reason[strlen(redirect_reason)] = 32;		
@@ -1064,7 +1125,8 @@ public Action:hlx_sm_redirect(args)
 	new client = StringToInt(client_id);
 	if ((client > 0) && (strcmp(server_address, "") != 0)) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 
 			new Handle:top_values = CreateKeyValues("msg");
 			KvSetString(top_values, "title", redirect_reason);
@@ -1089,29 +1151,30 @@ public Action:hlx_sm_player_action(args)
 		return Plugin_Handled;
 	}
 
-	new String:client_id[32];
+	decl String:client_id[32];
 	GetCmdArg(1, client_id, 32);
 
-	new String:player_action[192];
+	decl String:player_action[192];
 	GetCmdArg(2, player_action, 192);
 
 	new client = StringToInt(client_id);
 	if (client > 0) {
 		new player_index = GetClientOfUserId(client);
-		if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
+		if ((player_index > 0) && (!IsFakeClient(player_index)) &&
+		    (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 
-			new String:player_name[64];
+			decl String:player_name[64];
 			if (!GetClientName(player_index, player_name, 64)) {
 				strcopy(player_name, 64, "UNKNOWN");
 			}
 
-			new String:player_authid[64];
+			decl String:player_authid[64];
 			if (!GetClientAuthString(player_index, player_authid, 64)) {
 				strcopy(player_authid, 64, "UNKNOWN");
 			}
 
 			new player_team_index = GetClientTeam(player_index);
-			new String:player_team[64];
+			decl String:player_team[64];
 			player_team = team_list[player_team_index];
 
 			LogToGame("\"%s<%d><%s><%s>\" triggered \"%s\"", player_name, client, player_authid, player_team, player_action); 
@@ -1128,10 +1191,10 @@ public Action:hlx_sm_team_action(args)
 		return Plugin_Handled;
 	}
 
-	new String:team_name[192];
+	decl String:team_name[192];
 	GetCmdArg(1, team_name, 192);
 
-	new String:team_action[192];
+	decl String:team_action[192];
 	GetCmdArg(2, team_action, 192);
 
 	LogToGame("Team \"%s\" triggered \"%s\"", team_name, team_action); 
@@ -1146,7 +1209,7 @@ public Action:hlx_sm_world_action(args)
 		return Plugin_Handled;
 	}
 
-	new String:world_action[192];
+	decl String:world_action[192];
 	GetCmdArg(1, world_action, 192);
 
 	LogToGame("World triggered \"%s\"", world_action); 
@@ -1154,7 +1217,7 @@ public Action:hlx_sm_world_action(args)
 	return Plugin_Handled;
 }
 
-stock is_command_blocked(String: command[])
+bool:is_command_blocked(String: command[])
 {
 	new command_blocked = 0;
 	new command_index = 0;
@@ -1164,10 +1227,11 @@ stock is_command_blocked(String: command[])
 		}
 		command_index++;
 	}
-	if (command_blocked > 0) {
-		return 1;
-	}
-	return 0;
+	return (command_blocked > 0);
+	//if (command_blocked > 0) {
+	//	return 1;
+	//}
+	//return 0;
 }
 
 
@@ -1182,9 +1246,9 @@ public Action:hlx_block_commands(client, args)
 		
 		new block_chat_commands = GetConVarInt(hlx_block_chat_commands);
 
-		new String:user_command[192];
+		decl String:user_command[192];
 		GetCmdArgString(user_command, 192);
-		new String: origin_command[192];
+		decl String: origin_command[192];
 
 		new start_index = 0
 		new command_length = strlen(user_command);
@@ -1206,9 +1270,10 @@ public Action:hlx_block_commands(client, args)
 		if (command_length > 0) {
 			if (block_chat_commands > 0) {
 
-				new String:command_type[32] = "say";
-				new command_blocked = is_command_blocked(user_command[start_index]);
-				if (command_blocked > 0) {
+				decl String:command_type[32] = "say";
+				//new command_blocked = is_command_blocked(user_command[start_index]);
+				//if (command_blocked > 0) {
+				if (is_command_blocked(user_command[start_index])) {
 
 					// Normally the condition below should not be necessary. But sometimes an error
 					// message is reported: Native "GetClientName" reported: Client xy is not connected
@@ -1221,18 +1286,18 @@ public Action:hlx_block_commands(client, args)
 							DisplayMenu(HLstatsXMenuMain, client, MENU_TIME_FOREVER);
 						}
 
-						new String:player_name[64];
+						decl String:player_name[64];
 						if (!GetClientName(client, player_name, 64))	{
 							strcopy(player_name, 64, "UNKNOWN");
 						}
 
-						new String:player_authid[64];
+						decl String:player_authid[64];
 						if (!GetClientAuthString(client, player_authid, 64)){
 							strcopy(player_authid, 64, "UNKNOWN");
 						}
 
 						new player_team_index = GetClientTeam(client);
-						new String:player_team[64];
+						decl String:player_team[64];
 						player_team = team_list[player_team_index];
 
 						new player_userid = GetClientUserId(client);
@@ -1259,7 +1324,8 @@ public Action:hlx_block_commands(client, args)
 
 public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 
 		if (GetEventBool(event, "headshot")) {
 			new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
@@ -1272,15 +1338,15 @@ public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool
 		
 				if (victim_team_index != player_team_index) {
 		
-					new String:player_team[64];
+					decl String:player_team[64];
 					player_team = team_list[player_team_index];
 
-					new String:player_name[64];
+					decl String:player_name[64];
 					if (!GetClientName(attacker, player_name, 64))	{
 						strcopy(player_name, 64, "UNKNOWN");
 					}
 
-					new String:player_authid[64];
+					decl String:player_authid[64];
 					if (!GetClientAuthString(attacker, player_authid, 64)){
 						strcopy(player_authid, 64, "UNKNOWN");
 					}
@@ -1291,7 +1357,8 @@ public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool
 			}
 		}
 
-	} else if (strcmp(game_mod, "TF") == 0) {
+	//} else if (strcmp(game_mod, "TF") == 0) {
+	} else if (game_mod_id == tf) {
 
 		new custom_kill = GetEventInt(event, "customkill");
 		
@@ -1307,15 +1374,15 @@ public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool
 		
 				if (victim_team_index != player_team_index) {
 		
-					new String:player_team[64];
+					decl String:player_team[64];
 					player_team = team_list[player_team_index];
 
-					new String:player_name[64];
+					decl String:player_name[64];
 					if (!GetClientName(attacker, player_name, 64))	{
 						strcopy(player_name, 64, "UNKNOWN");
 					}
 
-					new String:player_authid[64];
+					decl String:player_authid[64];
 					if (!GetClientAuthString(attacker, player_authid, 64)){
 						strcopy(player_authid, 64, "UNKNOWN");
 					}
@@ -1339,11 +1406,12 @@ public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool
 
 public Action: HLstatsX_Event_PlayerTeamChange(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 		new userid = GetEventInt(event, "userid");
 		if (userid > 0) {
 			new player_team_index = GetEventInt(event, "team");
-			new String:player_team[64];
+			decl String:player_team[64];
 			player_team = team_list[player_team_index];
 			new player_index = GetClientOfUserId(userid);
 			if (player_index > 0) {
@@ -1357,11 +1425,12 @@ public Action: HLstatsX_Event_PlayerTeamChange(Handle:event, const String:name[]
 				}
 			}
 		}
-	} else if (strcmp(game_mod, "TF") == 0) {
+	//} else if (strcmp(game_mod, "TF") == 0) {
+	} else if (game_mod_id == tf) {
 		new userid = GetEventInt(event, "userid");
 		if (userid > 0) {
 			new player_team_index = GetEventInt(event, "team");
-			new String:player_team[64];
+			decl String:player_team[64];
 			player_team = team_list[player_team_index];
 			new player_index = GetClientOfUserId(userid);
 			if (player_index > 0) {
@@ -1389,13 +1458,14 @@ static const String: ts_models[4][] = {"models/player/t_phoenix.mdl",
                                        "models/player/t_arctic.mdl", 
                                        "models/player/t_guerilla.mdl"};
 
-stock set_player_model(client)
+set_player_model(client)
 {
 	if (client > 0) {
-		if (strcmp(game_mod, "CSS") == 0) {
+		//if (strcmp(game_mod, "CSS") == 0) {
+		if (game_mod_id == css) {
 			if (IsClientConnected(client)) {
 				new player_team_index = GetClientTeam(client);
-				new String:player_team[64];
+				decl String:player_team[64];
 				player_team = team_list[player_team_index];			
 				new new_model = GetRandomInt(0, 3);
 				if (strcmp(player_team, "CT") == 0) {
@@ -1409,12 +1479,13 @@ stock set_player_model(client)
 }
 
 
-stock swap_player(player_index)
+swap_player(player_index)
 {
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == css) {
 		if (IsClientConnected(player_index)) {
 			new player_team_index = GetClientTeam(player_index);
-			new String:player_team[64];
+			decl String:player_team[64];
 			player_team = team_list[player_team_index];			
 				
 			new opposite_team_index = -1;
@@ -1483,22 +1554,22 @@ CreateHLstatsXMenuEvents(&Handle: MenuHandle)
 }
 
 
-stock make_player_command(client, String: player_command[]) 
+make_player_command(client, String: player_command[]) 
 {
 
 	if (client > 0) {
-		new String:player_name[64];
+		decl String:player_name[64];
 		if (!GetClientName(client, player_name, 64)) {
 			strcopy(player_name, 64, "UNKNOWN");
 		}
 
-		new String:player_authid[64];
+		decl String:player_authid[64];
 		if (!GetClientAuthString(client, player_authid, 64)) {
 			strcopy(player_authid, 64, "UNKNOWN");
 		}
 
 		new player_team_index = GetClientTeam(client);
-		new String:player_team[64];
+		decl String:player_team[64];
 		player_team = team_list[player_team_index];
 
 		new player_userid = GetClientUserId(client);
@@ -1546,6 +1617,9 @@ public HLstatsXMainCommandHandler(Handle:menu, MenuAction:action, param1, param2
 			}
 		}
 	}
+	else if (action == MenuAction_End) {
+		CloseHandle(menu);
+	}
 }
 
 public HLstatsXAutoCommandHandler(Handle:menu, MenuAction:action, param1, param2)
@@ -1564,6 +1638,9 @@ public HLstatsXAutoCommandHandler(Handle:menu, MenuAction:action, param1, param2
 			}
 		}
 	}
+	else if (action == MenuAction_End) {
+		CloseHandle(menu);
+	}
 }
 
 public HLstatsXEventsCommandHandler(Handle:menu, MenuAction:action, param1, param2)
@@ -1581,5 +1658,8 @@ public HLstatsXEventsCommandHandler(Handle:menu, MenuAction:action, param1, para
 					make_player_command(param1, "/hlx_chat 0");
 			}
 		}
+	}
+	else if (action == MenuAction_End) {
+		CloseHandle(menu);
 	}
 }
