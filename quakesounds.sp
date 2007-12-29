@@ -290,9 +290,9 @@ public OnPluginStart()
 	if(!FileToKeyValues(kvQUS, fileQUS))
     	KeyValuesToFile(kvQUS, fileQUS);
     	
-    // if the plugin was loaded late we have a bunch of initialization that needs to be done
+	// if the plugin was loaded late we have a bunch of initialization that needs to be done
 	if(lateLoaded) {
-	    // First we need to do whatever we would have done at RoundStart()
+		// First we need to do whatever we would have done at RoundStart()
 		NewRoundInitialization();
 			
 		// Next we need to whatever we would have done as each client authorized
@@ -369,22 +369,30 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		backstab = false;
 	}
 
-	totalKills++;
+	if (attackerId == victimId)
+	{
+		if(settingsArray[SELFKILL])
+			soundId = SELFKILL;
+	}
+	else
+	{
+		totalKills++;
 
-	if(attackerClient)
-		consecutiveKills[attackerClient]++;
+		if(attackerClient)
+			consecutiveKills[attackerClient]++;
 
-	if(victimClient)
-		consecutiveKills[victimClient] = 0;
+		if(victimClient)
+			consecutiveKills[victimClient] = 0;
+
+		if(totalKills == 1 && settingsArray[FIRSTBLOOD])
+			soundId = FIRSTBLOOD;
+	}
 
 	if(IsGrenade(weapon) && settingsArray[GRENADE])
-		soundId = GRENADE;
-
-	if(attackerId == victimId && settingsArray[SELFKILL])
-		soundId = SELFKILL;
-
-	if(totalKills == 1 && settingsArray[FIRSTBLOOD])
-		soundId = FIRSTBLOOD;
+	{
+		if (gameType != TF2 || attackerId == victimId)
+			soundId = GRENADE;
+	}
 
 	if(headshot && attackerClient > 0 && attackerClient <= MAXPLAYERS)
 		switch(++headShotCount[attackerClient]) {
