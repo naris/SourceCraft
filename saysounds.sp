@@ -112,13 +112,13 @@ new Handle:cvarjoinspawn = INVALID_HANDLE;
 new Handle:cvarspecificjoinexit = INVALID_HANDLE;
 new Handle:cvartimebetween = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
-new Handle:hTopMenu = INVALID_HANDLE;
+new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
-new restrict_playing_sounds[MAXPLAYERS+1] = {0, ...};
-new SndOn[MAXPLAYERS+1] = {1, ...};
-new SndCount[MAXPLAYERS+1] = {0, ...};
-new Float:LastSound[MAXPLAYERS+1] = {0.0, ...};
-new bool:firstSpawn[MAXPLAYERS+1] = {true, ...};
+new restrict_playing_sounds[MAXPLAYERS+1];
+new SndOn[MAXPLAYERS+1];
+new SndCount[MAXPLAYERS+1];
+new Float:LastSound[MAXPLAYERS+1];
+new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 
 public Plugin:myinfo = 
@@ -157,6 +157,14 @@ public OnPluginStart(){
 		OnAdminMenuReady(topmenu);
 }
 
+public OnLibraryRemoved(const String:name[])
+{
+	if (StrEqual(name, "adminmenu"))
+	{
+		hAdminMenu = INVALID_HANDLE;
+	}
+}
+ 
 public OnAdminMenuReady(Handle:topmenu)
 {
     /*************************************************************/
@@ -164,11 +172,11 @@ public OnAdminMenuReady(Handle:topmenu)
     /*************************************************************/
 
     /* Block us from being called twice */
-    if (topmenu != hTopMenu){
+    if (topmenu != hAdminMenu){
         /* Save the Handle */
-        hTopMenu = topmenu;
-        new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hTopMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
+        hAdminMenu = topmenu;
+        new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
                      server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
     }
 }
@@ -594,43 +602,39 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 }
 
 public Action:Command_Sound_Reset(client, args){
-	if (args < 1)
-	{
+	if (args < 1){
 		ReplyToCommand(client, "[Say Sounds] Usage: sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
-	new String:arg[32];
+
+	new String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));	
-	
-	if(strcmp(arg,"all",false) == 0 ){
+
+	if (strcmp(arg,"all",false) == 0 ){
 		for (new i = 1; i <= MAXPLAYERS; i++)
 			SndCount[i] = 0;
 		ReplyToCommand(client, "[Say Sounds] Quota has been reset for all players");	
 	}else{
-		new user[2];
-		new numplayer = SearchForClients(arg, user, 2);
-		
-		if (numplayer == 0){
-			ReplyToCommand(client, "[Say Sounds] No matching client");
-			return Plugin_Handled;
-		}else if (numplayer > 1){
-			ReplyToCommand(client, "[Say Sounds] More than one client matches");
-			return Plugin_Handled;
-		}else if ((client != 0) && (!CanUserTarget(client, user[0]))){
-			ReplyToCommand(client, "[Say Sounds] Unable to target");
-			return Plugin_Handled;
-		}else if (IsFakeClient(user[0])){
-			ReplyToCommand(client, "[Say Sounds] Cannot target a bot");
-			return Plugin_Handled;
+		decl String:name[64];
+		new bool:isml,clients[MAXPLAYERS+1];
+		new count=ProcessTargetString(arg,client,clients,MAXPLAYERS+1,COMMAND_FILTER_NO_BOTS,name,sizeof(name),isml);
+		if (count > 0){
+			for(new x=0;x<count;x++){
+				new player=clients[x];
+				if(IsPlayerAlive(player) && !IsFakeClient(player)){
+					SndCount[player] = 0;
+					new String:clientname[64];
+					GetClientName(player,clientname,MAXPLAYERS);
+					ReplyToCommand(client, "[Say Sounds] Quota has been reset for %s", clientname);
+				}
+			}
+		}else{
+			ReplyToTargetError(client, count);
 		}
-			
-		SndCount[user[0]] = 0;
-		new String:clientname[64];
-		GetClientName(user[0],clientname,MAXPLAYERS);
-		ReplyToCommand(client, "[Say Sounds] Quota has been reset for %s", clientname);
 	}
 	return Plugin_Handled;
 }
+
 
 public Action:Command_Sound_Ban(client, args){
 	if (args < 1)
@@ -638,36 +642,30 @@ public Action:Command_Sound_Ban(client, args){
 		ReplyToCommand(client, "[Say Sounds] Usage: sm_sound_ban <user> : Bans a player from using sounds");
 		return Plugin_Handled;	
 	}
-	new String:arg[32];
-	GetCmdArg(1, arg, sizeof(arg));	
-	
-	new user[2];
-	new numplayer = SearchForClients(arg, user, 2);
-	
-	if (numplayer == 0){
-		ReplyToCommand(client, "[Say Sounds] No matching client");
-		return Plugin_Handled;
-	}else if (numplayer > 1){
-		ReplyToCommand(client, "[Say Sounds] More than one client matches");
-		return Plugin_Handled;
-	}else if ((client != 0) && (!CanUserTarget(client, user[0]))){
-		ReplyToCommand(client, "[Say Sounds] Unable to target");
-		return Plugin_Handled;
-	}else if (IsFakeClient(user[0])){
-		ReplyToCommand(client, "[Say Sounds] Cannot target a bot");
-		return Plugin_Handled;
-	}
-	
-	new String:BanClient2[64];
-	GetClientName(user[0],BanClient2,MAXPLAYERS);
-	
-	if (restrict_playing_sounds[user[0]] == 1){
-		ReplyToCommand(client, "[Say Sounds] %s is already banned!", BanClient2);
-	}else{
-		restrict_playing_sounds[user[0]]=1;
-		ReplyToCommand(client,"[Say Sounds] %s has been banned!", BanClient2);
-	}
 
+	new String:arg[64];
+	GetCmdArg(1, arg, sizeof(arg));	
+
+	decl String:name[64];
+	new bool:isml,clients[MAXPLAYERS+1];
+	new count=ProcessTargetString(arg,client,clients,MAXPLAYERS+1,COMMAND_FILTER_NO_BOTS,name,sizeof(name),isml);
+	if (count > 0){
+		for(new x=0;x<count;x++){
+			new player=clients[x];
+			if(IsPlayerAlive(player) && !IsFakeClient(player)){
+				new String:clientname[64];
+				GetClientName(player,clientname,MAXPLAYERS);
+				if (restrict_playing_sounds[player] == 1){
+					ReplyToCommand(client, "[Say Sounds] %s is already banned!", clientname);
+				}else{
+					restrict_playing_sounds[player]=1;
+					ReplyToCommand(client,"[Say Sounds] %s has been banned!", clientname);
+				}
+			}
+		}
+	}else{
+		ReplyToTargetError(client, count);
+	}
 	return Plugin_Handled;
 }
 
@@ -677,34 +675,29 @@ public Action:Command_Sound_Unban(client, args){
 		ReplyToCommand(client, "[Say Sounds] Usage: sm_sound_unban <user> <1|0> : Unbans a player from using sounds");
 		return Plugin_Handled;	
 	}
-	new String:arg[32];
+
+	new String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));	
-	
-	new user[2];
-	new numplayer = SearchForClients(arg, user, 2);
-	
-	if (numplayer == 0){
-		ReplyToCommand(client, "[Say Sounds] No matching client");
-		return Plugin_Handled;
-	}else if (numplayer > 1){
-		ReplyToCommand(client, "[Say Sounds] More than one client matches");
-		return Plugin_Handled;
-	}else if ((client != 0) && (!CanUserTarget(client, user[0]))){
-		ReplyToCommand(client, "[Say Sounds] Unable to target");
-		return Plugin_Handled;
-	}else if (IsFakeClient(user[0])){
-		ReplyToCommand(client, "[Say Sounds] Cannot target a bot");
-		return Plugin_Handled;
-	}
-	
-	new String:BanClient2[64];
-	GetClientName(user[0],BanClient2,MAXPLAYERS);
-	
-	if (restrict_playing_sounds[user[0]] == 0){
-		ReplyToCommand(client,"[Say Sounds] %s is not banned!", BanClient2);
+
+	decl String:name[64];
+	new bool:isml,clients[MAXPLAYERS+1];
+	new count=ProcessTargetString(arg,client,clients,MAXPLAYERS+1,COMMAND_FILTER_NO_BOTS,name,sizeof(name),isml);
+	if (count > 0){
+		for(new x=0;x<count;x++){
+			new player=clients[x];
+			if(IsPlayerAlive(player) && !IsFakeClient(player)){
+				new String:clientname[64];
+				GetClientName(player,clientname,MAXPLAYERS);
+				if (restrict_playing_sounds[player] == 0){
+					ReplyToCommand(client,"[Say Sounds] %s is not banned!", clientname);
+				}else{
+					restrict_playing_sounds[player]=0;
+					ReplyToCommand(client,"[Say Sounds] %s has been unbanned!", clientname);
+				}
+			}
+		}
 	}else{
-		restrict_playing_sounds[user[0]]=0;
-		ReplyToCommand(client,"[Say Sounds] %s has been unbanned!", BanClient2);
+		ReplyToTargetError(client, count);
 	}
 	return Plugin_Handled;
 }

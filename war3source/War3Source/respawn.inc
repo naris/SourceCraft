@@ -10,18 +10,15 @@
 #endif
 #define _respawn_included
 
-/*
-#undef REQUIRE_EXTENSIONS
+#undef REQUIRE_PLUGIN
 #include <cstrike>
-*/
+#define REQUIRE_PLUGIN
 
 stock RespawnPlayer(client)
 {
-    /*
     if (GameType == cstrike)
         CS_RespawnPlayer(client);
     else
-    */
         DispatchSpawn(client);
 }
 
