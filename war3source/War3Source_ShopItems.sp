@@ -76,6 +76,11 @@ public Plugin:myinfo =
     url = "http://pimpinjuice.net/"
 };
 
+public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+{
+	SetupRespawn();
+}
+
 public OnPluginStart()
 {
     GetGameType();

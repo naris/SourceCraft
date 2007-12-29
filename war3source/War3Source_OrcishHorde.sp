@@ -21,9 +21,9 @@
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
-new bool:m_HasRespawned[MAXPLAYERS+1]        = {false};
-new Float:m_UseTime[MAXPLAYERS+1]            = {0.0,...};
-new bool:m_AllowChainLightning[MAXPLAYERS+1] = {true,...};
+new bool:m_HasRespawned[MAXPLAYERS+1];
+new Float:m_UseTime[MAXPLAYERS+1];
+new bool:m_AllowChainLightning[MAXPLAYERS+1];
 
 new Handle:cvarChainCooldown;
 
@@ -41,6 +41,11 @@ public Plugin:myinfo =
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
+
+public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+{
+	SetupRespawn();
+}
 
 public OnPluginStart()
 {

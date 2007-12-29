@@ -24,7 +24,7 @@ new g_beamSprite;
 new g_haloSprite;
 
 // Suicide bomber check
-new bool:m_Suicided[MAXPLAYERS+1]={false};
+new bool:m_Suicided[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {

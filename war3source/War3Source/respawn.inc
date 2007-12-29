@@ -10,9 +10,15 @@
 #endif
 #define _respawn_included
 
-#undef REQUIRE_PLUGIN
+#undef REQUIRE_EXTENSIONS
 #include <cstrike>
-#define REQUIRE_PLUGIN
+#define REQUIRE_EXTENSIONS
+
+stock SetupRespawn()
+{
+    if (GameType != cstrike)
+        MarkNativeAsOptional("CS_RespawnPlayer");
+}
 
 stock RespawnPlayer(client)
 {
