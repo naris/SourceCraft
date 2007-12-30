@@ -587,6 +587,9 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		LastSound[client] = thetime + waitTime;
 		globalLastSound   = thetime + soundTime;
 
+		if (adminonly)
+			globalLastAdminSound = thetime + adminTime;
+
 		if (singleonly){
 			if(SndOn[client] && IsClientInGame(client)){
 				EmitSoundToClient(client, filelocation);
