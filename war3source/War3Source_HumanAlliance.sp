@@ -180,7 +180,7 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     if(race == raceID && skill==0 && newskilllevel > 0 &&
        War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
     {
-        HumanAlliance_Invisibility(war3player, newskilllevel);
+        HumanAlliance_Invisibility(client, war3player, newskilllevel);
     }
 }
 
@@ -193,7 +193,7 @@ public OnItemPurchase(client,war3player,item)
         if (cloak == item)
         {
             new skill_invis=War3_GetSkillLevel(war3player,race,0);
-            HumanAlliance_Invisibility(war3player, skill_invis);
+            HumanAlliance_Invisibility(client, war3player, skill_invis);
         }
     }
 }
@@ -224,7 +224,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 new skill_invis=War3_GetSkillLevel(war3player,race,0);
                 if (skill_invis)
                 {
-                    HumanAlliance_Invisibility(war3player, skill_invis);
+                    HumanAlliance_Invisibility(client, war3player, skill_invis);
                 }
 
                 new skill_devo=War3_GetSkillLevel(war3player,race,1);
@@ -255,7 +255,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     new color[4] = { 200, 255, 205, 255 };
                     TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
-                            0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
+                                       0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
                     TE_SendToAll();
                 }
             }
@@ -323,9 +323,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public HumanAlliance_Invisibility(war3player, skilllevel)
+public HumanAlliance_Invisibility(client, war3player, skilllevel)
 {
-    // Invisibility
     new alpha;
     switch(skilllevel)
     {
@@ -347,6 +346,14 @@ public HumanAlliance_Invisibility(war3player, skilllevel)
     {
         alpha *= 0.80;
     }
+
+    new Float:start[3];
+    GetClientAbsOrigin(client, start);
+
+    new color[4] = { 0, 255, 50, 128 };
+    TE_SetupBeamRingPoint(start,30.0,60.0,g_beamSprite,g_haloSprite,
+                          0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+    TE_SendToAll();
 
     War3_SetMinVisibility(war3player,alpha, 0.80);
 }

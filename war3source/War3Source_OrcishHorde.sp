@@ -22,14 +22,17 @@
 new raceID; // The ID we are assigned to
 
 new bool:m_HasRespawned[MAXPLAYERS+1];
+new bool:m_IsRespawning[MAXPLAYERS+1];
 new Float:m_UseTime[MAXPLAYERS+1];
 new bool:m_AllowChainLightning[MAXPLAYERS+1];
+new bool:m_InSuddenDeath;
 
 new Handle:cvarChainCooldown;
 
 new g_beamSprite;
 new g_haloSprite;
 new g_crystalSprite;
+new g_purpleGlow;
 
 new String:thunderWav[] = "war3/thunder1Long.mp3"; // "ambient/weather/thunder1.wav";
 
@@ -54,7 +57,16 @@ public OnPluginStart()
     cvarChainCooldown=CreateConVar("war3_chainlightningcooldown","30"); // Chain Lightning Cooldown, default: 30 seconds
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("round_start",RoundStartEvent);
+
+    if (GameType == cstrike)
+        HookEvent("round_start",RoundStartEvent);
+    else if (GameType == dod)
+        HookEvent("dod_round_start",RoundStartEvent);
+    else if (GameType == tf2)
+    {
+        HookEvent("teamplay_round_start",RoundStartEvent);
+        HookEvent("teamplay_suddendeath_begin",SuddenDeathBeginEvent);
+    }
 }
 
 public OnWar3PluginReady()
@@ -79,6 +91,8 @@ public OnMapStart()
     g_beamSprite    = SetupModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
     g_haloSprite    = SetupModel("materials/sprites/halo01.vmt");
     g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
+    g_purpleGlow    = SetupModel("materials/sprites/purpleglow1.vmt");
+    m_InSuddenDeath = false;
 
     SetupSound(thunderWav);
 }
@@ -93,6 +107,7 @@ public OnRaceSelected(client,war3player,oldrace,newrace)
 {
     m_AllowChainLightning[client]=true;
     m_HasRespawned[client]=false;
+    m_IsRespawning[client]=false;
 }
 
 public OnGameFrame()
@@ -165,6 +180,28 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    new war3player=War3_GetWar3Player(client);
+    if (war3player>-1)
+    {
+        new race=War3_GetRace(war3player);
+        if (race==raceID)
+        {
+            if (m_IsRespawning[client])
+            {
+                m_IsRespawning[client]=false;
+                new Float:Origin[3];
+                GetClientAbsOrigin(client, Origin);
+                TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
+                TE_SendToAll();
+            }
+        }
+    }
+}
+
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -173,7 +210,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (war3player>-1)
     {
         new race=War3_GetRace(war3player);
-        if (race==raceID&&!m_HasRespawned[index])
+        if (race==raceID && (!m_HasRespawned[index] ||
+                             (GameType == tf2 && !m_InSuddenDeath)))
         {
             new skill=War3_GetSkillLevel(war3player,race,2);
             if (skill)
@@ -192,8 +230,14 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
                 if (GetRandomInt(1,100)<=percent)
                 {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(index, Origin);
+                    TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
+                    TE_SendToAll();
+
                     AuthTimer(0.5,index,RespawnPlayerHandle);
                     m_HasRespawned[index]=true;
+                    m_IsRespawning[index]=true;
                 }
             }
         }
@@ -203,7 +247,20 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     for(new x=1;x<=MAXPLAYERS;x++)
+    {
         m_HasRespawned[x]=false;
+        m_IsRespawning[x]=false;
+    }
+}
+
+public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    m_InSuddenDeath=true;
+    for(new x=1;x<=MAXPLAYERS;x++)
+    {
+        m_HasRespawned[x]=false;
+        m_IsRespawning[x]=false;
+    }
 }
 
 public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
