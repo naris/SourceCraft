@@ -104,13 +104,19 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && m_TeleportCount[client] <= 2 && IsPlayerAlive(client))
+    PrintToChat(client,"%c[War3Source]%c OnUltimateCommand1, count=%d",
+                COLOR_GREEN,COLOR_DEFAULT,m_TeleportCount[client]);
+    if (race==raceID && pressed && m_TeleportCount[client] <= 2 && IsPlayerAlive(client))
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
         if(ult_level)
         {
+            PrintToChat(client,"%c[War3Source]%c OnUltimateCommand2, count=%d",
+                        COLOR_GREEN,COLOR_DEFAULT,m_TeleportCount[client]);
             m_TeleportCount[client]++;
             new bool:toSpawn = (m_TeleportCount[client] >= 2);
+            PrintToChat(client,"%c[War3Source]%c OnUltimateCommand3, count=%d, toSpawn=%d",
+                        COLOR_GREEN,COLOR_DEFAULT,m_TeleportCount[client], toSpawn);
             HumanAlliance_Teleport(client,war3player,ult_level, toSpawn);
             if (!toSpawn)
             {
@@ -359,6 +365,9 @@ public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
         destloc[0]=spawnLoc[client][0];
         destloc[1]=spawnLoc[client][1];
         destloc[2]=spawnLoc[client][2];
+
+        PrintToChat(client,"%c[War3Source]%c Teleport(to_spawn), to_spawn=%d, loc=%f,%f,%f",
+                    COLOR_GREEN,COLOR_DEFAULT, to_spawn, destloc[0], destloc[1], destloc[2]);
     }
     else
     {
@@ -423,6 +432,8 @@ public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
                 }
             }
         }
+        PrintToChat(client,"%c[War3Source]%c Teleport, to_spawn=%d, loc=%f,%f,%f",
+                    COLOR_GREEN,COLOR_DEFAULT, to_spawn, destloc[0], destloc[1], destloc[2]);
     }
 
     TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
