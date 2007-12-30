@@ -104,13 +104,13 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && m_TeleportCount[client] < 2 && IsPlayerAlive(client))
+    if (race==raceID && m_TeleportCount[client] <= 2 && IsPlayerAlive(client))
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
         if(ult_level)
         {
             m_TeleportCount[client]++;
-            new bool:toSpawn = (m_TeleportCount[client] > 1);
+            new bool:toSpawn = (m_TeleportCount[client] >= 2);
             HumanAlliance_Teleport(client,war3player,ult_level, toSpawn);
             if (!toSpawn)
             {
@@ -127,6 +127,8 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 public Action:AllowTeleport(Handle:timer,any:index)
 {
     m_TeleportCount[index]=0;
+    PrintToChat(index,"%c[War3Source]%c Your %cTeleport%c has recharged and can be used again.",
+            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
@@ -169,6 +171,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         SetupMaxHealth(client);
         GetClientAbsOrigin(client,spawnLoc[client]);
+        m_TeleportCount[client]=0;
 
         new war3player=War3_GetWar3Player(client);
         if (war3player>-1)
