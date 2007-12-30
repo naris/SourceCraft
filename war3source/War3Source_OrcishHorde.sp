@@ -54,7 +54,8 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarChainCooldown=CreateConVar("war3_chainlightningcooldown","30"); // Chain Lightning Cooldown, default: 30 seconds
+    cvarChainCooldown=CreateConVar("war3_chainlightningcooldown","30");
+
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_death",PlayerDeathEvent);
 
@@ -131,8 +132,12 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
         if (skill)
         {
             OrcishHorde_ChainLightning(war3player,client,skill);
-            m_AllowChainLightning[client]=false;
-            CreateTimer(GetConVarFloat(cvarChainCooldown),AllowChainLightning,client);
+            new Float:cooldown = GetConVarFloat(cvarChainCooldown);
+            if (cooldown > 0.0)
+            {
+                m_AllowChainLightning[client]=false;
+                CreateTimer(cooldown,AllowChainLightning,client);
+            }
         }
     }
 }

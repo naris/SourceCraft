@@ -43,7 +43,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","30");
+    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","0.0");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
@@ -108,8 +108,12 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
         if(ult_level)
         {
             HumanAlliance_Teleport(client,war3player,ult_level);
-            m_AllowTeleport[client]=false;
-            CreateTimer(GetConVarFloat(cvarTeleportCooldown),AllowTeleport,client);
+            new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
+            if (cooldown > 0.0)
+            {
+                m_AllowTeleport[client]=false;
+                CreateTimer(cooldown,AllowTeleport,client);
+            }
         }
     }
 }

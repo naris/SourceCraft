@@ -22,6 +22,8 @@
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowEntangle[MAXPLAYERS+1];
+new Handle:cvarEntangleCooldown = INVALID_HANDLE;
+
 new g_lightningSprite;
 new g_haloSprite;
 
@@ -37,6 +39,8 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     GetGameType();
+
+    cvarEntangleCooldown=CreateConVar("war3_entangledrootscooldown","45");
 
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
@@ -127,10 +131,16 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                     }
                 }
             }
+
             PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
                     COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-            m_AllowEntangle[client]=false;
-            CreateTimer(45.0,AllowEntangle,client);
+
+            new Float:cooldown = GetConVarFloat(cvarEntangleCooldown);
+            if (cooldown > 0.0)
+            {
+                m_AllowEntangle[client]=false;
+                CreateTimer(cooldown,AllowEntangle,client);
+            }
         }
     }
 }
