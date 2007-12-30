@@ -145,11 +145,11 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
             if (skilllevel_unholy)
-                Undead_UnholyAura(war3player, skilllevel_unholy);
+                Undead_UnholyAura(index, war3player, skilllevel_unholy);
 
             new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
             if (skilllevel_levi)
-                Undead_Levitation(war3player, skilllevel_levi);
+                Undead_Levitation(index, war3player, skilllevel_levi);
         }
     }
 }
@@ -159,9 +159,9 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     if(race == raceID && War3_GetRace(war3player) == raceID)
     {
         if (skill==1)
-            Undead_UnholyAura(war3player, newskilllevel);
+            Undead_UnholyAura(client, war3player, newskilllevel);
         else if (skill==2)
-            Undead_Levitation(war3player, newskilllevel);
+            Undead_Levitation(client, war3player, newskilllevel);
     }
 }
 
@@ -174,7 +174,7 @@ public OnItemPurchase(client,war3player,item)
         if (boots == item)
         {
             new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
-            Undead_UnholyAura(war3player, skilllevel_unholy);
+            Undead_UnholyAura(client,war3player, skilllevel_unholy);
         }
         else
         {
@@ -182,7 +182,7 @@ public OnItemPurchase(client,war3player,item)
             if (sock == item)
             {
                 new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
-                Undead_Levitation(war3player, skilllevel_levi);
+                Undead_Levitation(client,war3player, skilllevel_levi);
             }
         }
     }
@@ -239,7 +239,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Undead_UnholyAura(war3player, skilllevel)
+public Undead_UnholyAura(client, war3player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
@@ -274,7 +274,7 @@ public Undead_UnholyAura(war3player, skilllevel)
     War3_SetMaxSpeed(war3player,speed);
 }
 
-public Undead_Levitation(war3player, skilllevel)
+public Undead_Levitation(client, war3player, skilllevel)
 {
     new Float:gravity=1.0;
     switch (skilllevel)
