@@ -29,10 +29,10 @@ new bool:m_InSuddenDeath;
 
 new Handle:cvarChainCooldown;
 
-new g_beamSprite;
 new g_haloSprite;
-new g_crystalSprite;
 new g_purpleGlow;
+new g_crystalSprite;
+new g_lightningSprite;
 
 new String:thunderWav[] = "war3/thunder1Long.mp3"; // "ambient/weather/thunder1.wav";
 
@@ -88,11 +88,23 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite    = SetupModel("materials/sprites/lgtning.vmt"); // "materials/sprites/laser.vmt");
-    g_haloSprite    = SetupModel("materials/sprites/halo01.vmt");
-    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
-    g_purpleGlow    = SetupModel("materials/sprites/purpleglow1.vmt");
     m_InSuddenDeath = false;
+
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
+
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
+
+    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find crystal_beam Model");
+
+    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find purpleglow Model");
 
     SetupSound(thunderWav);
 }
@@ -297,7 +309,7 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
             SetHealth(victimIndex,new_health);
 
             new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victimIndex,g_beamSprite,g_haloSprite,
+            TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
         }
@@ -393,7 +405,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                         if ( IsInRange(client,index,range))
                         {
                             new color[4] = { 10, 200, 255, 255 };
-                            TE_SetupBeamLaser(last,index,g_beamSprite,g_haloSprite,
+                            TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
                                               0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                             TE_SendToAll();
 

@@ -22,6 +22,8 @@ new raceID; // The ID we are assigned to
 new explosionModel;
 new g_beamSprite;
 new g_haloSprite;
+new g_smokeSprite;
+new g_lightningSprite;
 
 // Suicide bomber check
 new bool:m_Suicided[MAXPLAYERS+1];
@@ -71,6 +73,14 @@ public OnMapStart()
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
+
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    if (g_smokeSprite == -1)
+        SetFailState("Couldn't find smoke Model");
+
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
 
     /*
     if (GameType == tf2)
@@ -253,6 +263,14 @@ public Undead_UnholyAura(war3player, skilllevel)
         speed *= 1.1;
     }
 
+    new Float:start[3];
+    GetClientAbsOrigin(client, start);
+
+    new color[4] = { 255, 100, 0, 255 };
+    TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
+                          0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
+    TE_SendToAll();
+
     War3_SetMaxSpeed(war3player,speed);
 }
 
@@ -279,6 +297,14 @@ public Undead_Levitation(war3player, skilllevel)
     {
         sock *= 0.8;
     }
+
+    new Float:start[3];
+    GetClientAbsOrigin(client, start);
+
+    new color[4] = { 0, 20, 100, 255 };
+    TE_SetupBeamRingPoint(start,20.0,50.0,g_lightningSprite,g_lightningSprite,
+                          0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
+    TE_SendToAll();
 
     War3_SetMinGravity(war3player,gravity);
 }

@@ -21,7 +21,7 @@
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowEntangle[MAXPLAYERS+1];
-new g_beamSprite;
+new g_lightningSprite;
 new g_haloSprite;
 
 public Plugin:myinfo = 
@@ -61,8 +61,13 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite = SetupModel("materials/sprites/lgtning.vmt");
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
+
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -105,7 +110,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                             if (IsInRange(client,index,range))
                             {
                                 new color[4] = { 0, 255, 0, 255 };
-                                TE_SetupBeamLaser(client,index,g_beamSprite,g_haloSprite,
+                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
                                                   0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                 TE_SendToAll();
 
@@ -133,7 +138,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new index=GetClientOfUserId(userid);
-    if(index>0)
+    if (index>0)
         m_AllowEntangle[index]=true;
 }
 

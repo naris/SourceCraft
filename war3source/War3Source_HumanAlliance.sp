@@ -22,9 +22,9 @@ new raceID; // The ID we are assigned to
 
 new String:teleportWav[] = "beams/beamstart5.wav";
 
-new g_beamSprite;
 new g_haloSprite;
 new g_smokeSprite;
+new g_lightningSprite;
 
 public Plugin:myinfo = 
 {
@@ -73,8 +73,8 @@ public OnMapStart()
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_beamSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_beamSprite == -1)
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
@@ -254,7 +254,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     end[2] = start[2] + 150;
 
                     new color[4] = { 200, 255, 205, 255 };
-                    TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
+                    TE_SetupBeamPoints(start,end,g_lightningSprite,g_haloSprite,
                                        0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
                     TE_SendToAll();
                 }
@@ -351,7 +351,7 @@ public HumanAlliance_Invisibility(client, war3player, skilllevel)
     GetClientAbsOrigin(client, start);
 
     new color[4] = { 0, 255, 50, 128 };
-    TE_SetupBeamRingPoint(start,30.0,60.0,g_beamSprite,g_haloSprite,
+    TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
@@ -380,7 +380,7 @@ public HumanAlliance_Bash(war3player, victim)
         {
             new Float:Origin[3];
             GetClientAbsOrigin(victim, Origin);
-            TE_SetupGlowSprite(Origin,g_beamSprite,1.0,2.3,90);
+            TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
 
             FreezeEntity(victim);
             AuthTimer(1.0,victim,UnfreezePlayer);
