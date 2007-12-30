@@ -47,7 +47,8 @@ public Plugin:myinfo =
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
-	SetupRespawn();
+    SetupRespawn();
+    return true;
 }
 
 public OnPluginStart()
