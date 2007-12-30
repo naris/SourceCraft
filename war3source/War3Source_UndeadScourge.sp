@@ -420,10 +420,11 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
     TE_SendToAll();
     EmitSoundToAll("weapons/explode5.wav",client);
 
-    for(new x=1;x<MAXPLAYERS+1;x++)
+    new clientCount = GetClientCount();
+    for(new x=1;x<=clientCount;x++)
     {
-        if (x != client && x <= GetClientCount() && IsClientConnected(x) &&
-            IsPlayerAlive(x) && GetClientTeam(x) != GetClientTeam(client))
+        if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
+            GetClientTeam(x) != GetClientTeam(client))
         {
             new war3player_check=War3_GetWar3Player(x);
             if (war3player_check>-1)
