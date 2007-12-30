@@ -29,7 +29,6 @@ new g_lightningSprite;
 new Handle:cvarTeleportCooldown = INVALID_HANDLE;
 
 new bool:m_AllowTeleport[MAXPLAYERS+1];
-new Float:m_UseTime[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -101,18 +100,6 @@ public OnRaceSelected(client,war3player,oldrace,race)
     m_AllowTeleport[client]=true;
 }
 
-public OnGameFrame()
-{
-    for (new x=0;x<=MAXPLAYERS;x++)
-    {
-        if (!m_AllowTeleport[x])
-        {
-            if (GetEngineTime() >= m_UseTime[x] + GetConVarFloat(cvarTeleportCooldown))
-                m_AllowTeleport[x]=true;
-        }
-    }
-}
-
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if (race==raceID && m_AllowTeleport[client] && IsPlayerAlive(client))
@@ -122,9 +109,14 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
         {
             HumanAlliance_Teleport(client,war3player,ult_level);
             m_AllowTeleport[client]=false;
-            m_UseTime[client]=GetEngineTime();
+            CreateTimer(GetConVarFloat(cvarTeleportCooldown),AllowTeleport,client);
         }
     }
+}
+
+public Action:AllowTeleport(Handle:timer,any:index)
+{
+    m_AllowTeleport[index]=true;
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)

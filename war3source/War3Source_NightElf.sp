@@ -16,6 +16,7 @@
 #include "War3Source/health"
 #include "War3Source/freeze"
 #include "War3Source/authtimer"
+#include "War3Source/log"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -264,8 +265,14 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
                 new damage=GetDamage(event, index, 10, 20);
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
-                if(newhp<0)
+                if (newhp <= 0)
+                {
                     newhp=0;
+                    LogKill(victimindex, index, "thorns_aura", "Thorns Aura", amount);
+                }
+                else
+                    LogDamage(victimindex, index, "thorns_aura", "Thorns Aura", amount);
+
                 SetHealth(index,newhp);
 
                 new Float:Origin[3];
@@ -305,8 +312,14 @@ public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evade
             new damage=GetDamage(event, index, 10, 20);
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimindex)-amount;
-            if(newhp<0)
+            if (newhp <= 0)
+            {
                 newhp=0;
+                LogKill(index, victimindex, "trueshot_aura", "Trueshot Aura", amount);
+            }
+            else
+                LogDamage(index, victimindex, "trueshot_aura", "Trueshot Aura", amount);
+
             SetHealth(victimindex,newhp);
 
             new Float:Origin[3];

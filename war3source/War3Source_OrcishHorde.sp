@@ -23,11 +23,10 @@ new raceID; // The ID we are assigned to
 
 new bool:m_HasRespawned[MAXPLAYERS+1];
 new bool:m_IsRespawning[MAXPLAYERS+1];
-new Float:m_UseTime[MAXPLAYERS+1];
 new bool:m_AllowChainLightning[MAXPLAYERS+1];
 new bool:m_InSuddenDeath;
 
-new Handle:cvarChainCooldown;
+new Handle:cvarChainCooldown = INVALID_HANDLE;
 
 new g_haloSprite;
 new g_purpleGlow;
@@ -123,18 +122,6 @@ public OnRaceSelected(client,war3player,oldrace,newrace)
     m_IsRespawning[client]=false;
 }
 
-public OnGameFrame()
-{
-    for (new x=0;x<=MAXPLAYERS;x++)
-    {
-        if (!m_AllowChainLightning[x])
-        {
-            if (GetEngineTime() >= m_UseTime[x] + GetConVarFloat(cvarChainCooldown))
-                m_AllowChainLightning[x]=true;
-        }
-    }
-}
-
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
     if (pressed && m_AllowChainLightning[client] &&
@@ -145,9 +132,14 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
         {
             OrcishHorde_ChainLightning(war3player,client,skill);
             m_AllowChainLightning[client]=false;
-            m_UseTime[client]=GetEngineTime();
+            CreateTimer(GetConVarFloat(cvarChainCooldown),AllowChainLightning,client);
         }
     }
+}
+
+public Action:AllowChainLightning(Handle:timer,any:index)
+{
+    m_AllowChainLightning[index]=true;
 }
 
 // Events
