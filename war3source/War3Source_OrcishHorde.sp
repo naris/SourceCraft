@@ -202,19 +202,23 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(client);
-    if (war3player>-1)
+    if (client)
     {
-        new race=War3_GetRace(war3player);
-        if (race==raceID)
+        SaveHealth(client);
+        new war3player=War3_GetWar3Player(client);
+        if (war3player>-1)
         {
-            if (m_IsRespawning[client])
+            new race=War3_GetRace(war3player);
+            if (race==raceID)
             {
-                m_IsRespawning[client]=false;
-                new Float:Origin[3];
-                GetClientAbsOrigin(client, Origin);
-                TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
-                TE_SendToAll();
+                if (m_IsRespawning[client])
+                {
+                    m_IsRespawning[client]=false;
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(client, Origin);
+                    TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
+                    TE_SendToAll();
+                }
             }
         }
     }

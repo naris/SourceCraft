@@ -243,6 +243,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
+        SaveHealth(client);
         SetupMaxHealth(client);
 
         GetClientAbsOrigin(client,spawnLoc[client]);

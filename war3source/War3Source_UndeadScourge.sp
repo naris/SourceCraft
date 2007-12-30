@@ -142,20 +142,24 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid     = GetEventInt(event,"userid");
     new index      = GetClientOfUserId(userid);
-    new war3player = War3_GetWar3Player(index);
-    if (war3player > -1)
+    if (index)
     {
-        m_Suicided[index]=false;
-        new race=War3_GetRace(war3player);
-        if(race==raceID)
+        SaveHealth(index);
+        new war3player = War3_GetWar3Player(index);
+        if (war3player > -1)
         {
-            new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
-            if (skilllevel_unholy)
-                Undead_UnholyAura(index, war3player, skilllevel_unholy);
+            m_Suicided[index]=false;
+            new race=War3_GetRace(war3player);
+            if(race==raceID)
+            {
+                new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
+                if (skilllevel_unholy)
+                    Undead_UnholyAura(index, war3player, skilllevel_unholy);
 
-            new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
-            if (skilllevel_levi)
-                Undead_Levitation(index, war3player, skilllevel_levi);
+                new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
+                if (skilllevel_levi)
+                    Undead_Levitation(index, war3player, skilllevel_levi);
+            }
         }
     }
 }

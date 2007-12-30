@@ -156,7 +156,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid=GetEventInt(event,"userid");
     new index=GetClientOfUserId(userid);
     if (index>0)
+    {
+        SaveHealth(index);
         m_AllowEntangle[index]=true;
+    }
 }
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
