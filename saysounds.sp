@@ -582,7 +582,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new soundLimit = GetConVarInt(cvarsoundlimit);	
-	if ((SndCount[client] < soundLimit) && globalLastSound < thetime){
+	if (SndCount[client] < soundLimit && globalLastSound < thetime){
 		SndCount[client]  = SndCount[client] + 1;
 		LastSound[client] = thetime + waitTime;
 		globalLastSound   = thetime + soundTime;
