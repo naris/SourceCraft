@@ -61,6 +61,6 @@ public BeetleMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
     }
     else if (action == TopMenuAction_SelectOption)
     {
-        ClientCommand(param, "admin_menu");
+        FakeClientCommandEx(param, "@menu");
     }
 }
