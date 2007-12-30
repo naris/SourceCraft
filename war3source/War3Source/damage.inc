@@ -15,12 +15,14 @@ stock savedHealth[MAXPLAYERS+1]             = { 0, ... };
 
 stock SaveHealth(client)
 {
-    savedHealth[client] = GetHealth(client);
+    if (IsClientConnected(client) && IsPlayerAlive(client))
+        savedHealth[client] = GetHealth(client);
 }
 
 stock SaveAllHealth()
 {
-    for(new x=1;x<MAXPLAYERS+1;x++)
+    new clientCount = GetClientCount();
+    for(new x=1;x<=clientCount;x++)
     {
         if (IsClientConnected(x) && IsPlayerAlive(x))
         {
