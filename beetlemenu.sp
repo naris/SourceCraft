@@ -14,7 +14,7 @@
 
 #define PLUGIN_VERSION "1.0"
 
-new Handle:hTopMenu = INVALID_HANDLE;
+new Handle:hAdminMenu = INVALID_HANDLE;
 
 // Plugin definitions
 public Plugin:myinfo = 
@@ -37,19 +37,24 @@ public OnPluginStart()
     {
         OnAdminMenuReady(topmenu);
     }
-
     return true;
 }
 
+public OnLibraryRemoved(const String:name[])
+{
+	if (StrEqual(name, "adminmenu"))
+		hAdminMenu = INVALID_HANDLE;
+}
+ 
 public OnAdminMenuReady(Handle:topmenu)
 {
     /* Block us from being called twice */
-    if (topmenu != hTopMenu)
+    if (topmenu != hAdminMenu)
     {
         /* Save the Handle */
-        hTopMenu = topmenu;
-        new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hTopMenu, "BeetleMenu", TopMenuObject_Item, BeetleMenu, server_commands, "admin_menu", ADMFLAG_GENERIC);
+        hAdminMenu = topmenu;
+        new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hAdminMenu, "BeetleMenu", TopMenuObject_Item, BeetleMenu, server_commands, "admin_menu", ADMFLAG_GENERIC);
     }
 }
 

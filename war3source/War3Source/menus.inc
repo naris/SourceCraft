@@ -6,6 +6,12 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+#define REQUIRE_PLUGIN
+
+new Handle:hAdminMenu = INVALID_HANDLE;
+
 public War3Source_InitMenus()
 {
     /* Account for late loading */
@@ -18,6 +24,12 @@ public War3Source_InitMenus()
     return true;
 }
 
+public OnLibraryRemoved(const String:name[])
+{
+	if (StrEqual(name, "adminmenu"))
+		hAdminMenu = INVALID_HANDLE;
+}
+ 
 public OnAdminMenuReady(Handle:topmenu)
 {
     /************************************************************/
@@ -25,12 +37,12 @@ public OnAdminMenuReady(Handle:topmenu)
     /************************************************************/
 
     /* Block us from being called twice */
-    if (topmenu != hTopMenu)
+    if (topmenu != hAdminMenu)
     {
         /* Save the Handle */
-        hTopMenu = topmenu;
-        new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hTopMenu, "War3Source_Admin", TopMenuObject_Item, War3Source_AdminMenu, server_commands, "War3Source_Admin", ADMFLAG_GENERIC);
+        hAdminMenu = topmenu;
+        new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hAdminMenu, "war3admin", TopMenuObject_Item, War3Source_AdminMenu, server_commands, "war3admin", ADMFLAG_WAR3);
     }
 }
 

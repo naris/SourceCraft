@@ -8,10 +8,8 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-#undef REQUIRE_PLUGIN
-#include <adminmenu>
-
-new Handle:hTopMenu = INVALID_HANDLE;
+//#define ADMFLAG_WAR3 ADMFLAG_RCON
+#define ADMFLAG_WAR3 ADMFLAG_CUSTOM1
 
 public War3Source_InitCVars()
 {
@@ -23,19 +21,19 @@ public War3Source_InitCVars()
     m_Currency=CreateConVar("war3_currency","credit", "Name of the currency");
     m_Currencies=CreateConVar("war3_currencies","credits", "Name of the currency in plural form");
 
-    RegAdminCmd("war3_setxp",War3Source_CMD_SetXP,ADMFLAG_RCON,"Set a player's XP");
-    RegAdminCmd("war3_givexp",War3Source_CMD_GiveXP,ADMFLAG_RCON,"Give a player XP");
-    RegAdminCmd("war3_removexp",War3Source_CMD_RemoveXP,ADMFLAG_RCON,"Remove some XP from a player");
-    RegAdminCmd("war3_setlevel",War3Source_CMD_SetLevel,ADMFLAG_RCON,"Set a player's level");
-    RegAdminCmd("war3_givelevel",War3Source_CMD_GiveLevel,ADMFLAG_RCON,"Give a player a single level");
-    RegAdminCmd("war3_removelevel",War3Source_CMD_RemoveLevel,ADMFLAG_RCON,"Remove a single level from a player");
-    RegAdminCmd("war3_setcredits",War3Source_CMD_SetCredits,ADMFLAG_RCON,"Set a player's credit count");
-    RegAdminCmd("war3_givecredits",War3Source_CMD_GiveCredits,ADMFLAG_RCON,"Give a player credits");
-    RegAdminCmd("war3_removecredits",War3Source_CMD_RemoveCredits,ADMFLAG_RCON,"Remove some credits from a player");
+    RegAdminCmd("war3_setxp",War3Source_CMD_SetXP,ADMFLAG_WAR3,"Set a player's XP");
+    RegAdminCmd("war3_givexp",War3Source_CMD_GiveXP,ADMFLAG_WAR3,"Give a player XP");
+    RegAdminCmd("war3_removexp",War3Source_CMD_RemoveXP,ADMFLAG_WAR3,"Remove some XP from a player");
+    RegAdminCmd("war3_setlevel",War3Source_CMD_SetLevel,ADMFLAG_WAR3,"Set a player's level");
+    RegAdminCmd("war3_givelevel",War3Source_CMD_GiveLevel,ADMFLAG_WAR3,"Give a player a single level");
+    RegAdminCmd("war3_removelevel",War3Source_CMD_RemoveLevel,ADMFLAG_WAR3,"Remove a single level from a player");
+    RegAdminCmd("war3_setcredits",War3Source_CMD_SetCredits,ADMFLAG_WAR3,"Set a player's credit count");
+    RegAdminCmd("war3_givecredits",War3Source_CMD_GiveCredits,ADMFLAG_WAR3,"Give a player credits");
+    RegAdminCmd("war3_removecredits",War3Source_CMD_RemoveCredits,ADMFLAG_WAR3,"Remove some credits from a player");
 
-    RegAdminCmd("wcadmin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
-    RegAdminCmd("wc3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
-    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_RCON,"Brings up the War3Source admin panel.");
+    RegAdminCmd("wcadmin",War3Source_Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
+    RegAdminCmd("wc3admin",War3Source_Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
+    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
 
     return true;
 }
