@@ -253,6 +253,7 @@ public Native_War3_SetMaxSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
+                PushArrayCell(indiceHandle,1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -298,6 +299,7 @@ public Native_War3_SetMinGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,gravity); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
+                PushArrayCell(indiceHandle,1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -310,11 +312,12 @@ public Native_War3_SetMinGravity(Handle:plugin,numParams)
 
 public Native_War3_SetMinVisibility(Handle:plugin,numParams)
 {
-    if(numParams >= 2 && numParams <= 3)
+    if(numParams >= 2 && numParams <= 4)
     {
         new war3player=GetNativeCell(1);
         new visibility=GetNativeCell(2);
         new Float:meleeFactor = (numParams > 2) ? GetNativeCell(3) : 1.0;
+        new Float:movementFactor = (numParams > 3) ? GetNativeCell(4) : 1.0;
         if(war3player != -1 && visibility > -1)
         {
             new Handle:temp=GetPropertyInfo(war3player);
@@ -344,6 +347,7 @@ public Native_War3_SetMinVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,visibility); // minvisibility 
                 PushArrayCell(indiceHandle,meleeFactor); // visibility melee factor
+                PushArrayCell(indiceHandle,movementFactor); // visibility movement factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -389,6 +393,7 @@ public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
+                PushArrayCell(indiceHandle,1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,speed); // force speed?
                 PushArrayCell(indiceHandle,0.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -434,6 +439,7 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
+                PushArrayCell(indiceHandle,1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,gravity); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
@@ -479,6 +485,7 @@ public Native_War3_SetOverrideVisibile(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // mingravity gravity
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
+                PushArrayCell(indiceHandle,1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,0.0); // force speed?
                 PushArrayCell(indiceHandle,0); // force gravity?
                 PushArrayCell(indiceHandle,visibility); // force visibility?

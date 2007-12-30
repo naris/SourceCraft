@@ -167,9 +167,10 @@ native War3_SetMinGravity(war3player,Float:gravity=1.0);
  * @param war3player: The War3Player ID to use. Can be retrieved with War3_GetWar3Player.
  * @param visibility: The visibility you want to pass.
  * @param melee_factor: The value to multiply the visibility by when player uses a melee weapon (Pass 1.0 to not check for melee weapons)
+ * @param melee_factor: The value to multiply the visibility by when player is not moving.
  * @noreturn
  */
-native War3_SetMinVisibility(war3player,visibility=255,Float:melee_factor=1.0);
+native War3_SetMinVisibility(war3player,visibility=255,Float:melee_factor=1.0,Float:movement_factor=1.0);
 
 /**
  * Overrides the speed for War3Source, useful for punishing them or whatever.

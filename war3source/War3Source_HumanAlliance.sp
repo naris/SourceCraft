@@ -28,7 +28,9 @@ new g_lightningSprite;
 
 new Handle:cvarTeleportCooldown = INVALID_HANDLE;
 
-new bool:m_AllowTeleport[MAXPLAYERS+1];
+new m_TeleportCount[MAXPLAYERS+1];
+
+new Float:spawnLoc[MAXPLAYERS+1][3];
 
 public Plugin:myinfo = 
 {
@@ -43,7 +45,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","0");
+    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","30");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
@@ -92,27 +94,31 @@ public OnMapStart()
 public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
-    m_AllowTeleport[client]=true;
+    m_TeleportCount[client]=0;
 }
 
 public OnRaceSelected(client,war3player,oldrace,race)
 {
-    m_AllowTeleport[client]=true;
+    m_TeleportCount[client]=0;
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && m_AllowTeleport[client] && IsPlayerAlive(client))
+    if (race==raceID && m_TeleportCount[client] < 2 && IsPlayerAlive(client))
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
         if(ult_level)
         {
-            HumanAlliance_Teleport(client,war3player,ult_level);
-            new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
-            if (cooldown > 0.0)
+            m_TeleportCount[client]++;
+            new bool:toSpawn = (m_TeleportCount[client] > 1);
+            HumanAlliance_Teleport(client,war3player,ult_level, toSpawn);
+            if (!toSpawn)
             {
-                m_AllowTeleport[client]=false;
-                CreateTimer(cooldown,AllowTeleport,client);
+                new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
+                if (cooldown > 0.0)
+                {
+                    CreateTimer(cooldown,AllowTeleport,client);
+                }
             }
         }
     }
@@ -120,7 +126,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 
 public Action:AllowTeleport(Handle:timer,any:index)
 {
-    m_AllowTeleport[index]=true;
+    m_TeleportCount[index]=0;
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
@@ -162,6 +168,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (client)
     {
         SetupMaxHealth(client);
+        GetClientAbsOrigin(client,spawnLoc[client]);
 
         new war3player=War3_GetWar3Player(client);
         if (war3player>-1)
@@ -303,7 +310,7 @@ public HumanAlliance_Invisibility(client, war3player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    War3_SetMinVisibility(war3player,alpha, 0.80);
+    War3_SetMinVisibility(war3player,alpha, 0.80, 0.80);
 }
 
 public HumanAlliance_Bash(war3player, victim)
@@ -336,71 +343,81 @@ public HumanAlliance_Bash(war3player, victim)
     }
 }
 
-public HumanAlliance_Teleport(client,war3player,ult_level)
+public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
 {
     new Float:origin[3];
     GetClientAbsOrigin(client, origin);
     TE_SetupSmoke(origin,g_smokeSprite,40.0,1);
     TE_SendToAll();
 
-    new Float:range=1.0;
-    switch(ult_level)
+    new Float:destloc[3];
+    if (to_spawn)
     {
-        case 1:
-            range=100.0;
-        case 2:
-            range=250.0;
-        case 3:
-            range=450.0;
-        case 4:
-            range=600.0;
+        destloc[0]=spawnLoc[client][0];
+        destloc[1]=spawnLoc[client][1];
+        destloc[2]=spawnLoc[client][2];
     }
-
-    new Float:clientloc[3],Float:clientang[3],Float:destloc[3];
-    GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
-    GetClientEyeAngles(client,clientang); // Get the angle the player is looking
-    TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
-    TR_GetEndPosition(destloc); // Get the end xyz coordinate of where a player is looking
-
-    new Float:distance[3];
-    distance[0] = destloc[0]-clientloc[0];
-    distance[1] = destloc[1]-clientloc[1];
-    distance[2] = destloc[2]-clientloc[2];
-    if (distance[0] < 0)
-        distance[0] *= -1;
-    if (distance[1] < 0)
-        distance[1] *= -1;
-    if (distance[2] < 0)
-        distance[2] *= -1;
-
-    // Limit the teleport location to remain within the range
-    for (new i = 0; i<=2; i++)
+    else
     {
-        if (distance[i] > range)
+        new Float:range=1.0;
+        switch(ult_level)
         {
-            if (clientloc[i] >= 0)
+            case 1:
+                range=100.0;
+            case 2:
+                range=250.0;
+            case 3:
+                range=450.0;
+            case 4:
+                range=600.0;
+        }
+
+        new Float:clientloc[3],Float:clientang[3];
+        GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
+        GetClientEyeAngles(client,clientang); // Get the angle the player is looking
+        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
+        TR_GetEndPosition(destloc); // Get the end xyz coordinate of where a player is looking
+
+        new Float:distance[3];
+        distance[0] = destloc[0]-clientloc[0];
+        distance[1] = destloc[1]-clientloc[1];
+        distance[2] = destloc[2]-clientloc[2];
+        if (distance[0] < 0)
+            distance[0] *= -1;
+        if (distance[1] < 0)
+            distance[1] *= -1;
+        if (distance[2] < 0)
+            distance[2] *= -1;
+
+        // Limit the teleport location to remain within the range
+        for (new i = 0; i<=2; i++)
+        {
+            if (distance[i] > range)
             {
-                if (destloc[i] >= 0)
+                if (clientloc[i] >= 0)
                 {
-                    if (clientloc[i] <= destloc[i])
-                        destloc[i] = clientloc[i] + range;
-                    if (clientloc[i] > destloc[i])
+                    if (destloc[i] >= 0)
+                    {
+                        if (clientloc[i] <= destloc[i])
+                            destloc[i] = clientloc[i] + range;
+                        if (clientloc[i] > destloc[i])
+                            destloc[i] = clientloc[i] - range;
+                    }
+                    else
                         destloc[i] = clientloc[i] - range;
                 }
                 else
-                    destloc[i] = clientloc[i] - range;
-            }
-            else
-            {
-                if (destloc[i] < 0)
                 {
-                    if (clientloc[i] <= destloc[i])
+                    if (destloc[i] < 0)
+                    {
+                        if (clientloc[i] <= destloc[i])
+                            destloc[i] = clientloc[i] + range;
+                        if (clientloc[i] > destloc[i])
+                            destloc[i] = clientloc[i] - range;
+                    }
+                    else
                         destloc[i] = clientloc[i] + range;
-                    if (clientloc[i] > destloc[i])
-                        destloc[i] = clientloc[i] - range;
                 }
-                else
-                    destloc[i] = clientloc[i] + range;
             }
         }
     }

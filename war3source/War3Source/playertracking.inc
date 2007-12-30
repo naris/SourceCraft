@@ -192,21 +192,23 @@ public Action:PlayerProperties(Handle:timer)
         if(IsClientInGame(client))
         {
             new Handle:pinfo=GetPropertyInfo(x);
-            new Float:gravity=1.0,Float:speed=1.0,visibility=255,Float:meleeFactor=1.0;
+            new Float:gravity=1.0,Float:speed=1.0;
+            new visibility=255,Float:meleeFactor=1.0,Float:movementFactor=1.0;
             new bool:overridePlayerSpeed=false;
             new bool:overridePlayerGravity=false;
             new bool:overridePlayerVisibility=false;
             for(new y=0;y<GetArraySize(pinfo);y++)
             {
                 // check which plugin is the highest/lowest bidder, but first, override?
-                new Handle:temp           = GetArrayCell(pinfo,y);
-                new Float:maxSpeed        = GetArrayCell(temp,1);
-                new Float:minGravity      = GetArrayCell(temp,2);
-                new minVisibility         = GetArrayCell(temp,3);
-                new Float:maxmeleeFactor  = GetArrayCell(temp,4);
-                new Float:overridespeed   = GetArrayCell(temp,5);
-                new Float:overridegravity = GetArrayCell(temp,6);
-                new overridevisibility    = GetArrayCell(temp,7);
+                new Handle:temp             = GetArrayCell(pinfo,y);
+                new Float:maxSpeed          = GetArrayCell(temp,1);
+                new Float:minGravity        = GetArrayCell(temp,2);
+                new minVisibility           = GetArrayCell(temp,3);
+                new Float:maxMeleeFactor    = GetArrayCell(temp,4);
+                new Float:maxMovementFactor = GetArrayCell(temp,5);
+                new Float:overridespeed     = GetArrayCell(temp,6);
+                new Float:overridegravity   = GetArrayCell(temp,7);
+                new overridevisibility      = GetArrayCell(temp,8);
 
                 if(!overridePlayerSpeed)
                 {
@@ -248,7 +250,8 @@ public Action:PlayerProperties(Handle:timer)
                     else if(visibility>minVisibility)
                     {
                         visibility=minVisibility;
-                        meleeFactor=maxmeleeFactor;
+                        meleeFactor=maxMeleeFactor;
+                        movementFactor=maxMovementFactor;
                         visibilityAltered[client]=true;
                     }
                 }
@@ -305,7 +308,7 @@ public Action:PlayerProperties(Handle:timer)
                 }
                 else
                 {
-                    MakeInvisible(client, visibility, meleeFactor);
+                    MakeInvisible(client, visibility, meleeFactor, movementFactor);
                 }
             }
 
@@ -341,7 +344,7 @@ stock MakeVisible(client)
     }
 }
 
-stock MakeInvisible(client, visibility, Float:meleeFactor)
+stock MakeInvisible(client, visibility, Float:meleeFactor, Float:movementFactor)
 {
     decl String:wepName[128];
     GetClientWeapon(client, wepName, 127);
@@ -375,13 +378,26 @@ stock MakeInvisible(client, visibility, Float:meleeFactor)
         }
     }
 
-    new count=GetEntityCount();
-    for(new obj = 64; obj < count; obj++)
+    if (m_VelocityOffset != -1 && movementFactor != 1.0 && movementFactor != -1.0)
     {
-        if(IsValidEdict(obj))
+        new Float:vecVelocity[3];
+        GetEntDataVector(client, m_VelocityOffset, vecVelocity);
+        if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
         {
-            if(GetEntDataEnt(obj,m_OwnerOffset) == client)
+            visibility *= movementFactor;
+        }
+    }
+
+    if(m_OwnerOffset != -1)
+    {
+        new count=GetEntityCount();
+        for(new obj = 64; obj < count; obj++)
+        {
+            if(IsValidEdict(obj))
+            {
+                if(GetEntDataEnt(obj,m_OwnerOffset) == client)
                 SetRenderColor(obj,255,255,255,visibility);
+            }
         }
     }
     SetRenderColor(client,255,255,255,visibility);

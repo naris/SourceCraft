@@ -5,13 +5,14 @@
  * Author(s): Anthony Iacono  
  */
 
-new m_OffsetLifestate              = 0;
-new m_OffsetSpeed                  = 0;
-new m_OwnerOffset                  = 0;
-new m_ColorOffset                  = 0;
-new m_RenderModeOffset             = 0;
-new m_OffsetGravity[MAXPLAYERS+1]  = { 0, ... };
-new m_OffsetMaxSpeed[MAXPLAYERS+1] = { 0, ... };
+new m_OffsetLifestate;
+new m_OffsetSpeed;
+new m_OwnerOffset;
+new m_ColorOffset;
+new m_RenderModeOffset;
+new m_VelocityOffset;
+new m_OffsetGravity[MAXPLAYERS+1];
+new m_OffsetMaxSpeed[MAXPLAYERS+1];
 
 public bool:War3Source_InitOffset()
 {
@@ -49,6 +50,13 @@ public bool:War3Source_InitOffset()
     if(m_RenderModeOffset==-1)
     {
         PrintToServer("[War3Source] Error finding RenderMode offset.");
+        ret=false;
+    }
+
+    m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
+    if(m_VelocityOffset == -1)
+    {
+        PrintToServer("[War3Source] Error finding Velocity offset.");
         ret=false;
     }
 

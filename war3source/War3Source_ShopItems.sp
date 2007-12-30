@@ -245,7 +245,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         SaveHealth(client);
         SetupMaxHealth(client);
-
         GetClientAbsOrigin(client,spawnLoc[client]);
 
         new war3player=War3_GetWar3Player(client);
@@ -685,8 +684,9 @@ public Action:DoMole(Handle:timer,Handle:temp)
             new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
             new lucky_player=GetArrayCell(playerList,lucky_player_iter);
             //EntityOrigin(lucky_player,teleLoc);
-            teleLoc=spawnLoc[lucky_player];
-            teleLoc[0]+=40.0;
+            teleLoc[0]=spawnLoc[lucky_player][0] + 40.0;
+            teleLoc[1]=spawnLoc[lucky_player][1];
+            teleLoc[2]=spawnLoc[lucky_player][2];
             TeleportEntity(client,teleLoc, NULL_VECTOR, NULL_VECTOR);
             isMole[client]=true;
             if (GameType == cstrike)
