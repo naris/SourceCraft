@@ -10,8 +10,8 @@
  
 #define MAX_LEVELS 16
 #define HEADSHOT_XP 10
-#define KNIFE_XP 40
-#define BACKSTAB_XP 60
+#define KNIFE_XP 20
+#define BACKSTAB_XP 25
 
 #define DEFUSE_XP 20
 #define PLANT_XP 20
