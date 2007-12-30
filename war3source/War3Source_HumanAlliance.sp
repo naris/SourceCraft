@@ -44,7 +44,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","30"); // Teleport Cooldown, default: 30 seconds
+    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","30");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
