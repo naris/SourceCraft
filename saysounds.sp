@@ -436,7 +436,8 @@ public Action:Command_Say(client,args){
 			}
 		}
 						
-		if(strcmp(speech[startidx],"!sounds",false) == 0){
+		if(strcmp(speech[startidx],"!sounds",false) == 0 || 
+		   strcmp(speech[startidx],"sounds",false) == 0){
 				if(SndOn[client] == 1){
 					SndOn[client] = 0;
 					PrintToChat(client,"[Say Sounds] Sounds Disabled");
@@ -446,16 +447,19 @@ public Action:Command_Say(client,args){
 				}
 				return Plugin_Handled;
 		}
-		else if(strcmp(speech[startidx],"!soundlist",false) == 0){
+		else if(strcmp(speech[startidx],"!soundlist",false) == 0 ||
+			strcmp(speech[startidx],"soundlist",false) == 0){
 			List_Sounds(client);
 			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 			return Plugin_Handled;
 		}
-		else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
+		else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
+			strcmp(speech[startidx],"soundmenu",false) == 0){
 			Sound_Menu(client,false);
 			return Plugin_Handled;
 		}
-		else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
+		else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
+			strcmp(speech[startidx],"adminsounds",false) == 0){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
 		}
