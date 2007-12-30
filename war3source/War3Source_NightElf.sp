@@ -14,6 +14,7 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
+#include "War3Source/damage"
 #include "War3Source/freeze"
 #include "War3Source/authtimer"
 #include "War3Source/log"
@@ -79,6 +80,11 @@ public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
     m_AllowEntangle[client]=true;
+}
+
+public OnGameFrame()
+{
+    SaveAllHealth();
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -213,6 +219,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
+        if (victimindex)
+            SaveHealth(victimindex);
     }
 }
 
@@ -235,7 +243,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         }
         if (GetRandomInt(1,100) <= chance)
         {
-            new losthp=GetDamage(event);
+            new losthp=GetDamage(event, victimIndex);
             new newhp=GetClientHealth(victimIndex)+losthp;
             SetHealth(victimIndex,newhp);
 
@@ -272,7 +280,7 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new damage=GetDamage(event, index, 10, 20);
+                new damage=GetDamage(event, victimindex, index, 10, 20);
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
                 if (newhp <= 0)
@@ -319,7 +327,7 @@ public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evade
                     percent=0.60;
             }
 
-            new damage=GetDamage(event, index, 10, 20);
+            new damage=GetDamage(event, victimindex, index, 10, 20);
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimindex)-amount;
             if (newhp <= 0)

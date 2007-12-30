@@ -14,6 +14,7 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
+#include "War3Source/damage"
 #include "War3Source/authtimer"
 #include "War3Source/respawn"
 #include "War3Source/log"
@@ -116,6 +117,11 @@ public OnWar3PlayerAuthed(client,war3player)
     m_AllowChainLightning[client]=true;
 }
 
+public OnGameFrame()
+{
+    SaveAllHealth();
+}
+
 public OnRaceSelected(client,war3player,oldrace,newrace)
 {
     m_AllowChainLightning[client]=true;
@@ -187,6 +193,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
+        if (victimIndex)
+            SaveHealth(victimIndex);
     }
 }
 
@@ -293,7 +301,7 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetDamage(event, index, 5, 20);
+            new damage=GetDamage(event, victimIndex, index, 5, 20);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health <= 0)
@@ -347,7 +355,7 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetDamage(event, index, 10, 30);
+            new damage=GetDamage(event, victimIndex, index, 10, 30);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health <= 0)

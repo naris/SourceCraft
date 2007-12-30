@@ -14,6 +14,7 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
+#include "War3Source/damage"
 #include "War3Source/log"
 
 // War3Source stuff
@@ -99,6 +100,11 @@ public OnMapStart()
 public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
+}
+
+public OnGameFrame()
+{
+    SaveAllHealth();
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -236,6 +242,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
+        if (victimIndex)
+            SaveHealth(victimIndex);
     }
 }
 
@@ -327,7 +335,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
             case 4:
                 percent_health=0.30;
         }
-        new Float:damage=float(GetDamage(event, index, 5, 20));
+        new Float:damage=float(GetDamage(event, victim, index, 5, 20));
         new leechhealth=RoundFloat(damage*percent_health);
         if(leechhealth)
         {
