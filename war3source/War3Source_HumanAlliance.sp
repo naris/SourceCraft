@@ -43,7 +43,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","0.0");
+    cvarTeleportCooldown=CreateConVar("war3_teleportcooldown","0");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
