@@ -118,7 +118,7 @@ Versions:
 #define MAX_NUM_SETS 5
 #define MAX_MELEE 9
 
-#define NUM_SOUNDS 51
+#define NUM_SOUNDS 54
 #define HEADSHOT 0
 #define GRENADE 1
 #define SELFKILL 2
@@ -170,6 +170,9 @@ Versions:
 #define FIREAXE 48
 #define FIREAXE3 49
 #define FIREAXE5 50
+#define CLUB 48			// snipers machete
+#define CLUB3 49
+#define CLUB5 50
 
 #define NUM_EVENT_SOUNDS 1
 #define JOINSERVER 0
@@ -224,7 +227,7 @@ static const String:soundNames[NUM_SOUNDS][] = {"headshot", "grenade", "selfkill
 "triple combo", "quad combo", "monster combo", "headshot 3", "headshot 5", "backstab", "backstab 3",
 "backstab 5", "knife", "knife 3", "knife 5", "fists", "fists 3", "fists 5", "bat", "bat 3", "bat 5",
 "wrench", "wrench 3", "wrench 5","bottle", "bottle 3", "bottle 5", "bonesaw", "bonesaw 3", "bonesaw 5",
-"shovel", "shovel 3", "shovel 5", "fireaxe", "fireaxe 3", "fireaxe 5"};
+"shovel", "shovel 3", "shovel 5", "fireaxe", "fireaxe 3", "fireaxe 5", "club", "club 3", "club 5"};
 
 // We need to capture if the plugin was late loaded so we can make sure initializations
 // are handled properly
@@ -360,8 +363,9 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	else if(gameType == TF2)
 	{
-		headshot = (GetEventInt(event, "customkill") == 1) && StrEqual(weapon, "sniperrifle");
-		backstab = (GetEventInt(event, "customkill") == 2) && StrEqual(weapon, "knife");
+		new customkill = GetEventInt(event, "customkill");
+		headshot = (customkill == 1);
+		backstab = (customkill == 2);
 	}
 	else
 	{
@@ -461,7 +465,10 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(attackerClient && killNumSetting[consecutiveKills[attackerClient]])
 			soundId = killNumSetting[consecutiveKills[attackerClient]];
 
-	if(assisterClient && assisterClient != victimClient && (settingsArray[DOUBLECOMBO] || settingsArray[TRIPLECOMBO] || settingsArray[QUADCOMBO] || settingsArray[MONSTERCOMBO]))
+	if(assisterClient && assisterClient != victimClient && (settingsArray[DOUBLECOMBO] ||
+								settingsArray[TRIPLECOMBO] ||
+								settingsArray[QUADCOMBO] ||
+								settingsArray[MONSTERCOMBO]))
 	{
 		if(lastKillTime[assisterClient] != -1.0) {
 			if((GetEngineTime() - lastKillTime[assisterClient]) < 1.5) {
@@ -482,7 +489,10 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		lastKillTime[assisterClient] = GetEngineTime();
 	}
 			
-	if(attackerClient && attackerClient != victimClient && (settingsArray[DOUBLECOMBO] || settingsArray[TRIPLECOMBO] || settingsArray[QUADCOMBO] || settingsArray[MONSTERCOMBO]))
+	if(attackerClient && attackerClient != victimClient && (settingsArray[DOUBLECOMBO] ||
+								settingsArray[TRIPLECOMBO] ||
+								settingsArray[QUADCOMBO] ||
+								settingsArray[MONSTERCOMBO]))
 	{
 		if(lastKillTime[attackerClient] != -1.0) {
 			if((GetEngineTime() - lastKillTime[attackerClient]) < 1.5) {
@@ -503,7 +513,8 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		lastKillTime[attackerClient] = GetEngineTime();
 	}
 			
-	if(attackerClient && victimClient && GetClientTeam(attackerClient) == GetClientTeam(victimClient) && attackerId != victimId && settingsArray[TEAMKILL])
+	if(attackerClient && victimClient && GetClientTeam(attackerClient) == GetClientTeam(victimClient) &&
+	   attackerId != victimId && settingsArray[TEAMKILL])
 		soundId = TEAMKILL;
 	
 	// Play the appropriate sound if there was a reason to do so 
@@ -808,7 +819,7 @@ public IsKnife(String:weapon[])
         else if(StrEqual(weapon,"fireaxe"))
 		return 8;
         else if(StrEqual(weapon,"club"))
-		return 1;
+		return 9;
 		
 	return 0;
 }

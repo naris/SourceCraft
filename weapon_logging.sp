@@ -49,11 +49,14 @@
 #define LOG_HIT_RIGHTARM   12
 #define LOG_HIT_LEFTLEG    13
 #define LOG_HIT_RIGHTLEG   14
+#define LOG_HIT_BACKSTABS  15
 
+enum mod_id { CSS, DODS, HL2MP, TF, INS };
+new mod_id: game_mod_id;
 new String: game_mod[32];
 new String: team_list[16][64];
 
-new weapon_stats[MAX_LOG_PLAYERS + 1][MAX_LOG_WEAPONS][15];
+new weapon_stats[MAX_LOG_PLAYERS + 1][MAX_LOG_WEAPONS][16];
 new String: css_weapon_list[][] = {
 									"ak47", 
 									"m4a1",
@@ -114,6 +117,35 @@ new String: dods_weapon_list[][] = {
 									 "dod_bomb_target"
 								};
 
+new String: tf_weapon_list[][] = {
+									 "bat",
+									 "bonesaw",
+									 "bottle",
+									 "club",
+									 "fireaxe",
+									 "fists",
+									 "flamethrower",
+									 "tf_projectile_pipe",
+									 "knife",
+									 "minigun",
+									 "tf_projectile_pipe_remote",
+									 "pistol",
+									 "pistol_scout",
+									 "revolver",
+									 "tf_projectile_rocket",
+									 "scattergun",
+									 "shotgun_hwg",
+									 "shotgun_primary",
+									 "shotgun_pyro",
+									 "shotgun_soldier",
+									 "shovel",
+									 "smg",
+									 "sniperrifle",
+									 "syringegun_medic",
+									 "wrench",
+									 "obj_sentrygun"
+								};
+
 public Plugin:myinfo = {
 	name = "Weapon Logging",
 	author = "Tobi17",
@@ -124,37 +156,53 @@ public Plugin:myinfo = {
 
 public OnPluginStart()
 {
-	new String: game_description[64];
+	decl String: game_description[64];
 	GetGameDescription(game_description, 64, true);
 	if (strcmp(game_description, "Counter-Strike: Source") == 0) {
 		game_mod = "CSS";
+		game_mod_id = CSS;
 	}
-	if (strcmp(game_description, "Day of Defeat: Source") == 0) {
+	else if (strcmp(game_description, "Day of Defeat: Source") == 0) {
 		game_mod = "DODS";
+		game_mod_id = DODS;
 	}
-	if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0) {
+	else if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0) {
 		game_mod = "HL2MP";
+		game_mod_id = HL2MP;
 	}
-	if (strcmp(game_description, "Team Fortress") == 0) {
+	else if (strcmp(game_description, "Team Fortress") == 0) {
 		game_mod = "TF";
+		game_mod_id = TF;
+	}
+	else if (strcmp(game_description, "Insurgency") == 0) {
+		game_mod = "INS";
+		game_mod_id = INS;
 	}
 
 	for (new i = 0; (i < (MAX_LOG_PLAYERS + 1)); i++) {
 		reset_player_stats(i);
 	}
 	
-	if (strcmp(game_mod, "CSS") == 0) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == CSS) {
 		HookEvent("weapon_fire",  Event_CSSPlayerFire);
 		HookEvent("player_death", Event_CSSPlayerDeath);
 		HookEvent("player_hurt",  Event_CSSPlayerHurt);
 		HookEvent("player_spawn", Event_CSSPlayerSpawn);
 		HookEvent("round_end",    Event_CSSRoundEnd);
 	}
-	if (strcmp(game_mod, "DODS") == 0) {
+	//else if (strcmp(game_mod, "DODS") == 0) {
+	else if (game_mod_id == DODS) {
 		HookEvent("dod_stats_weapon_attack",  Event_DODSWeaponAttack);
 		HookEvent("player_death", Event_DODSPlayerDeath);
 		HookEvent("player_hurt",  Event_DODSPlayerHurt);
-		HookEvent("player_spawn", Event_DODSRoundEnd);
+		HookEvent("dod_round_win", Event_DODSRoundEnd);
+		HookEvent("dod_game_over", Event_DODSRoundEnd);
+	}
+	else if (game_mod_id == TF) {
+		HookEvent("player_death", Event_TFPlayerDeath);
+		HookEvent("teamplay_round_win", Event_TFRoundEnd);
+		HookEvent("teamplay_round_stalemate", Event_TFRoundEnd);
 	}
 
 }
@@ -165,7 +213,7 @@ public OnMapStart()
 	for (new entity_index = 0; (entity_index < max_entities); entity_index++) {
 		if (IsValidEntity(entity_index)) {
 
-			new String: entity_classname[64];
+			decl String: entity_classname[64];
 			GetEntityNetClass(entity_index, entity_classname, 64);
 
 			if (strcmp(entity_classname, "CCSTeam") == 0) {
@@ -173,7 +221,7 @@ public OnMapStart()
 				new index_offset = FindSendPropOffs("CCSTeam", "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs("CCSTeam", "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
@@ -182,12 +230,12 @@ public OnMapStart()
 				}
 			}
 
-			if (strcmp(entity_classname, "CDODTeam") == 0) {
+			else if (strcmp(entity_classname, "CDODTeam") == 0) {
 				new team_index;
 				new index_offset = FindSendPropOffs("CDODTeam", "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs("CDODTeam", "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
@@ -195,13 +243,27 @@ public OnMapStart()
 					team_list[team_index] = team_name;
 				}
 			}
-			if ((strcmp(entity_classname, "CDODTeam_Allies") == 0) || (strcmp(entity_classname, "CDODTeam_Axis") == 0)) {
+			else if ((strcmp(entity_classname, "CDODTeam_Allies") == 0) ||
+				 (strcmp(entity_classname, "CDODTeam_Axis") == 0)) {
 				new team_index;
 				new index_offset = FindSendPropOffs(entity_classname, "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
 
-				new String: team_name[64];
+				decl String: team_name[64];
 				new name_offset = FindSendPropOffs(entity_classname, "m_szTeamname");				
+				GetEntDataString(entity_index, name_offset, team_name, 64);
+				
+				if (strcmp(team_name, "") != 0) {
+					team_list[team_index] = team_name;
+				}
+			}
+			else if (strcmp(entity_classname, "CTFTeam") == 0) {
+				new team_index;
+				new index_offset = FindSendPropOffs("CTFTeam", "m_iTeamNum");				
+				team_index = GetEntData(entity_index, index_offset);
+
+				decl String: team_name[64];
+				new name_offset = FindSendPropOffs("CTFTeam", "m_szTeamname");				
 				GetEntDataString(entity_index, name_offset, team_name, 64);
 				
 				if (strcmp(team_name, "") != 0) {
@@ -213,35 +275,51 @@ public OnMapStart()
 }
 
 
-stock get_weapon_index(const String: weapon_name[])
+get_weapon_index(const String: weapon_name[])
 {
-	new loop_break = 0;
+	//new loop_break = 0;
 	new index = 0;
 	
-	if (strcmp(game_mod, "CSS") == 0) {
-		while ((loop_break == 0) && (index < sizeof(css_weapon_list))) {
+	//if (strcmp(game_mod, "CSS") == 0) {
+	if (game_mod_id == CSS) {
+		//while ((loop_break == 0) && (index < sizeof(css_weapon_list))) {
+		while (index < sizeof(css_weapon_list)) {
     	    if (strcmp(weapon_name, css_weapon_list[index], true) == 0) {
-        		loop_break++;
+        		//loop_break++;
+			return index - 1;
 	        }
     	    index++;
 		}
-	} else if (strcmp(game_mod, "DODS") == 0) {
-		while ((loop_break == 0) && (index < sizeof(dods_weapon_list))) {
+	//} else if (strcmp(game_mod, "DODS") == 0) {
+	} else if (game_mod_id == DODS) {
+		//while ((loop_break == 0) && (index < sizeof(dods_weapon_list))) {
+		while (index < sizeof(dods_weapon_list)) {
     	    if (strcmp(weapon_name, dods_weapon_list[index], true) == 0) {
-        		loop_break++;
+        		//loop_break++;
+			return index - 1;
+	        }
+    	    index++;
+		}
+	} else if (game_mod_id == TF) {
+		//while ((loop_break == 0) && (index < sizeof(tf_weapon_list))) {
+		while (index < sizeof(tf_weapon_list)) {
+    	    if (strcmp(weapon_name, tf_weapon_list[index], true) == 0) {
+        		//loop_break++;
+			return index - 1;
 	        }
     	    index++;
 		}
 	}
 
-	if (loop_break == 0) {
-		return -1;
-	} else {
-		return index - 1;
-	}
+	return -1;
+	//if (loop_break == 0) {
+	//	return -1;
+	//} else {
+	//	return index - 1;
+	//}
 }
 
-stock reset_player_stats(player_index) 
+reset_player_stats(player_index) 
 {
 	for (new i = 0; (i < MAX_LOG_WEAPONS); i++) {
 		weapon_stats[player_index][i][LOG_HIT_SHOTS]     = 0;
@@ -259,23 +337,24 @@ stock reset_player_stats(player_index)
 		weapon_stats[player_index][i][LOG_HIT_RIGHTARM]  = 0;
 		weapon_stats[player_index][i][LOG_HIT_LEFTLEG]   = 0;
 		weapon_stats[player_index][i][LOG_HIT_RIGHTLEG]  = 0;
+		weapon_stats[player_index][i][LOG_HIT_BACKSTABS] = 0;
 	}
 }
 
-stock dump_player_stats(player_index)
+dump_player_stats(player_index)
 {
 	if ((IsClientConnected(player_index)) && (IsClientInGame(player_index)))  {
 
-		new String:player_name[64];
+		decl String:player_name[64];
 		if (!GetClientName(player_index, player_name, 64))	{
 			strcopy(player_name, 64, "UNKNOWN");
 		}
-		new String:player_authid[64];
+		decl String:player_authid[64];
 		if (!GetClientAuthString(player_index, player_authid, 64)){
 			strcopy(player_authid, 64, "UNKNOWN");
 		}
 		new player_team_index = GetClientTeam(player_index);
-		new String:player_team[64];
+		decl String:player_team[64];
 		player_team = team_list[player_team_index];
 
 		new player_userid = GetClientUserId(player_index);
@@ -283,12 +362,16 @@ stock dump_player_stats(player_index)
 		new is_logged = 0;
 		for (new i = 0; (i < MAX_LOG_WEAPONS); i++) {
 			if (weapon_stats[player_index][i][LOG_HIT_SHOTS] > 0) {
-				if (strcmp(game_mod, "CSS") == 0) {
+				//if (strcmp(game_mod, "CSS") == 0) {
+				if (game_mod_id == CSS) {
 					LogToGame("\"%s<%d><%s><%s>\" triggered \"weaponstats\" (weapon \"%s\") (shots \"%d\") (hits \"%d\") (kills \"%d\") (headshots \"%d\") (tks \"%d\") (damage \"%d\") (deaths \"%d\")", player_name, player_userid, player_authid, player_team, css_weapon_list[i], weapon_stats[player_index][i][LOG_HIT_SHOTS], weapon_stats[player_index][i][LOG_HIT_HITS], weapon_stats[player_index][i][LOG_HIT_KILLS], weapon_stats[player_index][i][LOG_HIT_HEADSHOTS], weapon_stats[player_index][i][LOG_HIT_TEAMKILLS], weapon_stats[player_index][i][LOG_HIT_DAMAGE], weapon_stats[player_index][i][LOG_HIT_DEATHS]); 
 					LogToGame("\"%s<%d><%s><%s>\" triggered \"weaponstats2\" (weapon \"%s\") (head \"%d\") (chest \"%d\") (stomach \"%d\") (leftarm \"%d\") (rightarm \"%d\") (leftleg \"%d\") (rightleg \"%d\")", player_name, player_userid, player_authid, player_team, css_weapon_list[i], weapon_stats[player_index][i][LOG_HIT_HEAD], weapon_stats[player_index][i][LOG_HIT_CHEST], weapon_stats[player_index][i][LOG_HIT_STOMACH], weapon_stats[player_index][i][LOG_HIT_LEFTARM], weapon_stats[player_index][i][LOG_HIT_RIGHTARM], weapon_stats[player_index][i][LOG_HIT_LEFTLEG], weapon_stats[player_index][i][LOG_HIT_RIGHTLEG]); 
-				} else if (strcmp(game_mod, "DODS") == 0) {
+				//} else if (strcmp(game_mod, "DODS") == 0) {
+				} else if (game_mod_id == DODS) {
 					LogToGame("\"%s<%d><%s><%s>\" triggered \"weaponstats\" (weapon \"%s\") (shots \"%d\") (hits \"%d\") (kills \"%d\") (headshots \"%d\") (tks \"%d\") (damage \"%d\") (deaths \"%d\")", player_name, player_userid, player_authid, player_team, dods_weapon_list[i], weapon_stats[player_index][i][LOG_HIT_SHOTS], weapon_stats[player_index][i][LOG_HIT_HITS], weapon_stats[player_index][i][LOG_HIT_KILLS], weapon_stats[player_index][i][LOG_HIT_HEADSHOTS], weapon_stats[player_index][i][LOG_HIT_TEAMKILLS], weapon_stats[player_index][i][LOG_HIT_DAMAGE], weapon_stats[player_index][i][LOG_HIT_DEATHS]); 
 					LogToGame("\"%s<%d><%s><%s>\" triggered \"weaponstats2\" (weapon \"%s\") (head \"%d\") (chest \"%d\") (stomach \"%d\") (leftarm \"%d\") (rightarm \"%d\") (leftleg \"%d\") (rightleg \"%d\")", player_name, player_userid, player_authid, player_team, dods_weapon_list[i], weapon_stats[player_index][i][LOG_HIT_HEAD], weapon_stats[player_index][i][LOG_HIT_CHEST], weapon_stats[player_index][i][LOG_HIT_STOMACH], weapon_stats[player_index][i][LOG_HIT_LEFTARM], weapon_stats[player_index][i][LOG_HIT_RIGHTARM], weapon_stats[player_index][i][LOG_HIT_LEFTLEG], weapon_stats[player_index][i][LOG_HIT_RIGHTLEG]); 
+				} else if (game_mod_id == TF) {
+					LogToGame("\"%s<%d><%s><%s>\" triggered \"weaponstats\" (weapon \"%s\") (shots \"%d\") (hits \"%d\") (kills \"%d\") (headshots \"%d\") (tks \"%d\") (damage \"%d\") (deaths \"%d\")", player_name, player_userid, player_authid, player_team, dods_weapon_list[i], weapon_stats[player_index][i][LOG_HIT_SHOTS], weapon_stats[player_index][i][LOG_HIT_HITS], weapon_stats[player_index][i][LOG_HIT_KILLS], weapon_stats[player_index][i][LOG_HIT_HEADSHOTS], weapon_stats[player_index][i][LOG_HIT_TEAMKILLS], weapon_stats[player_index][i][LOG_HIT_DAMAGE], weapon_stats[player_index][i][LOG_HIT_DEATHS]); 
 				}
 				is_logged++;
 			}
@@ -308,7 +391,7 @@ public Action:Event_DODSWeaponAttack(Handle:event, const String:name[], bool:don
 	new userid   = GetClientOfUserId(GetEventInt(event, "attacker"));
 	if (userid > 0) {
 
-		new String: weapon[64];
+		decl String: weapon[64];
 		new log_weapon_index  = GetEventInt(event, "weapon");
 		switch (log_weapon_index) {
 			case 1 :
@@ -375,7 +458,11 @@ public Action:Event_DODSWeaponAttack(Handle:event, const String:name[], bool:don
 		
 		new weapon_index = get_weapon_index(weapon);
 		if (weapon_index > -1) {
-			if ((strcmp(weapon, "dod_bomb_target") != 0) && (strcmp(weapon, "riflegren_ger") != 0) && (strcmp(weapon, "riflegren_us") != 0) && (strcmp(weapon, "smoke_ger") != 0) && (strcmp(weapon, "smoke_us") != 0)) {
+			if ((strcmp(weapon, "dod_bomb_target") != 0) &&
+			    (strcmp(weapon, "riflegren_ger") != 0) &&
+			    (strcmp(weapon, "riflegren_us") != 0) &&
+			    (strcmp(weapon, "smoke_ger") != 0) &&
+			    (strcmp(weapon, "smoke_us") != 0)) {
 				weapon_stats[userid][weapon_index][LOG_HIT_SHOTS]++;
 			}
 		}
@@ -390,11 +477,13 @@ public Action:Event_CSSPlayerFire(Handle:event, const String:name[], bool:dontBr
 
 	new userid   = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (userid > 0) {
-		new String: weapon[64];
+		decl String: weapon[64];
 		GetEventString(event, "weapon", weapon, 64)
 		new weapon_index = get_weapon_index(weapon);
 		if (weapon_index > -1) {
-		    if ((strcmp(weapon, "flashbang") != 0) && (strcmp(weapon, "hegrenade") != 0) && (strcmp(weapon, "smokegrenade") != 0)) {
+		    if ((strcmp(weapon, "flashbang") != 0) &&
+			(strcmp(weapon, "hegrenade") != 0) &&
+			(strcmp(weapon, "smokegrenade") != 0)) {
 				weapon_stats[userid][weapon_index][LOG_HIT_SHOTS]++;
 			}
 		}
@@ -408,7 +497,7 @@ public Action:Event_CSSPlayerHurt(Handle:event, const String:name[], bool:dontBr
 	//	"health"        "byte"          // remaining health points
 	//	"armor"         "byte"          // remaining armor points
 	//	"weapon"        "string"        // weapon name attacker used, if not the world
-	//	"dmg_health"    "byte"  		// damage done to health
+	//	"dmg_health"    "byte"  	// damage done to health
 	//	"dmg_armor"     "byte"          // damage done to armor
 	//	"hitgroup"      "byte"          // hitgroup that was damaged
 
@@ -417,11 +506,13 @@ public Action:Event_CSSPlayerHurt(Handle:event, const String:name[], bool:dontBr
 	new hitgroup  = GetEventInt(event, "hitgroup");
 	
 	if (attacker > 0) {
-		new String: weapon[64];
+		decl String: weapon[64];
 		GetEventString(event, "weapon", weapon, 64)
 		new weapon_index = get_weapon_index(weapon);
 		if (weapon_index > -1) {
-			if ((strcmp(weapon, "flashbang") != 0) && (strcmp(weapon, "hegrenade") != 0) && (strcmp(weapon, "smokegrenade") != 0)) {
+			if ((strcmp(weapon, "flashbang") != 0) &&
+			    (strcmp(weapon, "hegrenade") != 0) &&
+			    (strcmp(weapon, "smokegrenade") != 0)) {
 				weapon_stats[attacker][weapon_index][LOG_HIT_SHOTS]++;
 			}
 			weapon_stats[attacker][weapon_index][LOG_HIT_HITS]++;
@@ -445,11 +536,11 @@ public Action:Event_DODSPlayerHurt(Handle:event, const String:name[], bool:dontB
 	// "hitgroup"      "byte"          // what hitgroup was hit
 	
 	new attacker  = GetClientOfUserId(GetEventInt(event, "attacker"));
-	new damage    = GetEventInt(event, "health");
+	new damage    = GetEventInt(event, "damage");
 	new hitgroup  = GetEventInt(event, "hitgroup");
 	
 	if (attacker > 0) {
-		new String: weapon[64];
+		decl String: weapon[64];
 		GetEventString(event, "weapon", weapon, 64)
 		new weapon_index = get_weapon_index(weapon);
 		if (weapon_index > -1) {
@@ -478,7 +569,7 @@ public Action:Event_CSSPlayerDeath(Handle:event, const String:name[], bool:dontB
 	new headshot = GetEventBool(event, "headshot");
 
 	if ((victim > 0) && (attacker > 0)) {
-		new String: weapon[64];
+		decl String: weapon[64];
 		GetEventString(event, "weapon", weapon, 64)
 		new weapon_index = get_weapon_index(weapon);
 		if (weapon_index > -1) {
@@ -508,7 +599,7 @@ public Action:Event_DODSPlayerDeath(Handle:event, const String:name[], bool:dont
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 
 	if ((victim > 0) && (attacker > 0)) {
-		new String: weapon[64];
+		decl String: weapon[64];
 		GetEventString(event, "weapon", weapon, 64)
 		new weapon_index = get_weapon_index(weapon);
 		if (weapon_index > -1) {
@@ -524,7 +615,46 @@ public Action:Event_DODSPlayerDeath(Handle:event, const String:name[], bool:dont
 	return Plugin_Continue
 }
 
+public Action:Event_TFPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	// this extends the original player_death 
+	// "userid"	"short"   	// user ID who died				
+	// "attacker"	"short"	 	// user ID who killed
+	// "weapon"	"string" 	// weapon name killer used 
+	// "damagebits"	"long"		// bits of type of damage
+	// "customkill"	"short"		// type of custom kill
+	// "assister"	"short"		// user ID of assister
+	// "dominated"	"short"		// did killer dominate victim with this kill
+	// "assister_dominated" "short"	// did assister dominate victim with this kill
+	// "revenge"	"short"		// did killer get revenge on victim with this kill
+	// "assister_revenge" "short"	// did assister get revenge on victim with this kill
 
+	new victim   = GetClientOfUserId(GetEventInt(event, "userid"));
+	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	new customkill = GetEventInt(event, "customkill");
+
+	if ((victim > 0) && (attacker > 0)) {
+		decl String: weapon[64];
+		GetEventString(event, "weapon", weapon, 64)
+		new weapon_index = get_weapon_index(weapon);
+		if (weapon_index > -1) {
+			weapon_stats[attacker][weapon_index][LOG_HIT_KILLS]++;
+			if (customkill == 1) {
+				weapon_stats[attacker][weapon_index][LOG_HIT_HEADSHOTS]++;
+			}
+			else if (customkill == 2) {
+				weapon_stats[attacker][weapon_index][LOG_HIT_BACKSTABS]++;
+			}
+			weapon_stats[victim][weapon_index][LOG_HIT_DEATHS]++;
+			if (GetClientTeam(attacker) == GetClientTeam(victim)) {
+				weapon_stats[attacker][weapon_index][LOG_HIT_TEAMKILLS]++;
+			}
+			dump_player_stats(victim);
+		}
+	}
+
+	return Plugin_Continue
+}
 
 public Action:Event_CSSPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -554,6 +684,15 @@ public Action:Event_DODSRoundEnd(Handle:event, const String:name[], bool:dontBro
 	return Plugin_Continue
 }
 
+
+public Action:Event_TFRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	new max_clients = GetMaxClients();
+	for (new i = 1; (i <= max_clients); i++) {
+		dump_player_stats(i);
+	}
+	return Plugin_Continue
+}
 
 public OnClientDisconnect(client)
 {

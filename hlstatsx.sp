@@ -24,7 +24,7 @@
 #include <menus>
 #include <sdktools>
 
-enum mod_id { css, dods, hl2mp, tf, insurgency };
+enum mod_id { CSS, DODS, HL2MP, TF, INS };
 new mod_id: game_mod_id;
 new String: game_mod[32];
 new String: team_list[16][64];
@@ -75,23 +75,23 @@ public OnPluginStart()
 	
 	if (strcmp(game_description, "Counter-Strike: Source") == 0) {
 		game_mod = "CSS";
-		game_mod_id = css;
+		game_mod_id = CSS;
 	}
 	else if (strcmp(game_description, "Day of Defeat: Source") == 0) {
 		game_mod = "DODS";
-		game_mod_id = dods;
+		game_mod_id = DODS;
 	}
 	else if (strcmp(game_description, "Half-Life 2 Deathmatch") == 0) {
 		game_mod = "HL2MP";
-		game_mod_id = hl2mp;
+		game_mod_id = HL2MP;
 	}
 	else if (strcmp(game_description, "Team Fortress") == 0) {
 		game_mod = "TF";
-		game_mod_id = tf;
+		game_mod_id = TF;
 	}
 	else if (strcmp(game_description, "Insurgency") == 0) {
 		game_mod = "INS";
-		game_mod_id = insurgency;
+		game_mod_id = INS;
 	}
 
 	LogToGame("Mod Detection: %s [%s]", game_description, game_mod);
@@ -99,7 +99,7 @@ public OnPluginStart()
 	HandleGameConf = LoadGameConfigFile("hlstatsx.sdktools");
 
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id ==  css) {
+	if (game_mod_id ==  CSS) {
 		StartPrepSDKCall(SDKCall_Player);
 		PrepSDKCall_SetFromConf(HandleGameConf, SDKConf_Signature, "SwitchTeam");
 		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
@@ -196,7 +196,7 @@ public OnMapStart()
 			}
 
 			else if ((strcmp(entity_classname, "CDODTeam_Allies") == 0) ||
-                                 (strcmp(entity_classname, "CDODTeam_Axis") == 0)) {
+				 (strcmp(entity_classname, "CDODTeam_Axis") == 0)) {
 				new team_index;
 				new index_offset = FindSendPropOffs(entity_classname, "m_iTeamNum");				
 				team_index = GetEntData(entity_index, index_offset);
@@ -230,13 +230,13 @@ public OnMapStart()
 	clear_message_cache();
 
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 		ct_player_color = -1;
 		ts_player_color = -1;
 		find_player_team_slot("CT");
 		find_player_team_slot("TERRORIST");
 	//} else if (strcmp(game_mod, "TF") == 0) {
-	} else if (game_mod_id == tf) {
+	} else if (game_mod_id == TF) {
 		blue_player_color = -1;
 		red_player_color = -1;
 		find_player_team_slot("Blue");
@@ -246,7 +246,7 @@ public OnMapStart()
 
 find_player_team_slot(String: team[64]) {
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 		new team_index = get_team_index(team);
 		if (team_index > -1) {
 			if (strcmp(team, "CT") == 0) {
@@ -316,7 +316,7 @@ find_player_team_slot(String: team[64]) {
 public validate_team_colors() 
 {
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 		if (ct_player_color > -1) {
 			if ((IsClientConnected(ct_player_color)) && (IsClientInGame(ct_player_color))) {
 				new player_team_index = GetClientTeam(ct_player_color);
@@ -349,7 +349,7 @@ public validate_team_colors()
 			}
 		}
 	//} else if (strcmp(game_mod, "TF") == 0) {
-	} else if (game_mod_id == tf) {
+	} else if (game_mod_id == TF) {
 		if (blue_player_color > -1) {
 			if ((IsClientConnected(blue_player_color)) && (IsClientInGame(blue_player_color))) {
 				new player_team_index = GetClientTeam(blue_player_color);
@@ -409,7 +409,7 @@ public OnClientDisconnect(client)
 {
 	if (client > 0) {
 		//if (strcmp(game_mod, "CSS") == 0) {
-		if (game_mod_id == css) {
+		if (game_mod_id == CSS) {
 			if ((ct_player_color == -1) || (client == ct_player_color)) {
 				ct_player_color = -1;
 				clear_message_cache();
@@ -418,7 +418,7 @@ public OnClientDisconnect(client)
 				clear_message_cache();
 			}
 		//} else if (strcmp(game_mod, "TF") == 0) {
-		} else if (game_mod_id == tf) {
+		} else if (game_mod_id == TF) {
 			if ((blue_player_color == -1) || (client == blue_player_color)) {
 				blue_player_color = -1;
 				clear_message_cache();
@@ -435,7 +435,7 @@ color_player(color_type, player_index, String: client_message[192])
 {
 	new color_player_index = -1;
 	//if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
-	if (game_mod_id == css || game_mod_id == tf) {
+	if (game_mod_id == CSS || game_mod_id == TF) {
 		decl String:client_name[192];
 		GetClientName(player_index, client_name, 192);
 		if (color_type == 1) {
@@ -462,7 +462,7 @@ color_all_players(String: message[192])
 
 		ClearArray(PlayerColorArray);
 		//if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
-		if (game_mod_id == css || game_mod_id == tf) {
+		if (game_mod_id == CSS || game_mod_id == TF) {
 
 			new lowest_matching_pos = 192;
 			new lowest_matching_pos_client = -1;
@@ -541,7 +541,7 @@ color_entities(String: message[192])
 color_team_entities(String: message[192])
 {
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 		if (ts_player_color > -1) {
 			if (ReplaceString(message, 192, "TERRORIST", "\x03TERRORIST\x01") == 0) {
 				if (ct_player_color > -1) {
@@ -560,7 +560,7 @@ color_team_entities(String: message[192])
 			}
 		}
 	//} else if (strcmp(game_mod, "TF") == 0) {
-	} else if (game_mod_id == tf) {
+	} else if (game_mod_id == TF) {
 		if (red_player_color > -1) {
 			if (ReplaceString(message, 192, "Red", "\x03Red\x01") == 0) {
 				if (blue_player_color > -1) {
@@ -673,7 +673,7 @@ public Action:hlx_sm_psay(args)
 
 			//decl String:display_message[192];
 			//if (strcmp(game_mod, "CSS") == 0) {
-			if (game_mod_id == css) {
+			if (game_mod_id == CSS) {
 				
 				if (is_colored > 0) {
 					if (is_message_cached(client_message)) {
@@ -705,7 +705,7 @@ public Action:hlx_sm_psay(args)
 				//	BfWriteString(hBf, display_message);
 				//	EndMessage();
 				//}
-			} else if (game_mod_id == tf) {
+			} else if (game_mod_id == TF) {
 				
 				if (is_colored > 0) {
 					if (is_message_cached(client_message)) {
@@ -810,7 +810,7 @@ public Action:hlx_sm_psay2(args)
 
 			//decl String:display_message[192];
 			//if ((strcmp(game_mod, "CSS") == 0) || (strcmp(game_mod, "TF") == 0)) {
-			if (game_mod_id == css || game_mod_id == tf) {
+			if (game_mod_id == CSS || game_mod_id == TF) {
 				remove_color_entities(client_message);
 				//Format(display_message, 192, "\x04HLstatsX: %s", client_message);
 				//PrintToChat(player_index, display_message);
@@ -1325,7 +1325,7 @@ public Action:hlx_block_commands(client, args)
 public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 
 		if (GetEventBool(event, "headshot")) {
 			new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
@@ -1358,7 +1358,7 @@ public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool
 		}
 
 	//} else if (strcmp(game_mod, "TF") == 0) {
-	} else if (game_mod_id == tf) {
+	} else if (game_mod_id == TF) {
 
 		new custom_kill = GetEventInt(event, "customkill");
 		
@@ -1407,7 +1407,7 @@ public Action:HLstatsX_Event_PlayerDeath(Handle:event, const String:name[], bool
 public Action: HLstatsX_Event_PlayerTeamChange(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 		new userid = GetEventInt(event, "userid");
 		if (userid > 0) {
 			new player_team_index = GetEventInt(event, "team");
@@ -1426,7 +1426,7 @@ public Action: HLstatsX_Event_PlayerTeamChange(Handle:event, const String:name[]
 			}
 		}
 	//} else if (strcmp(game_mod, "TF") == 0) {
-	} else if (game_mod_id == tf) {
+	} else if (game_mod_id == TF) {
 		new userid = GetEventInt(event, "userid");
 		if (userid > 0) {
 			new player_team_index = GetEventInt(event, "team");
@@ -1462,7 +1462,7 @@ set_player_model(client)
 {
 	if (client > 0) {
 		//if (strcmp(game_mod, "CSS") == 0) {
-		if (game_mod_id == css) {
+		if (game_mod_id == CSS) {
 			if (IsClientConnected(client)) {
 				new player_team_index = GetClientTeam(client);
 				decl String:player_team[64];
@@ -1482,7 +1482,7 @@ set_player_model(client)
 swap_player(player_index)
 {
 	//if (strcmp(game_mod, "CSS") == 0) {
-	if (game_mod_id == css) {
+	if (game_mod_id == CSS) {
 		if (IsClientConnected(player_index)) {
 			new player_team_index = GetClientTeam(player_index);
 			decl String:player_team[64];
