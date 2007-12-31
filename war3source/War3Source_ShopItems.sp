@@ -507,7 +507,7 @@ public Action:Regeneration(Handle:timer)
             new war3player=War3_GetWar3Player(x);
             if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
             {
-                new newhp=GetHealth(x)+1;
+                new newhp=GetClientHealth(x)+1;
                 new maxhp=(GameType == tf2) ? GetMaxHealth(x) : 100;
                 if(newhp<=maxhp)
                     SetHealth(x,newhp);

@@ -181,7 +181,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new attackeruserid = GetEventInt(event,"attacker");
             if (attackeruserid && victimuserid != attackeruserid)
             {
-                new attackerindex=GetClientOfUserId(attackeruserid);
+                new attackerindex = GetClientOfUserId(attackeruserid);
                 new war3playerattacker=War3_GetWar3Player(attackerindex);
                 if (war3playerattacker != -1)
                 {
@@ -248,6 +248,10 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         {
             new losthp=GetDamage(event, victimIndex);
             new newhp=GetClientHealth(victimIndex)+losthp;
+            new maxhp=GetMaxHealth(victimIndex);
+            if (newhp > maxhp)
+                newhp = maxhp;
+
             SetHealth(victimIndex,newhp);
 
             decl String:victimName[64];
