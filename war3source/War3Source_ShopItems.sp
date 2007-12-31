@@ -43,18 +43,18 @@
  
 // War3Source stuff
 
-new myWepsOffset        = 0;
-new curWepOffset        = 0;
-new ammotypeOffset      = 0;
-new clipOffset          = 0;
-new ammoOffset          = 0; // Primary Ammo
-new ammo2Offset         = 0; // Secondary Ammo
-new metalOffset         = 0; // metal (3rd Ammo)
+new myWepsOffset;
+new curWepOffset;
+new ammotypeOffset;
+new clipOffset;
+new ammoOffset; // Primary Ammo
+new ammo2Offset; // Secondary Ammo
+new metalOffset; // metal (3rd Ammo)
 
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Float:spawnLoc[MAXPLAYERS+1][3];
-new bool:usedPeriapt[MAXPLAYERS+1]        = { false, ... };
-new bool:isMole[MAXPLAYERS+1]             = { false, ... };
+new bool:usedPeriapt[MAXPLAYERS+1];
+new bool:isMole[MAXPLAYERS+1];
 
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
