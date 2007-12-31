@@ -50,11 +50,7 @@ stock GetDamage(Handle:event, victim=0, attacker=0, min=5, max=20)
                 }
 
                 if (victim)
-                {
-                    new health = GetEventInt(event,"health");
-                    if (health > prevHealth)
-                        damage = health - prevHealth;
-                }
+                    damage = GetEventInt(event,"health") - prevHealth;
             }
 
             if (!damage)
