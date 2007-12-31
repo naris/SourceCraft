@@ -10,7 +10,9 @@
 #define TF2_PYRO 7
 #define TF2_SPY 8
 #define TF2_ENG 9
-#define PL_VERSION "2.2Beta"
+#define PL_VERSION "3.1"
+
+#define DEBUG 0
 
 public Plugin:myinfo = 
 {
@@ -43,6 +45,7 @@ public OnPluginStart(){
 	TF_classoffsets = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");
 	
 	RegAdminCmd("sm_classlimit", Command_PrintTable, ADMFLAG_CUSTOM4, "Re-reads and prints the limits");
+	//RegConsoleCmd("sm_classlimit", Command_PrintTable)
 }
 
 
@@ -64,6 +67,10 @@ public Action:PlayerTeamBalanced(Handle:event, const String:name[], bool:dontBro
 	new team = GetEventInt(event, "team");
 	new class = TF_GetClass(client);
 	new clientcount = GetClientCount(true);
+	
+  #if DEBUG == 1
+    LogMessage("Teambalanced: %N", client)
+  #endif
 	
 	if(MaxClass[clientcount][team][class] <= -1)
 		return;
@@ -94,6 +101,10 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 	new class = TF_GetClass(client);
 	new team = GetClientTeam(client);
 	
+	#if DEBUG == 1
+    LogMessage("PlayerSpawn: %N", client)
+  #endif
+	
 	if(class == 0)
 		return;
 	
@@ -122,8 +133,11 @@ public Action:Playerchangeclass(Handle:event, const String:name[], bool:dontBroa
 	new class = GetEventInt(event, "class");
 	new oldclass = TF_GetClass(client);
 	
-	if(class == oldclass)
-		return;
+	if(class == oldclass){ return; }
+	
+  #if DEBUG == 1
+    LogMessage("ChangeClass: %N", client)
+  #endif
 	
 	new team = GetClientTeam(client);
 	new clientcount = GetClientCount(true);
@@ -158,7 +172,7 @@ public Action:Playerchangeclass(Handle:event, const String:name[], bool:dontBroa
 FindUnusedClass(team, clientcount){
 	new i;
 	for(i=1; i<=9; i++){
-		if( CurrentCount[team][i] < MaxClass[clientcount][team][i] ){
+		if((MaxClass[clientcount][team][i] == -1) || (CurrentCount[team][i] < MaxClass[clientcount][team][i]) ){
 			return i;
 		}
 	}
@@ -365,5 +379,10 @@ stock TF_GetClass(client){
 }
 
 stock SwitchClientClass(client, class){
+  #if DEBUG == 1
+    LogMessage("Changing class: %N ---- %d", client, class)
+  #endif
 	FakeClientCommand(client, "joinclass %s", TF_ClassNames[class]);
+	FakeClientCommandEx(client, "joinclass %s", TF_ClassNames[class]); 
+	
 }
