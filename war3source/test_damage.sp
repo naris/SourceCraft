@@ -66,14 +66,18 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
     new damage = GetDamage(event, victimIndex, attackerIndex, -1, -1);
 
-    decl String:victimName[64];
-    GetClientName(victimIndex,victimName,sizeof(victimName));
+    decl String:victimName[64] = "";
+    decl String:attackerName[64] = "";
+    decl String:weapon[64] = "";
 
-    decl String:attackerName[64];
-    GetClientName(attackerIndex,attackerName,sizeof(attackerName));
+    if (victimIndex)
+        GetClientName(victimIndex,victimName,sizeof(victimName));
 
-    decl String:weapon[64];
-    GetClientWeapon(attackerIndex, weapon, sizeof(weapon));
+    if (attackerIndex)
+    {
+        GetClientName(attackerIndex,attackerName,sizeof(attackerName));
+        GetClientWeapon(attackerIndex, weapon, sizeof(weapon));
+    }
 
     LogMessage("%s has attacked %s with %s for %d damage with %d of %d health remaining.\n",
                attackerName, victimName, weapon, damage, health, oldHealth);

@@ -396,7 +396,14 @@ stock MakeInvisible(client, visibility, Float:meleeFactor, Float:movementFactor)
             if(IsValidEdict(obj))
             {
                 if(GetEntDataEnt(obj,m_OwnerOffset) == client)
-                SetRenderColor(obj,255,255,255,visibility);
+                {
+                    decl String:name[32] = "";
+                    if (!GetEntityNetClass(obj,name,sizeof(name)) ||
+                        !StrEqual(name, "CCaptureFlag"))
+                    {
+                        SetRenderColor(obj,255,255,255,visibility);
+                    }
+                }
             }
         }
     }
