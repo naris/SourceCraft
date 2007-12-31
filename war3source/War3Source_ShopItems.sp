@@ -446,12 +446,22 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     new newhealth=GetClientHealth(attacker_index)+2;
                     SetHealth(attacker_index,newhealth);
+
+                    decl String:victimName[64];
+                    GetClientName(index,victimName,sizeof(victimName));
+                    PrintToChat(attacker_index,"%c[War3Source]%c You have received 2 hp from %s using %cMask of Death%c.",
+                                COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
                 if (war3player_assister != -1 && War3_GetOwnsItem(war3player_assister,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(assister_index)+2;
                     SetHealth(assister_index,newhealth);
+
+                    decl String:victimName[64];
+                    GetClientName(index,victimName,sizeof(victimName));
+                    PrintToChat(attacker_index,"%c[War3Source]%c You have received 2 hp from %s using %cMask of Death%c.",
+                                COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
                 if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_ORB]) ||
@@ -460,6 +470,18 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     War3_SetOverrideSpeed(war3player,0.5);
                     AuthTimer(5.0,index,RestoreSpeed);
+
+                    decl String:aname[128];
+                    GetClientName(attacker_index,aname,sizeof(aname));
+                    if (assister_index > -1)
+                    {
+                        decl String:assister[64];
+                        GetClientName(attacker_index,assister,sizeof(aname));
+                        StrCat(aname,sizeof(aname), "+");
+                        StrCat(aname,sizeof(aname), assister);
+                    }
+                    PrintToChat(index,"%c[War3Source] %s %chas frozen you with the %cOrb of Frost%c",
+                                COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
                 if (War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE_PROTECTION]))
@@ -541,18 +563,22 @@ public Action:Gloves(Handle:timer)
                     {
                         case TF2_HEAVY: 
                         {
-                            new ammo = GetEntData(player, ammoOffset, 4) + 20;
+                            new ammo = GetEntData(player, ammoOffset, 4) + 10;
                             if (ammo < 400.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
+                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_PYRO: 
                         {
-                            new ammo = GetEntData(player, ammoOffset, 4) + 20;
+                            new ammo = GetEntData(player, ammoOffset, 4) + 10;
                             if (ammo < 400.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
+                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_MEDIC: 
@@ -561,14 +587,18 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 300.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
+                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_ENG: // Gets Metal instead of Ammo
                         {
-                            new metal = GetEntData(player, metalOffset, 4) + 20;
+                            new metal = GetEntData(player, metalOffset, 4) + 10;
                             if (metal < 400.0)
                             {
                                 SetEntData(player, metalOffset, metal, 4, true);
+                                PrintToChat(player,"%c[War3Source]%c You have received metal from %cFlaming Gloves of Warmth%c.",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         default:
@@ -577,6 +607,8 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 60.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
+                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                     }
