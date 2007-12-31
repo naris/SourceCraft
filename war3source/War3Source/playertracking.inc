@@ -257,6 +257,15 @@ public Action:PlayerProperties(Handle:timer)
                 }
             }
 
+            /**/
+            LogMessage("[War3Source] speedaltered=%d, override=%d, speed=%f\n",
+                       speedAltered[client], overridePlayerSpeed, speed);
+
+            /**/
+            PrintToChat(client, "%c[War3Source] %c speedaltered=%d, override=%d, speed=%f",
+                        COLOR_GREEN,COLOR_DEFAULT, speedAltered[client], overridePlayerSpeed, speed);
+            /**/
+
             if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
             {
                 if (GameType == tf2)
@@ -264,7 +273,7 @@ public Action:PlayerProperties(Handle:timer)
                     if (m_BaseSpeed[client] > 1.0)
                     {
                         new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                        if (curSpeed > 1.0 && !speedAltered[client]) // Don't alter initial map freeze
+                        if (curSpeed > 1.0 || speedAltered[client]) // Don't alter initial map freeze
                         {
                             new Float:newSpeed;
                             if (curSpeed < 200.0) // && TF_GetClass(client) == TF2_HEAVY)
@@ -279,15 +288,31 @@ public Action:PlayerProperties(Handle:timer)
                                 newSpeed = m_BaseSpeed[client] * speed;
                             }
 
+                            /**/
+                            LogMessage("[War3Source] BaseSpeed=%f, curSpeed=%f, newSpeed=%f\n",
+                                       m_BaseSpeed[client], curSpeed, newSpeed);
+
+                            /**/
+                            PrintToChat(client, "%c[War3Source] %c BaseSpeed=%f, speed=%f, curSpeed=%f, newSpeed=%f",
+                                        COLOR_GREEN,COLOR_DEFAULT, m_BaseSpeed[client], speed, curSpeed, newSpeed);
+                            /**/
+
                             if (curSpeed != newSpeed)
+                            {
                                 SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+
+                                decl String:name[64];
+                                GetClientName(client,name,sizeof(name));
+                                LogMessage("Speed set to %d for %s, base=%d\n", newSpeed, client, m_BaseSpeed[client]);
+                                PrintToChat(client, "Speed set to %d for %s, base=%d", newSpeed, client, m_BaseSpeed[client]);
+                            }
                         }
                     }
                 }
                 else
                 {
                     if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                    SetEntDataFloat(client,m_OffsetSpeed,speed);
+                        SetEntDataFloat(client,m_OffsetSpeed,speed);
                 }
 
                 if (speed == 1.0)
