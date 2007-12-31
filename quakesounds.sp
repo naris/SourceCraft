@@ -103,6 +103,11 @@ Versions:
 		* Added volume adjustment
 		* Moved config file location
 		* Made the config file load automatically
+		
+	1.9
+		* Modified by -=|JFH|=- Naris
+		* Added support for TF2
+		* Added ability to assign seperate sounds to each melee weapon.
 */
 
 
@@ -111,7 +116,7 @@ Versions:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.8"
+#define PLUGIN_VERSION "1.9"
 #define MAX_FILE_LEN 64
 #define DISABLE_CHOICE 3
 #define NO_KILLS -1.0

@@ -1,8 +1,8 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_UndeadScourge.sp
- * Description: The Undead Scourge race for War3Source.
- * Author(s): Anthony Iacono 
+ * File: test_damage.sp
+ * Description: Display damage for every hit.
+ * Author(s): Naris (Murray Wilson)
  */
  
 #pragma semicolon 1
@@ -10,12 +10,9 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "War3Source/War3Source_Interface"
-
 #include "War3Source/util"
 #include "War3Source/health"
 #include "War3Source/damage"
-#include "War3Source/log"
 
 public Plugin:myinfo = 
 {
