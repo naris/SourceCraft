@@ -41,9 +41,6 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
-
-    if (GameType == tf2)
-        HookEvent("player_changeclass",PlayerChangeClassEvent);
 }
 
 public OnWar3PluginReady()
@@ -87,8 +84,9 @@ public OnWar3PlayerAuthed(client,war3player)
     SetupHealth(client);
 }
 
-public OnRaceSelected(client,war3player,oldrace,race)
+public OnGameFrame()
 {
+    SaveAllHealth();
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -128,14 +126,6 @@ public OnItemPurchase(client,war3player,item)
 }
 
 // Events
-public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-        ResetMaxHealth(client);
-}
-
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -150,6 +140,12 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = War3_GetRace(war3player);
             if (race == raceID)
             {
+                new skill_jetpack=War3_GetSkillLevel(war3player,race,0);
+                if (skill_jetpack)
+                {
+                    TerranConfederacy_Jetpack(client, war3player, skill_jetpack);
+                }
+
                 new skill_cloak=War3_GetSkillLevel(war3player,race,1);
                 if (skill_cloak)
                 {

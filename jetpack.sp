@@ -183,15 +183,15 @@ public OnGameFrame()
 
         for(new i = 1; i <= g_iMaxClients; i++)
         {
-            if (g_iFuel[i])
+            if(g_bJetpackOn[i])
             {
-                if(g_bJetpackOn[i])
+                if (g_iFuel[i] != 0)
                 {
                     if(!IsAlive(i))
                         StopJetpack(i);
                     else
                     {
-                        if (g_iFuel[i] > 0 && g_iFuel[i] < 20)
+                        if (g_iFuel[i] > 0 && g_iFuel[i] < 30)
                         {
                             // Low on Fuel, Make it sputter.
                             if (g_iFuel[i] % 2)
@@ -216,10 +216,16 @@ public OnGameFrame()
                             g_iFuel[i]--;
                     }
                 }
-                else
+
+                if (g_iFuel[i] == 0)
                 {
                     StopJetpack(i);
                     CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
+                    if(GetConVarBool(sm_jetpack_announce))
+                    {
+                        PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
+                                    COLOR_GREEN,COLOR_DEFAULT);
+                    }
                 }
             }
         }
@@ -230,13 +236,17 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 {
 	if (client && g_bHasJetpack[client] && IsClientConnected(client) && IsPlayerAlive(client))
 	{
-		g_iFuel[client] = GetConVarInt(sm_jetpack_fuel);
-		if(GetConVarBool(sm_jetpack_announce))
-		{
-			PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
-			            COLOR_GREEN,COLOR_DEFAULT);
-		}
-	}
+        new tank_size = GetConVarInt(sm_jetpack_fuel);
+        if (g_iFuel[client] < tank_size)
+        {
+            g_iFuel[client] = tank_size;
+            if(GetConVarBool(sm_jetpack_announce))
+            {
+                PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
+                            COLOR_GREEN,COLOR_DEFAULT);
+            }
+        }
+    }
 }
 
 public OnClientDisconnect(client)
@@ -353,8 +363,8 @@ public Native_GiveJetpack(Handle:plugin,numParams)
 		new client = GetNativeCell(1);
 		g_bHasJetpack[client] = true;
 		g_bFromNative[client] = true;
-		g_iFuel[client] = (numParams > 1) ? GetNativeCell(2) : GetConVarInt(sm_jetpack_fuel);
-		g_fRefuelingTime[client] = (numParams > 2) ? GetNativeCell(3) : GetConVarFloat(sm_jetpack_refueling_time);
+		g_iFuel[client] = (numParams >= 2) ? GetNativeCell(2) : GetConVarInt(sm_jetpack_fuel);
+		g_fRefuelingTime[client] = (numParams >= 3) ? GetNativeCell(3) : GetConVarFloat(sm_jetpack_refueling_time);
 		g_iNativeJetpacks++;
 		return g_iFuel[client];
 	}
