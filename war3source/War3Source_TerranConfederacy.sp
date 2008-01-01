@@ -58,9 +58,11 @@ public OnWar3PluginReady()
                            "Jetpack",
                            "Allows you to fly until you run out of fuel.");
 
+    /*
     SetJetpackControl(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+    */
 }
 
 public OnMapStart()
@@ -84,6 +86,15 @@ public OnWar3PlayerAuthed(client,war3player)
     SetupHealth(client);
 }
 
+public OnRaceSelected(client,war3player,oldrace,race)
+{
+    if (race != oldrace && oldrace == raceID)
+    {
+        TakeJetpack(client);
+        War3_SetMinVisibility(war3player, 255, 1.0, 1.0);
+    }
+}
+
 public OnGameFrame()
 {
     SaveAllHealth();
@@ -91,7 +102,7 @@ public OnGameFrame()
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && pressed && IsPlayerAlive(client))
+    if (race==raceID && IsPlayerAlive(client))
     {
         if (pressed)
             StartJetpack(client);
@@ -106,6 +117,8 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     {
         if (skill==0)
             TerranConfederacy_Jetpack(client, war3player, newskilllevel);
+        else if (skill==1)
+            TerranConfederacy_Cloak(client, war3player, newskilllevel);
         else if (skill==3)
             TerranConfederacy_Stimpacks(client, war3player, newskilllevel);
     }
@@ -247,39 +260,42 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
         {
             case 1:
             {
-                from_percent=0.01;
+                from_percent=0.0;
                 to_percent=0.10;
             }
             case 2:
             {
-                from_percent=0.05;
+                from_percent=0.0;
                 to_percent=0.30;
             }
             case 3:
             {
-                from_percent=0.20;
+                from_percent=0.10;
                 to_percent=0.60;
             }
             case 4:
             {
-                from_percent=0.50;
-                to_percent=1.00;
+                from_percent=0.20;
+                to_percent=0.80;
             }
         }
         new damage=GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        new newhp=GetClientHealth(victimIndex)+amount;
-        new maxhp=GetMaxHealth(victimIndex);
-        if (newhp > maxhp)
-            newhp = maxhp;
+        if (amount)
+        {
+            new newhp=GetClientHealth(victimIndex)+amount;
+            new maxhp=GetMaxHealth(victimIndex);
+            if (newhp > maxhp)
+                newhp = maxhp;
 
-        SetHealth(victimIndex,newhp);
+            SetHealth(victimIndex,newhp);
 
-        decl String:victimName[64];
-        GetClientName(victimIndex,victimName,63);
+            decl String:victimName[64];
+            GetClientName(victimIndex,victimName,63);
 
-        PrintToChat(victimIndex,"%c[War3Source] %s %cyour armor absorbed %d hp",
-                    COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+            PrintToChat(victimIndex,"%c[War3Source] %s %cyour armor absorbed %d hp",
+                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+        }
         return true;
     }
     return false;
@@ -329,22 +345,22 @@ public TerranConfederacy_Jetpack(client, war3player, skilllevel)
         {
             case 1:
             {
-                fuel=100;
+                fuel=60;
                 refueling_time=45.0;
             }
             case 2:
             {
-                fuel=120;
+                fuel=90;
                 refueling_time=30.0;
             }
             case 3:
             {
-                fuel=150;
+                fuel=120;
                 refueling_time=20.0;
             }
             case 4:
             {
-                fuel=200;
+                fuel=150;
                 refueling_time=10.0;
             }
         }

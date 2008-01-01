@@ -11,6 +11,10 @@
 #include <sourcemod>
 #include <sdktools>
 
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+#define REQUIRE_PLUGIN
+
 #define PLUGIN_VERSION "1.1.0"
 
 #define MOVETYPE_WALK		2
@@ -30,13 +34,17 @@
 new Handle:sm_jetpack		= INVALID_HANDLE;
 new Handle:sm_jetpack_sound	= INVALID_HANDLE;
 new Handle:sm_jetpack_speed	= INVALID_HANDLE;
-new Handle:sm_jetpack_volume	= INVALID_HANDLE;
+new Handle:sm_jetpack_volume= INVALID_HANDLE;
 new Handle:sm_jetpack_fuel	= INVALID_HANDLE;
 new Handle:sm_jetpack_onspawn	= INVALID_HANDLE;
 new Handle:sm_jetpack_announce	= INVALID_HANDLE;
 new Handle:sm_jetpack_adminonly	= INVALID_HANDLE;
 new Handle:sm_jetpack_pluginonly= INVALID_HANDLE;
 new Handle:sm_jetpack_refueling_time= INVALID_HANDLE;
+
+new Handle:hAdminMenu = INVALID_HANDLE;
+new TopMenuObject:oGiveJetpack = INVALID_TOPMENUOBJECT;
+new TopMenuObject:oTakeJetpack = INVALID_TOPMENUOBJECT;
 
 // SendProp Offsets
 new g_iLifeState	= -1;
@@ -134,6 +142,13 @@ public OnPluginStart()
 		
 	if((g_iVelocity = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]")) == -1)
 		LogError("Could not find offset for CBasePlayer::m_vecVelocity[0]");
+
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
 }
 
 public OnMapStart()
@@ -178,76 +193,86 @@ public OnConfigsExecuted()
 
 public OnGameFrame()
 {
-    if((g_iNativeJetpacks > 0 || GetConVarBool(sm_jetpack)) && g_fTimer < GetGameTime() - 0.075)
-    {
-        g_fTimer = GetGameTime();
+	if((g_iNativeJetpacks > 0 || GetConVarBool(sm_jetpack)) && g_fTimer < GetGameTime() - 0.075)
+	{
+		g_fTimer = GetGameTime();
 
-        for(new i = 1; i <= g_iMaxClients; i++)
-        {
-            if(g_bJetpackOn[i])
-            {
-                if (g_iFuel[i] != 0)
-                {
-                    if(!IsAlive(i))
-                        StopJetpack(i);
-                    else
-                    {
-                        if (g_iFuel[i] > 0 && g_iFuel[i] < 30)
-                        {
-                            // Low on Fuel, Make it sputter.
-                            if (g_iFuel[i] % 2)
-                                StopSound(i, SNDCHAN_AUTO, g_sSound);
-                            else
-                            {
-                                AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+		for(new i = 1; i <= g_iMaxClients; i++)
+		{
+			if(g_bJetpackOn[i])
+			{
+				if (g_iFuel[i] != 0)
+				{
+					if(!IsAlive(i))
+						StopJetpack(i);
+					else
+					{
+						if (g_iFuel[i] > 0 && g_iFuel[i] < 25)
+						{
+							// Low on Fuel, Make it sputter.
+							if (g_iFuel[i] % 2)
+								StopSound(i, SNDCHAN_AUTO, g_sSound);
+							else
+							{
+								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
 
-                                new Float:vecPos[3];
-                                GetClientAbsOrigin(i, vecPos);
-                                EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO,
-                                        SNDLEVEL_NORMAL, SND_NOFLAGS,
-                                        GetConVarFloat(sm_jetpack_volume),
-                                        SNDPITCH_NORMAL, -1, vecPos,
-                                        NULL_VECTOR, true, 0.0);
-                            }
-                        }
-                        else
-                            AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+								new Float:vecPos[3];
+								GetClientAbsOrigin(i, vecPos);
+								EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO,
+										SNDLEVEL_NORMAL, SND_NOFLAGS,
+										GetConVarFloat(sm_jetpack_volume),
+										SNDPITCH_NORMAL, -1, vecPos,
+										NULL_VECTOR, true, 0.0);
+							}
+						}
+						else
+							AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
 
-                        if (g_iFuel[i] > 0)
-                            g_iFuel[i]--;
-                    }
-                }
+						if (g_iFuel[i] > 0)
+							g_iFuel[i]--;
+					}
+				}
 
-                if (g_iFuel[i] == 0)
-                {
-                    StopJetpack(i);
-                    CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
-                    if(GetConVarBool(sm_jetpack_announce))
-                    {
-                        PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
-                                    COLOR_GREEN,COLOR_DEFAULT);
-                    }
-                }
-            }
-        }
-    }
+				if (g_iFuel[i] == 0)
+				{
+					StopJetpack(i);
+					CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
+					if(GetConVarBool(sm_jetpack_announce))
+					{
+						PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
+								COLOR_GREEN,COLOR_DEFAULT);
+					}
+				}
+			}
+		}
+	}
 }
 
 public Action:RefuelJetpack(Handle:timer,any:client)
 {
-    if (client && g_bHasJetpack[client] && IsClientConnected(client) && IsPlayerAlive(client))
-    {
-        new tank_size = g_iRefuelAmount[client];
-        if (g_iFuel[client] < tank_size)
-        {
-            g_iFuel[client] = tank_size;
-            if(GetConVarBool(sm_jetpack_announce))
-            {
-                PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
-                        COLOR_GREEN,COLOR_DEFAULT);
-            }
-        }
-    }
+	if (client && g_bHasJetpack[client] && IsClientConnected(client) && IsPlayerAlive(client))
+	{
+		new tank_size = g_iRefuelAmount[client];
+		if (g_iFuel[client] < tank_size)
+		{
+			g_iFuel[client] = tank_size;
+			if(GetConVarBool(sm_jetpack_announce))
+			{
+				PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
+						COLOR_GREEN,COLOR_DEFAULT);
+			}
+		}
+	}
+}
+
+public OnClientPutInServer(client)
+{
+	g_bHasJetpack[client] = false;
+	if (g_bFromNative[client])
+	{
+		g_bFromNative[client] = false;
+		g_iNativeJetpacks--;
+	}
 }
 
 public OnClientDisconnect(client)
@@ -430,44 +455,44 @@ public Native_TakeJetpackFuel(Handle:plugin,numParams)
 
 public Native_SetJetpackFuel(Handle:plugin,numParams)
 {
-    if(numParams == 2)
-    {
-        new client = GetNativeCell(1);
-        if (client)
-        {
-            if (client <= MAXPLAYERS+1)
-                g_iFuel[client] = g_iRefuelAmount[client] = GetNativeCell(2);
-        }
-        else
-            SetConVarInt(sm_jetpack_fuel, GetNativeCell(2));
-    }
-    else if(numParams == 1)
-    {
-        SetConVarInt(sm_jetpack_fuel, GetNativeCell(1));
-    }
+	if(numParams == 2)
+	{
+		new client = GetNativeCell(1);
+		if (client)
+		{
+			if (client <= MAXPLAYERS+1)
+				g_iFuel[client] = g_iRefuelAmount[client] = GetNativeCell(2);
+		}
+		else
+			SetConVarInt(sm_jetpack_fuel, GetNativeCell(2));
+	}
+	else if(numParams == 1)
+	{
+		SetConVarInt(sm_jetpack_fuel, GetNativeCell(1));
+	}
 
-    return 0;
+	return 0;
 }
 
 public Native_SetJetpackRefuelingTime(Handle:plugin,numParams)
 {
-    if(numParams == 2)
-    {
-        new client = GetNativeCell(1);
-        if (client)
-        {
-            if (client <= MAXPLAYERS+1)
-                g_fRefuelingTime[client] =  Float:GetNativeCell(2);
-        }
-        else
-            SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(2));
-    }
-    else if(numParams == 1)
-    {
-        SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(1));
-    }
+	if(numParams == 2)
+	{
+		new client = GetNativeCell(1);
+		if (client)
+		{
+			if (client <= MAXPLAYERS+1)
+				g_fRefuelingTime[client] =  Float:GetNativeCell(2);
+		}
+		else
+			SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(2));
+	}
+	else if(numParams == 1)
+	{
+		SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(1));
+	}
 
-    return 0;
+	return 0;
 }
 
 public Native_GetJetpackFuel(Handle:plugin,numParams)
@@ -482,20 +507,20 @@ public Native_GetJetpackRefuelingTime(Handle:plugin,numParams)
 
 public Native_GetJetpack(Handle:plugin,numParams)
 {
-    if (numParams == 1)
-        return g_bHasJetpack[GetNativeCell(1)];
-    else
-        return 0;
+	if (numParams == 1)
+		return g_bHasJetpack[GetNativeCell(1)];
+	else
+		return 0;
 }
 
 public Native_SetJetpackControl(Handle:plugin,numParams)
 {
-    SetConVarBool(sm_jetpack_pluginonly, (numParams >= 1) ? GetNativeCell(1) : 1);
-    if (numParams >= 2)
-    {
-        SetConVarBool(sm_jetpack_announce, GetNativeCell(2));
-    }
-    return 0;
+	SetConVarBool(sm_jetpack_pluginonly, (numParams >= 1) ? GetNativeCell(1) : 1);
+	if (numParams >= 2)
+	{
+		SetConVarBool(sm_jetpack_announce, GetNativeCell(2));
+	}
+	return 0;
 }
 
 public Action:Command_GiveJetpack(client,argc)
@@ -516,7 +541,7 @@ public Action:Command_GiveJetpack(client,argc)
 	else
 	{
 		ReplyToCommand(client,"%c[Jetpack] Usage: %csm_jetpack_give <@userid/partial name>",
-				COLOR_GREEN,COLOR_DEFAULT);
+				       COLOR_GREEN,COLOR_DEFAULT);
 	}
 	return Plugin_Handled;
 }
@@ -539,7 +564,7 @@ public Action:Command_TakeJetpack(client,argc)
 	else
 	{
 		ReplyToCommand(client,"%c[Jetpack] Usage: %csm_jetpack_take <@userid/partial name>",
-				COLOR_GREEN,COLOR_DEFAULT);
+				       COLOR_GREEN,COLOR_DEFAULT);
 	}
 	return Plugin_Handled;
 }
@@ -548,36 +573,177 @@ public SetJetpack(client,const String:target[],bool:enable)
 {
 	decl String:name[64];
 	new bool:isml,clients[MAXPLAYERS+1];
-	new count=ProcessTargetString(target,client,clients,MAXPLAYERS+1,COMMAND_FILTER_NO_BOTS,name,sizeof(name),isml);
+	new count=ProcessTargetString(target,client,clients,MAXPLAYERS+1,COMMAND_FILTER_NO_BOTS,
+                                  name,sizeof(name),isml);
 	if(count)
 	{
 		for(new x=0;x<count;x++)
 		{
-			new index = clients[x];
-			if(enable)
+			switch (PerformJetpack(client, clients[x], enable))
 			{
-				if (!g_bHasJetpack[index])
+				case 1: ReplyToCommand(client,"Target already has a jetpack");
+				case 2: ReplyToCommand(client,"Unable to remove the jetpack");
+				case 0:
 				{
-					g_bHasJetpack[index] = true;
-					g_iFuel[index] = g_iRefuelAmount[index] = GetConVarInt(sm_jetpack_fuel);
-					g_fRefuelingTime[index] = GetConVarFloat(sm_jetpack_refueling_time);
-					if(GetConVarBool(sm_jetpack_announce))
-					{
-						PrintToChat(index,"%c[Jetpack] %cIs enabled, valid commands are: [%c+jetpack%c] [%c-jetpack%c]",
-						            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-					}
-				}
-			}
-			else
-			{
-				if (!g_bFromNative[index])
-				{
-					StopJetpack(index);
-					g_bHasJetpack[index] = false;
+					if (enable)
+						ReplyToCommand(client, "Gave a jetpack to target");
+					else
+						ReplyToCommand(client, "Removed the jetpack form target");
 				}
 			}
 		}
 	}
 	return count;
+}
+
+public PerformJetpack(client, target, bool:enable)
+{
+	if(enable)
+	{
+		if (!g_bHasJetpack[target])
+		{
+			g_bHasJetpack[target] = true;
+			g_iFuel[target] = g_iRefuelAmount[target] = GetConVarInt(sm_jetpack_fuel);
+			g_fRefuelingTime[target] = GetConVarFloat(sm_jetpack_refueling_time);
+			if(GetConVarBool(sm_jetpack_announce))
+			{
+				PrintToChat(target,"%c[Jetpack] %cIs enabled, valid commands are: [%c+jetpack%c] [%c-jetpack%c]",
+						COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+			}
+			LogAction(client, target, "\"%L\" gave a jetpack to \"%L\"", client, target);
+			return 0;
+		}
+		else
+			return 1;
+	}
+	else
+	{
+		if (!g_bFromNative[target])
+		{
+			StopJetpack(target);
+			g_bHasJetpack[target] = false;
+			LogAction(client, target, "\"%L\" took the jetpack from \"%L\"", client, target);
+			return 0;
+		}
+		else
+			return 2;
+	}
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+	if (StrEqual(name, "adminmenu"))
+		hAdminMenu = INVALID_HANDLE;
+}
+ 
+public OnAdminMenuReady(Handle:topmenu)
+{
+	/* Block us from being called twice */
+	if (topmenu != hAdminMenu)
+	{
+		/* Save the Handle */
+		hAdminMenu = topmenu;
+		new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_PLAYERCOMMANDS);
+		oGiveJetpack = AddToTopMenu(hAdminMenu, "sm_give_jetpack", TopMenuObject_Item, AdminMenu,
+				server_commands, "sm_give_jetpack", ADMFLAG_JETPACK);
+		oTakeJetpack = AddToTopMenu(hAdminMenu, "sm_take_jetpack", TopMenuObject_Item, AdminMenu,
+				server_commands, "sm_take_jetpack", ADMFLAG_JETPACK);
+	}
+}
+
+public AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+{
+	if (action == TopMenuAction_DisplayOption)
+	{
+		if (object_id == oGiveJetpack)
+			Format(buffer, maxlength, "Give Jetpack");
+		else if (object_id == oTakeJetpack)
+			Format(buffer, maxlength, "Take Jetpack");
+	}
+	else if (action == TopMenuAction_SelectOption)
+	{
+		JetpackMenu(param, object_id);
+	}
+}
+
+JetpackMenu(client, TopMenuObject:object_id)
+{
+	new Handle:menu = CreateMenu(MenuHandler_Jetpack);
+	
+	decl String:title[100];
+	if (object_id == oGiveJetpack)
+		Format(title, sizeof(title), "%T:", "Give a Jetpack", client);
+	else
+		Format(title, sizeof(title), "%T:", "Take the Jetpack", client);
+	SetMenuTitle(menu, title);
+	SetMenuExitBackButton(menu, true);
+
+	AddTargetsToMenu(menu, client, true, true);
+
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+public MenuHandler_Jetpack(Handle:menu, MenuAction:action, param1, param2)
+{
+	decl String:title[32];
+	GetMenuTitle(menu,title,sizeof(title));
+
+	if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
+	else if (action == MenuAction_Cancel)
+	{
+		if (param2 == MenuCancel_ExitBack && hAdminMenu != INVALID_HANDLE)
+		{
+			DisplayTopMenu(hAdminMenu, param1, TopMenuPosition_LastCategory);
+		}
+	}
+	else if (action == MenuAction_Select)
+	{
+		decl String:info[32];
+		new userid, target;
+		
+		GetMenuItem(menu, param2, info, sizeof(info));
+		userid = StringToInt(info);
+
+		if ((target = GetClientOfUserId(userid)) == 0)
+		{
+			PrintToChat(param1, "[SM] %t", "Player no longer available");
+		}
+		else if (!CanUserTarget(param1, target))
+		{
+			PrintToChat(param1, "[SM] %t", "Unable to target");
+		}
+		else
+		{
+			new String:name[32];
+			GetClientName(target, name, sizeof(name));
+
+			if (StrContains(title, "Give") != -1)
+			{
+				PerformJetpack(param1, target, true);
+				ShowActivity2(param1, "[SM] ", "%t", "Gave target a jetpack", "_s", name);
+			}
+			else
+			{
+				PerformJetpack(param1, target, false);
+				ShowActivity2(param1, "[SM] ", "%t", "Took the jetpack from target", "_s", name);
+			}
+		}
+
+		/* Re-draw the menu if they're still valid */
+		if (IsClientInGame(param1) && !IsClientInKickQueue(param1))
+		{
+			if (StrContains(title, "Give") != -1)
+			{
+				JetpackMenu(param1, oGiveJetpack);
+			}
+			else
+			{
+				JetpackMenu(param1, oTakeJetpack);
+			}
+		}
+	}
 }
 

@@ -99,8 +99,25 @@ public OnWar3PlayerAuthed(client,war3player)
 
 public OnRaceSelected(client,war3player,oldrace,race)
 {
-    m_TeleportCount[client]=0;
+    if (race != oldrace && oldrace == raceID)
+    {
+        m_TeleportCount[client]=0;
+
+        // Reset MaxHealth back to normal
+        if (healthIncreased[client] && GameType == tf2)
+        {
+            SetMaxHealth(client, maxHealth[client]);
+            healthIncreased[client] = false;
+        }
+
+        // Reset invisibility
+        if (war3player != -1)
+        {
+            War3_SetMinVisibility(war3player, 255, 1.0);
+        }
+    }
 }
+
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
@@ -241,7 +258,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         {
             War3_SetMinVisibility(war3player, 255, 1.0);
         }
-
     }
 }
 
