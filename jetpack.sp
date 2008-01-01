@@ -54,6 +54,7 @@ new bool:g_bJetpackOn[MAXPLAYERS + 1]	= {false,...};
 
 // Fuel for the Jetpacks
 new g_iFuel[MAXPLAYERS + 1];
+new g_iRefuelAmount[MAXPLAYERS + 1];
 new Float:g_fRefuelingTime[MAXPLAYERS + 1];
 
 // Timer For GameFrame
@@ -111,12 +112,12 @@ public OnPluginStart()
 	sm_jetpack_pluginonly = CreateConVar("sm_jetpack_pluginonly", "0", "only allows jetpack given by other plugins", FCVAR_PLUGIN);
 
 	// Create ConCommands
-	RegConsoleCmd("+sm_jetpack", JetpackP, "", FCVAR_GAMEDLL);
-	RegConsoleCmd("-sm_jetpack", JetpackM, "", FCVAR_GAMEDLL);
+	RegConsoleCmd("+sm_jetpack", JetpackP, "use jetpack (keydown)", FCVAR_GAMEDLL);
+	RegConsoleCmd("-sm_jetpack", JetpackM, "use jetpack (keyup)", FCVAR_GAMEDLL);
 
 	// Register admin cmds
-	RegAdminCmd("sm_give_jetpack",Command_GiveJetpack,ADMFLAG_JETPACK);
-	RegAdminCmd("sm_take_jetpack",Command_TakeJetpack,ADMFLAG_JETPACK);
+	RegAdminCmd("sm_give_jetpack",Command_GiveJetpack,ADMFLAG_JETPACK,"","give a jetpack to a player");
+	RegAdminCmd("sm_take_jetpack",Command_TakeJetpack,ADMFLAG_JETPACK,"","take the jetpack from a player");
 
 	// Hook events
 	HookEvent("player_spawn",PlayerSpawnEvent);
@@ -157,7 +158,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 		}
 
 		g_bHasJetpack[index] = true;
-		g_iFuel[index] = GetConVarInt(sm_jetpack_fuel);
+		g_iFuel[index] = g_iRefuelAmount[index] = GetConVarInt(sm_jetpack_fuel);
 		g_fRefuelingTime[index] = GetConVarFloat(sm_jetpack_refueling_time);
 		if(g_bHasJetpack[index] && GetConVarBool(sm_jetpack_announce))
 		{
@@ -166,7 +167,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 		}
 	}
 	else if (!g_bFromNative[index])
-		g_iFuel[index] = GetConVarInt(sm_jetpack_fuel);
+		g_iFuel[index] = g_iRefuelAmount[index] = GetConVarInt(sm_jetpack_fuel);
 }
 
 public OnConfigsExecuted()
@@ -234,16 +235,16 @@ public OnGameFrame()
 
 public Action:RefuelJetpack(Handle:timer,any:client)
 {
-	if (client && g_bHasJetpack[client] && IsClientConnected(client) && IsPlayerAlive(client))
-	{
-        new tank_size = GetConVarInt(sm_jetpack_fuel);
+    if (client && g_bHasJetpack[client] && IsClientConnected(client) && IsPlayerAlive(client))
+    {
+        new tank_size = g_iRefuelAmount[client];
         if (g_iFuel[client] < tank_size)
         {
             g_iFuel[client] = tank_size;
             if(GetConVarBool(sm_jetpack_announce))
             {
                 PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
-                            COLOR_GREEN,COLOR_DEFAULT);
+                        COLOR_GREEN,COLOR_DEFAULT);
             }
         }
     }
@@ -363,7 +364,7 @@ public Native_GiveJetpack(Handle:plugin,numParams)
 		new client = GetNativeCell(1);
 		g_bHasJetpack[client] = true;
 		g_bFromNative[client] = true;
-		g_iFuel[client] = (numParams >= 2) ? GetNativeCell(2) : GetConVarInt(sm_jetpack_fuel);
+		g_iFuel[client] = g_iRefuelAmount[client] = (numParams >= 2) ? GetNativeCell(2) : GetConVarInt(sm_jetpack_fuel);
 		g_fRefuelingTime[client] = (numParams >= 3) ? GetNativeCell(3) : GetConVarFloat(sm_jetpack_refueling_time);
 		g_iNativeJetpacks++;
 		return g_iFuel[client];
@@ -435,7 +436,7 @@ public Native_SetJetpackFuel(Handle:plugin,numParams)
         if (client)
         {
             if (client <= MAXPLAYERS+1)
-                g_iFuel[client] =  GetNativeCell(2);
+                g_iFuel[client] = g_iRefuelAmount[client] = GetNativeCell(2);
         }
         else
             SetConVarInt(sm_jetpack_fuel, GetNativeCell(2));
@@ -558,7 +559,7 @@ public SetJetpack(client,const String:target[],bool:enable)
 				if (!g_bHasJetpack[index])
 				{
 					g_bHasJetpack[index] = true;
-					g_iFuel[index] = GetConVarInt(sm_jetpack_fuel);
+					g_iFuel[index] = g_iRefuelAmount[index] = GetConVarInt(sm_jetpack_fuel);
 					g_fRefuelingTime[index] = GetConVarFloat(sm_jetpack_refueling_time);
 					if(GetConVarBool(sm_jetpack_announce))
 					{

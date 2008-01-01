@@ -10,8 +10,8 @@ public bool:War3Source_InitHooks()
 {
     RegConsoleCmd("say",War3Source_SayCommand);
     RegConsoleCmd("say_team",War3Source_SayCommand);
-    RegConsoleCmd("+ultimate",War3Source_UltimateCommand);
-    RegConsoleCmd("-ultimate",War3Source_UltimateCommand);
+    RegConsoleCmd("+ultimate",War3Source_UltimateCommand,"use war3 ultimate ability (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate",War3Source_UltimateCommand,"use war3 ultimate ability (keyup)",FCVAR_GAMEDLL);
     return true;
 }
 
