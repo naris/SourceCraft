@@ -454,6 +454,11 @@ public Native_GetJetpack(Handle:plugin,numParams)
 	return (numParams == 1) ? (g_bHasJetpack[GetNativeCell(1)] ? 1 : 0) : -1;
 }
 
+public Native_ControlJetpack(Handle:plugin,numParams)
+{
+	SetConVarBool(sm_jetpack_pluginonly, (numParams >= 1) ? GetNativeCell(1) : 1);
+}
+
 public Action:Command_GiveJetpack(client,argc)
 {
 	if(argc>=1)

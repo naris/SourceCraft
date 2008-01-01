@@ -31,6 +31,14 @@ native Float:GetJetpackRefuelingTime(client);
 /**
  * Set the jetpack indicator for the player
  *
+ * @param plugin_only 		Set to 1 to assume complete control of the jetpack.
+ * @return			none
+ */
+native SetJetpackControl(bool:plugin_only);
+
+/**
+ * Set the jetpack indicator for the player
+ *
  * @param index 		Client index
  * @return			1 if the player has a jetpack
  */
