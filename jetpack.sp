@@ -1,3 +1,11 @@
+/**
+ * vim: set ai et ts=4 sw=4 :
+ * File: jetpack.sp
+ * Description: Jetpack for source.
+ * Author(s): Knagg0
+ * Modified by: -=|JFH|=-Naris (Murray Wilson)
+ */
+ 
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -71,6 +79,10 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 	// Register Natives
 	CreateNative("GetJetpack",Native_GetJetpack);
 	CreateNative("GetJetpackFuel",Native_GetJetpackFuel);
+	CreateNative("GetJetpackRefuelingTime",Native_GetJetpackRefuelingTime);
+	CreateNative("SetJetpackFuel",Native_SetJetpackFuel);
+	CreateNative("SetJetpackRefuelingTime",Native_SetJetpackRefuelingTime);
+	CreateNative("SetJetpackControl",Native_SetJetpackControl);
 	CreateNative("GiveJetpack",Native_GiveJetpack);
 	CreateNative("TakeJetpack",Native_TakeJetpack);
 	CreateNative("GiveJetpackFuel",Native_GiveJetpackFuel);
@@ -165,53 +177,53 @@ public OnConfigsExecuted()
 
 public OnGameFrame()
 {
-	if((g_iNativeJetpacks > 0 || GetConVarBool(sm_jetpack)) && g_fTimer < GetGameTime() - 0.075)
-	{
-		g_fTimer = GetGameTime();
-		
-		for(new i = 1; i <= g_iMaxClients; i++)
-		{
-			if (g_iFuel[i])
-			{
-				if(g_bJetpackOn[i])
-				{
-					if(!IsAlive(i))
-						StopJetpack(i);
-					else
-					{
-						if (g_iFuel[i] > 0 && g_iFuel[i] < 20)
-						{
-							// Low on Fuel, Make it sputter.
-							if (g_iFuel[i] % 2)
-								StopSound(i, SNDCHAN_AUTO, g_sSound);
-							else
-							{
-								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+    if((g_iNativeJetpacks > 0 || GetConVarBool(sm_jetpack)) && g_fTimer < GetGameTime() - 0.075)
+    {
+        g_fTimer = GetGameTime();
 
-								new Float:vecPos[3];
-								GetClientAbsOrigin(i, vecPos);
-								EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO,
-										SNDLEVEL_NORMAL, SND_NOFLAGS,
-										GetConVarFloat(sm_jetpack_volume),
-										SNDPITCH_NORMAL, -1, vecPos,
-										NULL_VECTOR, true, 0.0);
-							}
-						}
-						else
-							AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+        for(new i = 1; i <= g_iMaxClients; i++)
+        {
+            if (g_iFuel[i])
+            {
+                if(g_bJetpackOn[i])
+                {
+                    if(!IsAlive(i))
+                        StopJetpack(i);
+                    else
+                    {
+                        if (g_iFuel[i] > 0 && g_iFuel[i] < 20)
+                        {
+                            // Low on Fuel, Make it sputter.
+                            if (g_iFuel[i] % 2)
+                                StopSound(i, SNDCHAN_AUTO, g_sSound);
+                            else
+                            {
+                                AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
 
-						if (g_iFuel[i] > 0)
-							g_iFuel[i]--;
-					}
-				}
-				else
-				{
-					StopJetpack(i);
-					CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
-				}
-			}
-		}
-	}
+                                new Float:vecPos[3];
+                                GetClientAbsOrigin(i, vecPos);
+                                EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO,
+                                        SNDLEVEL_NORMAL, SND_NOFLAGS,
+                                        GetConVarFloat(sm_jetpack_volume),
+                                        SNDPITCH_NORMAL, -1, vecPos,
+                                        NULL_VECTOR, true, 0.0);
+                            }
+                        }
+                        else
+                            AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+
+                        if (g_iFuel[i] > 0)
+                            g_iFuel[i]--;
+                    }
+                }
+                else
+                {
+                    StopJetpack(i);
+                    CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
+                }
+            }
+        }
+    }
 }
 
 public Action:RefuelJetpack(Handle:timer,any:client)
@@ -407,36 +419,44 @@ public Native_TakeJetpackFuel(Handle:plugin,numParams)
 
 public Native_SetJetpackFuel(Handle:plugin,numParams)
 {
-	if(numParams == 2)
-	{
-		new client = GetNativeCell(1);
-		if (client)
-		{
-			if (client <= MAXPLAYERS+1)
-				g_iFuel[client] =  GetNativeCell(2);
-		}
-		else
-			SetConVarInt(sm_jetpack_fuel, GetNativeCell(2));
-	}
-	else if(numParams == 1)
-		SetConVarInt(sm_jetpack_fuel, GetNativeCell(1));
+    if(numParams == 2)
+    {
+        new client = GetNativeCell(1);
+        if (client)
+        {
+            if (client <= MAXPLAYERS+1)
+                g_iFuel[client] =  GetNativeCell(2);
+        }
+        else
+            SetConVarInt(sm_jetpack_fuel, GetNativeCell(2));
+    }
+    else if(numParams == 1)
+    {
+        SetConVarInt(sm_jetpack_fuel, GetNativeCell(1));
+    }
+
+    return 0;
 }
 
 public Native_SetJetpackRefuelingTime(Handle:plugin,numParams)
 {
-	if(numParams == 2)
-	{
-		new client = GetNativeCell(1);
-		if (client)
-		{
-			if (client <= MAXPLAYERS+1)
-				g_fRefuelingTime[client] =  Float:GetNativeCell(2);
-		}
-		else
-			SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(2));
-	}
-	else if(numParams == 1)
-		SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(1));
+    if(numParams == 2)
+    {
+        new client = GetNativeCell(1);
+        if (client)
+        {
+            if (client <= MAXPLAYERS+1)
+                g_fRefuelingTime[client] =  Float:GetNativeCell(2);
+        }
+        else
+            SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(2));
+    }
+    else if(numParams == 1)
+    {
+        SetConVarFloat(sm_jetpack_refueling_time, Float:GetNativeCell(1));
+    }
+
+    return 0;
 }
 
 public Native_GetJetpackFuel(Handle:plugin,numParams)
@@ -444,19 +464,27 @@ public Native_GetJetpackFuel(Handle:plugin,numParams)
 	return (numParams == 1) ? g_iFuel[GetNativeCell(1)] : GetConVarInt(sm_jetpack_fuel);
 }
 
-public Float:Native_GetJetpackRefuelingTime(Handle:plugin,numParams)
+public Native_GetJetpackRefuelingTime(Handle:plugin,numParams)
 {
-	return (numParams == 1) ? g_fRefuelingTime[GetNativeCell(1)] : GetConVarFloat(sm_jetpack_refueling_time);
+	return _:((numParams == 1) ? g_fRefuelingTime[GetNativeCell(1)] : GetConVarFloat(sm_jetpack_refueling_time));
 }
 
 public Native_GetJetpack(Handle:plugin,numParams)
 {
-	return (numParams == 1) ? (g_bHasJetpack[GetNativeCell(1)] ? 1 : 0) : -1;
+    if (numParams == 1)
+        return g_bHasJetpack[GetNativeCell(1)];
+    else
+        return 0;
 }
 
-public Native_ControlJetpack(Handle:plugin,numParams)
+public Native_SetJetpackControl(Handle:plugin,numParams)
 {
-	SetConVarBool(sm_jetpack_pluginonly, (numParams >= 1) ? GetNativeCell(1) : 1);
+    SetConVarBool(sm_jetpack_pluginonly, (numParams >= 1) ? GetNativeCell(1) : 1);
+    if (numParams >= 2)
+    {
+        SetConVarBool(sm_jetpack_announce, GetNativeCell(2));
+    }
+    return 0;
 }
 
 public Action:Command_GiveJetpack(client,argc)
