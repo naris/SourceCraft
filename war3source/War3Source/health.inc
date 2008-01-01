@@ -58,7 +58,10 @@ stock IncreaseHealth(client, amount)
 
 stock SetHealth(entity,amount)
 {
-    SetEntData(entity,healthOffset[entity],amount,1);
+    if (amount <= 0)
+        ForcePlayerSuicide(entity);
+    else
+        SetEntData(entity,healthOffset[entity],amount,1);
 }
 
 stock SetMaxHealth(entity,amount)

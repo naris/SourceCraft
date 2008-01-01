@@ -81,10 +81,6 @@ public OnPluginStart()
 	
 	HookConVarChange(g_Cvar_adsStatus, AdsStatus);
 	
-	FwdNewSection = CreateGlobalForward("_ConfigNewSection", ET_Ignore, Param_String);
-	FwdKeyValue = CreateGlobalForward("_ConfigKeyValue", ET_Ignore, Param_String, Param_String);
-	FwdEnd = CreateGlobalForward("_ConfigEnd", ET_Ignore);
-	
 	CreateTimer(5.0, OnPluginStart_Delayed);
 	
 	RegPluginLibrary("ads");

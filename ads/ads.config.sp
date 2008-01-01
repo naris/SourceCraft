@@ -67,16 +67,20 @@ public ReadConfig()
 	}
 	
 	CloseHandle(ConfigParser);
-	
 }
 
 public SMCResult:ReadConfig_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
 	if(name[0])
 	{
-		Call_StartForward(FwdNewSection);
-		Call_PushString(name);
-		Call_Finish();
+		if (strcmp("Config", name, false) == 0)
+		{
+			ConfigState = CONFIG_STATE_CONFIG;
+		} else if (strcmp("MessageOptions", name, false) == 0) {
+			ConfigState = CONFIG_STATE_MSGOPT;
+		} else if (strcmp("AdMessages", name, false) == 0) {
+			ConfigState = CONFIG_STATE_MSG;
+		} 
 	}
 
 	return SMCParse_Continue;
@@ -94,10 +98,39 @@ public SMCResult:ReadConfig_KeyValue(Handle:smc,
 
 	if(key[0])
 	{
-		Call_StartForward(FwdKeyValue);
-		Call_PushString(key);
-		Call_PushString(value);
-		Call_Finish();
+		switch(ConfigState)
+		{
+			case CONFIG_STATE_CONFIG: {
+				if (strcmp("EnableAds", key, false) == 0)
+				{
+					EnabledAds = bool:StringToInt(value);
+					ChangeAdsStatus(EnabledAds);
+				} else if (strcmp("EnableOutsideAds", key, false) == 0) {
+					EnabledOutsideAds = bool:StringToInt(value);
+				} else if (strcmp("TimeBetweenMsg", key, false) == 0) {
+					AdsTimeMsg = StringToFloat(value);
+				} else if (strcmp("AllowDyanmicReplace", key, false) == 0) {
+					AllowDyanmicReplace = bool:StringToInt(value);
+				} else if (strcmp("LocationOfAds", key, false) == 0) {
+					LocationOfAds = StringToInt(value);
+				} else if (strcmp("AdsRedAlpha", key, false) == 0) {
+					AdsRedAlpha = StringToInt(value);
+				} else if (strcmp("AdsBlueAlpha", key, false) == 0) {
+					AdsBlueAlpha = StringToInt(value);
+				} else if (strcmp("AdsGreenAlpha", key, false) == 0) {
+					AdsGreenAlpha = StringToInt(value);
+				} else if (strcmp("AdsAlpha", key, false) == 0) {
+					AdsAlpha = StringToInt(value);
+				} else if (strcmp("InsurgencyAds", key, false) == 0) {
+					InsurgencyAds = bool:StringToInt(value);
+				} else if (strcmp("AdsChatColor", key, false) == 0) {
+					AdsChatColor(value);
+				}
+			}
+			case CONFIG_STATE_MSG: {
+						       NewAdsMessage(value);
+			}
+		}
 	}
 
 	return SMCParse_Continue;
@@ -112,62 +145,7 @@ public ReadConfig_ParseEnd(Handle:smc, bool:halted, bool:failed)
 {
 	if(ConfigCount == ++ParseCount)
 	{
-		Call_StartForward(FwdEnd);
-		Call_Finish();
+		AdsIndex = 0;
+		ConfigState = CONFIG_STATE_NONE;
 	}
-}
-
-public _ConfigNewSection(const String:name[])
-{
-	if (strcmp("Config", name, false) == 0)
-	{
-		ConfigState = CONFIG_STATE_CONFIG;
-	} else if (strcmp("MessageOptions", name, false) == 0) {
-		ConfigState = CONFIG_STATE_MSGOPT;
-	} else if (strcmp("AdMessages", name, false) == 0) {
-		ConfigState = CONFIG_STATE_MSG;
-	} 
-}
-
-public _ConfigKeyValue(const String:key[], String:value[])
-{
-	switch(ConfigState)
-	{
-		case CONFIG_STATE_CONFIG: {
-			if (strcmp("EnableAds", key, false) == 0)
-			{
-				EnabledAds = bool:StringToInt(value);
-				ChangeAdsStatus(EnabledAds);
-			} else if (strcmp("EnableOutsideAds", key, false) == 0) {
-				EnabledOutsideAds = bool:StringToInt(value);
-			} else if (strcmp("TimeBetweenMsg", key, false) == 0) {
-				AdsTimeMsg = StringToFloat(value);
-			} else if (strcmp("AllowDyanmicReplace", key, false) == 0) {
-				AllowDyanmicReplace = bool:StringToInt(value);
-			} else if (strcmp("LocationOfAds", key, false) == 0) {
-				LocationOfAds = StringToInt(value);
-			} else if (strcmp("AdsRedAlpha", key, false) == 0) {
-				AdsRedAlpha = StringToInt(value);
-			} else if (strcmp("AdsBlueAlpha", key, false) == 0) {
-				AdsBlueAlpha = StringToInt(value);
-			} else if (strcmp("AdsGreenAlpha", key, false) == 0) {
-				AdsGreenAlpha = StringToInt(value);
-			} else if (strcmp("AdsAlpha", key, false) == 0) {
-				AdsAlpha = StringToInt(value);
-			} else if (strcmp("InsurgencyAds", key, false) == 0) {
-				InsurgencyAds = bool:StringToInt(value);
-			} else if (strcmp("AdsChatColor", key, false) == 0) {
-				AdsChatColor(value);
-			}
-		}
-		case CONFIG_STATE_MSG: {
-			NewAdsMessage(value);
-		}
-	}
-}
-
-public _ConfigEnd()
-{
-	AdsIndex = 0;
-	ConfigState = CONFIG_STATE_NONE;
 }

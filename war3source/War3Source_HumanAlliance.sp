@@ -293,7 +293,7 @@ public HumanAlliance_Invisibility(client, war3player, skilllevel)
         case 3:
             alpha=115;
         case 4:
-            alpha=94;
+            alpha=100; // 94;
     }
 
     /* If the Player also has the Cloak of Shadows,
@@ -302,7 +302,7 @@ public HumanAlliance_Invisibility(client, war3player, skilllevel)
     new cloak = War3_GetShopItem("Cloak of Shadows");
     if (cloak != -1 && War3_GetOwnsItem(war3player,cloak))
     {
-        alpha *= 0.80;
+        alpha *= 0.90;
     }
 
     new Float:start[3];
@@ -313,7 +313,7 @@ public HumanAlliance_Invisibility(client, war3player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    War3_SetMinVisibility(war3player,alpha, 0.80, 0.80);
+    War3_SetMinVisibility(war3player,alpha, 0.90, 1.0);
 }
 
 public HumanAlliance_Bash(war3player, victim)

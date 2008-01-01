@@ -44,9 +44,6 @@ new Handle:g_Cvar_adsBuildVersion;
 new Handle:g_hAdsTimer = INVALID_HANDLE;
 
 new Handle:ConfigParser = INVALID_HANDLE;
-new Handle:FwdNewSection = INVALID_HANDLE;
-new Handle:FwdKeyValue = INVALID_HANDLE;
-new Handle:FwdEnd = INVALID_HANDLE;
 
 new Float:AdsTimeMsg;
 
