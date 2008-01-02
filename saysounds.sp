@@ -112,6 +112,7 @@ new Handle:cvarjoinspawn = INVALID_HANDLE;
 new Handle:cvarspecificjoinexit = INVALID_HANDLE;
 new Handle:cvartimebetween = INVALID_HANDLE;
 new Handle:cvaradmintime = INVALID_HANDLE;
+new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
@@ -142,6 +143,7 @@ public OnPluginStart(){
 	cvarspecificjoinexit = CreateConVar("sm_specific_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	cvaradmintime = CreateConVar("sm_time_between_admin_sounds","4.5","Time between each admin sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
+	cvaradminlimit = CreateConVar("sm_sound_admin_limit","5","Maximum sounds per admin",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -556,37 +558,38 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 
-	new Float:adminTime = 0.0;
-	if(adminonly){
-		new AdminId:aid = GetUserAdmin(client);
-		if (aid == INVALID_ADMIN_ID)
-			return Plugin_Handled;
-    		else if(!GetAdminFlag(aid, Admin_Generic, Access_Effective))
-        		return Plugin_Handled;
-
-		adminTime = GetConVarFloat(cvaradmintime);
+	new AdminId:aid = GetUserAdmin(client);
+	new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+	if(adminonly && !isadmin){
+		PrintToChat(client,"[Say Sounds] Sorry, you are not authorized to play this sound!");
+		return Plugin_Handled;
 	}
 
-	new Float:soundTime = GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
-	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	new Float:thetime = GetGameTime();
-
-	if (waitTime < soundTime)
-		waitTime = soundTime;
-
-	if (adminTime < soundTime)
-		adminTime = soundTime;
-
 	if (LastSound[client] >= thetime){
 		PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
 		return Plugin_Handled;
 	}
-	else if (adminonly && globalLastAdminSound >= thetime){
-		PrintToChat(client,"[Say Sounds] Please don't spam the admin sounds!");
-		return Plugin_Handled;
+
+	new Float:waitTime = GetConVarFloat(cvartimebetween);
+	new Float:soundTime = GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
+	if (waitTime < soundTime)
+		waitTime = soundTime;
+
+	new Float:adminTime = 0.0;
+	if (adminonly)
+	{
+		if (globalLastAdminSound >= thetime){
+			PrintToChat(client,"[Say Sounds] Please don't spam the admin sounds!");
+			return Plugin_Handled;
+		}
+
+		adminTime = GetConVarFloat(cvaradmintime);
+		if (adminTime < soundTime)
+			adminTime = soundTime;
 	}
 
-	new soundLimit = GetConVarInt(cvarsoundlimit);	
+	new soundLimit = isadmin ? GetConVarInt(cvaradminlimit) : GetConVarInt(cvarsoundlimit);	
 	if (SndCount[client] < soundLimit && globalLastSound < thetime){
 		SndCount[client]  = SndCount[client] + 1;
 		LastSound[client] = thetime + waitTime;
@@ -616,7 +619,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 
 	if(IsClientInGame(client)){
 		if ((SndCount[client]) >= soundLimit){
-			PrintToChat(client,"[Say Sounds] Sorry you have reached your sound quota!");
+			PrintToChat(client,"[Say Sounds] Sorry, you have reached your sound quota!");
 		}else{
 			new soundWarn = GetConVarInt(cvarsoundwarn);	
 			if ((SndCount[client]) == soundWarn){

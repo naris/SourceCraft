@@ -211,16 +211,14 @@ public OnGameFrame()
 						{
 							// Low on Fuel, Make it sputter.
 							if (g_iFuel[i] % 2)
+                            {
 								StopSound(i, SNDCHAN_AUTO, g_sSound);
+		                        SetMoveType(i, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
+                            }
 							else
 							{
+                                StartJetpack(i)
 								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
-
-								new Float:vecPos[3];
-								GetClientAbsOrigin(i, vecPos);
-								EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
-										       GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1, vecPos,
-										       NULL_VECTOR, true, 0.0);
 							}
 						}
 						else
@@ -302,7 +300,7 @@ public Action:JetpackM(client, args)
 
 StartJetpack(client)
 {
-	if (g_iFuel[client] > 0)
+	if (g_iFuel[client] != 0)
 	{
 		new Float:vecPos[3];
 		GetClientAbsOrigin(client, vecPos);
@@ -345,10 +343,7 @@ AddVelocity(client, Float:speed)
 
 bool:IsAlive(client)
 {
-	if(g_iLifeState != -1 && GetEntData(client, g_iLifeState, 1) == LIFE_ALIVE)
-		return true;
-
-	return false;
+	return (g_iLifeState != -1 && GetEntData(client, g_iLifeState, 1) == LIFE_ALIVE)
 }
 
 public Native_StartJetpack(Handle:plugin,numParams)
