@@ -19,9 +19,9 @@ S3: Healing Aura (Jigs Idea)
 Ult: Grab
 
 Protoss
-S1: 
-S2: Shields
-S3: 
+S1: Shields 
+S2: Cloak Teammates
+S3: Uncloak Enemies
 Ult: Control Object (steal sg/dispaenser/teleport)
 
 Al Queda
@@ -29,6 +29,12 @@ S1: Ressurectiuon (respawn and teleport back to orig pos)
 S2: Flaming Wrath (anti healing aura)
 S3: Suicide Bomber
 Ult: Mad Bomber
+
+Sick Farter
+S1: Repulsion (pushes other team members away)
+S2: Revulsion (prevent other team members from looking at him)
+S3: Slobber (drools on ground and makes it slippery so oppoenets slide around)
+Ult: Farts toxic cloud that persists and kills enemies.
 
 
 Existing skills:

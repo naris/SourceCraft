@@ -10,11 +10,11 @@
 #endif
 #define _health_included
 
-stock healthOffset[MAXPLAYERS+1]            = { 0, ... };
-stock maxHealthOffset[MAXPLAYERS+1]         = { 0, ... };
+stock healthOffset[MAXPLAYERS+1];
+stock maxHealthOffset[MAXPLAYERS+1];
 
-stock maxHealth[MAXPLAYERS+1]               = { 0, ... };
-stock bool:healthIncreased[MAXPLAYERS+1]    = { false, ... };
+stock maxHealth[MAXPLAYERS+1];
+stock bool:healthIncreased[MAXPLAYERS+1];
 
 stock SetupHealth(client)
 {

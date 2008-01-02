@@ -25,6 +25,8 @@ new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
+new m_Armor[MAXPLAYERS+1];
+
 public Plugin:myinfo = 
 {
     name = "War3Source Race - Terran Confederacy",
@@ -153,6 +155,18 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = War3_GetRace(war3player);
             if (race == raceID)
             {
+                new skill_armor = War3_GetSkillLevel(victimWar3player,raceID,2);
+                if (skill_armor)
+                {
+                    switch (skill_armor)
+                    {
+                        case 1: m_Armor[client] = GetMaxHealth(client);
+                        case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
+                        case 3: m_Armor[client] = GetMaxHealth(client)*2;
+                        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*2.50);
+                    }
+                }
+
                 new skill_jetpack=War3_GetSkillLevel(war3player,race,0);
                 if (skill_jetpack)
                 {
@@ -281,7 +295,10 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
         }
         new damage=GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        if (amount)
+        new armor=m_Armor[client];
+        if (amount > armor)
+            amount = armor;
+        if (amount > 0)
         {
             new newhp=GetClientHealth(victimIndex)+amount;
             new maxhp=GetMaxHealth(victimIndex);
@@ -289,6 +306,8 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
                 newhp = maxhp;
 
             SetHealth(victimIndex,newhp);
+
+            m_Armor[client] = armor - amount;
 
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
