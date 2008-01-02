@@ -155,7 +155,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = War3_GetRace(war3player);
             if (race == raceID)
             {
-                new skill_armor = War3_GetSkillLevel(victimWar3player,raceID,2);
+                new skill_armor = War3_GetSkillLevel(war3player,raceID,2);
                 if (skill_armor)
                 {
                     switch (skill_armor)
@@ -295,7 +295,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
         }
         new damage=GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        new armor=m_Armor[client];
+        new armor=m_Armor[victimIndex];
         if (amount > armor)
             amount = armor;
         if (amount > 0)
@@ -307,7 +307,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
 
             SetHealth(victimIndex,newhp);
 
-            m_Armor[client] = armor - amount;
+            m_Armor[victimIndex] = armor - amount;
 
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);

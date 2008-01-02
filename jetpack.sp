@@ -213,11 +213,11 @@ public OnGameFrame()
 							if (g_iFuel[i] % 2)
                             {
 								StopSound(i, SNDCHAN_AUTO, g_sSound);
-		                        SetMoveType(i, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
-                            }
+								SetMoveType(i, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
+							}
 							else
 							{
-                                StartJetpack(i)
+								StartJetpack(i);
 								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
 							}
 						}
@@ -343,7 +343,7 @@ AddVelocity(client, Float:speed)
 
 bool:IsAlive(client)
 {
-	return (g_iLifeState != -1 && GetEntData(client, g_iLifeState, 1) == LIFE_ALIVE)
+	return (g_iLifeState != -1 && GetEntData(client, g_iLifeState, 1) == LIFE_ALIVE);
 }
 
 public Native_StartJetpack(Handle:plugin,numParams)
