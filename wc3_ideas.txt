@@ -1,0 +1,65 @@
+Jiggly's uber medic race
+
+Jig: heal teammates
+
+Jig: ultimate to freeze person
+
+Me: Bomberman Ultimate == multiple bombings ala suicide bug
+
+Terran
+S1: Invisibility w/total when not moving
+S2: Armor
+S3: speed
+Ult: Jetpack
+
+Zerg
+S1: Increased Melee Attack
+S2: HP Regeneration
+S3: Healing Aura (Jigs Idea)
+Ult: Grab
+
+Protoss
+S1: 
+S2: Shields
+S3: 
+Ult: Control Object (steal sg/dispaenser/teleport)
+
+Al Queda
+S1: Ressurectiuon (respawn and teleport back to orig pos)
+S2: Flaming Wrath (anti healing aura)
+S3: Suicide Bomber
+Ult: Mad Bomber
+
+
+Existing skills:
+increased speed
+
+
+Skill Ideas:
+increased Projectile damage
+Blink (teleport very short distance)
+Blink (Total Inis for very short time)
+
+Ultimate Ideas:
+  Portal
+
+
+
+After some tests here are some known bugs.
+
+All of the following items/skills do not work.
+
+Mask of Death
+Boots of Speed
+Invisibility --> Varies from person to person sometimes it works, sometimes it doesnt work. (May not be bugged)
+Unholy aura
+Sock of the Feather
+Critical Grenade?? (Tried on Demoman with no results)
+
+All of the following skills/items DO work.
+Mole
+Periapt of Health.
+Levitation -- Was working on all classes. Then I switched to scout, it worked and was CRAZY, then all of a sudden it stopped working on any class.
+Thorns Aura
+Trueshot aura
+Vampiric Aura

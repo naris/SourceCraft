@@ -56,9 +56,9 @@ new g_iVelocity		= -1;
 new String:g_sSound[255]	= "vehicles/airboat/fan_blade_fullthrottle_loop1.wav";
 
 // Is Jetpack Enabled
-new bool:g_bHasJetpack[MAXPLAYERS + 1]	= {true,...};
-new bool:g_bFromNative[MAXPLAYERS + 1]	= {true,...};
-new bool:g_bJetpackOn[MAXPLAYERS + 1]	= {false,...};
+new bool:g_bHasJetpack[MAXPLAYERS + 1];
+new bool:g_bFromNative[MAXPLAYERS + 1];
+new bool:g_bJetpackOn[MAXPLAYERS + 1];
 
 // Fuel for the Jetpacks
 new g_iFuel[MAXPLAYERS + 1];
@@ -124,8 +124,8 @@ public OnPluginStart()
 	RegConsoleCmd("-sm_jetpack", JetpackM, "use jetpack (keyup)", FCVAR_GAMEDLL);
 
 	// Register admin cmds
-	RegAdminCmd("sm_give_jetpack",Command_GiveJetpack,ADMFLAG_JETPACK,"","give a jetpack to a player");
-	RegAdminCmd("sm_take_jetpack",Command_TakeJetpack,ADMFLAG_JETPACK,"","take the jetpack from a player");
+	RegAdminCmd("sm_jetpack_give",Command_GiveJetpack,ADMFLAG_JETPACK,"","give a jetpack to a player");
+	RegAdminCmd("sm_jetpack_take",Command_TakeJetpack,ADMFLAG_JETPACK,"","take the jetpack from a player");
 
 	// Hook events
 	HookEvent("player_spawn",PlayerSpawnEvent);
@@ -218,11 +218,9 @@ public OnGameFrame()
 
 								new Float:vecPos[3];
 								GetClientAbsOrigin(i, vecPos);
-								EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO,
-										SNDLEVEL_NORMAL, SND_NOFLAGS,
-										GetConVarFloat(sm_jetpack_volume),
-										SNDPITCH_NORMAL, -1, vecPos,
-										NULL_VECTOR, true, 0.0);
+								EmitSoundToAll(g_sSound, i, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
+										       GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1, vecPos,
+										       NULL_VECTOR, true, 0.0);
 							}
 						}
 						else
@@ -240,7 +238,7 @@ public OnGameFrame()
 					if(GetConVarBool(sm_jetpack_announce))
 					{
 						PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
-								COLOR_GREEN,COLOR_DEFAULT);
+								    COLOR_GREEN,COLOR_DEFAULT);
 					}
 				}
 			}
@@ -309,7 +307,7 @@ StartJetpack(client)
 		new Float:vecPos[3];
 		GetClientAbsOrigin(client, vecPos);
 		EmitSoundToAll(g_sSound, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
-				GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1, vecPos, NULL_VECTOR, true, 0.0);
+				       GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1, vecPos, NULL_VECTOR, true, 0.0);
 		SetMoveType(client, MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
 		g_bJetpackOn[client] = true;
 	}
