@@ -39,7 +39,6 @@ new Handle:sm_jetpack_fuel	= INVALID_HANDLE;
 new Handle:sm_jetpack_onspawn	= INVALID_HANDLE;
 new Handle:sm_jetpack_announce	= INVALID_HANDLE;
 new Handle:sm_jetpack_adminonly	= INVALID_HANDLE;
-new Handle:sm_jetpack_pluginonly= INVALID_HANDLE;
 new Handle:sm_jetpack_refueling_time= INVALID_HANDLE;
 
 new Handle:hAdminMenu = INVALID_HANDLE;
@@ -71,8 +70,9 @@ new Float:g_fTimer	= 0.0;
 // MaxClients
 new g_iMaxClients	= 0;
 
-// Number of Native Jetpacks
-new g_iNativeJetpacks   = 0;
+// Native interface settings
+new bool:b_bNativeOverride = false;
+new g_iNativeJetpacks      = 0;
 
 public Plugin:myinfo =
 {
@@ -117,7 +117,6 @@ public OnPluginStart()
 	sm_jetpack_onspawn = CreateConVar("sm_jetpack_onspawn", "1", "enable giving players a jetpack when they spawn", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
   	sm_jetpack_announce = CreateConVar("sm_jetpack_announce","1","This will enable announcements that jetpacks are available");
 	sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN);
-	sm_jetpack_pluginonly = CreateConVar("sm_jetpack_pluginonly", "0", "only allows jetpack given by other plugins", FCVAR_PLUGIN);
 
 	// Create ConCommands
 	RegConsoleCmd("+sm_jetpack", JetpackP, "use jetpack (keydown)", FCVAR_GAMEDLL);
@@ -162,7 +161,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
 
 	if (!g_bHasJetpack[index] && GetConVarBool(sm_jetpack) &&
-	    !GetConVarBool(sm_jetpack_pluginonly) && GetConVarBool(sm_jetpack_onspawn))
+	    !b_bNativeOverride && GetConVarBool(sm_jetpack_onspawn))
 	{
 		// Check for Admin Only
 		if (GetConVarBool(sm_jetpack_adminonly))
@@ -508,7 +507,7 @@ public Native_GetJetpack(Handle:plugin,numParams)
 
 public Native_SetJetpackControl(Handle:plugin,numParams)
 {
-	SetConVarBool(sm_jetpack_pluginonly, (numParams >= 1) ? GetNativeCell(1) : 1);
+	b_bNativeOverride = (numParams >= 1) ? GetNativeCell(1) : true;
 	if (numParams >= 2)
 	{
 		SetConVarBool(sm_jetpack_announce, GetNativeCell(2));
@@ -520,7 +519,7 @@ public Action:Command_GiveJetpack(client,argc)
 {
 	if(argc>=1)
 	{
-		if (GetConVarBool(sm_jetpack_pluginonly))
+		if (b_bNativeOverride)
 			ReplyToCommand(client,"Jetpacks are controlled by another plugin");
 		else
 		{
@@ -544,7 +543,7 @@ public Action:Command_TakeJetpack(client,argc)
 	if(argc>=1)
 	{
 		decl String:target[64];
-		if (GetConVarBool(sm_jetpack_pluginonly))
+		if (b_bNativeOverride
 			ReplyToCommand(client,"Jetpacks are controlled by another plugin");
 		else
 		{
