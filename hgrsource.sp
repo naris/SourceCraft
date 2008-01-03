@@ -105,7 +105,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
   CreateNative("GiveHook",Native_GiveHook);
   CreateNative("TakeHook",Native_TakeHook);
 
-  CreateNative("GiveGrap",Native_GiveGrab);
+  CreateNative("GiveGrab",Native_GiveGrab);
   CreateNative("TakeGrab",Native_TakeGrab);
 
   CreateNative("GiveRope",Native_GiveRope);

@@ -60,11 +60,9 @@ public OnWar3PluginReady()
                            "Jetpack",
                            "Allows you to fly until you run out of fuel.");
 
-    /*
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
-    */
 }
 
 public OnMapStart()
@@ -121,6 +119,8 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
             TerranConfederacy_Jetpack(client, war3player, newskilllevel);
         else if (skill==1)
             TerranConfederacy_Cloak(client, war3player, newskilllevel);
+        else if (skill==2)
+            TerranConfederacy_SetupArmor(client, newskilllevel);
         else if (skill==3)
             TerranConfederacy_Stimpacks(client, war3player, newskilllevel);
     }
@@ -165,15 +165,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                 new skill_armor = War3_GetSkillLevel(war3player,raceID,2);
                 if (skill_armor)
-                {
-                    switch (skill_armor)
-                    {
-                        case 1: m_Armor[client] = GetMaxHealth(client);
-                        case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
-                        case 3: m_Armor[client] = GetMaxHealth(client)*2;
-                        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*2.50);
-                    }
-                }
+                    TerranConfederacy_SetupArmor(client, skill_armor);
 
                 new skill_stimpacks = War3_GetSkillLevel(war3player,race,3);
                 if (skill_stimpacks)
@@ -258,6 +250,17 @@ public TerranConfederacy_Cloak(client, war3player, skilllevel)
     TE_SendToAll();
 
     War3_SetMinVisibility(war3player,alpha, 0.80, 0.1);
+}
+
+public TerranConfederacy_SetupArmor(client, skilllevel)
+{
+    switch (skilllevel)
+    {
+        case 1: m_Armor[client] = GetMaxHealth(client);
+        case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
+        case 3: m_Armor[client] = GetMaxHealth(client)*2;
+        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*2.50);
+    }
 }
 
 public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
