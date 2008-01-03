@@ -113,7 +113,7 @@ public OnPluginStart()
 	sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_PLUGIN);
 	sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_PLUGIN);
 	sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_PLUGIN);
-	sm_jetpack_refueling_time = CreateConVar("sm_jetpack_fuel", "30.0", "amount of time to wait before refueling", FCVAR_PLUGIN);
+	sm_jetpack_refueling_time = CreateConVar("sm_jetpack_refueling_time", "30.0", "amount of time to wait before refueling", FCVAR_PLUGIN);
 	sm_jetpack_onspawn = CreateConVar("sm_jetpack_onspawn", "1", "enable giving players a jetpack when they spawn", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
   	sm_jetpack_announce = CreateConVar("sm_jetpack_announce","1","This will enable announcements that jetpacks are available");
 	sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN);

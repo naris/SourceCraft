@@ -78,11 +78,6 @@ new GetVelocityOffset_2;
 new LifeStateOffset;
 new MoveTypeOffset;
 
-// SDK Handles
-new Handle:hGameConf;
-new Handle:hEyePosition;
-new Handle:hEyeAngles;
-
 // Precache variables
 new precache_laser;
 
@@ -214,20 +209,7 @@ public OnPluginStart()
   
   // Public cvar
   CreateConVar("hgrsource_version","1.0.3d","[HGR:Source] Current version of this plugin",FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_UNLOGGED|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
-  hGameConf=LoadGameConfigFile("plugin.hgrsource"); // Game configuration file
   
-  // EyePosition SDK call
-  StartPrepSDKCall(SDKCall_Player);
-  PrepSDKCall_SetFromConf(hGameConf,SDKConf_Virtual,"EyePosition");
-  PrepSDKCall_SetReturnInfo(SDKType_QAngle,SDKPass_ByValue);
-  hEyePosition=EndPrepSDKCall();
-  
-  // EyeAngles SDK call
-  StartPrepSDKCall(SDKCall_Player);
-  PrepSDKCall_SetFromConf(hGameConf,SDKConf_Virtual,"EyeAngles");
-  PrepSDKCall_SetReturnInfo(SDKType_QAngle,SDKPass_ByValue);
-  hEyeAngles=EndPrepSDKCall();
-
   PrintToServer("----------------|         HGR:Source Loaded         |---------------");
 }
 
@@ -774,8 +756,8 @@ public Action_Hook(client)
         if(HasAccess(client,Hook))
         {
           new Float:clientloc[3],Float:clientang[3];
-          GetEyePosition(client,clientloc); // Get the position of the player's eyes
-          GetAngles(client,clientang); // Get the angle the player is looking
+          GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
+          GetClientEyeAngles(client,clientang); // Get the angle the player is looking
           TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
           SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
           TR_GetEndPosition(gHookEndloc[client]); // Get the end xyz coordinate of where a player is looking
@@ -869,8 +851,8 @@ public Action:GrabSearch(Handle:timer,any:index)
   if(IsClientInGame(index)&&IsClientAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
   {
     new Float:clientloc[3],Float:clientang[3];
-    GetEyePosition(index,clientloc); // Get seekers eye coordinate
-    GetAngles(index,clientang); // Get angle of where the player is looking
+    GetClientEyePosition(index,clientloc); // Get seekers eye coordinate
+    GetClientEyeAngles(index,clientang); // Get angle of where the player is looking
     TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayGrabEnt); // Create a ray that tells where the player is looking
     gTargetindex[index]=TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
     if(gTargetindex[index]>0)
@@ -905,7 +887,7 @@ public Action:Grabbing(Handle:timer,any:index)
       // Find where to push the target
       new Float:clientloc[3],Float:clientang[3],Float:targetloc[3],Float:endvec[3],Float:distance[3];
       GetClientAbsOrigin(index,clientloc);
-      GetAngles(index,clientang);
+      GetClientEyeAngles(index,clientang);
       GetEntityOrigin(gTargetindex[index],targetloc);
       TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Find where the player is aiming
       TR_GetEndPosition(endvec); // Get the end position of the trace ray
@@ -968,8 +950,8 @@ public Action_Rope(client)
         if(HasAccess(client,Rope))
         {
           new Float:clientloc[3],Float:clientang[3];
-          GetEyePosition(client,clientloc); // Get the position of the player's eyes
-          GetAngles(client,clientang); // Get the angle the player is looking
+          GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
+          GetClientEyeAngles(client,clientang); // Get the angle the player is looking
           TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
           TR_GetEndPosition(gRopeEndloc[client]); // Get the end xyz coordinate of where a player is looking
           EmitSoundFromOrigin("weapons/crossbow/hit1.wav",gRopeEndloc[client]); // Emit sound from the end of the rope
@@ -1061,16 +1043,6 @@ public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
 public GetEntityOrigin(entity,Float:output[3])
 {
   GetEntDataVector(entity,OriginOffset,output);
-}
-
-public GetAngles(client,Float:output[3])
-{
-  SDKCall(hEyeAngles,client,output);
-}
-
-public GetEyePosition(client,Float:output[3])
-{
-  SDKCall(hEyePosition,client,output);
 }
 
 public GetVelocity(client,Float:output[3])
