@@ -18,6 +18,7 @@
 #include "War3Source/health"
 #include "War3Source/damage"
 #include "War3Source/weapons"
+#include "War3Source/log"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -215,14 +216,37 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new victimWar3player = War3_GetWar3Player(victimIndex);
         if (victimWar3player != -1)
         {
-            new victimrace = War3_GetRace(victimWar3player);
-            if (victimrace == raceID)
-                Zerg_AdrenalGlands(event, victimIndex, war3player);
+            new attackerUserid = GetEventInt(event,"attacker");
+            if (attackerUserid && victimUserid != attackerUserid)
+            {
+                new attackerIndex      = GetClientOfUserId(attackerUserid);
+                new attackerWar3player = War3_GetWar3Player(attackerIndex);
+                if (attackerWar3player != -1)
+                {
+                    if (War3_GetRace(attackerWar3player) == raceID)
+                        Zerg_AdrenalGlands(event, attackerIndex, attackerWar3player, victimIndex);
+                }
+            }
+
+            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assisterUserid && victimUserid != assisterUserid)
+            {
+                new assisterIndex      = GetClientOfUserId(assisterUserid);
+                new assisterWar3player = War3_GetWar3Player(assisterIndex);
+                if (assisterWar3player != -1)
+                {
+                    if (War3_GetRace(assisterWar3player) == raceID)
+                        Zerg_AdrenalGlands(event, assisterIndex, assisterWar3player, victimIndex);
+                }
+            }
         }
+        if (victimIndex)
+            SaveHealth(victimIndex);
     }
 }
 
-public Zerg_AdrenalGlands(Handle:event, victimindex, war3player)
+
+public Zerg_AdrenalGlands(Handle:event, index, war3player, victimIndex)
 {
     new skill_adrenal_glands=War3_GetSkillLevel(war3player,raceID,2);
     if (skill_adrenal_glands)
@@ -245,21 +269,21 @@ public Zerg_AdrenalGlands(Handle:event, victimindex, war3player)
                         percent=1.00;
                 }
 
-                new damage=GetDamage(event, victimindex, index, 10, 20);
+                new damage=GetDamage(event, victimIndex, index, 10, 20);
                 new amount=RoundFloat(float(damage)*percent);
-                new newhp=GetClientHealth(victimindex)-amount;
+                new newhp=GetClientHealth(victimIndex)-amount;
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(index, victimindex, "adrenal_glands", "Adrenal Glands", amount);
+                    LogKill(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
                 }
                 else
-                    LogDamage(index, victimindex, "adrenal_glands", "Adrenal Glands", amount);
+                    LogDamage(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
 
-                SetHealth(victimindex,newhp);
+                SetHealth(victimIndex,newhp);
 
                 new Float:Origin[3];
-                GetClientAbsOrigin(victimindex, Origin);
+                GetClientAbsOrigin(victimIndex, Origin);
                 Origin[2] += 5;
 
                 TE_SetupSparks(Origin,Origin,255,1);
@@ -285,7 +309,7 @@ public Zerg_Tentacles(client, war3player, skilllevel)
             case 2:
             {
                 m_GrabTime[client]=35;
-                mGrabRechargeTime[client]=30;
+                m_GrabRechargeTime[client]=30;
             }
             case 3:
             {
