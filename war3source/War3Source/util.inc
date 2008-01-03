@@ -66,3 +66,14 @@ stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
 
     return distance;                                  
 }
+
+stock bool:IsInRange(client,index,Float:maxdistance)
+{
+    new Float:startclient[3];
+    new Float:endclient[3];
+    GetClientAbsOrigin(client,startclient);
+    GetClientAbsOrigin(index,endclient);
+    new Float:distance=DistanceBetween(startclient,endclient);
+    return (distance<maxdistance);
+}
+

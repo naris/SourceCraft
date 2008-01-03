@@ -51,14 +51,6 @@ native GiveGrab(client);
 native TakeGrab(client);
 
 /**
- * Toggle ownership of a grabber for the player
- *
- * @param index 	Client index
- * @return			none
- */
-native ToggleGrab(client);
-
-/**
  * Give a rope to the player
  *
  * @param index 	Client index
@@ -73,22 +65,6 @@ native GiveRope(client);
  * @return			none
  */
 native TakeRope(client);
-
-/**
- * Toggle ownership of a rope for the player
- *
- * @param index 	Client index
- * @return			none
- */
-native ToggleRope(client);
-
-  CreateNative("Grab",Native_Grab);
-  CreateNative("Drop",Native_Drop);
-  CreateNative("GrabToggle",Native_GrabToggle);
-
-  CreateNative("Rope",Native_AttachRope);
-  CreateNative("Detach",Native_DetachRope);
-  CreateNative("RopeToggle",Native_AttachRopeToggle);
 
 /**
  * Use the hook (bind to a keydown)

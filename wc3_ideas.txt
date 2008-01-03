@@ -13,16 +13,16 @@ S3: speed
 Ult: Jetpack
 
 Zerg
-S1: Increased Melee Attack
-S2: HP Regeneration
+S1: Adrenal Glands (Increased Melee Attack)
+S2: Regeneration
 S3: Healing Aura (Jigs Idea)
 Ult: Grab
 
 Protoss
 S1: Shields 
-S2: Cloak Teammates
-S3: Uncloak Enemies
-Ult: Control Object (steal sg/dispaenser/teleport)
+S2: Cloaking field
+S3: Detector
+Ult: Mind Control (steal sg/dispaenser/teleport)
 
 Al Queda
 S1: Ressurectiuon (respawn and teleport back to orig pos)

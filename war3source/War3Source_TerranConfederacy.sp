@@ -61,7 +61,7 @@ public OnWar3PluginReady()
                            "Allows you to fly until you run out of fuel.");
 
     /*
-    SetJetpackControl(true,true);
+    ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
     */
@@ -155,6 +155,14 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = War3_GetRace(war3player);
             if (race == raceID)
             {
+                new skill_jetpack=War3_GetSkillLevel(war3player,race,0);
+                if (skill_jetpack)
+                    TerranConfederacy_Jetpack(client, war3player, skill_jetpack);
+
+                new skill_cloak=War3_GetSkillLevel(war3player,race,1);
+                if (skill_cloak)
+                    TerranConfederacy_Cloak(client, war3player, skill_cloak);
+
                 new skill_armor = War3_GetSkillLevel(war3player,raceID,2);
                 if (skill_armor)
                 {
@@ -167,21 +175,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     }
                 }
 
-                new skill_jetpack=War3_GetSkillLevel(war3player,race,0);
-                if (skill_jetpack)
-                {
-                    TerranConfederacy_Jetpack(client, war3player, skill_jetpack);
-                }
-
-                new skill_cloak=War3_GetSkillLevel(war3player,race,1);
-                if (skill_cloak)
-                {
-                    TerranConfederacy_Cloak(client, war3player, skill_cloak);
-                }
-
-                new skilllevel_stimpacks = War3_GetSkillLevel(war3player,race,3);
-                if (skilllevel_stimpacks)
-                    TerranConfederacy_Stimpacks(client, war3player, skilllevel_stimpacks);
+                new skill_stimpacks = War3_GetSkillLevel(war3player,race,3);
+                if (skill_stimpacks)
+                    TerranConfederacy_Stimpacks(client, war3player, skill_stimpacks);
             }
         }
     }

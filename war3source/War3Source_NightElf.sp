@@ -365,14 +365,3 @@ public Action:AllowEntangle(Handle:timer,any:index)
 {
     m_AllowEntangle[index]=true;
 }
-
-public bool:IsInRange(client,index,Float:maxdistance)
-{
-    new Float:startclient[3];
-    new Float:endclient[3];
-    GetClientAbsOrigin(client,startclient);
-    GetClientAbsOrigin(index,endclient);
-    new Float:distance=DistanceBetween(startclient,endclient);
-    return (distance<maxdistance);
-}
-

@@ -5,6 +5,11 @@
  * Author(s): Anthony Iacono  
  */
 
+#if defined _player_tracking_included
+ #endinput
+#endif
+#define _player_tracking_included
+
 #include <tf2>
 
 #define INFO_COUNT     6 // 1)client index, 2)race, 3)pending race, 4)pending skill reset, 5)credits, 6)tracking array
@@ -346,33 +351,11 @@ stock MakeVisible(client)
 
 stock MakeInvisible(client, visibility, Float:meleeFactor, Float:movementFactor)
 {
-    decl String:wepName[128];
-    GetClientWeapon(client, wepName, 127);
-
     if (meleeFactor != 1.0 && meleeFactor != -1.0)
     {
-        if(GameType == cstrike && StrEqual(wepName,"weapon_knife"))
-        {
-            visibility *= meleeFactor;
-        }
-        else if(GameType == tf2 && (StrEqual(wepName,"tf_weapon_knife") ||
-                                    StrEqual(wepName,"tf_weapon_shovel") ||
-                                    StrEqual(wepName,"tf_weapon_wrench") ||
-                                    StrEqual(wepName,"tf_weapon_bat") ||
-                                    StrEqual(wepName,"tf_weapon_bonesaw") ||
-                                    StrEqual(wepName,"tf_weapon_bottle") ||
-                                    StrEqual(wepName,"tf_weapon_club") ||
-                                    StrEqual(wepName,"tf_weapon_fireaxe") ||
-                                    StrEqual(wepName,"tf_weapon_fists") ||
-                                    StrEqual(wepName,"tf_weapon_builder") ||
-                                    StrEqual(wepName,"tf_weapon_pda_engineer_build") ||
-                                    StrEqual(wepName,"tf_weapon_pda_engineer_destroy") ||
-                                    StrEqual(wepName,"tf_weapon_pda_spy")))
-        {
-            visibility *= meleeFactor;
-        }
-        else if(GameType == dod && (StrEqual(wepName,"weapon_amerknife") ||
-                                    StrEqual(wepName,"weapon_spade")))
+        decl String:wepName[128];
+        GetClientWeapon(client, wepName, 127);
+        if (IsEquipmentMelee(wepName);
         {
             visibility *= meleeFactor;
         }
