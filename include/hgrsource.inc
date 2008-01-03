@@ -16,7 +16,7 @@
  * @param plugin_only 	Set to 1 to assume complete control of the HGR plugin.
  * @return		    	none
  */
-native ControlJetpack(bool:plugin_only=true);
+native ControlHookGrabRope(bool:plugin_only=true);
 
 /**
  * Give a hook to the player

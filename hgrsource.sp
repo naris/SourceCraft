@@ -83,6 +83,9 @@ new precache_laser;
 
 // Native interface settings
 new bool:g_bNativeOverride = false;
+new g_iNativeHooks;
+new g_iNativeGrabs;
+new g_iNativeRopes;
 
 enum HGRSourceAction
 {
@@ -359,7 +362,10 @@ public Native_GiveHook(Handle:plugin,numParams)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
+    {
       ClientAccess(client,Give,Hook);
+      g_iNativeHooks++;
+    }
   }
 }
 
@@ -369,7 +375,10 @@ public Native_TakeHook(Handle:plugin,numParams)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
+    {
       ClientAccess(client,Take,Hook);
+      g_iNativeHooks--;
+    }
   }
 }
 
@@ -379,7 +388,10 @@ public Native_GiveGrab(Handle:plugin,numParams)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
+    {
       ClientAccess(client,Give,Grab);
+      g_iNativeGrabs++;
+    }
   }
 }
 
@@ -389,7 +401,10 @@ public Native_TakeGrab(Handle:plugin,numParams)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
+    {
       ClientAccess(client,Take,Grab);
+      g_iNativeGrabs--;
+    }
   }
 }
 
@@ -399,7 +414,10 @@ public Native_GiveRope(Handle:plugin,numParams)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
+    {
       ClientAccess(client,Give,Rope);
+      g_iNativeRopes++;
+    }
   }
 }
 
@@ -409,7 +427,10 @@ public Native_TakeRope(Handle:plugin,numParams)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
+    {
       ClientAccess(client,Take,Rope);
+      g_iNativeRopes--;
+    }
   }
 }
 
@@ -663,11 +684,11 @@ public bool:IsFeatureEnabled(HGRSourceAction:action)
   if (g_bNativeOverride)
     return true;
   if(action==Hook)
-    return GetConVarBool(cvarHookEnable);
+    return g_iNativeHooks || GetConVarBool(cvarHookEnable);
   if(action==Grab)
-    return GetConVarBool(cvarGrabEnable);
+    return g_iNativeGrabs || GetConVarBool(cvarGrabEnable);
   if(action==Rope)
-    return GetConVarBool(cvarRopeEnable);
+    return g_iNativeRopes || GetConVarBool(cvarRopeEnable);
   return false;
 }
 

@@ -64,9 +64,7 @@ public OnWar3PluginReady()
                            "Tentacles",
                            "Reach out and grab an opponent.");
 
-    /*
     ControlHookGrabRope(true);
-    */
 }
 
 public OnMapStart()
