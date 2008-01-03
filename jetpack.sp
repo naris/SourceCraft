@@ -71,7 +71,7 @@ new Float:g_fTimer	= 0.0;
 new g_iMaxClients	= 0;
 
 // Native interface settings
-new bool:b_bNativeOverride = false;
+new bool:g_bNativeOverride = false;
 new g_iNativeJetpacks      = 0;
 
 public Plugin:myinfo =
@@ -86,12 +86,12 @@ public Plugin:myinfo =
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
 	// Register Natives
+	CreateNative("ControlJetpack",Native_ControlJetpack);
 	CreateNative("GetJetpack",Native_GetJetpack);
 	CreateNative("GetJetpackFuel",Native_GetJetpackFuel);
 	CreateNative("GetJetpackRefuelingTime",Native_GetJetpackRefuelingTime);
 	CreateNative("SetJetpackFuel",Native_SetJetpackFuel);
 	CreateNative("SetJetpackRefuelingTime",Native_SetJetpackRefuelingTime);
-	CreateNative("SetJetpackControl",Native_SetJetpackControl);
 	CreateNative("GiveJetpack",Native_GiveJetpack);
 	CreateNative("TakeJetpack",Native_TakeJetpack);
 	CreateNative("GiveJetpackFuel",Native_GiveJetpackFuel);
@@ -161,7 +161,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
 
 	if (!g_bHasJetpack[index] && GetConVarBool(sm_jetpack) &&
-	    !b_bNativeOverride && GetConVarBool(sm_jetpack_onspawn))
+	    !g_bNativeOverride && GetConVarBool(sm_jetpack_onspawn))
 	{
 		// Check for Admin Only
 		if (GetConVarBool(sm_jetpack_adminonly))
@@ -347,7 +347,7 @@ bool:IsAlive(client)
 
 public Native_StartJetpack(Handle:plugin,numParams)
 {
-	if(numParams ==1)
+	if(numParams == 1)
 	{
 		new client = GetNativeCell(1);
 		if(g_bHasJetpack[client] && !g_bJetpackOn[client] && IsAlive(client))
@@ -364,7 +364,7 @@ public Native_StartJetpack(Handle:plugin,numParams)
 
 public Native_StopJetpack(Handle:plugin,numParams)
 {
-	if(numParams ==1)
+	if(numParams == 1)
 	{
 		new client = GetNativeCell(1);
 		StopJetpack(client);
@@ -376,7 +376,7 @@ public Native_StopJetpack(Handle:plugin,numParams)
 
 public Native_GiveJetpack(Handle:plugin,numParams)
 {
-	if(numParams >=1 && numParams <= 3)
+	if(numParams >= 1 && numParams <= 3)
 	{
 		new client = GetNativeCell(1);
 		g_bHasJetpack[client] = true;
@@ -392,7 +392,7 @@ public Native_GiveJetpack(Handle:plugin,numParams)
 
 public Native_TakeJetpack(Handle:plugin,numParams)
 {
-	if(numParams ==1)
+	if(numParams == 1)
 	{
 		new client = GetNativeCell(1);
 		StopJetpack(client);
@@ -410,7 +410,7 @@ public Native_TakeJetpack(Handle:plugin,numParams)
 
 public Native_GiveJetpackFuel(Handle:plugin,numParams)
 {
-	if(numParams >=1 && numParams <= 2)
+	if(numParams >= 1 && numParams <= 2)
 	{
 		new client = GetNativeCell(1);
 		if (numParams > 1) 
@@ -434,7 +434,7 @@ public Native_GiveJetpackFuel(Handle:plugin,numParams)
 
 public Native_TakeJetpackFuel(Handle:plugin,numParams)
 {
-	if(numParams >=1 && numParams <= 2)
+	if(numParams >= 1 && numParams <= 2)
 	{
 		new client = GetNativeCell(1);
 		if (client > 0 && client <= MAXPLAYERS+1)
@@ -505,9 +505,9 @@ public Native_GetJetpack(Handle:plugin,numParams)
 		return 0;
 }
 
-public Native_SetJetpackControl(Handle:plugin,numParams)
+public Native_ControlJetpack(Handle:plugin,numParams)
 {
-	b_bNativeOverride = (numParams >= 1) ? GetNativeCell(1) : true;
+	g_bNativeOverride = (numParams >= 1) ? GetNativeCell(1) : true;
 	if (numParams >= 2)
 	{
 		SetConVarBool(sm_jetpack_announce, GetNativeCell(2));
@@ -519,7 +519,7 @@ public Action:Command_GiveJetpack(client,argc)
 {
 	if(argc>=1)
 	{
-		if (b_bNativeOverride)
+		if (g_bNativeOverride)
 			ReplyToCommand(client,"Jetpacks are controlled by another plugin");
 		else
 		{
@@ -543,7 +543,7 @@ public Action:Command_TakeJetpack(client,argc)
 	if(argc>=1)
 	{
 		decl String:target[64];
-		if (b_bNativeOverride
+		if (g_bNativeOverride)
 			ReplyToCommand(client,"Jetpacks are controlled by another plugin");
 		else
 		{

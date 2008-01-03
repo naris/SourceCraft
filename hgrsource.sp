@@ -86,6 +86,9 @@ new Handle:hEyeAngles;
 // Precache variables
 new precache_laser;
 
+// Native interface settings
+new bool:g_bNativeOverride = false;
+
 enum HGRSourceAction
 {
   Hook = 0, /** User is using hook */
@@ -98,6 +101,35 @@ enum HGRSourceAccess
   Give = 0, /** Gives access to user */
   Take = 1, /** Takes access from user */
 };
+
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+  // Register Natives
+  CreateNative("ControlHookGrabRope",Native_ControlHookGrabRope);
+
+  CreateNative("GiveHook",Native_GiveHook);
+  CreateNative("TakeHook",Native_TakeHook);
+
+  CreateNative("GiveGrap",Native_GiveGrab);
+  CreateNative("TakeGrab",Native_TakeGrab);
+
+  CreateNative("GiveRope",Native_GiveRope);
+  CreateNative("TakeRope",Native_TakeRope);
+
+  CreateNative("Hook",Native_Hook);
+  CreateNative("UnHook",Native_UnHook);
+  CreateNative("HookToggle",Native_HookToggle);
+
+  CreateNative("Grab",Native_Grab);
+  CreateNative("Drop",Native_Drop);
+  CreateNative("GrabToggle",Native_GrabToggle);
+
+  CreateNative("Rope",Native_Rope);
+  CreateNative("Detach",Native_Detach);
+  CreateNative("RopeToggle",Native_RopeToggle);
+
+  return true;
+}
 
 public OnPluginStart()
 {
@@ -222,6 +254,183 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     PrintToChat(index,"%c[HGR:Source] %cIs enabled, valid commands are: [%c+hook%c] [%c+grab%c] [%c+rope%c]",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
 }
 
+/*********
+ *Natives*
+**********/
+
+public Native_ControlHookGrabRope(Handle:plugin,numParams)
+{
+  if (numParams == 0)
+    g_bNativeOverride = true;
+  else if(numParams == 1)
+    g_bNativeOverride = GetNativeCell(1);
+}
+
+public Native_Hook(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      Action_Hook(client);
+  }
+}
+
+public Native_UnHook(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      Action_UnHook(client);
+  }
+}
+
+public Native_HookToggle(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+    {
+      if(gStatus[client][ACTION_HOOK])
+        gStatus[client][ACTION_HOOK]=false;
+      else
+        Action_Hook(client);
+    }
+  }
+}
+    
+public Native_Grab(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      Action_Grab(client);
+  }
+}
+
+public Native_Drop(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      Action_Drop(client);
+  }
+}
+
+public Native_GrabToggle(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+    {
+      if(gStatus[client][ACTION_GRAB])
+        gStatus[client][ACTION_GRAB]=false;
+      else
+        Action_Grab(client);
+    }
+  }
+}
+
+public Native_Rope(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      Action_Rope(client);
+  }
+}
+
+public Native_Detach(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      Action_Detach(client);
+  }
+}
+
+public Native_RopeToggle(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+    {
+      if(gStatus[client][ACTION_ROPE])
+        gStatus[client][ACTION_ROPE]=false;
+      else
+        Action_Rope(client);
+    }
+  }
+}
+
+public Native_GiveHook(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      ClientAccess(client,Give,Hook);
+  }
+}
+
+public Native_TakeHook(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      ClientAccess(client,Take,Hook);
+  }
+}
+
+public Native_GiveGrab(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      ClientAccess(client,Give,Grab);
+  }
+}
+
+public Native_TakeGrab(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      ClientAccess(client,Take,Grab);
+  }
+}
+
+public Native_GiveRope(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      ClientAccess(client,Give,Rope);
+  }
+}
+
+public Native_TakeRope(Handle:plugin,numParams)
+{
+  if(numParams == 1)
+  {
+    new client = GetNativeCell(1);
+    if(IsClientAlive(client))
+      ClientAccess(client,Take,Rope);
+  }
+}
+
 /******
  *Cmds*
 *******/
@@ -300,7 +509,7 @@ public Action:GiveHook(client,argc)
 {
   if(argc>=1)
   {
-    if(IsFeatureEnabled(Hook)&&IsFeatureAdminOnly(Hook))
+    if(!g_bNativeOverride && IsFeatureEnabled(Hook) && IsFeatureAdminOnly(Hook))
     {
       decl String:target[64];
       GetCmdArg(1,target,64);
@@ -318,7 +527,7 @@ public Action:TakeHook(client,argc)
 {
   if(argc>=1)
   {
-    if(IsFeatureEnabled(Hook)&&IsFeatureAdminOnly(Hook))
+    if(!g_bNativeOverride && IsFeatureEnabled(Hook) && IsFeatureAdminOnly(Hook))
     {
       decl String:target[64];
       GetCmdArg(1,target,64);
@@ -336,7 +545,7 @@ public Action:GiveGrab(client,argc)
 {
   if(argc>=1)
   {
-    if(IsFeatureEnabled(Grab)&&IsFeatureAdminOnly(Grab))
+    if(!g_bNativeOverride && IsFeatureEnabled(Grab) && IsFeatureAdminOnly(Grab))
     {
       decl String:target[64];
       GetCmdArg(1,target,64);
@@ -354,7 +563,7 @@ public Action:TakeGrab(client,argc)
 {
   if(argc>=1)
   {
-    if(IsFeatureEnabled(Grab)&&IsFeatureAdminOnly(Grab))
+    if(!g_bNativeOverride && IsFeatureEnabled(Grab) && IsFeatureAdminOnly(Grab))
     {
       decl String:target[64];
       GetCmdArg(1,target,64);
@@ -372,7 +581,7 @@ public Action:GiveRope(client,argc)
 {
   if(argc>=1)
   {
-    if(IsFeatureEnabled(Rope)&&IsFeatureAdminOnly(Rope))
+    if(!g_bNativeOverride && IsFeatureEnabled(Rope) && IsFeatureAdminOnly(Rope))
     {
       decl String:target[64];
       GetCmdArg(1,target,64);
@@ -390,7 +599,7 @@ public Action:TakeRope(client,argc)
 {
   if(argc>=1)
   {
-    if(IsFeatureEnabled(Rope)&&IsFeatureAdminOnly(Rope))
+    if(!g_bNativeOverride && IsFeatureEnabled(Rope) && IsFeatureAdminOnly(Rope))
     {
       decl String:target[64];
       GetCmdArg(1,target,64);
@@ -449,9 +658,9 @@ public bool:HasAccess(client,HGRSourceAction:action)
     return true;
   else
   {
-    if(!IsFeatureEnabled(action))
+    if(!g_bNativeOverride && !IsFeatureEnabled(action))
       return false;
-    if(!IsFeatureAdminOnly(action))
+    if(!g_bNativeOverride && !IsFeatureAdminOnly(action))
       return true;
     if(action==Hook)
       return gAllowedClients[client][ACTION_HOOK];
@@ -469,6 +678,8 @@ public bool:HasAccess(client,HGRSourceAction:action)
   
 public bool:IsFeatureEnabled(HGRSourceAction:action)
 {
+  if (g_bNativeOverride)
+    return true;
   if(action==Hook)
     return GetConVarBool(cvarHookEnable);
   if(action==Grab)
@@ -480,6 +691,8 @@ public bool:IsFeatureEnabled(HGRSourceAction:action)
 
 public bool:IsFeatureAdminOnly(HGRSourceAction:action)
 {
+  if (g_bNativeOverride)
+    return false;
   if(action==Hook)
     return GetConVarBool(cvarHookAdminOnly);
   if(action==Grab)
@@ -552,7 +765,7 @@ public GetBeamColor(client,HGRSourceAction:action,color[4])
 
 public Action_Hook(client)
 {
-  if(GetConVarBool(cvarHookEnable))
+  if(g_bNativeOverride || GetConVarBool(cvarHookEnable))
   {
     if(client>0)
     {
@@ -571,6 +784,8 @@ public Action_Hook(client)
           Hook_Push(client);
           CreateTimer(0.1,Hooking,client,TIMER_REPEAT); // Create hooking loop
         }
+        else if (g_bNativeOverride)
+          PrintToChat(client,"%c[HGR:Source] %cYou don't have a %chook%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         else
           PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %chook%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
       }
@@ -624,7 +839,7 @@ public Action_UnHook(client)
 
 public Action_Grab(client)
 {
-  if(GetConVarBool(cvarGrabEnable))
+  if(g_bNativeOverride || GetConVarBool(cvarGrabEnable))
   {
     if(client>0)
     {
@@ -635,6 +850,8 @@ public Action_Grab(client)
           gStatus[client][ACTION_GRAB]=true; // Tell plugin the seeker is grabbing a player
           CreateTimer(0.05,GrabSearch,client,TIMER_REPEAT); // Start a timer that searches for a client to grab
         }
+        else if (g_bNativeOverride)
+          PrintToChat(client,"%c[HGR:Source] %cYou don't have a %cgrabber%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         else
           PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %cgrab%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
       }
@@ -742,7 +959,7 @@ public Action_Drop(client)
 
 public Action_Rope(client)
 {
-  if(GetConVarBool(cvarRopeEnable))
+  if(g_bNativeOverride || GetConVarBool(cvarRopeEnable))
   {
     if(client>0)
     {
@@ -760,6 +977,8 @@ public Action_Rope(client)
           gStatus[client][ACTION_ROPE]=true; // Tell plugin the player is roping
           CreateTimer(0.1,Roping,client,TIMER_REPEAT); // Create roping loop
         }
+        else if (g_bNativeOverride)
+          PrintToChat(client,"%c[HGR:Source] %cYou don't have a %crope%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         else
           PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %crope%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
       }
