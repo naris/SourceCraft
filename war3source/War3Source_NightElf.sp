@@ -13,6 +13,7 @@
 #include "War3Source/War3Source_Interface"
 
 #include "War3Source/util"
+#include "War3Source/range"
 #include "War3Source/health"
 #include "War3Source/damage"
 #include "War3Source/freeze"

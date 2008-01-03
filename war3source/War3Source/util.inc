@@ -55,25 +55,3 @@ stock SetupModel(String:model[])
     return PrecacheModel(model);
 }
 
-stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
-{
-    new Float:distance = SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
-                                    (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
-                                    (startvec[2]-endvec[2])*(startvec[2]-endvec[2]));
-
-    if (distance < 0)
-        distance *= -1;
-
-    return distance;                                  
-}
-
-stock bool:IsInRange(client,index,Float:maxdistance)
-{
-    new Float:startclient[3];
-    new Float:endclient[3];
-    GetClientAbsOrigin(client,startclient);
-    GetClientAbsOrigin(index,endclient);
-    new Float:distance=DistanceBetween(startclient,endclient);
-    return (distance<maxdistance);
-}
-

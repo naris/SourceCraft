@@ -13,6 +13,7 @@
 #include "War3Source/War3Source_Interface"
 
 #include "War3Source/util"
+#include "War3Source/range"
 #include "War3Source/health"
 #include "War3Source/damage"
 #include "War3Source/log"
@@ -115,9 +116,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
         {
             new ult_level = War3_GetSkillLevel(war3player,race,3);
             if (ult_level)
-            {
                 Undead_SuicideBomber(client,war3player,ult_level,false);
-            }
         }
     }
 }
@@ -435,7 +434,7 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                     new Float:location_check[3];
                     GetClientAbsOrigin(x,location_check);
 
-                    new hp=PowerOfRange(client_location,radius,location_check);
+                    new hp=PowerOfRange(client_location,radius,location_check,300);
                     if (hp)
                     {
                         new newhealth = GetClientHealth(x)-hp;
@@ -459,13 +458,3 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
         }
     }
 }
-
-public PowerOfRange(Float:location[3],Float:radius,Float:check_location[3])
-{
-    new Float:distance=DistanceBetween(location,check_location);
-    new Float:healthtakeaway=0.0;
-    if(distance<radius)
-        healthtakeaway=1-FloatDiv(distance,radius)+0.20;
-    return RoundFloat(100*healthtakeaway);
-}
-
