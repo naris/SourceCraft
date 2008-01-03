@@ -21,7 +21,6 @@
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
-new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
@@ -74,10 +73,6 @@ public OnMapStart()
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
-
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
 }
 
 

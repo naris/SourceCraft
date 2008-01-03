@@ -25,7 +25,6 @@
 new raceID; // The ID we are assigned to
 
 new g_haloSprite;
-new g_smokeSprite;
 new g_lightningSprite;
 
 new m_GrabTime[MAXPLAYERS+1];
@@ -70,10 +69,6 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
