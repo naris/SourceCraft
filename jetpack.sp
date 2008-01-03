@@ -160,8 +160,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
 	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
 
-	if (!g_bHasJetpack[index] && GetConVarBool(sm_jetpack) &&
-	    !g_bNativeOverride && GetConVarBool(sm_jetpack_onspawn))
+	if (g_bHasJetpack[index])
+		g_iFuel[index] = g_iRefuelAmount[index];
+	else if (!g_bNativeOverride && GetConVarBool(sm_jetpack) && GetConVarBool(sm_jetpack_onspawn))
 	{
 		// Check for Admin Only
 		if (GetConVarBool(sm_jetpack_adminonly))
@@ -174,14 +175,12 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 		g_bHasJetpack[index] = true;
 		g_iFuel[index] = g_iRefuelAmount[index] = GetConVarInt(sm_jetpack_fuel);
 		g_fRefuelingTime[index] = GetConVarFloat(sm_jetpack_refueling_time);
-		if(g_bHasJetpack[index] && GetConVarBool(sm_jetpack_announce))
+		if (GetConVarBool(sm_jetpack_announce))
 		{
 			PrintToChat(index,"%c[Jetpack] %cIs enabled, valid commands are: [%c+jetpack%c] [%c-jetpack%c]",
-			            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+					COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
 		}
 	}
-	else if (!g_bFromNative[index])
-		g_iFuel[index] = g_iRefuelAmount[index] = GetConVarInt(sm_jetpack_fuel);
 }
 
 public OnConfigsExecuted()
