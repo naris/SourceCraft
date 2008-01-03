@@ -355,7 +355,7 @@ stock MakeInvisible(client, visibility, Float:meleeFactor, Float:movementFactor)
     {
         decl String:wepName[128];
         GetClientWeapon(client, wepName, 127);
-        if (IsEquipmentMelee(wepName);
+        if (IsEquipmentMelee(wepName))
         {
             visibility *= meleeFactor;
         }

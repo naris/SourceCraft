@@ -447,14 +447,3 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
         PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
     }
 }
-
-public bool:IsInRange(client,index,Float:maxdistance)
-{
-    new Float:startclient[3];
-    new Float:endclient[3];
-    GetClientAbsOrigin(client,startclient);
-    GetClientAbsOrigin(index,endclient);
-    new Float:distance=DistanceBetween(startclient,endclient);
-    return (distance<maxdistance);
-}
-
