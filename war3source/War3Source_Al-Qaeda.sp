@@ -209,13 +209,13 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 switch (reincarnation_skill)
                 {
                     case 1:
-                        percent=25;
+                        percent=9;
                     case 2:
-                        percent=42;
+                        percent=22;
                     case 3:
-                        percent=76;
+                        percent=36;
                     case 4:
-                        percent=98;
+                        percent=53;
                 }
                 if (GetRandomInt(1,100)<=percent)
                 {
