@@ -125,9 +125,12 @@ public OnGameFrame()
 
 public OnRaceSelected(client,war3player,oldrace,newrace)
 {
-    m_AllowChainLightning[client]=true;
-    m_HasRespawned[client]=false;
-    m_IsRespawning[client]=false;
+    if (oldrace == raceID && newrace != raceID)
+    {
+        m_AllowChainLightning[client]=true;
+        m_HasRespawned[client]=false;
+        m_IsRespawning[client]=false;
+    }
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)

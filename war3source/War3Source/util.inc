@@ -40,7 +40,7 @@ stock Mod:GetGameType()
     return GameType;
 }
 
-stock SetupSound(String:wav[])
+stock SetupSound(const String:wav[])
 {
     PrecacheSound(wav);
 
@@ -49,7 +49,7 @@ stock SetupSound(String:wav[])
     AddFileToDownloadsTable(file);
 }
 
-stock SetupModel(String:model[])
+stock SetupModel(const String:model[])
 {
     AddFileToDownloadsTable(model);
     return PrecacheModel(model);

@@ -60,7 +60,7 @@ public OnWar3PluginReady()
                            "Regeneration",
                            "Regenerates Health.",
                            "Healing Aura",
-                           "Regenerates Health fo all teammates in range.",
+                           "Regenerates Health of all teammates in range.",
                            "Tentacles",
                            "Reach out and grab an opponent.");
 
@@ -105,7 +105,7 @@ public Action:Regeneration(Handle:timer)
             new war3player=War3_GetWar3Player(client);
             if(war3player>=0 && War3_GetRace(war3player) == raceID)
             {
-                new skill_regeneration=War3_GetSkillLevel(war3player,raceID,2);
+                new skill_regeneration=War3_GetSkillLevel(war3player,raceID,1);
                 if (skill_regeneration)
                 {
                     new newhp=GetClientHealth(client)+skill_regeneration;
@@ -114,7 +114,7 @@ public Action:Regeneration(Handle:timer)
                         SetHealth(client,newhp);
                 }
 
-                new skill_healing_aura=War3_GetSkillLevel(war3player,raceID,3);
+                new skill_healing_aura=War3_GetSkillLevel(war3player,raceID,2);
                 if (skill_healing_aura)
                 {
                     new Float:range=1.0;
@@ -173,7 +173,7 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
 {
     if(race == raceID && newskilllevel > 0 && War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
     {
-        if (skill==0)
+        if (skill==3)
             Zerg_Tentacles(client, war3player, newskilllevel);
     }
 }
@@ -193,7 +193,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = War3_GetRace(war3player);
             if (race == raceID)
             {
-                new skill_tentacles=War3_GetSkillLevel(war3player,race,0);
+                new skill_tentacles=War3_GetSkillLevel(war3player,race,3);
                 if (skill_tentacles)
                     Zerg_Tentacles(client, war3player, skill_tentacles);
             }
@@ -242,7 +242,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Zerg_AdrenalGlands(Handle:event, index, war3player, victimIndex)
 {
-    new skill_adrenal_glands=War3_GetSkillLevel(war3player,raceID,2);
+    new skill_adrenal_glands=War3_GetSkillLevel(war3player,raceID,1);
     if (skill_adrenal_glands)
     {
         decl String:wepName[128];

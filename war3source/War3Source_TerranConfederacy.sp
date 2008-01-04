@@ -111,13 +111,13 @@ public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskillle
     if(race == raceID && newskilllevel > 0 && War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
     {
         if (skill==0)
-            TerranConfederacy_Jetpack(client, war3player, newskilllevel);
-        else if (skill==1)
             TerranConfederacy_Cloak(client, war3player, newskilllevel);
-        else if (skill==2)
+        else if (skill==1)
             TerranConfederacy_SetupArmor(client, newskilllevel);
-        else if (skill==3)
+        else if (skill==2)
             TerranConfederacy_Stimpacks(client, war3player, newskilllevel);
+        else if (skill==3)
+            TerranConfederacy_Jetpack(client, war3player, newskilllevel);
     }
 }
 
@@ -129,7 +129,7 @@ public OnItemPurchase(client,war3player,item)
         new boots = War3_GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new skill=War3_GetSkillLevel(war3player,race,3);
+            new skill=War3_GetSkillLevel(war3player,race,2);
             TerranConfederacy_Stimpacks(client, war3player, skill);
         }
     }
@@ -150,21 +150,21 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = War3_GetRace(war3player);
             if (race == raceID)
             {
-                new skill_jetpack=War3_GetSkillLevel(war3player,race,0);
-                if (skill_jetpack)
-                    TerranConfederacy_Jetpack(client, war3player, skill_jetpack);
-
-                new skill_cloak=War3_GetSkillLevel(war3player,race,1);
+                new skill_cloak=War3_GetSkillLevel(war3player,race,0);
                 if (skill_cloak)
                     TerranConfederacy_Cloak(client, war3player, skill_cloak);
 
-                new skill_armor = War3_GetSkillLevel(war3player,raceID,2);
+                new skill_armor = War3_GetSkillLevel(war3player,raceID,1);
                 if (skill_armor)
                     TerranConfederacy_SetupArmor(client, skill_armor);
 
-                new skill_stimpacks = War3_GetSkillLevel(war3player,race,3);
+                new skill_stimpacks = War3_GetSkillLevel(war3player,race,2);
                 if (skill_stimpacks)
                     TerranConfederacy_Stimpacks(client, war3player, skill_stimpacks);
+
+                new skill_jetpack=War3_GetSkillLevel(war3player,race,3);
+                if (skill_jetpack)
+                    TerranConfederacy_Jetpack(client, war3player, skill_jetpack);
             }
         }
     }
@@ -260,7 +260,7 @@ public TerranConfederacy_SetupArmor(client, skilllevel)
 
 public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
 {
-    new skill_level_armor = War3_GetSkillLevel(victimWar3player,raceID,2);
+    new skill_level_armor = War3_GetSkillLevel(victimWar3player,raceID,1);
     if (skill_level_armor)
     {
         new Float:from_percent,Float:to_percent;

@@ -27,6 +27,8 @@ new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
+new String:explodeWav[] = "weapons/explode5.wav";
+
 // Suicide bomber check
 new bool:m_Suicided[MAXPLAYERS+1];
 
@@ -84,18 +86,15 @@ public OnMapStart()
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
-    /*
     if (GameType == tf2)
-        explosionModel=PrecacheModel("materials/particles/explosion/explosionfiresmoke.vmt",false);
+        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
     else
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt",false);
-    */
+        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
 
-    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
-    PrecacheSound("weapons/explode5.wav",false);
+    SetupSound(explodeWav);
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -114,7 +113,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new ult_level = War3_GetSkillLevel(war3player,race,3);
+            new ult_level = War3_GetSkillLevel(war3player,race,0);
             if (ult_level)
                 Undead_SuicideBomber(client,war3player,ult_level,false);
         }
@@ -130,7 +129,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         if(War3_GetRace(war3player) == raceID)
         {
-            new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+            new ult_level=War3_GetSkillLevel(war3player,raceID,0);
             if (ult_level)
                 Undead_SuicideBomber(index,war3player,ult_level,true);
         }
@@ -417,7 +416,7 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
 
     TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
     TE_SendToAll();
-    EmitSoundToAll("weapons/explode5.wav",client);
+    EmitSoundToAll(explodeWav,client);
 
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
