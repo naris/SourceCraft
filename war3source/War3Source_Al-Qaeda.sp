@@ -33,8 +33,9 @@ new String:allahWav[] = "war3/allahuakbar.wav";
 new String:kaboomWav[] = "war3/iraqi_engaging.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
 
-// Suicide bomber check
+// Reincarnation variables
 new bool:m_IsRespawning[MAXPLAYERS+1];
+new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
 public Plugin:myinfo = 
 {
@@ -187,7 +188,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
             if (level)
             {
                 EmitSoundToAll(allahWav,client);
-                AuthTimer(GetSoundDuration(allahWav), client, AlQaeda_MabBomber);
+                AuthTimer(GetSoundDuration(allahWav), client, AlQaeda_MadBomber);
             }
         }
     }
@@ -220,6 +221,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (GetRandomInt(1,100)<=percent)
                 {
                     m_IsRespawning[index]=true;
+                    GetClientAbsOrigin(index,m_DeathLoc[index]);
                     AuthTimer(1.0,index,RespawnPlayerHandle);
                 }
             }
@@ -230,7 +232,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (suicide_skill)
                 {
                     EmitSoundToAll(kaboomWav,index);
-                    AlQaeda_Bomber(index,war3player,suicide_skill,true);
+                    AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
                 }
             }
         }
@@ -241,24 +243,12 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    if (client)
+    if (client && m_IsRespawning[client])
     {
-        new war3player=War3_GetWar3Player(client);
-        if (war3player>-1)
-        {
-            new race=War3_GetRace(war3player);
-            if (race==raceID)
-            {
-                if (m_IsRespawning[client])
-                {
-                    m_IsRespawning[client]=false;
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(client, Origin);
-                    TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
-                    TE_SendToAll();
-                }
-            }
-        }
+        m_IsRespawning[client]=false;
+        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+        TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
+        TE_SendToAll();
     }
 }
 
@@ -274,7 +264,7 @@ public OnRaceSelected(client,war3player,oldrace,newrace)
         m_IsRespawning[client]=false;
 }
 
-public Action:AlQaeda_MabBomber(Handle:timer,any:temp)
+public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
 {
     decl String:auth[64];
     GetArrayString(temp,0,auth,63);
@@ -310,6 +300,23 @@ public Action:AlQaeda_MabBomber(Handle:timer,any:temp)
     ClearArray(temp);
 }
 
+public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
+{
+    decl String:auth[64];
+    GetArrayString(temp,0,auth,63);
+    new client=PlayerOfAuth(auth);
+    if(client)
+    {
+        new war3player = War3_GetWar3Player(client);
+        if (war3player > -1)
+        {
+            new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
+            AlQaeda_Bomber(client,war3player,suicide_skill,true);
+        }
+    }
+    ClearArray(temp);
+}
+
 public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
 {
     new Float:radius;
@@ -339,6 +346,12 @@ public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
             radius = 350.0;
             r_int  = 350;
             damage = 100;
+        }
+        default:
+        {
+            radius = 100.0;
+            r_int  = 100;
+            damage = 25;
         }
     }
 
