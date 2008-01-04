@@ -34,7 +34,6 @@ new String:kaboomWav[] = "war3/iraqi_engaging.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
 
 // Suicide bomber check
-new bool:m_Exploded[MAXPLAYERS+1];
 new bool:m_IsRespawning[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
@@ -199,42 +198,39 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid     = GetEventInt(event,"userid");
     new index      = GetClientOfUserId(userid);
     new war3player = War3_GetWar3Player(index);
-    if (war3player > -1 && !m_Exploded[index])
+    if (war3player > -1)
     {
         if(War3_GetRace(war3player) == raceID)
         {
-            if (!m_Exploded[index])
+            new reincarnation_skill=War3_GetSkillLevel(war3player,raceID,0);
+            if (reincarnation_skill)
             {
-                new ult_level=War3_GetSkillLevel(war3player,raceID,3);
-                if (ult_level)
+                new percent;
+                switch (reincarnation_skill)
                 {
-                    EmitSoundToAll(kaboomWav,index);
-                    AlQaeda_Bomber(index,war3player,ult_level,true);
+                    case 1:
+                        percent=25;
+                    case 2:
+                        percent=42;
+                    case 3:
+                        percent=76;
+                    case 4:
+                        percent=98;
+                }
+                if (GetRandomInt(1,100)<=percent)
+                {
+                    m_IsRespawning[index]=true;
+                    AuthTimer(1.0,index,RespawnPlayerHandle);
                 }
             }
 
-            if (!m_Exploded[index])
+            if (!m_IsRespawning[index])
             {
-                new skill=War3_GetSkillLevel(war3player,raceID,0);
-                if (skill)
+                new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
+                if (suicide_skill)
                 {
-                    new percent;
-                    switch (skill)
-                    {
-                        case 1:
-                            percent=25;
-                        case 2:
-                            percent=42;
-                        case 3:
-                            percent=76;
-                        case 4:
-                            percent=98;
-                    }
-                    if (GetRandomInt(1,100)<=percent)
-                    {
-                        AuthTimer(0.5,index,RespawnPlayerHandle);
-                        m_IsRespawning[index]=true;
-                    }
+                    EmitSoundToAll(kaboomWav,index);
+                    AlQaeda_Bomber(index,war3player,suicide_skill,true);
                 }
             }
         }
@@ -247,7 +243,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        m_Exploded[client]=false;
         new war3player=War3_GetWar3Player(client);
         if (war3player>-1)
         {
@@ -270,19 +265,13 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     for(new x=1;x<=MAXPLAYERS;x++)
-    {
         m_IsRespawning[x]=false;
-        m_Exploded[x]=false;
-    }
 }
 
 public OnRaceSelected(client,war3player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
-    {
         m_IsRespawning[client]=false;
-        m_Exploded[client]=false;
-    }
 }
 
 public Action:AlQaeda_MabBomber(Handle:timer,any:temp)
@@ -290,7 +279,7 @@ public Action:AlQaeda_MabBomber(Handle:timer,any:temp)
     decl String:auth[64];
     GetArrayString(temp,0,auth,63);
     new client=PlayerOfAuth(auth);
-    if(client && !m_Exploded[client])
+    if(client)
     {
         new war3player = War3_GetWar3Player(client);
         if (war3player > -1)
@@ -323,8 +312,6 @@ public Action:AlQaeda_MabBomber(Handle:timer,any:temp)
 
 public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
 {
-    m_Exploded[client]=true;
-
     new Float:radius;
     new r_int, damage;
     switch(ult_level)
@@ -356,9 +343,7 @@ public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
     }
 
     if (ondeath)
-    {
         damage = 300;
-    }
 
     new Float:client_location[3];
     GetClientAbsOrigin(client,client_location);

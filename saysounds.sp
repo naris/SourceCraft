@@ -558,8 +558,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 
-	bool:isadmin = false;
-	if (IsClientConnected(x))
+	new bool:isadmin = false;
+	if (IsClientConnected(client))
 	{
 		new AdminId:aid = GetUserAdmin(client);
 		isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
