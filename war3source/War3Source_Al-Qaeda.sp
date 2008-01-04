@@ -124,51 +124,56 @@ public Action:FlamingWrath(Handle:timer)
     new maxplayers=GetMaxClients();
     for(new client=1;client<=maxplayers;client++)
     {
-        if(IsClientInGame(client) && IsPlayerAlive(client))
+        if(IsClientInGame(client))
         {
-            new war3player=War3_GetWar3Player(client);
-            if(war3player>=0 && War3_GetRace(war3player) == raceID)
+            if (IsPlayerAlive(client))
             {
-                new skill_flaming_wrath=War3_GetSkillLevel(war3player,raceID,1);
-                if (skill_flaming_wrath)
+                new war3player=War3_GetWar3Player(client);
+                if(war3player>=0 && War3_GetRace(war3player) == raceID)
                 {
-                    new Float:range=1.0;
-                    switch(skill_flaming_wrath)
+                    new skill_flaming_wrath=War3_GetSkillLevel(war3player,raceID,1);
+                    if (skill_flaming_wrath)
                     {
-                        case 1:
-                            range=300.0;
-                        case 2:
-                            range=450.0;
-                        case 3:
-                            range=650.0;
-                        case 4:
-                            range=800.0;
-                    }
-                    for (new index=1;index<=maxplayers;index++)
-                    {
-                        if (index != client && IsClientConnected(index) && IsPlayerAlive(index) &&
-                            GetClientTeam(index) != GetClientTeam(client))
+                        new Float:range=1.0;
+                        switch(skill_flaming_wrath)
                         {
-                            new war3player_check=War3_GetWar3Player(index);
-                            if (war3player_check>-1)
+                            case 1:
+                                range=300.0;
+                            case 2:
+                                range=450.0;
+                            case 3:
+                                range=650.0;
+                            case 4:
+                                range=800.0;
+                        }
+                        for (new index=1;index<=maxplayers;index++)
+                        {
+                            if (index != client && IsClientConnected(index))
                             {
-                                if (IsInRange(client,index,range))
+                                if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
                                 {
-                                    new color[4] = { 255, 10, 55, 255 };
-                                    TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                            0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                    TE_SendToAll();
-
-                                    new newhp=GetClientHealth(index)-skill_flaming_wrath;
-                                    if (newhp <= 0)
+                                    new war3player_check=War3_GetWar3Player(index);
+                                    if (war3player_check>-1)
                                     {
-                                        newhp=0;
-                                        LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                    }
-                                    else
-                                        LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                        if (IsInRange(client,index,range))
+                                        {
+                                            new color[4] = { 255, 10, 55, 255 };
+                                            TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                    0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                            TE_SendToAll();
 
-                                    SetHealth(index,newhp);
+                                            new newhp=GetClientHealth(index)-skill_flaming_wrath;
+                                            if (newhp <= 0)
+                                            {
+                                                newhp=0;
+                                                LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                            }
+                                            else
+                                                LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+
+                                            SetHealth(index,newhp);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -202,7 +207,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new war3player = War3_GetWar3Player(index);
     if (war3player > -1)
     {
-        if(War3_GetRace(war3player) == raceID)
+        if (War3_GetRace(war3player) == raceID)
         {
             if (m_Suicided[index])
                 m_Suicided[index]=false;
@@ -228,17 +233,15 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         m_IsRespawning[index]=true;
                         GetClientAbsOrigin(index,m_DeathLoc[index]);
                         AuthTimer(0.5,index,RespawnPlayerHandle);
+                        return;
                     }
                 }
 
-                if (!m_IsRespawning[index])
+                new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
+                if (suicide_skill)
                 {
-                    new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
-                    if (suicide_skill)
-                    {
-                        EmitSoundToAll(kaboomWav,index);
-                        AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
-                    }
+                    EmitSoundToAll(kaboomWav,index);
+                    AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
                 }
             }
         }
@@ -261,13 +264,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     for(new x=1;x<=MAXPLAYERS;x++)
+    {
         m_IsRespawning[x]=false;
+        m_Suicided[x]=false;
+    }
 }
 
 public OnRaceSelected(client,war3player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
+    {
         m_IsRespawning[client]=false;
+        m_Suicided[client]=false;
+    }
 }
 
 public Action:AlQaeda_MadBomber(Handle:timer,any:temp)

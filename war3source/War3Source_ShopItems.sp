@@ -265,7 +265,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         GetArrayString(vecPlayerWeapons[client],x,wepName,127);
                         PushArrayString(temp,wepName);
                     }
-                    CreateTimer(0.2,War3Source_Ankh,temp);
+                    CreateTimer(0.2,War3Source_Ankh,temp,TIMER_FLAG_NO_MAPCHANGE|TIMER_HNDL_CLOSE);
                 }
                 War3_SetOwnsItem(war3player,shopItem[ITEM_ANKH],false);
             }

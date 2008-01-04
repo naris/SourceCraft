@@ -146,7 +146,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
             if (cooldown > 0.0)
             {
                 m_AllowEntangle[client]=false;
-                CreateTimer(cooldown,AllowEntangle,client);
+                CreateTimer(cooldown,AllowEntangle,client,TIMER_FLAG_NO_MAPCHANGE|TIMER_HNDL_CLOSE);
             }
         }
     }

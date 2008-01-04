@@ -134,7 +134,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                 new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
                 if (cooldown > 0.0)
                 {
-                    CreateTimer(cooldown,AllowTeleport,client);
+                    CreateTimer(cooldown,AllowTeleport,client,TIMER_FLAG_NO_MAPCHANGE|TIMER_HNDL_CLOSE);
                 }
             }
         }
