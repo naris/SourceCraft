@@ -76,13 +76,31 @@ public BeetleMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
 
 public OnConfigsExecuted()
 {
-    bm_nextmap = FindConVar("bm_nextmap");
-    if (bm_nextmap != INVALID_HANDLE)
-        HookConVarChange(bm_nextmap, bm_nextmap_changed);
+    if (bm_nextmap == INVALID_HANDLE)
+    {
+        bm_nextmap = FindConVar("bm_nextmap");
+        if (bm_nextmap != INVALID_HANDLE)
+            HookConVarChange(bm_nextmap, bm_nextmap_changed);
+    }
 
-    sm_nextmap = FindConVar("sm_nextmap");
-    if (sm_nextmap != INVALID_HANDLE)
-        HookConVarChange(sm_nextmap, sm_nextmap_changed);
+    if (sm_nextmap == INVALID_HANDLE)
+    {
+        sm_nextmap = FindConVar("sm_nextmap");
+        if (sm_nextmap != INVALID_HANDLE)
+            HookConVarChange(sm_nextmap, sm_nextmap_changed);
+    }
+
+    if (bm_nextmap != INVALID_HANDLE && sm_nextmap != INVALID_HANDLE)
+    {
+        new String:bm_value[256];
+        GetConVarString(bm_nextmap, bm_value, sizeof(bm_value));
+
+        new String:sm_value[256];
+        GetConVarString(sm_nextmap, sm_value, sizeof(sm_value));
+
+        if (!StrEqual(bm_value, sm_value))
+            SetConVarString(sm_nextmap, bm_value, true, true);
+    }
 }
 
 public bm_nextmap_changed(Handle:convar, const String:oldValue[], const String:newValue[])
