@@ -1,7 +1,8 @@
 /*
  * vim: set ai et ts=4 sw=4 syntax=cpp :
  * File: beetlemenu.sp
- * Description: This adds Beetle's adminmenu to the SourceMod menu.
+ * Description: This adds Beetle's adminmenu to the SourceMod admin menu.
+ *              It also syncronizes Beetle's bm_nextmap and SM's sm_nextmap.
  * Author: -=|JFH|=- Naris (Murray Wilson)
  */
 
