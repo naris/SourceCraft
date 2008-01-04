@@ -34,6 +34,7 @@ new String:kaboomWav[] = "war3/iraqi_engaging.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
 
 // Reincarnation variables
+new bool:m_Suicided[MAXPLAYERS+1];
 new bool:m_IsRespawning[MAXPLAYERS+1];
 new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
@@ -203,26 +204,31 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         if(War3_GetRace(war3player) == raceID)
         {
-            new reincarnation_skill=War3_GetSkillLevel(war3player,raceID,0);
-            if (reincarnation_skill)
+            if (m_Suicided[index])
+                m_Suicided[index]=false;
+            else
             {
-                new percent;
-                switch (reincarnation_skill)
+                new reincarnation_skill=War3_GetSkillLevel(war3player,raceID,0);
+                if (reincarnation_skill)
                 {
-                    case 1:
-                        percent=9;
-                    case 2:
-                        percent=22;
-                    case 3:
-                        percent=36;
-                    case 4:
-                        percent=53;
-                }
-                if (GetRandomInt(1,100)<=percent)
-                {
-                    m_IsRespawning[index]=true;
-                    GetClientAbsOrigin(index,m_DeathLoc[index]);
-                    AuthTimer(1.0,index,RespawnPlayerHandle);
+                    new percent;
+                    switch (reincarnation_skill)
+                    {
+                        case 1:
+                            percent=9;
+                        case 2:
+                            percent=22;
+                        case 3:
+                            percent=36;
+                        case 4:
+                            percent=53;
+                    }
+                    if (GetRandomInt(1,100)<=percent)
+                    {
+                        m_IsRespawning[index]=true;
+                        GetClientAbsOrigin(index,m_DeathLoc[index]);
+                        AuthTimer(0.5,index,RespawnPlayerHandle);
+                    }
                 }
             }
 
@@ -291,7 +297,10 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
                 }
 
                 if (GetRandomInt(1,100)<=percent)
+                {
+                    m_Suicided[client]=true;
                     ForcePlayerSuicide(client);
+                }
                 else
                     AlQaeda_Bomber(client,war3player,ult_level,false);
             }
