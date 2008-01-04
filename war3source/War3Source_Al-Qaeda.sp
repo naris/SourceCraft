@@ -30,7 +30,7 @@ new g_smokeSprite;
 new g_lightningSprite;
 
 new String:allahWav[] = "war3/allahuakbar.wav";
-new String:kaboomWav[] = "war3/iraqui_engaging.wav";
+new String:kaboomWav[] = "war3/iraqi_engaging.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
 
 // Suicide bomber check
