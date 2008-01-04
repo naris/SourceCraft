@@ -16,6 +16,9 @@
 
 new Handle:hAdminMenu = INVALID_HANDLE;
 
+new Handle:bm_nextmap = INVALID_HANDLE;
+new Handle:sm_nextmap = INVALID_HANDLE;
+
 // Plugin definitions
 public Plugin:myinfo = 
 {
@@ -67,5 +70,38 @@ public BeetleMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
     else if (action == TopMenuAction_SelectOption)
     {
         FakeClientCommandEx(param, "@menu");
+    }
+}
+
+public OnConfigsExecuted()
+{
+    bm_nextmap = FindConVar("bm_nextmap");
+    if (bm_nextmap != INVALID_HANDLE)
+        HookConVarChange(bm_nextmap, bm_nextmap_changed);
+
+    sm_nextmap = FindConVar("sm_nextmap");
+    if (sm_nextmap != INVALID_HANDLE)
+        HookConVarChange(sm_nextmap, sm_nextmap_changed);
+}
+
+public bm_nextmap_changed(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+    if (sm_nextmap != INVALID_HANDLE)
+    {
+        new String:sm_value[256];
+        GetConVarString(sm_nextmap, sm_value, sizeof(sm_value));
+        if (!StrEqual(newValue, sm_value))
+            SetConVarString(sm_nextmap, newValue, true, true);
+    }
+}
+
+public sm_nextmap_changed(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+    if (bm_nextmap != INVALID_HANDLE)
+    {
+        new String:bm_value[256];
+        GetConVarString(bm_nextmap, bm_value, sizeof(bm_value));
+        if (!StrEqual(newValue, bm_value))
+            SetConVarString(bm_nextmap, newValue, true, true);
     }
 }
