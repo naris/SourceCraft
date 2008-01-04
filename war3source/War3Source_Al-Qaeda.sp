@@ -230,15 +230,15 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         AuthTimer(0.5,index,RespawnPlayerHandle);
                     }
                 }
-            }
 
-            if (!m_IsRespawning[index])
-            {
-                new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
-                if (suicide_skill)
+                if (!m_IsRespawning[index])
                 {
-                    EmitSoundToAll(kaboomWav,index);
-                    AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
+                    new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
+                    if (suicide_skill)
+                    {
+                        EmitSoundToAll(kaboomWav,index);
+                        AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
+                    }
                 }
             }
         }
@@ -300,6 +300,8 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
                 {
                     m_Suicided[client]=true;
                     ForcePlayerSuicide(client);
+                    EmitSoundToAll(kaboomWav,client);
+                    AuthTimer(GetSoundDuration(kaboomWav), client, AlQaeda_Kaboom);
                 }
                 else
                     AlQaeda_Bomber(client,war3player,ult_level,false);
