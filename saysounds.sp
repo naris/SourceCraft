@@ -558,11 +558,15 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 
-	new AdminId:aid = GetUserAdmin(client);
-	new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
-	if(adminonly && !isadmin){
-		PrintToChat(client,"[Say Sounds] Sorry, you are not authorized to play this sound!");
-		return Plugin_Handled;
+	bool:isadmin = false;
+	if (IsClientConnected(x))
+	{
+		new AdminId:aid = GetUserAdmin(client);
+		isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+		if(adminonly && !isadmin){
+			PrintToChat(client,"[Say Sounds] Sorry, you are not authorized to play this sound!");
+			return Plugin_Handled;
+		}
 	}
 
 	new Float:thetime = GetGameTime();

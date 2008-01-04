@@ -46,7 +46,12 @@ public Plugin:myinfo =
     url = "http://jigglysfunhouse.net/"
 };
 
-// War3Source Functions
+public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+{
+    SetupRespawn();
+    return true;
+}
+
 public OnPluginStart()
 {
     GetGameType();
