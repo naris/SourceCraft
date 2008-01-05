@@ -327,6 +327,8 @@ public Action:TimerAnnounce(Handle:timer, any:client)
 {
 	if(IsClientInGame(client))
 		PrintToChat(client, "%t", "announce message");
+
+	CloseHandle(timer);
 }
 
 // When a new client joins we reset sound preferences

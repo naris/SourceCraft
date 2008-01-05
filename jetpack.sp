@@ -257,6 +257,7 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 			}
 		}
 	}
+	CloseHandle(timer);
 }
 
 public OnClientPutInServer(client)
