@@ -139,12 +139,15 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                 {
                     new Float:vecVelocity[3];
                     GetEntDataVector(client, m_VelocityOffset, vecVelocity);
-                    if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0)
+                    if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 &&
+                        (vecVelocity[2] >= -10.0 && vecVelocity[2] <= 10.0))
+                    {
                         toSpawn = true;
+                    }
                     else
                     {
-                        PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet (%f,%f,%f).",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,vecVelocity[0],vecVelocity[1],vecVelocity[2]);
+                        PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet.",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                         return;
                     }
                 }

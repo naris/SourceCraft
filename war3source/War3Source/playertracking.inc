@@ -396,6 +396,8 @@ stock MakeInvisible(client, visibility)
                     {
                         SetRenderColor(obj,255,255,255,visibility);
                     }
+                    PrintToChat(client,"%c[War3Source]%c %c%s%c.",
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,name,COLOR_DEFAULT);
                 }
             }
         }
