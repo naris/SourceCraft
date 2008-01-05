@@ -318,6 +318,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
         }
     }
     ClearArray(temp);
+    CloseHandle(timer);
 }
 
 public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
@@ -335,6 +336,7 @@ public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
         }
     }
     ClearArray(temp);
+    CloseHandle(timer);
 }
 
 public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)

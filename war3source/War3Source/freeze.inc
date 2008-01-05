@@ -37,4 +37,5 @@ public Action:UnfreezePlayer(Handle:timer,Handle:temp)
     if(client)
         UnFreezeEntity(client);
     ClearArray(temp);
+    CloseHandle(timer);
 }

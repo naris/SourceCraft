@@ -36,4 +36,5 @@ public Action:RespawnPlayerHandle(Handle:timer,any:temp)
     if(client)
         RespawnPlayer(client);
     ClearArray(temp);
+    CloseHandle(timer);
 }

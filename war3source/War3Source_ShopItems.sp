@@ -265,7 +265,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         GetArrayString(vecPlayerWeapons[client],x,wepName,127);
                         PushArrayString(temp,wepName);
                     }
-                    CreateTimer(0.2,War3Source_Ankh,temp,TIMER_FLAG_NO_MAPCHANGE|TIMER_HNDL_CLOSE);
+                    CreateTimer(0.2,War3Source_Ankh,temp);
                 }
                 War3_SetOwnsItem(war3player,shopItem[ITEM_ANKH],false);
             }
@@ -517,6 +517,7 @@ public Action:RestoreSpeed(Handle:timer,any:temp)
             War3_SetOverrideSpeed(war3player,0.0);
     }
     ClearArray(temp);
+    CloseHandle(timer);
 }
 
 public Action:Regeneration(Handle:timer)
@@ -694,9 +695,10 @@ public Action:War3Source_Ankh(Handle:timer,any:temp)
                 if(ammotype!=-1)
                     GiveAmmo(client,ammotype,1000,true);
             }
-            ClearArray(temp);
         }
     }
+    ClearArray(temp);
+    CloseHandle(timer);
 }
 
 public Action:DoMole(Handle:timer,Handle:temp)
@@ -733,6 +735,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
         }
     }
     ClearArray(temp);
+    CloseHandle(timer);
 }
 
 stock UsePeriapt(client)

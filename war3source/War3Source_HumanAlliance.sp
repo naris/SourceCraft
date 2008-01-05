@@ -133,9 +133,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
             {
                 new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
                 if (cooldown > 0.0)
-                {
-                    CreateTimer(cooldown,AllowTeleport,client,TIMER_FLAG_NO_MAPCHANGE|TIMER_HNDL_CLOSE);
-                }
+                    CreateTimer(cooldown,AllowTeleport,client);
             }
         }
     }
@@ -145,7 +143,8 @@ public Action:AllowTeleport(Handle:timer,any:index)
 {
     m_TeleportCount[index]=0;
     PrintToChat(index,"%c[War3Source]%c Your %cTeleport%c has recharged and can be used again.",
-            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+    CloseHandle(timer);
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)

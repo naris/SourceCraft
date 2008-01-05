@@ -16,7 +16,7 @@ stock AuthTimer(Float:delay,index,Timer:func)
     decl String:auth[64];
     GetClientAuthString(index,auth,63);
     PushArrayString(temp,auth);
-    CreateTimer(delay,func,temp,TIMER_FLAG_NO_MAPCHANGE|TIMER_HNDL_CLOSE);
+    CreateTimer(delay,func,temp);
 }
 
 stock PlayerOfAuth(const String:auth[])

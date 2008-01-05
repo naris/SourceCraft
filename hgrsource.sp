@@ -878,15 +878,20 @@ public Action:GrabSearch(Handle:timer,any:index)
     gTargetindex[index]=TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
     if(gTargetindex[index]>0)
     {
-      // Found a player
-      new Float:targetloc[3];
-      GetEntityOrigin(gTargetindex[index],targetloc); // Find the target's xyz coordinate
-      EmitSoundFromOrigin("weapons/crossbow/hit1.wav",targetloc); // Emit sound from the entity being grabbed
-      SetEntPropFloat(gTargetindex[index],Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
-      gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
-      if(gTargetindex[index]>0&&gTargetindex[index]<=64&&IsClientInGame(gTargetindex[index]))
-        gGrabbed[gTargetindex[index]]=true; // Tell plugin the target is being grabbed
-      CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+      // Found something
+      decl String:name[32] = "";
+      if (GetEntityNetClass(index,name,sizeof(name)) && StrContains(name, "Player"))
+      {
+        // Found a player
+        new Float:targetloc[3];
+        GetEntityOrigin(gTargetindex[index],targetloc); // Find the target's xyz coordinate
+        EmitSoundFromOrigin("weapons/crossbow/hit1.wav",targetloc); // Emit sound from the entity being grabbed
+        SetEntPropFloat(gTargetindex[index],Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
+        gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
+        if(gTargetindex[index]>0&&gTargetindex[index]<=64&&IsClientInGame(gTargetindex[index]))
+          gGrabbed[gTargetindex[index]]=true; // Tell plugin the target is being grabbed
+        CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+      }
       // Stop timer
       CloseHandle(timer); // Stop the timer
     }

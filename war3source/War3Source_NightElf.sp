@@ -365,4 +365,5 @@ public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evade
 public Action:AllowEntangle(Handle:timer,any:index)
 {
     m_AllowEntangle[index]=true;
+    CloseHandle(timer);
 }
