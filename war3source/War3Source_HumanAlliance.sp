@@ -26,6 +26,8 @@ new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
+new m_VelocityOffset;
+
 new Handle:cvarTeleportCooldown = INVALID_HANDLE;
 
 new m_TeleportCount[MAXPLAYERS+1];
@@ -71,6 +73,10 @@ public OnWar3PluginReady()
                            "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
     FindMoveTypeOffset();
+
+    m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
+    if(m_VelocityOffset == -1)
+        SetFailState("[War3Source] Error finding Velocity offset.");
 }
 
 public OnMapStart()
@@ -121,19 +127,43 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && pressed && m_TeleportCount[client] < 2 && IsPlayerAlive(client))
+    if (race==raceID && pressed && IsPlayerAlive(client))
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
         if(ult_level)
         {
-            m_TeleportCount[client]++;
-            new bool:toSpawn = (m_TeleportCount[client] >= 2);
-            HumanAlliance_Teleport(client,war3player,ult_level, toSpawn);
-            if (!toSpawn)
+            if (m_TeleportCount[client] < 2)
             {
-                new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
-                if (cooldown > 0.0)
-                    CreateTimer(cooldown,AllowTeleport,client);
+                new bool:toSpawn = false;
+                if (m_TeleportCount[client] >= 1)
+                {
+                    new Float:vecVelocity[3];
+                    GetEntDataVector(client, m_VelocityOffset, vecVelocity);
+                    if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0)
+                        toSpawn = true;
+                    else
+                    {
+                        PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet (%f,%f,%f).",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,vecVelocity[0],vecVelocity[1],vecVelocity[2]);
+                        return;
+                    }
+                }
+
+                PrintToChat(client,"%c[War3Source]%c %cTeleport%cing!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+
+                HumanAlliance_Teleport(client,war3player,ult_level, toSpawn);
+                if (!toSpawn)
+                {
+                    new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
+                    if (cooldown > 0.0)
+                        CreateTimer(cooldown,AllowTeleport,client);
+                }
+            }
+            else
+            {
+                PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
             }
         }
     }
@@ -467,6 +497,8 @@ public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
 
     TE_SetupSmoke(destloc,g_smokeSprite,40.0,1);
     TE_SendToAll();
+
+    m_TeleportCount[client]++;
 }
 
 /***************
