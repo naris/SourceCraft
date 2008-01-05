@@ -14,6 +14,7 @@
 
 #include "War3Source/util"
 #include "War3Source/range"
+#include "War3Source/trace"
 #include "War3Source/health"
 #include "War3Source/damage"
 #include "War3Source/log"
@@ -418,6 +419,8 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
     TE_SendToAll();
     EmitSoundToAll(explodeWav,client);
 
+    new Float:clientLoc[3];
+    GetClientAbsOrigin(client, clientLoc);
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
     {
@@ -436,21 +439,24 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                     new hp=PowerOfRange(client_location,radius,location_check,300);
                     if (hp)
                     {
-                        new newhealth = GetClientHealth(x)-hp;
-                        if (newhealth <= 0)
+                        if (TraceTarget(client, x, clientLoc, location_check))
                         {
-                            newhealth=0;
-                            new addxp=5+ult_level;
-                            new newxp=War3_GetXP(war3player,raceID)+addxp;
-                            War3_SetXP(war3player,raceID,newxp);
+                            new newhealth = GetClientHealth(x)-hp;
+                            if (newhealth <= 0)
+                            {
+                                newhealth=0;
+                                new addxp=5+ult_level;
+                                new newxp=War3_GetXP(war3player,raceID)+addxp;
+                                War3_SetXP(war3player,raceID,newxp);
 
-                            LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                            }
+                            else
+                            {
+                                LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                            }
+                            SetHealth(x,newhealth);
                         }
-                        else
-                        {
-                            LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
-                        }
-                        SetHealth(x,newhealth);
                     }
                 }
             }

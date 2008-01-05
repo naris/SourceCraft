@@ -14,6 +14,7 @@
 
 #include "War3Source/util"
 #include "War3Source/range"
+#include "War3Source/trace"
 #include "War3Source/health"
 #include "War3Source/damage"
 #include "War3Source/authtimer"
@@ -392,6 +393,7 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
     new ult_level=War3_GetSkillLevel(war3player,raceID,3);
     if(ult_level)
     {
+        new num=ult_level*2;
         new Float:range=1.0;
         switch(ult_level)
         {
@@ -404,8 +406,10 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
             case 4:
                 range=800.0;
         }
-        new last=client;
         new count=0;
+        new last=client;
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
@@ -419,30 +423,35 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                     {
                         if ( IsInRange(client,index,range))
                         {
-                            new color[4] = { 10, 200, 255, 255 };
-                            TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
-                                              0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                            TE_SendToAll();
-
-                            new new_health=GetClientHealth(index)-40;
-                            if (new_health <= 0)
+                            new Float:indexLoc[3];
+                            GetClientAbsOrigin(index, indexLoc);
+                            if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
-                                new_health=0;
+                                new color[4] = { 10, 200, 255, 255 };
+                                TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
+                                        0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                                TE_SendToAll();
 
-                                new addxp=5+ultlevel;
-                                new newxp=War3_GetXP(war3player,raceID)+addxp;
-                                War3_SetXP(war3player,raceID,newxp);
+                                new new_health=GetClientHealth(index)-40;
+                                if (new_health <= 0)
+                                {
+                                    new_health=0;
 
-                                LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                                    new addxp=5+ultlevel;
+                                    new newxp=War3_GetXP(war3player,raceID)+addxp;
+                                    War3_SetXP(war3player,raceID,newxp);
+
+                                    LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                                }
+                                else
+                                    LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
+
+                                SetHealth(index,new_health);
+
+                                last=index;
+                                if (++count > num)
+                                    break;
                             }
-                            else
-                                LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-
-                            SetHealth(index,new_health);
-
-                            last=index;
-                            if (++count > 4)
-                                break;
                         }
                     }
                 }

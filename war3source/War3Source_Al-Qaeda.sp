@@ -14,6 +14,7 @@
 
 #include "War3Source/util"
 #include "War3Source/range"
+#include "War3Source/trace"
 #include "War3Source/health"
 #include "War3Source/authtimer"
 #include "War3Source/respawn"
@@ -23,6 +24,7 @@
 new raceID; // The ID we are assigned to
 
 new explosionModel;
+new bigExplosionModel;
 new g_beamSprite;
 new g_haloSprite;
 new g_purpleGlow;
@@ -102,13 +104,18 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find purpleglow Model");
 
-    if (GameType == tf2)
-        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
-    else
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
-
+    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
+
+    if (GameType == tf2)
+    {
+        bigExplosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
+        if (bigExplosionModel == -1)
+            SetFailState("Couldn't find Explosion Model");
+    }
+    else
+        bigExplosionModel = explosionModel;
 
     SetupSound(allahWav);
     SetupSound(kaboomWav);
@@ -119,6 +126,7 @@ public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
 }
+
 public Action:FlamingWrath(Handle:timer)
 {
     new maxplayers=GetMaxClients();
@@ -134,6 +142,7 @@ public Action:FlamingWrath(Handle:timer)
                     new skill_flaming_wrath=War3_GetSkillLevel(war3player,raceID,1);
                     if (skill_flaming_wrath)
                     {
+                        new num=skill_flaming_wrath*2;
                         new Float:range=1.0;
                         switch(skill_flaming_wrath)
                         {
@@ -146,6 +155,9 @@ public Action:FlamingWrath(Handle:timer)
                             case 4:
                                 range=800.0;
                         }
+                        new count=0;
+                        new Float:clientLoc[3];
+                        GetClientAbsOrigin(client, clientLoc);
                         for (new index=1;index<=maxplayers;index++)
                         {
                             if (index != client && IsClientConnected(index))
@@ -157,21 +169,29 @@ public Action:FlamingWrath(Handle:timer)
                                     {
                                         if (IsInRange(client,index,range))
                                         {
-                                            new color[4] = { 255, 10, 55, 255 };
-                                            TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                    0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                            TE_SendToAll();
-
-                                            new newhp=GetClientHealth(index)-skill_flaming_wrath;
-                                            if (newhp <= 0)
+                                            new Float:indexLoc[3];
+                                            GetClientAbsOrigin(index, indexLoc);
+                                            if (TraceTarget(client, index, clientLoc, indexLoc))
                                             {
-                                                newhp=0;
-                                                LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                            }
-                                            else
-                                                LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                                new color[4] = { 255, 10, 55, 255 };
+                                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                        0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                                TE_SendToAll();
 
-                                            SetHealth(index,newhp);
+                                                new newhp=GetClientHealth(index)-skill_flaming_wrath;
+                                                if (newhp <= 0)
+                                                {
+                                                    newhp=0;
+                                                    LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                                }
+                                                else
+                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+
+                                                SetHealth(index,newhp);
+
+                                                if (++count > num)
+                                                    break;
+                                            }
                                         }
                                     }
                                 }
@@ -382,7 +402,7 @@ public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
 
     new Float:client_location[3];
     GetClientAbsOrigin(client,client_location);
-    TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
+    TE_SetupExplosion(client_location,ondeath ? bigExplosionModel : explosionModel,10.0,30,0,r_int,20);
     TE_SendToAll();
 
     EmitSoundToAll(explodeWav,client);
@@ -405,21 +425,24 @@ public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
                     new hp=PowerOfRange(client_location,radius,location_check,damage);
                     if (hp)
                     {
-                        new newhealth = GetClientHealth(x)-hp;
-                        if (newhealth <= 0)
+                        if (TraceTarget(client, x, client_location, location_check))
                         {
-                            newhealth=0;
-                            new addxp=5+ult_level;
-                            new newxp=War3_GetXP(war3player,raceID)+addxp;
-                            War3_SetXP(war3player,raceID,newxp);
+                            new newhealth = GetClientHealth(x)-hp;
+                            if (newhealth <= 0)
+                            {
+                                newhealth=0;
+                                new addxp=5+ult_level;
+                                new newxp=War3_GetXP(war3player,raceID)+addxp;
+                                War3_SetXP(war3player,raceID,newxp);
 
-                            LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                            }
+                            else
+                            {
+                                LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                            }
+                            SetHealth(x,newhealth);
                         }
-                        else
-                        {
-                            LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
-                        }
-                        SetHealth(x,newhealth);
                     }
                 }
             }

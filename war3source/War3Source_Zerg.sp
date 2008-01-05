@@ -16,6 +16,7 @@
 
 #include "War3Source/util"
 #include "War3Source/range"
+#include "War3Source/trace"
 #include "War3Source/health"
 #include "War3Source/damage"
 #include "War3Source/weapons"
@@ -117,6 +118,7 @@ public Action:Regeneration(Handle:timer)
                 new skill_healing_aura=War3_GetSkillLevel(war3player,raceID,2);
                 if (skill_healing_aura)
                 {
+                    new num=skill_healing_aura*2;
                     new Float:range=1.0;
                     switch(skill_healing_aura)
                     {
@@ -129,6 +131,9 @@ public Action:Regeneration(Handle:timer)
                         case 4:
                             range=800.0;
                     }
+                    new count=0;
+                    new Float:clientLoc[3];
+                    GetClientAbsOrigin(client, clientLoc);
                     for (new index=1;index<=maxplayers;index++)
                     {
                         if (index != client && IsClientConnected(index) && IsPlayerAlive(index) &&
@@ -139,15 +144,23 @@ public Action:Regeneration(Handle:timer)
                             {
                                 if (IsInRange(client,index,range))
                                 {
-                                    new color[4] = { 0, 0, 255, 255 };
-                                    TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                            0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                    TE_SendToAll();
+                                    new Float:indexLoc[3];
+                                    GetClientAbsOrigin(index, indexLoc);
+                                    if (TraceTarget(client, index, clientLoc, indexLoc))
+                                    {
+                                        new color[4] = { 0, 0, 255, 255 };
+                                        TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                          0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                        TE_SendToAll();
 
-                                    new newhp=GetClientHealth(index)+skill_healing_aura;
-                                    new maxhp=(GameType == tf2) ? GetMaxHealth(index) : 100;
-                                    if(newhp<=maxhp)
-                                        SetHealth(index,newhp);
+                                        new newhp=GetClientHealth(index)+skill_healing_aura;
+                                        new maxhp=(GameType == tf2) ? GetMaxHealth(index) : 100;
+                                        if(newhp<=maxhp)
+                                            SetHealth(index,newhp);
+
+                                        if (++count > num)
+                                            break;
+                                    }
                                 }
                             }
                         }
