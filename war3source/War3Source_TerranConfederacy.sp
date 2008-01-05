@@ -244,7 +244,7 @@ public TerranConfederacy_Cloak(client, war3player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    War3_SetMinVisibility(war3player,alpha, 0.80, 0.5);
+    War3_SetMinVisibility(war3player,alpha, 0.80, 0.0);
 }
 
 public TerranConfederacy_SetupArmor(client, skilllevel)

@@ -392,10 +392,17 @@ stock MakeInvisible(client, visibility)
                 {
                     decl String:name[32] = "";
                     if (!GetEntityNetClass(obj,name,sizeof(name)) ||
-                        (!StrEqual(name, "CCaptureFlag") &&
-                         !StrEqual(name, "CSniperDot")))
+                        !StrEqual(name, "CCaptureFlag"))
                     {
-                        SetRenderColor(obj,255,255,255,visibility);
+                        if (StrEqual(name, "CSniperDot"))
+                        {
+                            // If the sniper is sniping, make minimum visibility 100
+                            // and don't hide the sniper dot!
+                            if (visibility < 100)
+                                visibility = 100;
+                        }
+                        else
+                            SetRenderColor(obj,255,255,255,visibility);
                     }
                 }
             }
