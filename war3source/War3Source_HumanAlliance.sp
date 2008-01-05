@@ -391,50 +391,72 @@ public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
         }
 
         new Float:clientloc[3],Float:clientang[3];
-        GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
-        GetClientEyeAngles(client,clientang); // Get the angle the player is looking
-        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
-        TR_GetEndPosition(destloc); // Get the end xyz coordinate of where a player is looking
+        GetClientEyePosition(client,clientloc);
+        GetClientEyeAngles(client,clientang);
+        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit);
+        TR_GetEndPosition(destloc);
 
-        new Float:distance[3];
-        distance[0] = destloc[0]-clientloc[0];
-        distance[1] = destloc[1]-clientloc[1];
-        distance[2] = destloc[2]-clientloc[2];
-        if (distance[0] < 0)
-            distance[0] *= -1;
-        if (distance[1] < 0)
-            distance[1] *= -1;
-        if (distance[2] < 0)
-            distance[2] *= -1;
-
-        // Limit the teleport location to remain within the range
-        for (new i = 0; i<=2; i++)
+        if (TR_DidHit())
         {
-            if (distance[i] > range)
+            new Float:size[3];
+            GetClientMaxs(client, size);
+            if (destloc[0] > clientloc[0])
+                destloc[0] -= size[0];
+            else
+                destloc[0] += size[0];
+
+            if (destloc[1] > clientloc[1])
+                destloc[1] -= size[1];
+            else
+                destloc[1] += size[1];
+
+            if (destloc[2] > clientloc[2])
+                destloc[2] -= size[2];
+            else
+                destloc[2] += size[2];
+        }
+        else
+        {
+            new Float:distance[3];
+            distance[0] = destloc[0]-clientloc[0];
+            distance[1] = destloc[1]-clientloc[1];
+            distance[2] = destloc[2]-clientloc[2];
+            if (distance[0] < 0)
+                distance[0] *= -1;
+            if (distance[1] < 0)
+                distance[1] *= -1;
+            if (distance[2] < 0)
+                distance[2] *= -1;
+
+            // Limit the teleport location to remain within the range
+            for (new i = 0; i<=2; i++)
             {
-                if (clientloc[i] >= 0)
+                if (distance[i] > range)
                 {
-                    if (destloc[i] >= 0)
+                    if (clientloc[i] >= 0)
                     {
-                        if (clientloc[i] <= destloc[i])
-                            destloc[i] = clientloc[i] + range;
-                        if (clientloc[i] > destloc[i])
+                        if (destloc[i] >= 0)
+                        {
+                            if (clientloc[i] <= destloc[i])
+                                destloc[i] = clientloc[i] + range;
+                            if (clientloc[i] > destloc[i])
+                                destloc[i] = clientloc[i] - range;
+                        }
+                        else
                             destloc[i] = clientloc[i] - range;
                     }
                     else
-                        destloc[i] = clientloc[i] - range;
-                }
-                else
-                {
-                    if (destloc[i] < 0)
                     {
-                        if (clientloc[i] <= destloc[i])
+                        if (destloc[i] < 0)
+                        {
+                            if (clientloc[i] <= destloc[i])
+                                destloc[i] = clientloc[i] + range;
+                            if (clientloc[i] > destloc[i])
+                                destloc[i] = clientloc[i] - range;
+                        }
+                        else
                             destloc[i] = clientloc[i] + range;
-                        if (clientloc[i] > destloc[i])
-                            destloc[i] = clientloc[i] - range;
                     }
-                    else
-                        destloc[i] = clientloc[i] + range;
                 }
             }
         }
@@ -453,5 +475,6 @@ public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
 
 public bool:TraceRayTryToHit(entity,mask)
 {
-  return !(entity > 0 && entity <= 64); // Check if the beam hit a player and tell it to keep tracing if it did
+  // Check if the beam hit a player and tell it to keep tracing if it did
+  return (entity < 0 || entity >= 64);
 }
