@@ -61,7 +61,7 @@ public OnWar3PluginReady()
                            "Regeneration",
                            "Regenerates Health.",
                            "Healing Aura",
-                           "Regenerates Health of all teammates in range.",
+                           "Regenerates Health of all teammates in range (It does NOT heal you).",
                            "Tentacles",
                            "Reach out and grab an opponent.");
 

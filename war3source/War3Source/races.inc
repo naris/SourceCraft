@@ -89,11 +89,11 @@ public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_SkillsInfo_Skill(client,race,skill)
+public War3Source_SkillsInfo_Skill(client,Handle:raceHandle,skill)
 {
     new Handle:menu=CreateMenu(War3Source_SkillsInfo_Back);
     SetMenuExitButton(menu,true);
-    new Handle:raceHandle=Race(race);
+    //new Handle:raceHandle=Race(race);
     decl String:name[64];
     GetArrayString(raceHandle,4+(skill*2),name,63);
     decl String:desc[256];
@@ -112,7 +112,8 @@ public War3Source_SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selec
         if(vecpos>-1)
         {
             new skill=selection;
-            new race=GetRace(vecpos);
+            //new Handle:race=GetRace(Race(vecpos));
+            new Handle:race=currentRaceForSkills[client];
             War3Source_SkillsInfo_Skill(client,race,skill);
         }
     }

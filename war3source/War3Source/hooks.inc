@@ -33,14 +33,14 @@ public bool:CommandCheck(const String:compare[], const String:command[], maxlen)
 public Action:War3Source_SayCommand(client,args)
 {
     decl String:arg1[32];
-    GetCmdArg(1,arg1,32);
+    GetCmdArg(1,arg1,sizeof(arg1));
     new vecpos=GetClientVectorPosition(client);
     if(vecpos>-1)
     {
         decl String:currencies[64];
-        GetConVarString(m_Currencies, currencies, 63);
+        GetConVarString(m_Currencies, currencies, sizeof(currencies));
         decl String:showCurrency[64];
-        Format(showCurrency,63,"show%s",currencies);
+        Format(showCurrency,sizeof(showCurrency),"show%s",currencies);
 
         if(CommandCheck(arg1,"showxp",63))
         {
@@ -90,7 +90,13 @@ public Action:War3Source_SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"shopmenu",63))
         {
-            War3Source_ShopMenu(client,vecpos);
+            War3Source_ShopMenu(client,vecpos,true);
+            return Plugin_Handled;
+        }
+        else if(CommandCheck(arg1,"showitems",63) || CommandCheck(arg1,"inventory",63) ||
+               CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
+        {
+            War3Source_ShopMenu(client,vecpos,false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"war3help",63) || CommandCheck(arg1,"wc3help",63) ||
