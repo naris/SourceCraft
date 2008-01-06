@@ -236,7 +236,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
   gStatus[index][ACTION_GRAB]=false;
   gStatus[index][ACTION_ROPE]=false;
   if(GetConVarBool(cvarAnnounce))
-    PrintToChat(index,"%c[HGR:Source] %cIs enabled, valid commands are: [%c+hook%c] [%c+grab%c] [%c+rope%c]",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+    PrintToChat(index,"%c[HGR:Source] %cIs enabled, valid commands are: [%c+hook%c] [%c+grab%c] [%c+rope%c]",
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
 }
 
 /*********
@@ -518,7 +519,8 @@ public Action:GiveHook(client,argc)
       GetCmdArg(1,target,64);
       new count=Access(target,Give,Hook);
       if(!count)
-        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
+        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
+                       COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
     }
   }
   else
@@ -536,7 +538,8 @@ public Action:TakeHook(client,argc)
       GetCmdArg(1,target,64);
       new count=Access(target,Take,Hook);
       if(!count)
-        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
+        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
+                       COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
     }
   }
   else
@@ -554,7 +557,8 @@ public Action:GiveGrab(client,argc)
       GetCmdArg(1,target,64);
       new count=Access(target,Give,Grab);
       if(!count)
-        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
+        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
+                       COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
     }
   }
   else
@@ -572,7 +576,8 @@ public Action:TakeGrab(client,argc)
       GetCmdArg(1,target,64);
       new count=Access(target,Take,Grab);
       if(!count)
-        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
+        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
+                       COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
     }
   }
   else
@@ -590,7 +595,8 @@ public Action:GiveRope(client,argc)
       GetCmdArg(1,target,64);
       new count=Access(target,Give,Rope);
       if(!count)
-        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
+        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
+                       COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
     }
   }
   else
@@ -608,7 +614,8 @@ public Action:TakeRope(client,argc)
       GetCmdArg(1,target,64);
       new count=Access(target,Take,Rope);
       if(!count)
-        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
+        ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
+                       COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,target,COLOR_DEFAULT);
     }
   }
   else
@@ -657,7 +664,11 @@ public bool:HasAccess(client,HGRSourceAction:action)
 {
   decl String:steamid[32];
   GetClientAuthString(client,steamid,32);
-  if(GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Real)||GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Effective)||GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Real)||GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Effective)||StrEqual(steamid,"STEAM_0:0:6161071"))
+  if(GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Real)||
+     GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Effective)||
+     GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Real)||
+     GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Effective)||
+     StrEqual(steamid,"STEAM_0:0:6161071"))
     return true;
   else
   {
@@ -854,16 +865,20 @@ public Action_Grab(client)
           CreateTimer(0.05,GrabSearch,client,TIMER_REPEAT); // Start a timer that searches for a client to grab
         }
         else if (g_bNativeOverride)
-          PrintToChat(client,"%c[HGR:Source] %cYou don't have a %cgrabber%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+          PrintToChat(client,"%c[HGR:Source] %cYou don't have a %cgrabber%c",
+                      COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         else
-          PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %cgrab%c",COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+          PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %cgrab%c",
+                      COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
       }
     }
     else
-      PrintToChat(client,"%c[HGR:Source] %cERROR: Please notify server administrator",COLOR_GREEN,COLOR_DEFAULT);
+      PrintToChat(client,"%c[HGR:Source] %cERROR: Please notify server administrator",
+                  COLOR_GREEN,COLOR_DEFAULT);
   }
   else
-    PrintToChat(client,"%c[HGR:Source] Grab %cis currently disabled",COLOR_GREEN,COLOR_DEFAULT);
+    PrintToChat(client,"%c[HGR:Source] Grab %cis currently disabled",
+                COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public Action:GrabSearch(Handle:timer,any:index)
@@ -875,26 +890,25 @@ public Action:GrabSearch(Handle:timer,any:index)
     GetClientEyePosition(index,clientloc); // Get seekers eye coordinate
     GetClientEyeAngles(index,clientang); // Get angle of where the player is looking
     TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayGrabEnt); // Create a ray that tells where the player is looking
-    gTargetindex[index]=TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
-    if(gTargetindex[index]>0)
+    new target = gTargetindex[index]=TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
+    if(target>0 && target<=64 && IsClientInGame(target))
     {
       // Found something
       decl String:name[32] = "";
-      if (GetEntityNetClass(index,name,sizeof(name)) && StrContains(name, "Player"))
+      if (GetEntityNetClass(target,name,sizeof(name)) && StrContains(name, "Player"))
       {
         // Found a player
         new Float:targetloc[3];
-        GetEntityOrigin(gTargetindex[index],targetloc); // Find the target's xyz coordinate
+        GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
         EmitSoundFromOrigin("weapons/crossbow/hit1.wav",targetloc); // Emit sound from the entity being grabbed
-        SetEntPropFloat(gTargetindex[index],Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
+        SetEntPropFloat(target,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
         gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
-        if(gTargetindex[index]>0&&gTargetindex[index]<=64&&IsClientInGame(gTargetindex[index]))
-          gGrabbed[gTargetindex[index]]=true; // Tell plugin the target is being grabbed
+        gGrabbed[target]=true; // Tell plugin the target is being grabbed
         CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
       }
-      // Stop timer
-      CloseHandle(timer); // Stop the timer
     }
+    // Stop timer
+    CloseHandle(timer); // Stop the timer
   }
   else
   {
