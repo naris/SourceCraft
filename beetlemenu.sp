@@ -127,11 +127,11 @@ public sm_nextmap_changed(Handle:convar, const String:oldValue[], const String:n
 
 public OnPluginEnd()
 {
-    UnHookConVarChange(bm_nextmap, bm_nextmap_changed);
+    UnhookConVarChange(bm_nextmap, bm_nextmap_changed);
     CloseHandle(bm_nextmap);
     bm_nextmap = INVALID_HANDLE;
 
-    UnHookConVarChange(sm_nextmap, sm_nextmap_changed);
+    UnhookConVarChange(sm_nextmap, sm_nextmap_changed);
     CloseHandle(sm_nextmap);
     sm_nextmap = INVALID_HANDLE;
 }
