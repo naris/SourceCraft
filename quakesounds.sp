@@ -215,9 +215,9 @@ new gameType = OTHER;
 new headShotCount[MAXPLAYERS + 1];
 new backStabCount[MAXPLAYERS + 1];
 new meleeCount[MAX_MELEE + 1][MAXPLAYERS + 1];
-new Handle:kvQUS;
+new Handle:kvQUS = INVALID_HANDLE;
 new String:fileQUS[MAX_FILE_LEN];
-new	Handle:cvarEnabled = INVALID_HANDLE;
+new Handle:cvarEnabled = INVALID_HANDLE;
 new Handle:cvarAnnounce = INVALID_HANDLE;
 new Handle:cvarTextDefault = INVALID_HANDLE;
 new Handle:cvarSoundDefault = INVALID_HANDLE;
@@ -247,7 +247,7 @@ public OnPluginStart()
 	// Before we do anything else lets make sure that the plugin is not disabled
 	cvarEnabled = CreateConVar("sm_quakesounds_enable", "1", "Enables the Quake sounds plugin");
 	HookConVarChange(cvarEnabled, EnableChanged);
-			
+
 	// Counter Strike Source
 	decl String:gameName[80];
 	GetGameFolderName(gameName, 80);
@@ -257,11 +257,11 @@ public OnPluginStart()
 		gameType = DODS;
 	else if(StrEqual(gameName, "hl2mp"))
 		gameType = HL2DM;
-        else if (StrEqual(gameName,"tf")) 
-            	gameType=TF2;
-		
+	else if (StrEqual(gameName,"tf")) 
+		gameType=TF2;
+
 	LoadTranslations("plugin.quakesounds");
-	
+
 	// Create the remainder of the CVARs
 	CreateConVar("sm_quakesounds_version", PLUGIN_VERSION, "Quake Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarAnnounce = CreateConVar("sm_quakesounds_announce", "1", "Announcement preferences");
@@ -294,15 +294,15 @@ public OnPluginStart()
 	// Load the sounds and initialize kvQUS
 	LoadSounds();
 	kvQUS=CreateKeyValues("QuakeUserSettings");
-  	BuildPath(Path_SM, fileQUS, MAX_FILE_LEN, "data/quakeusersettings.txt");
+	BuildPath(Path_SM, fileQUS, MAX_FILE_LEN, "data/quakeusersettings.txt");
 	if(!FileToKeyValues(kvQUS, fileQUS))
-    	KeyValuesToFile(kvQUS, fileQUS);
-    	
+		KeyValuesToFile(kvQUS, fileQUS);
+
 	// if the plugin was loaded late we have a bunch of initialization that needs to be done
 	if(lateLoaded) {
 		// First we need to do whatever we would have done at RoundStart()
 		NewRoundInitialization();
-			
+
 		// Next we need to whatever we would have done as each client authorized
 		for(new i = 1; i < GetMaxClients(); i++) {
 			if(IsClientInGame(i))
@@ -310,7 +310,7 @@ public OnPluginStart()
 				PrepareClient(i);
 			}
 		}
-	}	    
+	}
 }
 
 public OnMapStart()
@@ -521,9 +521,9 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 			
 	if(attackerClient && victimClient && GetClientTeam(attackerClient) == GetClientTeam(victimClient) &&
-	   attackerId != victimId && settingsArray[TEAMKILL])
+			attackerId != victimId && settingsArray[TEAMKILL])
 		soundId = TEAMKILL;
-	
+
 	// Play the appropriate sound if there was a reason to do so 
 	if(soundId != -1) {
 		PlayQuakeSound(soundId, attackerClient, assisterClient, victimClient);
@@ -537,7 +537,7 @@ public MenuHandlerQuake(Handle:menu, MenuAction:action, param1, param2)
 	if(action == MenuAction_Select)	{
 		// The Disable Choice moves around based on if female sounds are enabled
 		new disableChoice = numSets + 1;
-		
+
 		// Update both the soundPreference array and User Settings KV
 		if(param2 == disableChoice)
 			soundPreference[param1] = 0;
@@ -555,16 +555,16 @@ public MenuHandlerQuake(Handle:menu, MenuAction:action, param1, param2)
 		CloseHandle(menu);
 	}
 }
- 
+
 //  This creates the Quake menu
 public Action:MenuQuake(client, args)
 {
 	new Handle:menu = CreateMenu(MenuHandlerQuake);
 	decl String:buffer[100];
-	
+
 	Format(buffer, sizeof(buffer), "%T", "quake menu", client);
 	SetMenuTitle(menu, buffer);
-	
+
 	if(textPreference[client] == 0)
 		Format(buffer, sizeof(buffer), "%T", "enable text", client);
 	else
@@ -583,11 +583,11 @@ public Action:MenuQuake(client, args)
 	else
 		Format(buffer, sizeof(buffer), "%T", "no quake sounds", client);
 	AddMenuItem(menu, "no sounds", buffer);
- 
+
 	SetMenuExitButton(menu, true);
 
 	DisplayMenu(menu, client, 20);
- 
+
 	return Plugin_Handled;
 }
 
@@ -615,7 +615,7 @@ public LoadSounds()
 		if(!StrEqual(setNames[numSets], ""))
 			numSets++;
 	}
-	
+
 	for(new soundKey = 0; soundKey < NUM_SOUNDS; soundKey++) {
 		KvRewind(kvQSL);
 		KvJumpToKey(kvQSL, soundNames[soundKey]);
@@ -628,13 +628,13 @@ public LoadSounds()
 			killNumSetting[KvGetNum(kvQSL, "kills")] = soundKey;
 		settingsArray[soundKey] = KvGetNum(kvQSL, "config", 9);
 	}
-	
+
 	// Load the event sounds
 	KvRewind(kvQSL);
 	// If the event sounds section is missing we have an old config file
 	if(!KvJumpToKey(kvQSL, "event sounds"))
 		SetFailState("configs/QuakeSoundsList.cfg is missing event sounds section, you may need to upgrade it");
-		
+
 	// read the sounds in
 	for(new eventKey = 0; eventKey < NUM_EVENT_SOUNDS; eventKey++) {
 		KvRewind(kvQSL);
@@ -674,20 +674,20 @@ public PrepareEventSounds()
 public PlayQuakeSound(soundKey, attackerClient, assisterClient, victimClient)
 {
 	new playersConnected = GetMaxClients();
-	
+
 	if(settingsArray[soundKey] & 1) {
 		for (new i = 1; i < playersConnected; i++)
 			if(IsClientInGame(i) && !IsFakeClient(i) && soundPreference[i] && !StrEqual(soundsList[soundPreference[i]-1][soundKey], ""))
 				EmitSoundToClient(i, soundsList[soundPreference[i]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
 		return;
 	}
-			
+
 	if(soundPreference[attackerClient] && (settingsArray[soundKey] & 2) && attackerClient && !StrEqual(soundsList[soundPreference[attackerClient]-1][soundKey], ""))
 		EmitSoundToClient(attackerClient, soundsList[soundPreference[attackerClient]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
-	
+
 	if(soundPreference[assisterClient] && (settingsArray[soundKey] & 2) && assisterClient && !StrEqual(soundsList[soundPreference[assisterClient]-1][soundKey], ""))
 		EmitSoundToClient(assisterClient, soundsList[soundPreference[assisterClient]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
-	
+
 	if(soundPreference[victimClient] && (settingsArray[soundKey] & 4) && victimClient && !StrEqual(soundsList[soundPreference[victimClient]-1][soundKey], ""))
 		EmitSoundToClient(victimClient, soundsList[soundPreference[victimClient]-1][soundKey], _, _, _, _, GetConVarFloat(cvarVolume));
 }
@@ -698,7 +698,7 @@ public PrintQuakeText(soundKey, attackerClient, assisterClient, victimClient)
 	new playersConnected = GetMaxClients();
 	decl String:attackerName[62];
 	decl String:victimName[30];
-	
+
 	// Get the names of the victim and the attacker
 	if(attackerClient && IsClientInGame(attackerClient))
 	{
@@ -725,13 +725,13 @@ public PrintQuakeText(soundKey, attackerClient, assisterClient, victimClient)
 				PrintCenterText(i, "%t", soundNames[soundKey], attackerName, victimName);
 		return;
 	}
-			
+
 	if(textPreference[attackerClient] && (settingsArray[soundKey] & 16) && attackerClient)
 		PrintCenterText(attackerClient, "%t", soundNames[soundKey], attackerName, victimName);
-	
+
 	if(textPreference[assisterClient] && (settingsArray[soundKey] & 16) && assisterClient)
 		PrintCenterText(assisterClient, "%t", soundNames[soundKey], attackerName, victimName);
-	
+
 	if(textPreference[victimClient] && (settingsArray[soundKey] & 32) && victimClient)
 		PrintCenterText(victimClient, "%t", soundNames[soundKey], attackerName, victimName);
 }
@@ -780,19 +780,19 @@ public IsGrenade(String:weapon[])
 	// Counter Strike:Source grenades
 	if(StrEqual(weapon, "hegrenade") || StrEqual(weapon, "smokegrenade") || StrEqual(weapon, "flashbang"))
 		return 1;
-		
+
 	// Day of Defeat:Source grenades
 	if(StrEqual(weapon, "riflegren_ger") || StrEqual(weapon, "riflegren_us") || StrEqual(weapon, "frag_ger") || StrEqual(weapon, "frag_us") || StrEqual(weapon, "smoke_ger") || StrEqual(weapon, "smoke_us"))
 		return 1;
-		
+
 	// HL2:Deathmatch grenades
 	if(StrEqual(weapon, "grenade_frag"))
 		return 1;
-		
+
 	// TF2 grenades
 	if(StrEqual(weapon, "tf_projectile_pipe") || StrEqual(weapon, "tf_projectile_pipe_remote") || StrEqual(weapon, "tf_projectile_rocket"))
 		return 1;
-		
+
 	return 0;
 }
 
@@ -801,33 +801,33 @@ public IsKnife(String:weapon[])
 	// Counter Strike Knife
 	if(StrEqual(weapon, "knife"))
 		return 1;
-		
+
 	// Day of Defeat:Source knives
 	if(StrEqual(weapon, "spade") || StrEqual(weapon, "amerknife") || StrEqual(weapon, "punch"))
 		return 1;
-		
+
 	// HL2:Deathmatch knives
 	if(StrEqual(weapon, "stunstick") || StrEqual(weapon, "crowbar"))
 		return 1;
 
 	// TF2 melee weapons
-        if(StrEqual(weapon,"fists"))
+	if(StrEqual(weapon,"fists"))
 		return 2;
-        else if(StrEqual(weapon,"bat"))
+	else if(StrEqual(weapon,"bat"))
 		return 3;
-        else if(StrEqual(weapon,"wrench"))
+	else if(StrEqual(weapon,"wrench"))
 		return 4;
-        else if(StrEqual(weapon,"bottle"))
+	else if(StrEqual(weapon,"bottle"))
 		return 5;
-        else if(StrEqual(weapon,"bonesaw"))
+	else if(StrEqual(weapon,"bonesaw"))
 		return 6;
-        else if(StrEqual(weapon,"shovel"))
+	else if(StrEqual(weapon,"shovel"))
 		return 7;
-        else if(StrEqual(weapon,"fireaxe"))
+	else if(StrEqual(weapon,"fireaxe"))
 		return 8;
-        else if(StrEqual(weapon,"club"))
+	else if(StrEqual(weapon,"club"))
 		return 9;
-		
+
 	return 0;
 }
 
@@ -935,4 +935,25 @@ public EnableChanged(Handle:convar, const String:oldValue[], const String:newVal
 			UnhookEvent("round_start", EventRoundStart, EventHookMode_PostNoCopy);
 		IsHooked = false;
 	}
+}
+
+
+public OnPluginEnd()
+{
+	if (kvQUS != INVALID_HANDLE){
+		CloseHandle(kvQUS);
+		kvQUS = INVALID_HANDLE;
+	}
+
+	CloseHandle(cvarEnabled);
+	CloseHandle(cvarAnnounce);
+	CloseHandle(cvarTextDefault);
+	CloseHandle(cvarSoundDefault);
+	CloseHandle(cvarVolume);
+
+	cvarEnabled = INVALID_HANDLE;
+	cvarAnnounce = INVALID_HANDLE;
+	cvarTextDefault = INVALID_HANDLE;
+	cvarSoundDefault = INVALID_HANDLE;
+	cvarVolume = INVALID_HANDLE;
 }

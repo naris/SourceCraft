@@ -170,27 +170,27 @@ public OnLibraryRemoved(const String:name[])
  
 public OnAdminMenuReady(Handle:topmenu)
 {
-    /*************************************************************/
-    /* Add a Play Admin Sound option to the SourceMod Admin Menu */
-    /*************************************************************/
+	/*************************************************************/
+	/* Add a Play Admin Sound option to the SourceMod Admin Menu */
+	/*************************************************************/
 
-    /* Block us from being called twice */
-    if (topmenu != hAdminMenu){
-        /* Save the Handle */
-        hAdminMenu = topmenu;
-        new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
-                     server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
-    }
+	/* Block us from being called twice */
+	if (topmenu != hAdminMenu){
+		/* Save the Handle */
+		hAdminMenu = topmenu;
+		new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
+		AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
+				server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
+	}
 }
 
 public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
                         param, String:buffer[], maxlength)
 {
-    if (action == TopMenuAction_DisplayOption)
-        Format(buffer, maxlength, "Play Admin Sound");
-    else if (action == TopMenuAction_SelectOption)
-	Sound_Menu(param,true);
+	if (action == TopMenuAction_DisplayOption)
+		Format(buffer, maxlength, "Play Admin Sound");
+	else if (action == TopMenuAction_SelectOption)
+		Sound_Menu(param,true);
 }
 
 public OnMapStart(){
@@ -812,30 +812,51 @@ public Sound_Menu(client, bool:adminsounds){
 
 public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select){
-	    decl String:SelectionInfo[4];
-	    decl String:SelectionDispText[PLATFORM_MAX_PATH+1];
-	    new SelectionStyle;
-	    if (GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText))){
-		    KvRewind(listfile);
-		    KvGotoFirstSubKey(listfile);
-		    decl String:buffer[PLATFORM_MAX_PATH];
-		    do{
-			    KvGetSectionName(listfile, buffer, sizeof(buffer));
-			    if (strcmp(SelectionDispText,buffer,false) == 0){
-				    Submit_Sound(client);
-				    break;
-			    }
-		    } while (KvGotoNextKey(listfile));
-	    }
-    }
-    else if (action == MenuAction_End)
-    {
-	    CloseHandle(menu);
-    }
+	if(action==MenuAction_Select){
+		decl String:SelectionInfo[4];
+		decl String:SelectionDispText[PLATFORM_MAX_PATH+1];
+		new SelectionStyle;
+		if (GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText))){
+			KvRewind(listfile);
+			KvGotoFirstSubKey(listfile);
+			decl String:buffer[PLATFORM_MAX_PATH];
+			do{
+				KvGetSectionName(listfile, buffer, sizeof(buffer));
+				if (strcmp(SelectionDispText,buffer,false) == 0){
+					Submit_Sound(client);
+					break;
+				}
+			} while (KvGotoNextKey(listfile));
+		}
+	}
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
 }
 
-public OnPluginEnd(){
-  CloseHandle(listfile);
-  listfile=INVALID_HANDLE;
+public OnPluginEnd()
+{
+	if (listfile != INVALID_HANDLE){
+		CloseHandle(listfile);
+		listfile = INVALID_HANDLE;
+	}
+
+	CloseHandle(cvarsoundenable);
+	CloseHandle(cvarsoundwarn);
+	CloseHandle(cvarsoundlimit);
+	CloseHandle(cvarjoinexit);
+	CloseHandle(cvarjoinspawn);
+	CloseHandle(cvarspecificjoinexit);
+	CloseHandle(cvartimebetween);
+	CloseHandle(cvaradmintime);
+
+	cvarsoundenable = INVALID_HANDLE;
+	cvarsoundwarn = INVALID_HANDLE;
+	cvarsoundlimit = INVALID_HANDLE;
+	cvarjoinexit = INVALID_HANDLE;
+	cvarjoinspawn = INVALID_HANDLE;
+	cvarspecificjoinexit = INVALID_HANDLE;
+	cvartimebetween = INVALID_HANDLE;
+	cvaradmintime = INVALID_HANDLE;
 }
