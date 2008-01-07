@@ -922,13 +922,14 @@ public Action:Grabbing(Handle:timer,any:index)
   PrintCenterText(index,"Target found, release key/toggle off to drop");
   if(IsClientInGame(index)&&IsClientAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
   {
-    if(gTargetindex[index]>64||IsClientInGame(gTargetindex[index])&&IsClientAlive(gTargetindex[index]))
+    new target = gTargetindex[index];
+    if(target>64||IsClientInGame(target)&&IsClientAlive(target))
     {
       // Find where to push the target
       new Float:clientloc[3],Float:clientang[3],Float:targetloc[3],Float:endvec[3],Float:distance[3];
       GetClientAbsOrigin(index,clientloc);
       GetClientEyeAngles(index,clientang);
-      GetEntityOrigin(gTargetindex[index],targetloc);
+      GetEntityOrigin(target,targetloc);
       TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Find where the player is aiming
       TR_GetEndPosition(endvec); // Get the end position of the trace ray
       distance[0]=endvec[0]-clientloc[0];
@@ -942,7 +943,7 @@ public Action:Grabbing(Handle:timer,any:index)
       TeleportEntity(gTargetindex[index],NULL_VECTOR,NULL_VECTOR,velocity);
       // Make a beam from grabber to grabbed
       new color[4];
-      if(gTargetindex[index]<=64)
+      if(target<=64)
         targetloc[2]+=45;
       GetBeamColor(index,Grab,color);
       BeamEffect("@all",clientloc,targetloc,0.2,1.0,10.0,color,0.0,0);
@@ -963,12 +964,13 @@ public Action:Grabbing(Handle:timer,any:index)
 public Action_Drop(client)
 {
   gStatus[client][ACTION_GRAB]=false; // Tell plugin the grabber has dropped his target
-  if(gTargetindex[client]>0)
+  new target = gTargetindex[client];
+  if(target>0)
   {
     PrintCenterText(client,"Target has been dropped");
-    SetEntPropFloat(gTargetindex[client],Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
-    if(gTargetindex[client]>0&&gTargetindex[client]<=64&&IsClientInGame(gTargetindex[client]))
-      gGrabbed[gTargetindex[client]]=false; // Tell plugin the target is no longer being grabbed
+    SetEntPropFloat(target,Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
+    if(target>0&&target<=64&&IsClientInGame(target))
+      gGrabbed[target]=false; // Tell plugin the target is no longer being grabbed
     gTargetindex[client]=-1;
   }
   else
