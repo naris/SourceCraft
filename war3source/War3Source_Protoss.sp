@@ -10,8 +10,6 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "jetpack.inc"
-
 #include "War3Source/War3Source_Interface"
 
 #include "War3Source/util"
