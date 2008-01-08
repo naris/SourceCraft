@@ -90,7 +90,7 @@ public OnWar3PlayerAuthed(client,war3player)
 public OnRaceSelected(client,war3player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
-        ResetCloakingAndDetector(client)
+        ResetCloakingAndDetector(client);
 }
 
 public OnGameFrame()
@@ -114,7 +114,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
 
     if (client)
-        ResetCloakingAndDetector(client)
+        ResetCloakingAndDetector(client);
 }
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -333,16 +333,20 @@ public ResetCloakingAndDetector(client)
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
     {
-        if (m_Cloaked[client][index])
+        new war3player = War3_GetWar3Player(index);
+        if (war3player > -1)
         {
-            War3_SetMinVisibility(war3player, -1);
-            m_Cloaked[client][index] = false;
-        }
+            if (m_Cloaked[client][index])
+            {
+                War3_SetMinVisibility(war3player, -1);
+                m_Cloaked[client][index] = false;
+            }
 
-        if (m_Detected[client][index])
-        {
-            War3_SetOverrideVisible(war3player, -1);
-            m_Detected[client][index] = false;
+            if (m_Detected[client][index])
+            {
+                War3_SetOverrideVisible(war3player, -1);
+                m_Detected[client][index] = false;
+            }
         }
     }
 }
