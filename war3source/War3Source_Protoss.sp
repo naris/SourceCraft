@@ -90,23 +90,7 @@ public OnWar3PlayerAuthed(client,war3player)
 public OnRaceSelected(client,war3player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
-    {
-        new maxplayers=GetMaxClients();
-        for (new index=1;index<=maxplayers;index++)
-        {
-            if (m_Cloaked[client][index])
-            {
-                War3_SetMinVisibility(war3player, -1);
-                m_Cloaked[client][index] = false;
-            }
-
-            if (m_Detected[client][index])
-            {
-                War3_SetOverrideVisibility(war3player, -1);
-                m_Detected[client][index] = false;
-            }
-        }
-    }
+        ResetCloakingAndDetector(client)
 }
 
 public OnGameFrame()
@@ -130,27 +114,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
 
     if (client)
-    {
-        new maxplayers=GetMaxClients();
-        for (new index=1;index<=maxplayers;index++)
-        {
-            new war3player = War3_GetWar3Player(index);
-            if (war3player > -1)
-            {
-                if (m_Cloaked[client][index])
-                {
-                    War3_SetMinVisibility(war3player, -1);
-                    m_Cloaked[client][index] = false;
-                }
-
-                if (m_Detected[client][index])
-                {
-                    War3_SetOverrideVisibility(war3player, -1);
-                    m_Detected[client][index] = false;
-                }
-            }
-        }
-    }
+        ResetCloakingAndDetector(client)
 }
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -220,6 +184,37 @@ public bool:Protoss_Shields(Handle:event, victimIndex, victimWar3player)
         return true;
     }
     return false;
+}
+
+public Protoss_MindControl(client)
+{
+    new victim = 0;
+    new target = GetClientAimTarget(client);
+    if (target >= 0)
+    {
+        decl String:class[64] = "";
+        if (GetEdictClassname(target, class, sizeof(class)))
+        {
+            if (StrEqual(class, "obj_sentrygun", false) ||
+                StrEqual(class, "obj_dispenser", false) ||
+                StrEqual(class, "obj_teleporter_entrance", false) ||
+                StrEqual(class, "obj_teleporter_exit", false))
+            {
+                //Find the owner of the sentry gun m_hBuilder holds the client index 1 to Maxplayers
+                victim = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
+                SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+
+                new team = GetClientTeam(client);
+
+                SetVariantInt(team); //Prep the value for the call below
+                AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                SetVariantInt(team); //Same thing again but we are changing SetTeam
+                AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+            }
+        }
+    }
+    return victim;
 }
 
 public Action:CloakingAndDetector(Handle:timer)
@@ -308,18 +303,18 @@ public Action:CloakingAndDetector(Handle:timer)
                                         GetClientAbsOrigin(index, indexLoc);
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
-                                            War3_SetOverrideVisibility(war3player_check, 255);
+                                            War3_SetOverrideVisible(war3player_check, 255);
                                             m_Detected[client][index] = true;
                                         }
                                         else if (m_Detected[client][index])
                                         {
-                                            War3_SetOverrideVisibility(war3player_check, -1);
+                                            War3_SetOverrideVisible(war3player_check, -1);
                                             m_Detected[client][index] = false;
                                         }
                                     }
                                     else if (m_Detected[client][index])
                                     {
-                                        War3_SetOverrideVisibility(war3player_check, -1);
+                                        War3_SetOverrideVisible(war3player_check, -1);
                                         m_Detected[client][index] = false;
                                     }
                                 }
@@ -333,33 +328,21 @@ public Action:CloakingAndDetector(Handle:timer)
     return Plugin_Continue;
 }
 
-public Protoss_MindControl(client)
+public ResetCloakingAndDetector(client)
 {
-    new victim = 0;
-    new target = GetClientAimTarget(client);
-    if (target >= 0)
+    new maxplayers=GetMaxClients();
+    for (new index=1;index<=maxplayers;index++)
     {
-        decl String:class[64] = "";
-        if (GetEdictClassname(target, class, sizeof(class)))
+        if (m_Cloaked[client][index])
         {
-            if (StrEqual(class, "obj_sentrygun", false) ||
-                StrEqual(class, "obj_dispenser", false) ||
-                StrEqual(class, "obj_teleporter_entrance", false) ||
-                StrEqual(class, "obj_teleporter_exit", false))
-            {
-                //Find the owner of the sentry gun m_hBuilder holds the client index 1 to Maxplayers
-                victim = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
-                SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+            War3_SetMinVisibility(war3player, -1);
+            m_Cloaked[client][index] = false;
+        }
 
-                new team = GetClientTeam(client);
-
-                SetVariantInt(team); //Prep the value for the call below
-                AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                SetVariantInt(team); //Same thing again but we are changing SetTeam
-                AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-            }
+        if (m_Detected[client][index])
+        {
+            War3_SetOverrideVisible(war3player, -1);
+            m_Detected[client][index] = false;
         }
     }
-    return victim;
 }

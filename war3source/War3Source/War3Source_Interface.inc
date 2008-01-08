@@ -197,7 +197,7 @@ native War3_SetOverrideGravity(war3player,Float:gravity=0.0);
  * @param visibility: The visibility you want to pass.
  * @noreturn
  */
-native War3_SetOverrideVisibility(war3player,visibility=-1);
+native War3_SetOverrideVisible(war3player,visibility=-1);
 
 /**
  * Called when the plugin is ready.
