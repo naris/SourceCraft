@@ -374,4 +374,5 @@ public Action:AllowEntangle(Handle:timer,any:index)
 {
     m_AllowEntangle[index]=true;
     CloseHandle(timer);
+    return Plugin_Stop;
 }

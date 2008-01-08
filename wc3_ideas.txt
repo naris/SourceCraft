@@ -6,6 +6,9 @@ Jig: ultimate to freeze person
 
 Me: Bomberman Ultimate == multiple bombings ala suicide bug
 
+
+//TF2 Teams, 3=Blue Team | 2 = Red Team
+
 Terran
 S1: Invisibility w/total when not moving
 S2: Armor
@@ -20,8 +23,8 @@ Ult: Grab
 
 Protoss
 S1: Shields 
-S2: Cloaking field
-S3: Detector
+S2: Cloaking field (cloaks teammates but NOT player)
+S3: Detector (Detects invisible things [makes them glow])
 Ult: Mind Control (steal sg/dispaenser/teleport)
 
 Al Queda

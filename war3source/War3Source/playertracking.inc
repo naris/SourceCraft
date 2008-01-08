@@ -340,6 +340,7 @@ public Action:PlayerProperties(Handle:timer)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocity[3], visibility,

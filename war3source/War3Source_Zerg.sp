@@ -169,6 +169,7 @@ public Action:Regeneration(Handle:timer)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)

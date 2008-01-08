@@ -38,4 +38,5 @@ public Action:UnfreezePlayer(Handle:timer,Handle:temp)
         UnFreezeEntity(client);
     ClearArray(temp);
     CloseHandle(timer);
+    return Plugin_Stop;
 }

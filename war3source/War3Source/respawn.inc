@@ -37,4 +37,5 @@ public Action:RespawnPlayerHandle(Handle:timer,any:temp)
         RespawnPlayer(client);
     ClearArray(temp);
     CloseHandle(timer);
+    return Plugin_Stop;
 }

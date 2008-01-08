@@ -537,6 +537,7 @@ public Action:Regeneration(Handle:timer)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 public Action:Gloves(Handle:timer)
@@ -629,6 +630,7 @@ public Action:Gloves(Handle:timer)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 public Action:TrackWeapons(Handle:timer)

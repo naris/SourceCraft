@@ -178,6 +178,7 @@ public Action:AllowTeleport(Handle:timer,any:index)
     PrintToChat(index,"%c[War3Source]%c Your %cTeleport%c has recharged and can be used again.",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
     CloseHandle(timer);
+    return Plugin_Stop;
 }
 
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)

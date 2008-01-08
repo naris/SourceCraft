@@ -450,7 +450,7 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetOverrideVisibile(Handle:plugin,numParams)
+public Native_War3_SetOverrideVisibility(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -517,7 +517,7 @@ public bool:War3Source_InitNatives()
     CreateNative("War3_SetMinVisibility",Native_War3_SetMinVisibility);
     CreateNative("War3_SetOverrideSpeed",Native_War3_SetOverrideSpeed);
     CreateNative("War3_SetOverrideGravity",Native_War3_SetOverrideGravity);
-    CreateNative("War3_SetOverrideVisibile",Native_War3_SetOverrideVisibile);
+    CreateNative("War3_SetOverrideVisibility",Native_War3_SetOverrideVisibility);
     return true;
 }
 

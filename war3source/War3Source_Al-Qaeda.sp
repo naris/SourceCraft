@@ -202,6 +202,7 @@ public Action:FlamingWrath(Handle:timer)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -339,6 +340,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
     }
     ClearArray(temp);
     CloseHandle(timer);
+    return Plugin_Stop;
 }
 
 public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
@@ -357,6 +359,7 @@ public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
     }
     ClearArray(temp);
     CloseHandle(timer);
+    return Plugin_Stop;
 }
 
 public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
