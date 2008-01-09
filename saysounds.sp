@@ -285,7 +285,8 @@ public CheckJoin(client, const String:auth[]){
 					new count = KvGetNum(listfile, "count", 1);
 					if (count > 1){
 						new number = (count > 1) ? GetRandomInt(1,count) : 1;
-						Format(file, 8, "file%d", number);
+						if (number > 1)
+							Format(file, sizeof(file), "file%d", number);
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				}
@@ -314,7 +315,8 @@ public CheckJoin(client, const String:auth[]){
 				new count = KvGetNum(listfile, "count", 1);
 				if (count > 1){
 					new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					Format(file, 8, "file%d", number);
+					if (number > 1)
+						Format(file, sizeof(file), "file%d", number);
 				}
 				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
@@ -374,7 +376,8 @@ public OnClientDisconnect(client){
 			new count = KvGetNum(listfile, "count", 1);
 			if (count > 1){
 				new number = (count > 1) ? GetRandomInt(1,count) : 1;
-				Format(file, 8, "file%d", number);
+				if (number > 1)
+					Format(file, sizeof(file), "file%d", number);
 			}
 			KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 			if (strlen(filelocation)){
@@ -399,7 +402,8 @@ Submit_Sound(client)
 	new count = KvGetNum(listfile, "count", 1);
 	if (count > 1){
 		new number = (count > 1) ? GetRandomInt(1,count) : 1;
-		Format(file, 8, "file%d", number);
+		if (number > 1)
+			Format(file, sizeof(file), "file%d", number);
 	}
 	KvGetString(listfile, file, filelocation, sizeof(filelocation));
 	if (strlen(filelocation)){
@@ -531,9 +535,6 @@ public Action:Command_InsurgencySay(client,args){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
 		}
-
-		KvRewind(listfile);
-		KvGotoFirstSubKey(listfile);
 
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
