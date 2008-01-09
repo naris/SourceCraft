@@ -16,7 +16,6 @@
 #include "War3Source/range"
 #include "War3Source/trace"
 #include "War3Source/health"
-#include "War3Source/damage"
 #include "War3Source/authtimer"
 #include "War3Source/respawn"
 #include "War3Source/log"
@@ -86,7 +85,7 @@ public OnWar3PluginReady()
                            "Reincarnation", // Skill 3 Name
                            "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
                            "Chain Lightning", // Ultimate Name
-                           "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.\nNOT IMPLEMENTED YET!"); // Ultimate Description
+                           "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
 }
 
 public OnMapStart()
@@ -116,11 +115,6 @@ public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
     m_AllowChainLightning[client]=true;
-}
-
-public OnGameFrame()
-{
-    SaveAllHealth();
 }
 
 public OnRaceSelected(client,war3player,oldrace,newrace)
@@ -198,8 +192,6 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
-        if (victimIndex)
-            SaveHealth(victimIndex);
     }
 }
 
@@ -209,7 +201,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SaveHealth(client);
         new war3player=War3_GetWar3Player(client);
         if (war3player>-1)
         {
@@ -310,7 +301,7 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetDamage(event, victimIndex, index, 5, 20);
+            new damage=War3_GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health <= 0)
@@ -364,7 +355,7 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetDamage(event, victimIndex, index, 10, 30);
+            new damage=War3_GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health <= 0)

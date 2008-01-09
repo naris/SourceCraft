@@ -167,7 +167,8 @@ public Action:FlamingWrath(Handle:timer)
                                     new war3player_check=War3_GetWar3Player(index);
                                     if (war3player_check>-1)
                                     {
-                                        if (IsInRange(client,index,range))
+                                        if (!War3_GetImmunity(war3player_check, Immunity_HealthTake) &&
+                                            IsInRange(client,index,range))
                                         {
                                             new Float:indexLoc[3];
                                             GetClientAbsOrigin(index, indexLoc);
@@ -362,11 +363,11 @@ public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
     return Plugin_Stop;
 }
 
-public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
+public AlQaeda_Bomber(client,war3player,level,bool:ondeath)
 {
     new Float:radius;
     new r_int, damage;
-    switch(ult_level)
+    switch(level)
     {
         case 1:
         {
@@ -419,7 +420,7 @@ public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
             new war3player_check=War3_GetWar3Player(x);
             if (war3player_check>-1)
             {
-                if (!War3_GetImmunity(war3player_check,Immunity_Ultimates) &&
+                if (!(ondeath || War3_GetImmunity(war3player_check,Immunity_Ultimates)) &&
                     !War3_GetImmunity(war3player_check,Immunity_Explosion))
                 {
                     new Float:location_check[3];
@@ -434,15 +435,21 @@ public AlQaeda_Bomber(client,war3player,ult_level,bool:ondeath)
                             if (newhealth <= 0)
                             {
                                 newhealth=0;
-                                new addxp=5+ult_level;
+                                new addxp=5+level;
                                 new newxp=War3_GetXP(war3player,raceID)+addxp;
                                 War3_SetXP(war3player,raceID,newxp);
 
-                                LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                if (ondeath)
+                                    LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);
+                                else
+                                    LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
                             }
                             else
                             {
-                                LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                                if (ondeath)
+                                    LogDamage(client, x, "mad_bomber", "Mad Bomber", hp);
+                                else
+                                    LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
                             }
                             SetHealth(x,newhealth);
                         }

@@ -18,7 +18,6 @@
 #include "War3Source/range"
 #include "War3Source/trace"
 #include "War3Source/health"
-#include "War3Source/damage"
 #include "War3Source/weapons"
 #include "War3Source/log"
 
@@ -27,9 +26,6 @@ new raceID; // The ID we are assigned to
 
 new g_haloSprite;
 new g_lightningSprite;
-
-new m_GrabTime[MAXPLAYERS+1];
-new m_GrabRechargeTime[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -89,11 +85,6 @@ public OnRaceSelected(client,war3player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
         TakeGrab(client);
-}
-
-public OnGameFrame()
-{
-    SaveAllHealth();
 }
 
 public Action:Regeneration(Handle:timer)
@@ -183,6 +174,21 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
     }
 }
 
+public Action:OnGrabbed(client, target)
+{
+    if (target != client && IsClientConnected(target) && IsPlayerAlive(target) &&
+        GetClientTeam(target) != GetClientTeam(client))
+    {
+        new war3player_check=War3_GetWar3Player(target);
+        if (war3player_check>-1)
+        {
+            if (!War3_GetImmunity(war3player_check,Immunity_Ultimates))
+                return Plugin_Continue;
+        }
+    }
+    return Plugin_Stop;
+}
+
 public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
 {
     if(race == raceID && newskilllevel > 0 && War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
@@ -248,8 +254,6 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
-        if (victimIndex)
-            SaveHealth(victimIndex);
     }
 }
 
@@ -277,7 +281,7 @@ public Zerg_AdrenalGlands(Handle:event, index, war3player, victimIndex)
                         percent=1.00;
                 }
 
-                new damage=GetDamage(event, victimIndex, index, 10, 20);
+                new damage=War3_GetDamage(event, victimIndex);
                 new amount=RoundFloat(float(damage)*percent);
                 new newhp=GetClientHealth(victimIndex)-amount;
                 if (newhp <= 0)
@@ -307,29 +311,18 @@ public Zerg_Tentacles(client, war3player, skilllevel)
 {
     if (skilllevel)
     {
+        new grabTime;
         switch(skilllevel)
         {
             case 1:
-            {
-                m_GrabTime[client]=20;
-                m_GrabRechargeTime[client]=45;
-            }
+                grabTime=5;
             case 2:
-            {
-                m_GrabTime[client]=35;
-                m_GrabRechargeTime[client]=30;
-            }
+                grabTime=15;
             case 3:
-            {
-                m_GrabTime[client]=50;
-                m_GrabRechargeTime[client]=20;
-            }
+                grabTime=30;
             case 4:
-            {
-                m_GrabTime[client]=60;
-                m_GrabRechargeTime[client]=10;
-            }
+                grabTime=45;
         }
-        GiveGrab(client);
+        GiveGrab(client,grabTime);
     }
 }

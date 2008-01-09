@@ -51,6 +51,8 @@ new Handle:cvarRopeBeamColor;
 new Handle:cvarRopeRed;
 new Handle:cvarRopeGreen;
 new Handle:cvarRopeBlue;
+// Forward handles
+new Handle:fwdOnGrabbed;
 
 // Client status arrays
 new bool:gStatus[MAXPLAYERS+1][3];
@@ -67,8 +69,9 @@ new bool:gGrabbed[MAXPLAYERS+1];
 new Float:gRopeEndloc[MAXPLAYERS+1][3];
 new Float:gRopeDist[MAXPLAYERS+1];
 
-// Clients that have access to hook or grab
+// Clients that have access to hook, grab or rope
 new bool:gAllowedClients[MAXPLAYERS+1][3];
+new gAllowedTimeLimit[MAXPLAYERS+1][3];
 
 // Offset variables
 new OriginOffset;
@@ -125,6 +128,8 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
   CreateNative("Rope",Native_Rope);
   CreateNative("Detach",Native_Detach);
   CreateNative("RopeToggle",Native_RopeToggle);
+
+  fwdOnGrabbed=CreateGlobalForward("OnGrabbed",ET_Hook,Param_Cell,Param_Cell);
 
   return true;
 }
@@ -359,12 +364,15 @@ public Native_RopeToggle(Handle:plugin,numParams)
 
 public Native_GiveHook(Handle:plugin,numParams)
 {
-  if(numParams == 1)
+  if(numParams >= 1 && numParams <= 2)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
     {
-      ClientAccess(client,Give,Hook);
+      new limit=0;
+      if (numParams >= 2)
+        limit = GetNativeCell(2);
+      ClientAccess(client,Give,Hook,limit);
       g_iNativeHooks++;
     }
   }
@@ -377,7 +385,7 @@ public Native_TakeHook(Handle:plugin,numParams)
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
     {
-      ClientAccess(client,Take,Hook);
+      ClientAccess(client,Take,Hook,0);
       g_iNativeHooks--;
     }
   }
@@ -385,12 +393,15 @@ public Native_TakeHook(Handle:plugin,numParams)
 
 public Native_GiveGrab(Handle:plugin,numParams)
 {
-  if(numParams == 1)
+  if(numParams >= 1 && numParams <= 2)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
     {
-      ClientAccess(client,Give,Grab);
+      new limit=0;
+      if (numParams >= 2)
+        limit = GetNativeCell(2);
+      ClientAccess(client,Give,Grab,limit);
       g_iNativeGrabs++;
     }
   }
@@ -403,7 +414,7 @@ public Native_TakeGrab(Handle:plugin,numParams)
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
     {
-      ClientAccess(client,Take,Grab);
+      ClientAccess(client,Take,Grab,0);
       g_iNativeGrabs--;
     }
   }
@@ -411,12 +422,15 @@ public Native_TakeGrab(Handle:plugin,numParams)
 
 public Native_GiveRope(Handle:plugin,numParams)
 {
-  if(numParams == 1)
+  if(numParams >= 1 && numParams <= 2)
   {
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
     {
-      ClientAccess(client,Give,Rope);
+      new limit=0;
+      if (numParams >= 2)
+        limit = GetNativeCell(2);
+      ClientAccess(client,Give,Rope,limit);
       g_iNativeRopes++;
     }
   }
@@ -429,7 +443,7 @@ public Native_TakeRope(Handle:plugin,numParams)
     new client = GetNativeCell(1);
     if(IsClientAlive(client))
     {
-      ClientAccess(client,Take,Rope);
+      ClientAccess(client,Take,Rope,0);
       g_iNativeRopes--;
     }
   }
@@ -634,20 +648,29 @@ public Access(const String:target[],HGRSourceAccess:access,HGRSourceAction:actio
   if(count==0)
     return 0;
   for(new x=0;x<count;x++)
-    ClientAccess(clients[x],access,action);
+    ClientAccess(clients[x],access,action,0);
   return count;
 }
 
-public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action)
+public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,TimeLimit)
 {
   if(access==Give)
   {
     if(action==Hook)
+    {
       gAllowedClients[client][ACTION_HOOK]=true;
+      gAllowedTimeLimit[client][ACTION_HOOK]=TimeLimit;
+    }
     else if(action==Grab)
+    {
       gAllowedClients[client][ACTION_GRAB]=true;
+      gAllowedTimeLimit[client][ACTION_GRAB]=TimeLimit;
+    }
     else if(action==Rope)
+    {
       gAllowedClients[client][ACTION_ROPE]=true;
+      gAllowedTimeLimit[client][ACTION_ROPE]=TimeLimit;
+    }
   }
   else if(access==Take)
   {
@@ -662,27 +685,29 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action)
 
 public bool:HasAccess(client,HGRSourceAction:action)
 {
-  decl String:steamid[32];
-  GetClientAuthString(client,steamid,32);
-  if(GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Real)||
-     GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Effective)||
-     GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Real)||
-     GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Effective)||
-     StrEqual(steamid,"STEAM_0:0:6161071"))
-    return true;
-  else
+  if (!g_bNativeOverride)
   {
-    if(!g_bNativeOverride && !IsFeatureEnabled(action))
-      return false;
-    if(!g_bNativeOverride && !IsFeatureAdminOnly(action))
+    decl String:steamid[32];
+    GetClientAuthString(client,steamid,32);
+    if(GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Real)||
+       GetAdminFlag(GetUserAdmin(client),Admin_Generic,Access_Effective)||
+       GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Real)||
+       GetAdminFlag(GetUserAdmin(client),Admin_Root,Access_Effective)||
+       StrEqual(steamid,"STEAM_0:0:6161071"))
       return true;
-    if(action==Hook)
-      return gAllowedClients[client][ACTION_HOOK];
-    else if(action==Grab)
-      return gAllowedClients[client][ACTION_GRAB];
-    else if(action==Rope)
-      return gAllowedClients[client][ACTION_ROPE];
+    else if(!IsFeatureEnabled(action))
+      return false;
+    else if(!IsFeatureAdminOnly(action))
+      return true;
   }
+
+  if(action==Hook)
+    return gAllowedClients[client][ACTION_HOOK];
+  else if(action==Grab)
+    return gAllowedClients[client][ACTION_GRAB];
+  else if(action==Rope)
+    return gAllowedClients[client][ACTION_ROPE];
+
   return false;
 }
 
@@ -832,7 +857,19 @@ public Hook_Push(client)
 public Action:Hooking(Handle:timer,any:index)
 {
   if(IsClientInGame(index)&&IsClientAlive(index)&&gStatus[index][ACTION_HOOK]&&!gGrabbed[index])
+  {
+    if (gAllowedTimeLimit[index][ACTION_ROPE] > 0)
+    {
+      gAllowedTimeLimit[index][ACTION_ROPE]--;
+      if (gAllowedTimeLimit[index][ACTION_ROPE] <= 0)
+      {
+        CloseHandle(timer); // Stop the timer
+        Action_UnHook(index);
+        return;
+      }
+    }
     Hook_Push(index);
+  }
   else
   {
     CloseHandle(timer); // Stop the timer
@@ -898,13 +935,21 @@ public Action:GrabSearch(Handle:timer,any:index)
       if (GetEntityNetClass(target,name,sizeof(name)) && StrContains(name, "Player"))
       {
         // Found a player
-        new Float:targetloc[3];
-        GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
-        EmitSoundFromOrigin("weapons/crossbow/hit1.wav",targetloc); // Emit sound from the entity being grabbed
-        SetEntPropFloat(target,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
-        gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
-        gGrabbed[target]=true; // Tell plugin the target is being grabbed
-        CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+        new Action:res;
+        Call_StartForward(fwdOnGrabbed);
+        Call_PushCell(index);
+        Call_PushCell(target);
+        Call_Finish(res);
+        if (res == Plugin_Continue)
+        {
+          new Float:targetloc[3];
+          GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
+          EmitSoundFromOrigin("weapons/crossbow/hit1.wav",targetloc); // Emit sound from the entity being grabbed
+          SetEntPropFloat(target,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
+          gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
+          gGrabbed[target]=true; // Tell plugin the target is being grabbed
+          CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+        }
       }
     }
     // Stop timer
@@ -925,6 +970,17 @@ public Action:Grabbing(Handle:timer,any:index)
     new target = gTargetindex[index];
     if(target>64||IsClientInGame(target)&&IsClientAlive(target))
     {
+      if (gAllowedTimeLimit[index][ACTION_GRAB] > 0)
+      {
+        gAllowedTimeLimit[index][ACTION_GRAB]--;
+        if (gAllowedTimeLimit[index][ACTION_GRAB] <= 0)
+        {
+          CloseHandle(timer); // Stop the timer
+          Action_Drop(index);
+          return;
+        }
+      }
+
       // Find where to push the target
       new Float:clientloc[3],Float:clientang[3],Float:targetloc[3],Float:endvec[3],Float:distance[3];
       GetClientAbsOrigin(index,clientloc);
@@ -1018,6 +1074,17 @@ public Action:Roping(Handle:timer,any:index)
 {
   if(IsClientInGame(index)&&gStatus[index][ACTION_ROPE]&&IsClientAlive(index)&&!gGrabbed[index])
   {
+    if (gAllowedTimeLimit[index][ACTION_ROPE] > 0)
+    {
+      gAllowedTimeLimit[index][ACTION_ROPE]--;
+      if (gAllowedTimeLimit[index][ACTION_ROPE] <= 0)
+      {
+        CloseHandle(timer); // Stop the timer
+        Action_Detach(index);
+        return Plugin_Handled;
+      }
+    }
+
     new Float:clientloc[3],Float:velocity[3],Float:velocity2[3];
     GetClientAbsOrigin(index,clientloc);
     GetVelocity(index,velocity);

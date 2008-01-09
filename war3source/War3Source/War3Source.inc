@@ -25,6 +25,7 @@ new Handle:DBIDB = INVALID_HANDLE;
 
 // War3Source Includes
 #include "War3Source/util"
+#include "War3Source/damage"
 #include "War3Source/immunity"
 #include "War3Source/offsets"
 #include "War3Source/races"

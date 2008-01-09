@@ -69,11 +69,18 @@ public Native_War3_CreateShopItem(Handle:plugin,numParams)
     return -1;
 }
 
-/**
- * Get the ShopItem ID of a shop item
- * @param name: The name of the item. (max 64)
- * @return The return value will be the item index or -1 if there was a problem.
- */         
+public Native_War3_CreateHelpCommand(Handle:plugin,numParams)
+{
+    if(numParams==2)
+    {
+        decl String:name[64];
+        GetNativeString(1,name,63);
+        decl String:desc[256];
+        GetNativeString(2,desc,255);
+        NewHelpCommand(name,desc);
+    }
+}
+
 public Native_War3_GetShopItem(Handle:plugin,numParams)
 {
     if(numParams==1)
@@ -82,6 +89,24 @@ public Native_War3_GetShopItem(Handle:plugin,numParams)
         GetNativeString(1,name,63);
         return GetShopItem(name);
     }
+    else
+        return -1;
+}
+
+public Native_War3_GetSavedHealth(Handle:plugin,numParams)
+{
+    if(numParams==1)
+        return GetSavedHealth(GetNativeCell(1));
+    else
+        return -1;
+}
+
+public Native_War3_GetDamage(Handle:plugin,numParams)
+{
+    if(numParams==1)
+        return GetDamage(GetNativeCell(1));
+    else if(numParams==2)
+        return GetDamage(Handle:GetNativeCell(1), GetNativeCell(2));
     else
         return -1;
 }
@@ -203,18 +228,6 @@ public Native_War3_SetImmunity(Handle:plugin,numParams)
         new imm_state=GetNativeCell(3);
         if(war3player!=-1&&immunity!=-1&&imm_state!=-1)
             SetImmunity(war3player,immunity,imm_state);
-    }
-}
-
-public Native_War3_CreateHelpCommand(Handle:plugin,numParams)
-{
-    if(numParams==2)
-    {
-        decl String:name[64];
-        GetNativeString(1,name,63);
-        decl String:desc[256];
-        GetNativeString(2,desc,255);
-        NewHelpCommand(name,desc);
     }
 }
 
@@ -502,6 +515,8 @@ public bool:War3Source_InitNatives()
     CreateNative("War3_CreateShopItem",Native_War3_CreateShopItem);
     CreateNative("War3_CreateHelpCommand",Native_War3_CreateHelpCommand);
     CreateNative("War3_GetShopItem",Native_War3_GetShopItem);
+    CreateNative("War3_GetSavedHealth",Native_War3_GetSavedHealth);
+    CreateNative("War3_GetDamage",Native_War3_GetDamage);
     CreateNative("War3_GetWar3Player",Native_War3_GetWar3Player);
     CreateNative("War3_GetRace",Native_War3_GetRace);
     CreateNative("War3_GetLevel",Native_War3_GetLevel);

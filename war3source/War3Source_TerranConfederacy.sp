@@ -16,7 +16,6 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
-#include "War3Source/damage"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
@@ -88,11 +87,6 @@ public OnRaceSelected(client,war3player,oldrace,race)
         TakeJetpack(client);
         War3_SetMinVisibility(war3player, 255, 1.0, 1.0);
     }
-}
-
-public OnGameFrame()
-{
-    SaveAllHealth();
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -287,7 +281,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
                 to_percent=0.80;
             }
         }
-        new damage=GetDamage(event, victimIndex);
+        new damage=War3_GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
         new armor=m_Armor[victimIndex];
         if (amount > armor)

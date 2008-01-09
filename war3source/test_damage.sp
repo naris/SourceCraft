@@ -61,7 +61,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new health = GetEventInt(event,"health");
     new oldHealth = GetSavedHealth(victimIndex);
 
-    new damage = GetDamage(event, victimIndex, attackerIndex, -1, -1);
+    new damage = GetDamage(event, victimIndex);
 
     decl String:victimName[64] = "";
     decl String:attackerName[64] = "";

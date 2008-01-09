@@ -62,6 +62,21 @@ native War3_CreateHelpCommand(String:name[],String:desc[]);
 native War3_GetShopItem(String:name[]);
 
 /**
+ * Gets the health of client that was saved in the last GameFrame
+ * @param client: The client's index you want.
+ * @return The return value will be the amount of health client had last GameFrame.
+ */
+native War3_GetSavedHealth(client);
+
+/**
+ * Gets (or Calculates) damage for the given event.
+ * @param event: The Handle to the event
+ * @param client: The client's index you want (defaults to userid from event)
+ * @return The return value will be the amount of damage
+ */
+native War3_GetDamage(Handle:event, client=0);
+
+/**
  * Gets the War3Player ID used for the rest of the War3 interface natives.
  * @param client: The client's index you want.
  * @return The return value will be the War3Player ID, -1 on failure.

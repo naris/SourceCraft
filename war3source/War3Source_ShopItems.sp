@@ -16,7 +16,6 @@
 
 #include "War3Source/util"
 #include "War3Source/health"
-#include "War3Source/damage"
 #include "War3Source/authtimer"
 #include "War3Source/respawn"
 #include "War3Source/log"
@@ -199,11 +198,6 @@ public OnWar3PlayerAuthed(client,war3player)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
 
-public OnGameFrame()
-{
-    SaveAllHealth();
-}
-
 public OnItemPurchase(client,war3player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
@@ -243,7 +237,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SaveHealth(client);
         SetupMaxHealth(client);
         GetClientAbsOrigin(client,spawnLoc[client]);
 
@@ -488,7 +481,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if(isMole[attacker_index])
                     {
-                        new damage=GetDamage(event, index, attacker_index, 5, 20);
+                        new damage=War3_GetDamage(event, index);
                         new h1=GetEventInt(event,"health")+damage;
                         new h2=GetClientHealth(index);
                         if(h2<h1)
@@ -499,8 +492,6 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
-        if (index)
-            SaveHealth(index);
     }
 }
 

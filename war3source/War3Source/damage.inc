@@ -36,7 +36,7 @@ stock SaveAllHealth()
     }
 }
 
-stock GetDamage(Handle:event, victim=0, attacker=0, min=5, max=20)
+stock GetDamage(Handle:event, client=0)
 {
     new damage;
 
@@ -48,12 +48,12 @@ stock GetDamage(Handle:event, victim=0, attacker=0, min=5, max=20)
             damage = GetEventInt(event,"damage");
         default:
         {
-            if (!victim)
-                victim = GetClientOfUserId(GetEventInt(event,"userid"));
+            if (!client)
+                client = GetClientOfUserId(GetEventInt(event,"userid"));
 
-            if (victim)
+            if (client)
             {
-                new prevHealth = savedHealth[victim]; 
+                new prevHealth = savedHealth[client]; 
                 if (prevHealth)
                     damage = prevHealth - GetEventInt(event,"health");
             }

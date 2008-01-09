@@ -16,18 +16,14 @@
 #include "War3Source/range"
 #include "War3Source/trace"
 #include "War3Source/health"
-#include "War3Source/damage"
 
 // War3Source stuff
 new raceID; // The ID we are assigned to
 
-new m_BuilderOffset;
-
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
-new g_smokeSprite;
-new g_lightningSprite;
+new m_BuilderOffset;
 
 public Plugin:myinfo = 
 {
@@ -68,18 +64,6 @@ public OnWar3PluginReady()
         SetFailState("[War3Source] Error finding Builder offset.");
 }
 
-public OnMapStart()
-{
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-}
-
-
 public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
@@ -89,11 +73,6 @@ public OnRaceSelected(client,war3player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
         ResetCloakingAndDetector(client);
-}
-
-public OnGameFrame()
-{
-    SaveAllHealth();
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -162,7 +141,7 @@ public bool:Protoss_Shields(Handle:event, victimIndex, victimWar3player)
                 to_percent=0.80;
             }
         }
-        new damage=GetDamage(event, victimIndex);
+        new damage=War3_GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
         if (amount > 0)
         {

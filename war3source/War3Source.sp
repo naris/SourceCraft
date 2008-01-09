@@ -196,3 +196,8 @@ public OnClientDisconnect(client)
     }
 }
 
+public OnGameFrame()
+{
+    SaveAllHealth();
+}
+

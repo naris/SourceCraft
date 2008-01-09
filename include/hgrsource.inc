@@ -22,9 +22,10 @@ native ControlHookGrabRope(bool:plugin_only=true);
  * Give a hook to the player
  *
  * @param index 	Client index
+ * @param limit     Time limit (in seconds) player can hook, <=0 is indefinate
  * @return			none
  */
-native GiveHook(client);
+native GiveHook(client,limit=0);
 
 /**
  * Take the hook from the player
@@ -38,9 +39,10 @@ native TakeHook(client);
  * Give a grabber to the player
  *
  * @param index 	Client index
+ * @param limit     Time limit (in seconds) player can grab, <=0 is indefinate
  * @return			none
  */
-native GiveGrab(client);
+native GiveGrab(client,limit=0);
 
 /**
  * Take the grabber from the player
@@ -54,9 +56,10 @@ native TakeGrab(client);
  * Give a rope to the player
  *
  * @param index 	Client index
+ * @param limit     Time limit (in seconds) player can grab, <=0 is indefinate
  * @return			none
  */
-native GiveRope(client);
+native GiveRope(client,limit=0);
 
 /**
  * Take the rope from the player
@@ -138,3 +141,9 @@ native Detach(client);
  */
 native ToggleRope(client);
 
+/**
+ * Gets called when the grabber grabs someone
+ * @param client: The index of the client that used the grabber.
+ * @param target: The index of the target that got grabbed
+ */
+forward OnGrab(client,target);

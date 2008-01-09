@@ -16,7 +16,6 @@
 #include "War3Source/range"
 #include "War3Source/trace"
 #include "War3Source/health"
-#include "War3Source/damage"
 #include "War3Source/freeze"
 #include "War3Source/authtimer"
 #include "War3Source/log"
@@ -82,11 +81,6 @@ public OnWar3PlayerAuthed(client,war3player)
 {
     SetupHealth(client);
     m_AllowEntangle[client]=true;
-}
-
-public OnGameFrame()
-{
-    SaveAllHealth();
 }
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
@@ -166,7 +160,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
-        SaveHealth(index);
         m_AllowEntangle[index]=true;
     }
 }
@@ -231,8 +224,6 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
-        if (victimindex)
-            SaveHealth(victimindex);
     }
 }
 
@@ -255,7 +246,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         }
         if (GetRandomInt(1,100) <= chance)
         {
-            new losthp=GetDamage(event, victimIndex);
+            new losthp=War3_GetDamage(event, victimIndex);
             new newhp=GetClientHealth(victimIndex)+losthp;
             new maxhp=GetMaxHealth(victimIndex);
             if (newhp > maxhp)
@@ -296,7 +287,7 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new damage=GetDamage(event, victimindex, index, 10, 20);
+                new damage=War3_GetDamage(event, victimindex);
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
                 if (newhp <= 0)
@@ -343,7 +334,7 @@ public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evade
                     percent=0.60;
             }
 
-            new damage=GetDamage(event, victimindex, index, 10, 20);
+            new damage=War3_GetDamage(event, victimindex);
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimindex)-amount;
             if (newhp <= 0)
