@@ -55,7 +55,7 @@ public OnWar3PluginReady()
                            "Adrenal Glands",
                            "Increases Melee Attack Damage",
                            "Regeneration",
-                           "Regenerates Health.",
+                           "Regenerates your Health.",
                            "Healing Aura",
                            "Regenerates Health of all teammates in range (It does NOT heal you).",
                            "Tentacles",
