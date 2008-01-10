@@ -250,13 +250,13 @@ public Action:CloakingAndDetector(Handle:timer)
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
-                                            War3_SetMinVisibility(war3player_check, -1);
+                                            War3_SetMinVisibility(war3player_check, 255);
                                             m_Cloaked[client][index] = false;
                                         }
                                     }
                                     else if (m_Cloaked[client][index])
                                     {
-                                        War3_SetMinVisibility(war3player_check, -1);
+                                        War3_SetMinVisibility(war3player_check, 255);
                                         m_Cloaked[client][index] = false;
                                     }
                                 }
@@ -303,7 +303,7 @@ public ResetCloakingAndDetector(client)
         {
             if (m_Cloaked[client][index])
             {
-                War3_SetMinVisibility(war3player, -1);
+                War3_SetMinVisibility(war3player, 255);
                 m_Cloaked[client][index] = false;
             }
 
@@ -339,8 +339,15 @@ public Protoss_MindControl(client)
                 builderTeam =GetClientTeam(builder);
                 if (builderTeam != team)
                 {
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(target, Origin);
+                    SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+
+                    SetVariantInt(team); //Prep the value for the call below
+                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                    SetVariantInt(team); //Same thing again but we are changing SetTeam
+                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+
+                    EmitSoundToAll(controlWav,target);
 
                     new color[4] = { 0, 0, 0, 255 };
                     if (team == 3)
@@ -352,21 +359,14 @@ public Protoss_MindControl(client)
                                       0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                     TE_SendToAll();
 
+                    new Float:Origin[3];
+                    TR_GetEndPosition(Origin);
+
                     TE_SetupSmoke(Origin,g_smokeSprite,10.0,1);
                     TE_SendToAll();
 
                     TE_SetupGlowSprite(Origin,(team == 3) ? g_crystalSprite : g_redGlow,0.7,10.0,200);
                     TE_SendToAll();
-
-                    EmitSoundToAll(controlWav,target);
-
-                    SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
-
-                    SetVariantInt(team); //Prep the value for the call below
-                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                    SetVariantInt(team); //Same thing again but we are changing SetTeam
-                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
                 }
             }
         }

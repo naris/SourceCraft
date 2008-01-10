@@ -263,7 +263,7 @@ public Action:PlayerProperties(Handle:timer)
                         checkVisibility = CalculateVisibility(client, wepName, vecVelocity,
                                                               checkVisibility, meleeFactor,
                                                               movementFactor);
-                        if (visibility>checkVisibility)
+                        if (checkVisibility >= 0 && visibility > checkVisibility)
                         {
                             visibility=checkVisibility;
                             visibilityAltered[client]=true;

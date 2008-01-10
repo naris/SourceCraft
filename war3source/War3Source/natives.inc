@@ -349,6 +349,8 @@ public Native_War3_SetMinVisibility(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,3,visibility);
+                SetArrayCell(indiceHandle,4,meleeFactor);
+                SetArrayCell(indiceHandle,5,movementFactor);
                 SetArrayCell(temp,indice,indiceHandle);
             }
             else
@@ -394,7 +396,7 @@ public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,4,speed);
+                SetArrayCell(indiceHandle,6,speed);
                 SetArrayCell(temp,indice,indiceHandle);
             }
             else
@@ -440,7 +442,7 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,5,gravity);
+                SetArrayCell(indiceHandle,7,gravity);
                 SetArrayCell(temp,indice,indiceHandle);
             }
             else
@@ -486,7 +488,7 @@ public Native_War3_SetOverrideVisible(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,6,visibility);
+                SetArrayCell(indiceHandle,8,visibility);
                 SetArrayCell(temp,indice,indiceHandle);
             }
             else

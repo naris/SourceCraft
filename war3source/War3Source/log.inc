@@ -100,7 +100,8 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
                        victimName, victim, victimID, (victimTeam == 2) ? "Red" : "Blue", weapon,  xp);
 
         LogToGame("[War3Source] \"%s\"<%d><%s><%s> killed \"%s\"<%d><%s><%s> with %s (%d XP)\n",
-                  name, client, steamID, (team == 2) ? "Red" : "Blue", weapon,  xp);
+                  name, client, steamID, (team == 2) ? "Red" : "Blue",
+                  victimName, victim, victimID, (victimTeam == 2) ? "Red" : "Blue", weapon,  xp);
     }
     else
     {

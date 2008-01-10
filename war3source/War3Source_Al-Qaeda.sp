@@ -340,7 +340,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
         }
     }
     ClearArray(temp);
-    CloseHandle(timer);
+    //CloseHandle(timer);
     return Plugin_Stop;
 }
 
@@ -359,7 +359,7 @@ public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
         }
     }
     ClearArray(temp);
-    CloseHandle(timer);
+    //CloseHandle(timer);
     return Plugin_Stop;
 }
 

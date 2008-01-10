@@ -28,7 +28,7 @@ stock SaveAllHealth()
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
     {
-        if (IsClientConnected(x) && !IsFakeClient(x))
+        if (!IsFakeClient(x) && IsClientConnected(x) && IsClientInGame(x))
         {
             if (IsPlayerAlive(x))
                 savedHealth[x] = GetClientHealth(x);

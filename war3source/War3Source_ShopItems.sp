@@ -508,7 +508,7 @@ public Action:RestoreSpeed(Handle:timer,any:temp)
             War3_SetOverrideSpeed(war3player,0.0);
     }
     ClearArray(temp);
-    CloseHandle(timer);
+    //CloseHandle(timer);
 }
 
 public Action:Regeneration(Handle:timer)
@@ -691,7 +691,7 @@ public Action:War3Source_Ankh(Handle:timer,any:temp)
         }
     }
     ClearArray(temp);
-    CloseHandle(timer);
+    //CloseHandle(timer);
 }
 
 public Action:DoMole(Handle:timer,Handle:temp)
@@ -728,7 +728,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
         }
     }
     ClearArray(temp);
-    CloseHandle(timer);
+    //CloseHandle(timer);
 }
 
 stock UsePeriapt(client)
