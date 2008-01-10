@@ -257,9 +257,9 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
 
-            PrintToChat(victimIndex,"%c[War3Source] %s %cyou have evaded an attack!",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT);
             LogMessage("[War3Source] %s evaded an attack!\n", victimName);
+            PrintToChat(victimIndex,"%c[War3Source] %s %c evaded an attack!",
+                        COLOR_GREEN,victimName,COLOR_DEFAULT);
             return true;
         }
     }

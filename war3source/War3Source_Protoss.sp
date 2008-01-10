@@ -126,7 +126,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
     if (race==raceID && IsPlayerAlive(client))
     {
         if (pressed)
-            Protoss_MindControl(client);
+            Protoss_MindControl(client,war3player);
     }
 }
 
@@ -194,7 +194,7 @@ public Action:CloakingAndDetector(Handle:timer)
                 new war3player=War3_GetWar3Player(client);
                 if(war3player>=0 && War3_GetRace(war3player) == raceID)
                 {
-                    new Float:cloaking_range=0.0;
+                    new Float:cloaking_range;
                     new skill_cloaking=War3_GetSkillLevel(war3player,raceID,1);
                     if (skill_cloaking)
                     {
@@ -211,7 +211,7 @@ public Action:CloakingAndDetector(Handle:timer)
                         }
                     }
 
-                    new Float:detecting_range=0.0;
+                    new Float:detecting_range;
                     new skill_detecting=War3_GetSkillLevel(war3player,raceID,2);
                     if (skill_detecting)
                     {
@@ -228,6 +228,8 @@ public Action:CloakingAndDetector(Handle:timer)
                         }
                     }
 
+                    new cloaked_count      = 0;
+                    new cloaked_visibility = 0;
                     new Float:clientLoc[3];
                     GetClientAbsOrigin(client, clientLoc);
                     for (new index=1;index<=maxplayers;index++)
@@ -239,45 +241,65 @@ public Action:CloakingAndDetector(Handle:timer)
                                 new war3player_check=War3_GetWar3Player(index);
                                 if (war3player_check>-1)
                                 {
+                                    decl String:clientName[64];
+                                    GetClientName(client,clientName,63);
+
+                                    decl String:name[64];
+                                    GetClientName(index,name,63);
+
                                     if (GetClientTeam(index) == GetClientTeam(client))
                                     {
-                                        if (IsInRange(client,index,cloaking_range))
+                                        new bool:cloak = (cloaked_visibility < 255 &&
+                                                          IsInRange(client,index,cloaking_range));
+                                        if (cloak)
                                         {
                                             new Float:indexLoc[3];
                                             GetClientAbsOrigin(index, indexLoc);
-                                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                                            cloak = TraceTarget(client, index, clientLoc, indexLoc);
+                                            if (cloak)
                                             {
-                                                War3_SetMinVisibility(war3player_check, 0);
-                                                m_Cloaked[client][index] = true;
+                                                cloak = (++cloaked_count < skill_cloaking);
+                                                if (cloak)
+                                                {
+                                                    cloaked_count = 0;
+                                                    cloaked_visibility += 51;
+                                                    cloak = (cloaked_visibility < 255);
+                                                }
                                             }
-                                            else if (m_Cloaked[client][index])
-                                            {
-                                                War3_SetMinVisibility(war3player_check, 255);
-                                                m_Cloaked[client][index] = false;
-                                            }
+                                        }
+
+                                        if (cloak)
+                                        {
+                                            War3_SetMinVisibility(war3player_check, cloaked_visibility);
+                                            m_Cloaked[client][index] = true;
+
+                                            LogMessage("[War3Source] %s has been cloaked by %s!\n", name,clientName);
+                                            PrintToChat(index,"%c[War3Source] %s %c has been cloaked by %s!",
+                                                        COLOR_GREEN,name,clientName,COLOR_DEFAULT);
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
                                             War3_SetMinVisibility(war3player_check, 255);
                                             m_Cloaked[client][index] = false;
+
+                                            LogMessage("[War3Source] %s has been uncloaked!\n", name);
+                                            PrintToChat(index,"%c[War3Source] %s %c has been uncloaked!",
+                                                        COLOR_GREEN,name,COLOR_DEFAULT);
                                         }
                                     }
                                     else
                                     {
-                                        if (IsInRange(client,index,detecting_range))
+                                        new bool:detect = IsInRange(client,index,detecting_range);
+                                        if (detect)
                                         {
                                             new Float:indexLoc[3];
                                             GetClientAbsOrigin(index, indexLoc);
-                                            if (TraceTarget(client, index, clientLoc, indexLoc))
-                                            {
-                                                War3_SetOverrideVisible(war3player_check, 255);
-                                                m_Detected[client][index] = true;
-                                            }
-                                            else if (m_Detected[client][index])
-                                            {
-                                                War3_SetOverrideVisible(war3player_check, -1);
-                                                m_Detected[client][index] = false;
-                                            }
+                                            detect = TraceTarget(client, index, clientLoc, indexLoc);
+                                        }
+                                        if (detect)
+                                        {
+                                            War3_SetOverrideVisible(war3player_check, 255);
+                                            m_Detected[client][index] = true;
                                         }
                                         else if (m_Detected[client][index])
                                         {
@@ -319,62 +341,90 @@ public ResetCloakingAndDetector(client)
     }
 }
 
-public Protoss_MindControl(client)
+public Protoss_MindControl(client,war3player)
 {
-    decl String:class[64] = "";
-    new team;
-    new builder;
-    new builderTeam;
-
-    new target = TraceAimTarget(client);
-    if (target >= 0)
+    new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+    if(ult_level)
     {
-        if (GetEntityNetClass(target,class,sizeof(class)))
+        new Float:range, percent;
+        switch(ult_level)
         {
-            if (StrEqual(class, "CObjectSentrygun", false) ||
-                StrEqual(class, "CObjectDispenser", false) ||
-                StrEqual(class, "CObjectTeleporter", false))
+            case 1:
             {
-                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                builder = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
+                range=300.0;
+                percent=30;
+            }
+            case 2:
+            {
+                range=450.0;
+                percent=50;
+            }
+            case 3:
+            {
+                range=650.0;
+                percent=70;
+            }
+            case 4:
+            {
+                range=800.0;
+                percent=90;
+            }
+        }
 
-                team = GetClientTeam(client);
-                builderTeam =GetClientTeam(builder);
-                if (builderTeam != team)
+        new target = TraceAimTarget(client);
+        if (target >= 0)
+        {
+            new Float:clientLoc[3];
+            GetClientAbsOrigin(client, clientLoc);
+
+            new Float:targetLoc[3];
+            TR_GetEndPosition(targetLoc);
+
+            if (GetRandomInt(1,100)<=percent && IsPointInRange(clientLoc,targetLoc,range))
+            {
+                decl String:class[64] = "";
+                if (GetEntityNetClass(target,class,sizeof(class)))
                 {
-                    SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+                    if (StrEqual(class, "CObjectSentrygun", false) ||
+                            StrEqual(class, "CObjectDispenser", false) ||
+                            StrEqual(class, "CObjectTeleporter", false))
+                    {
+                        //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
+                        new builder = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
+                        new builderTeam =GetClientTeam(builder);
+                        new team = GetClientTeam(client);
+                        if (builderTeam != team)
+                        {
+                            SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
 
-                    SetVariantInt(team); //Prep the value for the call below
-                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+                            SetVariantInt(team); //Prep the value for the call below
+                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
 
-                    SetVariantInt(team); //Same thing again but we are changing SetTeam
-                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                            SetVariantInt(team); //Same thing again but we are changing SetTeam
+                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
 
-                    EmitSoundToAll(controlWav,target);
+                            EmitSoundToAll(controlWav,target);
 
-                    new color[4] = { 0, 0, 0, 255 };
-                    if (team == 3)
-                        color[2] = 255; // Blue
-                    else
-                        color[0] = 255; // Red
+                            new color[4] = { 0, 0, 0, 255 };
+                            if (team == 3)
+                                color[2] = 255; // Blue
+                            else
+                                color[0] = 255; // Red
 
-                    TE_SetupBeamLaser(client,target,g_lightningSprite,g_haloSprite,
-                                      0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                    TE_SendToAll();
+                            TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
+                                               0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                            TE_SendToAll();
 
-                    new Float:Origin[3];
-                    TR_GetEndPosition(Origin);
+                            TE_SetupSmoke(targetLoc,g_smokeSprite,10.0,1);
+                            TE_SendToAll();
 
-                    TE_SetupSmoke(Origin,g_smokeSprite,10.0,1);
-                    TE_SendToAll();
-
-                    TE_SetupGlowSprite(Origin,(team == 3) ? g_crystalSprite : g_redGlow,0.7,10.0,200);
-                    TE_SendToAll();
+                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_crystalSprite : g_redGlow,0.7,10.0,200);
+                            TE_SendToAll();
+                        }
+                    }
                 }
             }
         }
-        PrintToChat(client,"%c[War3Source] %cTarget is %d(%s), builder=%d(%d), team=%d",
-                    COLOR_GREEN,COLOR_DEFAULT,target,class,builder,builderTeam,team);
     }
 }
 
@@ -383,91 +433,56 @@ public Protoss_Scarab(Handle:event, index, war3player, victimIndex)
     new skill_cg = War3_GetSkillLevel(war3player,raceID,1);
     if (skill_cg > 0)
     {
-        new Float:percent;
+        new Float:percent, chance;
         switch(skill_cg)
         {
             case 1:
+            {
+                chance=20;
                 percent=0.24;
+            }
             case 2:
+            {
+                chance=40;
                 percent=0.57;
+            }
             case 3:
+            {
+                chance=60;
                 percent=0.83;
+            }
             case 4:
+            {
+                chance=90;
                 percent=1.00;
+            }
         }
 
-        new damage=War3_GetDamage(event, victimIndex);
-        new health_take=RoundFloat(float(damage)*percent);
-        new new_health=GetClientHealth(victimIndex)-health_take;
-        if (new_health <= 0)
+        if (GetRandomInt(1,100) <= chance)
         {
-            new_health=0;
-            LogKill(index, victimIndex, "scarab", "Reaver Scarab", health_take);
+            new damage=War3_GetDamage(event, victimIndex);
+            new health_take=RoundFloat(float(damage)*percent);
+            if (health_take > 0)
+            {
+                new new_health=GetClientHealth(victimIndex)-health_take;
+                if (new_health <= 0)
+                {
+                    new_health=0;
+                    LogKill(index, victimIndex, "scarab", "Reaver Scarab", health_take);
+                }
+                else
+                    LogDamage(index, victimIndex, "scarab", "Reaver Scarab", health_take);
+
+                SetHealth(victimIndex,new_health);
+
+                new Float:Origin[3];
+                GetClientAbsOrigin(victimIndex, Origin);
+                Origin[2] += 5;
+
+                TE_SetupExplosion(Origin,explosionModel,10.0,30,0,10,20);
+                TE_SendToAll();
+                EmitSoundToAll(explodeWav,victimIndex);
+            }
         }
-        else
-            LogDamage(index, victimIndex, "scarab", "Reaver Scarab", health_take);
-
-        SetHealth(victimIndex,new_health);
-
-        new Float:Origin[3];
-        GetClientAbsOrigin(victimIndex, Origin);
-        Origin[2] += 5;
-
-        TE_SetupExplosion(Origin,explosionModel,10.0,30,0,10,20);
-        TE_SendToAll();
-        EmitSoundToAll(explodeWav,victimIndex);
     }
 }
-
-/*
-public bool:Protoss_Shields(Handle:event, victimIndex, victimWar3player)
-{
-    new skill_level_armor = War3_GetSkillLevel(victimWar3player,raceID,0);
-    if (skill_level_armor)
-    {
-        new Float:from_percent,Float:to_percent;
-        switch(skill_level_armor)
-        {
-            case 1:
-            {
-                from_percent=0.0;
-                to_percent=0.10;
-            }
-            case 2:
-            {
-                from_percent=0.0;
-                to_percent=0.30;
-            }
-            case 3:
-            {
-                from_percent=0.10;
-                to_percent=0.60;
-            }
-            case 4:
-            {
-                from_percent=0.20;
-                to_percent=0.80;
-            }
-        }
-        new damage=War3_GetDamage(event, victimIndex);
-        new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        if (amount > 0)
-        {
-            new newhp=GetClientHealth(victimIndex)+amount;
-            new maxhp=GetMaxHealth(victimIndex);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetHealth(victimIndex,newhp);
-
-            decl String:victimName[64];
-            GetClientName(victimIndex,victimName,63);
-
-            PrintToChat(victimIndex,"%c[War3Source] %s %cyour shields absorbed %d hp",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
-        }
-        return true;
-    }
-    return false;
-}
-*/

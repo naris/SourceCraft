@@ -10,7 +10,7 @@
 #endif
 #define _range_included
 
-stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
+stock Float:DistanceBetween(const Float:startvec[3],const Float:endvec[3])
 {
     new Float:distance = SquareRoot((startvec[0]-endvec[0])*(startvec[0]-endvec[0])+
                                     (startvec[1]-endvec[1])*(startvec[1]-endvec[1])+
@@ -22,14 +22,18 @@ stock Float:DistanceBetween(Float:startvec[3],Float:endvec[3])
     return distance;                                  
 }
 
+stock bool:IsPointInRange(const Float:start[3], const Float:end[3],Float:maxdistance)
+{
+    return (DistanceBetween(start,end)<maxdistance);
+}
+
 stock bool:IsInRange(client,index,Float:maxdistance)
 {
-    new Float:startclient[3];
-    new Float:endclient[3];
-    GetClientAbsOrigin(client,startclient);
-    GetClientAbsOrigin(index,endclient);
-    new Float:distance=DistanceBetween(startclient,endclient);
-    return (distance<maxdistance);
+    new Float:start[3];
+    new Float:end[3];
+    GetClientAbsOrigin(client,start);
+    GetClientAbsOrigin(index,end);
+    return (DistanceBetween(start,end)<maxdistance);
 }
 
 stock PowerOfRange(Float:location[3],Float:radius,Float:check_location[3],maxhp)
