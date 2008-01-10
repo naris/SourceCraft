@@ -27,9 +27,9 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_BuilderOffset;
 
 new g_redGlow;
+new g_purpleGlow;
 new g_haloSprite;
 new g_smokeSprite;
-new g_crystalSprite;
 new g_lightningSprite;
 
 new explosionModel;
@@ -86,13 +86,13 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
-    if (g_crystalSprite == -1)
-        SetFailState("Couldn't find crystal_beam Model");
+    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find purpleglow Model");
 
     g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
     if (g_redGlow == -1)
-        SetFailState("Couldn't find purpleglow Model");
+        SetFailState("Couldn't find redglow Model");
 
     g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
     if (g_smokeSprite == -1)
@@ -391,7 +391,7 @@ public Protoss_MindControl(client,war3player)
                     {
                         //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
                         new builder = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
-                        new builderTeam =GetClientTeam(builder);
+                        new builderTeam = GetClientTeam(builder);
                         new team = GetClientTeam(client);
                         if (builderTeam != team)
                         {
@@ -418,7 +418,7 @@ public Protoss_MindControl(client,war3player)
                             TE_SetupSmoke(targetLoc,g_smokeSprite,10.0,1);
                             TE_SendToAll();
 
-                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_crystalSprite : g_redGlow,0.7,10.0,200);
+                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_purpleGlow : g_redGlow,0.7,10.0,200);
                             TE_SendToAll();
                         }
                     }

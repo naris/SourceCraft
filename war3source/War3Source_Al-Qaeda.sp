@@ -101,7 +101,7 @@ public OnMapStart()
         SetFailState("Couldn't find lghtning Model");
 
     g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
-    if (g_haloSprite == -1)
+    if (g_purpleGlow == -1)
         SetFailState("Couldn't find purpleglow Model");
 
     explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
