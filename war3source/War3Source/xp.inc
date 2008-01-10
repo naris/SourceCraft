@@ -67,13 +67,16 @@ public ShowXP(client,vecpos)
     GetArrayString(racedata,0,racename,63);
     if (level<=MAX_LEVELS)
     {
-        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP.",
-                    COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race),ReqLevelXP(level+1));
+        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP. (Overall Level %d)",
+                    COLOR_GREEN,COLOR_DEFAULT,racename,level,
+                    GetXP(vecpos,race),ReqLevelXP(level+1),
+                    GetOverallLevel(vecpos));
     }
     else
     {
-        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP.",
-                    COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race));
+        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP. (Overall Level %d)",
+                    COLOR_GREEN,COLOR_DEFAULT,racename,level,
+                    GetXP(vecpos,race),GetOverallLevel(vecpos));
     }
 }
  
