@@ -187,66 +187,74 @@ public Action:CloakingAndDetector(Handle:timer)
     new maxplayers=GetMaxClients();
     for(new client=1;client<=maxplayers;client++)
     {
-        if(IsClientInGame(client) && IsPlayerAlive(client))
+        if(IsClientInGame(client))
         {
-            new war3player=War3_GetWar3Player(client);
-            if(war3player>=0 && War3_GetRace(war3player) == raceID)
+            if(IsPlayerAlive(client))
             {
-                new Float:cloaking_range=0.0;
-                new skill_cloaking=War3_GetSkillLevel(war3player,raceID,1);
-                if (skill_cloaking)
+                new war3player=War3_GetWar3Player(client);
+                if(war3player>=0 && War3_GetRace(war3player) == raceID)
                 {
-                    switch(skill_cloaking)
+                    new Float:cloaking_range=0.0;
+                    new skill_cloaking=War3_GetSkillLevel(war3player,raceID,1);
+                    if (skill_cloaking)
                     {
-                        case 1:
-                            cloaking_range=300.0;
-                        case 2:
-                            cloaking_range=450.0;
-                        case 3:
-                            cloaking_range=650.0;
-                        case 4:
-                            cloaking_range=800.0;
-                    }
-                }
-
-                new Float:detecting_range=0.0;
-                new skill_detecting=War3_GetSkillLevel(war3player,raceID,2);
-                if (skill_detecting)
-                {
-                    switch(skill_detecting)
-                    {
-                        case 1:
-                            detecting_range=300.0;
-                        case 2:
-                            detecting_range=450.0;
-                        case 3:
-                            detecting_range=650.0;
-                        case 4:
-                            detecting_range=800.0;
-                    }
-                }
-
-                new Float:clientLoc[3];
-                GetClientAbsOrigin(client, clientLoc);
-                for (new index=1;index<=maxplayers;index++)
-                {
-                    if (index != client && IsClientConnected(index))
-                    {
-                        if (IsPlayerAlive(index))
+                        switch(skill_cloaking)
                         {
-                            new war3player_check=War3_GetWar3Player(index);
-                            if (war3player_check>-1)
+                            case 1:
+                                cloaking_range=300.0;
+                            case 2:
+                                cloaking_range=450.0;
+                            case 3:
+                                cloaking_range=650.0;
+                            case 4:
+                                cloaking_range=800.0;
+                        }
+                    }
+
+                    new Float:detecting_range=0.0;
+                    new skill_detecting=War3_GetSkillLevel(war3player,raceID,2);
+                    if (skill_detecting)
+                    {
+                        switch(skill_detecting)
+                        {
+                            case 1:
+                                detecting_range=300.0;
+                            case 2:
+                                detecting_range=450.0;
+                            case 3:
+                                detecting_range=650.0;
+                            case 4:
+                                detecting_range=800.0;
+                        }
+                    }
+
+                    new Float:clientLoc[3];
+                    GetClientAbsOrigin(client, clientLoc);
+                    for (new index=1;index<=maxplayers;index++)
+                    {
+                        if (index != client && IsClientInGame(index))
+                        {
+                            if (IsPlayerAlive(index))
                             {
-                                if (GetClientTeam(index) == GetClientTeam(client))
+                                new war3player_check=War3_GetWar3Player(index);
+                                if (war3player_check>-1)
                                 {
-                                    if (IsInRange(client,index,cloaking_range))
+                                    if (GetClientTeam(index) == GetClientTeam(client))
                                     {
-                                        new Float:indexLoc[3];
-                                        GetClientAbsOrigin(index, indexLoc);
-                                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                                        if (IsInRange(client,index,cloaking_range))
                                         {
-                                            War3_SetMinVisibility(war3player_check, 0);
-                                            m_Cloaked[client][index] = true;
+                                            new Float:indexLoc[3];
+                                            GetClientAbsOrigin(index, indexLoc);
+                                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                                            {
+                                                War3_SetMinVisibility(war3player_check, 0);
+                                                m_Cloaked[client][index] = true;
+                                            }
+                                            else if (m_Cloaked[client][index])
+                                            {
+                                                War3_SetMinVisibility(war3player_check, 255);
+                                                m_Cloaked[client][index] = false;
+                                            }
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
@@ -254,33 +262,28 @@ public Action:CloakingAndDetector(Handle:timer)
                                             m_Cloaked[client][index] = false;
                                         }
                                     }
-                                    else if (m_Cloaked[client][index])
+                                    else
                                     {
-                                        War3_SetMinVisibility(war3player_check, 255);
-                                        m_Cloaked[client][index] = false;
-                                    }
-                                }
-                                else
-                                {
-                                    if (IsInRange(client,index,detecting_range))
-                                    {
-                                        new Float:indexLoc[3];
-                                        GetClientAbsOrigin(index, indexLoc);
-                                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                                        if (IsInRange(client,index,detecting_range))
                                         {
-                                            War3_SetOverrideVisible(war3player_check, 255);
-                                            m_Detected[client][index] = true;
+                                            new Float:indexLoc[3];
+                                            GetClientAbsOrigin(index, indexLoc);
+                                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                                            {
+                                                War3_SetOverrideVisible(war3player_check, 255);
+                                                m_Detected[client][index] = true;
+                                            }
+                                            else if (m_Detected[client][index])
+                                            {
+                                                War3_SetOverrideVisible(war3player_check, -1);
+                                                m_Detected[client][index] = false;
+                                            }
                                         }
                                         else if (m_Detected[client][index])
                                         {
                                             War3_SetOverrideVisible(war3player_check, -1);
                                             m_Detected[client][index] = false;
                                         }
-                                    }
-                                    else if (m_Detected[client][index])
-                                    {
-                                        War3_SetOverrideVisible(war3player_check, -1);
-                                        m_Detected[client][index] = false;
                                     }
                                 }
                             }

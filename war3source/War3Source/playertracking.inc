@@ -312,9 +312,9 @@ public Action:PlayerProperties(Handle:timer)
                 }
             }
 
-            if (visibilityAltered[client] || overridePlayerVisibility || visibility != 255)
+            if (visibilityAltered[client] || overridePlayerVisibility || (visibility >= 0 && visibility < 255))
             {
-                if (visibility >= 255)
+                if (visibility < 0 || visibility >= 255)
                 {
                     MakeVisible(client);
 
@@ -395,7 +395,7 @@ stock MakeInvisible(client, visibility)
                     if (!GetEntityNetClass(obj,name,sizeof(name)) ||
                         !StrEqual(name, "CCaptureFlag"))
                     {
-                        if (StrEqual(name, "CSniperDot"))
+                        if (!StrEqual(name, "CSniperDot"))
                         {
                             // If the sniper is sniping, make minimum visibility 100
                             // and don't hide the sniper dot!
