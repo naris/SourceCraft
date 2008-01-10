@@ -242,7 +242,7 @@ public Action:Load_Sounds(Handle:timer){
 			}
 		} while (KvGotoNextKey(listfile));
 	}
-	CloseHandle(timer);
+	//CloseHandle(timer);
 }
 
 public OnClientAuthorized(client, const String:auth[]){
@@ -560,7 +560,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	CloseHandle(pack);
-	CloseHandle(timer);
+	//CloseHandle(timer);
 
 	new bool:isadmin = false;
 	if (IsClientConnected(client))

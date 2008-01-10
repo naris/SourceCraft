@@ -434,7 +434,7 @@ public updpph(client){
 		
 	}
 		pph = pnts * 3600
-		pps = pph/plytime
+		pps = plytime ? pph/plytime : 0
 		Format(buffer1, sizeof(buffer1), "UPDATE User SET PPH = %i WHERE steamId = '%s'",pps ,steamId);
 		SQL_FastQuery(db, buffer1);
 	

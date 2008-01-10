@@ -19,6 +19,16 @@ stock bool:TraceTarget(client, target, const Float:clientLoc[3], const Float:tar
     return (TR_GetEntityIndex() == target);
 }
 
+stock TraceAimTarget(client)
+{
+    new Float:clientloc[3],Float:clientang[3];
+    GetClientEyePosition(client,clientloc);
+    GetClientEyeAngles(client,clientang);
+    g_TraceFilterIndex = client;
+    TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite, TraceRayFilterIndex);
+    return TR_GetEntityIndex();
+}
+
 public bool:TraceRayFilterIndex(entity,mask)
 {
   return (entity != g_TraceFilterIndex);

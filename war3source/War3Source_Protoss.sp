@@ -26,6 +26,12 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
 new m_BuilderOffset;
 
+new g_redGlow;
+new g_haloSprite;
+new g_smokeSprite;
+new g_crystalSprite;
+new g_lightningSprite;
+
 new explosionModel;
 
 new String:explodeWav[] = "war3/PSaHit00.wav";
@@ -57,7 +63,7 @@ public OnWar3PluginReady()
                            "You are now part of the Protoss.",
                            "You will be part of the Protoss when you die or respawn.",
                            "Reaver Scarabs",
-                           "Explode upon contact with enimies, causing increased damage.",
+                           "Explode upon contact with enemies, causing increased damage.",
                            "Arbiter Reality-Warping Field",
                            "Cloaks all friendly units within range",
                            "Observer Sensors",
@@ -68,6 +74,29 @@ public OnWar3PluginReady()
     m_BuilderOffset = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
     if(m_BuilderOffset == -1)
         SetFailState("[War3Source] Error finding Builder offset.");
+}
+
+public OnMapStart()
+{
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
+
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
+
+    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
+    if (g_crystalSprite == -1)
+        SetFailState("Couldn't find crystal_beam Model");
+
+    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
+    if (g_redGlow == -1)
+        SetFailState("Couldn't find purpleglow Model");
+
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    if (g_smokeSprite == -1)
+        SetFailState("Couldn't find smoke Model");
 
     if (GameType == tf2)
         explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
@@ -289,35 +318,61 @@ public ResetCloakingAndDetector(client)
 
 public Protoss_MindControl(client)
 {
-    new victim = 0;
-    new target = GetClientAimTarget(client);
+    decl String:class[64] = "";
+    new team;
+    new builder;
+    new builderTeam;
+
+    new target = TraceAimTarget(client);
     if (target >= 0)
     {
-        decl String:class[64] = "";
-        if (GetEdictClassname(target, class, sizeof(class)))
+        if (GetEntityNetClass(target,class,sizeof(class)))
         {
-            if (StrEqual(class, "obj_sentrygun", false) ||
-                StrEqual(class, "obj_dispenser", false) ||
-                StrEqual(class, "obj_teleporter_entrance", false) ||
-                StrEqual(class, "obj_teleporter_exit", false))
+            if (StrEqual(class, "CObjectSentrygun", false) ||
+                StrEqual(class, "CObjectDispenser", false) ||
+                StrEqual(class, "CObjectTeleporter", false))
             {
-                //Find the owner of the sentry gun m_hBuilder holds the client index 1 to Maxplayers
-                victim = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
-                SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
+                builder = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
 
-                new team = GetClientTeam(client);
+                team = GetClientTeam(client);
+                builderTeam =GetClientTeam(builder);
+                if (builderTeam != team)
+                {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(target, Origin);
 
-                SetVariantInt(team); //Prep the value for the call below
-                AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+                    new color[4] = { 0, 0, 0, 255 };
+                    if (team == 3)
+                        color[2] = 255; // Blue
+                    else
+                        color[0] = 255; // Red
 
-                SetVariantInt(team); //Same thing again but we are changing SetTeam
-                AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                    TE_SetupBeamLaser(client,target,g_lightningSprite,g_haloSprite,
+                                      0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                    TE_SendToAll();
 
-                EmitSoundToAll(controlWav,target);
+                    TE_SetupSmoke(Origin,g_smokeSprite,10.0,1);
+                    TE_SendToAll();
+
+                    TE_SetupGlowSprite(Origin,(team == 3) ? g_crystalSprite : g_redGlow,0.7,10.0,200);
+                    TE_SendToAll();
+
+                    EmitSoundToAll(controlWav,target);
+
+                    SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+
+                    SetVariantInt(team); //Prep the value for the call below
+                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                    SetVariantInt(team); //Same thing again but we are changing SetTeam
+                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                }
             }
         }
+        PrintToChat(client,"%c[War3Source] %cTarget is %d(%s), builder=%d(%d), team=%d",
+                    COLOR_GREEN,COLOR_DEFAULT,target,class,builder,builderTeam,team);
     }
-    return victim;
 }
 
 public Protoss_Scarab(Handle:event, index, war3player, victimIndex)

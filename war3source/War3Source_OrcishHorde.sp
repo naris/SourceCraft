@@ -101,11 +101,11 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 
     g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
-    if (g_haloSprite == -1)
+    if (g_crystalSprite == -1)
         SetFailState("Couldn't find crystal_beam Model");
 
     g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
-    if (g_haloSprite == -1)
+    if (g_purpleGlow == -1)
         SetFailState("Couldn't find purpleglow Model");
 
     SetupSound(thunderWav);
