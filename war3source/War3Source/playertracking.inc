@@ -429,10 +429,10 @@ stock SetRenderColor(entity,r,g,b,a)
 stock CreateIfColumnDoesntExist(Handle:DB,const String:columnname[],const String:settings[])
 {
     decl String:query[256];
-    Format(query,255,"SELECT %s FROM war3source",columnname);
+    Format(query,sizeof(query),"SELECT %s FROM war3source LIMIT 1",columnname);
     if(!SQL_FastQuery(DB,query))
     {
-        Format(query,255,"ALTER TABLE war3source ADD COLUMN %s %s",columnname,settings);
+        Format(query,sizeof(query),"ALTER TABLE war3source ADD COLUMN %s %s",columnname,settings);
         SQL_FastQuery(DB,query);
     }
 }
@@ -441,9 +441,14 @@ public SQLPlayerInt(Handle:query,const String:columnname[])
 {
     new column;
     SQL_FieldNameToNum(query,columnname,column);
-    decl String:result[16];
-    SQL_FetchString(query,column,result,sizeof(result));
-    return StringToInt(result);
+    if (SQL_IsFieldNull(query, column))
+        return 0;
+    else
+    {
+        decl String:result[16];
+        SQL_FetchString(query,column,result,sizeof(result));
+        return StringToInt(result);
+    }
 }
 
 public War3Source_SQLTable()
@@ -477,27 +482,27 @@ public War3Source_SQLTable()
 public War3Source_InsertPlayer(Handle:db,client)
 {
     decl String:steamid[64];
-    if(GetClientAuthString(client,steamid,63))
+    if(GetClientAuthString(client,steamid,sizeof(steamid)))
     {
-        decl String:buffer[1024];
-        Format(buffer,1023,"INSERT INTO war3source (steamid,race,credits");
+        decl String:buffer[4096];
+        Format(buffer,sizeof(buffer),"INSERT INTO war3source (steamid,race,credits");
         for(new x=0;x<RACE_COUNT;x++)
         {
-            decl String:short[16];
+            decl String:short[32];
             new Handle:race=Race(x);
-            GetArrayString(race,1,short,15);
-            Format(buffer,1023,"%s,%s_xp,%s_level",buffer,short,short);
+            GetArrayString(race,1,short,sizeof(short));
+            Format(buffer,sizeof(buffer),"%s,%s_xp,%s_level",buffer,short,short);
             for(new y=0;y<SKILL_COUNT;y++)
-                Format(buffer,1023,"%s,%s_skilllevel_%d",buffer,short,y);
+                Format(buffer,sizeof(buffer),"%s,%s_skilllevel_%d",buffer,short,y);
         }
-        Format(buffer,1023,"%s) VALUES ('%s','0','0'",buffer,steamid);
+        Format(buffer,sizeof(buffer),"%s) VALUES ('%s','0','0'",buffer,steamid);
         for(new x=0;x<RACE_COUNT;x++)
         {
-            Format(buffer,1023,"%s,'0','0'",buffer);
+            Format(buffer,sizeof(buffer),"%s,'0','0'",buffer);
             for(new y=0;y<SKILL_COUNT;y++)
-                Format(buffer,1023,"%s,'0'",buffer);
+                Format(buffer,sizeof(buffer),"%s,'0'",buffer);
         }
-        Format(buffer,1023,"%s)",buffer);
+        Format(buffer,sizeof(buffer),"%s)",buffer);
         SQL_FastQuery(db,buffer);
     }
 }
@@ -508,10 +513,10 @@ public War3Source_LoadPlayerData(client,vectorpos)
     if(DBIDB)
     {
         decl String:steamid[64];
-        if(GetClientAuthString(client,steamid,63))
+        if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
             decl String:buf[256];
-            Format(buf,255,"SELECT * FROM war3source WHERE steamid = '%s'",steamid);
+            Format(buf,sizeof(buf),"SELECT * FROM war3source WHERE steamid = '%s'",steamid);
             new Handle:query=SQL_Query(DBIDB,buf);
             if(query)
             {
@@ -524,16 +529,16 @@ public War3Source_LoadPlayerData(client,vectorpos)
                     for(new x=0;x<RACE_COUNT;x++)
                     {
                         new Handle:race=Race(x);
-                        decl String:short[16];
-                        GetArrayString(race,1,short,15);
+                        decl String:short[32];
+                        GetArrayString(race,1,short,sizeof(short));
                         decl String:buffer[64];
-                        Format(buffer,63,"%s_xp",short);
+                        Format(buffer,sizeof(buffer),"%s_xp",short);
                         SetXP(vectorpos,x,SQLPlayerInt(query,buffer));
-                        Format(buffer,63,"%s_level",short);
+                        Format(buffer,sizeof(buffer),"%s_level",short);
                         SetLevel(vectorpos,x,SQLPlayerInt(query,buffer));
                         for(new y=0;y<SKILL_COUNT;y++)
                         {
-                            Format(buffer,63,"%s_skilllevel_%d",short,y);
+                            Format(buffer,sizeof(buffer),"%s_skilllevel_%d",short,y);
                             SetSkillLevel(vectorpos,x,y,SQLPlayerInt(query,buffer));
                         }
                     }
@@ -555,23 +560,31 @@ public War3Source_SavePlayerData(client,vectorpos)
     if(DBIDB)
     {
         decl String:steamid[64];
-        if(GetClientAuthString(client,steamid,63))
+        if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
-            decl String:bufferSave[2048]="";
-            Format(bufferSave,2047,"race = '%d',",GetRace(vectorpos));
-            Format(bufferSave,2047,"%s credits = '%d'",bufferSave,GetCredits(vectorpos));
+            decl String:bufferSave[4096]="";
+            Format(bufferSave,sizeof(bufferSave),"race = '%d',",
+                   GetRace(vectorpos));
+            Format(bufferSave,sizeof(bufferSave),"%s credits = '%d'",
+                   bufferSave,GetCredits(vectorpos));
             for(new x=0;x<RACE_COUNT;x++)
             {
                 new Handle:race=Race(x);
-                decl String:short[16];
-                GetArrayString(race,1,short,15);
-                Format(bufferSave,2047,"%s, %s_xp = '%d'",bufferSave,short,GetXP(vectorpos,x));
-                Format(bufferSave,2047,"%s, %s_level = '%d'",bufferSave,short,GetLevel(vectorpos,x));
+                decl String:short[32];
+                GetArrayString(race,1,short,sizeof(short));
+                Format(bufferSave,sizeof(bufferSave),"%s, %s_xp = '%d'",
+                       bufferSave,short,GetXP(vectorpos,x));
+                Format(bufferSave,sizeof(bufferSave),"%s, %s_level = '%d'",
+                       bufferSave,short,GetLevel(vectorpos,x));
                 for(new y=0;y<SKILL_COUNT;y++)
-                    Format(bufferSave,2047,"%s, %s_skilllevel_%d = '%d'",bufferSave,short,y,GetSkillLevel(vectorpos,x,y));
+                {
+                    Format(bufferSave,sizeof(bufferSave),"%s, %s_skilllevel_%d = '%d'",
+                           bufferSave,short,y,GetSkillLevel(vectorpos,x,y));
+                }
             }
-            decl String:querySave[2400];
-            Format(querySave,2399,"UPDATE war3source SET %s WHERE steamid = '%s'",bufferSave,steamid);
+            decl String:querySave[4096];
+            Format(querySave,sizeof(querySave),"UPDATE war3source SET %s WHERE steamid = '%s'",
+                   bufferSave,steamid);
             SQL_FastQuery(DBIDB,querySave);
         }
     }
