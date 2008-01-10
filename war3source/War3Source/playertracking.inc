@@ -12,7 +12,10 @@
 
 #include <tf2>
 
-#define INFO_COUNT     6 // 1)client index, 2)race, 3)pending race, 4)pending skill reset, 5)credits, 6)tracking array
+#define INFO_COUNT     7 // 0)client index, 1)race, 2)pending race,
+                         // 3)pending skill reset, 4)credits,
+                         // 5)overall level, 6)tracking array
+
 #define TRACKING_COUNT 11
 
 // Global definition
@@ -92,16 +95,28 @@ public SetCredits(vectorpos,credits)
     SetArrayCell(vec,4,credits);
 }
 
-public Handle:GetPropertyInfo(vectorpos)
+public GetOverallLevel(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     return GetArrayCell(vec,5);
 }
 
+public SetOverallLevel(vectorpos,level)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    SetArrayCell(vec,5,level);
+}
+
+public Handle:GetPropertyInfo(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,6);
+}
+
 public SetPropertyInfo(vectorpos,Handle:info)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,5,info);
+    SetArrayCell(vec,6,info);
 }
 
 public GetImmunity(vectorpos,immunity)
@@ -488,9 +503,9 @@ public War3Source_InsertPlayer(Handle:db,client)
         Format(buffer,sizeof(buffer),"INSERT INTO war3source (steamid,race,credits");
         for(new x=0;x<RACE_COUNT;x++)
         {
-            decl String:short[32];
+            decl String:short[16];
             new Handle:race=Race(x);
-            GetArrayString(race,1,short,sizeof(short));
+            GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
             Format(buffer,sizeof(buffer),"%s,%s_xp,%s_level",buffer,short,short);
             for(new y=0;y<SKILL_COUNT;y++)
                 Format(buffer,sizeof(buffer),"%s,%s_skilllevel_%d",buffer,short,y);
@@ -529,8 +544,8 @@ public War3Source_LoadPlayerData(client,vectorpos)
                     for(new x=0;x<RACE_COUNT;x++)
                     {
                         new Handle:race=Race(x);
-                        decl String:short[32];
-                        GetArrayString(race,1,short,sizeof(short));
+                        decl String:short[16];
+                        GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
                         decl String:buffer[64];
                         Format(buffer,sizeof(buffer),"%s_xp",short);
                         SetXP(vectorpos,x,SQLPlayerInt(query,buffer));
@@ -570,8 +585,8 @@ public War3Source_SavePlayerData(client,vectorpos)
             for(new x=0;x<RACE_COUNT;x++)
             {
                 new Handle:race=Race(x);
-                decl String:short[32];
-                GetArrayString(race,1,short,sizeof(short));
+                decl String:short[16];
+                GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
                 Format(bufferSave,sizeof(bufferSave),"%s, %s_xp = '%d'",
                        bufferSave,short,GetXP(vectorpos,x));
                 Format(bufferSave,sizeof(bufferSave),"%s, %s_level = '%d'",

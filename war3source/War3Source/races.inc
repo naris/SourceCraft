@@ -9,6 +9,20 @@
 #define SKILL_COUNT 4
 #define SKILL_ULTIMATE 3 // Yes, its the 4th, but 3th when you are talking iteriators
 
+#define RACE_NAME               0
+#define RACE_SHORT_NAME         1
+#define RACE_SWITCHMESSAGE      2
+#define RACE_SWITCHMESSAGE_DEAD 3
+#define RACE_SKILL_1            4
+#define RACE_SKILL_1_DESC       5
+#define RACE_SKILL_2            6
+#define RACE_SKILL_2_DESC       7
+#define RACE_SKILL_3            8
+#define RACE_SKILL_3_DESC       9
+#define RACE_ULTIMATE          10
+#define RACE_ULTIMATE_DESC     11
+#define RACE_REQUIRED_LEVEL    12
+
 // Functions called from menus.inc
 public War3Source_SkillMenu(client,vectorpos);
 
@@ -22,7 +36,8 @@ public Handle:CreateRace(const String:name[],                  const String:shor
                          const String:skill1[],                const String:skill1_desc[],
                          const String:skill2[],                const String:skill2_desc[],
                          const String:skill3[],                const String:skill3_desc[],
-                         const String:ult[],                   const String:ult_desc[])
+                         const String:ult[],                   const String:ult_desc[],
+                         const String:required_level[])
 {
     new Handle:ret=CreateArray(ByteCountToCells(192));
     PushArrayString(ret,name);
@@ -37,6 +52,7 @@ public Handle:CreateRace(const String:name[],                  const String:shor
     PushArrayString(ret,skill3_desc);
     PushArrayString(ret,ult);
     PushArrayString(ret,ult_desc);
+    PushArrayString(ret,required_level);
     return ret;
 }
 
@@ -49,6 +65,16 @@ public bool:War3Source_InitiatearrayRaces()
 public Handle:Race(racenum)
 {
     return GetArrayCell(arrayRaces,racenum);
+}
+
+public GetRaceName(Handle:race, String:name[], maxlength)
+{
+    GetArrayString(race,RACE_NAME,name,maxlength);
+}
+
+public GetRaceShortName(Handle:race, String:name[], maxlength)
+{
+    GetArrayString(race,RACE_SHORT_NAME,name,maxlength);
 }
 
 public War3Source_PendingCheck(client,vectorpos)

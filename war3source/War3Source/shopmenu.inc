@@ -7,6 +7,10 @@
 
 #define SHOPITEM_COUNT GetArraySize(shopVector)
 
+#define SHOPITEM_NAME   0
+#define SHOPITEM_DESC   1
+#define SHOPITEM_COST   2
+
 // A vector of shopmenu infomation
 new Handle:shopVector;
 
@@ -37,7 +41,7 @@ public GetShopItem(const String:name[])
     for(new x=0;x<size;x++)
     {
         new Handle:item=GetArrayCell(shopVector,x);
-        GetArrayString(item,0,curName,63);
+        GetArrayString(item,SHOPITEM_NAME,curName,63);
         if(!StrEqual(name,curName,false))
             return x;
     }

@@ -14,38 +14,46 @@ new Handle:g_OnWar3PluginReadyHandle;
 
 public Native_War3_CreateRace(Handle:plugin,numParams)
 {
-    if(numParams==12)
+    if (numParams >=12 && numParams <= 13)
     {
         decl String:name[64],String:short[16],String:switchmessage_instant[192],String:switchmessage_dead[192];
         decl String:skill1[64],String:skill1_desc[192],String:skill2[64],String:skill2_desc[192];
         decl String:skill3[64],String:skill3_desc[192],String:ult[64],String:ult_desc[192];
-        GetNativeString(1,name,63);
-        GetNativeString(2,short,15);
-        GetNativeString(3,switchmessage_instant,191);
-        GetNativeString(4,switchmessage_dead,191);
-        GetNativeString(5,skill1,63);
-        GetNativeString(6,skill1_desc,191);
-        GetNativeString(7,skill2,63);
-        GetNativeString(8,skill2_desc,191);
-        GetNativeString(9,skill3,63);
-        GetNativeString(10,skill3_desc,191);
-        GetNativeString(11,ult,63);
-        GetNativeString(12,ult_desc,191);
+        decl String:required_level[4];
+        GetNativeString(1,name,sizeof(name));
+        GetNativeString(2,short,sizeof(short));
+        GetNativeString(3,switchmessage_instant,sizeof(switchmessage_instant));
+        GetNativeString(4,switchmessage_dead,sizeof(switchmessage_dead));
+        GetNativeString(5,skill1,sizeof(skill1));
+        GetNativeString(6,skill1_desc,sizeof(skill1_desc));
+        GetNativeString(7,skill2,sizeof(skill2));
+        GetNativeString(8,skill2_desc,sizeof(skill2_desc));
+        GetNativeString(9,skill3,sizeof(skill3));
+        GetNativeString(10,skill3_desc,sizeof(skill3_desc));
+        GetNativeString(11,ult,sizeof(ult));
+        GetNativeString(12,ult_desc,sizeof(ult_desc));
+
+        if (numParams >= 13)
+            GetNativeString(13,required_level,sizeof(required_level));
+        else
+            strcopy(required_level, sizeof(required_level), "0");
+
         new Handle:race=CreateRace(name,short,switchmessage_instant,switchmessage_dead,
-                                   skill1,skill1_desc,skill2,skill2_desc,skill3,skill3_desc,ult,ult_desc);
+                                   skill1,skill1_desc,skill2,skill2_desc,skill3,skill3_desc,
+                                   ult,ult_desc,required_level);
         PushArrayCell(arrayRaces,race);
         if(DBIDB)
         {
             decl String:buffer[32]="";
             new Handle:raceHandle=Race(RACE_COUNT-1);
-            GetArrayString(raceHandle,1,short,15);
-            Format(buffer,31,"%s_xp",short);
+            GetArrayString(raceHandle,1,short,sizeof(short));
+            Format(buffer,sizeof(buffer),"%s_xp",short);
             CreateIfColumnDoesntExist(DBIDB,buffer,"varchar(30)");
-            Format(buffer,31,"%s_level",short);
+            Format(buffer,sizeof(buffer),"%s_level",short);
             CreateIfColumnDoesntExist(DBIDB,buffer,"varchar(30)");
             for(new y=0;y<SKILL_COUNT;y++)
             {
-                Format(buffer,31,"%s_skilllevel_%d",short,y);
+                Format(buffer,sizeof(buffer),"%s_skilllevel_%d",short,y);
                 CreateIfColumnDoesntExist(DBIDB,buffer,"varchar(30)");
             }
         }
@@ -59,9 +67,9 @@ public Native_War3_CreateShopItem(Handle:plugin,numParams)
     if(numParams==3)
     {
         decl String:name[64],String:desc[256],String:cost[4];
-        GetNativeString(1,name,63);
-        GetNativeString(2,desc,255);
-        GetNativeString(3,cost,3);
+        GetNativeString(1,name,sizeof(name));
+        GetNativeString(2,desc,sizeof(desc));
+        GetNativeString(3,cost,sizeof(cost));
         new Handle:item=CreateShopItem(name,desc,cost);
         PushArrayCell(shopVector,item);
         return GetArraySize(shopVector)-1;
@@ -74,9 +82,9 @@ public Native_War3_CreateHelpCommand(Handle:plugin,numParams)
     if(numParams==2)
     {
         decl String:name[64];
-        GetNativeString(1,name,63);
+        GetNativeString(1,name,sizeof(name));
         decl String:desc[256];
-        GetNativeString(2,desc,255);
+        GetNativeString(2,desc,sizeof(desc));
         NewHelpCommand(name,desc);
     }
 }
@@ -86,7 +94,7 @@ public Native_War3_GetShopItem(Handle:plugin,numParams)
     if(numParams==1)
     {
         decl String:name[64];
-        GetNativeString(1,name,63);
+        GetNativeString(1,name,sizeof(name));
         return GetShopItem(name);
     }
     else

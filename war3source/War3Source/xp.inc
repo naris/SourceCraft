@@ -31,15 +31,24 @@ public DoLevelCheck(client,vectorpos)
     new bool:m_Go=true;
     while(m_Go)
     {
-        new curlevel=GetLevel(vectorpos,GetRace(vectorpos));
-        if(curlevel<MAX_LEVELS)
+        new race = GetRace(vectorpos);
+        new level = GetLevel(vectorpos,race);
+        if (level < MAX_LEVELS)
         {
-            if(GetXP(vectorpos,GetRace(vectorpos))>=ReqLevelXP(curlevel+1))
+            new curXP = GetXP(vectorpos,race);
+            new reqXP = ReqLevelXP(++level);
+            if (curXP >= reqXP)
             {
-                    SetLevel(vectorpos,GetRace(vectorpos),GetLevel(vectorpos,GetRace(vectorpos))+1);
+                    new oLevel = GetOverallLevel(vectorpos);
+                    SetOverallLevel(vectorpos, ++oLevel);
+                    SetLevel(vectorpos,race,level);
                     War3Source_SkillMenu(client,vectorpos);
-                    PrintToChat(client,"%c[War3Source] %cYou are now level %d.",COLOR_GREEN,COLOR_DEFAULT,GetLevel(vectorpos,GetRace(vectorpos)));
-                    SetXP(vectorpos,GetRace(vectorpos),GetXP(vectorpos,GetRace(vectorpos))-ReqLevelXP(curlevel+1));
+
+                    decl String:raceName[64] = "";
+                    GetArrayString(Race(race),RACE_NAME,raceName,sizeof(raceName));
+                    PrintToChat(client,"%c[War3Source] %cYou are now a level %d %s (level %d overall).",
+                                COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
+                    SetXP(vectorpos,race,curXP-reqXP);
             }
             else
                 m_Go=false;
@@ -56,10 +65,16 @@ public ShowXP(client,vecpos)
     decl String:racename[64];
     new Handle:racedata=Race(race);
     GetArrayString(racedata,0,racename,63);
-    if(level!=MAX_LEVELS)
-        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP.",COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race),ReqLevelXP(level+1));
+    if (level<=MAX_LEVELS)
+    {
+        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP.",
+                    COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race),ReqLevelXP(level+1));
+    }
     else
-        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP.",COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race));
+    {
+        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP.",
+                    COLOR_GREEN,COLOR_DEFAULT,racename,level,GetXP(vecpos,race));
+    }
 }
  
 public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife,bool:backstab)
@@ -79,21 +94,25 @@ public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife,bool:backstab
     if (headshot)
     {
         newxp+=HEADSHOT_XP;
-        PrintToChat(client,"%c[War3Source] %cYou get %d additional XP for a headshot.",COLOR_GREEN,COLOR_DEFAULT,HEADSHOT_XP);
+        PrintToChat(client,"%c[War3Source] %cYou get %d additional XP for a headshot.",
+                    COLOR_GREEN,COLOR_DEFAULT,HEADSHOT_XP);
     }
     else if (backstab)
     {
         newxp+=BACKSTAB_XP;
-        PrintToChat(client,"%c[War3Source] %cYou get %d additional XP for a backstab.",COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
+        PrintToChat(client,"%c[War3Source] %cYou get %d additional XP for a backstab.",
+                    COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
     }
     else if (knife)
     {
         newxp+=KNIFE_XP;
-        PrintToChat(client,"%c[War3Source] %cYou get %d additional XP for a knife/shovel/wrench/etc kill.",COLOR_GREEN,COLOR_DEFAULT,KNIFE_XP);
+        PrintToChat(client,"%c[War3Source] %cYou get %d additional XP for a knife/shovel/wrench/etc kill.",
+                    COLOR_GREEN,COLOR_DEFAULT,KNIFE_XP);
     }
 
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for getting a kill.",COLOR_GREEN,COLOR_DEFAULT,killxp);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for getting a kill.",
+                COLOR_GREEN,COLOR_DEFAULT,killxp);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -105,7 +124,8 @@ public GiveDefuseXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+DEFUSE_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for defusing the bomb.",COLOR_GREEN,COLOR_DEFAULT,DEFUSE_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for defusing the bomb.",
+                COLOR_GREEN,COLOR_DEFAULT,DEFUSE_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -117,7 +137,8 @@ public GivePlantXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+PLANT_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for planting the bomb.",COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for planting the bomb.",
+                COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -129,7 +150,8 @@ public GiveHostageRescuedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+HOSTAGERESCUED_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for rescuing a hostage.",COLOR_GREEN,COLOR_DEFAULT,HOSTAGERESCUED_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for rescuing a hostage.",
+                COLOR_GREEN,COLOR_DEFAULT,HOSTAGERESCUED_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -141,7 +163,8 @@ public GiveObjectBuiltXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+DESTROY_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for building something.",COLOR_GREEN,COLOR_DEFAULT,BUILD_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for building something.",
+                COLOR_GREEN,COLOR_DEFAULT,BUILD_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -153,7 +176,8 @@ public GiveObjectDestroyedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+DESTROY_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for destroying something.",COLOR_GREEN,COLOR_DEFAULT,DESTROY_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for destroying something.",
+                COLOR_GREEN,COLOR_DEFAULT,DESTROY_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -165,7 +189,8 @@ public GiveFlagCapturedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+CAPTURE_FLAG_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for capturing the flag.",COLOR_GREEN,COLOR_DEFAULT,CAPTURE_FLAG_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for capturing the flag.",
+                COLOR_GREEN,COLOR_DEFAULT,CAPTURE_FLAG_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -177,7 +202,8 @@ public GivePointCapturedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+CAPTURE_POINT_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for capturing a point.",COLOR_GREEN,COLOR_DEFAULT,CAPTURE_POINT_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for capturing a point.",
+                COLOR_GREEN,COLOR_DEFAULT,CAPTURE_POINT_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
@@ -189,7 +215,8 @@ public GiveCaptureBlockedXP(client,vectorpos)
     new race=GetRace(vectorpos);
     newxp=GetXP(vectorpos,race)+BLOCK_XP;
     SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for blocking a point.",COLOR_GREEN,COLOR_DEFAULT,BLOCK_XP);
+    PrintToChat(client,"%c[War3Source] %cYou have gained %d XP for blocking a point.",
+                COLOR_GREEN,COLOR_DEFAULT,BLOCK_XP);
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }

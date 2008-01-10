@@ -69,7 +69,8 @@ public OnWar3PluginReady()
                            "Observer Sensors",
                            "Reveals enemy invisible units within range",
                            "Dark Archon Mind Control",
-                           "Allows you to control an object from the opposite team.");
+                           "Allows you to control an object from the opposite team.",
+                           "16");
 
     m_BuilderOffset = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
     if(m_BuilderOffset == -1)

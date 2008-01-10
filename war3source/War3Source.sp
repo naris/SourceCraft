@@ -140,6 +140,7 @@ public OnClientPutInServer(client)
         PushArrayCell(newPlayer,-1); // Pending race
         PushArrayCell(newPlayer,0); // Pending skill reset
         PushArrayCell(newPlayer,0); // Credits
+        PushArrayCell(newPlayer,0); // Overall Level
         new Handle:temp=CreateArray();
         PushArrayCell(newPlayer,temp); // Information about speed and gravity
         for(new x=0;x<IMMUNITY_COUNT;x++)
@@ -151,8 +152,10 @@ public OnClientPutInServer(client)
         for(new x=0;x<RACE_COUNT;x++)
             PushArrayCell(newPlayer,0); // Race x Level
         for(new x=0;x<RACE_COUNT;x++)
+        {
             for(new y=0;y<SKILL_COUNT;y++)
                 PushArrayCell(newPlayer,0); // Skill level for race x skill y
+        }
         if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(RACE_COUNT*SKILL_COUNT)))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
