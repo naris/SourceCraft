@@ -149,12 +149,6 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new victimWar3player = War3_GetWar3Player(victimIndex);
         if (victimWar3player != -1)
         {
-            /*
-            new victimrace = War3_GetRace(victimWar3player);
-            if (victimrace == raceID)
-                Protoss_Shields(event, victimIndex, victimWar3player);
-            */
-
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
@@ -275,7 +269,7 @@ public Action:CloakingAndDetector(Handle:timer)
 
                                             LogMessage("[War3Source] %s has been cloaked by %s!\n", name,clientName);
                                             PrintToChat(index,"%c[War3Source] %s %c has been cloaked by %s!",
-                                                        COLOR_GREEN,name,clientName,COLOR_DEFAULT);
+                                                        COLOR_GREEN,name,COLOR_DEFAULT,clientName);
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
@@ -382,12 +376,12 @@ public Protoss_MindControl(client,war3player)
 
             if (GetRandomInt(1,100)<=percent && IsPointInRange(clientLoc,targetLoc,range))
             {
-                decl String:class[64] = "";
+                decl String:class[32] = "";
                 if (GetEntityNetClass(target,class,sizeof(class)))
                 {
                     if (StrEqual(class, "CObjectSentrygun", false) ||
-                            StrEqual(class, "CObjectDispenser", false) ||
-                            StrEqual(class, "CObjectTeleporter", false))
+                        StrEqual(class, "CObjectDispenser", false) ||
+                        StrEqual(class, "CObjectTeleporter", false))
                     {
                         //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
                         new builder = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
@@ -415,11 +409,25 @@ public Protoss_MindControl(client,war3player)
                                                0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                             TE_SendToAll();
 
-                            TE_SetupSmoke(targetLoc,g_smokeSprite,10.0,1);
+                            TE_SetupSmoke(targetLoc,g_smokeSprite,5.0,1);
                             TE_SendToAll();
 
-                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_purpleGlow : g_redGlow,0.7,10.0,200);
+                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_purpleGlow : g_redGlow,1.0,5.0,255);
                             TE_SendToAll();
+
+                            decl String:clientName[64];
+                            GetClientName(client,clientName,63);
+
+                            decl String:builderName[64];
+                            GetClientName(builder,builderName,63);
+
+                            decl String:object[32] = "";
+                            strcopy(object, sizeof(object), class[7]);
+                            LogMessage("[War3Source] %s has stolen %s's %s!\n", clientName,builderName,object);
+                            PrintToChat(client,"%c[War3Source] %c you has stolen %s's %s!",
+                                        COLOR_GREEN,COLOR_DEFAULT,builderName,object);
+                            PrintToChat(builder,"%c[War3Source] %c %s has stolen your %s!",
+                                        COLOR_GREEN,COLOR_DEFAULT,clientName,object);
                         }
                     }
                 }
