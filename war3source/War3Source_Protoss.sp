@@ -36,6 +36,8 @@ new explosionModel;
 
 new String:explodeWav[] = "war3/PSaHit00.wav";
 new String:controlWav[] = "war3/pteSum00.wav";
+new String:unCloakWav[] = "war3/PabCag00.wav";
+new String:cloakWav[] = "war3/pabRdy00.wav";
 
 public Plugin:myinfo = 
 {
@@ -109,6 +111,8 @@ public OnMapStart()
 
     SetupSound(explodeWav);
     SetupSound(controlWav);
+    SetupSound(unCloakWav);
+    SetupSound(cloakWav);
 }
 
 public OnWar3PlayerAuthed(client,war3player)
@@ -268,6 +272,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                             War3_SetMinVisibility(war3player_check, cloaked_visibility);
                                             m_Cloaked[client][index] = true;
 
+                                            EmitSoundToClient(client, cloakWav);
                                             LogMessage("[War3Source] %s has been cloaked by %s!\n", name,clientName);
                                             PrintToChat(index,"%c[War3Source] %s %c has been cloaked by %s!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT,clientName);
@@ -277,6 +282,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                             War3_SetMinVisibility(war3player_check, 255);
                                             m_Cloaked[client][index] = false;
 
+                                            EmitSoundToClient(client, unCloakWav);
                                             LogMessage("[War3Source] %s has been uncloaked!\n", name);
                                             PrintToChat(index,"%c[War3Source] %s %c has been uncloaked!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT);
