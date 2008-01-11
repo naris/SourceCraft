@@ -90,6 +90,9 @@ public OnPluginStart()
 
 public OnAllPluginsLoaded()
 {
+    if(SAVE_ENABLED)
+        War3Source_SQLTable();
+
     if(!m_CalledReady)
     {
         Call_StartForward(g_OnWar3PluginReadyHandle);
@@ -97,8 +100,7 @@ public OnAllPluginsLoaded()
         Call_Finish(res);
         m_CalledReady=true;
     }
-    if(SAVE_ENABLED)
-        War3Source_SQLTable();
+
     War3Source_InitHelpCommands();
 }
 
