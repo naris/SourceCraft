@@ -842,22 +842,4 @@ public OnPluginEnd()
 		CloseHandle(listfile);
 		listfile = INVALID_HANDLE;
 	}
-
-	CloseHandle(cvarsoundenable);
-	CloseHandle(cvarsoundwarn);
-	CloseHandle(cvarsoundlimit);
-	CloseHandle(cvarjoinexit);
-	CloseHandle(cvarjoinspawn);
-	CloseHandle(cvarspecificjoinexit);
-	CloseHandle(cvartimebetween);
-	CloseHandle(cvaradmintime);
-
-	cvarsoundenable = INVALID_HANDLE;
-	cvarsoundwarn = INVALID_HANDLE;
-	cvarsoundlimit = INVALID_HANDLE;
-	cvarjoinexit = INVALID_HANDLE;
-	cvarjoinspawn = INVALID_HANDLE;
-	cvarspecificjoinexit = INVALID_HANDLE;
-	cvartimebetween = INVALID_HANDLE;
-	cvaradmintime = INVALID_HANDLE;
 }

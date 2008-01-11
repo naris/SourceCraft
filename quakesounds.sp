@@ -944,16 +944,4 @@ public OnPluginEnd()
 		CloseHandle(kvQUS);
 		kvQUS = INVALID_HANDLE;
 	}
-
-	CloseHandle(cvarEnabled);
-	CloseHandle(cvarAnnounce);
-	CloseHandle(cvarTextDefault);
-	CloseHandle(cvarSoundDefault);
-	CloseHandle(cvarVolume);
-
-	cvarEnabled = INVALID_HANDLE;
-	cvarAnnounce = INVALID_HANDLE;
-	cvarTextDefault = INVALID_HANDLE;
-	cvarSoundDefault = INVALID_HANDLE;
-	cvarVolume = INVALID_HANDLE;
 }
