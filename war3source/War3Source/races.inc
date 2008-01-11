@@ -77,6 +77,20 @@ public GetRaceShortName(Handle:race, String:name[], maxlength)
     GetArrayString(race,RACE_SHORT_NAME,name,maxlength);
 }
 
+public FindRace(const String:name[])
+{
+    decl String:curName[64]="";
+    new size = GetArraySize(arrayRaces);
+    for(new x=0;x<size;x++)
+    {
+        new Handle:race=GetArrayCell(arrayRaces,x);
+        GetArrayString(race,RACE_SHORT_NAME,curName,63);
+        if(!StrEqual(name,curName,false))
+            return x;
+    }
+    return -1;
+}
+
 public War3Source_PendingCheck(client,vectorpos)
 {
     new pendingrace=GetPendingRace(vectorpos);

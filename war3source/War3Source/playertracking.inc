@@ -452,6 +452,19 @@ stock CreateIfColumnDoesntExist(Handle:DB,const String:columnname[],const String
     }
 }
 
+public bool:SQLPlayerString(Handle:query,const String:columnname[], String:result[], maxlength)
+{
+    new column;
+    SQL_FieldNameToNum(query,columnname,column);
+    if (SQL_IsFieldNull(query, column))
+        return false;
+    else
+    {
+        SQL_FetchString(query,column,result,maxlength);
+        return true;
+    }
+}
+
 public SQLPlayerInt(Handle:query,const String:columnname[])
 {
     new column;
@@ -501,7 +514,7 @@ public War3Source_InsertPlayer(Handle:db,client)
     if(GetClientAuthString(client,steamid,sizeof(steamid)))
     {
         decl String:buffer[4096];
-        Format(buffer,sizeof(buffer),"INSERT INTO war3source (steamid,race,credits,overall_level,");
+        Format(buffer,sizeof(buffer),"INSERT INTO war3source (steamid,race,credits,overall_level");
         for(new x=0;x<RACE_COUNT;x++)
         {
             decl String:short[16];
@@ -540,7 +553,9 @@ public War3Source_LoadPlayerData(client,vectorpos)
                 fetch = SQL_FetchRow(query);
                 if(fetch)
                 {
-                    SetRace(vectorpos,SQLPlayerInt(query,"race"));
+                    decl String:raceName[64]="";
+                    SQLPlayerString(query,"race",raceName,sizeof(raceName));
+                    SetRace(vectorpos,FindRace(raceName));
                     SetCredits(vectorpos,SQLPlayerInt(query,"credits"));
                     SetOverallLevel(vectorpos,SQLPlayerInt(query,"overall_level"));
                     for(new x=0;x<RACE_COUNT;x++)
@@ -579,9 +594,11 @@ public War3Source_SavePlayerData(client,vectorpos)
         decl String:steamid[64];
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
+            decl String:raceName[64]="";
+            GetRaceShortName(Race(GetRace(vectorpos)), raceName, sizeof(raceName));
             decl String:bufferSave[4096]="";
-            Format(bufferSave,sizeof(bufferSave),"race = '%d', credits = '%d', overall_level = '%d'",
-                   GetRace(vectorpos),GetCredits(vectorpos),GetOverallLevel(vectorpos));
+            Format(bufferSave,sizeof(bufferSave),"race = '%s', credits = '%d', overall_level = '%d'",
+                   raceName,GetCredits(vectorpos),GetOverallLevel(vectorpos));
             for(new x=0;x<RACE_COUNT;x++)
             {
                 new Handle:race=Race(x);

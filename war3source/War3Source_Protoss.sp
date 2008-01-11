@@ -55,7 +55,7 @@ public OnPluginStart()
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
 
-    CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
+    //CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnWar3PluginReady()
@@ -101,11 +101,7 @@ public OnMapStart()
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    if (GameType == tf2)
-        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
-    else
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
-
+    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
