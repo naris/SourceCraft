@@ -27,7 +27,7 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_BuilderOffset;
 
 new g_redGlow;
-new g_purpleGlow;
+new g_blueGlow;
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
@@ -89,9 +89,9 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
+    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
     if (g_haloSprite == -1)
-        SetFailState("Couldn't find purpleglow Model");
+        SetFailState("Couldn't find blueglow Model");
 
     g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
     if (g_redGlow == -1)
@@ -419,7 +419,7 @@ public Protoss_MindControl(client,war3player)
                             TE_SetupSmoke(targetLoc,g_smokeSprite,5.0,1);
                             TE_SendToAll();
 
-                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_purpleGlow : g_redGlow,1.0,5.0,255);
+                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,1.0,5.0,255);
                             TE_SendToAll();
 
                             decl String:clientName[64];
