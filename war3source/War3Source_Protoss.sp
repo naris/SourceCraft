@@ -272,10 +272,13 @@ public Action:CloakingAndDetector(Handle:timer)
                                             War3_SetMinVisibility(war3player_check, cloaked_visibility);
                                             m_Cloaked[client][index] = true;
 
-                                            EmitSoundToClient(client, cloakWav);
-                                            LogMessage("[War3Source] %s has been cloaked by %s!\n", name,clientName);
-                                            PrintToChat(index,"%c[War3Source] %s %c has been cloaked by %s!",
+                                            if (!m_Cloaked[client][index])
+                                            {
+                                                EmitSoundToClient(client, cloakWav);
+                                                LogMessage("[War3Source] %s has been cloaked by %s!\n", name,clientName);
+                                                PrintToChat(index,"%c[War3Source] %s %c has been cloaked by %s!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT,clientName);
+                                            }
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
