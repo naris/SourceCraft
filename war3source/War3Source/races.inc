@@ -85,7 +85,7 @@ public FindRace(const String:name[])
     {
         new Handle:race=GetArrayCell(arrayRaces,x);
         GetArrayString(race,RACE_SHORT_NAME,curName,63);
-        if(!StrEqual(name,curName,false))
+        if(StrEqual(name,curName,false))
             return x;
     }
     return -1;

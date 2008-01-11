@@ -49,14 +49,17 @@ public SetRace(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     new oldrace=GetArrayCell(vec,1);
-    SetArrayCell(vec,1,race);
-    Call_StartForward(g_OnRaceSelectedHandle);
-    Call_PushCell(GetArrayCell(vec,0));
-    Call_PushCell(vectorpos);
-    Call_PushCell(oldrace);
-    Call_PushCell(race);
-    new result;
-    Call_Finish(result);
+    if (race != oldrace)
+    {
+        SetArrayCell(vec,1,race);
+        Call_StartForward(g_OnRaceSelectedHandle);
+        Call_PushCell(GetArrayCell(vec,0));
+        Call_PushCell(vectorpos);
+        Call_PushCell(oldrace);
+        Call_PushCell(race);
+        new result;
+        Call_Finish(result);
+    }
 }
 
 public GetPendingRace(vectorpos)
@@ -485,8 +488,6 @@ public CreateIfColumnDoesntExist(Handle:DB,const String:columnname[],const Strin
             SQL_GetError(DB, error, sizeof(error));
             SetFailState("Error adding column %s: %s\nSQL:%s\n", columnname, error, query);
         }
-        else
-            LogMessage(query);
     }
 }
 
@@ -544,8 +545,6 @@ public War3Source_InsertPlayer(Handle:db,client)
             SQL_GetError(db, error, sizeof(error));
             LogError("[War3Source] Unable to insert player: %s\nSQL:%s\n", error, buffer);
         }
-        else
-            LogMessage(buffer);
     }
 }
 
@@ -568,7 +567,11 @@ public War3Source_LoadPlayerData(client,vectorpos)
                 {
                     decl String:raceName[64]="";
                     SQLPlayerString(query,"race",raceName,sizeof(raceName));
-                    SetRace(vectorpos,FindRace(raceName));
+                    new race = FindRace(raceName);
+                    PrintToChat(client, "Set Race to %d=%s", race, raceName);
+                    LogMessage("Set Race for %N to %d=%s\n", client, race, raceName);
+                    SetRace(vectorpos,race);
+
                     SetCredits(vectorpos,SQLPlayerInt(query,"credits"));
                     SetOverallLevel(vectorpos,SQLPlayerInt(query,"overall_level"));
                     for(new x=0;x<RACE_COUNT;x++)
