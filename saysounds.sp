@@ -418,7 +418,6 @@ Submit_Sound(client)
 	if (!strlen(filelocation) && StrEqual(file, "file1")){
 		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
 	}
-	PrintToChat(client, "Play sound #%d of %d, %s", number, count, filelocation);
 	if (strlen(filelocation)){
 		new adminonly = KvGetNum(listfile, "admin",0);
 		new singleonly = KvGetNum(listfile, "single",0);
