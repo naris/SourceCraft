@@ -65,7 +65,7 @@ public ShowXP(client,vecpos)
     decl String:racename[64];
     new Handle:racedata=Race(race);
     GetArrayString(racedata,0,racename,63);
-    if (level<=MAX_LEVELS)
+    if (level<MAX_LEVELS)
     {
         PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP. (Overall Level %d)",
                     COLOR_GREEN,COLOR_DEFAULT,racename,level,
