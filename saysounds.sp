@@ -223,11 +223,11 @@ public Action:Load_Sounds(Handle:timer){
 			decl String:file[8];
 			new count = KvGetNum(listfile, "count", 1);
 			new download = KvGetNum(listfile, "download", 1);
-			for (new i = 1; i <= count; i++){
-				if (i > 1){
-					Format(file, 7, "file%d", i);
+			for (new i = 0; i <= count; i++){
+				if (i){
+					Format(file, sizeof(file), "file%d", i);
 				}else{
-					strcopy(file, 8, "file");
+					strcopy(file, sizeof(file), "file");
 				}
 				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
@@ -237,6 +237,9 @@ public Action:Load_Sounds(Handle:timer){
 						if (download){
 							AddFileToDownloadsTable(dl);
 						}
+					}
+					if (count == 1){
+						break;
 					}
 				}
 			}
@@ -285,10 +288,12 @@ public CheckJoin(client, const String:auth[]){
 					new count = KvGetNum(listfile, "count", 1);
 					if (count > 1){
 						new number = (count > 1) ? GetRandomInt(1,count) : 1;
-						if (number > 1)
-							Format(file, sizeof(file), "file%d", number);
+						Format(file, sizeof(file), "file%d", number);
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+					if (!strlen(filelocation) && StrEqual(file, "file1")){
+						KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+					}
 				}
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
@@ -315,10 +320,12 @@ public CheckJoin(client, const String:auth[]){
 				new count = KvGetNum(listfile, "count", 1);
 				if (count > 1){
 					new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					if (number > 1)
-						Format(file, sizeof(file), "file%d", number);
+					Format(file, sizeof(file), "file%d", number);
 				}
 				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+				if (!strlen(filelocation) && StrEqual(file, "file1")){
+					KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+				}
 				if (strlen(filelocation)){
 					new adminonly = KvGetNum(listfile, "admin",0);
 					new singleonly = KvGetNum(listfile, "single",0);
@@ -376,10 +383,12 @@ public OnClientDisconnect(client){
 			new count = KvGetNum(listfile, "count", 1);
 			if (count > 1){
 				new number = (count > 1) ? GetRandomInt(1,count) : 1;
-				if (number > 1)
-					Format(file, sizeof(file), "file%d", number);
+				Format(file, sizeof(file), "file%d", number);
 			}
 			KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+			if (!strlen(filelocation) && StrEqual(file, "file1")){
+				KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+			}
 			if (strlen(filelocation)){
 				new adminonly = KvGetNum(listfile, "admin",0);
 				new singleonly = KvGetNum(listfile, "single",0);
@@ -400,12 +409,16 @@ Submit_Sound(client)
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:file[8] = "file";
 	new count = KvGetNum(listfile, "count", 1);
+	new number;
 	if (count > 1){
-		new number = (count > 1) ? GetRandomInt(1,count) : 1;
-		if (number > 1)
-			Format(file, sizeof(file), "file%d", number);
+		number = (count > 1) ? GetRandomInt(1,count) : 1;
+		Format(file, sizeof(file), "file%d", number);
 	}
 	KvGetString(listfile, file, filelocation, sizeof(filelocation));
+	if (!strlen(filelocation) && StrEqual(file, "file1")){
+		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+	}
+	PrintToChat(client, "Play sound #%d of %d, %s", number, count, filelocation);
 	if (strlen(filelocation)){
 		new adminonly = KvGetNum(listfile, "admin",0);
 		new singleonly = KvGetNum(listfile, "single",0);
