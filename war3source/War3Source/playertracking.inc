@@ -210,7 +210,7 @@ public Action:PlayerProperties(Handle:timer)
         new client=GetArrayCell(playerHandle,0);
         if(IsClientInGame(client))
         {
-            decl String:wepName[128];
+            decl String:wepName[128] = "";
             GetClientWeapon(client, wepName, 127);
 
             new Float:vecVelocity[3];
@@ -441,61 +441,25 @@ stock SetRenderColor(entity,r,g,b,a)
     }
 }
 
-stock CreateIfColumnDoesntExist(Handle:DB,const String:columnname[],const String:settings[])
-{
-    decl String:query[256];
-    Format(query,sizeof(query),"SELECT %s FROM war3source LIMIT 1",columnname);
-    if(!SQL_FastQuery(DB,query))
-    {
-        Format(query,sizeof(query),"ALTER TABLE war3source ADD COLUMN %s %s",columnname,settings);
-        SQL_FastQuery(DB,query);
-    }
-}
-
-public bool:SQLPlayerString(Handle:query,const String:columnname[], String:result[], maxlength)
-{
-    new column;
-    SQL_FieldNameToNum(query,columnname,column);
-    if (SQL_IsFieldNull(query, column))
-        return false;
-    else
-    {
-        SQL_FetchString(query,column,result,maxlength);
-        return true;
-    }
-}
-
-public SQLPlayerInt(Handle:query,const String:columnname[])
-{
-    new column;
-    SQL_FieldNameToNum(query,columnname,column);
-    if (SQL_IsFieldNull(query, column))
-        return 0;
-    else
-    {
-        decl String:result[16];
-        SQL_FetchString(query,column,result,sizeof(result));
-        return StringToInt(result);
-    }
-}
-
 public War3Source_SQLTable()
 {
-    if(DBIDB)
+    if (DBIDB)
     {
         // Check if the table exists
-        new Handle:tableCheck=SQL_Query(DBIDB,"SELECT * FROM war3source");
-        new bool:created=true; // assume its already there
-        if(tableCheck==INVALID_HANDLE)
-            created=false;
-        else
+        new Handle:tableCheck=SQL_Query(DBIDB,"SELECT * FROM war3source LIMIT 1");
+        new bool:created=(tableCheck != INVALID_HANDLE);
+        if (created)
             CloseHandle(tableCheck);
-        if(!created)
+        else
         {
             if(SQL_FastQuery(DBIDB,"CREATE TABLE war3source (steamid varchar(64));"))
                 created=true;
             else
-                SetFailState("[War3Source] Unknown error in the creation of the SQL table.");
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                SetFailState("[War3Source] Error in the creation of the SQL table:%s", error);
+            }
         }
         if(created)
         {
@@ -508,16 +472,58 @@ public War3Source_SQLTable()
     }
 }
 
+public CreateIfColumnDoesntExist(Handle:DB,const String:columnname[],const String:settings[])
+{
+    decl String:query[256];
+    Format(query,sizeof(query),"SELECT %s FROM war3source LIMIT 1",columnname);
+    if(!SQL_FastQuery(DB,query))
+    {
+        Format(query,sizeof(query),"ALTER TABLE war3source ADD COLUMN %s %s",columnname,settings);
+        if (!SQL_FastQuery(DB,query))
+        {
+            decl String:error[256];
+            SQL_GetError(DB, error, sizeof(error));
+            SetFailState("Error adding column %s: %s\nSQL:%s\n", columnname, error, query);
+        }
+        else
+            LogMessage(query);
+    }
+}
+
+public bool:SQLPlayerString(Handle:query,const String:columnname[], String:result[], maxlength)
+{
+    new column;
+    SQL_FieldNameToNum(query,columnname,column);
+    if (SQL_IsFieldNull(query, column))
+        return false;
+    else
+        return (SQL_FetchString(query,column,result,maxlength) > 0);
+}
+
+public SQLPlayerInt(Handle:query,const String:columnname[])
+{
+    new column;
+    SQL_FieldNameToNum(query,columnname,column);
+    if (SQL_IsFieldNull(query, column))
+        return 0;
+    else
+    {
+        decl String:result[16] = "";
+        SQL_FetchString(query,column,result,sizeof(result));
+        return StringToInt(result);
+    }
+}
+
 public War3Source_InsertPlayer(Handle:db,client)
 {
-    decl String:steamid[64];
+    decl String:steamid[64] = "";
     if(GetClientAuthString(client,steamid,sizeof(steamid)))
     {
-        decl String:buffer[4096];
+        decl String:buffer[4096] = "";
         Format(buffer,sizeof(buffer),"INSERT INTO war3source (steamid,race,credits,overall_level");
         for(new x=0;x<RACE_COUNT;x++)
         {
-            decl String:short[16];
+            decl String:short[16] = "";
             new Handle:race=Race(x);
             GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
             Format(buffer,sizeof(buffer),"%s,%s_xp,%s_level",buffer,short,short);
@@ -532,7 +538,14 @@ public War3Source_InsertPlayer(Handle:db,client)
                 Format(buffer,sizeof(buffer),"%s,'0'",buffer);
         }
         Format(buffer,sizeof(buffer),"%s)",buffer);
-        SQL_FastQuery(db,buffer);
+        if (!SQL_FastQuery(db,buffer))
+        {
+            decl String:error[256] = "";
+            SQL_GetError(db, error, sizeof(error));
+            LogError("[War3Source] Unable to insert player: %s\nSQL:%s\n", error, buffer);
+        }
+        else
+            LogMessage(buffer);
     }
 }
 
@@ -541,10 +554,10 @@ public War3Source_LoadPlayerData(client,vectorpos)
     new bool:fetch=false;
     if(DBIDB)
     {
-        decl String:steamid[64];
+        decl String:steamid[64] = "";
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
-            decl String:buf[256];
+            decl String:buf[256] = "";
             Format(buf,sizeof(buf),"SELECT * FROM war3source WHERE steamid = '%s'",steamid);
             new Handle:query=SQL_Query(DBIDB,buf);
             if(query)
@@ -561,9 +574,9 @@ public War3Source_LoadPlayerData(client,vectorpos)
                     for(new x=0;x<RACE_COUNT;x++)
                     {
                         new Handle:race=Race(x);
-                        decl String:short[16];
+                        decl String:short[16]="";
                         GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
-                        decl String:buffer[64];
+                        decl String:buffer[64]="";
                         Format(buffer,sizeof(buffer),"%s_xp",short);
                         SetXP(vectorpos,x,SQLPlayerInt(query,buffer));
                         Format(buffer,sizeof(buffer),"%s_level",short);
@@ -591,7 +604,7 @@ public War3Source_SavePlayerData(client,vectorpos)
 {
     if(DBIDB)
     {
-        decl String:steamid[64];
+        decl String:steamid[64]="";
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
             decl String:raceName[64]="";
@@ -602,7 +615,7 @@ public War3Source_SavePlayerData(client,vectorpos)
             for(new x=0;x<RACE_COUNT;x++)
             {
                 new Handle:race=Race(x);
-                decl String:short[16];
+                decl String:short[16]="";
                 GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
                 Format(bufferSave,sizeof(bufferSave),"%s, %s_xp = '%d', %s_level = '%d'",
                        bufferSave,short,GetXP(vectorpos,x),short,GetLevel(vectorpos,x));
@@ -612,10 +625,17 @@ public War3Source_SavePlayerData(client,vectorpos)
                            bufferSave,short,y,GetSkillLevel(vectorpos,x,y));
                 }
             }
-            decl String:querySave[4096];
+            decl String:querySave[4096] = "";
             Format(querySave,sizeof(querySave),"UPDATE war3source SET %s WHERE steamid = '%s'",
                    bufferSave,steamid);
-            SQL_FastQuery(DBIDB,querySave);
+            if (!SQL_FastQuery(DBIDB,querySave))
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("[War3Source] Unable to update player: %s\nSQL:%s\n", error, querySave);
+            }
+            else
+                LogMessage(querySave);
         }
     }
 }
