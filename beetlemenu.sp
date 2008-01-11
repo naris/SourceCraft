@@ -124,12 +124,3 @@ public sm_nextmap_changed(Handle:convar, const String:oldValue[], const String:n
             SetConVarString(bm_nextmap, newValue, true, true);
     }
 }
-
-public OnPluginEnd()
-{
-    if (bm_nextmap != INVALID_HANDLE)
-        UnhookConVarChange(bm_nextmap, bm_nextmap_changed);
-
-    if (sm_nextmap != INVALID_HANDLE)
-        UnhookConVarChange(sm_nextmap, sm_nextmap_changed);
-}

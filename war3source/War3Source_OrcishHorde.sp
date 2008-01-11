@@ -149,7 +149,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 public Action:AllowChainLightning(Handle:timer,any:index)
 {
     m_AllowChainLightning[index]=true;
-    //CloseHandle(timer);
+    return Plugin_Stop;
 }
 
 // Events

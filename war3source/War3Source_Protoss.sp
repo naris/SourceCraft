@@ -416,14 +416,20 @@ public Protoss_MindControl(client,war3player)
                                 color[0] = 255; // Red
 
                             TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                               0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                                               0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
                             TE_SendToAll();
 
-                            TE_SetupSmoke(targetLoc,g_smokeSprite,5.0,1);
+                            TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
                             TE_SendToAll();
 
-                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,1.0,5.0,255);
+                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,5.0,5.0,255);
                             TE_SendToAll();
+
+                            new Float:splashDir[3];
+                            splashDir[0] = 0.0;
+                            splashDir[1] = 0.0;
+                            splashDir[2] = 100.0;
+                            TE_SetupEnergySplash(targetLoc, splashDir, true);
 
                             decl String:clientName[64];
                             GetClientName(client,clientName,63);
