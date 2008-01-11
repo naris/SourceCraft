@@ -50,6 +50,10 @@ Versions:
 		* Added globalLastSound which is set to duration of last sound played to reduce possibility of overlapping sounds.
 		* Fix the sounds go away bug
 		* Moved close of listfile from mapchange to Load_Sounds (if handle is valid)
+	1.7   Jan 10, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added separate admin sound_limit and time_between_sounds convars.
+		* Changed multiple sound to check the "file" key if "file1" is not found.
 
 Todo:
 	* Multiple sound files for trigger word
@@ -57,26 +61,28 @@ Todo:
 	* Save user settings
  
 Cvarlist (default value):
-	sm_sound_enable 1		Turns Sounds On/Off
-	sm_sound_warn 3			Number of sounds to warn person at
-	sm_sound_limit 5 		Maximum sounds per person
-	sm_join_exit 0 			Play sounds when someone joins or exits the game
-	sm_specific_join_exit 0 	Play sounds when a specific STEAM ID joins or exits the game
-	sm_time_between_sounds 4.5 	Time between each sound trigger, 0.0 to disable checking
+	sm_sound_enable 1		 Turns Sounds On/Off
+	sm_sound_warn 3			 Number of sounds to warn person at
+	sm_sound_limit 5 		 Maximum sounds per person
+	sm_sound_admin_limit 5 		 Maximum sounds per admin
+	sm_join_exit 0 			 Play sounds when someone joins or exits the game
+	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
+	sm_time_between_sounds 4.5 	 Time between each sound trigger, 0.0 to disable checking
+	sm_time_between_admin_sounds 4.5 Time between each sound trigger (for admins), 0.0 to disable checking
 
 Admin Commands:
-	sm_sound_ban <user>		Bans a player from using sounds
-	sm_sound_unban <user>		Unbans a player os they can play sounds
-	sm_sound_reset <all|user>	Resets sound quota for user, or everyone if all
-	sm_admin_sounds 		Display a menu of all admin sounds to play
-	!adminsounds 			When used in chat will present a menu of all admin sound to play.
+	sm_sound_ban <user>		 Bans a player from using sounds
+	sm_sound_unban <user>		 Unbans a player os they can play sounds
+	sm_sound_reset <all|user>	 Resets sound quota for user, or everyone if all
+	sm_admin_sounds 		 Display a menu of all admin sounds to play
+	!adminsounds 			 When used in chat will present a menu of all admin sound to play.
 	
 User Commands:
-	sm_sound_menu 			Display a menu of all sounds (trigger words) to play
-	sm_sound_list  			Print all trigger words to the console
-	!sounds  			When used in chat turns sounds on/off for that client
-	!soundlist  			When used in chat will print all the trigger words to the console
-	!soundmenu  			When used in chat will present a menu to choose a sound to play.
+	sm_sound_menu 			 Display a menu of all sounds (trigger words) to play
+	sm_sound_list  			 Print all trigger words to the console
+	!sounds  			 When used in chat turns sounds on/off for that client
+	!soundlist  			 When used in chat will print all the trigger words to the console
+	!soundmenu  			 When used in chat will present a menu to choose a sound to play.
 
 	
 Make sure "saysounds.cfg" is in your addons/sourcemod/configs/ directory.
@@ -102,7 +108,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.6"
+#define PLUGIN_VERSION "1.7"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
