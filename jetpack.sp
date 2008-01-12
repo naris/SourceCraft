@@ -257,7 +257,7 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 			}
 		}
 	}
-	CloseHandle(timer);
+	return Plugin_Handled;
 }
 
 public OnClientPutInServer(client)
