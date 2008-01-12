@@ -580,7 +580,6 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new adminonly = ReadPackCell(pack);
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
-	CloseHandle(pack);
 
 	new bool:isadmin = false;
 	if (IsClientConnected(client))
