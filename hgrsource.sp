@@ -863,18 +863,20 @@ public Action:Hooking(Handle:timer,any:index)
       gAllowedTimeLimit[index][ACTION_ROPE]--;
       if (gAllowedTimeLimit[index][ACTION_ROPE] <= 0)
       {
-        CloseHandle(timer); // Stop the timer
         Action_UnHook(index);
-        return;
+        CloseHandle(timer); // Stop the timer
+        return Plugin_Stop;
       }
     }
     Hook_Push(index);
   }
   else
   {
-    CloseHandle(timer); // Stop the timer
     Action_UnHook(index);
+    CloseHandle(timer); // Stop the timer
+    return Plugin_Stop;
   }
+  return Plugin_Handled;
 }
 
 public Action_UnHook(client)
@@ -949,17 +951,19 @@ public Action:GrabSearch(Handle:timer,any:index)
           gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
           gGrabbed[target]=true; // Tell plugin the target is being grabbed
           CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+          CloseHandle(timer); // Stop the timer
+          return Plugin_Stop;
         }
       }
     }
-    // Stop timer
-    CloseHandle(timer); // Stop the timer
   }
   else
   {
-    CloseHandle(timer); // Stop the timer
     Action_Drop(index);
+    CloseHandle(timer); // Stop the timer
+    return Plugin_Stop;
   }
+  return Plugin_Handled;
 }
 
 public Action:Grabbing(Handle:timer,any:index)
@@ -975,9 +979,9 @@ public Action:Grabbing(Handle:timer,any:index)
         gAllowedTimeLimit[index][ACTION_GRAB]--;
         if (gAllowedTimeLimit[index][ACTION_GRAB] <= 0)
         {
-          CloseHandle(timer); // Stop the timer
           Action_Drop(index);
-          return;
+          CloseHandle(timer); // Stop the timer
+          return Plugin_Stop;
         }
       }
 
@@ -1006,15 +1010,18 @@ public Action:Grabbing(Handle:timer,any:index)
     }
     else
     {
-      CloseHandle(timer); // Stop the timer
       Action_Drop(index);
+      CloseHandle(timer); // Stop the timer
+      return Plugin_Stop;
     }
   }
   else
   {
-    CloseHandle(timer); // Stop the timer
     Action_Drop(index);
+    CloseHandle(timer); // Stop the timer
+    return Plugin_Stop;
   }
+  return Plugin_Handled;
 }
 
 public Action_Drop(client)
@@ -1079,9 +1086,9 @@ public Action:Roping(Handle:timer,any:index)
       gAllowedTimeLimit[index][ACTION_ROPE]--;
       if (gAllowedTimeLimit[index][ACTION_ROPE] <= 0)
       {
-        CloseHandle(timer); // Stop the timer
         Action_Detach(index);
-        return Plugin_Handled;
+        CloseHandle(timer); // Stop the timer
+        return Plugin_Stop;
       }
     }
 
@@ -1106,8 +1113,9 @@ public Action:Roping(Handle:timer,any:index)
   }
   else
   {
-    CloseHandle(timer); // Stop the timer
     Action_Detach(index);
+    CloseHandle(timer); // Stop the timer
+    return Plugin_Stop;
   }
   return Plugin_Handled;
 }
