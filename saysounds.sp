@@ -54,6 +54,9 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added separate admin sound_limit and time_between_sounds convars.
 		* Changed multiple sound to check the "file" key if "file1" is not found.
+	1.8   Jan 11, 2008
+		* Modified by -=|JFH|=-Naris
+		* Fixed timer errors
 
 Todo:
 	* Multiple sound files for trigger word
@@ -251,7 +254,7 @@ public Action:Load_Sounds(Handle:timer){
 			}
 		} while (KvGotoNextKey(listfile));
 	}
-	//CloseHandle(timer);
+	return Plugin_Handled;
 }
 
 public OnClientAuthorized(client, const String:auth[]){
@@ -578,7 +581,6 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new singleonly = ReadPackCell(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	CloseHandle(pack);
-	//CloseHandle(timer);
 
 	new bool:isadmin = false;
 	if (IsClientConnected(client))
