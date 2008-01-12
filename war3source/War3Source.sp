@@ -175,10 +175,14 @@ public OnClientPutInServer(client)
                 m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
             }
 
+            new vecpos=GetClientVectorPosition(client);
             if(SAVE_ENABLED)
-                m_FirstSpawn[client]=War3Source_LoadPlayerData(client,GetClientVectorPosition(client));
+                m_FirstSpawn[client]=War3Source_LoadPlayerData(client,vecpos);
             else
                 m_FirstSpawn[client]=2;
+
+            if (m_FirstSpawn[client])
+                SetRace(vecpos, FindRace("human")); // Default race to human.
         }
         else
             SetFailState("[War3Source] There was a failure on processing client, halting.");

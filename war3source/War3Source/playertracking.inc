@@ -567,10 +567,7 @@ public War3Source_LoadPlayerData(client,vectorpos)
                 {
                     decl String:raceName[64]="";
                     SQLPlayerString(query,"race",raceName,sizeof(raceName));
-                    new race = FindRace(raceName);
-                    PrintToChat(client, "Set Race to %d=%s", race, raceName);
-                    LogMessage("Set Race for %N to %d=%s\n", client, race, raceName);
-                    SetRace(vectorpos,race);
+                    SetRace(vectorpos,FindRace(raceName));
 
                     SetCredits(vectorpos,SQLPlayerInt(query,"credits"));
                     SetOverallLevel(vectorpos,SQLPlayerInt(query,"overall_level"));
@@ -637,8 +634,6 @@ public War3Source_SavePlayerData(client,vectorpos)
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("[War3Source] Unable to update player: %s\nSQL:%s\n", error, querySave);
             }
-            else
-                LogMessage(querySave);
         }
     }
 }

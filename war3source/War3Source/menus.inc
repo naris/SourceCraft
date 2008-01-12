@@ -75,10 +75,9 @@ public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
         if (m_FirstSpawn[client] > 1)
-        {
             War3Source_RaceMenu(client, true);
-        }
-        m_FirstSpawn[client]=0;
+        else
+            m_FirstSpawn[client]=0;
     }
 	else if (action == MenuAction_End)
 	{
@@ -218,7 +217,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
             if(selection >= 0&&selection<RACE_COUNT)
             {
                 // Okay, they selected a valid race
-                if(IsPlayerAlive(client))
+                if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
                 {
                     SetPendingRace(vecpos,selection);
                     new Handle:race=Race(selection);
@@ -235,6 +234,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
                     GetArrayString(race,2,buf,sizeof(buf));
                     PrintToChat(client, "%c[War3Source] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
+                m_FirstSpawn[client]=0;
             }
         }
     }

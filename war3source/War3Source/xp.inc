@@ -61,25 +61,28 @@ public DoLevelCheck(client,vectorpos)
 public ShowXP(client,vecpos)
 {
     new race=GetRace(vecpos);
-    new level=GetLevel(vecpos,race);
-    decl String:racename[64];
-    new Handle:racedata=Race(race);
-    GetArrayString(racedata,0,racename,63);
-    if (level<MAX_LEVELS)
+    if (race >= 0)
     {
-        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP. (Overall Level %d)",
-                    COLOR_GREEN,COLOR_DEFAULT,racename,level,
-                    GetXP(vecpos,race),ReqLevelXP(level+1),
-                    GetOverallLevel(vecpos));
-    }
-    else
-    {
-        PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP. (Overall Level %d)",
-                    COLOR_GREEN,COLOR_DEFAULT,racename,level,
-                    GetXP(vecpos,race),GetOverallLevel(vecpos));
+        new level=GetLevel(vecpos,race);
+        decl String:racename[64];
+        new Handle:racedata=Race(race);
+        GetArrayString(racedata,0,racename,63);
+        if (level<MAX_LEVELS)
+        {
+            PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP / %d XP. (Overall Level %d)",
+                        COLOR_GREEN,COLOR_DEFAULT,racename,level,
+                        GetXP(vecpos,race),ReqLevelXP(level+1),
+                        GetOverallLevel(vecpos));
+        }
+        else
+        {
+            PrintToChat(client,"%c[War3Source] %c%s - Level %d - %d XP. (Overall Level %d)",
+                        COLOR_GREEN,COLOR_DEFAULT,racename,level,
+                        GetXP(vecpos,race),GetOverallLevel(vecpos));
+        }
     }
 }
- 
+
 public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife,bool:backstab)
 {
     new newxp,killxp;
