@@ -1,8 +1,8 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: jetpack.inc
+ * File: saytext2.inc
  * Description: stock for SayText2
- * Author(s): Tauphi
+ * Author(s): Naris (using code by Tauphi)
  */
 
 #if defined _saytext2_included

@@ -181,7 +181,7 @@ public OnClientPutInServer(client)
             else
                 m_FirstSpawn[client]=2;
 
-            if (m_FirstSpawn[client])
+            if (m_FirstSpawn[client] == 2)
                 SetRace(vecpos, FindRace("human")); // Default race to human.
         }
         else

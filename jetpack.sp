@@ -11,6 +11,8 @@
 #include <sourcemod>
 #include <sdktools>
 
+#include "topmessage"
+
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 #define REQUIRE_PLUGIN
@@ -223,7 +225,39 @@ public OnGameFrame()
 							AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
 
 						if (g_iFuel[i] > 0)
+						{
 							g_iFuel[i]--;
+							/* Display the Fuel Gauge */
+							decl String:gauge[30] = "[====+=====|=====+====]";
+							new Float:percent = float(g_iFuel[i]) / float(g_iRefuelAmount[i]);
+							new pos = RoundFloat(percent * 21.0);
+							if (pos < 21)
+							{
+								gauge{pos} = '#';
+								gauge{pos+1} = 0;
+							}
+
+							new r,g,b;
+							if (percent <= 0.25 || g_iFuel[i] < 25)
+							{
+								r = 255;
+								g = 0;
+								b = 0;
+							}
+							else if (percent >= 0.50)
+							{
+								r = 0;
+								g = 255;
+								b = 0;
+							}
+							else
+							{
+								r = 255;
+								g = 255;
+								b = 0;
+							}
+							SendTopMessage(i, pos+2, 1, r,g,b,255, gauge);
+						}
 					}
 				}
 
@@ -233,8 +267,9 @@ public OnGameFrame()
 					CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
 					if(GetConVarBool(sm_jetpack_announce))
 					{
+						SendTopMessage(i, 1, 1, 255,0,0,128, "[] Your jetpack has run out of fuel");
 						PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
-								    COLOR_GREEN,COLOR_DEFAULT);
+									COLOR_GREEN,COLOR_DEFAULT);
 					}
 				}
 			}
@@ -252,8 +287,9 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 			g_iFuel[client] = tank_size;
 			if(GetConVarBool(sm_jetpack_announce))
 			{
+				SendTopMessage(client, 30, 1, 0,255,0,128, "[====+=====|=====+====]");
 				PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
-						COLOR_GREEN,COLOR_DEFAULT);
+							COLOR_GREEN,COLOR_DEFAULT);
 			}
 		}
 	}
