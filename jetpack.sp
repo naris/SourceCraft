@@ -233,7 +233,7 @@ public OnGameFrame()
 							new pos = RoundFloat(percent * 21.0);
 							if (pos < 21)
 							{
-								gauge{pos} = '#';
+								gauge{pos} = ']';
 								gauge{pos+1} = 0;
 							}
 
