@@ -864,7 +864,7 @@ public Action:Hooking(Handle:timer,any:index)
       if (gAllowedTimeLimit[index][ACTION_ROPE] <= 0)
       {
         Action_UnHook(index);
-        CloseHandle(timer); // Stop the timer
+        //CloseHandle(timer); // Stop the timer
         return Plugin_Stop;
       }
     }
@@ -873,7 +873,7 @@ public Action:Hooking(Handle:timer,any:index)
   else
   {
     Action_UnHook(index);
-    CloseHandle(timer); // Stop the timer
+    //CloseHandle(timer); // Stop the timer
     return Plugin_Stop;
   }
   return Plugin_Handled;
@@ -951,7 +951,7 @@ public Action:GrabSearch(Handle:timer,any:index)
           gGrabDist[index]=GetDistanceBetween(clientloc,targetloc); // Tell plugin the distance between the 2 to maintain
           gGrabbed[target]=true; // Tell plugin the target is being grabbed
           CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
-          CloseHandle(timer); // Stop the timer
+          //CloseHandle(timer); // Stop the timer
           return Plugin_Stop;
         }
       }
@@ -960,7 +960,7 @@ public Action:GrabSearch(Handle:timer,any:index)
   else
   {
     Action_Drop(index);
-    CloseHandle(timer); // Stop the timer
+    //CloseHandle(timer); // Stop the timer
     return Plugin_Stop;
   }
   return Plugin_Handled;
@@ -980,7 +980,7 @@ public Action:Grabbing(Handle:timer,any:index)
         if (gAllowedTimeLimit[index][ACTION_GRAB] <= 0)
         {
           Action_Drop(index);
-          CloseHandle(timer); // Stop the timer
+          //CloseHandle(timer); // Stop the timer
           return Plugin_Stop;
         }
       }
@@ -1011,14 +1011,14 @@ public Action:Grabbing(Handle:timer,any:index)
     else
     {
       Action_Drop(index);
-      CloseHandle(timer); // Stop the timer
+      //CloseHandle(timer); // Stop the timer
       return Plugin_Stop;
     }
   }
   else
   {
     Action_Drop(index);
-    CloseHandle(timer); // Stop the timer
+    //CloseHandle(timer); // Stop the timer
     return Plugin_Stop;
   }
   return Plugin_Handled;
@@ -1087,7 +1087,7 @@ public Action:Roping(Handle:timer,any:index)
       if (gAllowedTimeLimit[index][ACTION_ROPE] <= 0)
       {
         Action_Detach(index);
-        CloseHandle(timer); // Stop the timer
+        //CloseHandle(timer); // Stop the timer
         return Plugin_Stop;
       }
     }
@@ -1114,7 +1114,7 @@ public Action:Roping(Handle:timer,any:index)
   else
   {
     Action_Detach(index);
-    CloseHandle(timer); // Stop the timer
+    //CloseHandle(timer); // Stop the timer
     return Plugin_Stop;
   }
   return Plugin_Handled;

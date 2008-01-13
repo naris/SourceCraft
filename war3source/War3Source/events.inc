@@ -68,10 +68,10 @@ public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBro
 public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new uid_victim=GetEventInt(event,"userid");
-    new uid_attacker=GetEventInt(event,"attacker");
+    new victimIndex=GetClientOfUserId(uid_victim);
+
     if(uid_victim > 0)
     {
-        new victimIndex=GetClientOfUserId(uid_victim);
         new vecposvictim=GetClientVectorPosition(victimIndex);
         if(vecposvictim!=-1)
         {
@@ -81,10 +81,11 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
                 War3Source_SkillMenu(victimIndex,vecposvictim);
         }
     }
+
+    new uid_attacker=GetEventInt(event,"attacker");
     if(uid_victim != uid_attacker && uid_attacker > 0)
     {
         new attackerIndex=GetClientOfUserId(uid_attacker);
-        new victimIndex=GetClientOfUserId(uid_victim);
         new vecPos=GetClientVectorPosition(attackerIndex);
         if(vecPos != -1 && GetClientTeam(attackerIndex) != GetClientTeam(victimIndex))
         {
@@ -127,6 +128,18 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
 
             GiveKillXP(attackerIndex,vecPos,victimIndex,headshot,melee,backstab);
             GiveKillCredits(attackerIndex,vecPos);
+        }
+    }
+
+    new uid_assister=GetEventInt(event,"assister");
+    if(uid_assister > 0)
+    {
+        new assisterIndex=GetClientOfUserId(uid_assister);
+        new vecPos=GetClientVectorPosition(assisterIndex);
+        if(vecPos != -1 && GetClientTeam(assisterIndex) != GetClientTeam(victimIndex))
+        {
+            GiveKillXP(assisterIndex,vecPos,victimIndex,false,false,false);
+            GiveKillCredits(assisterIndex,vecPos);
         }
     }
 }
