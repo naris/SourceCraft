@@ -348,12 +348,13 @@ StartJetpack(client)
 
 StopJetpack(client)
 {
-	if(g_bJetpackOn[client])
+	if (g_bJetpackOn[client])
 	{
-		if(IsAlive(client)) SetMoveType(client, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
-		StopSound(client, SNDCHAN_AUTO, g_sSound);
 		g_bJetpackOn[client] = false;
+		if(IsAlive(client))
+			SetMoveType(client, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
 	}
+	StopSound(client, SNDCHAN_AUTO, g_sSound);
 }
 
 SetMoveType(client, movetype, movecollide)
