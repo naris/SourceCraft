@@ -26,7 +26,7 @@ new raceID; // The ID we are assigned to
 new bool:m_HasRespawned[MAXPLAYERS+1];
 new bool:m_IsRespawning[MAXPLAYERS+1];
 new bool:m_AllowChainLightning[MAXPLAYERS+1];
-new bool:m_InSuddenDeath;
+new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
 new Handle:cvarChainCooldown = INVALID_HANDLE;
 
@@ -90,8 +90,6 @@ public OnWar3PluginReady()
 
 public OnMapStart()
 {
-    m_InSuddenDeath = false;
-
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
@@ -210,9 +208,11 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (m_IsRespawning[client])
                 {
                     m_IsRespawning[client]=false;
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(client, Origin);
-                    TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
+
+                    if (GameType != cstrike)
+                        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+
+                    TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
                 }
             }
@@ -228,8 +228,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (war3player>-1)
     {
         new race=War3_GetRace(war3player);
-        if (race==raceID && (!m_HasRespawned[index] ||
-                             (GameType == tf2 && !m_InSuddenDeath)))
+        if (race==raceID && (!m_HasRespawned[index] || GameType != cstrike))
         {
             new skill=War3_GetSkillLevel(war3player,race,2);
             if (skill)
@@ -248,9 +247,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
                 if (GetRandomInt(1,100)<=percent)
                 {
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(index, Origin);
-                    TE_SetupGlowSprite(Origin,g_purpleGlow,1.0,3.5,150);
+                    GetClientAbsOrigin(index, m_DeathLoc[index]);
+                    TE_SetupGlowSprite(m_DeathLoc[index],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
 
                     AuthTimer(0.5,index,RespawnPlayerHandle);
@@ -273,7 +271,6 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    m_InSuddenDeath=true;
     for(new x=1;x<=MAXPLAYERS;x++)
     {
         m_HasRespawned[x]=false;

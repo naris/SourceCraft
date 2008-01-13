@@ -31,6 +31,7 @@ new m_VelocityOffset;
 new Handle:cvarTeleportCooldown = INVALID_HANDLE;
 
 new m_TeleportCount[MAXPLAYERS+1];
+new m_UltimatePressed[MAXPLAYERS+1];
 
 new Float:spawnLoc[MAXPLAYERS+1][3];
 
@@ -127,46 +128,52 @@ public OnRaceSelected(client,war3player,oldrace,race)
 
 public OnUltimateCommand(client,war3player,race,bool:pressed)
 {
-    if (race==raceID && pressed && IsPlayerAlive(client))
+    if (race==raceID && IsPlayerAlive(client))
     {
         new ult_level=War3_GetSkillLevel(war3player,race,3);
         if(ult_level)
         {
-            if (m_TeleportCount[client] < 2)
-            {
-                new bool:toSpawn = false;
-                if (m_TeleportCount[client] >= 1)
-                {
-                    new Float:vecVelocity[3];
-                    GetEntDataVector(client, m_VelocityOffset, vecVelocity);
-                    if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 &&
-                        (vecVelocity[2] >= -10.0 && vecVelocity[2] <= 10.0))
-                    {
-                        toSpawn = true;
-                    }
-                    else
-                    {
-                        PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet.",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                        return;
-                    }
-                }
-
-                PrintToChat(client,"%c[War3Source]%c %cTeleport%cing!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-
-                HumanAlliance_Teleport(client,war3player,ult_level, toSpawn);
-                if (!toSpawn)
-                {
-                    new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
-                    if (cooldown > 0.0)
-                        CreateTimer(cooldown,AllowTeleport,client);
-                }
-            }
+            if (pressed)
+                m_UltimatePressed[client] = GetSysTickCount();
             else
             {
-                PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet!",
+                if (m_TeleportCount[client] < 2)
+                {
+                    new bool:toSpawn = false;
+                    if (m_TeleportCount[client] >= 1)
+                    {
+                        new Float:vecVelocity[3];
+                        GetEntDataVector(client, m_VelocityOffset, vecVelocity);
+                        if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 &&
+                            (vecVelocity[2] >= -10.0 && vecVelocity[2] <= 10.0))
+                        {
+                            toSpawn = true;
+                        }
+                        else
+                        {
+                            PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet.",
+                                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                            return;
+                        }
+                    }
+
+                    PrintToChat(client,"%c[War3Source]%c %cTeleport%cing!",
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+
+                    HumanAlliance_Teleport(client,war3player,ult_level, toSpawn,
+                                           GetSysTickCount() - m_UltimatePressed[client]);
+                    if (!toSpawn)
+                    {
+                        new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
+                        if (cooldown > 0.0)
+                            CreateTimer(cooldown,AllowTeleport,client);
+                    }
+                }
+                else
+                {
+                    PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet!",
                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                }
             }
         }
     }
@@ -394,7 +401,7 @@ public HumanAlliance_Bash(war3player, victim)
     }
 }
 
-public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
+public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn, time_pressed)
 {
     new Float:origin[3];
     GetClientAbsOrigin(client, origin);
@@ -410,17 +417,20 @@ public HumanAlliance_Teleport(client,war3player,ult_level, bool:to_spawn)
     }
     else
     {
+        if (time_pressed > 3000)
+            time_pressed = 3000;
+
         new Float:range=1.0;
         switch(ult_level)
         {
             case 1:
-                range=100.0;
+                range=(float(time_pressed) / 3000.0) * 100.0;
             case 2:
-                range=250.0;
+                range=(float(time_pressed) / 3000.0) * 250.0;
             case 3:
-                range=450.0;
+                range=(float(time_pressed) / 3000.0) * 450.0;
             case 4:
-                range=600.0;
+                range=(float(time_pressed) / 3000.0) * 600.0;
         }
 
         new Float:clientloc[3],Float:clientang[3];

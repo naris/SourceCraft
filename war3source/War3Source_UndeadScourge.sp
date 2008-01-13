@@ -297,7 +297,7 @@ public Undead_Levitation(client, war3player, skilllevel)
     new sock = War3_GetShopItem("Sock of the Feather");
     if (sock != -1 && War3_GetOwnsItem(war3player,sock))
     {
-        sock *= 0.8;
+        gravity *= 0.8;
     }
 
     new Float:start[3];

@@ -76,7 +76,7 @@ public OnWar3PluginReady()
                            "Flaming Wrath",
                            "You cause damage to opponents around you.",
                            "Suicide Bomber",
-                           "You explode when you die",
+                           "You explode when you die, causing great damage to opponents around you",
                            "Mad Bomber",
                            "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!");
 
