@@ -296,8 +296,7 @@ public CheckJoin(client, const String:auth[]){
 					decl String:file[8] = "file";
 					new count = KvGetNum(listfile, "count", 1);
 					if (count > 1){
-						new number = (count > 1) ? GetRandomInt(1,count) : 1;
-						Format(file, sizeof(file), "file%d", number);
+						Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 					if (!strlen(filelocation) && StrEqual(file, "file1")){
@@ -328,8 +327,7 @@ public CheckJoin(client, const String:auth[]){
 				decl String:file[8] = "file";
 				new count = KvGetNum(listfile, "count", 1);
 				if (count > 1){
-					new number = (count > 1) ? GetRandomInt(1,count) : 1;
-					Format(file, sizeof(file), "file%d", number);
+					Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
 				}
 				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 				if (!strlen(filelocation) && StrEqual(file, "file1")){
@@ -391,8 +389,7 @@ public OnClientDisconnect(client){
 			decl String:file[8] = "file";
 			new count = KvGetNum(listfile, "count", 1);
 			if (count > 1){
-				new number = (count > 1) ? GetRandomInt(1,count) : 1;
-				Format(file, sizeof(file), "file%d", number);
+				Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
 			}
 			KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 			if (!strlen(filelocation) && StrEqual(file, "file1")){
@@ -418,10 +415,8 @@ Submit_Sound(client)
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:file[8] = "file";
 	new count = KvGetNum(listfile, "count", 1);
-	new number;
 	if (count > 1){
-		number = (count > 1) ? GetRandomInt(1,count) : 1;
-		Format(file, sizeof(file), "file%d", number);
+		Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
 	}
 	KvGetString(listfile, file, filelocation, sizeof(filelocation));
 	if (!strlen(filelocation) && StrEqual(file, "file1")){
