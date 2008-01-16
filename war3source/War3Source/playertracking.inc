@@ -448,50 +448,32 @@ public War3Source_SQLTable()
 {
     if (DBIDB)
     {
-        // Check if the table exists
-        new Handle:tableCheck=SQL_Query(DBIDB,"SELECT * FROM war3source LIMIT 1");
-        new bool:created=(tableCheck != INVALID_HANDLE);
-        if (created)
-            CloseHandle(tableCheck);
-        else
+        // Create the tables, if they don;t exist
+        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_players (steamid varchar(64) not null, race varchar(30), credits int default 0, overall_level int default 0, date_added timestamp default current_timestamp, last_update timestamp default current_timestamp, PRIMARY KEY(steamid))"))
         {
-            if(SQL_FastQuery(DBIDB,"CREATE TABLE war3source (steamid varchar(64));"))
-                created=true;
-            else
-            {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                SetFailState("[War3Source] Error in the creation of the SQL table:%s", error);
-            }
+            decl String:error[256] = "";
+            SQL_GetError(DBIDB, error, sizeof(error));
+            LogError("[War3Source] Error in the creation of the w3s_players SQL table:%s", error);
+            SetFailState("[War3Source] Error in the creation of the w3s_players SQL table");
         }
-        if(created)
+        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_race (steamid varchar(64) not null, race varchar(30) not null, xp int default 0, level int default 0, PRIMARY KEY(steamid,race))"))
         {
-            // We need to check again because we may set to true in the last function
-            CreateIfColumnDoesntExist(DBIDB,"steamid","varchar(64)");
-            CreateIfColumnDoesntExist(DBIDB,"race","varchar(30)");
-            CreateIfColumnDoesntExist(DBIDB,"credits","varchar(30)");
-            CreateIfColumnDoesntExist(DBIDB,"overall_level","varchar(30)");
+            decl String:error[256] = "";
+            SQL_GetError(DBIDB, error, sizeof(error));
+            LogError("[War3Source] Error in the creation of the w3s_skills SQL table:%s", error);
+            SetFailState("[War3Source] Error in the creation of the w3s_skills SQL table");
+        }
+        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_skills (steamid varchar(64) not null, race varchar(30) not null, skill int not null, skill_level int default 0,  PRIMARY KEY(steamid,race,skill))"))
+        {
+            decl String:error[256] = "";
+            SQL_GetError(DBIDB, error, sizeof(error));
+            LogError("[War3Source] Error in the creation of the w3s_skills SQL table:%s", error);
+            SetFailState("[War3Source] Error in the creation of the w3s_skills SQL table");
         }
     }
 }
 
-public CreateIfColumnDoesntExist(Handle:DB,const String:columnname[],const String:settings[])
-{
-    decl String:query[256];
-    Format(query,sizeof(query),"SELECT %s FROM war3source LIMIT 1",columnname);
-    if(!SQL_FastQuery(DB,query))
-    {
-        Format(query,sizeof(query),"ALTER TABLE war3source ADD COLUMN %s %s",columnname,settings);
-        if (!SQL_FastQuery(DB,query))
-        {
-            decl String:error[256];
-            SQL_GetError(DB, error, sizeof(error));
-            SetFailState("Error adding column %s: %s\nSQL:%s\n", columnname, error, query);
-        }
-    }
-}
-
-public bool:SQLPlayerString(Handle:query,const String:columnname[], String:result[], maxlength)
+public bool:FetchSQLString(Handle:query,const String:columnname[], String:result[], maxlength)
 {
     new column;
     SQL_FieldNameToNum(query,columnname,column);
@@ -501,51 +483,11 @@ public bool:SQLPlayerString(Handle:query,const String:columnname[], String:resul
         return (SQL_FetchString(query,column,result,maxlength) > 0);
 }
 
-public SQLPlayerInt(Handle:query,const String:columnname[])
+public FetchSQLInt(Handle:query,const String:columnname[])
 {
     new column;
     SQL_FieldNameToNum(query,columnname,column);
-    if (SQL_IsFieldNull(query, column))
-        return 0;
-    else
-    {
-        decl String:result[16] = "";
-        SQL_FetchString(query,column,result,sizeof(result));
-        return StringToInt(result);
-    }
-}
-
-public War3Source_InsertPlayer(Handle:db,client)
-{
-    decl String:steamid[64] = "";
-    if(GetClientAuthString(client,steamid,sizeof(steamid)))
-    {
-        decl String:buffer[4096] = "";
-        Format(buffer,sizeof(buffer),"INSERT INTO war3source (steamid,race,credits,overall_level");
-        for(new x=0;x<RACE_COUNT;x++)
-        {
-            decl String:short[16] = "";
-            new Handle:race=Race(x);
-            GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
-            Format(buffer,sizeof(buffer),"%s,%s_xp,%s_level",buffer,short,short);
-            for(new y=0;y<SKILL_COUNT;y++)
-                Format(buffer,sizeof(buffer),"%s,%s_skilllevel_%d",buffer,short,y);
-        }
-        Format(buffer,sizeof(buffer),"%s) VALUES ('%s','0','0','0'",buffer,steamid);
-        for(new x=0;x<RACE_COUNT;x++)
-        {
-            Format(buffer,sizeof(buffer),"%s,'0','0'",buffer);
-            for(new y=0;y<SKILL_COUNT;y++)
-                Format(buffer,sizeof(buffer),"%s,'0'",buffer);
-        }
-        Format(buffer,sizeof(buffer),"%s)",buffer);
-        if (!SQL_FastQuery(db,buffer))
-        {
-            decl String:error[256] = "";
-            SQL_GetError(db, error, sizeof(error));
-            LogError("[War3Source] Unable to insert player: %s\nSQL:%s\n", error, buffer);
-        }
-    }
+    return SQL_FetchInt(query,column);
 }
 
 public War3Source_LoadPlayerData(client,vectorpos)
@@ -557,40 +499,55 @@ public War3Source_LoadPlayerData(client,vectorpos)
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
             decl String:buf[256] = "";
-            Format(buf,sizeof(buf),"SELECT * FROM war3source WHERE steamid = '%s'",steamid);
+            Format(buf,sizeof(buf),
+                   "SELECT (race,credits,overall_level) FROM w3s_players WHERE steamid = '%s'",
+                   steamid);
+
             new Handle:query=SQL_Query(DBIDB,buf);
             if(query)
             {
-                SQL_Rewind(query);
                 fetch = SQL_FetchRow(query);
-                if(fetch)
+                if (fetch)
                 {
                     decl String:raceName[64]="";
-                    SQLPlayerString(query,"race",raceName,sizeof(raceName));
+                    FetchSQLString(query,"race",raceName,sizeof(raceName));
                     SetRace(vectorpos,FindRace(raceName));
 
-                    SetCredits(vectorpos,SQLPlayerInt(query,"credits"));
-                    SetOverallLevel(vectorpos,SQLPlayerInt(query,"overall_level"));
-                    for(new x=0;x<RACE_COUNT;x++)
+                    SetCredits(vectorpos,FetchSQLInt(query,"credits"));
+                    SetOverallLevel(vectorpos,FetchSQLInt(query,"overall_level"));
+
+                    Format(buf,sizeof(buf),
+                           "SELECT (race,xp,level) FROM w3s_player_races WHERE steamid = '%s'",
+                           steamid);
+
+                    new Handle:raceQuery=SQL_Query(DBIDB,buf);
+                    if(raceQuery)
                     {
-                        new Handle:race=Race(x);
-                        decl String:short[16]="";
-                        GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
-                        decl String:buffer[64]="";
-                        Format(buffer,sizeof(buffer),"%s_xp",short);
-                        SetXP(vectorpos,x,SQLPlayerInt(query,buffer));
-                        Format(buffer,sizeof(buffer),"%s_level",short);
-                        SetLevel(vectorpos,x,SQLPlayerInt(query,buffer));
-                        for(new y=0;y<SKILL_COUNT;y++)
+                        while (SQL_FetchRow(raceQuery))
                         {
-                            Format(buffer,sizeof(buffer),"%s_skilllevel_%d",short,y);
-                            SetSkillLevel(vectorpos,x,y,SQLPlayerInt(query,buffer));
+                            FetchSQLString(raceQuery,"race",raceName,sizeof(raceName));
+                            new raceId=FindRace(raceName);
+                            SetXP(vectorpos,raceId,FetchSQLInt(query,"xp"));
+                            SetLevel(vectorpos,raceId,FetchSQLInt(query,"level"));
+
+                            Format(buf,sizeof(buf),
+                                   "SELECT (skill,level) FROM w3s_player_skills WHERE steamid = '%s' and race = '%s'",
+                                   steamid,raceName);
+
+                            new Handle:skillQuery=SQL_Query(DBIDB,buf);
+                            if(skillQuery)
+                            {
+                                while (SQL_FetchRow(skillQuery))
+                                {
+                                    SetSkillLevel(vectorpos,raceId,
+                                                  FetchSQLInt(skillQuery,"skill"),
+                                                  FetchSQLInt(skillQuery,"level"));
+                                }
+                                CloseHandle(skillQuery);
+                            }
                         }
+                        CloseHandle(raceQuery);
                     }
-                }
-                else
-                {
-                    War3Source_InsertPlayer(DBIDB,client);
                 }
                 CloseHandle(query);
             }
@@ -609,30 +566,62 @@ public War3Source_SavePlayerData(client,vectorpos)
         {
             decl String:raceName[64]="";
             GetRaceShortName(Race(GetRace(vectorpos)), raceName, sizeof(raceName));
-            decl String:bufferSave[4096]="";
-            Format(bufferSave,sizeof(bufferSave),"race = '%s', credits = '%d', overall_level = '%d'",
-                   raceName,GetCredits(vectorpos),GetOverallLevel(vectorpos));
-            for(new x=0;x<RACE_COUNT;x++)
-            {
-                new Handle:race=Race(x);
-                decl String:short[16]="";
-                GetArrayString(race,RACE_SHORT_NAME,short,sizeof(short));
-                Format(bufferSave,sizeof(bufferSave),"%s, %s_xp = '%d', %s_level = '%d'",
-                       bufferSave,short,GetXP(vectorpos,x),short,GetLevel(vectorpos,x));
-                for(new y=0;y<SKILL_COUNT;y++)
-                {
-                    Format(bufferSave,sizeof(bufferSave),"%s, %s_skilllevel_%d = '%d'",
-                           bufferSave,short,y,GetSkillLevel(vectorpos,x,y));
-                }
-            }
-            decl String:querySave[4096] = "";
-            Format(querySave,sizeof(querySave),"UPDATE war3source SET %s WHERE steamid = '%s'",
-                   bufferSave,steamid);
-            if (!SQL_FastQuery(DBIDB,querySave))
+
+            new credits       = GetCredits(vectorpos);
+            new overall_level = GetOverallLevel(vectorpos);
+
+            decl String:replaceQuery[512] = "";
+            Format(replaceQuery,sizeof(replaceQuery),
+                   "REPLACE INTO w3s_players (steamid,race,credits,overall_level,last_update) VALUES ('%s','%s',%s,%s,current_timestamp)",
+                   steamid, raceName, credits, overall_level);
+
+            if (!SQL_FastQuery(DBIDB,replaceQuery))
             {
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("[War3Source] Unable to update player: %s\nSQL:%s\n", error, querySave);
+                LogError("[War3Source] Unable to replace player: %s\nSQL:%s\n",
+                         error, replaceQuery);
+                return;
+            }
+
+            for(new raceId=0;raceId<RACE_COUNT;raceId++)
+            {
+                new Handle:race=Race(raceId);
+                GetArrayString(race,RACE_SHORT_NAME,raceName,sizeof(raceName));
+
+                new xp    = GetXP(vectorpos,raceId);
+                new level = GetLevel(vectorpos,raceId);
+
+                Format(replaceQuery,sizeof(replaceQuery),
+                       "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)",
+                       steamid, raceName, xp, level);
+
+                if (!SQL_FastQuery(DBIDB,replaceQuery))
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("[War3Source] Unable to replace player's race: %s\nSQL:%s\n",
+                             error, replaceQuery);
+                    return;
+                }
+
+                for(new skill=0;skill<SKILL_COUNT;skill++)
+                {
+                    new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
+
+                    Format(replaceQuery,sizeof(replaceQuery),
+                           "REPLACE INTO w3s_player_skills (steamid,race,skill,level) VALUES ('%s','%s',%d,%d)",
+                           steamid, raceName, skill, skillLevel);
+
+                    if (!SQL_FastQuery(DBIDB,replaceQuery))
+                    {
+                        decl String:error[256] = "";
+                        SQL_GetError(DBIDB, error, sizeof(error));
+                        LogError("[War3Source] Unable to insert player's skill: %s\nSQL:%s\n",
+                                 error, replaceQuery);
+                        return;
+                    }
+                }
             }
         }
     }

@@ -42,21 +42,6 @@ public Native_War3_CreateRace(Handle:plugin,numParams)
                                    skill1,skill1_desc,skill2,skill2_desc,skill3,skill3_desc,
                                    ult,ult_desc,required_level);
         PushArrayCell(arrayRaces,race);
-        if(DBIDB)
-        {
-            decl String:buffer[32]="";
-            new Handle:raceHandle=Race(RACE_COUNT-1);
-            GetArrayString(raceHandle,1,short,sizeof(short));
-            Format(buffer,sizeof(buffer),"%s_xp",short);
-            CreateIfColumnDoesntExist(DBIDB,buffer,"varchar(30)");
-            Format(buffer,sizeof(buffer),"%s_level",short);
-            CreateIfColumnDoesntExist(DBIDB,buffer,"varchar(30)");
-            for(new y=0;y<SKILL_COUNT;y++)
-            {
-                Format(buffer,sizeof(buffer),"%s_skilllevel_%d",short,y);
-                CreateIfColumnDoesntExist(DBIDB,buffer,"varchar(30)");
-            }
-        }
         return GetArraySize(arrayRaces)-1;
     }
     return -1;
