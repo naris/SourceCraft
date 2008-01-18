@@ -4,6 +4,14 @@
  * Description: Jetpack for source.
  * Author(s): Knagg0
  * Modified by: -=|JFH|=-Naris (Murray Wilson)
+ *              -- Added Fuel & Refueling Time
+ *              -- Added AdminOnly
+ *              -- Added Give/Take Jetpack 
+ *              -- Added Admin Interface
+ *              -- Added Native Interface
+ *
+ * Added by: Grrrrrrrrrrrrrrrrrrr
+ *           -- Added Flame Effect
  */
  
 #pragma semicolon 1
@@ -17,7 +25,7 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "2.0.3"
 
 #define MOVETYPE_WALK		2
 #define MOVETYPE_FLYGRAVITY	5
@@ -219,10 +227,14 @@ public OnGameFrame()
 							{
 								StartJetpack(i);
 								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+								AddFireEffect(i);
 							}
 						}
 						else
+						{
 							AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
+							AddFireEffect(i);
+						}
 
 						if (g_iFuel[i] > 0)
 						{
@@ -368,13 +380,50 @@ SetMoveType(client, movetype, movecollide)
 AddVelocity(client, Float:speed)
 {
 	if(g_iVelocity == -1) return;
-	
+
 	new Float:vecVelocity[3];
 	GetEntDataVector(client, g_iVelocity, vecVelocity);
-	
+
 	vecVelocity[2] += speed;
 
 	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vecVelocity);
+}
+
+// Updated by Grrrrrrrrrrrrrrrrrrr
+AddFireEffect(client)
+{
+	new Float:vecPos[3],Float:vecDir[3];
+	GetClientAbsOrigin(client, vecPos);
+	GetClientEyePosition(client,vecDir);
+
+	vecDir[0] = 80.0;
+	if(vecDir[1]==0.0)
+	{
+		vecDir[1] = 179.8;
+	}
+	else if(vecDir[1]==90.0||vecDir[1]==-90.0)
+	{
+		vecDir[1] = (vecDir[1]*-1.0);
+	}
+	else if(vecDir[1]>90.0)
+	{
+		vecDir[1] = ((vecDir[1]-90.0)*-1.0);
+	}
+	else if(vecDir[1]<-90.0)
+	{
+		vecDir[1] = ((vecDir[1]+90.0)*-1.0);
+	}
+	else if(vecDir[1]<90.0&&vecDir[1]>0.0)
+	{
+		vecDir[1] = ((vecDir[1]+90.0)*-1.0);
+	}
+	else if(vecDir[1]<0.0&&vecDir[1]>-90.0)
+	{
+		vecDir[1] = ((vecDir[1]-90.0)*-1.0);
+	}
+
+	TE_SetupEnergySplash(vecPos, vecDir, false);
+	TE_SendToAll();
 }
 
 bool:IsAlive(client)
