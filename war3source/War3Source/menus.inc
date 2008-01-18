@@ -1065,7 +1065,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
-                    SetOverallLevel(vectorpos, GetOverallLevel(vectorpos)+1);
+                    SetOverallLevel(targetvecpos, GetOverallLevel(targetvecpos)+1);
                     War3Source_SkillMenu(index,targetvecpos);
 
                     PrintToChat(client, "%c[War3Source] %cYou gave player \"%s\" a level.",
@@ -1087,7 +1087,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
-                    SetOverallLevel(vectorpos, GetOverallLevel(vectorpos)-1);
+                    SetOverallLevel(targetvecpos, GetOverallLevel(targetvecpos)-1);
                     for(new x=0;x<SKILL_COUNT;x++)
                         SetSkillLevel(targetvecpos,race,x,0);
 

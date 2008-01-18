@@ -315,7 +315,7 @@ public Action:War3Source_CMD_GiveLevel(client,args)
                 else
                 {
                     SetLevel(vecpos,race,newlevel);
-                    SetOverallLevel(vectorpos, GetOverallLevel(vectorpos)+1);
+                    SetOverallLevel(vecpos, GetOverallLevel(vecpos)+1);
                     PrintToConsole(client,"[War3Source] You just gave player \"%s\" a level.",name);
                     PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
@@ -361,7 +361,7 @@ public Action:War3Source_CMD_RemoveLevel(client,args)
                     for(new y=0;y<SKILL_COUNT;y++)
                         SetSkillLevel(vecpos,race,y,0);
                     SetLevel(vecpos,race,newlevel);
-                    SetOverallLevel(vectorpos, GetOverallLevel(vectorpos)-1);
+                    SetOverallLevel(vecpos, GetOverallLevel(vecpos)-1);
                     PrintToConsole(client,"[War3Source] You just removed a level from player \"%s\".",name);
                     PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
