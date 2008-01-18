@@ -57,6 +57,11 @@ Versions:
 	1.8   Jan 11, 2008
 		* Modified by -=|JFH|=-Naris
 		* Fixed timer errors
+	1.9   Jan 18, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added Sound Duration setting in config file
+		* Various fixes
+
 
 Todo:
 	* Multiple sound files for trigger word
@@ -111,7 +116,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.7"
+#define PLUGIN_VERSION "1.9"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
