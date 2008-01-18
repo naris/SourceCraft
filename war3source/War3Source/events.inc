@@ -166,6 +166,10 @@ public War3Source_RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     if (GameType == tf2)
     {
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        {
             m_OffsetMaxSpeed[x]=0;
+            if (SAVE_ENABLED)
+                War3Source_SavePlayerData(x,GetClientVectorPosition(x));
+        }
     }
 }
