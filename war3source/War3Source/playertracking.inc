@@ -612,7 +612,7 @@ public War3Source_SavePlayerData(client,vectorpos)
                     for(new skill=0;skill<SKILL_COUNT;skill++)
                     {
                         new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
-                        if (skilllevel)
+                        if (skillLevel)
                         {
                             Format(replaceQuery,sizeof(replaceQuery),
                                    "REPLACE INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d)",
