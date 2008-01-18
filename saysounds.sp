@@ -577,7 +577,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 
 	new bool:isadmin = false;
-	if (IsClientConnected(client))
+	if (IsClientInGame(client))
 	{
 		new AdminId:aid = GetUserAdmin(client);
 		isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
@@ -589,7 +589,9 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 
 	new Float:thetime = GetGameTime();
 	if (LastSound[client] >= thetime){
-		PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
+		if(IsClientInGame(client)){
+			PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
+		}
 		return Plugin_Handled;
 	}
 
@@ -602,7 +604,9 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	if (adminonly)
 	{
 		if (globalLastAdminSound >= thetime){
-			PrintToChat(client,"[Say Sounds] Please don't spam the admin sounds!");
+			if(IsClientInGame(client)){
+				PrintToChat(client,"[Say Sounds] Please don't spam the admin sounds!");
+			}
 			return Plugin_Handled;
 		}
 
