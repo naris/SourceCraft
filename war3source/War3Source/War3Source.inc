@@ -38,6 +38,7 @@ new Handle:DBIDB = INVALID_HANDLE;
 #include "War3Source/shopmenu"
 #include "War3Source/weapons"
 #include "War3Source/playertracking"
+#include "War3Source/db"
 #include "War3Source/natives"
 #include "War3Source/hooks"
 #include "War3Source/menus"
