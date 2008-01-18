@@ -180,7 +180,7 @@ public War3Source_RaceMenu(client, bool:change)
     }
 
     SetMenuExitButton(crMenu,true);
-    // Iteriate through the races and print them out
+    // Iterate through the races and print them out
     new Handle:race;
     decl String:rbuf[4];
     decl String:rname[64];
@@ -1065,6 +1065,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
+                    SetOverallLevel(vectorpos, GetOverallLevel(vectorpos)+1);
                     War3Source_SkillMenu(index,targetvecpos);
 
                     PrintToChat(client, "%c[War3Source] %cYou gave player \"%s\" a level.",
@@ -1086,6 +1087,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
+                    SetOverallLevel(vectorpos, GetOverallLevel(vectorpos)-1);
                     for(new x=0;x<SKILL_COUNT;x++)
                         SetSkillLevel(targetvecpos,race,x,0);
 
