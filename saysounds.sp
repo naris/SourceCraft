@@ -292,28 +292,11 @@ public CheckJoin(client, const String:auth[]){
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
-				if (!strlen(filelocation)){
-					decl String:file[8] = "file";
-					new count = KvGetNum(listfile, "count", 1);
-					if (count > 1){
-						Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
-					}
-					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-					if (!strlen(filelocation) && StrEqual(file, "file1")){
-						KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
-					}
-				}
 				if (strlen(filelocation)){
-					new adminonly = KvGetNum(listfile, "admin",0);
-					new singleonly = KvGetNum(listfile, "single",0);
-
-					new Handle:pack;
-					CreateDataTimer(0.2,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
-
+					Send_Sound(client,filelocation);
+					SndCount[client] = 0;
+					return;
+				}else if (Submit_Sound(client)){
 					SndCount[client] = 0;
 					return;
 				}
@@ -321,31 +304,10 @@ public CheckJoin(client, const String:auth[]){
 		}
 
 		if(GetConVarBool(cvarjoinexit)){
-			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, "JoinSound")){
-				decl String:file[8] = "file";
-				new count = KvGetNum(listfile, "count", 1);
-				if (count > 1){
-					Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
-				}
-				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-				if (!strlen(filelocation) && StrEqual(file, "file1")){
-					KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
-				}
-				if (strlen(filelocation)){
-					new adminonly = KvGetNum(listfile, "admin",0);
-					new singleonly = KvGetNum(listfile, "single",0);
-
-					new Handle:pack;
-					CreateDataTimer(0.2,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
-
-					SndCount[client] = 0;
-				}
+				Submit_Sound(client);
+				SndCount[client] = 0;
 			}
 		}
 	}
@@ -356,7 +318,7 @@ public OnClientDisconnect(client){
 		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
-		firstSpawn[client]=true;
+		firstSpawn[client] = true;
 
 		if(GetConVarBool(cvarspecificjoinexit)){
 			decl String:auth[64];
@@ -367,50 +329,25 @@ public OnClientDisconnect(client){
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "exit", filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
-					new adminonly = KvGetNum(listfile, "admin",0);
-					new singleonly = KvGetNum(listfile, "single",0);
-
-					new Handle:pack;
-					CreateDataTimer(0.2,Command_Play_Sound,pack);
-					WritePackCell(pack, client);
-					WritePackCell(pack, adminonly);
-					WritePackCell(pack, singleonly);
-					WritePackString(pack, filelocation);
-
+					Send_Sound(client,filelocation);
+					SndCount[client] = 0;
+					return;
+				}else if (Submit_Sound(client)){
 					SndCount[client] = 0;
 					return;
 				}
 			}
 		}
 
-		decl String:filelocation[PLATFORM_MAX_PATH+1];
 		KvRewind(listfile);
 		if (KvJumpToKey(listfile, "ExitSound")){
-			decl String:file[8] = "file";
-			new count = KvGetNum(listfile, "count", 1);
-			if (count > 1){
-				Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
-			}
-			KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-			if (!strlen(filelocation) && StrEqual(file, "file1")){
-				KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
-			}
-			if (strlen(filelocation)){
-				new adminonly = KvGetNum(listfile, "admin",0);
-				new singleonly = KvGetNum(listfile, "single",0);
-
-				new Handle:pack;
-				CreateDataTimer(0.2,Command_Play_Sound,pack);
-				WritePackCell(pack, client);
-				WritePackCell(pack, adminonly);
-				WritePackCell(pack, singleonly);
-				WritePackString(pack, filelocation);
-			}
+			Submit_Sound(client);
+			SndCount[client] = 0;
 		}
 	}
 }
 
-Submit_Sound(client)
+bool:Submit_Sound(client)
 {
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:file[8] = "file";
@@ -423,15 +360,24 @@ Submit_Sound(client)
 		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
 	}
 	if (strlen(filelocation)){
-		new adminonly = KvGetNum(listfile, "admin",0);
-		new singleonly = KvGetNum(listfile, "single",0);
-		new Handle:pack;
-		CreateDataTimer(0.1,Command_Play_Sound,pack);
-		WritePackCell(pack, client);
-		WritePackCell(pack, adminonly);
-		WritePackCell(pack, singleonly);
-		WritePackString(pack, filelocation);
+		Send_Sound(client, filelocation);
+		return true;
 	}
+	return false;
+}
+
+Send_Sound(client, String:filelocation[])
+{
+	new adminonly = KvGetNum(listfile, "admin",0);
+	new singleonly = KvGetNum(listfile, "single",0);
+	new Float:duration = KvGetFloat(listfile, "duration",0.0);
+	new Handle:pack;
+	CreateDataTimer(0.1,Command_Play_Sound,pack);
+	WritePackCell(pack, client);
+	WritePackCell(pack, adminonly);
+	WritePackCell(pack, singleonly);
+	WritePackFloat(pack, duration);
+	WritePackString(pack, filelocation);
 }
 
 public Action:Command_Say(client,args){
@@ -469,19 +415,16 @@ public Action:Command_Say(client,args){
 					PrintToChat(client,"[Say Sounds] Sounds Enabled");
 				}
 				return Plugin_Handled;
-		}
-		else if(strcmp(speech[startidx],"!soundlist",false) == 0 ||
+		}else if(strcmp(speech[startidx],"!soundlist",false) == 0 ||
 			strcmp(speech[startidx],"soundlist",false) == 0){
 			List_Sounds(client);
 			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 			return Plugin_Handled;
-		}
-		else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
+		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
 			strcmp(speech[startidx],"soundmenu",false) == 0){
 			Sound_Menu(client,false);
 			return Plugin_Handled;
-		}
-		else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
+		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
 			strcmp(speech[startidx],"adminsounds",false) == 0){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
@@ -537,17 +480,14 @@ public Action:Command_InsurgencySay(client,args){
 					PrintToChat(client,"[Say Sounds] Sounds Enabled");
 				}
 				return Plugin_Handled;
-		}
-		else if(strcmp(speech[startidx],"!soundlist",false) == 0){
+		}else if(strcmp(speech[startidx],"!soundlist",false) == 0){
 			List_Sounds(client);
 			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 			return Plugin_Handled;
-		}
-		else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
+		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
 			Sound_Menu(client,false);
 			return Plugin_Handled;
-		}
-		else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
+		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
 		}
@@ -574,6 +514,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new client = ReadPackCell(pack);
 	new adminonly = ReadPackCell(pack);
 	new singleonly = ReadPackCell(pack);
+	new Float:duration = ReadPackFloat(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 
 	new bool:isadmin = false;
@@ -596,6 +537,9 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
+	if (waitTime < duration)
+		waitTime = duration;
+
 	new Float:soundTime = GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
 	if (waitTime < soundTime)
 		waitTime = soundTime;
@@ -847,9 +791,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 				}
 			} while (KvGotoNextKey(listfile));
 		}
-	}
-	else if (action == MenuAction_End)
-	{
+	}else if (action == MenuAction_End){
 		CloseHandle(menu);
 	}
 }
