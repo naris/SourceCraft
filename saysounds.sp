@@ -98,10 +98,31 @@ Sounds go in your mods "sound" directory (such as sound/misc/filename.wav).
 File Format:
 	"Sound Combinations"
 		{
-			"wazza"  //Word trigger
+			"JoinSound" // Sound to play when a player Joins the server
+			{
+				"file"	"misc/welcome.wav"
+				"admin"	"0"
+				"single" "1" // 1 to play sound to single client only, 0 to play to all (default is 0)
+			}
+			"wazza"  // Word trigger
 			{
 				"file"	"misc/wazza.wav" //"file" is always there, next is the filepath (always starts with "sound/")
-				"admin"	"1"	//1 is admin only, 0 is anyone
+				"admin"	"1"	//1 is admin only, 0 is anyone (defaults is 0)
+				"download" "1"	//1 to download the sounds, 0 to not download (default is 1)
+				"duration" "5.0" // duration of the sound (default is 0.0)
+			}
+			"lol"  // Word trigger to randomly select 1 of multiple sounds
+			{
+				"file"	"misc/lol1.wav"	// name of the 1st option, can also be "file1"
+				"file2"	"misc/lol2.wav"	// name of the 2nd option
+				"file3"	"misc/lol3.wav"
+				"file4"	"misc/lol4.wav"
+				"count"	"4"		// number of sounds (default is 1)
+				"duration" "5.0"	// This will apply no matter which sound is selected
+			}
+			"doh"  // Minimun configuration for sounds
+			{
+				"file"	"misc/doh.wav"	// This will set all other options to default values
 			}
 		}
 	
