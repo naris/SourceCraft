@@ -61,6 +61,10 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added Sound Duration setting in config file
 		* Various fixes
+	1.10  Jan 22, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added more comprensive error checking
+		* Changed !soundlist to call Sound_Menu() instead of List_Sounds().
 
 
 Todo:
@@ -89,7 +93,7 @@ User Commands:
 	sm_sound_menu 			 Display a menu of all sounds (trigger words) to play
 	sm_sound_list  			 Print all trigger words to the console
 	!sounds  			 When used in chat turns sounds on/off for that client
-	!soundlist  			 When used in chat will print all the trigger words to the console
+	!soundlist  			 When used in chat will print all the trigger words to the console (Now displays menu)
 	!soundmenu  			 When used in chat will present a menu to choose a sound to play.
 
 	
@@ -447,8 +451,9 @@ public Action:Command_Say(client,args){
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundlist",false) == 0 ||
 			strcmp(speech[startidx],"soundlist",false) == 0){
-			List_Sounds(client);
-			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
+			//List_Sounds(client);
+			//PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
+			Sound_Menu(client,false);
 			return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
 			strcmp(speech[startidx],"soundmenu",false) == 0){
@@ -738,7 +743,7 @@ public Action:Command_Sound_List(client, args){
 	List_Sounds(client);
 }
 
-List_Sounds(client){
+stock List_Sounds(client){
 	KvRewind(listfile);
 	if (KvJumpToKey(listfile, "ExitSound", false))
 		KvGotoNextKey(listfile, true);
