@@ -243,7 +243,7 @@ public Action:Load_Sounds(Handle:timer){
 	// precache sounds, loop through sounds
 	BuildPath(Path_SM,soundlistfile,sizeof(soundlistfile),"configs/saysounds.cfg");
 	if(!FileExists(soundlistfile)) {
-		LogMessage("saysounds.cfg not parsed...file doesnt exist!");
+		SetFailState("saysounds.cfg not parsed...file doesnt exist!");
 	}else{
 		if (listfile != INVALID_HANDLE){
 			CloseHandle(listfile);
@@ -251,34 +251,38 @@ public Action:Load_Sounds(Handle:timer){
 		listfile = CreateKeyValues("soundlist");
 		FileToKeyValues(listfile,soundlistfile);
 		KvRewind(listfile);
-		KvGotoFirstSubKey(listfile);
-		do{
-			decl String:filelocation[PLATFORM_MAX_PATH+1];
-			decl String:dl[PLATFORM_MAX_PATH+1];
-			decl String:file[8];
-			new count = KvGetNum(listfile, "count", 1);
-			new download = KvGetNum(listfile, "download", 1);
-			for (new i = 0; i <= count; i++){
-				if (i){
-					Format(file, sizeof(file), "file%d", i);
-				}else{
-					strcopy(file, sizeof(file), "file");
-				}
-				KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-				if (strlen(filelocation)){
-					Format(dl, sizeof(filelocation), "sound/%s", filelocation);
-					if(FileExists(dl)){
-						PrecacheSound(filelocation, true);
-						if (download){
-							AddFileToDownloadsTable(dl);
+		if (KvGotoFirstSubKey(listfile)){
+			do{
+				decl String:filelocation[PLATFORM_MAX_PATH+1];
+				decl String:dl[PLATFORM_MAX_PATH+1];
+				decl String:file[8];
+				new count = KvGetNum(listfile, "count", 1);
+				new download = KvGetNum(listfile, "download", 1);
+				for (new i = 0; i <= count; i++){
+					if (i){
+						Format(file, sizeof(file), "file%d", i);
+					}else{
+						strcopy(file, sizeof(file), "file");
+					}
+					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
+					if (strlen(filelocation)){
+						Format(dl, sizeof(filelocation), "sound/%s", filelocation);
+						if(FileExists(dl)){
+							PrecacheSound(filelocation, true);
+							if (download){
+								AddFileToDownloadsTable(dl);
+							}
+						}
+						if (count == 1){
+							break;
 						}
 					}
-					if (count == 1){
-						break;
-					}
 				}
-			}
-		} while (KvGotoNextKey(listfile));
+			} while (KvGotoNextKey(listfile));
+		}
+		else{
+			SetFailState("saysounds.cfg not parsed...No subkeys found!");
+		}
 	}
 	return Plugin_Handled;
 }
@@ -411,7 +415,7 @@ public Action:Command_Say(client,args){
 		// If sounds are not enabled, then skip this whole thing
 		if (!GetConVarBool(cvarsoundenable))
 			return Plugin_Continue;
-	
+
 		// player is banned from playing sounds
 		if (restrict_playing_sounds[client])
 			return Plugin_Continue;
@@ -430,7 +434,7 @@ public Action:Command_Say(client,args){
 				speech[len-1] = '\0';
 			}
 		}
-						
+
 		if(strcmp(speech[startidx],"!sounds",false) == 0 || 
 		   strcmp(speech[startidx],"sounds",false) == 0){
 				if(SndOn[client] == 1){
@@ -455,7 +459,7 @@ public Action:Command_Say(client,args){
 			Sound_Menu(client,true);
 			return Plugin_Handled;
 		}
-		
+
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		decl String:buffer[PLATFORM_MAX_PATH+1];
@@ -477,7 +481,7 @@ public Action:Command_InsurgencySay(client,args){
 		// If sounds are not enabled, then skip this whole thing
 		if (!GetConVarBool(cvarsoundenable))
 			return Plugin_Continue;
-	
+
 		// player is banned from playing sounds
 		if (restrict_playing_sounds[client])
 			return Plugin_Continue;
@@ -486,7 +490,7 @@ public Action:Command_InsurgencySay(client,args){
 		decl String:clientName[64];
 		GetClientName(client,clientName,64);
 		GetCmdArgString(speech,sizeof(speech));
-		
+
 		new startidx = 4;
 		if (speech[0] == '"'){
 			startidx = 5;
@@ -496,7 +500,7 @@ public Action:Command_InsurgencySay(client,args){
 				speech[len-1] = '\0';
 			}
 		}
-						
+
 		if(strcmp(speech[startidx],"!sounds",false) == 0){
 				if(SndOn[client] == 1){
 					SndOn[client] = 0;
@@ -736,14 +740,16 @@ public Action:Command_Sound_List(client, args){
 
 List_Sounds(client){
 	KvRewind(listfile);
-	KvJumpToKey(listfile, "ExitSound", false);
-	KvGotoNextKey(listfile, true);
+	if (KvJumpToKey(listfile, "ExitSound", false))
+		KvGotoNextKey(listfile, true);
+	else
+		KvGotoFirstSubKey(listfile);
+
 	decl String:buffer[PLATFORM_MAX_PATH+1];
 	do{
 		KvGetSectionName(listfile, buffer, sizeof(buffer));
 		PrintToConsole(client, buffer);
 	} while (KvGotoNextKey(listfile));
-	
 }
 
 public Action:Command_Sound_Menu(client, args){
@@ -774,27 +780,32 @@ public Sound_Menu(client, bool:adminsounds){
 	new count=1;
 
 	KvRewind(listfile);
-	KvGotoFirstSubKey(listfile);
-
-	do{
-		KvGetSectionName(listfile, buffer, sizeof(buffer));
-		if (!StrEqual(buffer, "JoinSound") && !StrEqual(buffer, "ExitSound") && strncmp(buffer,"STEAM_",6,false))
-		{
-			if (adminsounds){
-				if (KvGetNum(listfile, "admin",0)){
-					Format(num,3,"%d",count);
-					AddMenuItem(soundmenu,num,buffer);
-					count++;
-				}
-			}else{
-				if (!KvGetNum(listfile, "admin",0)){
-					Format(num,3,"%d",count);
-					AddMenuItem(soundmenu,num,buffer);
-					count++;
+	if (KvGotoFirstSubKey(listfile)){
+		do{
+			KvGetSectionName(listfile, buffer, sizeof(buffer));
+			if (!StrEqual(buffer, "JoinSound") &&
+			    !StrEqual(buffer, "ExitSound") &&
+			    strncmp(buffer,"STEAM_",6,false))
+			{
+				if (adminsounds){
+					if (KvGetNum(listfile, "admin",0)){
+						Format(num,3,"%d",count);
+						AddMenuItem(soundmenu,num,buffer);
+						count++;
+					}
+				}else{
+					if (!KvGetNum(listfile, "admin",0)){
+						Format(num,3,"%d",count);
+						AddMenuItem(soundmenu,num,buffer);
+						count++;
+					}
 				}
 			}
-		}
-	} while (KvGotoNextKey(listfile));
+		} while (KvGotoNextKey(listfile));
+	}
+	else{
+		SetFailState("No subkeys found in the config file!");
+	}
 
 	DisplayMenu(soundmenu,client,MENU_TIME_FOREVER);
 }
