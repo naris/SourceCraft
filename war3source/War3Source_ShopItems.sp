@@ -212,7 +212,7 @@ public OnItemPurchase(client,war3player,item)
     {
         War3_SetXP(war3player,War3_GetRace(war3player),War3_GetXP(war3player,War3_GetRace(war3player))+100);
         War3_SetOwnsItem(war3player,shopItem[8],false);
-        PrintToChat(client,"%c[War3Source] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
+        PrintToChat(client,"%c[JigglyCraft] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
@@ -442,7 +442,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     decl String:victimName[64];
                     GetClientName(index,victimName,sizeof(victimName));
-                    PrintToChat(attacker_index,"%c[War3Source]%c You have received 2 hp from %s using %cMask of Death%c.",
+                    PrintToChat(attacker_index,"%c[JigglyCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
                                 COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
@@ -453,7 +453,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     decl String:victimName[64];
                     GetClientName(index,victimName,sizeof(victimName));
-                    PrintToChat(attacker_index,"%c[War3Source]%c You have received 2 hp from %s using %cMask of Death%c.",
+                    PrintToChat(attacker_index,"%c[JigglyCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
                                 COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
@@ -473,7 +473,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         StrCat(aname,sizeof(aname), "+");
                         StrCat(aname,sizeof(aname), assister);
                     }
-                    PrintToChat(index,"%c[War3Source] %s %chas frozen you with the %cOrb of Frost%c",
+                    PrintToChat(index,"%c[JigglyCraft] %s %chas frozen you with the %cOrb of Frost%c",
                                 COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
@@ -560,7 +560,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 400.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -570,7 +570,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 400.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -580,7 +580,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 300.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -590,7 +590,7 @@ public Action:Gloves(Handle:timer)
                             if (metal < 400.0)
                             {
                                 SetEntData(player, metalOffset, metal, 4, true);
-                                PrintToChat(player,"%c[War3Source]%c You have received metal from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(player,"%c[JigglyCraft]%c You have received metal from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -600,7 +600,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 60.0)
                             {
                                 SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[War3Source]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -725,7 +725,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
         }
         else
         {
-            PrintToChat(client, "%c[War3Source] %cCould not find a place to mole to, there are no enemies!", COLOR_GREEN,COLOR_DEFAULT);
+            PrintToChat(client, "%c[JigglyCraft] %cCould not find a place to mole to, there are no enemies!", COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     ClearArray(temp);

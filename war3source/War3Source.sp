@@ -33,12 +33,12 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
     if(!War3Source_InitNatives())
     {
-        PrintToServer("[War3Source] There was a failure in creating the native based functions, definately halting.");
+        PrintToServer("[JigglyCraft] There was a failure in creating the native based functions, definately halting.");
         return false;
     }
     if(!War3Source_InitForwards())
     {
-        PrintToServer("[War3Source] There was a failure in creating the forward based functions, definately halting.");
+        PrintToServer("[JigglyCraft] There was a failure in creating the forward based functions, definately halting.");
         return false;
     }
     return true;
@@ -46,46 +46,46 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-    PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin loading...");
+    PrintToServer("-------------------------------------------------------------------------\n[JigglyCraft] Plugin loading...");
 
     GetGameType();
     
     arrayPlayers=CreateArray();
     if(!War3Source_InitiatearrayRaces())
-        SetFailState("[War3Source] There was a failure in creating the race vector, definately halting.");
+        SetFailState("[JigglyCraft] There was a failure in creating the race vector, definately halting.");
     if(!War3Source_InitiateShopVector())
-        SetFailState("[War3Source] There was a failure in creating the shop vector, definately halting.");
+        SetFailState("[JigglyCraft] There was a failure in creating the shop vector, definately halting.");
     if(!War3Source_InitiateHelpVector())
-        SetFailState("[War3Source] There was a failure in creating the help vector, definitely halting.");
+        SetFailState("[JigglyCraft] There was a failure in creating the help vector, definitely halting.");
 
     if(!War3Source_HookEvents())
-        SetFailState("[War3Source] There was a failure in initiating event hooks.");
+        SetFailState("[JigglyCraft] There was a failure in initiating event hooks.");
 
     if (GameType == tf2)
     {
         if(!War3Source_HookTFEvents())
-            SetFailState("[War3Source] There was a failure in initiating tf2 event hooks.");
+            SetFailState("[JigglyCraft] There was a failure in initiating tf2 event hooks.");
     }
     else if(GameType == cstrike)
     {
         if(!War3Source_HookCStrikeEvents())
-            SetFailState("[War3Source] There was a failure in initiating cstrike event hooks.");
+            SetFailState("[JigglyCraft] There was a failure in initiating cstrike event hooks.");
     }
 
     if(!War3Source_InitCVars())
-        SetFailState("[War3Source] There was a failure in initiating console variables.");
+        SetFailState("[JigglyCraft] There was a failure in initiating console variables.");
     if(!War3Source_InitMenus())
-        SetFailState("[War3Source] There was a failure in initiating menus.");
+        SetFailState("[JigglyCraft] There was a failure in initiating menus.");
     if(!War3Source_InitHooks())
-        SetFailState("[War3Source] There was a failure in initiating the hooks.");
+        SetFailState("[JigglyCraft] There was a failure in initiating the hooks.");
     if(!War3Source_InitOffset())
-        SetFailState("[War3Source] There was a failure in finding the offsets required.");
+        SetFailState("[JigglyCraft] There was a failure in finding the offsets required.");
     if(!War3Source_ParseSettings())
-        SetFailState("[War3Source] There was a failure in parsing the configuration file.");
+        SetFailState("[JigglyCraft] There was a failure in parsing the configuration file.");
 
     // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
     CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
-    PrintToServer("[War3Source] Plugin finished loading.\n-------------------------------------------------------------------------");
+    PrintToServer("[JigglyCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
 }
 
 public OnAllPluginsLoaded()
@@ -106,7 +106,7 @@ public OnAllPluginsLoaded()
 
 public OnPluginEnd()
 {
-    PrintToServer("-------------------------------------------------------------------------\n[War3Source] Plugin shutting down...");
+    PrintToServer("-------------------------------------------------------------------------\n[JigglyCraft] Plugin shutting down...");
     for(new x=0;x<GetArraySize(arrayPlayers);x++)
     {
         new Handle:vec=GetArrayCell(arrayPlayers,x);
@@ -119,7 +119,7 @@ public OnPluginEnd()
         ClearArray(vec);
     }
     ClearArray(arrayRaces);
-    PrintToServer("[War3Source] Plugin shutdown finished.\n-------------------------------------------------------------------------");
+    PrintToServer("[JigglyCraft] Plugin shutdown finished.\n-------------------------------------------------------------------------");
 }
 
 public OnMapStart()
@@ -185,7 +185,7 @@ public OnClientPutInServer(client)
                 SetRace(vecpos, FindRace("human")); // Default race to human.
         }
         else
-            SetFailState("[War3Source] There was a failure on processing client, halting.");
+            SetFailState("[JigglyCraft] There was a failure on processing client, halting.");
     }
 }
 

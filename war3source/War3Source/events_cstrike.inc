@@ -10,17 +10,17 @@ public bool:War3Source_HookCStrikeEvents()
 {
     if(!HookEventEx("bomb_defused",War3Source_BombDefusedEvent))
     {
-        PrintToServer("[War3Source] Could not hook the bomb_defused event.");
+        PrintToServer("[JigglyCraft] Could not hook the bomb_defused event.");
         return false;
     }
     if(!HookEventEx("bomb_planted",War3Source_BombPlantedEvent))
     {
-        PrintToServer("[War3Source] Could not hook the bomb_planted event.");
+        PrintToServer("[JigglyCraft] Could not hook the bomb_planted event.");
         return false;
     }
     if(!HookEventEx("hostage_rescued",War3Source_HostageRescuedEvent))
     {
-        PrintToServer("[War3Source] Could not hook the hostage_rescued event.");
+        PrintToServer("[JigglyCraft] Could not hook the hostage_rescued event.");
         return false;
     }
 

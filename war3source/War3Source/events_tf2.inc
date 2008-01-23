@@ -9,34 +9,34 @@ public bool:War3Source_HookTFEvents()
 {
     if(!HookEvent("player_builtobject", War3Source_EventObjectBuilt))
     {
-        PrintToServer("[War3Source] Could not hook the player_builtobject event.");
+        PrintToServer("[JigglyCraft] Could not hook the player_builtobject event.");
         return false;
     }
     if(!HookEvent("object_destroyed", War3Source_EventObjectDestroyed))
     {
-        PrintToServer("[War3Source] Could not hook the object_destroyed event.");
+        PrintToServer("[JigglyCraft] Could not hook the object_destroyed event.");
         return false;
     }
     if(!HookEvent("teamplay_flag_event", War3Source_EventFlagEvent))
     {
-        PrintToServer("[War3Source] Could not hook the teamplay_flag_event.");
+        PrintToServer("[JigglyCraft] Could not hook the teamplay_flag_event.");
         return false;
     }
     if(!HookEvent("teamplay_point_captured", War3Source_EventPointCaptured))
     {
-        PrintToServer("[War3Source] Could not hook the teampoint_point_captured event.");
+        PrintToServer("[JigglyCraft] Could not hook the teampoint_point_captured event.");
         return false;
     }
     if(!HookEvent("teamplay_capture_blocked", War3Source_EventCaptureBlocked))
     {
-        PrintToServer("[War3Source] Could not hook the teadmplay_capture_blocked event.");
+        PrintToServer("[JigglyCraft] Could not hook the teadmplay_capture_blocked event.");
         return false;
     }
 
     /*
     if(!HookEvent("teamplay_round_win", War3Source_RoundWin))
     {
-        PrintToServer("[War3Source] Could not hook the teamplay_round_win event.");
+        PrintToServer("[JigglyCraft] Could not hook the teamplay_round_win event.");
         return false;
     }
     */

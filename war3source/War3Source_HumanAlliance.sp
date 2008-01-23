@@ -77,7 +77,7 @@ public OnWar3PluginReady()
 
     m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
     if(m_VelocityOffset == -1)
-        SetFailState("[War3Source] Error finding Velocity offset.");
+        SetFailState("[JigglyCraft] Error finding Velocity offset.");
 }
 
 public OnMapStart()
@@ -151,13 +151,13 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                         }
                         else
                         {
-                            PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet.",
+                            PrintToChat(client,"%c[JigglyCraft]%c Sorry, your %cTeleport%c has not recharged yet.",
                                         COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             return;
                         }
                     }
 
-                    PrintToChat(client,"%c[War3Source]%c %cTeleport%cing!",
+                    PrintToChat(client,"%c[JigglyCraft]%c %cTeleport%cing!",
                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                     HumanAlliance_Teleport(client,war3player,ult_level, toSpawn,
@@ -171,7 +171,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                 }
                 else
                 {
-                    PrintToChat(client,"%c[War3Source]%c Sorry, your %cTeleport%c has not recharged yet!",
+                    PrintToChat(client,"%c[JigglyCraft]%c Sorry, your %cTeleport%c has not recharged yet!",
                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
             }
@@ -182,7 +182,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 public Action:AllowTeleport(Handle:timer,any:index)
 {
     m_TeleportCount[index]=0;
-    PrintToChat(index,"%c[War3Source]%c Your %cTeleport%c has recharged and can be used again.",
+    PrintToChat(index,"%c[JigglyCraft]%c Your %cTeleport%c has recharged and can be used again.",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
     return Plugin_Stop;
 }

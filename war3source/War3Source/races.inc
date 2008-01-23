@@ -86,7 +86,7 @@ public FindRace(const String:name[])
     for(new x=0;x<size;x++)
     {
         new Handle:race=GetArrayCell(arrayRaces,x);
-        GetArrayString(race,RACE_SHORT_NAME,curName,63);
+        GetArrayString(race,RACE_SHORT_NAME,curName,sizeof(curName));
         if(StrEqual(name,curName,false))
             return x;
     }
@@ -103,7 +103,7 @@ public War3Source_PendingCheck(client,vectorpos)
         decl String:buf[192];
         new Handle:race=Race(GetRace(vectorpos));
         GetArrayString(race,2,buf,191);
-        PrintToChat(client,"%c[War3Source] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+        PrintToChat(client,"%c[JigglyCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
 
     if (GetPendingSkillReset(vectorpos))
@@ -158,10 +158,10 @@ public War3Source_SkillsInfo_Skill(client,Handle:raceHandle,skill)
     SetMenuExitButton(menu,true);
     //new Handle:raceHandle=Race(race);
     decl String:name[64];
-    GetArrayString(raceHandle,4+(skill*2),name,63);
+    GetArrayString(raceHandle,4+(skill*2),name,sizeof(name));
     decl String:desc[256];
-    GetArrayString(raceHandle,4+(skill*2)+1,desc,255);
-    SetMenuTitle(menu,"[War3Source] Skill information for %s\nDescription: %s",name,desc);
+    GetArrayString(raceHandle,4+(skill*2)+1,desc,sizeof(desc));
+    SetMenuTitle(menu,"Skill information for %s\nDescription: %s",name,desc);
     AddMenuItem(menu,"","Back to the skills");
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,true);
@@ -217,11 +217,15 @@ public War3Source_ShowSkillsInfo(client, Handle:raceHandle, Function:parentMenuF
     new Handle:menu=CreateMenu(War3Source_SkillsInfo_Selected);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
-    SetMenuTitle(menu,"[War3Source] Select a skill for more info.");
+
+    decl String:name[64];
+    GetRaceName(raceHandle,name,sizeof(name));
+    SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
+
     decl String:buf[64];
     for(new x=0;x<SKILL_COUNT;x++)
     {
-        GetArrayString(raceHandle,4+(x*2),buf,63);
+        GetArrayString(raceHandle,4+(x*2),buf,sizeof(buf));
         AddMenuItem(menu,"",buf);
     }
     currentRaceForSkills[client] = raceHandle;
@@ -234,7 +238,7 @@ public War3Source_ResetSkills(client,vecpos)
     if(IsPlayerAlive(client))
     {
         SetPendingSkillReset(vecpos,1);
-        PrintToChat(client,"%c[War3Source] %cYour skills for your current race will be reset when you die or respawn.",
+        PrintToChat(client,"%c[JigglyCraft] %cYour skills for your current race will be reset when you die or respawn.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
     else
@@ -246,14 +250,16 @@ public War3Source_ShowSkills(client,vecpos)
     new race=GetRace(vecpos);
     new Handle:raceHandle=Race(race);
     new Handle:panel=CreatePanel();
-    SetPanelTitle(panel,"[War3Source] Here are your skill levels.");
+
+    SetPanelTitle(panel,"[JigglyCraft] Here are your skill levels.");
+
     decl String:buf[64];
     decl String:bufout[256];
     DrawPanelText(panel,"-----------------------------");
     for(new x=0;x<SKILL_COUNT;x++)
     {
-        GetArrayString(raceHandle,4+(x*2),buf,63);
-        Format(bufout,255,"%s - Level %d",buf,GetSkillLevel(vecpos,race,x));
+        GetArrayString(raceHandle,4+(x*2),buf,sizeof(buf));
+        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(vecpos,race,x));
         DrawPanelText(panel,bufout);
     }
     DrawPanelText(panel,"-----------------------------");
@@ -268,7 +274,7 @@ ResetSkills(client,vecpos)
         for(new x=0;x<SKILL_COUNT;x++)
             SetSkillLevel(vecpos,race,x,0);
 
-        PrintToChat(client,"%c[War3Source] %cYour skills have been reset for your current race.",
+        PrintToChat(client,"%c[JigglyCraft] %cYour skills have been reset for your current race.",
                     COLOR_GREEN,COLOR_DEFAULT);
 
         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))

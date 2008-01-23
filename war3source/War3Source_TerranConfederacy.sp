@@ -300,7 +300,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
 
-            PrintToChat(victimIndex,"%c[War3Source] %s %cyour armor absorbed %d hp",
+            PrintToChat(victimIndex,"%c[JigglyCraft] %s %cyour armor absorbed %d hp",
                         COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
         }
         return true;

@@ -19,22 +19,22 @@ public War3Source_SQLTable()
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("[War3Source] Error in the creation of the w3s_players SQL table:%s", error);
-            SetFailState("[War3Source] Error in the creation of the w3s_players SQL table");
+            LogError("[JigglyCraft] Error in the creation of the w3s_players SQL table:%s", error);
+            SetFailState("[JigglyCraft] Error in the creation of the w3s_players SQL table");
         }
         else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_races (steamid varchar(64) not null, race varchar(30) not null, xp int default 0, level int default 0, PRIMARY KEY(steamid,race))"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("[War3Source] Error in the creation of the w3s_skills SQL table:%s", error);
-            SetFailState("[War3Source] Error in the creation of the w3s_skills SQL table");
+            LogError("[JigglyCraft] Error in the creation of the w3s_skills SQL table:%s", error);
+            SetFailState("[JigglyCraft] Error in the creation of the w3s_skills SQL table");
         }
         else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_skills (steamid varchar(64) not null, race varchar(30) not null, skill int not null, skill_level int default 0,  PRIMARY KEY(steamid,race,skill))"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("[War3Source] Error in the creation of the w3s_skills SQL table:%s", error);
-            SetFailState("[War3Source] Error in the creation of the w3s_skills SQL table");
+            LogError("[JigglyCraft] Error in the creation of the w3s_skills SQL table:%s", error);
+            SetFailState("[JigglyCraft] Error in the creation of the w3s_skills SQL table");
         }
     }
 }
@@ -130,7 +130,7 @@ public War3Source_SavePlayerData(client,vectorpos)
             {
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("[War3Source] Unable to replace player: %s\nSQL:%s\n",
+                LogError("[JigglyCraft] Unable to replace player: %s\nSQL:%s\n",
                          error, replaceQuery);
                 return;
             }
@@ -153,7 +153,7 @@ public War3Source_SavePlayerData(client,vectorpos)
                     {
                         decl String:error[256] = "";
                         SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("[War3Source] Unable to replace player's race: %s\nSQL:%s\n",
+                        LogError("[JigglyCraft] Unable to replace player's race: %s\nSQL:%s\n",
                                  error, replaceQuery);
                         return;
                     }
@@ -171,7 +171,7 @@ public War3Source_SavePlayerData(client,vectorpos)
                             {
                                 decl String:error[256] = "";
                                 SQL_GetError(DBIDB, error, sizeof(error));
-                                LogError("[War3Source] Unable to insert player's skill: %s\nSQL:%s\n",
+                                LogError("[JigglyCraft] Unable to insert player's skill: %s\nSQL:%s\n",
                                          error, replaceQuery);
                                 return;
                             }

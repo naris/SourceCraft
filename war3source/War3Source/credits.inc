@@ -13,7 +13,7 @@ public War3Source_ShowCredits(client,vecpos)
     new credits=GetCredits(vecpos);
     decl String:currencies[64];
     GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
-    PrintToChat(client,"%c[War3Source] %cYou have %d %s.",
+    PrintToChat(client,"%c[JigglyCraft] %cYou have %d %s.",
                 COLOR_GREEN,COLOR_DEFAULT,credits, currencies);
 }
 
@@ -29,7 +29,7 @@ public GiveKillCredits(client,vectorpos)
     if(newcredits <= MAX_CREDITS || MAX_CREDITS == 0)
     {
         SetCredits(vectorpos,newcredits);
-        PrintToChat(client, "%c[War3Source] %cYou have gained %d %s for getting a kill.",
+        PrintToChat(client, "%c[JigglyCraft] %cYou have gained %d %s for getting a kill.",
                     COLOR_GREEN,COLOR_DEFAULT,addcredits, currency);
     }
     else
@@ -38,7 +38,7 @@ public GiveKillCredits(client,vectorpos)
         if (amt > 0)
         {
             SetCredits(vectorpos,MAX_CREDITS);
-            PrintToChat(client, "%c[War3Source] %cThe max amount of %s is %d, so you have gained %d %s.",
+            PrintToChat(client, "%c[JigglyCraft] %cThe max amount of %s is %d, so you have gained %d %s.",
                         COLOR_GREEN,COLOR_DEFAULT,currency,MAX_CREDITS,amt,currency);
         }
     }

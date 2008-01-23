@@ -129,7 +129,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 
                                     decl String:name[64];
                                     GetClientName(client,name,63);
-                                    PrintToChat(index,"%c[War3Source] %s %chas tied you down with %cEntangled Roots.%c",
+                                    PrintToChat(index,"%c[JigglyCraft] %s %chas tied you down with %cEntangled Roots.%c",
                                                 COLOR_GREEN,name,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     SetEntData(index,movetypeOffset,0,1);
@@ -141,7 +141,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                 }
             }
 
-            PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
+            PrintToChat(client,"%c[JigglyCraft]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
                     COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
             new Float:cooldown = GetConVarFloat(cvarEntangleCooldown);
@@ -257,8 +257,8 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
 
-            LogMessage("[War3Source] %s evaded an attack!\n", victimName);
-            PrintToChat(victimIndex,"%c[War3Source] %s %c evaded an attack!",
+            LogMessage("[JigglyCraft] %s evaded an attack!\n", victimName);
+            PrintToChat(victimIndex,"%c[JigglyCraft] %s %c evaded an attack!",
                         COLOR_GREEN,victimName,COLOR_DEFAULT);
             return true;
         }

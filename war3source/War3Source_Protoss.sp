@@ -24,7 +24,9 @@ new raceID; // The ID we are assigned to
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
-new m_BuilderOffset;
+enum objects { unknown, sentrygun, dispenser, teleporter };
+new m_BuilderOffset[objects];
+new m_BuildingOffset[objects];
 
 new g_redGlow;
 new g_blueGlow;
@@ -74,9 +76,29 @@ public OnWar3PluginReady()
                            "Allows you to control an object from the opposite team.",
                            "16");
 
-    m_BuilderOffset = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
-    if(m_BuilderOffset == -1)
-        SetFailState("[War3Source] Error finding Builder offset.");
+    m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
+    if(m_BuilderOffset[sentrygun] == -1)
+        SetFailState("[JigglyCraft] Error finding Sentrygun Builder offset.");
+
+    m_BuildingOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
+    if(m_BuildingOffset[sentrygun] == -1)
+        SetFailState("[JigglyCraft] Error finding Sentrygun Building offset.");
+
+    m_BuilderOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_hBuilder");
+    if(m_BuilderOffset[dispenser] == -1)
+        SetFailState("[JigglyCraft] Error finding Dispenser Builder offset.");
+
+    m_BuildingOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_bBuilding");
+    if(m_BuildingOffset[dispenser] == -1)
+        SetFailState("[JigglyCraft] Error finding Dispenser Building offset.");
+
+    m_BuilderOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_hBuilder");
+    if(m_BuilderOffset[teleporter] == -1)
+        SetFailState("[JigglyCraft] Error finding Teleporter Builder offset.");
+
+    m_BuildingOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_bBuilding");
+    if(m_BuildingOffset[teleporter] == -1)
+        SetFailState("[JigglyCraft] Error finding Teleporter Building offset.");
 }
 
 public OnMapStart()
@@ -271,8 +293,8 @@ public Action:CloakingAndDetector(Handle:timer)
                                             if (!m_Cloaked[client][index])
                                             {
                                                 EmitSoundToClient(client, cloakWav);
-                                                LogMessage("[War3Source] %s has been cloaked by %s!\n", name,clientName);
-                                                PrintToChat(index,"%c[War3Source] %s %c has been cloaked by %s!",
+                                                LogMessage("[JigglyCraft] %s has been cloaked by %s!\n", name,clientName);
+                                                PrintToChat(index,"%c[JigglyCraft] %s %c has been cloaked by %s!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT,clientName);
                                             }
                                         }
@@ -282,8 +304,8 @@ public Action:CloakingAndDetector(Handle:timer)
                                             m_Cloaked[client][index] = false;
 
                                             EmitSoundToClient(client, unCloakWav);
-                                            LogMessage("[War3Source] %s has been uncloaked!\n", name);
-                                            PrintToChat(index,"%c[War3Source] %s %c has been uncloaked!",
+                                            LogMessage("[JigglyCraft] %s has been uncloaked!\n", name);
+                                            PrintToChat(index,"%c[JigglyCraft] %s %c has been uncloaked!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT);
                                         }
                                     }
@@ -351,22 +373,22 @@ public Protoss_MindControl(client,war3player)
         {
             case 1:
             {
-                range=300.0;
+                range=50.0;
                 percent=30;
             }
             case 2:
             {
-                range=450.0;
+                range=125.0;
                 percent=50;
             }
             case 3:
             {
-                range=650.0;
+                range=250.0;
                 percent=70;
             }
             case 4:
             {
-                range=800.0;
+                range=450.0;
                 percent=90;
             }
         }
@@ -380,66 +402,91 @@ public Protoss_MindControl(client,war3player)
             new Float:targetLoc[3];
             TR_GetEndPosition(targetLoc);
 
-            if (GetRandomInt(1,100)<=percent && IsPointInRange(clientLoc,targetLoc,range))
+            if (IsPointInRange(clientLoc,targetLoc,range))
             {
-                decl String:class[32] = "";
-                if (GetEntityNetClass(target,class,sizeof(class)))
+                new Float:distance=DistanceBetween(clientLoc,targetLoc);
+                if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
                 {
-                    if (StrEqual(class, "CObjectSentrygun", false) ||
-                        StrEqual(class, "CObjectDispenser", false) ||
-                        StrEqual(class, "CObjectTeleporter", false))
+                    decl String:class[32] = "";
+                    if (GetEntityNetClass(target,class,sizeof(class)))
                     {
-                        //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                        new builder = GetEntDataEnt(target, m_BuilderOffset); // Get the current owner of the object.
-                        new builderTeam = GetClientTeam(builder);
-                        new team = GetClientTeam(client);
-                        if (builderTeam != team)
+                        new objects:obj;
+                        if (StrEqual(class, "CObjectSentrygun", false))
+                            obj = sentrygun;
+                        else if (StrEqual(class, "CObjectDispenser", false))
+                            obj = dispenser;
+                        else if (StrEqual(class, "CObjectTeleporter", false))
+                            obj = teleporter;
+                        else
+                            obj = unknown;
+
+                        if (obj != unknown)
                         {
-                            SetEntDataEnt(target, m_BuilderOffset, client, true); // Change the builder to client
+                            //Check to see if the object is still being built
+                            new building = GetEntDataEnt(target, m_BuildingOffset[obj]);
+                            if (building != 1)
+                            {
+                                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
+                                new builder = GetEntDataEnt(target, m_BuilderOffset[obj]); // Get the current owner of the object.
+                                new builderTeam = GetClientTeam(builder);
+                                new team = GetClientTeam(client);
+                                LogMessage("[JigglyCraft] class=%s, building=%d, builder=%d,team=%d!", class, building, builder, team);
+                                PrintToChat(client,"%c[JigglyCraft] %c class=%s, building=%d, builder=%d,team=%d!",
+                                            COLOR_GREEN,COLOR_DEFAULT, class, building, builder, team);
+                                if (builderTeam != team)
+                                {
+                                    SetEntDataEnt(target, m_BuilderOffset[obj], client, true); // Change the builder to client
 
-                            SetVariantInt(team); //Prep the value for the call below
-                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+                                    SetVariantInt(team); //Prep the value for the call below
+                                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
 
-                            SetVariantInt(team); //Same thing again but we are changing SetTeam
-                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                                    SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
 
-                            EmitSoundToAll(controlWav,target);
+                                    EmitSoundToAll(controlWav,target);
 
-                            new color[4] = { 0, 0, 0, 255 };
-                            if (team == 3)
-                                color[2] = 255; // Blue
+                                    new color[4] = { 0, 0, 0, 255 };
+                                    if (team == 3)
+                                        color[2] = 255; // Blue
+                                    else
+                                        color[0] = 255; // Red
+
+                                    TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
+                                                       0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
+                                    TE_SendToAll();
+
+                                    TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
+                                    TE_SendToAll();
+
+                                    TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,5.0,5.0,255);
+                                    TE_SendToAll();
+
+                                    new Float:splashDir[3];
+                                    splashDir[0] = 0.0;
+                                    splashDir[1] = 0.0;
+                                    splashDir[2] = 100.0;
+                                    TE_SetupEnergySplash(targetLoc, splashDir, true);
+
+                                    decl String:clientName[64];
+                                    GetClientName(client,clientName,63);
+
+                                    decl String:builderName[64];
+                                    GetClientName(builder,builderName,63);
+
+                                    decl String:object[32] = "";
+                                    strcopy(object, sizeof(object), class[7]);
+                                    LogMessage("[JigglyCraft] %s has stolen %s's %s!\n", clientName,builderName,object);
+                                    PrintToChat(client,"%c[JigglyCraft] %c you have stolen %s's %s!",
+                                                COLOR_GREEN,COLOR_DEFAULT,builderName,object);
+                                    PrintToChat(builder,"%c[JigglyCraft] %c %s has stolen your %s!",
+                                                COLOR_GREEN,COLOR_DEFAULT,clientName,object);
+                                }
+                            }
                             else
-                                color[0] = 255; // Red
-
-                            TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                               0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
-                            TE_SendToAll();
-
-                            TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
-                            TE_SendToAll();
-
-                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,5.0,5.0,255);
-                            TE_SendToAll();
-
-                            new Float:splashDir[3];
-                            splashDir[0] = 0.0;
-                            splashDir[1] = 0.0;
-                            splashDir[2] = 100.0;
-                            TE_SetupEnergySplash(targetLoc, splashDir, true);
-
-                            decl String:clientName[64];
-                            GetClientName(client,clientName,63);
-
-                            decl String:builderName[64];
-                            GetClientName(builder,builderName,63);
-
-                            decl String:object[32] = "";
-                            strcopy(object, sizeof(object), class[7]);
-                            LogMessage("[War3Source] %s has stolen %s's %s!\n", clientName,builderName,object);
-                            PrintToChat(client,"%c[War3Source] %c you has stolen %s's %s!",
-                                        COLOR_GREEN,COLOR_DEFAULT,builderName,object);
-                            PrintToChat(builder,"%c[War3Source] %c %s has stolen your %s!",
-                                        COLOR_GREEN,COLOR_DEFAULT,clientName,object);
+                            {
+                                PrintToChat(client,"%c[JigglyCraft] %c Unable to steal object while it is building (%d)!",
+                                            COLOR_GREEN,COLOR_DEFAULT, building);
+                            }
                         }
                     }
                 }

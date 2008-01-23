@@ -42,19 +42,19 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
     decl String:victimTeam[64];
     GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[War3Source] %N %chas damaged you for %d with a %c%s%c",
+    PrintToChat(victim, "%c[JigglyCraft] %N %chas damaged you for %d with a %c%s%c",
                 COLOR_GREEN,client,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
 
-    PrintToChat(client, "%c[War3Source] %cYou damaged %N for %d hp with a %c%s%c.",
+    PrintToChat(client, "%c[JigglyCraft] %cYou damaged %N for %d hp with a %c%s%c.",
                 COLOR_GREEN,COLOR_DEFAULT,victim, hp, COLOR_TEAM,description,COLOR_DEFAULT);
 
-    PrintToConsole(victim, "[War3Source] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+    PrintToConsole(victim, "[JigglyCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
                    client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    PrintToConsole(client, "[War3Source] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+    PrintToConsole(client, "[JigglyCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
                    client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    LogToGame("[War3Source] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+    LogToGame("[JigglyCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
               client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 }
 
@@ -72,35 +72,35 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
     decl String:victimTeam[64];
     GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[War3Source] %N %c killed you with a %c%s%c",
+    PrintToChat(victim, "%c[JigglyCraft] %N %c killed you with a %c%s%c",
                 COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
 
     if (xp)
     {
-        PrintToChat(client, "%c[War3Source] %cYou gained %d XP for killing %N with a %c%s%c.",
+        PrintToChat(client, "%c[JigglyCraft] %cYou gained %d XP for killing %N with a %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,xp,victim, COLOR_TEAM,description,COLOR_DEFAULT);
 
-        PrintToConsole(victim, "[War3Source] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+        PrintToConsole(victim, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
 
-        PrintToConsole(client, "[War3Source] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+        PrintToConsole(client, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
 
-        LogToGame("[War3Source] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+        LogToGame("[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                   client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
     }
     else
     {
-        PrintToChat(client, "%c[War3Source] %cYou killed %N with a %c%s%c.",
+        PrintToChat(client, "%c[JigglyCraft] %cYou killed %N with a %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,victim, COLOR_TEAM,description,COLOR_DEFAULT);
 
-        PrintToConsole(client, "[War3Source] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+        PrintToConsole(client, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
 
-        PrintToConsole(victim, "[War3Source] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+        PrintToConsole(victim, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
 
-        LogToGame("[War3Source] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+        LogToGame("[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                   client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
     }
 }
