@@ -28,10 +28,10 @@ public War3Source_InitMenus()
 
 public OnLibraryRemoved(const String:name[])
 {
-	if (StrEqual(name, "adminmenu"))
-		hAdminMenu = INVALID_HANDLE;
+    if (StrEqual(name, "adminmenu"))
+        hAdminMenu = INVALID_HANDLE;
 }
- 
+
 public OnAdminMenuReady(Handle:topmenu)
 {
     /************************************************************/
@@ -65,6 +65,7 @@ public War3Source_IntroMenu(client)
     new Handle:introMenu=CreateMenu(War3Source_IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
     SetMenuTitle(introMenu,"Welcome to this War3Source server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\n%s",VERSION);
+    SetMenuExitButton(introMenu,true);
     AddMenuItem(introMenu,"","Exit");
     DisplayMenu(introMenu,client, 20);
 }
@@ -75,14 +76,14 @@ public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
         if (m_FirstSpawn[client] > 1)
-            War3Source_RaceMenu(client, true);
+            War3Source_RaceMenu(client, true, INVALID_FUNCTION);
         else
             m_FirstSpawn[client]=0;
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_War3Menu(client,vecpos)
@@ -111,7 +112,8 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new war3player=StringToInt(SelectionInfo);
         if(war3player>-1)
         {
@@ -123,7 +125,7 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
                 }
                 case 1: // changerace
                 {
-                    War3Source_RaceMenu(client, true);
+                    War3Source_RaceMenu(client, true, War3Source_War3Menu);
                 }
                 case 2: // skillsinfo
                 {
@@ -158,13 +160,15 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
-public War3Source_RaceMenu(client, bool:change)
+new Function:gRaceMenuParentMenuFunction = INVALID_FUNCTION;
+
+public War3Source_RaceMenu(client, bool:change, Function:parentMenuFunction)
 {
     new Handle:crMenu;
     
@@ -180,6 +184,8 @@ public War3Source_RaceMenu(client, bool:change)
     }
 
     SetMenuExitButton(crMenu,true);
+    SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
+
     // Iterate through the races and print them out
     new Handle:race;
     decl String:rbuf[4];
@@ -203,6 +209,7 @@ public War3Source_RaceMenu(client, bool:change)
         else
             AddMenuItem(crMenu,rbuf,rname);
     }
+    gRaceMenuParentMenuFunction=parentMenuFunction;
     DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -238,10 +245,24 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+        if (selection == MenuEnd_ExitBack &&
+            gRaceMenuParentMenuFunction != INVALID_FUNCTION)
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos >- 1)
+            {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction);
+                Call_PushCell(client);
+                Call_PushCell(vecpos);
+                Call_Finish(result);
+            }
+        }
+    }
 }
 
 public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -260,10 +281,10 @@ public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_SkillMenu(client,vectorpos)
@@ -273,6 +294,7 @@ public War3Source_SkillMenu(client,vectorpos)
     new skillcount=GetSkillCount(vectorpos,race_num);
     new level=GetLevel(vectorpos,race_num);
     SetMenuExitButton(sMenu,true);
+    SetMenuExitBackButton(sMenu,true);
     SetMenuTitle(sMenu,"[War3Source] Select your desired skill. (%d/%d)",skillcount,level);
     decl String:skillname[64];
     new curlevel;
@@ -372,10 +394,10 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
             }
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_ShopMenu(client,vectorpos,bool:shopmenu)
@@ -430,10 +452,10 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
                 War3Source_ShopMenu_Item(client,vecpos,item);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_ShopMenu_Item(client,vecpos,item)
@@ -443,6 +465,7 @@ public War3Source_ShopMenu_Item(client,vecpos,item)
     GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
     new Handle:shopMenu_Item=CreateMenu(War3Source_ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
+    SetMenuExitBackButton(shopMenu_Item,true);
     decl String:itemname[64];
     new Handle:itemHandle;
     itemHandle=ShopItem(item);
@@ -523,10 +546,17 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                 War3Source_ShopMenu(client,vecpos,shopMenuMode[client]);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+        if (selection == MenuEnd_ExitBack)
+        {
+            ClientCommand(client,"play buttons/button14.wav");
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos>-1)
+                War3Source_ShopMenu(client,vecpos,shopMenuMode[client]);
+        }
+    }
 }
 
 public Action:War3Source_Admin(client,args)
@@ -568,10 +598,10 @@ public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_Player(client,targetvecpos)
@@ -676,10 +706,10 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_PlayerInfo(client,target)
@@ -737,10 +767,10 @@ public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_XP(client,target)
@@ -845,10 +875,10 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_GiveShopItem(client,target)
@@ -933,10 +963,10 @@ public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selectio
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_SetRace(client,target)
@@ -1004,10 +1034,10 @@ public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,sele
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_Level(client,target)
@@ -1109,10 +1139,10 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }
 
 public War3Source_Admin_Credits(client,target)
@@ -1240,8 +1270,8 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-	else if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+    }
 }

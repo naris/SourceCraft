@@ -275,10 +275,19 @@ public War3Source_HelpMenu_Command(client,command)
 
 public War3Source_HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
         War3Source_War3Help(client);
+    }
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
+        if (selection == MenuEnd_ExitBack)
+        {
+            ClientCommand(client,"play buttons/button14.wav");
+            War3Source_War3Help(client);
+        }
     }
 }
 
