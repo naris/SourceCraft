@@ -430,9 +430,6 @@ public Protoss_MindControl(client,war3player)
                                 new builder = GetEntDataEnt(target, m_BuilderOffset[obj]); // Get the current owner of the object.
                                 new builderTeam = GetClientTeam(builder);
                                 new team = GetClientTeam(client);
-                                LogMessage("[JigglyCraft] class=%s, building=%d, builder=%d,team=%d!", class, building, builder, team);
-                                PrintToChat(client,"%c[JigglyCraft] %c class=%s, building=%d, builder=%d,team=%d!",
-                                            COLOR_GREEN,COLOR_DEFAULT, class, building, builder, team);
                                 if (builderTeam != team)
                                 {
                                     SetEntDataEnt(target, m_BuilderOffset[obj], client, true); // Change the builder to client
@@ -481,11 +478,6 @@ public Protoss_MindControl(client,war3player)
                                     PrintToChat(builder,"%c[JigglyCraft] %c %s has stolen your %s!",
                                                 COLOR_GREEN,COLOR_DEFAULT,clientName,object);
                                 }
-                            }
-                            else
-                            {
-                                PrintToChat(client,"%c[JigglyCraft] %c Unable to steal object while it is building (%d)!",
-                                            COLOR_GREEN,COLOR_DEFAULT, building);
                             }
                         }
                     }
