@@ -24,12 +24,14 @@
 #define RACE_REQUIRED_LEVEL    12
 
 // Functions called from menus.inc
-public War3Source_SkillMenu(client,vectorpos);
+public War3Source_SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
 // A vector of race infomation
 new Handle:arrayRaces;
 
 new Handle:currentRaceForSkills[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
+
+new Function:gSkillsInfoParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 
 public Handle:CreateRace(const String:name[],                  const String:short[],
                          const String:switchmessage_instant[], const String:switchmessage_dead[],
@@ -118,13 +120,34 @@ public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection
         ClientCommand(client,"play buttons/button14.wav");
 
         new Handle:raceHandle = currentRaceForSkills[client];
-        if(raceHandle != INVALID_HANDLE)
-            War3Source_ShowSkillsInfo(client,raceHandle);
-        else
+        if(raceHandle == INVALID_HANDLE)
         {
             new vecpos=GetClientVectorPosition(client);
             if(vecpos>-1)
-                War3Source_SkillsInfo(client,vecpos);
+            {
+                new race=GetRace(vecpos);
+                raceHandle=Race(race);
+            }
+        }
+        War3Source_ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+        {
+            ClientCommand(client,"play buttons/button14.wav");
+
+            new Handle:raceHandle = currentRaceForSkills[client];
+            if(raceHandle == INVALID_HANDLE)
+            {
+                new vecpos=GetClientVectorPosition(client);
+                if(vecpos>-1)
+                {
+                    new race=GetRace(vecpos);
+                    raceHandle=Race(race);
+                }
+            }
+            War3Source_ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
         }
     }
 }
@@ -140,6 +163,8 @@ public War3Source_SkillsInfo_Skill(client,Handle:raceHandle,skill)
     GetArrayString(raceHandle,4+(skill*2)+1,desc,255);
     SetMenuTitle(menu,"[War3Source] Skill information for %s\nDescription: %s",name,desc);
     AddMenuItem(menu,"","Back to the skills");
+    SetMenuExitButton(menu,true);
+    SetMenuExitBackButton(menu,true);
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
@@ -157,6 +182,23 @@ public War3Source_SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selec
             War3Source_SkillsInfo_Skill(client,race,skill);
         }
     }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack &&
+            gSkillsInfoParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos >- 1)
+            {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(vecpos);
+                Call_Finish(result);
+            }
+        }
+    }
 }
 
 public War3Source_ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -167,13 +209,14 @@ public War3Source_SkillsInfo(client,vecpos)
 {
     new race=GetRace(vecpos);
     new Handle:raceHandle=Race(race);
-    War3Source_ShowSkillsInfo(client, raceHandle);
+    War3Source_ShowSkillsInfo(client, raceHandle, INVALID_FUNCTION);
 }
 
-public War3Source_ShowSkillsInfo(client, Handle:raceHandle)
+public War3Source_ShowSkillsInfo(client, Handle:raceHandle, Function:parentMenuFunction)
 {
     new Handle:menu=CreateMenu(War3Source_SkillsInfo_Selected);
     SetMenuExitButton(menu,true);
+    SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
     SetMenuTitle(menu,"[War3Source] Select a skill for more info.");
     decl String:buf[64];
     for(new x=0;x<SKILL_COUNT;x++)
@@ -182,6 +225,7 @@ public War3Source_ShowSkillsInfo(client, Handle:raceHandle)
         AddMenuItem(menu,"",buf);
     }
     currentRaceForSkills[client] = raceHandle;
+    gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
@@ -228,6 +272,6 @@ ResetSkills(client,vecpos)
                     COLOR_GREEN,COLOR_DEFAULT);
 
         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-            War3Source_SkillMenu(client,vecpos);
+            War3Source_SkillMenu(client, vecpos, INVALID_FUNCTION);
     }
 }

@@ -276,7 +276,7 @@ public Action:War3Source_CMD_SetLevel(client,args)
                 PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,level);
                 if(level>0)
-                    War3Source_SkillMenu(index,vecpos);
+                    War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -319,7 +319,7 @@ public Action:War3Source_CMD_GiveLevel(client,args)
                     PrintToConsole(client,"[War3Source] You just gave player \"%s\" a level.",name);
                     PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
-                    War3Source_SkillMenu(index,vecpos);
+                    War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
                 }
             }
         }
@@ -366,7 +366,7 @@ public Action:War3Source_CMD_RemoveLevel(client,args)
                     PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
                     if(newlevel>0)
-                        War3Source_SkillMenu(index,vecpos);
+                        War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
                 }
             }
         }

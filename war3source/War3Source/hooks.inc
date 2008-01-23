@@ -71,7 +71,7 @@ public Action:War3Source_SayCommand(client,args)
         {
             new race=GetRace(vecpos);
             if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                War3Source_SkillMenu(client,vecpos);
+                War3Source_SkillMenu(client,vecpos, INVALID_FUNCTION);
             else
             {
                 PrintToChat(client,"%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);

@@ -11,6 +11,8 @@
 #define REQUIRE_PLUGIN
 
 new bool:shopMenuMode[MAXPLAYERS+1];
+new Function:gRaceMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new Function:gSkillMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 
 new Handle:hAdminMenu = INVALID_HANDLE;
 
@@ -139,7 +141,7 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
                 {
                     new race=GetRace(war3player);
                     if(GetSkillCount(war3player,race)<GetLevel(war3player,race))
-                        War3Source_SkillMenu(client,war3player);
+                        War3Source_SkillMenu(client, war3player, War3Source_War3Menu);
                     else
                     {
                         PrintToChat(client, "%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.", COLOR_GREEN,COLOR_DEFAULT);
@@ -165,8 +167,6 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
         CloseHandle(menu);
     }
 }
-
-new Function:gRaceMenuParentMenuFunction = INVALID_FUNCTION;
 
 public War3Source_RaceMenu(client, bool:change, Function:parentMenuFunction)
 {
@@ -209,7 +209,7 @@ public War3Source_RaceMenu(client, bool:change, Function:parentMenuFunction)
         else
             AddMenuItem(crMenu,rbuf,rname);
     }
-    gRaceMenuParentMenuFunction=parentMenuFunction;
+    gRaceMenuParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -248,14 +248,14 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack &&
-            gRaceMenuParentMenuFunction != INVALID_FUNCTION)
+            gRaceMenuParentMenuFunction[client] != INVALID_FUNCTION)
         {
             new vecpos=GetClientVectorPosition(client);
             if(vecpos >- 1)
             {
                 decl result;
                 ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction);
+                Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction[client]);
                 Call_PushCell(client);
                 Call_PushCell(vecpos);
                 Call_Finish(result);
@@ -280,7 +280,24 @@ public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection
             {
                 // Okay, they selected a valid race
                 new Handle:raceHandle=Race(selection);
-                War3Source_ShowSkillsInfo(client, raceHandle);
+                War3Source_ShowSkillsInfo(client, raceHandle, War3Source_RaceMenu);
+            }
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack &&
+            gRaceMenuParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos >- 1)
+            {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(vecpos);
+                Call_Finish(result);
             }
         }
     }
@@ -290,7 +307,7 @@ public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_SkillMenu(client,vectorpos)
+public War3Source_SkillMenu(client, vectorpos, Function:parentMenuFunction)
 {
     new Handle:sMenu=CreateMenu(War3Source_SMenu_Selected);
     new race_num=GetRace(vectorpos);
@@ -319,6 +336,7 @@ public War3Source_SkillMenu(client,vectorpos)
         if(curlevel!=4)
             AddMenuItem(sMenu,sbuf,buf);
     }
+    gSkillMenuParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -369,7 +387,7 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                                         COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
                         }
                         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                            War3Source_SkillMenu(client,vecpos);
+                            War3Source_SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
                     }
                     else
                     {
@@ -391,9 +409,26 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                         }
 
                         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                            War3Source_SkillMenu(client,vecpos);
+                            War3Source_SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
                     }
                 }
+            }
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack &&
+            gSkillMenuParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos >- 1)
+            {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gSkillMenuParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(vecpos);
+                Call_Finish(result);
             }
         }
     }
@@ -669,7 +704,7 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
                             SetSkillLevel(war3player,race,y,0);
 
                     if(GetSkillCount(war3player,race)<GetLevel(war3player,race))
-                        War3Source_SkillMenu(index,war3player);
+                        War3Source_SkillMenu(index, war3player, War3Source_Admin_Player);
 
                     PrintToChat(index, "%c[War3Source] %cAdmin \"%s\" reset your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
@@ -1102,7 +1137,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 {
                     SetLevel(targetvecpos,race,newlevel);
                     SetOverallLevel(targetvecpos, GetOverallLevel(targetvecpos)+1);
-                    War3Source_SkillMenu(index,targetvecpos);
+                    War3Source_SkillMenu(index, targetvecpos, War3Source_Admin_Level);
 
                     PrintToChat(client, "%c[War3Source] %cYou gave player \"%s\" a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,targetname);
@@ -1134,7 +1169,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
 
                     if(newlevel>0)
-                        War3Source_SkillMenu(index,targetvecpos);
+                        War3Source_SkillMenu(index, targetvecpos, War3Source_Admin_Level);
                 }
             }
             War3Source_Admin_Level(client,index);

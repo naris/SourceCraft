@@ -34,8 +34,12 @@ public GiveKillCredits(client,vectorpos)
     }
     else
     {
-        SetCredits(vectorpos,MAX_CREDITS);
-        PrintToChat(client, "%c[War3Source] %cThe max amount of %s is %d, so you have gained %d %s.",
-                    COLOR_GREEN,COLOR_DEFAULT,currency,MAX_CREDITS,MAX_CREDITS-curcredits,currency);
+        new amt = MAX_CREDITS-curcredits;
+        if (amt > 0)
+        {
+            SetCredits(vectorpos,MAX_CREDITS);
+            PrintToChat(client, "%c[War3Source] %cThe max amount of %s is %d, so you have gained %d %s.",
+                        COLOR_GREEN,COLOR_DEFAULT,currency,MAX_CREDITS,amt,currency);
+        }
     }
 }

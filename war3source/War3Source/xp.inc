@@ -24,7 +24,7 @@
 #define CAPTURE_POINT_XP 20
 
 // Functions called from menus.inc
-public War3Source_SkillMenu(client,vectorpos);
+public War3Source_SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
 public DoLevelCheck(client,vectorpos)
 {
@@ -42,7 +42,7 @@ public DoLevelCheck(client,vectorpos)
                     new oLevel = GetOverallLevel(vectorpos);
                     SetOverallLevel(vectorpos, ++oLevel);
                     SetLevel(vectorpos,race,level);
-                    War3Source_SkillMenu(client,vectorpos);
+                    War3Source_SkillMenu(client, vectorpos, INVALID_FUNCTION);
 
                     decl String:raceName[64] = "";
                     GetArrayString(Race(race),RACE_NAME,raceName,sizeof(raceName));

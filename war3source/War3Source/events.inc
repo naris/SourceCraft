@@ -60,7 +60,7 @@ public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBro
             if (m_FirstSpawn[index])
                 War3Source_IntroMenu(index);
             else if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                War3Source_SkillMenu(index,vecpos);
+                War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
         }
     }
 }
@@ -78,7 +78,7 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
             War3Source_PendingCheck(victimIndex,vecposvictim);
             new race=GetRace(vecposvictim);
             if(GetSkillCount(vecposvictim,race)<GetLevel(vecposvictim,race))
-                War3Source_SkillMenu(victimIndex,vecposvictim);
+                War3Source_SkillMenu(victimIndex, vecposvictim, INVALID_FUNCTION);
         }
     }
 
