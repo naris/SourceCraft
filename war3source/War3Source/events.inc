@@ -169,7 +169,7 @@ public War3Source_RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
             m_OffsetMaxSpeed[x]=0;
-            if (saveEnabled)
+            if (saveEnabled && IsClientInGame(x))
                 War3Source_SavePlayerData(x,GetClientVectorPosition(x));
         }
     }
@@ -181,7 +181,8 @@ public OnMapEnd()
     {
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
-            War3Source_SavePlayerData(x,GetClientVectorPosition(x));
+            if (IsClientInGame(x))
+                War3Source_SavePlayerData(x,GetClientVectorPosition(x));
         }
     }
 }

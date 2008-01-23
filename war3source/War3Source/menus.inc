@@ -245,10 +245,9 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
             }
         }
     }
-    else if (action == MenuAction_End)
+    else if (action == MenuAction_Cancel)
     {
-        CloseHandle(menu);
-        if (selection == MenuEnd_ExitBack &&
+        if (selection == MenuCancel_ExitBack &&
             gRaceMenuParentMenuFunction != INVALID_FUNCTION)
         {
             new vecpos=GetClientVectorPosition(client);
@@ -262,6 +261,10 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
                 Call_Finish(result);
             }
         }
+    }
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
     }
 }
 
@@ -546,16 +549,19 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                 War3Source_ShopMenu(client,vecpos,shopMenuMode[client]);
         }
     }
-    else if (action == MenuAction_End)
+    else if (action == MenuAction_Cancel)
     {
-        CloseHandle(menu);
-        if (selection == MenuEnd_ExitBack)
+        if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
             new vecpos=GetClientVectorPosition(client);
             if(vecpos>-1)
                 War3Source_ShopMenu(client,vecpos,shopMenuMode[client]);
         }
+    }
+    else if (action == MenuAction_End)
+    {
+        CloseHandle(menu);
     }
 }
 
