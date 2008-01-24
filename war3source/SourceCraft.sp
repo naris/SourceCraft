@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source.sp
+ * File: SourceCraft.sp
  * Description: The main file for SourceCraft.
  * Author(s): Anthony Iacono 
  * Modifications by: Naris (Murray Wilson)
@@ -32,7 +32,7 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #define MAX_CREDITS        GetConVarInt(m_MaxCredits)
 
 // SourceCraft Includes
-#include "War3Source/War3Source"
+#include "War3Source/help"
 #include "War3Source/util"
 #include "War3Source/damage"
 #include "War3Source/immunity"
