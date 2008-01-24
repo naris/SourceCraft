@@ -42,19 +42,19 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
     decl String:victimTeam[64];
     GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[JigglyCraft] %N %chas damaged you for %d with a %c%s%c",
+    PrintToChat(victim, "%c[SourceCraft] %N %chas damaged you for %d with a %c%s%c",
                 COLOR_GREEN,client,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
 
-    PrintToChat(client, "%c[JigglyCraft] %cYou damaged %N for %d hp with a %c%s%c.",
+    PrintToChat(client, "%c[SourceCraft] %cYou damaged %N for %d hp with a %c%s%c.",
                 COLOR_GREEN,COLOR_DEFAULT,victim, hp, COLOR_TEAM,description,COLOR_DEFAULT);
 
-    PrintToConsole(victim, "[JigglyCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+    PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
                    client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    PrintToConsole(client, "[JigglyCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+    PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
                    client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    LogToGame("[JigglyCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+    LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
               client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 }
 
@@ -72,35 +72,35 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
     decl String:victimTeam[64];
     GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[JigglyCraft] %N %c killed you with a %c%s%c",
+    PrintToChat(victim, "%c[SourceCraft] %N %c killed you with a %c%s%c",
                 COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
 
     if (xp)
     {
-        PrintToChat(client, "%c[JigglyCraft] %cYou gained %d XP for killing %N with a %c%s%c.",
+        PrintToChat(client, "%c[SourceCraft] %cYou gained %d XP for killing %N with a %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,xp,victim, COLOR_TEAM,description,COLOR_DEFAULT);
 
-        PrintToConsole(victim, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+        PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
 
-        PrintToConsole(client, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+        PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
 
-        LogToGame("[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                   client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
     }
     else
     {
-        PrintToChat(client, "%c[JigglyCraft] %cYou killed %N with a %c%s%c.",
+        PrintToChat(client, "%c[SourceCraft] %cYou killed %N with a %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,victim, COLOR_TEAM,description,COLOR_DEFAULT);
 
-        PrintToConsole(client, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+        PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
 
-        PrintToConsole(victim, "[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+        PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
 
-        LogToGame("[JigglyCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                   client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
     }
 }

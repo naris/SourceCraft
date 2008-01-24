@@ -24,7 +24,7 @@
 #define RACE_REQUIRED_LEVEL    12
 
 // Functions called from menus.inc
-public War3Source_SkillMenu(client, vectorpos, Function:parentMenuFunction);
+public SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
 // A vector of race infomation
 new Handle:arrayRaces;
@@ -58,7 +58,7 @@ public Handle:CreateRace(const String:name[],                  const String:shor
     return ret;
 }
 
-public bool:War3Source_InitiatearrayRaces()
+public bool:InitiatearrayRaces()
 {
     arrayRaces=CreateArray();
     return true;
@@ -93,7 +93,7 @@ public FindRace(const String:name[])
     return -1;
 }
 
-public War3Source_PendingCheck(client,vectorpos)
+public PendingCheck(client,vectorpos)
 {
     new pendingrace=GetPendingRace(vectorpos);
     if(pendingrace>-1)
@@ -103,17 +103,17 @@ public War3Source_PendingCheck(client,vectorpos)
         decl String:buf[192];
         new Handle:race=Race(GetRace(vectorpos));
         GetArrayString(race,2,buf,191);
-        PrintToChat(client,"%c[JigglyCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+        PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
 
     if (GetPendingSkillReset(vectorpos))
     {
         SetPendingSkillReset(vectorpos,0);
-        ResetSkills(client,vectorpos);
+        ResetSkillsNow(client,vectorpos);
     }
 }
 
-public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
+public SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
@@ -129,7 +129,7 @@ public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection
                 raceHandle=Race(race);
             }
         }
-        War3Source_ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
+        ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
     }
     else if (action == MenuAction_Cancel)
     {
@@ -147,14 +147,14 @@ public War3Source_SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection
                     raceHandle=Race(race);
                 }
             }
-            War3Source_ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
+            ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
         }
     }
 }
 
-public War3Source_SkillsInfo_Skill(client,Handle:raceHandle,skill)
+public SkillsInfo_Skill(client,Handle:raceHandle,skill)
 {
-    new Handle:menu=CreateMenu(War3Source_SkillsInfo_Back);
+    new Handle:menu=CreateMenu(SkillsInfo_Back);
     SetMenuExitButton(menu,true);
     //new Handle:raceHandle=Race(race);
     decl String:name[64];
@@ -168,7 +168,7 @@ public War3Source_SkillsInfo_Skill(client,Handle:raceHandle,skill)
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
+public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
@@ -179,7 +179,7 @@ public War3Source_SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selec
             new skill=selection;
             //new Handle:race=GetRace(Race(vecpos));
             new Handle:race=currentRaceForSkills[client];
-            War3Source_SkillsInfo_Skill(client,race,skill);
+            SkillsInfo_Skill(client,race,skill);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -201,20 +201,20 @@ public War3Source_SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selec
     }
 }
 
-public War3Source_ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
+public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
 {
 }
 
-public War3Source_SkillsInfo(client,vecpos)
+public SkillsInfo(client,vecpos)
 {
     new race=GetRace(vecpos);
     new Handle:raceHandle=Race(race);
-    War3Source_ShowSkillsInfo(client, raceHandle, INVALID_FUNCTION);
+    ShowSkillsInfo(client, raceHandle, INVALID_FUNCTION);
 }
 
-public War3Source_ShowSkillsInfo(client, Handle:raceHandle, Function:parentMenuFunction)
+public ShowSkillsInfo(client, Handle:raceHandle, Function:parentMenuFunction)
 {
-    new Handle:menu=CreateMenu(War3Source_SkillsInfo_Selected);
+    new Handle:menu=CreateMenu(SkillsInfo_Selected);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
 
@@ -233,25 +233,25 @@ public War3Source_ShowSkillsInfo(client, Handle:raceHandle, Function:parentMenuF
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_ResetSkills(client,vecpos)
+public ResetSkills(client,vecpos)
 {
     if(IsPlayerAlive(client))
     {
         SetPendingSkillReset(vecpos,1);
-        PrintToChat(client,"%c[JigglyCraft] %cYour skills for your current race will be reset when you die or respawn.",
+        PrintToChat(client,"%c[SourceCraft] %cYour skills for your current race will be reset when you die or respawn.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
     else
-        ResetSkills(client,vecpos);
+        ResetSkillsNow(client,vecpos);
 }
 
-public War3Source_ShowSkills(client,vecpos)
+public ShowSkills(client,vecpos)
 {
     new race=GetRace(vecpos);
     new Handle:raceHandle=Race(race);
     new Handle:panel=CreatePanel();
 
-    SetPanelTitle(panel,"[JigglyCraft] Here are your skill levels.");
+    SetPanelTitle(panel,"[SourceCraft] Here are your skill levels.");
 
     decl String:buf[64];
     decl String:bufout[256];
@@ -264,20 +264,20 @@ public War3Source_ShowSkills(client,vecpos)
     }
     DrawPanelText(panel,"-----------------------------");
     DrawPanelItem(panel,"Close");
-    SendPanelToClient(panel,client,War3Source_ShowSkills_Selected,0);
+    SendPanelToClient(panel,client,ShowSkills_Selected,0);
 }
 
-ResetSkills(client,vecpos)
+ResetSkillsNow(client,vecpos)
 {
     {
         new race=GetRace(vecpos);
         for(new x=0;x<SKILL_COUNT;x++)
             SetSkillLevel(vecpos,race,x,0);
 
-        PrintToChat(client,"%c[JigglyCraft] %cYour skills have been reset for your current race.",
+        PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
                     COLOR_GREEN,COLOR_DEFAULT);
 
         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-            War3Source_SkillMenu(client, vecpos, INVALID_FUNCTION);
+            SkillMenu(client, vecpos, INVALID_FUNCTION);
     }
 }

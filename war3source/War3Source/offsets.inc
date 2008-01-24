@@ -14,7 +14,7 @@ new m_VelocityOffset;
 new m_OffsetGravity[MAXPLAYERS+1];
 new m_OffsetMaxSpeed[MAXPLAYERS+1];
 
-public bool:War3Source_InitOffset()
+public bool:InitOffset()
 {
     new bool:ret=true;
 

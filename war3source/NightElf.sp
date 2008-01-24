@@ -1,9 +1,10 @@
 /**
-* vim: set ai et ts=4 sw=4 :
-* File: War3Source_NightElf.sp
-* Description: The Night Elf race for War3Source.
-* Author(s): Anthony Iacono 
-*/
+ * vim: set ai et ts=4 sw=4 :
+ * File: War3Source_NightElf.sp
+ * Description: The Night Elf race for SourceCraft.
+ * Author(s): Anthony Iacono 
+ * Modifications by: Naris (Murray Wilson)
+ */
  
 #pragma semicolon 1
  
@@ -20,7 +21,6 @@
 #include "War3Source/authtimer"
 #include "War3Source/log"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowEntangle[MAXPLAYERS+1];
@@ -31,9 +31,9 @@ new g_haloSprite;
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Night Elf",
+    name = "SourceCraft Race - Night Elf",
     author = "PimpinJuice",
-    description = "The Night Elf race for War3Source.",
+    description = "The Night Elf race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
@@ -48,20 +48,19 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Night Elf",
-                           "nightelf",
-                           "You are now a Night Elf.",
-                           "You will be a Night Elf when you die or respawn.",
-                           "Evasion",
-                           "Gives you 5-30% chance of evading a shot.",
-                           "Thorns Aura",
-                           "Does 30% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
-                           "Trueshot Aura",
-                           "Does 10-60% extra damage to the \nenemy, chance is 30%.",
-                           "Entangled Roots",
-                           "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
+    raceID=CreateRace("Night Elf", "nightelf",
+                      "You are now a Night Elf.",
+                      "You will be a Night Elf when you die or respawn.",
+                      "Evasion",
+                      "Gives you 5-30% chance of evading a shot.",
+                      "Thorns Aura",
+                      "Does 30% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
+                      "Trueshot Aura",
+                      "Does 10-60% extra damage to the \nenemy, chance is 30%.",
+                      "Entangled Roots",
+                      "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
     FindMoveTypeOffset();
 }
@@ -77,18 +76,18 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 }
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
     m_AllowEntangle[client]=true;
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (race==raceID && pressed && IsPlayerAlive(client) &&
         m_AllowEntangle[client])
     {
-        new ult_level=War3_GetSkillLevel(war3player,race,3);
+        new ult_level=GetSkillLevel(player,race,3);
         if(ult_level)
         {
             new Float:range=1.0;
@@ -111,10 +110,10 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                 if (client != index && IsClientConnected(index) && IsPlayerAlive(index) &&
                     GetClientTeam(index) != GetClientTeam(client))
                 {
-                    new war3player_check=War3_GetWar3Player(index);
-                    if (war3player_check>-1)
+                    new player_check=GetPlayer(index);
+                    if (player_check>-1)
                     {
-                        if (!War3_GetImmunity(war3player_check,Immunity_Ultimates))
+                        if (!GetImmunity(player_check,Immunity_Ultimates))
                         {
                             if (IsInRange(client,index,range))
                             {
@@ -129,7 +128,7 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
 
                                     decl String:name[64];
                                     GetClientName(client,name,63);
-                                    PrintToChat(index,"%c[JigglyCraft] %s %chas tied you down with %cEntangled Roots.%c",
+                                    PrintToChat(index,"%c[SourceCraft] %s %chas tied you down with %cEntangled Roots.%c",
                                                 COLOR_GREEN,name,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     SetEntData(index,movetypeOffset,0,1);
@@ -141,8 +140,8 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
                 }
             }
 
-            PrintToChat(client,"%c[JigglyCraft]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
-                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
             new Float:cooldown = GetConVarFloat(cvarEntangleCooldown);
             if (cooldown > 0.0)
@@ -170,34 +169,34 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (victimuserid)
     {
         new victimindex      = GetClientOfUserId(victimuserid);
-        new war3playervictim = War3_GetWar3Player(victimindex);
-        if (war3playervictim != -1)
+        new playervictim = GetPlayer(victimindex);
+        if (playervictim != -1)
         {
             new bool:evaded = false;
-            new victimrace = War3_GetRace(war3playervictim);
+            new victimrace = GetRace(playervictim);
             if (victimrace == raceID)
             {
-                evaded = NightElf_Evasion(event, victimindex, war3playervictim);
+                evaded = NightElf_Evasion(event, victimindex, playervictim);
             }
 
             new attackeruserid = GetEventInt(event,"attacker");
             if (attackeruserid && victimuserid != attackeruserid)
             {
                 new attackerindex = GetClientOfUserId(attackeruserid);
-                new war3playerattacker=War3_GetWar3Player(attackerindex);
-                if (war3playerattacker != -1)
+                new playerattacker=GetPlayer(attackerindex);
+                if (playerattacker != -1)
                 {
                     new damage = 0;
-                    if (War3_GetRace(war3playerattacker)==raceID)
+                    if (GetRace(playerattacker)==raceID)
                     {
                         damage = NightElf_TrueshotAura(event, attackerindex,
-                                                       war3playerattacker, victimindex, evaded);
+                                                       playerattacker, victimindex, evaded);
                     }
 
                     if (victimrace == raceID && (!evaded || damage))
                     {
-                        NightElf_ThornsAura(event, attackerindex, war3playerattacker,
-                                            victimindex, war3playervictim, evaded, damage);
+                        NightElf_ThornsAura(event, attackerindex, playerattacker,
+                                            victimindex, playervictim, evaded, damage);
                     }
                 }
             }
@@ -206,20 +205,20 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (assisteruserid && victimuserid != assisteruserid)
             {
                 new assisterindex=GetClientOfUserId(assisteruserid);
-                new war3playerassister=War3_GetWar3Player(assisterindex);
-                if (war3playerassister != -1)
+                new playerassister=GetPlayer(assisterindex);
+                if (playerassister != -1)
                 {
                     new damage = 0;
-                    if (War3_GetRace(war3playerassister)==raceID)
+                    if (GetRace(playerassister)==raceID)
                     {
                         damage = NightElf_TrueshotAura(event, assisterindex,
-                                                       war3playerassister, victimindex, evaded);
+                                                       playerassister, victimindex, evaded);
                     }
 
                     if (victimrace == raceID && (!evaded || damage))
                     {
-                        NightElf_ThornsAura(event, assisterindex, war3playerassister,
-                                            victimindex, war3playervictim, evaded, damage);
+                        NightElf_ThornsAura(event, assisterindex, playerassister,
+                                            victimindex, playervictim, evaded, damage);
                     }
                 }
             }
@@ -229,7 +228,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
 {
-    new skill_level_evasion = War3_GetSkillLevel(victimWar3player,raceID,0);
+    new skill_level_evasion = GetSkillLevel(victimWar3player,raceID,0);
     if (skill_level_evasion)
     {
         new chance;
@@ -246,7 +245,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
         }
         if (GetRandomInt(1,100) <= chance)
         {
-            new losthp=War3_GetDamage(event, victimIndex);
+            new losthp=GetDamage(event, victimIndex);
             new newhp=GetClientHealth(victimIndex)+losthp;
             new maxhp=GetMaxHealth(victimIndex);
             if (newhp > maxhp)
@@ -257,8 +256,8 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
 
-            LogMessage("[JigglyCraft] %s evaded an attack!\n", victimName);
-            PrintToChat(victimIndex,"%c[JigglyCraft] %s %c evaded an attack!",
+            LogMessage("[SourceCraft] %s evaded an attack!\n", victimName);
+            PrintToChat(victimIndex,"%c[SourceCraft] %s %c evaded an attack!",
                         COLOR_GREEN,victimName,COLOR_DEFAULT);
             return true;
         }
@@ -266,12 +265,12 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
     return false;
 }
 
-public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3playervictim, evaded, prev_damage)
+public NightElf_ThornsAura(Handle:event, index, player, victimindex, playervictim, evaded, prev_damage)
 {
-    new skill_level_thorns = War3_GetSkillLevel(war3playervictim,raceID,1);
+    new skill_level_thorns = GetSkillLevel(playervictim,raceID,1);
     if (skill_level_thorns)
     {
-        if (!War3_GetImmunity(war3player,Immunity_HealthTake))
+        if (!GetImmunity(player,Immunity_HealthTake))
         {
             new chance;
             switch(skill_level_thorns)
@@ -287,7 +286,7 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new damage=War3_GetDamage(event, victimindex);
+                new damage=GetDamage(event, victimindex);
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
                 if (newhp <= 0)
@@ -313,10 +312,10 @@ public NightElf_ThornsAura(Handle:event, index, war3player, victimindex, war3pla
     return 0;
 }
 
-public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evaded)
+public NightElf_TrueshotAura(Handle:event, index, player, victimindex, evaded)
 {
     // Trueshot Aura
-    new skill_level_trueshot=War3_GetSkillLevel(war3player,raceID,2);
+    new skill_level_trueshot=GetSkillLevel(player,raceID,2);
     if (skill_level_trueshot)
     {
         if (GetRandomInt(1,100) <= (evaded) ? 10 : 30)
@@ -334,7 +333,7 @@ public NightElf_TrueshotAura(Handle:event, index, war3player, victimindex, evade
                     percent=0.60;
             }
 
-            new damage=War3_GetDamage(event, victimindex);
+            new damage=GetDamage(event, victimindex);
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimindex)-amount;
             if (newhp <= 0)

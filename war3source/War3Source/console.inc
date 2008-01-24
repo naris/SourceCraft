@@ -11,7 +11,7 @@
 //#define ADMFLAG_WAR3 ADMFLAG_RCON
 #define ADMFLAG_WAR3 ADMFLAG_CUSTOM1
 
-public War3Source_InitCVars()
+public InitCVars()
 {
     CreateConVar("war3_version",VERSION,"War3Source version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY);
 
@@ -21,24 +21,24 @@ public War3Source_InitCVars()
     m_Currency=CreateConVar("war3_currency","credit", "Name of the currency");
     m_Currencies=CreateConVar("war3_currencies","credits", "Name of the currency in plural form");
 
-    RegAdminCmd("war3_setxp",War3Source_CMD_SetXP,ADMFLAG_WAR3,"Set a player's XP");
-    RegAdminCmd("war3_givexp",War3Source_CMD_GiveXP,ADMFLAG_WAR3,"Give a player XP");
-    RegAdminCmd("war3_removexp",War3Source_CMD_RemoveXP,ADMFLAG_WAR3,"Remove some XP from a player");
-    RegAdminCmd("war3_setlevel",War3Source_CMD_SetLevel,ADMFLAG_WAR3,"Set a player's level");
-    RegAdminCmd("war3_givelevel",War3Source_CMD_GiveLevel,ADMFLAG_WAR3,"Give a player a single level");
-    RegAdminCmd("war3_removelevel",War3Source_CMD_RemoveLevel,ADMFLAG_WAR3,"Remove a single level from a player");
-    RegAdminCmd("war3_setcredits",War3Source_CMD_SetCredits,ADMFLAG_WAR3,"Set a player's credit count");
-    RegAdminCmd("war3_givecredits",War3Source_CMD_GiveCredits,ADMFLAG_WAR3,"Give a player credits");
-    RegAdminCmd("war3_removecredits",War3Source_CMD_RemoveCredits,ADMFLAG_WAR3,"Remove some credits from a player");
+    RegAdminCmd("Setxp",CMD_SetXP,ADMFLAG_WAR3,"Set a player's XP");
+    RegAdminCmd("war3_givexp",CMD_GiveXP,ADMFLAG_WAR3,"Give a player XP");
+    RegAdminCmd("war3_removexp",CMD_RemoveXP,ADMFLAG_WAR3,"Remove some XP from a player");
+    RegAdminCmd("Setlevel",CMD_SetLevel,ADMFLAG_WAR3,"Set a player's level");
+    RegAdminCmd("war3_givelevel",CMD_GiveLevel,ADMFLAG_WAR3,"Give a player a single level");
+    RegAdminCmd("war3_removelevel",CMD_RemoveLevel,ADMFLAG_WAR3,"Remove a single level from a player");
+    RegAdminCmd("Setcredits",CMD_SetCredits,ADMFLAG_WAR3,"Set a player's credit count");
+    RegAdminCmd("war3_givecredits",CMD_GiveCredits,ADMFLAG_WAR3,"Give a player credits");
+    RegAdminCmd("war3_removecredits",CMD_RemoveCredits,ADMFLAG_WAR3,"Remove some credits from a player");
 
-    RegAdminCmd("wcadmin",War3Source_Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
-    RegAdminCmd("wc3admin",War3Source_Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
-    RegAdminCmd("war3admin",War3Source_Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
+    RegAdminCmd("wcadmin",Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
+    RegAdminCmd("wc3admin",Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
+    RegAdminCmd("war3admin",Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
 
     return true;
 }
 
-public War3Source_PlayerParse(const String:matchstr[], &Handle:matchHandle)
+public PlayerParse(const String:matchstr[], &Handle:matchHandle)
 {
     if(StrEqual(matchstr,"@all",false))
     {
@@ -107,10 +107,10 @@ public War3Source_PlayerParse(const String:matchstr[], &Handle:matchHandle)
     }
 }
 
-public Action:War3Source_CMD_SetXP(client,args)
+public Action:CMD_SetXP(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_setxp <player> <xp>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: Setxp <player> <xp>");
     else
     {
         decl String:match[64];
@@ -126,7 +126,7 @@ public Action:War3Source_CMD_SetXP(client,args)
         if(xp<0)
             xp=0;
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -137,22 +137,22 @@ public Action:War3Source_CMD_SetXP(client,args)
             {
                 new race=GetRace(vecpos);
                 SetXP(vecpos,race,xp);
-                PrintToConsole(client,"[JigglyCraft] You just set \"%s's\" XP to %d.",name,xp);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" set your XP to %d.",
+                PrintToConsole(client,"[SourceCraft] You just set \"%s's\" XP to %d.",name,xp);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your XP to %d.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_GiveXP(client,args)
+public Action:CMD_GiveXP(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_givexp <player> <xp>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givexp <player> <xp>");
     else
     {
         decl String:match[64];
@@ -168,7 +168,7 @@ public Action:War3Source_CMD_GiveXP(client,args)
         if(xp<0)
             xp=0;
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -179,22 +179,22 @@ public Action:War3Source_CMD_GiveXP(client,args)
             {
                 new race=GetRace(vecpos);
                 SetXP(vecpos,race,GetXP(vecpos,race)+xp);
-                PrintToConsole(client,"[JigglyCraft] You just gave %d XP to \"%s\".",xp,name);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" gave you %d XP.",
+                PrintToConsole(client,"[SourceCraft] You just gave %d XP to \"%s\".",xp,name);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you %d XP.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_RemoveXP(client,args)
+public Action:CMD_RemoveXP(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_removexp <player> <xp>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_removexp <player> <xp>");
     else
     {
         decl String:match[64];
@@ -210,7 +210,7 @@ public Action:War3Source_CMD_RemoveXP(client,args)
         if(xp<0)
             xp=0;
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -224,22 +224,22 @@ public Action:War3Source_CMD_RemoveXP(client,args)
                 if(newxp<0)
                     newxp=0;
                 SetXP(vecpos,race,newxp);
-                PrintToConsole(client,"[JigglyCraft] You just removed %d XP from \"%s\".",xp,name);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" removed %d XP from you.",
+                PrintToConsole(client,"[SourceCraft] You just removed %d XP from \"%s\".",xp,name);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d XP from you.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_SetLevel(client,args)
+public Action:CMD_SetLevel(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_setlevel <player> <level>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: Setlevel <player> <level>");
     else
     {
         decl String:match[64];
@@ -255,7 +255,7 @@ public Action:War3Source_CMD_SetLevel(client,args)
         if(level<0)
             level=0;
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -272,23 +272,23 @@ public Action:War3Source_CMD_SetLevel(client,args)
                 if(level<0)
                     level=0;
                 SetLevel(vecpos,race,level);
-                PrintToConsole(client,"[JigglyCraft] You just set player \"%s's\" level to %d.",name,level);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
+                PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" level to %d.",name,level);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,level);
                 if(level>0)
-                    War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
+                    SkillMenu(index, vecpos, INVALID_FUNCTION);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_GiveLevel(client,args)
+public Action:CMD_GiveLevel(client,args)
 {
     if(args!=1)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_givelevel <player>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givelevel <player>");
     else
     {
         decl String:match[64];
@@ -299,7 +299,7 @@ public Action:War3Source_CMD_GiveLevel(client,args)
         else
             adminname="Console";
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -311,28 +311,28 @@ public Action:War3Source_CMD_GiveLevel(client,args)
                 new race=GetRace(vecpos);
                 new newlevel=GetLevel(vecpos,race)+1;
                 if(newlevel>MAX_LEVELS)
-                    PrintToConsole(client,"[JigglyCraft] Player \"%s\" is already at their max level.",name);
+                    PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at their max level.",name);
                 else
                 {
                     SetLevel(vecpos,race,newlevel);
                     SetOverallLevel(vecpos, GetOverallLevel(vecpos)+1);
-                    PrintToConsole(client,"[JigglyCraft] You just gave player \"%s\" a level.",name);
-                    PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" gave you a level.",
+                    PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" a level.",name);
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
-                    War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
+                    SkillMenu(index, vecpos, INVALID_FUNCTION);
                 }
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_RemoveLevel(client,args)
+public Action:CMD_RemoveLevel(client,args)
 {
     if(args!=1)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_removelevel <player>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_removelevel <player>");
     else
     {
         decl String:match[64];
@@ -343,7 +343,7 @@ public Action:War3Source_CMD_RemoveLevel(client,args)
         else
             adminname="Console";
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -355,31 +355,31 @@ public Action:War3Source_CMD_RemoveLevel(client,args)
                 new race=GetRace(vecpos);
                 new newlevel=GetLevel(vecpos,race)-1;
                 if(newlevel<0)
-                    PrintToConsole(client,"[JigglyCraft] Player \"%s\" is already at level 0.",name);
+                    PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at level 0.",name);
                 else
                 {
                     for(new y=0;y<SKILL_COUNT;y++)
                         SetSkillLevel(vecpos,race,y,0);
                     SetLevel(vecpos,race,newlevel);
                     SetOverallLevel(vecpos, GetOverallLevel(vecpos)-1);
-                    PrintToConsole(client,"[JigglyCraft] You just removed a level from player \"%s\".",name);
-                    PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
+                    PrintToConsole(client,"[SourceCraft] You just removed a level from player \"%s\".",name);
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
                     if(newlevel>0)
-                        War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
+                        SkillMenu(index, vecpos, INVALID_FUNCTION);
                 }
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_SetCredits(client,args)
+public Action:CMD_SetCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_setcredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: Setcredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -401,7 +401,7 @@ public Action:War3Source_CMD_SetCredits(client,args)
         GetConVarString(m_Currencies, currencies, 63);
 
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -411,21 +411,21 @@ public Action:War3Source_CMD_SetCredits(client,args)
             if(vecpos>-1)
             {
                 SetCredits(vecpos,credits);
-                PrintToConsole(client,"[JigglyCraft] You just set player \"%s's\" %s to %d.",name,currencies,credits);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" set your %s to %d.",
+                PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" %s to %d.",name,currencies,credits);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your %s to %d.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,currencies,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_GiveCredits(client,args)
+public Action:CMD_GiveCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_givecredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givecredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -445,7 +445,7 @@ public Action:War3Source_CMD_GiveCredits(client,args)
         GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
 
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -460,21 +460,21 @@ public Action:War3Source_CMD_GiveCredits(client,args)
                 if(newcreds>MAX_CREDITS)
                     newcreds=MAX_CREDITS;
                 SetCredits(vecpos,newcreds);
-                PrintToConsole(client,"[JigglyCraft] You just gave player \"%s\" %d %s.",name,credits,currencies);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" give you %d %s.",
+                PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" %d %s.",name,credits,currencies);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" give you %d %s.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }
 
-public Action:War3Source_CMD_RemoveCredits(client,args)
+public Action:CMD_RemoveCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[JigglyCraft] The syntax of the command is: war3_givecredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givecredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -494,7 +494,7 @@ public Action:War3Source_CMD_RemoveCredits(client,args)
         GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
 
         new Handle:matchHandle=CreateArray();
-        War3Source_PlayerParse(match,matchHandle);
+        PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             decl String:name[64];
@@ -509,13 +509,13 @@ public Action:War3Source_CMD_RemoveCredits(client,args)
                 if(newcreds>MAX_CREDITS)
                     newcreds=MAX_CREDITS;
                 SetCredits(vecpos,newcreds);
-                PrintToConsole(client,"[JigglyCraft] You just removed %d %s from player \"%s\".",credits,currencies,name);
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" removed %d %s from you.",
+                PrintToConsole(client,"[SourceCraft] You just removed %d %s from player \"%s\".",credits,currencies,name);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d %s from you.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
             }
         }
         if(GetArraySize(matchHandle)==0)
-            PrintToConsole(client,"[JigglyCraft] No players matched your query.");
+            PrintToConsole(client,"[SourceCraft] No players matched your query.");
     }
     return Plugin_Handled;
 }

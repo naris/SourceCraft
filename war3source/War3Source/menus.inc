@@ -16,7 +16,7 @@ new Function:gSkillMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...}
 
 new Handle:hAdminMenu = INVALID_HANDLE;
 
-public War3Source_InitMenus()
+public InitMenus()
 {
     /* Account for late loading */
     new Handle:topmenu;
@@ -37,7 +37,7 @@ public OnLibraryRemoved(const String:name[])
 public OnAdminMenuReady(Handle:topmenu)
 {
     /************************************************************/
-    /* Add Administer War3Source option to SourceMod Admin Menu */
+    /* Add Administer SourceCraft option to SourceMod Admin Menu */
     /************************************************************/
 
     /* Block us from being called twice */
@@ -46,39 +46,39 @@ public OnAdminMenuReady(Handle:topmenu)
         /* Save the Handle */
         hAdminMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hAdminMenu, "war3admin", TopMenuObject_Item, War3Source_AdminMenu, server_commands, "war3admin", ADMFLAG_WAR3);
+        AddToTopMenu(hAdminMenu, "war3admin", TopMenuObject_Item, AdminMenu, server_commands, "war3admin", ADMFLAG_WAR3);
     }
 }
 
-public War3Source_AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+public AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
     {
-        Format(buffer, maxlength, "Administer JigglyCraft");
+        Format(buffer, maxlength, "Administer SourceCraft");
     }
     else if (action == TopMenuAction_SelectOption)
     {
-        War3Source_Admin(param,param);
+        Admin(param,param);
     }
 }
 
-public War3Source_IntroMenu(client)
+public IntroMenu(client)
 {
-    new Handle:introMenu=CreateMenu(War3Source_IntroMenu_Action);
+    new Handle:introMenu=CreateMenu(IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
-    SetMenuTitle(introMenu,"Welcome to this JigglyCraft server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\n%s",VERSION);
+    SetMenuTitle(introMenu,"Welcome to this SourceCraft server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\n%s",VERSION);
     SetMenuExitButton(introMenu,true);
     AddMenuItem(introMenu,"","Exit");
     DisplayMenu(introMenu,client, 20);
 }
 
-public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
+public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
 {
     if (action == MenuAction_Select ||
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
         if (m_FirstSpawn[client] > 1)
-            War3Source_RaceMenu(client, true, INVALID_FUNCTION);
+            RaceMenu(client, true, INVALID_FUNCTION);
         else
             m_FirstSpawn[client]=0;
     }
@@ -88,14 +88,14 @@ public War3Source_IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
     }
 }
 
-public War3Source_War3Menu(client,vecpos)
+public Menu(client,vecpos)
 {
-    new Handle:war3Menu=CreateMenu(War3Source_War3Menu_Select);
+    new Handle:war3Menu=CreateMenu(Menu_Select);
     SetMenuExitButton(war3Menu,true);
-    SetMenuTitle(war3Menu,"[JigglyCraft] Choose a task.");
+    SetMenuTitle(war3Menu,"[SourceCraft] Choose a task.");
     decl String:buf[4];
     Format(buf,sizeof(buf),"%d",vecpos);
-    AddMenuItem(war3Menu,buf,"View JigglyCraft command list");
+    AddMenuItem(war3Menu,buf,"View SourceCraft command list");
     AddMenuItem(war3Menu,buf,"Change your race");
     AddMenuItem(war3Menu,buf,"View your race's skills information");
     AddMenuItem(war3Menu,buf,"Reset your skills");
@@ -106,7 +106,7 @@ public War3Source_War3Menu(client,vecpos)
     DisplayMenu(war3Menu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection)
+public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -116,48 +116,48 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
         new SelectionStyle;
         GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
                     SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
-        new war3player=StringToInt(SelectionInfo);
-        if(war3player>-1)
+        new player=StringToInt(SelectionInfo);
+        if(player>-1)
         {
             switch(selection)
             {
                 case 0: // war3help
                 {
-                    War3Source_War3Help(client);
+                    Help(client);
                 }
                 case 1: // changerace
                 {
-                    War3Source_RaceMenu(client, true, War3Source_War3Menu);
+                    RaceMenu(client, true, Menu);
                 }
                 case 2: // skillsinfo
                 {
-                    War3Source_SkillsInfo(client,war3player);
+                    SkillsInfo(client,player);
                 }
                 case 3: // resetskills
                 {
-                    War3Source_ResetSkills(client,war3player);
+                    ResetSkills(client,player);
                 }
                 case 4: // spendskills
                 {
-                    new race=GetRace(war3player);
-                    if(GetSkillCount(war3player,race)<GetLevel(war3player,race))
-                        War3Source_SkillMenu(client, war3player, War3Source_War3Menu);
+                    new race=GetRace(player);
+                    if(GetSkillCount(player,race)<GetLevel(player,race))
+                        SkillMenu(client, player, Menu);
                     else
                     {
-                        PrintToChat(client, "%c[JigglyCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.", COLOR_GREEN,COLOR_DEFAULT);
+                        PrintToChat(client, "%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.", COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
                 case 5: // showskills
                 {
-                    War3Source_ShowSkills(client,war3player);
+                    ShowSkills(client,player);
                 }
                 case 6: // showitems
                 {
-                    War3Source_ShopMenu(client,war3player, false);
+                    ShopMenu(client,player, false);
                 }
                 case 7: // shopmenu
                 {
-                    War3Source_ShopMenu(client,war3player, true);
+                    ShopMenu(client,player, true);
                 }
             }
         }
@@ -168,19 +168,19 @@ public War3Source_War3Menu_Select(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_RaceMenu(client, bool:change, Function:parentMenuFunction)
+public RaceMenu(client, bool:change, Function:parentMenuFunction)
 {
     new Handle:crMenu;
     
     if (change)
     {
-        crMenu=CreateMenu(War3Source_CRMenu_Selected);
-        SetMenuTitle(crMenu, "[JigglyCraft] Select your desired race.\n");
+        crMenu=CreateMenu(CRMenu_Selected);
+        SetMenuTitle(crMenu, "[SourceCraft] Select your desired race.\n");
     }
     else
     {
-        crMenu=CreateMenu(War3Source_RIMenu_Selected);
-        SetMenuTitle(crMenu, "[JigglyCraft] Select a race to view.");
+        crMenu=CreateMenu(RIMenu_Selected);
+        SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
     }
 
     SetMenuExitButton(crMenu,true);
@@ -213,7 +213,7 @@ public War3Source_RaceMenu(client, bool:change, Function:parentMenuFunction)
     DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -230,7 +230,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
                     new Handle:race=Race(selection);
                     decl String:buf[192];
                     GetArrayString(race,3,buf,sizeof(buf));
-                    PrintToChat(client,"%c[JigglyCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+                    PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
                 else
                 {
@@ -239,7 +239,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
                     new Handle:race=Race(selection);
                     decl String:buf[192];
                     GetArrayString(race,2,buf,sizeof(buf));
-                    PrintToChat(client, "%c[JigglyCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
+                    PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
                 m_FirstSpawn[client]=0;
             }
@@ -268,7 +268,7 @@ public War3Source_CRMenu_Selected(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -280,7 +280,7 @@ public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection
             {
                 // Okay, they selected a valid race
                 new Handle:raceHandle=Race(selection);
-                War3Source_ShowSkillsInfo(client, raceHandle, War3Source_RaceMenu);
+                ShowSkillsInfo(client, raceHandle, RaceMenu);
             }
         }
     }
@@ -307,15 +307,15 @@ public War3Source_RIMenu_Selected(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_SkillMenu(client, vectorpos, Function:parentMenuFunction)
+public SkillMenu(client, vectorpos, Function:parentMenuFunction)
 {
-    new Handle:sMenu=CreateMenu(War3Source_SMenu_Selected);
+    new Handle:sMenu=CreateMenu(SMenu_Selected);
     new race_num=GetRace(vectorpos);
     new skillcount=GetSkillCount(vectorpos,race_num);
     new level=GetLevel(vectorpos,race_num);
     SetMenuExitButton(sMenu,true);
     SetMenuExitBackButton(sMenu,true);
-    SetMenuTitle(sMenu,"[JigglyCraft] Select your desired skill. (%d/%d)",skillcount,level);
+    SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
     decl String:skillname[64];
     new curlevel;
     new Handle:race=Race(race_num);
@@ -340,7 +340,7 @@ public War3Source_SkillMenu(client, vectorpos, Function:parentMenuFunction)
     DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -371,23 +371,23 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                                 SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                                 decl String:skillname[64];
                                 GetArrayString(raceHandle,4+(skill*2),skillname,sizeof(skillname));
-                                PrintToChat(client, "%c[JigglyCraft] %c\"%s\" is now level %d.",
+                                PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                             COLOR_GREEN,COLOR_DEFAULT,skillname,
                                             GetSkillLevel(vecpos,race,skill));
                             }
                             else
                             {
-                                PrintToChat(client, "%c[JigglyCraft] %cYou can not choose a skill without gaining another level.",
+                                PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
                                             COLOR_GREEN,COLOR_DEFAULT);
                             }
                         }
                         else
                         {
-                            PrintToChat(client, "%c[JigglyCraft] %cYou need to be at least level %d to choose an ultimate.",
+                            PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
                                         COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
                         }
                         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                            War3Source_SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
+                            SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
                     }
                     else
                     {
@@ -398,18 +398,18 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                             SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                             decl String:skillname[64];
                             GetArrayString(raceHandle,4+(skill*2),skillname,sizeof(skillname));
-                            PrintToChat(client, "%c[JigglyCraft] %c\"%s\" is now level %d.",
+                            PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                         COLOR_GREEN,COLOR_DEFAULT,skillname,
                                         GetSkillLevel(vecpos,race,skill));
                         }
                         else
                         {
-                            PrintToChat(client, "%c[JigglyCraft] %cYou can not choose a skill without gaining another level.",
+                            PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
                                         COLOR_GREEN,COLOR_DEFAULT);
                         }
 
                         if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                            War3Source_SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
+                            SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
                     }
                 }
             }
@@ -438,18 +438,18 @@ public War3Source_SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public War3Source_ShopMenu(client,vectorpos,bool:shopmenu)
+public ShopMenu(client,vectorpos,bool:shopmenu)
 {
     new credits=GetCredits(vectorpos);
     decl String:currencies[64];
     GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-    new Handle:shopMenu=CreateMenu(War3Source_ShopMenu_Selected);
+    new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
     SetMenuExitButton(shopMenu,true);
 
     if (shopmenu)
-        SetMenuTitle(shopMenu,"[JigglyCraft] Select an item to look at. - You have %d %s",credits,currencies);
+        SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,currencies);
     else
-        SetMenuTitle(shopMenu,"[JigglyCraft] Here is a list of the items you currently have. - You have %d %s",credits,currencies);
+        SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,currencies);
 
     decl String:itemname[64];
     decl String:itembuf[4];
@@ -472,7 +472,7 @@ public War3Source_ShopMenu(client,vectorpos,bool:shopmenu)
     DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -487,7 +487,7 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
                         SelectionDispText,sizeof(SelectionDispText));
             new item=StringToInt(SelectionInfo);
             if(item>-1 && item<SHOPITEM_COUNT)
-                War3Source_ShopMenu_Item(client,vecpos,item);
+                ShopMenu_Item(client,vecpos,item);
         }
     }
     else if (action == MenuAction_End)
@@ -496,12 +496,12 @@ public War3Source_ShopMenu_Selected(Handle:menu,MenuAction:action,client,selecti
     }
 }
 
-public War3Source_ShopMenu_Item(client,vecpos,item)
+public ShopMenu_Item(client,vecpos,item)
 {
     new credits=GetCredits(vecpos);
     decl String:currencies[64];
     GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-    new Handle:shopMenu_Item=CreateMenu(War3Source_ShopMenu_Item_Select);
+    new Handle:shopMenu_Item=CreateMenu(ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
     SetMenuExitBackButton(shopMenu_Item,true);
     decl String:itemname[64];
@@ -514,7 +514,7 @@ public War3Source_ShopMenu_Item(client,vecpos,item)
     decl String:cost[32];
     GetArrayString(itemHandle,2,cost,31);
     Format(cost,31,"Cost: %s %s",cost, currencies);
-    SetMenuTitle(shopMenu_Item,"[JigglyCraft] Shop Item - %s - You have %d %s\n%s\n%s",
+    SetMenuTitle(shopMenu_Item,"[SourceCraft] Shop Item - %s - You have %d %s\n%s\n%s",
                  itemname,credits,currencies,desc,cost);
     decl String:buf[4];
     Format(buf,3,"%d",item);
@@ -526,7 +526,7 @@ public War3Source_ShopMenu_Item(client,vecpos,item)
     DisplayMenu(shopMenu_Item,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
+public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -565,23 +565,23 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
                         new result;
                         Call_Finish(result);
 
-                        PrintToChat(client, "%c[JigglyCraft] %cYou have successfully purchased the %s.",
+                        PrintToChat(client, "%c[SourceCraft] %cYou have successfully purchased the %s.",
                                     COLOR_GREEN,COLOR_DEFAULT,itemname);
                     }
                     else
                     {
-                        PrintToChat(client, "%c[JigglyCraft] %cYou already own the %s.",
+                        PrintToChat(client, "%c[SourceCraft] %cYou already own the %s.",
                                     COLOR_GREEN,COLOR_DEFAULT, itemname);
                     }
                 }
                 else
                 {
-                    PrintToChat(client, "%c[JigglyCraft] %cYou can not afford the %s.",
+                    PrintToChat(client, "%c[SourceCraft] %cYou can not afford the %s.",
                                 COLOR_GREEN,COLOR_DEFAULT,itemname);
                 }
             }
             else if(selection==1)
-                War3Source_ShopMenu(client,vecpos,shopMenuMode[client]);
+                ShopMenu(client,vecpos,shopMenuMode[client]);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -591,7 +591,7 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
             ClientCommand(client,"play buttons/button14.wav");
             new vecpos=GetClientVectorPosition(client);
             if(vecpos>-1)
-                War3Source_ShopMenu(client,vecpos,shopMenuMode[client]);
+                ShopMenu(client,vecpos,shopMenuMode[client]);
         }
     }
     else if (action == MenuAction_End)
@@ -600,26 +600,26 @@ public War3Source_ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,sele
     }
 }
 
-public Action:War3Source_Admin(client,args)
+public Action:Admin(client,args)
 {
-    new Handle:adminMenu=CreateMenu(War3Source_Admin_Selected);
+    new Handle:adminMenu=CreateMenu(Admin_Selected);
     SetMenuExitButton(adminMenu,true);
-    SetMenuTitle(adminMenu,"[JigglyCraft] Select a player to administrate.");
+    SetMenuTitle(adminMenu,"[SourceCraft] Select a player to administrate.");
     decl String:playername[64];
-    decl String:war3playerbuf[4];
+    decl String:playerbuf[4];
     new Handle:playerHandle;
     for(new x=0;x<GetArraySize(arrayPlayers);x++)
     {
         playerHandle=GetArrayCell(arrayPlayers,x);
-        Format(war3playerbuf,sizeof(war3playerbuf),"%d",GetArrayCell(playerHandle,0));
+        Format(playerbuf,sizeof(playerbuf),"%d",GetArrayCell(playerHandle,0));
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        AddMenuItem(adminMenu,war3playerbuf,playername);
+        AddMenuItem(adminMenu,playerbuf,playername);
     }
     DisplayMenu(adminMenu,client,MENU_TIME_FOREVER);
     return Plugin_Handled;
 }
 
-public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
+public Admin_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -630,12 +630,12 @@ public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
         GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
                     SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
-        new war3player=GetClientVectorPosition(index);
-        if(war3player>-1)
-            War3Source_Admin_Player(client,war3player);
+        new player=GetClientVectorPosition(index);
+        if(player>-1)
+            Admin_Player(client,player);
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player you selected has left the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player you selected has left the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -645,14 +645,14 @@ public War3Source_Admin_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public War3Source_Admin_Player(client,targetvecpos)
+public Admin_Player(client,targetvecpos)
 {
-    new Handle:adminMenu_Player=CreateMenu(War3Source_Admin_Player_Select);
+    new Handle:adminMenu_Player=CreateMenu(Admin_Player_Select);
     SetMenuExitButton(adminMenu_Player,true);
     decl String:playername[64];
     new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
     GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-    SetMenuTitle(adminMenu_Player,"[JigglyCraft] Administration options for %s.",playername);
+    SetMenuTitle(adminMenu_Player,"[SourceCraft] Administration options for %s.",playername);
     decl String:buf[4];
     Format(buf,3,"%d",GetArrayCell(playerHandle,0));
     decl String:currencies[64];
@@ -669,7 +669,7 @@ public War3Source_Admin_Player(client,targetvecpos)
     DisplayMenu(adminMenu_Player,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
 {
     // This is gonna be fun... NOT.
     if (action == MenuAction_Select)
@@ -681,10 +681,10 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
         GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
                     SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
-        new war3player=GetClientVectorPosition(index);
+        new player=GetClientVectorPosition(index);
         new String:adminname[64];
         GetClientName(client,adminname,sizeof(adminname));
-        if(war3player>-1)
+        if(player>-1)
         {
             new String:targetname[64];
             GetClientName(index,targetname,sizeof(targetname));
@@ -694,56 +694,56 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
                 case 0:
                 {
                     // Player info selected
-                    War3Source_Admin_PlayerInfo(client,index);
+                    Admin_PlayerInfo(client,index);
                 }
                 case 1:
                 {
                     // Reset skills
-                    new race=GetRace(war3player);
+                    new race=GetRace(player);
                     for(new y=0;y<SKILL_COUNT;y++)
-                            SetSkillLevel(war3player,race,y,0);
+                            SetSkillLevel(player,race,y,0);
 
-                    if(GetSkillCount(war3player,race)<GetLevel(war3player,race))
-                        War3Source_SkillMenu(index, war3player, War3Source_Admin_Player);
+                    if(GetSkillCount(player,race)<GetLevel(player,race))
+                        SkillMenu(index, player, Admin_Player);
 
-                    PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" reset your skills.",
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" reset your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
 
-                    PrintToChat(client, "%c[JigglyCraft] %cYou reset player \"%s\" skills.",
+                    PrintToChat(client, "%c[SourceCraft] %cYou reset player \"%s\" skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,targetname);
                 }
                 case 2:
                 {
                     // Set race
-                    War3Source_Admin_SetRace(client,index);
+                    Admin_SetRace(client,index);
                 }
                 case 3:
                 {
                     // Give shop item
-                    War3Source_Admin_GiveShopItem(client,index);
+                    Admin_GiveShopItem(client,index);
                 }
                 case 4:
                 {
                     // Increase/Decrease XP
-                    War3Source_Admin_XP(client,index);
+                    Admin_XP(client,index);
                 }
                 case 5:
                 {
                     // Increase/Decrease Level
-                    War3Source_Admin_Level(client,index);
+                    Admin_Level(client,index);
                 }
                 case 6:
                 {
                     // Increase/Decrease Credits
-                    War3Source_Admin_Credits(client,index);
+                    Admin_Credits(client,index);
                 }
             }
             if(selection==1)
-                War3Source_Admin_Player(client,war3player);
+                Admin_Player(client,player);
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player you selected has left the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player you selected has left the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -753,14 +753,14 @@ public War3Source_Admin_Player_Select(Handle:menu,MenuAction:action,client,selec
     }
 }
 
-public War3Source_Admin_PlayerInfo(client,target)
+public Admin_PlayerInfo(client,target)
 {
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
         decl String:currency[64];
         GetConVarString(m_Currencies, currency, sizeof(currency));
-        new Handle:playerInfo=CreateMenu(War3Source_Admin_PI_Select);
+        new Handle:playerInfo=CreateMenu(Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
@@ -773,7 +773,7 @@ public War3Source_Admin_PlayerInfo(client,target)
         new xp=GetXP(targetvecpos,race);
         new level=GetLevel(targetvecpos,race);
 
-        SetMenuTitle(playerInfo,"[JigglyCraft] Info for %s.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
+        SetMenuTitle(playerInfo,"[SourceCraft] Info for %s.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
                      playername,race_name,currency,credits,xp,level);
 
         decl String:buf[4];
@@ -783,12 +783,12 @@ public War3Source_Admin_PlayerInfo(client,target)
     }
     else
     {
-        PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
-public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -799,12 +799,12 @@ public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection
         GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
                     SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
-        new war3player=GetClientVectorPosition(index);
-        if(war3player>-1)
-            War3Source_Admin_Player(client,war3player);
+        new player=GetClientVectorPosition(index);
+        if(player>-1)
+            Admin_Player(client,player);
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -814,17 +814,17 @@ public War3Source_Admin_PI_Select(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_Admin_XP(client,target)
+public Admin_XP(client,target)
 {
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
-        new Handle:menu=CreateMenu(War3Source_Admin_XP_Select);
+        new Handle:menu=CreateMenu(Admin_XP_Select);
         SetMenuExitButton(menu,true);
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[JigglyCraft] Select an option for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
         AddMenuItem(menu,buf,"Give 100 XP");
@@ -836,11 +836,11 @@ public War3Source_Admin_XP(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
-        PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
 }
 
-public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -874,14 +874,14 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
                 new newxp=GetXP(targetvecpos,race)+xpadd;
                 SetXP(targetvecpos,race,newxp);
 
-                PrintToChat(client, "%c[JigglyCraft] %cYou gave \"%s\" %d XP.",
+                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%s\" %d XP.",
                             COLOR_GREEN,COLOR_DEFAULT,targetname,xpadd);
 
-                PrintToChat(index, "%c[JigglyCraft] %cYou recieved %d XP from admin \"%s\".",
+                PrintToChat(index, "%c[SourceCraft] %cYou recieved %d XP from admin \"%s\".",
                             COLOR_GREEN,COLOR_DEFAULT,xpadd,adminname);
 
                 DoLevelCheck(index,targetvecpos);
-                War3Source_Admin_XP(client,index);
+                Admin_XP(client,index);
             }
             else
             {
@@ -901,18 +901,18 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
 
                 SetXP(targetvecpos,race,newxp);
 
-                PrintToChat(client, "%c[JigglyCraft] %cYou removed %d XP from player \"%s\".",
+                PrintToChat(client, "%c[SourceCraft] %cYou removed %d XP from player \"%s\".",
                             COLOR_GREEN,COLOR_DEFAULT,xprem,targetname);
 
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" removed %d XP from you.",
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d XP from you.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,xprem);
 
-                War3Source_Admin_XP(client,index);
+                Admin_XP(client,index);
             }
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -922,17 +922,17 @@ public War3Source_Admin_XP_Select(Handle:menu,MenuAction:action,client,selection
     }
 }
 
-public War3Source_Admin_GiveShopItem(client,target)
+public Admin_GiveShopItem(client,target)
 {
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
-        new Handle:menu=CreateMenu(War3Source_Admin_GSI_Select);
+        new Handle:menu=CreateMenu(Admin_GSI_Select);
         SetMenuExitButton(menu,true);
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[JigglyCraft] Select an item to give to %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an item to give to %s.",playername);
         decl String:itemname[64];
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -947,12 +947,12 @@ public War3Source_Admin_GiveShopItem(client,target)
     }
     else
     {
-        PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
-public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -984,23 +984,23 @@ public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selectio
                 decl String:targetname[64];
                 GetClientName(index,targetname,sizeof(targetname));
 
-                PrintToChat(client, "%c[JigglyCraft] %cYou gave \"%s\" a %s.",
+                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%s\" a %s.",
                             COLOR_GREEN,COLOR_DEFAULT,targetname,itemname);
 
-                PrintToChat(index, "%c[JigglyCraft] %cYou recieved a %s from admin \"%s\".",
+                PrintToChat(index, "%c[SourceCraft] %cYou recieved a %s from admin \"%s\".",
                             COLOR_GREEN,COLOR_DEFAULT,itemname,adminname);
 
-                War3Source_Admin_Player(client,targetvecpos);
+                Admin_Player(client,targetvecpos);
             }
             else
             {
-                PrintToChat(client, "%c[JigglyCraft] %cThe player already owns this item.",
+                PrintToChat(client, "%c[SourceCraft] %cThe player already owns this item.",
                             COLOR_GREEN,COLOR_DEFAULT);
             }
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -1010,17 +1010,17 @@ public War3Source_Admin_GSI_Select(Handle:menu,MenuAction:action,client,selectio
     }
 }
 
-public War3Source_Admin_SetRace(client,target)
+public Admin_SetRace(client,target)
 {
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
-        new Handle:menu=CreateMenu(War3Source_Admin_SetRace_Select);
+        new Handle:menu=CreateMenu(Admin_SetRace_Select);
         SetMenuExitButton(menu,true);
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[JigglyCraft] Select a race for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select a race for %s.",playername);
         decl String:racename[64];
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -1035,12 +1035,12 @@ public War3Source_Admin_SetRace(client,target)
     }
     else
     {
-        PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
-public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -1063,15 +1063,15 @@ public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,sele
             decl String:targetname[64];
             GetClientName(index,targetname,sizeof(targetname));
 
-            PrintToChat(client, "%c[JigglyCraft] %cYou set player \"%s\" to race %s.",
+            PrintToChat(client, "%c[SourceCraft] %cYou set player \"%s\" to race %s.",
                         COLOR_GREEN,COLOR_DEFAULT,targetname,racename);
 
-            PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" set you to race %s.",
+            PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set you to race %s.",
                         COLOR_GREEN,COLOR_DEFAULT,adminname,racename);
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -1081,17 +1081,17 @@ public War3Source_Admin_SetRace_Select(Handle:menu,MenuAction:action,client,sele
     }
 }
 
-public War3Source_Admin_Level(client,target)
+public Admin_Level(client,target)
 {
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
-        new Handle:menu=CreateMenu(War3Source_Admin_Level_Select);
+        new Handle:menu=CreateMenu(Admin_Level_Select);
         SetMenuExitButton(menu,true);
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[JigglyCraft] Select an option for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
         AddMenuItem(menu,buf,"Give a level");
@@ -1100,12 +1100,12 @@ public War3Source_Admin_Level(client,target)
     }
     else
     {
-        PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
-public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -1130,19 +1130,19 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 new newlevel=GetLevel(targetvecpos,race)+1;
                 if(newlevel>MAX_LEVELS)
                 {
-                    PrintToChat(client, "%c[JigglyCraft] %cPlayer \"%s\" is already at the max level.",
+                    PrintToChat(client, "%c[SourceCraft] %cPlayer \"%s\" is already at the max level.",
                                 COLOR_GREEN,COLOR_DEFAULT,targetname);
                 }
                 else
                 {
                     SetLevel(targetvecpos,race,newlevel);
                     SetOverallLevel(targetvecpos, GetOverallLevel(targetvecpos)+1);
-                    War3Source_SkillMenu(index, targetvecpos, War3Source_Admin_Level);
+                    SkillMenu(index, targetvecpos, Admin_Level);
 
-                    PrintToChat(client, "%c[JigglyCraft] %cYou gave player \"%s\" a level.",
+                    PrintToChat(client, "%c[SourceCraft] %cYou gave player \"%s\" a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,targetname);
 
-                    PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" gave you a level.",
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
                 }
             }
@@ -1152,7 +1152,7 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                 new newlevel=GetLevel(targetvecpos,race)-1;
                 if (newlevel<0)
                 {
-                    PrintToChat(client, "%c[JigglyCraft] %cPlayer \"%s\" is already level 0.",
+                    PrintToChat(client, "%c[SourceCraft] %cPlayer \"%s\" is already level 0.",
                                 COLOR_GREEN,COLOR_DEFAULT,targetname);
                 }
                 else
@@ -1162,21 +1162,21 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
                     for(new x=0;x<SKILL_COUNT;x++)
                         SetSkillLevel(targetvecpos,race,x,0);
 
-                    PrintToChat(client, "%c[JigglyCraft] %cYou removed a level from player \"%s\".",
+                    PrintToChat(client, "%c[SourceCraft] %cYou removed a level from player \"%s\".",
                                 COLOR_GREEN,COLOR_DEFAULT,targetname);
 
-                    PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
 
                     if(newlevel>0)
-                        War3Source_SkillMenu(index, targetvecpos, War3Source_Admin_Level);
+                        SkillMenu(index, targetvecpos, Admin_Level);
                 }
             }
-            War3Source_Admin_Level(client,index);
+            Admin_Level(client,index);
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }
@@ -1186,17 +1186,17 @@ public War3Source_Admin_Level_Select(Handle:menu,MenuAction:action,client,select
     }
 }
 
-public War3Source_Admin_Credits(client,target)
+public Admin_Credits(client,target)
 {
     new targetvecpos=GetClientVectorPosition(target);
     if(targetvecpos>-1)
     {
-        new Handle:menu=CreateMenu(War3Source_Admin_Credits_Select);
+        new Handle:menu=CreateMenu(Admin_Credits_Select);
         SetMenuExitButton(menu,true);
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[JigglyCraft] Select an option for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -1229,12 +1229,12 @@ public War3Source_Admin_Credits(client,target)
     }
     else
     {
-        PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
-public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
+public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -1271,13 +1271,13 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                     newcred=MAX_CREDITS;
                 SetCredits(targetvecpos,newcred);
 
-                PrintToChat(client, "%c[JigglyCraft] %cYou gave \"%s\" %d %s(s).",
+                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%s\" %d %s(s).",
                             COLOR_GREEN,COLOR_DEFAULT,targetname,credadd,currency);
 
-                PrintToChat(index, "%c[JigglyCraft] %cYou recieved %d %s(s) from admin \"%s\".",
+                PrintToChat(index, "%c[SourceCraft] %cYou recieved %d %s(s) from admin \"%s\".",
                             COLOR_GREEN,COLOR_DEFAULT,credadd,currency,adminname);
 
-                War3Source_Admin_Credits(client,index);
+                Admin_Credits(client,index);
             }
             else
             {
@@ -1296,18 +1296,18 @@ public War3Source_Admin_Credits_Select(Handle:menu,MenuAction:action,client,sele
                     newcred=0;
                 SetCredits(targetvecpos,newcred);
 
-                PrintToChat(client, "%c[JigglyCraft] %cYou removed %d %s(s) from player \"%s\".",
+                PrintToChat(client, "%c[SourceCraft] %cYou removed %d %s(s) from player \"%s\".",
                             COLOR_GREEN,COLOR_DEFAULT,credrem,currency,targetname);
 
-                PrintToChat(index, "%c[JigglyCraft] %cAdmin \"%s\" removed %d %s(s) from you.",
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d %s(s) from you.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,credrem,currency);
 
-                War3Source_Admin_Credits(client,index);
+                Admin_Credits(client,index);
             }
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cThe player has disconnected from the server.",
+            PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
         }
     }

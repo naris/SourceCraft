@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_ShopItems.sp
- * Description: The shop items that come with War3Source.
+ * Description: The shop items that come with SourceCraft.
  * Author(s): Anthony Iacono
  * Modifications by: Naris (Murray Wilson)
  */
@@ -100,24 +100,24 @@ public OnPluginStart()
         CreateTimer(1.0,TrackWeapons,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    shopItem[ITEM_ANKH]=War3_CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
-    shopItem[ITEM_BOOTS]=War3_CreateShopItem("Boots of Speed","Allows you to move faster.","7");
-    shopItem[ITEM_CLAWS]=War3_CreateShopItem("Claws of Attack","An additional 8 hp will be removed from the enemy on every successful attack.","3");
-    shopItem[ITEM_CLOAK]=War3_CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
-    shopItem[ITEM_MASK]=War3_CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
-    shopItem[ITEM_NECKLACE]=War3_CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
-    shopItem[ITEM_ORB]=War3_CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","5");
-    shopItem[ITEM_PERIAPT]=War3_CreateShopItem("Periapt of Health","Receive extra health.","3");
-    shopItem[ITEM_TOME]=War3_CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","10");
-    shopItem[ITEM_SCROLL]=War3_CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
-    shopItem[ITEM_SOCK]=War3_CreateShopItem("Sock of the Feather","You will be able to jump higher.","4");
-    shopItem[ITEM_GLOVES]=War3_CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade or ammo or metal every 20 seconds.","5");
-    shopItem[ITEM_RING]=War3_CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","3");
-    shopItem[ITEM_MOLE]=War3_CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
-    shopItem[ITEM_MOLE_PROTECTION]=War3_CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
-    shopItem[ITEM_GOGGLES]=War3_CreateShopItem("The Goggles","They do nothing!","15");
+    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
+    shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","7");
+    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","An additional 8 hp will be removed from the enemy on every successful attack.","3");
+    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
+    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
+    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
+    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","5");
+    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","3");
+    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","10");
+    shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
+    shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","4");
+    shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade or ammo or metal every 20 seconds.","5");
+    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","3");
+    shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
+    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
+    shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","15");
 
     LoadSDKToolStuff();
 }
@@ -190,7 +190,7 @@ public LoadSDKToolStuff()
     }
 }
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
 
@@ -198,29 +198,29 @@ public OnWar3PlayerAuthed(client,war3player)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
 
-public OnItemPurchase(client,war3player,item)
+public OnItemPurchase(client,player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
-        War3_SetMaxSpeed(war3player,1.4);
+        SetMaxSpeed(player,1.4);
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
-        War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.50);
+        SetMinVisibility(player, (GameType == tf2) ? 140 : 160, 0.50);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
-        War3_SetImmunity(war3player,Immunity_Ultimates,true);
+        SetImmunity(player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health
         UsePeriapt(client);
     else if(item==shopItem[ITEM_TOME])                              // Tome of Experience
     {
-        War3_SetXP(war3player,War3_GetRace(war3player),War3_GetXP(war3player,War3_GetRace(war3player))+100);
-        War3_SetOwnsItem(war3player,shopItem[8],false);
+        SetXP(player,GetRace(player),GetXP(player,GetRace(player))+100);
+        SetOwnsItem(player,shopItem[8],false);
         PrintToChat(client,"%c[JigglyCraft] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
         RespawnPlayer(client);
-        War3_SetOwnsItem(war3player,shopItem[9],false);
+        SetOwnsItem(player,shopItem[9],false);
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
-        War3_SetMinGravity(war3player,0.3);
+        SetMinGravity(player,0.3);
 }
 
 public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -240,10 +240,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         SetupMaxHealth(client);
         GetClientAbsOrigin(client,spawnLoc[client]);
 
-        new war3player=War3_GetWar3Player(client);
-        if(war3player>-1)
+        new player=GetPlayer(client);
+        if(player>-1)
         {
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_ANKH]))        // Ankh of Reincarnation
+            if(GetOwnsItem(player,shopItem[ITEM_ANKH]))        // Ankh of Reincarnation
             {
                 if (GameType == cstrike)
                 {
@@ -260,29 +260,29 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     }
                     CreateTimer(0.2,War3Source_Ankh,temp);
                 }
-                War3_SetOwnsItem(war3player,shopItem[ITEM_ANKH],false);
+                SetOwnsItem(player,shopItem[ITEM_ANKH],false);
             }
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
-                War3_SetMaxSpeed(war3player,1.4);
+            if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
+                SetMaxSpeed(player,1.4);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
-                War3_SetMinVisibility(war3player, (GameType == tf2) ? 140 : 160, 0.80);
+            if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
+                SetMinVisibility(player, (GameType == tf2) ? 140 : 160, 0.80);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
+            if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
                 UsePeriapt(client);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
-                War3_SetMinGravity(war3player,0.3);
+            if(GetOwnsItem(player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
+                SetMinGravity(player,0.3);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE]))                            // Mole
+            if(GetOwnsItem(player,shopItem[ITEM_MOLE]))                            // Mole
             {
                 // We need to check to use mole, or did we JUST use it?
                 if(isMole[client])
                 {
                     // we already used it, take it away
                     isMole[client]=false;
-                    War3_SetOwnsItem(war3player,shopItem[13],false);
+                    SetOwnsItem(player,shopItem[13],false);
                 }
                 else
                     AuthTimer(1.0,client,DoMole);
@@ -295,79 +295,79 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(client);
-    if(war3player>-1)
+    new player=GetPlayer(client);
+    if(player>-1)
     {
         if (GameType == cstrike ||
-            !War3_GetOwnsItem(war3player,shopItem[ITEM_ANKH]))
+            !GetOwnsItem(player,shopItem[ITEM_ANKH]))
         {
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_BOOTS]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_BOOTS],false);
+            if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))
+                SetOwnsItem(player,shopItem[ITEM_BOOTS],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLAWS]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_CLAWS],false);
+            if(GetOwnsItem(player,shopItem[ITEM_CLAWS]))
+                SetOwnsItem(player,shopItem[ITEM_CLAWS],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_CLOAK]))
+            if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))
             {
-                War3_SetMinVisibility(war3player, 255, 1.0);
-                War3_SetOwnsItem(war3player,shopItem[3],false);
+                SetMinVisibility(player, 255, 1.0);
+                SetOwnsItem(player,shopItem[3],false);
             }
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_MASK]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_MASK],false);
+            if(GetOwnsItem(player,shopItem[ITEM_MASK]))
+                SetOwnsItem(player,shopItem[ITEM_MASK],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_NECKLACE]))
+            if(GetOwnsItem(player,shopItem[ITEM_NECKLACE]))
             {
-                War3_SetOwnsItem(war3player,shopItem[ITEM_NECKLACE],false);
-                War3_SetImmunity(war3player,Immunity_Ultimates,false);
+                SetOwnsItem(player,shopItem[ITEM_NECKLACE],false);
+                SetImmunity(player,Immunity_Ultimates,false);
             }
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_ORB]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_ORB],false);
+            if(GetOwnsItem(player,shopItem[ITEM_ORB]))
+                SetOwnsItem(player,shopItem[ITEM_ORB],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_PERIAPT]))
+            if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]))
             {
-                War3_SetOwnsItem(war3player,shopItem[ITEM_PERIAPT],false);
+                SetOwnsItem(player,shopItem[ITEM_PERIAPT],false);
             }
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_SCROLL]))
+            if(GetOwnsItem(player,shopItem[ITEM_SCROLL]))
             {
-                War3_SetOwnsItem(war3player,shopItem[ITEM_SCROLL],false);
+                SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
                 AuthTimer(1.0,client,RespawnPlayerHandle);
             }
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_SOCK]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_SOCK],false);
+            if(GetOwnsItem(player,shopItem[ITEM_SOCK]))
+                SetOwnsItem(player,shopItem[ITEM_SOCK],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_GLOVES],false);
+            if(GetOwnsItem(player,shopItem[ITEM_GLOVES]))
+                SetOwnsItem(player,shopItem[ITEM_GLOVES],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_GOGGLES]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_GOGGLES],false);
+            if(GetOwnsItem(player,shopItem[ITEM_GOGGLES]))
+                SetOwnsItem(player,shopItem[ITEM_GOGGLES],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_RING],false);
+            if(GetOwnsItem(player,shopItem[ITEM_RING]))
+                SetOwnsItem(player,shopItem[ITEM_RING],false);
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE]))
+            if(GetOwnsItem(player,shopItem[ITEM_MOLE]))
             {
                 // We need to check to use mole, or did we JUST use it?
                 if(isMole[client])
                 {
                     // we already used it, take it away
                     isMole[client]=false;
-                    War3_SetOwnsItem(war3player,shopItem[ITEM_MOLE],false);
+                    SetOwnsItem(player,shopItem[ITEM_MOLE],false);
                 }
             }
 
-            if(War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE_PROTECTION]))
-                War3_SetOwnsItem(war3player,shopItem[ITEM_MOLE_PROTECTION],false);
+            if(GetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION]))
+                SetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION],false);
         }
 
-        War3_SetMaxSpeed(war3player,1.0);
-        War3_SetMinGravity(war3player,1.0);
+        SetMaxSpeed(player,1.0);
+        SetMinGravity(player,1.0);
 
         // Reset Overrides when players die
-        War3_SetOverrideSpeed(war3player,1.0);
+        SetOverrideSpeed(player,1.0);
 
         // Reset MaxHealth back to normal
         if (usedPeriapt[client] && GameType == tf2)
@@ -388,25 +388,25 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new index               = GetClientOfUserId(userid);
         new attacker_index      = GetClientOfUserId(attacker_userid);
 
-        new war3player          = War3_GetWar3Player(index);
-        new war3player_attacker = War3_GetWar3Player(attacker_index);
+        new player          = GetPlayer(index);
+        new player_attacker = GetPlayer(attacker_index);
 
         new assister_index      = -1;
-        new war3player_assister = -1;
+        new player_assister = -1;
 
         if (assister_userid != 0)
         {
             assister_index      = GetClientOfUserId(assister_userid);
-            war3player_assister = War3_GetWar3Player(assister_index);
+            player_assister = GetPlayer(assister_index);
         }
 
-        if(war3player !=-1 && war3player_attacker != -1)
+        if(player !=-1 && player_attacker != -1)
         {
-            if(!War3_GetImmunity(war3player,Immunity_ShopItems))
+            if(!GetImmunity(player,Immunity_ShopItems))
             {
-                if (!War3_GetImmunity(war3player,Immunity_HealthTake))
+                if (!GetImmunity(player,Immunity_HealthTake))
                 {
-                    if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_CLAWS]))
+                    if (GetOwnsItem(player_attacker,shopItem[ITEM_CLAWS]))
                     {
                         new newhealth=GetClientHealth(index)-8;
                         if (newhealth <= 0)
@@ -420,7 +420,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         SetHealth(index,newhealth);
                     }
 
-                    if (war3player_assister != -1 && War3_GetOwnsItem(war3player_assister,shopItem[ITEM_CLAWS]))
+                    if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_CLAWS]))
                     {
                         new newhealth = GetClientHealth(index)-8;
                         if (newhealth <= 0)
@@ -435,7 +435,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     }
                 }
 
-                if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_MASK]))
+                if (GetOwnsItem(player_attacker,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(attacker_index)+2;
                     SetHealth(attacker_index,newhealth);
@@ -446,7 +446,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                                 COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (war3player_assister != -1 && War3_GetOwnsItem(war3player_assister,shopItem[ITEM_MASK]))
+                if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(assister_index)+2;
                     SetHealth(assister_index,newhealth);
@@ -457,11 +457,11 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                                 COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (War3_GetOwnsItem(war3player_attacker,shopItem[ITEM_ORB]) ||
-                    (war3player_assister != -1 &&
-                     War3_GetOwnsItem(war3player_assister,shopItem[ITEM_ORB])))
+                if (GetOwnsItem(player_attacker,shopItem[ITEM_ORB]) ||
+                    (player_assister != -1 &&
+                     GetOwnsItem(player_assister,shopItem[ITEM_ORB])))
                 {
-                    War3_SetOverrideSpeed(war3player,0.5);
+                    SetOverrideSpeed(player,0.5);
                     AuthTimer(5.0,index,RestoreSpeed);
 
                     decl String:aname[128];
@@ -477,11 +477,11 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                                 COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (War3_GetOwnsItem(war3player,shopItem[ITEM_MOLE_PROTECTION]))
+                if (GetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION]))
                 {
                     if(isMole[attacker_index])
                     {
-                        new damage=War3_GetDamage(event, index);
+                        new damage=GetDamage(event, index);
                         new h1=GetEventInt(event,"health")+damage;
                         new h2=GetClientHealth(index);
                         if(h2<h1)
@@ -503,9 +503,9 @@ public Action:RestoreSpeed(Handle:timer,any:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
-        new war3player=War3_GetWar3Player(client);
-        if(war3player>-1)
-            War3_SetOverrideSpeed(war3player,0.0);
+        new player=GetPlayer(client);
+        if(player>-1)
+            SetOverrideSpeed(player,0.0);
     }
     ClearArray(temp);
     return Plugin_Stop;
@@ -518,8 +518,8 @@ public Action:Regeneration(Handle:timer)
     {
         if(IsClientInGame(x) && IsPlayerAlive(x))
         {
-            new war3player=War3_GetWar3Player(x);
-            if(war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_RING]))
+            new player=GetPlayer(x);
+            if(player>=0 && GetOwnsItem(player,shopItem[ITEM_RING]))
             {
                 new newhp=GetClientHealth(x)+1;
                 new maxhp=(GameType == tf2) ? GetMaxHealth(x) : 100;
@@ -533,13 +533,13 @@ public Action:Regeneration(Handle:timer)
 
 public Action:Gloves(Handle:timer)
 {
-    new maxplayers=GetMaxClients();
-    for(new player=1;player<=maxplayers;player++)
+    new maxclients=GetMaxClients();
+    for(new client=1;client<=maxclients;client++)
     {
-        if(IsClientInGame(player) && IsPlayerAlive(player))
+        if(IsClientInGame(client) && IsPlayerAlive(client))
         {
-            new war3player=War3_GetWar3Player(player);
-            if (war3player>=0 && War3_GetOwnsItem(war3player,shopItem[ITEM_GLOVES]))
+            new player=GetPlayer(client);
+            if (player>=0 && GetOwnsItem(player,shopItem[ITEM_GLOVES]))
             {
                 if (GameType == cstrike)
                 {
@@ -552,55 +552,55 @@ public Action:Gloves(Handle:timer)
                 }
                 else if (GameType == tf2)
                 {
-                    switch (TF_GetClass(player))
+                    switch (TF_GetClass(client))
                     {
                         case TF2_HEAVY: 
                         {
-                            new ammo = GetEntData(player, ammoOffset, 4) + 10;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 10;
                             if (ammo < 400.0)
                             {
-                                SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                SetEntData(client, ammoOffset, ammo, 4, true);
+                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_PYRO: 
                         {
-                            new ammo = GetEntData(player, ammoOffset, 4) + 10;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 10;
                             if (ammo < 400.0)
                             {
-                                SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                SetEntData(client, ammoOffset, ammo, 4, true);
+                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_MEDIC: 
                         {
-                            new ammo = GetEntData(player, ammoOffset, 4) + 10;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 10;
                             if (ammo < 300.0)
                             {
-                                SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                SetEntData(client, ammoOffset, ammo, 4, true);
+                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_ENG: // Gets Metal instead of Ammo
                         {
-                            new metal = GetEntData(player, metalOffset, 4) + 10;
+                            new metal = GetEntData(client, metalOffset, 4) + 10;
                             if (metal < 400.0)
                             {
-                                SetEntData(player, metalOffset, metal, 4, true);
-                                PrintToChat(player,"%c[JigglyCraft]%c You have received metal from %cFlaming Gloves of Warmth%c.",
+                                SetEntData(client, metalOffset, metal, 4, true);
+                                PrintToChat(client,"%c[JigglyCraft]%c You have received metal from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         default:
                         {
-                            new ammo = GetEntData(player, ammoOffset, 4) + 2;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 2;
                             if (ammo < 60.0)
                             {
-                                SetEntData(player, ammoOffset, ammo, 4, true);
-                                PrintToChat(player,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                SetEntData(client, ammoOffset, ammo, 4, true);
+                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -609,12 +609,12 @@ public Action:Gloves(Handle:timer)
                 else
                 {
                     new ammoType  = 0;
-                    new curWeapon = GetEntDataEnt(player, curWepOffset);
+                    new curWeapon = GetEntDataEnt(client, curWepOffset);
                     if (curWeapon > 0)
                         ammoType  = GetAmmoType(curWeapon);
 
                     if (ammoType > 0)
-                        GiveAmmo(player,ammoType,10,true);
+                        GiveAmmo(client,ammoType,10,true);
                     else if (clipOffset)
                         SetEntData(curWeapon, clipOffset, 5, 4, true);
                 }
@@ -628,9 +628,9 @@ public Action:TrackWeapons(Handle:timer)
 {
     if (GameType == cstrike)
     {
-        new maxplayers=GetMaxClients();
+        new maxclients=GetMaxClients();
         decl String:wepName[128];
-        for(new x=1;x<=maxplayers;x++)
+        for(new x=1;x<=maxclients;x++)
         {
             if(IsClientInGame(x) && IsPlayerAlive(x))
             {

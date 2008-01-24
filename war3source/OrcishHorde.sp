@@ -1,8 +1,9 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_OrcishHorde.sp
- * Description: The Orcish Horde race for War3Source.
+ * Description: The Orcish Horde race for SourceCraft.
  * Author(s): Anthony Iacono 
+ * Modifications by: Naris (Murray Wilson)
  */
  
 #pragma semicolon 1
@@ -20,7 +21,6 @@
 #include "War3Source/respawn"
 #include "War3Source/log"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new bool:m_HasRespawned[MAXPLAYERS+1];
@@ -39,9 +39,9 @@ new String:thunderWav[] = "war3/thunder1Long.mp3"; // "ambient/weather/thunder1.
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Orcish Horde",
+    name = "SourceCraft Race - Orcish Horde",
     author = "PimpinJuice",
-    description = "The Orcish Horde race for War3Source.",
+    description = "The Orcish Horde race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
@@ -72,20 +72,20 @@ public OnPluginStart()
     }
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Orcish Horde", // Full race name
-                           "orc", // SQLite ID name (short name, no spaces)
-                           "You are now an Orcish Horde.", // Selected Race message
-                           "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                           "Acute Strike", //Skill 1 Name
-                           "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
-                           "Acute Grenade", // Skill 2 Name
-                           "Grenades and Rockets will always do a 40-240%\nmore damage.", // Skill 2 Description
-                           "Reincarnation", // Skill 3 Name
-                           "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
-                           "Chain Lightning", // Ultimate Name
-                           "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
+    raceID=CreateRace("Orcish Horde", // Full race name
+                      "orc", // SQLite ID name (short name, no spaces)
+                      "You are now an Orcish Horde.", // Selected Race message
+                      "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
+                      "Acute Strike", //Skill 1 Name
+                      "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
+                      "Acute Grenade", // Skill 2 Name
+                      "Grenades and Rockets will always do a 40-240%\nmore damage.", // Skill 2 Description
+                      "Reincarnation", // Skill 3 Name
+                      "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
+                      "Chain Lightning", // Ultimate Name
+                      "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
 }
 
 public OnMapStart()
@@ -109,13 +109,13 @@ public OnMapStart()
     SetupSound(thunderWav);
 }
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
     m_AllowChainLightning[client]=true;
 }
 
-public OnRaceSelected(client,war3player,oldrace,newrace)
+public OnRaceSelected(client,player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
@@ -125,15 +125,15 @@ public OnRaceSelected(client,war3player,oldrace,newrace)
     }
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (pressed && m_AllowChainLightning[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new skill = War3_GetSkillLevel(war3player,race,3);
+        new skill = GetSkillLevel(player,race,3);
         if (skill)
         {
-            OrcishHorde_ChainLightning(war3player,client,skill);
+            OrcishHorde_ChainLightning(player,client,skill);
             new Float:cooldown = GetConVarFloat(cvarChainCooldown);
             if (cooldown > 0.0)
             {
@@ -156,21 +156,20 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
-        new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = War3_GetWar3Player(victimIndex);
-        if (victimWar3player != -1)
+        new victimIndex  = GetClientOfUserId(victimUserid);
+        if (victimIndex != -1)
         {
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
-                new attackerIndex      = GetClientOfUserId(attackerUserid);
-                new attackerWar3player = War3_GetWar3Player(attackerIndex);
-                if (attackerWar3player != -1)
+                new attackerIndex  = GetClientOfUserId(attackerUserid);
+                new attackerPlayer = GetPlayer(attackerIndex);
+                if (attackerPlayer != -1)
                 {
-                    if (War3_GetRace(attackerWar3player) == raceID)
+                    if (GetRace(attackerPlayer) == raceID)
                     {
-                        OrcishHorde_AcuteStrike(event, attackerIndex, attackerWar3player, victimIndex);
-                        OrcishHorde_AcuteGrenade(event, attackerIndex, attackerWar3player, victimIndex);
+                        OrcishHorde_AcuteStrike(event, attackerIndex, attackerPlayer, victimIndex);
+                        OrcishHorde_AcuteGrenade(event, attackerIndex, attackerPlayer, victimIndex);
                     }
                 }
             }
@@ -178,14 +177,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
             if (assisterUserid && victimUserid != assisterUserid)
             {
-                new assisterIndex      = GetClientOfUserId(assisterUserid);
-                new assisterWar3player = War3_GetWar3Player(assisterIndex);
-                if (assisterWar3player != -1)
+                new assisterIndex  = GetClientOfUserId(assisterUserid);
+                new assisterPlayer = GetPlayer(assisterIndex);
+                if (assisterPlayer != -1)
                 {
-                    if (War3_GetRace(assisterWar3player) == raceID)
+                    if (GetRace(assisterPlayer) == raceID)
                     {
-                        OrcishHorde_AcuteStrike(event, assisterIndex, assisterWar3player, victimIndex);
-                        OrcishHorde_AcuteGrenade(event, assisterIndex, assisterWar3player, victimIndex);
+                        OrcishHorde_AcuteStrike(event, assisterIndex, assisterPlayer, victimIndex);
+                        OrcishHorde_AcuteGrenade(event, assisterIndex, assisterPlayer, victimIndex);
                     }
                 }
             }
@@ -199,10 +198,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new war3player=War3_GetWar3Player(client);
-        if (war3player>-1)
+        new player=GetPlayer(client);
+        if (player>-1)
         {
-            new race=War3_GetRace(war3player);
+            new race=GetRace(player);
             if (race==raceID)
             {
                 if (m_IsRespawning[client])
@@ -224,13 +223,13 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new index=GetClientOfUserId(userid);
-    new war3player=War3_GetWar3Player(index);
-    if (war3player>-1)
+    new player=GetPlayer(index);
+    if (player>-1)
     {
-        new race=War3_GetRace(war3player);
+        new race=GetRace(player);
         if (race==raceID && (!m_HasRespawned[index] || GameType != cstrike))
         {
-            new skill=War3_GetSkillLevel(war3player,race,2);
+            new skill=GetSkillLevel(player,race,2);
             if (skill)
             {
                 new percent;
@@ -278,9 +277,9 @@ public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast
     }
 }
 
-public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
+public OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
 {
-    new skill_cs = War3_GetSkillLevel(war3player,raceID,0);
+    new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
     {
         if(GetRandomInt(1,100)<=15)
@@ -298,7 +297,7 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=War3_GetDamage(event, victimIndex);
+            new damage=GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health <= 0)
@@ -319,9 +318,9 @@ public OrcishHorde_AcuteStrike(Handle:event, index, war3player, victimIndex)
     }
 }
 
-public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
+public OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
 {
-    new skill_cg = War3_GetSkillLevel(war3player,raceID,1);
+    new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
     {
         decl String:weapon[64];
@@ -352,7 +351,7 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=War3_GetDamage(event, victimIndex);
+            new damage=GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
             new new_health=GetClientHealth(victimIndex)-health_take;
             if (new_health <= 0)
@@ -375,9 +374,9 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, war3player, victimIndex)
     }
 }
 
-public OrcishHorde_ChainLightning(war3player,client,ultlevel)
+public OrcishHorde_ChainLightning(player,client,ultlevel)
 {
-    new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+    new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
     {
         new num=ult_level*2;
@@ -403,10 +402,10 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
             if (client != index && IsClientConnected(index) &&
                 IsPlayerAlive(index) && GetClientTeam(client) != GetClientTeam(index))
             {
-                new war3player_check=War3_GetWar3Player(index);
-                if (war3player_check>-1)
+                new player_check=GetPlayer(index);
+                if (player_check>-1)
                 {
-                    if (!War3_GetImmunity(war3player_check,Immunity_Ultimates))
+                    if (!GetImmunity(player_check,Immunity_Ultimates))
                     {
                         if ( IsInRange(client,index,range))
                         {
@@ -425,8 +424,8 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
                                     new_health=0;
 
                                     new addxp=5+ultlevel;
-                                    new newxp=War3_GetXP(war3player,raceID)+addxp;
-                                    War3_SetXP(war3player,raceID,newxp);
+                                    new newxp=GetXP(player,raceID)+addxp;
+                                    SetXP(player,raceID,newxp);
 
                                     LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
                                 }
@@ -445,6 +444,6 @@ public OrcishHorde_ChainLightning(war3player,client,ultlevel)
             }
         }
         EmitSoundToAll(thunderWav,client);
-        PrintToChat(client,"%c[War3Source]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
     }
 }

@@ -23,7 +23,7 @@ public Handle:CreateShopItem(const String:name[], const String:desc[], const Str
     return ret;
 }
 
-public bool:War3Source_InitiateShopVector()
+public bool:InitiateShopVector()
 {
     shopVector=CreateArray();
     return true;

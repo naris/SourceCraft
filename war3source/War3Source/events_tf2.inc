@@ -5,38 +5,38 @@
  * Author(s): Naris (Murray Wilson)
  */
 
-public bool:War3Source_HookTFEvents()
+public bool:HookTFEvents()
 {
-    if(!HookEvent("player_builtobject", War3Source_EventObjectBuilt))
+    if(!HookEvent("player_builtobject", EventObjectBuilt))
     {
-        PrintToServer("[JigglyCraft] Could not hook the player_builtobject event.");
+        PrintToServer("[SourceCraft] Could not hook the player_builtobject event.");
         return false;
     }
-    if(!HookEvent("object_destroyed", War3Source_EventObjectDestroyed))
+    if(!HookEvent("object_destroyed", EventObjectDestroyed))
     {
-        PrintToServer("[JigglyCraft] Could not hook the object_destroyed event.");
+        PrintToServer("[SourceCraft] Could not hook the object_destroyed event.");
         return false;
     }
-    if(!HookEvent("teamplay_flag_event", War3Source_EventFlagEvent))
+    if(!HookEvent("teamplay_flag_event", EventFlagEvent))
     {
-        PrintToServer("[JigglyCraft] Could not hook the teamplay_flag_event.");
+        PrintToServer("[SourceCraft] Could not hook the teamplay_flag_event.");
         return false;
     }
-    if(!HookEvent("teamplay_point_captured", War3Source_EventPointCaptured))
+    if(!HookEvent("teamplay_point_captured", EventPointCaptured))
     {
-        PrintToServer("[JigglyCraft] Could not hook the teampoint_point_captured event.");
+        PrintToServer("[SourceCraft] Could not hook the teampoint_point_captured event.");
         return false;
     }
-    if(!HookEvent("teamplay_capture_blocked", War3Source_EventCaptureBlocked))
+    if(!HookEvent("teamplay_capture_blocked", EventCaptureBlocked))
     {
-        PrintToServer("[JigglyCraft] Could not hook the teadmplay_capture_blocked event.");
+        PrintToServer("[SourceCraft] Could not hook the teadmplay_capture_blocked event.");
         return false;
     }
 
     /*
-    if(!HookEvent("teamplay_round_win", War3Source_RoundWin))
+    if(!HookEvent("teamplay_round_win", RoundWin))
     {
-        PrintToServer("[JigglyCraft] Could not hook the teamplay_round_win event.");
+        PrintToServer("[SourceCraft] Could not hook the teamplay_round_win event.");
         return false;
     }
     */
@@ -44,7 +44,7 @@ public bool:War3Source_HookTFEvents()
     return true;
 }
 
-public War3Source_EventObjectBuilt(Handle:event,const String:name[],bool:dontBroadcast)
+public EventObjectBuilt(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     if (userid > 0)
@@ -56,7 +56,7 @@ public War3Source_EventObjectBuilt(Handle:event,const String:name[],bool:dontBro
     }
 }
 
-public War3Source_EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
+public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new attacker = GetEventInt(event,"attacker");
     if (attacker > 0)
@@ -77,7 +77,7 @@ public War3Source_EventObjectDestroyed(Handle:event,const String:name[],bool:don
     }
 }
 
-public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new player=GetEventInt(event,"player");
     if (player>0)
@@ -92,7 +92,7 @@ public War3Source_EventFlagEvent(Handle:event,const String:name[],bool:dontBroad
     }
 }
 
-public War3Source_EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
+public EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
 {
     decl String:cappers[MAXPLAYERS+1] = "";
     if (GetEventString(event,"cappers", cappers, MAXPLAYERS)>0)
@@ -108,7 +108,7 @@ public War3Source_EventPointCaptured(Handle:event,const String:name[],bool:dontB
     }
 }
 
-public War3Source_EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
+public EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new index=GetEventInt(event,"blocker");
     if (index > 0)

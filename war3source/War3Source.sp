@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source.sp
- * Description: The main file for War3Source.
+ * Description: The main file for SourceCraft.
  * Author(s): Anthony Iacono 
  * Modifications by: Naris (Murray Wilson)
  *
@@ -13,8 +13,8 @@
 #include <sourcemod>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION_NUM "0.9 $Revision$" // "0.8.6.1"
-#define VERSION     "$Revision$" // "0.8.6.1 by Anthony \"PimpinJuice\" Iacono"
+#define VERSION_NUM "1.0 $Revision$"
+#define VERSION     "$Revision$"
 
 // War3Source Includes
 #include "War3Source/War3Source"
@@ -22,23 +22,23 @@ new bool:m_CalledReady=false;
 
 public Plugin:myinfo= 
 {
-    name="War3Source",
-    author="PimpinJuice",
-    description="Brings a Warcraft like gamemode to the Source engine.",
+    name="SourceCraft",
+    author="Naris (with some PimpinJuice code)",
+    description="StarCraft/WarCraft for the Source engine.",
     version=VERSION_NUM,
-    url="http://pimpinjuice.net/"
+    url="http://www.jigglysfunhouse.net/"
 };
 
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
-    if(!War3Source_InitNatives())
+    if(!InitNatives())
     {
-        PrintToServer("[JigglyCraft] There was a failure in creating the native based functions, definately halting.");
+        PrintToServer("[SourceCraft] There was a failure in creating the native based functions, definately halting.");
         return false;
     }
-    if(!War3Source_InitForwards())
+    if(!InitForwards())
     {
-        PrintToServer("[JigglyCraft] There was a failure in creating the forward based functions, definately halting.");
+        PrintToServer("[SourceCraft] There was a failure in creating the forward based functions.");
         return false;
     }
     return true;
@@ -46,67 +46,67 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-    PrintToServer("-------------------------------------------------------------------------\n[JigglyCraft] Plugin loading...");
+    PrintToServer("-------------------------------------------------------------------------\n[SourceCraft] Plugin loading...");
 
     GetGameType();
     
     arrayPlayers=CreateArray();
-    if(!War3Source_InitiatearrayRaces())
-        SetFailState("[JigglyCraft] There was a failure in creating the race vector, definately halting.");
-    if(!War3Source_InitiateShopVector())
-        SetFailState("[JigglyCraft] There was a failure in creating the shop vector, definately halting.");
-    if(!War3Source_InitiateHelpVector())
-        SetFailState("[JigglyCraft] There was a failure in creating the help vector, definitely halting.");
+    if(!InitiatearrayRaces())
+        SetFailState("[SourceCraft] There was a failure in creating the race vector.");
+    if(!InitiateShopVector())
+        SetFailState("[SourceCraft] There was a failure in creating the shop vector.");
+    if(!InitiateHelpVector())
+        SetFailState("[SourceCraft] There was a failure in creating the help vector.");
 
-    if(!War3Source_HookEvents())
-        SetFailState("[JigglyCraft] There was a failure in initiating event hooks.");
+    if(!HookEvents())
+        SetFailState("[SourceCraft] There was a failure in initiating event hooks.");
 
     if (GameType == tf2)
     {
-        if(!War3Source_HookTFEvents())
-            SetFailState("[JigglyCraft] There was a failure in initiating tf2 event hooks.");
+        if(!HookTFEvents())
+            SetFailState("[SourceCraft] There was a failure in initiating tf2 event hooks.");
     }
     else if(GameType == cstrike)
     {
-        if(!War3Source_HookCStrikeEvents())
-            SetFailState("[JigglyCraft] There was a failure in initiating cstrike event hooks.");
+        if(!HookCStrikeEvents())
+            SetFailState("[SourceCraft] There was a failure in initiating cstrike event hooks.");
     }
 
-    if(!War3Source_InitCVars())
-        SetFailState("[JigglyCraft] There was a failure in initiating console variables.");
-    if(!War3Source_InitMenus())
-        SetFailState("[JigglyCraft] There was a failure in initiating menus.");
-    if(!War3Source_InitHooks())
-        SetFailState("[JigglyCraft] There was a failure in initiating the hooks.");
-    if(!War3Source_InitOffset())
-        SetFailState("[JigglyCraft] There was a failure in finding the offsets required.");
-    if(!War3Source_ParseSettings())
-        SetFailState("[JigglyCraft] There was a failure in parsing the configuration file.");
+    if(!InitCVars())
+        SetFailState("[SourceCraft] There was a failure in initiating console variables.");
+    if(!InitMenus())
+        SetFailState("[SourceCraft] There was a failure in initiating menus.");
+    if(!InitHooks())
+        SetFailState("[SourceCraft] There was a failure in initiating the hooks.");
+    if(!InitOffset())
+        SetFailState("[SourceCraft] There was a failure in finding the offsets required.");
+    if(!ParseSettings())
+        SetFailState("[SourceCraft] There was a failure in parsing the configuration file.");
 
     // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
     CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
-    PrintToServer("[JigglyCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
+    PrintToServer("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
 }
 
 public OnAllPluginsLoaded()
 {
     if(SAVE_ENABLED)
-        War3Source_SQLTable();
+        SQLTable();
 
     if(!m_CalledReady)
     {
-        Call_StartForward(g_OnWar3PluginReadyHandle);
+        Call_StartForward(g_OnPluginReadyHandle);
         new res;
         Call_Finish(res);
         m_CalledReady=true;
     }
 
-    War3Source_InitHelpCommands();
+    InitHelpCommands();
 }
 
 public OnPluginEnd()
 {
-    PrintToServer("-------------------------------------------------------------------------\n[JigglyCraft] Plugin shutting down...");
+    PrintToServer("-------------------------------------------------------------------------\n[SourceCraft] Plugin shutting down...");
     for(new x=0;x<GetArraySize(arrayPlayers);x++)
     {
         new Handle:vec=GetArrayCell(arrayPlayers,x);
@@ -119,7 +119,7 @@ public OnPluginEnd()
         ClearArray(vec);
     }
     ClearArray(arrayRaces);
-    PrintToServer("[JigglyCraft] Plugin shutdown finished.\n-------------------------------------------------------------------------");
+    PrintToServer("[SourceCraft] Plugin shutdown finished.\n-------------------------------------------------------------------------");
 }
 
 public OnMapStart()
@@ -161,7 +161,7 @@ public OnClientPutInServer(client)
         if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(RACE_COUNT*SKILL_COUNT)))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
-            Call_StartForward(g_OnWar3PlayerAuthedHandle);
+            Call_StartForward(g_OnPlayerAuthedHandle);
             Call_PushCell(client);
             Call_PushCell(GetClientVectorPosition(client));
             new res;
@@ -177,7 +177,7 @@ public OnClientPutInServer(client)
 
             new vecpos=GetClientVectorPosition(client);
             if(SAVE_ENABLED)
-                m_FirstSpawn[client]=War3Source_LoadPlayerData(client,vecpos);
+                m_FirstSpawn[client]=LoadPlayerData(client,vecpos);
             else
                 m_FirstSpawn[client]=2;
 
@@ -185,7 +185,7 @@ public OnClientPutInServer(client)
                 SetRace(vecpos, FindRace("human")); // Default race to human.
         }
         else
-            SetFailState("[JigglyCraft] There was a failure on processing client, halting.");
+            SetFailState("[SourceCraft] There was a failure processing client.");
     }
 }
 
@@ -197,7 +197,7 @@ public OnClientDisconnect(client)
         if (clientVecPos>-1)
         {
             if (SAVE_ENABLED)
-                War3Source_SavePlayerData(client,clientVecPos);
+                SavePlayerData(client,clientVecPos);
 
             RemoveFromArray(arrayPlayers,clientVecPos);
             m_FirstSpawn[client]=2;

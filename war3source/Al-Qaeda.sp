@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_Al-Qaeda.sp
- * Description: The Al-Qaeda race for War3Source.
+ * Description: The Al-Qaeda race for SourceCraft.
  * Author(s): -=|JFH|=-Naris (Murray Wilson) 
  */
  
@@ -20,7 +20,6 @@
 #include "War3Source/respawn"
 #include "War3Source/log"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new explosionModel;
@@ -65,20 +64,19 @@ public OnPluginStart()
     CreateTimer(3.0,FlamingWrath,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Al-Qaeda",
-                           "alqaeda",
-                           "You are now an Al-Qaeda.",
-                           "You will be an Al-Qaeda when you die or respawn.",
-                           "Reincarnation",
-                           "Gives you a 15-80% chance of immediately respawning where you died.",
-                           "Flaming Wrath",
-                           "You cause damage to opponents around you.",
-                           "Suicide Bomber",
-                           "You explode when you die, causing great damage to opponents around you",
-                           "Mad Bomber",
-                           "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!");
+    raceID=CreateRace("Al-Qaeda", "alqaeda",
+                      "You are now an Al-Qaeda.",
+                      "You will be an Al-Qaeda when you die or respawn.",
+                      "Reincarnation",
+                      "Gives you a 15-80% chance of immediately respawning where you died.",
+                      "Flaming Wrath",
+                      "You cause damage to opponents around you.",
+                      "Suicide Bomber",
+                      "You explode when you die, causing great damage to opponents around you",
+                      "Mad Bomber",
+                      "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!");
 
 }
 
@@ -122,7 +120,7 @@ public OnMapStart()
     SetupSound(explodeWav);
 }
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
 }
@@ -136,10 +134,10 @@ public Action:FlamingWrath(Handle:timer)
         {
             if (IsPlayerAlive(client))
             {
-                new war3player=War3_GetWar3Player(client);
-                if(war3player>=0 && War3_GetRace(war3player) == raceID)
+                new player=GetPlayer(client);
+                if(player>=0 && GetRace(player) == raceID)
                 {
-                    new skill_flaming_wrath=War3_GetSkillLevel(war3player,raceID,1);
+                    new skill_flaming_wrath=GetSkillLevel(player,raceID,1);
                     if (skill_flaming_wrath)
                     {
                         new num=skill_flaming_wrath*2;
@@ -164,10 +162,10 @@ public Action:FlamingWrath(Handle:timer)
                             {
                                 if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
                                 {
-                                    new war3player_check=War3_GetWar3Player(index);
-                                    if (war3player_check>-1)
+                                    new player_check=GetPlayer(index);
+                                    if (player_check>-1)
                                     {
-                                        if (!War3_GetImmunity(war3player_check, Immunity_HealthTake) &&
+                                        if (!GetImmunity(player_check, Immunity_HealthTake) &&
                                             IsInRange(client,index,range))
                                         {
                                             new Float:indexLoc[3];
@@ -206,13 +204,13 @@ public Action:FlamingWrath(Handle:timer)
     return Plugin_Continue;
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new level = War3_GetSkillLevel(war3player,race,3);
+            new level = GetSkillLevel(player,race,3);
             if (level)
             {
                 EmitSoundToAll(allahWav,client);
@@ -226,16 +224,16 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid     = GetEventInt(event,"userid");
     new index      = GetClientOfUserId(userid);
-    new war3player = War3_GetWar3Player(index);
-    if (war3player > -1)
+    new player = GetPlayer(index);
+    if (player > -1)
     {
-        if (War3_GetRace(war3player) == raceID)
+        if (GetRace(player) == raceID)
         {
             if (m_Suicided[index])
                 m_Suicided[index]=false;
             else
             {
-                new reincarnation_skill=War3_GetSkillLevel(war3player,raceID,0);
+                new reincarnation_skill=GetSkillLevel(player,raceID,0);
                 if (reincarnation_skill)
                 {
                     new percent;
@@ -259,7 +257,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     }
                 }
 
-                new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
+                new suicide_skill=GetSkillLevel(player,raceID,2);
                 if (suicide_skill)
                 {
                     EmitSoundToAll(kaboomWav,index);
@@ -292,7 +290,7 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public OnRaceSelected(client,war3player,oldrace,newrace)
+public OnRaceSelected(client,player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
@@ -308,10 +306,10 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
-        new war3player = War3_GetWar3Player(client);
-        if (war3player > -1)
+        new player = GetPlayer(client);
+        if (player > -1)
         {
-            new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+            new ult_level=GetSkillLevel(player,raceID,3);
             if (ult_level)
             {
                 new percent;
@@ -335,12 +333,11 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
                     AuthTimer(GetSoundDuration(kaboomWav), client, AlQaeda_Kaboom);
                 }
                 else
-                    AlQaeda_Bomber(client,war3player,ult_level,false);
+                    AlQaeda_Bomber(client,player,ult_level,false);
             }
         }
     }
     ClearArray(temp);
-    //CloseHandle(timer);
     return Plugin_Stop;
 }
 
@@ -351,19 +348,18 @@ public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
-        new war3player = War3_GetWar3Player(client);
-        if (war3player > -1)
+        new player = GetPlayer(client);
+        if (player > -1)
         {
-            new suicide_skill=War3_GetSkillLevel(war3player,raceID,2);
-            AlQaeda_Bomber(client,war3player,suicide_skill,true);
+            new suicide_skill=GetSkillLevel(player,raceID,2);
+            AlQaeda_Bomber(client,player,suicide_skill,true);
         }
     }
     ClearArray(temp);
-    //CloseHandle(timer);
     return Plugin_Stop;
 }
 
-public AlQaeda_Bomber(client,war3player,level,bool:ondeath)
+public AlQaeda_Bomber(client,player,level,bool:ondeath)
 {
     new Float:radius;
     new r_int, damage;
@@ -417,11 +413,11 @@ public AlQaeda_Bomber(client,war3player,level,bool:ondeath)
         if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
             GetClientTeam(x) != GetClientTeam(client))
         {
-            new war3player_check=War3_GetWar3Player(x);
-            if (war3player_check>-1)
+            new player_check=GetPlayer(x);
+            if (player_check>-1)
             {
-                if (!(ondeath || War3_GetImmunity(war3player_check,Immunity_Ultimates)) &&
-                    !War3_GetImmunity(war3player_check,Immunity_Explosion))
+                if (!(ondeath || GetImmunity(player_check,Immunity_Ultimates)) &&
+                    !GetImmunity(player_check,Immunity_Explosion))
                 {
                     new Float:location_check[3];
                     GetClientAbsOrigin(x,location_check);
@@ -436,8 +432,8 @@ public AlQaeda_Bomber(client,war3player,level,bool:ondeath)
                             {
                                 newhealth=0;
                                 new addxp=5+level;
-                                new newxp=War3_GetXP(war3player,raceID)+addxp;
-                                War3_SetXP(war3player,raceID,newxp);
+                                new newxp=GetXP(player,raceID)+addxp;
+                                SetXP(player,raceID,newxp);
 
                                 if (ondeath)
                                     LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);

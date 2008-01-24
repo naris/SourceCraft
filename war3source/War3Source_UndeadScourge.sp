@@ -1,8 +1,9 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_UndeadScourge.sp
- * Description: The Undead Scourge race for War3Source.
+ * Description: The Undead Scourge race for SourceCraft.
  * Author(s): Anthony Iacono 
+ * Modifications by: Naris (Murray Wilson)
  */
  
 #pragma semicolon 1
@@ -18,7 +19,6 @@
 #include "War3Source/health"
 #include "War3Source/log"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new explosionModel;
@@ -51,20 +51,19 @@ public OnPluginStart()
     HookEvent("player_death",PlayerDeathEvent);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Undead Scourge",
-                           "undead",
-                           "You are now an Undead Scourge.",
-                           "You will be an Undead Scourge when you die or respawn.",
-                           "Vampiric Aura",
-                           "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.",
-                           "Unholy Aura",
-                           "Gives you a speed boost, 8-36% faster.",
-                           "Levitation",
-                           "Allows you to jump higher by \nreducing your gravity by 8-64%.",
-                           "Suicide Bomber",
-                           "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
+    raceID=CreateRace("Undead Scourge", "undead",
+                      "You are now an Undead Scourge.",
+                      "You will be an Undead Scourge when you die or respawn.",
+                      "Vampiric Aura",
+                      "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.",
+                      "Unholy Aura",
+                      "Gives you a speed boost, 8-36% faster.",
+                      "Levitation",
+                      "Allows you to jump higher by \nreducing your gravity by 8-64%.",
+                      "Suicide Bomber",
+                      "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
 
 }
 
@@ -97,20 +96,20 @@ public OnMapStart()
     SetupSound(explodeWav);
 }
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new ult_level = War3_GetSkillLevel(war3player,race,0);
+            new ult_level = GetSkillLevel(player,race,0);
             if (ult_level)
-                Undead_SuicideBomber(client,war3player,ult_level,false);
+                Undead_SuicideBomber(client,player,ult_level,false);
         }
     }
 }
@@ -119,14 +118,14 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid     = GetEventInt(event,"userid");
     new index      = GetClientOfUserId(userid);
-    new war3player = War3_GetWar3Player(index);
-    if (war3player > -1 && !m_Suicided[index])
+    new player = GetPlayer(index);
+    if (player > -1 && !m_Suicided[index])
     {
-        if(War3_GetRace(war3player) == raceID)
+        if(GetRace(player) == raceID)
         {
-            new ult_level=War3_GetSkillLevel(war3player,raceID,0);
+            new ult_level=GetSkillLevel(player,raceID,0);
             if (ult_level)
-                Undead_SuicideBomber(index,war3player,ult_level,true);
+                Undead_SuicideBomber(index,player,ult_level,true);
         }
     }
 }
@@ -137,65 +136,65 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index      = GetClientOfUserId(userid);
     if (index)
     {
-        new war3player = War3_GetWar3Player(index);
-        if (war3player > -1)
+        new player = GetPlayer(index);
+        if (player > -1)
         {
             m_Suicided[index]=false;
-            new race=War3_GetRace(war3player);
+            new race=GetRace(player);
             if(race==raceID)
             {
-                new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
+                new skilllevel_unholy = GetSkillLevel(player,race,1);
                 if (skilllevel_unholy)
-                    Undead_UnholyAura(index, war3player, skilllevel_unholy);
+                    Undead_UnholyAura(index, player, skilllevel_unholy);
 
-                new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
+                new skilllevel_levi = GetSkillLevel(player,race,2);
                 if (skilllevel_levi)
-                    Undead_Levitation(index, war3player, skilllevel_levi);
+                    Undead_Levitation(index, player, skilllevel_levi);
             }
         }
     }
 }
 
-public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race == raceID && War3_GetRace(war3player) == raceID)
+    if(race == raceID && GetRace(player) == raceID)
     {
         if (skill==1)
-            Undead_UnholyAura(client, war3player, newskilllevel);
+            Undead_UnholyAura(client, player, newskilllevel);
         else if (skill==2)
-            Undead_Levitation(client, war3player, newskilllevel);
+            Undead_Levitation(client, player, newskilllevel);
     }
 }
 
-public OnItemPurchase(client,war3player,item)
+public OnItemPurchase(client,player,item)
 {
-    new race=War3_GetRace(war3player);
+    new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
     {
-        new boots = War3_GetShopItem("Boots of Speed");
+        new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new skilllevel_unholy = War3_GetSkillLevel(war3player,race,1);
-            Undead_UnholyAura(client,war3player, skilllevel_unholy);
+            new skilllevel_unholy = GetSkillLevel(player,race,1);
+            Undead_UnholyAura(client,player, skilllevel_unholy);
         }
         else
         {
-            new sock = War3_GetShopItem("Sock of the Feather");
+            new sock = GetShopItem("Sock of the Feather");
             if (sock == item)
             {
-                new skilllevel_levi = War3_GetSkillLevel(war3player,race,2);
-                Undead_Levitation(client,war3player, skilllevel_levi);
+                new skilllevel_levi = GetSkillLevel(player,race,2);
+                Undead_Levitation(client,player, skilllevel_levi);
             }
         }
     }
 }
 
-public OnRaceSelected(client,war3player,oldrace,newrace)
+public OnRaceSelected(client,player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
-        War3_SetMaxSpeed(war3player,1.0);
-        War3_SetMinGravity(war3player,1.0);
+        SetMaxSpeed(player,1.0);
+        SetMinGravity(player,1.0);
     }
 }
 
@@ -205,17 +204,17 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (victimUserid)
     {
         new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = War3_GetWar3Player(victimIndex);
+        new victimWar3player = GetPlayer(victimIndex);
         if (victimWar3player != -1)
         {
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
                 new attackerIndex      = GetClientOfUserId(attackerUserid);
-                new attackerWar3player = War3_GetWar3Player(attackerIndex);
+                new attackerWar3player = GetPlayer(attackerIndex);
                 if (attackerWar3player != -1)
                 {
-                    if (War3_GetRace(attackerWar3player) == raceID)
+                    if (GetRace(attackerWar3player) == raceID)
                     {
                         Undead_VampiricAura(event, attackerIndex, attackerWar3player,
                                             victimIndex, victimWar3player);
@@ -227,10 +226,10 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (assisterUserid && victimUserid != assisterUserid)
             {
                 new assisterIndex      = GetClientOfUserId(assisterUserid);
-                new assisterWar3player = War3_GetWar3Player(assisterIndex);
+                new assisterWar3player = GetPlayer(assisterIndex);
                 if (assisterWar3player != -1)
                 {
-                    if (War3_GetRace(assisterWar3player) == raceID)
+                    if (GetRace(assisterWar3player) == raceID)
                     {
                         Undead_VampiricAura(event, assisterIndex, assisterWar3player,
                                             victimIndex, victimWar3player);
@@ -241,7 +240,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Undead_UnholyAura(client, war3player, skilllevel)
+public Undead_UnholyAura(client, player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
@@ -259,8 +258,8 @@ public Undead_UnholyAura(client, war3player, skilllevel)
     /* If the Player also has the Boots of Speed,
      * Increase the speed further
      */
-    new boots = War3_GetShopItem("Boots of Speed");
-    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    new boots = GetShopItem("Boots of Speed");
+    if (boots != -1 && GetOwnsItem(player,boots))
     {
         speed *= 1.1;
     }
@@ -273,10 +272,10 @@ public Undead_UnholyAura(client, war3player, skilllevel)
                           0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    War3_SetMaxSpeed(war3player,speed);
+    SetMaxSpeed(player,speed);
 }
 
-public Undead_Levitation(client, war3player, skilllevel)
+public Undead_Levitation(client, player, skilllevel)
 {
     new Float:gravity=1.0;
     switch (skilllevel)
@@ -294,8 +293,8 @@ public Undead_Levitation(client, war3player, skilllevel)
     /* If the Player also has the Sock of the Feather,
      * Decrease the gravity further.
      */
-    new sock = War3_GetShopItem("Sock of the Feather");
-    if (sock != -1 && War3_GetOwnsItem(war3player,sock))
+    new sock = GetShopItem("Sock of the Feather");
+    if (sock != -1 && GetOwnsItem(player,sock))
     {
         gravity *= 0.8;
     }
@@ -308,14 +307,14 @@ public Undead_Levitation(client, war3player, skilllevel)
                           0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
     TE_SendToAll();
 
-    War3_SetMinGravity(war3player,gravity);
+    SetMinGravity(player,gravity);
 }
 
-public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3player)
+public Undead_VampiricAura(Handle:event, index, player, victim, victim_player)
 {
-    new skill = War3_GetSkillLevel(war3player,raceID,0);
+    new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
-        !War3_GetImmunity(victim_war3player, Immunity_HealthTake))
+        !GetImmunity(victim_player, Immunity_HealthTake))
     {
         new Float:percent_health;
         switch(skill)
@@ -329,7 +328,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
             case 4:
                 percent_health=0.30;
         }
-        new Float:damage=float(War3_GetDamage(event, victim));
+        new Float:damage=float(GetDamage(event, victim));
         new leechhealth=RoundFloat(damage*percent_health);
         if(leechhealth)
         {
@@ -369,7 +368,7 @@ public Undead_VampiricAura(Handle:event, index, war3player, victim, victim_war3p
     }
 }
 
-public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
+public Undead_SuicideBomber(client,player,ult_level,bool:ondeath)
 {
     if (!ondeath)
     {
@@ -418,11 +417,11 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
         if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
             GetClientTeam(x) != GetClientTeam(client))
         {
-            new war3player_check=War3_GetWar3Player(x);
-            if (war3player_check>-1)
+            new player_check=GetPlayer(x);
+            if (player_check>-1)
             {
-                if (!War3_GetImmunity(war3player_check,Immunity_Ultimates) &&
-                    !War3_GetImmunity(war3player_check,Immunity_Explosion))
+                if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                    !GetImmunity(player_check,Immunity_Explosion))
                 {
                     new Float:location_check[3];
                     GetClientAbsOrigin(x,location_check);
@@ -437,8 +436,8 @@ public Undead_SuicideBomber(client,war3player,ult_level,bool:ondeath)
                             {
                                 newhealth=0;
                                 new addxp=5+ult_level;
-                                new newxp=War3_GetXP(war3player,raceID)+addxp;
-                                War3_SetXP(war3player,raceID,newxp);
+                                new newxp=GetXP(player,raceID)+addxp;
+                                SetXP(player,raceID,newxp);
 
                                 LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
                             }

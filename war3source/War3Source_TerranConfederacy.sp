@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_TerranConfederacy .sp
- * Description: The Terran Confederacy race for War3Source.
+ * Description: The Terran Confederacy race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */
  
@@ -17,7 +17,6 @@
 #include "War3Source/util"
 #include "War3Source/health"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new g_smokeSprite;
@@ -27,9 +26,9 @@ new m_Armor[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Terran Confederacy",
+    name = "SourceCraft Race - Terran Confederacy",
     author = "-=|JFH|=-Naris",
-    description = "The Terran Confederacy race for War3Source.",
+    description = "The Terran Confederacy race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://jigglysfunhouse.net/"
 };
@@ -43,20 +42,19 @@ public OnPluginStart()
     HookEvent("player_hurt",PlayerHurtEvent);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Terran Confederacy",
-                           "terran",
-                           "You are now part of the Terran Confederacy.",
-                           "You will be part of the Terran Confederacy when you die or respawn.",
-                           "Cloaking Device",
-                           "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still",
-                           "Heavy Armor",
-                           "Reduces damage.",
-                           "Stimpacks",
-                           "Gives you a speed boost, 8-36% faster.",
-                           "Jetpack",
-                           "Allows you to fly until you run out of fuel.");
+    raceID=CreateRace("Terran Confederacy", "terran",
+                      "You are now part of the Terran Confederacy.",
+                      "You will be part of the Terran Confederacy when you die or respawn.",
+                      "Cloaking Device",
+                      "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still",
+                      "Heavy Armor",
+                      "Reduces damage.",
+                      "Stimpacks",
+                      "Gives you a speed boost, 8-36% faster.",
+                      "Jetpack",
+                      "Allows you to fly until you run out of fuel.");
 
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
@@ -75,21 +73,21 @@ public OnMapStart()
 }
 
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
 }
 
-public OnRaceSelected(client,war3player,oldrace,race)
+public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
     {
         TakeJetpack(client);
-        War3_SetMinVisibility(war3player, 255, 1.0, 1.0);
+        SetMinVisibility(player, 255, 1.0, 1.0);
     }
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
@@ -100,31 +98,31 @@ public OnUltimateCommand(client,war3player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race == raceID && newskilllevel > 0 && War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
+    if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
     {
         if (skill==0)
-            TerranConfederacy_Cloak(client, war3player, newskilllevel);
+            TerranConfederacy_Cloak(client, player, newskilllevel);
         else if (skill==1)
             TerranConfederacy_SetupArmor(client, newskilllevel);
         else if (skill==2)
-            TerranConfederacy_Stimpacks(client, war3player, newskilllevel);
+            TerranConfederacy_Stimpacks(client, player, newskilllevel);
         else if (skill==3)
-            TerranConfederacy_Jetpack(client, war3player, newskilllevel);
+            TerranConfederacy_Jetpack(client, player, newskilllevel);
     }
 }
 
-public OnItemPurchase(client,war3player,item)
+public OnItemPurchase(client,player,item)
 {
-    new race=War3_GetRace(war3player);
+    new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
     {
-        new boots = War3_GetShopItem("Boots of Speed");
+        new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new skill=War3_GetSkillLevel(war3player,race,2);
-            TerranConfederacy_Stimpacks(client, war3player, skill);
+            new skill=GetSkillLevel(player,race,2);
+            TerranConfederacy_Stimpacks(client, player, skill);
         }
     }
 }
@@ -138,27 +136,27 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         SetupMaxHealth(client);
 
-        new war3player=War3_GetWar3Player(client);
-        if (war3player>-1)
+        new player=GetPlayer(client);
+        if (player>-1)
         {
-            new race = War3_GetRace(war3player);
+            new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_cloak=War3_GetSkillLevel(war3player,race,0);
+                new skill_cloak=GetSkillLevel(player,race,0);
                 if (skill_cloak)
-                    TerranConfederacy_Cloak(client, war3player, skill_cloak);
+                    TerranConfederacy_Cloak(client, player, skill_cloak);
 
-                new skill_armor = War3_GetSkillLevel(war3player,raceID,1);
+                new skill_armor = GetSkillLevel(player,raceID,1);
                 if (skill_armor)
                     TerranConfederacy_SetupArmor(client, skill_armor);
 
-                new skill_stimpacks = War3_GetSkillLevel(war3player,race,2);
+                new skill_stimpacks = GetSkillLevel(player,race,2);
                 if (skill_stimpacks)
-                    TerranConfederacy_Stimpacks(client, war3player, skill_stimpacks);
+                    TerranConfederacy_Stimpacks(client, player, skill_stimpacks);
 
-                new skill_jetpack=War3_GetSkillLevel(war3player,race,3);
+                new skill_jetpack=GetSkillLevel(player,race,3);
                 if (skill_jetpack)
-                    TerranConfederacy_Jetpack(client, war3player, skill_jetpack);
+                    TerranConfederacy_Jetpack(client, player, skill_jetpack);
             }
         }
     }
@@ -179,10 +177,10 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         }
 
         // Reset invisibility
-        new war3player=War3_GetWar3Player(client);
-        if (war3player != -1)
+        new player=GetPlayer(client);
+        if (player != -1)
         {
-            War3_SetMinVisibility(war3player, 255, 1.0, 1.0);
+            SetMinVisibility(player, 255, 1.0, 1.0);
         }
 
     }
@@ -194,19 +192,19 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (victimUserid)
     {
         new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = War3_GetWar3Player(victimIndex);
-        if (victimWar3player != -1)
+        new victimplayer = GetPlayer(victimIndex);
+        if (victimplayer != -1)
         {
-            new victimrace = War3_GetRace(victimWar3player);
+            new victimrace = GetRace(victimplayer);
             if (victimrace == raceID)
             {
-                TerranConfederacy_Armor(event, victimIndex, victimWar3player);
+                TerranConfederacy_Armor(event, victimIndex, victimplayer);
             }
         }
     }
 }
 
-public TerranConfederacy_Cloak(client, war3player, skilllevel)
+public TerranConfederacy_Cloak(client, player, skilllevel)
 {
     new alpha;
     switch(skilllevel)
@@ -224,8 +222,8 @@ public TerranConfederacy_Cloak(client, war3player, skilllevel)
     /* If the Player also has the Cloak of Shadows,
      * Decrease the visibility further
      */
-    new cloak = War3_GetShopItem("Cloak of Shadows");
-    if (cloak != -1 && War3_GetOwnsItem(war3player,cloak))
+    new cloak = GetShopItem("Cloak of Shadows");
+    if (cloak != -1 && GetOwnsItem(player,cloak))
     {
         alpha *= 0.90;
     }
@@ -238,7 +236,7 @@ public TerranConfederacy_Cloak(client, war3player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    War3_SetMinVisibility(war3player,alpha, 0.80, 0.0);
+    SetMinVisibility(player,alpha, 0.80, 0.0);
 }
 
 public TerranConfederacy_SetupArmor(client, skilllevel)
@@ -252,9 +250,9 @@ public TerranConfederacy_SetupArmor(client, skilllevel)
     }
 }
 
-public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
+public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimplayer)
 {
-    new skill_level_armor = War3_GetSkillLevel(victimWar3player,raceID,1);
+    new skill_level_armor = GetSkillLevel(victimplayer,raceID,1);
     if (skill_level_armor)
     {
         new Float:from_percent,Float:to_percent;
@@ -281,7 +279,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
                 to_percent=0.80;
             }
         }
-        new damage=War3_GetDamage(event, victimIndex);
+        new damage=GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
         new armor=m_Armor[victimIndex];
         if (amount > armor)
@@ -300,7 +298,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
             decl String:victimName[64];
             GetClientName(victimIndex,victimName,63);
 
-            PrintToChat(victimIndex,"%c[JigglyCraft] %s %cyour armor absorbed %d hp",
+            PrintToChat(victimIndex,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
                         COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
         }
         return true;
@@ -308,7 +306,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimWar3player)
     return false;
 }
 
-public TerranConfederacy_Stimpacks(client, war3player, skilllevel)
+public TerranConfederacy_Stimpacks(client, player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
@@ -326,8 +324,8 @@ public TerranConfederacy_Stimpacks(client, war3player, skilllevel)
     /* If the Player also has the Boots of Speed,
      * Increase the speed further
      */
-    new boots = War3_GetShopItem("Boots of Speed");
-    if (boots != -1 && War3_GetOwnsItem(war3player,boots))
+    new boots = GetShopItem("Boots of Speed");
+    if (boots != -1 && GetOwnsItem(player,boots))
     {
         speed *= 1.1;
     }
@@ -340,10 +338,10 @@ public TerranConfederacy_Stimpacks(client, war3player, skilllevel)
                           0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    War3_SetMaxSpeed(war3player,speed);
+    SetMaxSpeed(player,speed);
 }
 
-public TerranConfederacy_Jetpack(client, war3player, skilllevel)
+public TerranConfederacy_Jetpack(client, player, skilllevel)
 {
     if (skilllevel)
     {

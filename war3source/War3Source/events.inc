@@ -8,36 +8,36 @@
 
 new Float:m_BaseSpeed[MAXPLAYERS+1];
 
-public bool:War3Source_HookEvents()
+public bool:HookEvents()
 {
-    if(!HookEventEx("player_spawn",War3Source_PlayerSpawnEvent))
+    if(!HookEventEx("player_spawn",PlayerSpawnEvent))
     {
-        PrintToServer("[War3Source] Could not hook the player_spawn event.");
+        PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
     }
-    if(!HookEventEx("player_death",War3Source_PlayerDeathEvent))
+    if(!HookEventEx("player_death",PlayerDeathEvent))
     {
-        PrintToServer("[War3Source] Could not hook the player_spawn event.");
+        PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
     }
 
     if (GameType == tf2)
     {
-        if(!HookEventEx("teamplay_round_active",War3Source_RoundActive))
+        if(!HookEventEx("teamplay_round_active",RoundActive))
         {
-            PrintToServer("[War3Source] Could not hook the teamplay_round_active event.");
+            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
         }
 
-        if(!HookEventEx("teamplay_round_win",War3Source_RoundOver))
+        if(!HookEventEx("teamplay_round_win",RoundOver))
         {
-            PrintToServer("[War3Source] Could not hook the teamplay_round_active event.");
+            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
         }
 
-        if(!HookEventEx("teamplay_round_stalemate",War3Source_RoundOver))
+        if(!HookEventEx("teamplay_round_stalemate",RoundOver))
         {
-            PrintToServer("[War3Source] Could not hook the teamplay_round_active event.");
+            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
         }
     }
@@ -45,7 +45,7 @@ public bool:War3Source_HookEvents()
     return true;
 }
 
-public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     if (userid > 0)
@@ -54,18 +54,18 @@ public War3Source_PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBro
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
         {
-            War3Source_PendingCheck(index,vecpos);
+            PendingCheck(index,vecpos);
             ShowXP(index,vecpos);
             new race=GetRace(vecpos);
             if (m_FirstSpawn[index])
-                War3Source_IntroMenu(index);
+                IntroMenu(index);
             else if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                War3Source_SkillMenu(index, vecpos, INVALID_FUNCTION);
+                SkillMenu(index, vecpos, INVALID_FUNCTION);
         }
     }
 }
 
-public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new uid_victim=GetEventInt(event,"userid");
     new victimIndex=GetClientOfUserId(uid_victim);
@@ -75,10 +75,10 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
         new vecposvictim=GetClientVectorPosition(victimIndex);
         if(vecposvictim!=-1)
         {
-            War3Source_PendingCheck(victimIndex,vecposvictim);
+            PendingCheck(victimIndex,vecposvictim);
             new race=GetRace(vecposvictim);
             if(GetSkillCount(vecposvictim,race)<GetLevel(vecposvictim,race))
-                War3Source_SkillMenu(victimIndex, vecposvictim, INVALID_FUNCTION);
+                SkillMenu(victimIndex, vecposvictim, INVALID_FUNCTION);
         }
     }
 
@@ -144,7 +144,7 @@ public War3Source_PlayerDeathEvent(Handle:event,const String:name[],bool:dontBro
     }
 }
 
-public War3Source_RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
+public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 {
     if (GameType == tf2)
     {
@@ -161,7 +161,7 @@ public War3Source_RoundActive(Handle:event,const String:name[],bool:dontBroadcas
     }
 }
 
-public War3Source_RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
+public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new bool:saveEnabled = SAVE_ENABLED;
     if (GameType == tf2)
@@ -170,7 +170,7 @@ public War3Source_RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
         {
             m_OffsetMaxSpeed[x]=0;
             if (saveEnabled && IsClientInGame(x))
-                War3Source_SavePlayerData(x,GetClientVectorPosition(x));
+                SavePlayerData(x,GetClientVectorPosition(x));
         }
     }
 }
@@ -182,7 +182,7 @@ public OnMapEnd()
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
             if (IsClientInGame(x))
-                War3Source_SavePlayerData(x,GetClientVectorPosition(x));
+                SavePlayerData(x,GetClientVectorPosition(x));
         }
     }
 }

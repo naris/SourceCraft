@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_Protoss.sp
- * Description: The Protoss race for War3Source.
+ * Description: The Protoss race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */
  
@@ -18,7 +18,6 @@
 #include "War3Source/health"
 #include "War3Source/log"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
@@ -43,9 +42,9 @@ new String:cloakWav[] = "war3/pabRdy00.wav";
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Protoss",
+    name = "SourceCraft Race - Protoss",
     author = "-=|JFH|=-Naris",
-    description = "The Protoss race for War3Source.",
+    description = "The Protoss race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://jigglysfunhouse.net/"
 };
@@ -60,45 +59,44 @@ public OnPluginStart()
     //CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Protoss",
-                           "protoss",
-                           "You are now part of the Protoss.",
-                           "You will be part of the Protoss when you die or respawn.",
-                           "Reaver Scarabs",
-                           "Explode upon contact with enemies, causing increased damage.",
-                           "Arbiter Reality-Warping Field",
-                           "Cloaks all friendly units within range",
-                           "Observer Sensors",
-                           "Reveals enemy invisible units within range",
-                           "Dark Archon Mind Control",
-                           "Allows you to control an object from the opposite team.",
-                           "16");
+    raceID=CreateRace("Protoss", "protoss",
+                      "You are now part of the Protoss.",
+                      "You will be part of the Protoss when you die or respawn.",
+                      "Reaver Scarabs",
+                      "Explode upon contact with enemies, causing increased damage.",
+                      "Arbiter Reality-Warping Field",
+                      "Cloaks all friendly units within range",
+                      "Observer Sensors",
+                      "Reveals enemy invisible units within range",
+                      "Dark Archon Mind Control",
+                      "Allows you to control an object from the opposite team.",
+                      "16");
 
     m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
     if(m_BuilderOffset[sentrygun] == -1)
-        SetFailState("[JigglyCraft] Error finding Sentrygun Builder offset.");
+        SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
 
     m_BuildingOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
     if(m_BuildingOffset[sentrygun] == -1)
-        SetFailState("[JigglyCraft] Error finding Sentrygun Building offset.");
+        SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
 
     m_BuilderOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_hBuilder");
     if(m_BuilderOffset[dispenser] == -1)
-        SetFailState("[JigglyCraft] Error finding Dispenser Builder offset.");
+        SetFailState("[SourceCraft] Error finding Dispenser Builder offset.");
 
     m_BuildingOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_bBuilding");
     if(m_BuildingOffset[dispenser] == -1)
-        SetFailState("[JigglyCraft] Error finding Dispenser Building offset.");
+        SetFailState("[SourceCraft] Error finding Dispenser Building offset.");
 
     m_BuilderOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_hBuilder");
     if(m_BuilderOffset[teleporter] == -1)
-        SetFailState("[JigglyCraft] Error finding Teleporter Builder offset.");
+        SetFailState("[SourceCraft] Error finding Teleporter Builder offset.");
 
     m_BuildingOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_bBuilding");
     if(m_BuildingOffset[teleporter] == -1)
-        SetFailState("[JigglyCraft] Error finding Teleporter Building offset.");
+        SetFailState("[SourceCraft] Error finding Teleporter Building offset.");
 }
 
 public OnMapStart()
@@ -133,23 +131,23 @@ public OnMapStart()
     SetupSound(cloakWav);
 }
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
 }
 
-public OnRaceSelected(client,war3player,oldrace,race)
+public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
         ResetCloakingAndDetector(client);
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
         if (pressed)
-            Protoss_MindControl(client,war3player);
+            Protoss_MindControl(client,player);
     }
 }
 
@@ -169,18 +167,18 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (victimUserid)
     {
         new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = War3_GetWar3Player(victimIndex);
-        if (victimWar3player != -1)
+        new victimplayer = GetPlayer(victimIndex);
+        if (victimplayer != -1)
         {
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
                 new attackerIndex      = GetClientOfUserId(attackerUserid);
-                new attackerWar3player = War3_GetWar3Player(attackerIndex);
-                if (attackerWar3player != -1)
+                new attackerplayer = GetPlayer(attackerIndex);
+                if (attackerplayer != -1)
                 {
-                    if (War3_GetRace(attackerWar3player) == raceID)
-                        Protoss_Scarab(event, attackerIndex, attackerWar3player, victimIndex);
+                    if (GetRace(attackerplayer) == raceID)
+                        Protoss_Scarab(event, attackerIndex, attackerplayer, victimIndex);
                 }
             }
 
@@ -188,11 +186,11 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (assisterUserid && victimUserid != assisterUserid)
             {
                 new assisterIndex      = GetClientOfUserId(assisterUserid);
-                new assisterWar3player = War3_GetWar3Player(assisterIndex);
-                if (assisterWar3player != -1)
+                new assisterplayer = GetPlayer(assisterIndex);
+                if (assisterplayer != -1)
                 {
-                    if (War3_GetRace(assisterWar3player) == raceID)
-                        Protoss_Scarab(event, assisterIndex, assisterWar3player, victimIndex);
+                    if (GetRace(assisterplayer) == raceID)
+                        Protoss_Scarab(event, assisterIndex, assisterplayer, victimIndex);
                 }
             }
         }
@@ -208,11 +206,11 @@ public Action:CloakingAndDetector(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new war3player=War3_GetWar3Player(client);
-                if(war3player>=0 && War3_GetRace(war3player) == raceID)
+                new player=GetPlayer(client);
+                if(player>=0 && GetRace(player) == raceID)
                 {
                     new Float:cloaking_range;
-                    new skill_cloaking=War3_GetSkillLevel(war3player,raceID,1);
+                    new skill_cloaking=GetSkillLevel(player,raceID,1);
                     if (skill_cloaking)
                     {
                         switch(skill_cloaking)
@@ -229,7 +227,7 @@ public Action:CloakingAndDetector(Handle:timer)
                     }
 
                     new Float:detecting_range;
-                    new skill_detecting=War3_GetSkillLevel(war3player,raceID,2);
+                    new skill_detecting=GetSkillLevel(player,raceID,2);
                     if (skill_detecting)
                     {
                         switch(skill_detecting)
@@ -255,8 +253,8 @@ public Action:CloakingAndDetector(Handle:timer)
                         {
                             if (IsPlayerAlive(index))
                             {
-                                new war3player_check=War3_GetWar3Player(index);
-                                if (war3player_check>-1)
+                                new player_check=GetPlayer(index);
+                                if (player_check>-1)
                                 {
                                     decl String:clientName[64];
                                     GetClientName(client,clientName,63);
@@ -287,25 +285,25 @@ public Action:CloakingAndDetector(Handle:timer)
 
                                         if (cloak)
                                         {
-                                            War3_SetMinVisibility(war3player_check, cloaked_visibility);
+                                            SetMinVisibility(player_check, cloaked_visibility);
                                             m_Cloaked[client][index] = true;
 
                                             if (!m_Cloaked[client][index])
                                             {
                                                 EmitSoundToClient(client, cloakWav);
-                                                LogMessage("[JigglyCraft] %s has been cloaked by %s!\n", name,clientName);
-                                                PrintToChat(index,"%c[JigglyCraft] %s %c has been cloaked by %s!",
+                                                LogMessage("[SourceCraft] %s has been cloaked by %s!\n", name,clientName);
+                                                PrintToChat(index,"%c[SourceCraft] %s %c has been cloaked by %s!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT,clientName);
                                             }
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
-                                            War3_SetMinVisibility(war3player_check, 255);
+                                            SetMinVisibility(player_check, 255);
                                             m_Cloaked[client][index] = false;
 
                                             EmitSoundToClient(client, unCloakWav);
-                                            LogMessage("[JigglyCraft] %s has been uncloaked!\n", name);
-                                            PrintToChat(index,"%c[JigglyCraft] %s %c has been uncloaked!",
+                                            LogMessage("[SourceCraft] %s has been uncloaked!\n", name);
+                                            PrintToChat(index,"%c[SourceCraft] %s %c has been uncloaked!",
                                                         COLOR_GREEN,name,COLOR_DEFAULT);
                                         }
                                     }
@@ -320,12 +318,12 @@ public Action:CloakingAndDetector(Handle:timer)
                                         }
                                         if (detect)
                                         {
-                                            War3_SetOverrideVisible(war3player_check, 255);
+                                            SetOverrideVisible(player_check, 255);
                                             m_Detected[client][index] = true;
                                         }
                                         else if (m_Detected[client][index])
                                         {
-                                            War3_SetOverrideVisible(war3player_check, -1);
+                                            SetOverrideVisible(player_check, -1);
                                             m_Detected[client][index] = false;
                                         }
                                     }
@@ -345,27 +343,27 @@ public ResetCloakingAndDetector(client)
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
     {
-        new war3player = War3_GetWar3Player(index);
-        if (war3player > -1)
+        new player = GetPlayer(index);
+        if (player > -1)
         {
             if (m_Cloaked[client][index])
             {
-                War3_SetMinVisibility(war3player, 255);
+                SetMinVisibility(player, 255);
                 m_Cloaked[client][index] = false;
             }
 
             if (m_Detected[client][index])
             {
-                War3_SetOverrideVisible(war3player, -1);
+                SetOverrideVisible(player, -1);
                 m_Detected[client][index] = false;
             }
         }
     }
 }
 
-public Protoss_MindControl(client,war3player)
+public Protoss_MindControl(client,player)
 {
-    new ult_level=War3_GetSkillLevel(war3player,raceID,3);
+    new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
     {
         new Float:range, percent;
@@ -472,10 +470,10 @@ public Protoss_MindControl(client,war3player)
 
                                     decl String:object[32] = "";
                                     strcopy(object, sizeof(object), class[7]);
-                                    LogMessage("[JigglyCraft] %s has stolen %s's %s!\n", clientName,builderName,object);
-                                    PrintToChat(client,"%c[JigglyCraft] %c you have stolen %s's %s!",
+                                    LogMessage("[SourceCraft] %s has stolen %s's %s!\n", clientName,builderName,object);
+                                    PrintToChat(client,"%c[SourceCraft] %c you have stolen %s's %s!",
                                                 COLOR_GREEN,COLOR_DEFAULT,builderName,object);
-                                    PrintToChat(builder,"%c[JigglyCraft] %c %s has stolen your %s!",
+                                    PrintToChat(builder,"%c[SourceCraft] %c %s has stolen your %s!",
                                                 COLOR_GREEN,COLOR_DEFAULT,clientName,object);
                                 }
                             }
@@ -487,9 +485,9 @@ public Protoss_MindControl(client,war3player)
     }
 }
 
-public Protoss_Scarab(Handle:event, index, war3player, victimIndex)
+public Protoss_Scarab(Handle:event, index, player, victimIndex)
 {
-    new skill_cg = War3_GetSkillLevel(war3player,raceID,1);
+    new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
     {
         new Float:percent, chance;
@@ -519,7 +517,7 @@ public Protoss_Scarab(Handle:event, index, war3player, victimIndex)
 
         if (GetRandomInt(1,100) <= chance)
         {
-            new damage=War3_GetDamage(event, victimIndex);
+            new damage=GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
             if (health_take > 0)
             {

@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
  * File: War3Source_TerranConfederacy .sp
- * Description: The Terran Confederacy race for War3Source.
+ * Description: The Terran Confederacy race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */
  
@@ -21,7 +21,6 @@
 #include "War3Source/weapons"
 #include "War3Source/log"
 
-// War3Source stuff
 new raceID; // The ID we are assigned to
 
 new g_haloSprite;
@@ -29,9 +28,9 @@ new g_lightningSprite;
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Terran Confederacy",
+    name = "SourceCraft Race - Zerg",
     author = "-=|JFH|=-Naris",
-    description = "The Zerg race for War3Source.",
+    description = "The Zerg race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://jigglysfunhouse.net/"
 };
@@ -46,20 +45,19 @@ public OnPluginStart()
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnWar3PluginReady()
+public OnPluginReady()
 {
-    raceID=War3_CreateRace("Zerg",
-                           "zerg",
-                           "You are now part of the Zerg.",
-                           "You will be part of the Zerg when you die or respawn.",
-                           "Adrenal Glands",
-                           "Increases Melee Attack Damage",
-                           "Regeneration",
-                           "Regenerates your Health.",
-                           "Healing Aura",
-                           "Regenerates Health of all teammates in range (It does NOT heal you).",
-                           "Tentacles",
-                           "Reach out and grab an opponent.");
+    raceID=CreateRace("Zerg", "zerg",
+                      "You are now part of the Zerg.",
+                      "You will be part of the Zerg when you die or respawn.",
+                      "Adrenal Glands",
+                      "Increases Melee Attack Damage",
+                      "Regeneration",
+                      "Regenerates your Health.",
+                      "Healing Aura",
+                      "Regenerates Health of all teammates in range (It does NOT heal you).",
+                      "Tentacles",
+                      "Reach out and grab an opponent.");
 
     ControlHookGrabRope(true);
 }
@@ -76,12 +74,12 @@ public OnMapStart()
 }
 
 
-public OnWar3PlayerAuthed(client,war3player)
+public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
 }
 
-public OnRaceSelected(client,war3player,oldrace,race)
+public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
         TakeGrab(client);
@@ -96,10 +94,10 @@ public Action:Regeneration(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new war3player=War3_GetWar3Player(client);
-                if(war3player>=0 && War3_GetRace(war3player) == raceID)
+                new player=GetPlayer(client);
+                if(player>=0 && GetRace(player) == raceID)
                 {
-                    new skill_regeneration=War3_GetSkillLevel(war3player,raceID,1);
+                    new skill_regeneration=GetSkillLevel(player,raceID,1);
                     if (skill_regeneration)
                     {
                         new newhp=GetClientHealth(client)+skill_regeneration;
@@ -108,7 +106,7 @@ public Action:Regeneration(Handle:timer)
                             SetHealth(client,newhp);
                     }
 
-                    new skill_healing_aura=War3_GetSkillLevel(war3player,raceID,2);
+                    new skill_healing_aura=GetSkillLevel(player,raceID,2);
                     if (skill_healing_aura)
                     {
                         new num=skill_healing_aura*2;
@@ -132,8 +130,8 @@ public Action:Regeneration(Handle:timer)
                             if (index != client && IsClientConnected(index) && IsPlayerAlive(index) &&
                                 GetClientTeam(index) == GetClientTeam(client))
                             {
-                                new war3player_check=War3_GetWar3Player(index);
-                                if (war3player_check>-1)
+                                new player_check=GetPlayer(index);
+                                if (player_check>-1)
                                 {
                                     if (IsInRange(client,index,range))
                                     {
@@ -166,7 +164,7 @@ public Action:Regeneration(Handle:timer)
     return Plugin_Continue;
 }
 
-public OnUltimateCommand(client,war3player,race,bool:pressed)
+public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
@@ -182,22 +180,22 @@ public Action:OnGrabbed(client, target)
     if (target != client && IsClientConnected(target) && IsPlayerAlive(target) &&
         GetClientTeam(target) != GetClientTeam(client))
     {
-        new war3player_check=War3_GetWar3Player(target);
-        if (war3player_check>-1)
+        new player_check=GetPlayer(target);
+        if (player_check>-1)
         {
-            if (!War3_GetImmunity(war3player_check,Immunity_Ultimates))
+            if (!GetImmunity(player_check,Immunity_Ultimates))
                 return Plugin_Continue;
         }
     }
     return Plugin_Stop;
 }
 
-public OnSkillLevelChanged(client,war3player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race == raceID && newskilllevel > 0 && War3_GetRace(war3player) == raceID && IsPlayerAlive(client))
+    if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
     {
         if (skill==3)
-            Zerg_Tentacles(client, war3player, newskilllevel);
+            Zerg_Tentacles(client, player, newskilllevel);
     }
 }
 
@@ -210,15 +208,15 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         SetupMaxHealth(client);
 
-        new war3player=War3_GetWar3Player(client);
-        if (war3player>-1)
+        new player=GetPlayer(client);
+        if (player>-1)
         {
-            new race = War3_GetRace(war3player);
+            new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_tentacles=War3_GetSkillLevel(war3player,race,3);
+                new skill_tentacles=GetSkillLevel(player,race,3);
                 if (skill_tentacles)
-                    Zerg_Tentacles(client, war3player, skill_tentacles);
+                    Zerg_Tentacles(client, player, skill_tentacles);
             }
         }
     }
@@ -230,17 +228,17 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (victimUserid)
     {
         new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = War3_GetWar3Player(victimIndex);
+        new victimWar3player = GetPlayer(victimIndex);
         if (victimWar3player != -1)
         {
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
                 new attackerIndex      = GetClientOfUserId(attackerUserid);
-                new attackerWar3player = War3_GetWar3Player(attackerIndex);
+                new attackerWar3player = GetPlayer(attackerIndex);
                 if (attackerWar3player != -1)
                 {
-                    if (War3_GetRace(attackerWar3player) == raceID)
+                    if (GetRace(attackerWar3player) == raceID)
                         Zerg_AdrenalGlands(event, attackerIndex, attackerWar3player, victimIndex);
                 }
             }
@@ -249,10 +247,10 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (assisterUserid && victimUserid != assisterUserid)
             {
                 new assisterIndex      = GetClientOfUserId(assisterUserid);
-                new assisterWar3player = War3_GetWar3Player(assisterIndex);
+                new assisterWar3player = GetPlayer(assisterIndex);
                 if (assisterWar3player != -1)
                 {
-                    if (War3_GetRace(assisterWar3player) == raceID)
+                    if (GetRace(assisterWar3player) == raceID)
                         Zerg_AdrenalGlands(event, assisterIndex, assisterWar3player, victimIndex);
                 }
             }
@@ -261,9 +259,9 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 }
 
 
-public Zerg_AdrenalGlands(Handle:event, index, war3player, victimIndex)
+public Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
 {
-    new skill_adrenal_glands=War3_GetSkillLevel(war3player,raceID,1);
+    new skill_adrenal_glands=GetSkillLevel(player,raceID,1);
     if (skill_adrenal_glands)
     {
         decl String:wepName[128];
@@ -284,7 +282,7 @@ public Zerg_AdrenalGlands(Handle:event, index, war3player, victimIndex)
                         percent=1.00;
                 }
 
-                new damage=War3_GetDamage(event, victimIndex);
+                new damage=GetDamage(event, victimIndex);
                 new amount=RoundFloat(float(damage)*percent);
                 new newhp=GetClientHealth(victimIndex)-amount;
                 if (newhp <= 0)
@@ -310,7 +308,7 @@ public Zerg_AdrenalGlands(Handle:event, index, war3player, victimIndex)
     return 0;
 }
 
-public Zerg_Tentacles(client, war3player, skilllevel)
+public Zerg_Tentacles(client, player, skilllevel)
 {
     if (skilllevel)
     {

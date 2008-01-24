@@ -6,28 +6,28 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-public bool:War3Source_HookCStrikeEvents()
+public bool:HookCStrikeEvents()
 {
-    if(!HookEventEx("bomb_defused",War3Source_BombDefusedEvent))
+    if(!HookEventEx("bomb_defused",BombDefusedEvent))
     {
-        PrintToServer("[JigglyCraft] Could not hook the bomb_defused event.");
+        PrintToServer("[SourceCraft] Could not hook the bomb_defused event.");
         return false;
     }
-    if(!HookEventEx("bomb_planted",War3Source_BombPlantedEvent))
+    if(!HookEventEx("bomb_planted",BombPlantedEvent))
     {
-        PrintToServer("[JigglyCraft] Could not hook the bomb_planted event.");
+        PrintToServer("[SourceCraft] Could not hook the bomb_planted event.");
         return false;
     }
-    if(!HookEventEx("hostage_rescued",War3Source_HostageRescuedEvent))
+    if(!HookEventEx("hostage_rescued",HostageRescuedEvent))
     {
-        PrintToServer("[JigglyCraft] Could not hook the hostage_rescued event.");
+        PrintToServer("[SourceCraft] Could not hook the hostage_rescued event.");
         return false;
     }
 
     return true;
 }
 
-public War3Source_BombDefusedEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public BombDefusedEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     if (userid > 0)
@@ -39,7 +39,7 @@ public War3Source_BombDefusedEvent(Handle:event,const String:name[],bool:dontBro
     }
 }
 
-public War3Source_BombPlantedEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public BombPlantedEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     if (userid > 0)
@@ -51,7 +51,7 @@ public War3Source_BombPlantedEvent(Handle:event,const String:name[],bool:dontBro
     }
 }
 
-public War3Source_HostageRescuedEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public HostageRescuedEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     if (userid > 0)

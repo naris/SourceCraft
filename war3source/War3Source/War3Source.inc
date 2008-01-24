@@ -52,7 +52,7 @@ new Handle:vecLevelConfiguration = INVALID_HANDLE;
 
 #define HELPCOMMAND_COUNT GetArraySize(vecHelpCommands)
 
-public bool:War3Source_ParseSettings()
+public bool:ParseSettings()
 {
     new Handle:keyValue=CreateKeyValues("War3SourceSettings");
     decl String:path[1024];
@@ -189,13 +189,13 @@ public NewHelpCommand(String:name[],String:info[])
     PushArrayCell(vecHelpCommands,vec);
 }
 
-public bool:War3Source_InitiateHelpVector()
+public bool:InitiateHelpVector()
 {
     vecHelpCommands=CreateArray();
     return true;
 }
 
-public War3Source_InitHelpCommands()
+public InitHelpCommands()
 {
     NewHelpCommand("say war3menu","Don't like keyboard shortcuts? You can \naccess all the menu-based functions from here.");
     NewHelpCommand("say showxp","Show the current experience information for the current race.");
@@ -224,11 +224,11 @@ public War3Source_InitHelpCommands()
     NewHelpCommand("war3admin","Bring up the admin menu to modify player info.");
 }
 
-public War3Source_War3Help(client)
+public Help(client)
 {
-    new Handle:helpMenu=CreateMenu(War3Source_HelpMenu_Selected);
+    new Handle:helpMenu=CreateMenu(HelpMenu_Selected);
     SetMenuExitButton(helpMenu,true);
-    SetMenuTitle(helpMenu,"[War3Source] Select a command for more info.");
+    SetMenuTitle(helpMenu,"[SourceCraft] Select a command for more info.");
     decl String:commandname[64];
     decl String:helpbuf[4];
     new Handle:commandHandle;
@@ -242,7 +242,7 @@ public War3Source_War3Help(client)
     DisplayMenu(helpMenu,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
@@ -253,13 +253,13 @@ public War3Source_HelpMenu_Selected(Handle:menu,MenuAction:action,client,selecti
         GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new command=StringToInt(SelectionInfo);
         if(command>-1&&command<HELPCOMMAND_COUNT)
-            War3Source_HelpMenu_Command(client,command);
+            HelpMenu_Command(client,command);
     }
 }
 
-public War3Source_HelpMenu_Command(client,command)
+public HelpMenu_Command(client,command)
 {
-    new Handle:helpMenu_Command=CreateMenu(War3Source_HM_Command_Select);
+    new Handle:helpMenu_Command=CreateMenu(HM_Command_Select);
     SetMenuExitButton(helpMenu_Command,true);
     SetMenuExitBackButton(helpMenu_Command,true);
     decl String:name[64];
@@ -268,17 +268,17 @@ public War3Source_HelpMenu_Command(client,command)
     decl String:desc[300];
     GetArrayString(helpCommandHandle,1,desc,299);
     Format(desc,299,"Description: %s",desc);
-    SetMenuTitle(helpMenu_Command,"[War3Source] War3Source Command - %s\n%s",name,desc);
+    SetMenuTitle(helpMenu_Command,"[SourceCraft] War3Source Command - %s\n%s",name,desc);
     AddMenuItem(helpMenu_Command,"backtohelp","Back to help commands");
     DisplayMenu(helpMenu_Command,client,MENU_TIME_FOREVER);
 }
 
-public War3Source_HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
+public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        War3Source_War3Help(client);
+        Help(client);
     }
     else if (action == MenuAction_End)
     {
@@ -286,7 +286,7 @@ public War3Source_HM_Command_Select(Handle:menu,MenuAction:action,client,selecti
         if (selection == MenuEnd_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            War3Source_War3Help(client);
+            Help(client);
         }
     }
 }

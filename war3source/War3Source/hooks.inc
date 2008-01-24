@@ -6,12 +6,12 @@
  * Modifications by: Naris (Murray Wilson)
  */
  
-public bool:War3Source_InitHooks()
+public bool:InitHooks()
 {
-    RegConsoleCmd("say",War3Source_SayCommand);
-    RegConsoleCmd("say_team",War3Source_SayCommand);
-    RegConsoleCmd("+ultimate",War3Source_UltimateCommand,"use war3 ultimate ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate",War3Source_UltimateCommand,"use war3 ultimate ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("say",SayCommand);
+    RegConsoleCmd("say_team",SayCommand);
+    RegConsoleCmd("+ultimate",UltimateCommand,"use war3 ultimate ability (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate",UltimateCommand,"use war3 ultimate ability (keyup)",FCVAR_GAMEDLL);
     return true;
 }
 
@@ -30,7 +30,7 @@ public bool:CommandCheck(const String:compare[], const String:command[], maxlen)
 	    return false;
 }
 
-public Action:War3Source_SayCommand(client,args)
+public Action:SayCommand(client,args)
 {
     decl String:arg1[32];
     GetCmdArg(1,arg1,sizeof(arg1));
@@ -49,73 +49,73 @@ public Action:War3Source_SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"changerace",63))
         {
-            War3Source_RaceMenu(client, true, INVALID_FUNCTION);
+            RaceMenu(client, true, INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"raceinfo",63))
         {
-            War3Source_RaceMenu(client, false, INVALID_FUNCTION);
+            RaceMenu(client, false, INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"skillsinfo",63))
         {
-            War3Source_SkillsInfo(client,vecpos);
+            SkillsInfo(client,vecpos);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"resetskills",63))
         {
-            War3Source_ResetSkills(client,vecpos);
+            ResetSkills(client,vecpos);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"spendskills",63))
         {
             new race=GetRace(vecpos);
             if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                War3Source_SkillMenu(client,vecpos, INVALID_FUNCTION);
+                SkillMenu(client,vecpos, INVALID_FUNCTION);
             else
             {
-                PrintToChat(client,"%c[War3Source] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
+                PrintToChat(client,"%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
             }
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showskills",63))
         {
-            War3Source_ShowSkills(client,vecpos);
+            ShowSkills(client,vecpos);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showcredits",63)|| CommandCheck(arg1,showCurrency,63))
         {
-            War3Source_ShowCredits(client,vecpos);
+            ShowCredits(client,vecpos);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"shopmenu",63))
         {
-            War3Source_ShopMenu(client,vecpos,true);
+            ShopMenu(client,vecpos,true);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showitems",63) || CommandCheck(arg1,"inventory",63) ||
                CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
         {
-            War3Source_ShopMenu(client,vecpos,false);
+            ShopMenu(client,vecpos,false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"war3help",63) || CommandCheck(arg1,"wc3help",63) ||
 	       	    CommandCheck(arg1,"wchelp",63)   || CommandCheck(arg1,"help",63))
         {
-            War3Source_War3Help(client);
+            Help(client);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"war3menu",63) || CommandCheck(arg1,"wc3menu",63) ||
 	       	    CommandCheck(arg1,"wcmenu",63))
         {
-            War3Source_War3Menu(client,vecpos);
+            Menu(client,vecpos);
             return Plugin_Handled;
         }
 	}
     return Plugin_Continue;
 }
  
-public Action:War3Source_UltimateCommand(client,args)
+public Action:UltimateCommand(client,args)
 {
     decl String:command[32];
     GetCmdArg(0,command,32);

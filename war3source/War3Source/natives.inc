@@ -7,12 +7,12 @@
  */
 
 // Handles
-new Handle:g_OnWar3PlayerAuthedHandle;
+new Handle:g_OnPlayerAuthedHandle;
 new Handle:g_OnUltimateCommandHandle;
 new Handle:g_OnItemPurchaseHandle;
-new Handle:g_OnWar3PluginReadyHandle;
+new Handle:g_OnPluginReadyHandle;
 
-public Native_War3_CreateRace(Handle:plugin,numParams)
+public Native_CreateRace(Handle:plugin,numParams)
 {
     if (numParams >=12 && numParams <= 13)
     {
@@ -47,7 +47,7 @@ public Native_War3_CreateRace(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_CreateShopItem(Handle:plugin,numParams)
+public Native_CreateShopItem(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
@@ -62,7 +62,7 @@ public Native_War3_CreateShopItem(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_CreateHelpCommand(Handle:plugin,numParams)
+public Native_CreateHelpCommand(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -74,7 +74,7 @@ public Native_War3_CreateHelpCommand(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_GetShopItem(Handle:plugin,numParams)
+public Native_GetShopItem(Handle:plugin,numParams)
 {
     if(numParams==1)
     {
@@ -86,7 +86,7 @@ public Native_War3_GetShopItem(Handle:plugin,numParams)
         return -1;
 }
 
-public Native_War3_GetSavedHealth(Handle:plugin,numParams)
+public Native_GetSavedHealth(Handle:plugin,numParams)
 {
     if(numParams==1)
         return GetSavedHealth(GetNativeCell(1));
@@ -94,7 +94,7 @@ public Native_War3_GetSavedHealth(Handle:plugin,numParams)
         return -1;
 }
 
-public Native_War3_GetDamage(Handle:plugin,numParams)
+public Native_GetDamage(Handle:plugin,numParams)
 {
     if(numParams==1)
         return GetDamage(GetNativeCell(1));
@@ -104,7 +104,7 @@ public Native_War3_GetDamage(Handle:plugin,numParams)
         return -1;
 }
 
-public Native_War3_GetWar3Player(Handle:plugin,numParams)
+public Native_GetPlayer(Handle:plugin,numParams)
 {
     if(numParams==1)
         return GetClientVectorPosition(GetNativeCell(1));
@@ -112,7 +112,7 @@ public Native_War3_GetWar3Player(Handle:plugin,numParams)
         return -1;
 }
 
-public Native_War3_GetRace(Handle:plugin,numParams)
+public Native_GetRace(Handle:plugin,numParams)
 {
     if(numParams==1)
     {
@@ -123,7 +123,7 @@ public Native_War3_GetRace(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_GetLevel(Handle:plugin,numParams)
+public Native_GetLevel(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -135,7 +135,7 @@ public Native_War3_GetLevel(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_GetSkillLevel(Handle:plugin,numParams)
+public Native_GetSkillLevel(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
@@ -148,7 +148,7 @@ public Native_War3_GetSkillLevel(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_GetXP(Handle:plugin,numParams)
+public Native_GetXP(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -160,7 +160,7 @@ public Native_War3_GetXP(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_SetXP(Handle:plugin,numParams)
+public Native_SetXP(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
@@ -176,7 +176,7 @@ public Native_War3_SetXP(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_GetOwnsItem(Handle:plugin,numParams)
+public Native_GetOwnsItem(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -188,7 +188,7 @@ public Native_War3_GetOwnsItem(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_SetOwnsItem(Handle:plugin,numParams)
+public Native_SetOwnsItem(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
@@ -200,7 +200,7 @@ public Native_War3_SetOwnsItem(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_GetImmunity(Handle:plugin,numParams)
+public Native_GetImmunity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -212,7 +212,7 @@ public Native_War3_GetImmunity(Handle:plugin,numParams)
     return -1;
 }
 
-public Native_War3_SetImmunity(Handle:plugin,numParams)
+public Native_SetImmunity(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
@@ -224,7 +224,7 @@ public Native_War3_SetImmunity(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetMaxSpeed(Handle:plugin,numParams)
+public Native_SetMaxSpeed(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -270,7 +270,7 @@ public Native_War3_SetMaxSpeed(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetMinGravity(Handle:plugin,numParams)
+public Native_SetMinGravity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -316,7 +316,7 @@ public Native_War3_SetMinGravity(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetMinVisibility(Handle:plugin,numParams)
+public Native_SetMinVisibility(Handle:plugin,numParams)
 {
     if(numParams >= 2 && numParams <= 4)
     {
@@ -366,7 +366,7 @@ public Native_War3_SetMinVisibility(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
+public Native_SetOverrideSpeed(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -412,7 +412,7 @@ public Native_War3_SetOverrideSpeed(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
+public Native_SetOverrideGravity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -458,7 +458,7 @@ public Native_War3_SetOverrideGravity(Handle:plugin,numParams)
     }
 }
 
-public Native_War3_SetOverrideVisible(Handle:plugin,numParams)
+public Native_SetOverrideVisible(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -504,38 +504,38 @@ public Native_War3_SetOverrideVisible(Handle:plugin,numParams)
     }
 }
 
-public bool:War3Source_InitNatives()
+public bool:InitNatives()
 {
-    CreateNative("War3_CreateRace",Native_War3_CreateRace);
-    CreateNative("War3_CreateShopItem",Native_War3_CreateShopItem);
-    CreateNative("War3_CreateHelpCommand",Native_War3_CreateHelpCommand);
-    CreateNative("War3_GetShopItem",Native_War3_GetShopItem);
-    CreateNative("War3_GetSavedHealth",Native_War3_GetSavedHealth);
-    CreateNative("War3_GetDamage",Native_War3_GetDamage);
-    CreateNative("War3_GetWar3Player",Native_War3_GetWar3Player);
-    CreateNative("War3_GetRace",Native_War3_GetRace);
-    CreateNative("War3_GetLevel",Native_War3_GetLevel);
-    CreateNative("War3_GetSkillLevel",Native_War3_GetSkillLevel);
-    CreateNative("War3_GetXP",Native_War3_GetXP);
-    CreateNative("War3_SetXP",Native_War3_SetXP);
-    CreateNative("War3_GetOwnsItem",Native_War3_GetOwnsItem);
-    CreateNative("War3_SetOwnsItem",Native_War3_SetOwnsItem);
-    CreateNative("War3_GetImmunity",Native_War3_GetImmunity);
-    CreateNative("War3_SetImmunity",Native_War3_SetImmunity);
-    CreateNative("War3_SetMaxSpeed",Native_War3_SetMaxSpeed);
-    CreateNative("War3_SetMinGravity",Native_War3_SetMinGravity);
-    CreateNative("War3_SetMinVisibility",Native_War3_SetMinVisibility);
-    CreateNative("War3_SetOverrideSpeed",Native_War3_SetOverrideSpeed);
-    CreateNative("War3_SetOverrideGravity",Native_War3_SetOverrideGravity);
-    CreateNative("War3_SetOverrideVisible",Native_War3_SetOverrideVisible);
+    CreateNative("CreateRace",Native_CreateRace);
+    CreateNative("CreateShopItem",Native_CreateShopItem);
+    CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
+    CreateNative("GetShopItem",Native_GetShopItem);
+    CreateNative("GetSavedHealth",Native_GetSavedHealth);
+    CreateNative("GetDamage",Native_GetDamage);
+    CreateNative("GetPlayer",Native_GetPlayer);
+    CreateNative("GetRace",Native_GetRace);
+    CreateNative("GetLevel",Native_GetLevel);
+    CreateNative("GetSkillLevel",Native_GetSkillLevel);
+    CreateNative("GetXP",Native_GetXP);
+    CreateNative("SetXP",Native_SetXP);
+    CreateNative("GetOwnsItem",Native_GetOwnsItem);
+    CreateNative("SetOwnsItem",Native_SetOwnsItem);
+    CreateNative("GetImmunity",Native_GetImmunity);
+    CreateNative("SetImmunity",Native_SetImmunity);
+    CreateNative("SetMaxSpeed",Native_SetMaxSpeed);
+    CreateNative("SetMinGravity",Native_SetMinGravity);
+    CreateNative("SetMinVisibility",Native_SetMinVisibility);
+    CreateNative("SetOverrideSpeed",Native_SetOverrideSpeed);
+    CreateNative("SetOverrideGravity",Native_SetOverrideGravity);
+    CreateNative("SetOverrideVisible",Native_SetOverrideVisible);
     return true;
 }
 
-public bool:War3Source_InitForwards()
+public bool:InitForwards()
 {
-    g_OnWar3PlayerAuthedHandle=CreateGlobalForward("OnWar3PlayerAuthed",ET_Ignore,Param_Cell,Param_Cell);
+    g_OnPlayerAuthedHandle=CreateGlobalForward("OnPlayerAuthed",ET_Ignore,Param_Cell,Param_Cell);
     g_OnUltimateCommandHandle=CreateGlobalForward("OnUltimateCommand",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
-    g_OnWar3PluginReadyHandle=CreateGlobalForward("OnWar3PluginReady",ET_Ignore);
+    g_OnPluginReadyHandle=CreateGlobalForward("OnPluginReady",ET_Ignore);
     g_OnRaceSelectedHandle=CreateGlobalForward("OnRaceSelected",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnSkillLevelChangedHandle=CreateGlobalForward("OnSkillLevelChanged",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnItemPurchaseHandle=CreateGlobalForward("OnItemPurchase",ET_Ignore,Param_Cell,Param_Cell,Param_Cell);
