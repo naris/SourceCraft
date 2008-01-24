@@ -10,9 +10,11 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-new bool:shopMenuMode[MAXPLAYERS+1];
+new bool:gShopMenuMode[MAXPLAYERS+1];
 new Function:gRaceMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new Function:gSkillMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new Function:gShopMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new gShowItemsTarget[MAXPLAYERS+1];
 
 new Handle:hAdminMenu = INVALID_HANDLE;
 
@@ -88,7 +90,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
     }
 }
 
-public Menu(client,vecpos)
+public MainMenu(client,vecpos)
 {
     new Handle:scMenu=CreateMenu(Menu_Select);
     SetMenuExitButton(scMenu,true);
@@ -122,43 +124,29 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
             switch(selection)
             {
                 case 0: // schelp
-                {
                     Help(client);
-                }
                 case 1: // changerace
-                {
-                    RaceMenu(client, true, Menu);
-                }
+                    RaceMenu(client,true,MainMenu);
                 case 2: // skillsinfo
-                {
                     SkillsInfo(client,player);
-                }
                 case 3: // resetskills
-                {
                     ResetSkills(client,player);
-                }
                 case 4: // spendskills
                 {
                     new race=GetRace(player);
                     if(GetSkillCount(player,race)<GetLevel(player,race))
-                        SkillMenu(client, player, Menu);
+                        SkillMenu(client, player, MainMenu);
                     else
                     {
                         PrintToChat(client, "%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.", COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
                 case 5: // showskills
-                {
-                    ShowSkills(client,player);
-                }
+                    ShowSkills(client,client,player,MainMenu);
                 case 6: // showitems
-                {
-                    ShopMenu(client,player, false);
-                }
+                    ShopMenu(client,player,false,MainMenu);
                 case 7: // shopmenu
-                {
-                    ShopMenu(client,player, true);
-                }
+                    ShopMenu(client,player,true,MainMenu);
             }
         }
     }
@@ -314,7 +302,7 @@ public SkillMenu(client, vectorpos, Function:parentMenuFunction)
     new skillcount=GetSkillCount(vectorpos,race_num);
     new level=GetLevel(vectorpos,race_num);
     SetMenuExitButton(sMenu,true);
-    SetMenuExitBackButton(sMenu,true);
+    SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
     SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
     decl String:skillname[64];
     new curlevel;
@@ -438,13 +426,14 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public ShopMenu(client,vectorpos,bool:shopmenu)
+public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
 {
     new credits=GetCredits(vectorpos);
     decl String:currencies[64];
     GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
     new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
     SetMenuExitButton(shopMenu,true);
+    SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
 
     if (shopmenu)
         SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,currencies);
@@ -468,7 +457,8 @@ public ShopMenu(client,vectorpos,bool:shopmenu)
             AddMenuItem(shopMenu,itembuf,linestr);
         }
     }
-    shopMenuMode[client] = shopmenu;
+    gShopMenuMode[client] = shopmenu;
+    gShopMenuParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -488,6 +478,23 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
             new item=StringToInt(SelectionInfo);
             if(item>-1 && item<SHOPITEM_COUNT)
                 ShopMenu_Item(client,vecpos,item);
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack &&
+            gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos >- 1)
+            {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(vecpos);
+                Call_Finish(result);
+            }
         }
     }
     else if (action == MenuAction_End)
@@ -519,7 +526,7 @@ public ShopMenu_Item(client,vecpos,item)
     decl String:buf[4];
     Format(buf,3,"%d",item);
 
-    if (shopMenuMode[client])
+    if (gShopMenuMode[client])
         AddMenuItem(shopMenu_Item,buf,"Purchase");
 
     AddMenuItem(shopMenu_Item,buf,"Back to items");
@@ -537,7 +544,8 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
             decl String:SelectionInfo[4];
             decl String:SelectionDispText[256];
             new SelectionStyle;
-            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                        SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
             new item=StringToInt(SelectionInfo);
             if(selection==0)
             {
@@ -581,7 +589,10 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
                 }
             }
             else if(selection==1)
-                ShopMenu(client,vecpos,shopMenuMode[client]);
+            {
+                ShopMenu(client,vecpos,gShopMenuMode[client],
+                         gShopMenuParentMenuFunction[client]);
+            }
         }
     }
     else if (action == MenuAction_Cancel)
@@ -591,13 +602,62 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
             ClientCommand(client,"play buttons/button14.wav");
             new vecpos=GetClientVectorPosition(client);
             if(vecpos>-1)
-                ShopMenu(client,vecpos,shopMenuMode[client]);
+            {
+                ShopMenu(client,vecpos,gShopMenuMode[client],
+                         gShopMenuParentMenuFunction[client]);
+            }
         }
     }
     else if (action == MenuAction_End)
     {
         CloseHandle(menu);
     }
+}
+
+public ShowItems(client,target,vectorpos,Function:parentMenuFunction)
+{
+    new Handle:panel=CreatePanel();
+
+    if (client == target)
+        SetPanelTitle(panel,"[SourceCraft] Here are your skill items.");
+    else
+    {
+        decl String:buffer[256];
+        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's items.", target);
+        SetPanelTitle(panel,buffer);
+    }
+
+    decl String:itemname[64];
+    new Handle:itemHandle;
+    DrawPanelText(panel,"-----------------------------");
+    for(new x=0;x<SHOPITEM_COUNT;x++)
+    {
+        if (GetOwnsItem(vectorpos,x))
+        {
+            itemHandle=ShopItem(x);
+            GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+            DrawPanelText(panel,itemname);
+        }
+    }
+    DrawPanelText(panel,"-----------------------------");
+    DrawPanelItem(panel,"Close");
+
+    gShowItemsTarget[client]=target;
+    gShopMenuParentMenuFunction[client]=parentMenuFunction;
+    SendPanelToClient(panel,client,ShowItems_Selected,0);
+}
+
+public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
+{
+        if (gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(gShowItemsTarget[client]);
+                Call_Finish(result);
+        }
 }
 
 public Action:Admin(client,args)
@@ -649,6 +709,7 @@ public Admin_Player(client,targetvecpos)
 {
     new Handle:adminMenu_Player=CreateMenu(Admin_Player_Select);
     SetMenuExitButton(adminMenu_Player,true);
+    SetMenuExitBackButton(adminMenu_Player,true);
     decl String:playername[64];
     new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
     GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
@@ -671,7 +732,6 @@ public Admin_Player(client,targetvecpos)
 
 public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
 {
-    // This is gonna be fun... NOT.
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
@@ -745,6 +805,15 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player you selected has left the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+        {
+            ClientCommand(client,"play buttons/button14.wav");
+            Admin(client,0);
         }
     }
     else if (action == MenuAction_End)
@@ -760,15 +829,20 @@ public Admin_PlayerInfo(client,target)
     {
         decl String:currency[64];
         GetConVarString(m_Currencies, currency, sizeof(currency));
+
         new Handle:playerInfo=CreateMenu(Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
+        SetMenuExitBackButton(playerInfo,true);
+
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
+
         new race=GetRace(targetvecpos);
         new Handle:rhand=Race(race);
         decl String:race_name[64];
         GetArrayString(rhand,0,race_name,sizeof(race_name));
+
         new credits=GetCredits(targetvecpos);
         new xp=GetXP(targetvecpos,race);
         new level=GetLevel(targetvecpos,race);
@@ -778,6 +852,8 @@ public Admin_PlayerInfo(client,target)
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
+        AddMenuItem(playerInfo,buf,"View Player's skill levels");
+        AddMenuItem(playerInfo,buf,"View Player's shop items");
         AddMenuItem(playerInfo,buf,"Back to options");
         DisplayMenu(playerInfo,client,MENU_TIME_FOREVER);
     }
@@ -785,6 +861,7 @@ public Admin_PlayerInfo(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
+        Admin(client,0);
     }
 }
 
@@ -796,21 +873,57 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+        GetMenuItem(menu,1,SelectionInfo,sizeof(SelectionInfo),
                     SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
         new index=StringToInt(SelectionInfo);
-        new player=GetClientVectorPosition(index);
-        if(player>-1)
-            Admin_Player(client,player);
+        new targetvecpos=GetClientVectorPosition(index);
+        if (targetvecpos>-1)
+        {
+            switch(selection)
+            {
+                case 0: // skill levels
+                    ShowSkills(client,index,targetvecpos,Admin_PlayerInfo);
+                case 1: // shop items
+                    ShowItems(client,index,targetvecpos,Admin_PlayerInfo);
+                default:
+                    Admin_Player(client,targetvecpos);
+            }
+        }
         else
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
         }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+            Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
     {
         CloseHandle(menu);
+    }
+}
+
+Admin_Return(Handle:menu,client)
+{
+    ClientCommand(client,"play buttons/button14.wav");
+    decl String:SelectionInfo[4];
+    decl String:SelectionDispText[256];
+    new SelectionStyle;
+    GetMenuItem(menu,1,SelectionInfo,sizeof(SelectionInfo),
+                SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+    new index=StringToInt(SelectionInfo);
+    new targetvecpos=GetClientVectorPosition(index);
+    if (targetvecpos>-1)
+        Admin_Player(client,targetvecpos);
+    else
+    {
+        PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
+                    COLOR_GREEN,COLOR_DEFAULT);
+        Admin(client,0);
     }
 }
 
@@ -821,12 +934,16 @@ public Admin_XP(client,target)
     {
         new Handle:menu=CreateMenu(Admin_XP_Select);
         SetMenuExitButton(menu,true);
+        SetMenuExitBackButton(menu,true);
+
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
         SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
+
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
+
         AddMenuItem(menu,buf,"Give 100 XP");
         AddMenuItem(menu,buf,"Give 1000 XP");
         AddMenuItem(menu,buf,"Give 10000 XP");
@@ -836,8 +953,11 @@ public Admin_XP(client,target)
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
     else
+    {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
+        Admin(client,0);
+    }
 }
 
 public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
@@ -914,7 +1034,13 @@ public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
         }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+            Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
     {
@@ -929,13 +1055,17 @@ public Admin_GiveShopItem(client,target)
     {
         new Handle:menu=CreateMenu(Admin_GSI_Select);
         SetMenuExitButton(menu,true);
+        SetMenuExitBackButton(menu,true);
+
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
         SetMenuTitle(menu,"[SourceCraft] Select an item to give to %s.",playername);
-        decl String:itemname[64];
+
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
+
+        decl String:itemname[64];
         new Handle:itemHandle;
         for(new x=0;x<SHOPITEM_COUNT;x++)
         {
@@ -1002,7 +1132,13 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
         }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+            Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
     {
@@ -1017,13 +1153,17 @@ public Admin_SetRace(client,target)
     {
         new Handle:menu=CreateMenu(Admin_SetRace_Select);
         SetMenuExitButton(menu,true);
+        SetMenuExitBackButton(menu,true);
+
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
         SetMenuTitle(menu,"[SourceCraft] Select a race for %s.",playername);
-        decl String:racename[64];
+
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
+
+        decl String:racename[64];
         new Handle:raceHandle;
         for(new x=0;x<RACE_COUNT;x++)
         {
@@ -1037,6 +1177,7 @@ public Admin_SetRace(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
+        Admin(client,0);
     }
 }
 
@@ -1073,7 +1214,13 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
         }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+            Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
     {
@@ -1088,12 +1235,16 @@ public Admin_Level(client,target)
     {
         new Handle:menu=CreateMenu(Admin_Level_Select);
         SetMenuExitButton(menu,true);
+        SetMenuExitBackButton(menu,true);
+
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
         SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
+
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
+
         AddMenuItem(menu,buf,"Give a level");
         AddMenuItem(menu,buf,"Remove a level");
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
@@ -1102,6 +1253,7 @@ public Admin_Level(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
+        Admin(client,0);
     }
 }
 
@@ -1178,7 +1330,13 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
         }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+            Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
     {
@@ -1193,6 +1351,8 @@ public Admin_Credits(client,target)
     {
         new Handle:menu=CreateMenu(Admin_Credits_Select);
         SetMenuExitButton(menu,true);
+        SetMenuExitBackButton(menu,true);
+
         decl String:playername[64];
         new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
         GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
@@ -1231,6 +1391,7 @@ public Admin_Credits(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
+        Admin(client,0);
     }
 }
 
@@ -1309,7 +1470,13 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
+            Admin(client,0);
         }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+            Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
     {

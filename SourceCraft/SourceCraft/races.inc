@@ -32,6 +32,7 @@ new Handle:arrayRaces;
 new Handle:currentRaceForSkills[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
 new Function:gSkillsInfoParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new gShowSkillsTarget[MAXPLAYERS+1];
 
 public Handle:CreateRace(const String:name[],                  const String:short[],
                          const String:switchmessage_instant[], const String:switchmessage_dead[],
@@ -201,10 +202,6 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
-{
-}
-
 public SkillsInfo(client,vecpos)
 {
     new race=GetRace(vecpos);
@@ -212,7 +209,7 @@ public SkillsInfo(client,vecpos)
     ShowSkillsInfo(client, raceHandle, INVALID_FUNCTION);
 }
 
-public ShowSkillsInfo(client, Handle:raceHandle, Function:parentMenuFunction)
+public ShowSkillsInfo(client,Handle:raceHandle,Function:parentMenuFunction)
 {
     new Handle:menu=CreateMenu(SkillsInfo_Selected);
     SetMenuExitButton(menu,true);
@@ -245,13 +242,20 @@ public ResetSkills(client,vecpos)
         ResetSkillsNow(client,vecpos);
 }
 
-public ShowSkills(client,vecpos)
+public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
 {
     new race=GetRace(vecpos);
     new Handle:raceHandle=Race(race);
     new Handle:panel=CreatePanel();
 
-    SetPanelTitle(panel,"[SourceCraft] Here are your skill levels.");
+    if (client == target)
+        SetPanelTitle(panel,"[SourceCraft] Here are your skill levels.");
+    else
+    {
+        decl String:buffer[256];
+        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's skill levels.", target);
+        SetPanelTitle(panel,buffer);
+    }
 
     decl String:buf[64];
     decl String:bufout[256];
@@ -264,20 +268,34 @@ public ShowSkills(client,vecpos)
     }
     DrawPanelText(panel,"-----------------------------");
     DrawPanelItem(panel,"Close");
+
+    gShowSkillsTarget[client]=target;
+    gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
     SendPanelToClient(panel,client,ShowSkills_Selected,0);
+}
+
+public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
+{
+        if (gSkillsInfoParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(gShowSkillsTarget[client]);
+                Call_Finish(result);
+        }
 }
 
 ResetSkillsNow(client,vecpos)
 {
-    {
-        new race=GetRace(vecpos);
-        for(new x=0;x<SKILL_COUNT;x++)
-            SetSkillLevel(vecpos,race,x,0);
+    new race=GetRace(vecpos);
+    for(new x=0;x<SKILL_COUNT;x++)
+        SetSkillLevel(vecpos,race,x,0);
 
-        PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
-                    COLOR_GREEN,COLOR_DEFAULT);
+    PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
+                COLOR_GREEN,COLOR_DEFAULT);
 
-        if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-            SkillMenu(client, vecpos, INVALID_FUNCTION);
-    }
+    if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+        SkillMenu(client, vecpos, INVALID_FUNCTION);
 }

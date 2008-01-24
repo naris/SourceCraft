@@ -71,7 +71,7 @@ public Action:SayCommand(client,args)
         {
             new race=GetRace(vecpos);
             if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                SkillMenu(client,vecpos, INVALID_FUNCTION);
+                SkillMenu(client,vecpos,INVALID_FUNCTION);
             else
             {
                 PrintToChat(client,"%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
@@ -80,7 +80,7 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"showskills",63))
         {
-            ShowSkills(client,vecpos);
+            ShowSkills(client,client,vecpos,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showcredits",63)|| CommandCheck(arg1,showCurrency,63))
@@ -90,13 +90,13 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"shopmenu",63))
         {
-            ShopMenu(client,vecpos,true);
+            ShopMenu(client,vecpos,true,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showitems",63) || CommandCheck(arg1,"inventory",63) ||
                CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
         {
-            ShopMenu(client,vecpos,false);
+            ShopMenu(client,vecpos,false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"schelp",63) || CommandCheck(arg1,"help",63))
@@ -106,7 +106,7 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"scmenu",63) || CommandCheck(arg1,"menu",63))
         {
-            Menu(client,vecpos);
+            MainMenu(client,vecpos);
             return Plugin_Handled;
         }
 	}

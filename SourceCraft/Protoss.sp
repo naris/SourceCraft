@@ -35,10 +35,10 @@ new g_lightningSprite;
 
 new explosionModel;
 
-new String:explodeWav[] = "war3/PSaHit00.wav";
-new String:controlWav[] = "war3/pteSum00.wav";
-new String:unCloakWav[] = "war3/PabCag00.wav";
-new String:cloakWav[] = "war3/pabRdy00.wav";
+new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
+new String:controlWav[] = "sourcecraft/pteSum00.wav";
+new String:unCloakWav[] = "sourcecraft/PabCag00.wav";
+new String:cloakWav[] = "sourcecraft/pabRdy00.wav";
 
 public Plugin:myinfo = 
 {
@@ -72,7 +72,7 @@ public OnPluginReady()
                       "Reveals enemy invisible units within range",
                       "Dark Archon Mind Control",
                       "Allows you to control an object from the opposite team.",
-                      "16");
+                      "0"); // "16");
 
     m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
     if(m_BuilderOffset[sentrygun] == -1)
@@ -371,22 +371,22 @@ public Protoss_MindControl(client,player)
         {
             case 1:
             {
-                range=50.0;
+                range=150.0;
                 percent=30;
             }
             case 2:
             {
-                range=125.0;
+                range=300.0;
                 percent=50;
             }
             case 3:
             {
-                range=250.0;
+                range=450.0;
                 percent=70;
             }
             case 4:
             {
-                range=450.0;
+                range=650.0;
                 percent=90;
             }
         }
