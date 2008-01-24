@@ -248,9 +248,9 @@ public OnGameFrame()
 
 public bool:ParseSettings()
 {
-    new Handle:keyValue=CreateKeyValues("War3SourceSettings");
+    new Handle:keyValue=CreateKeyValues("SourceCraftSettings");
     decl String:path[1024];
-    BuildPath(Path_SM,path,sizeof(path),"configs/war3source.ini");
+    BuildPath(Path_SM,path,sizeof(path),"configs/sourcecraft.ini");
     FileToKeyValues(keyValue,path);
     decl String:error[256];
     DBIDB=SQL_DefConnect(error,255);
