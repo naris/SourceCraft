@@ -10,9 +10,9 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "War3Source/util"
-#include "War3Source/health"
-#include "War3Source/damage"
+#include "SourceCraft/util"
+#include "SourceCraft/health"
+#include "SourceCraft/damage"
 
 public Plugin:myinfo = 
 {
