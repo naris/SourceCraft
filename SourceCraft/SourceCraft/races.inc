@@ -24,7 +24,7 @@
 #define RACE_REQUIRED_LEVEL    12
 
 // Functions called from menus.inc
-public SkillMenu(client, vectorpos, Function:parentMenuFunction);
+//public SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
 // A vector of race infomation
 new Handle:arrayRaces;

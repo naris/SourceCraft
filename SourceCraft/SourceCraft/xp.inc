@@ -24,7 +24,7 @@
 #define CAPTURE_POINT_XP 20
 
 // Functions called from menus.inc
-public SkillMenu(client, vectorpos, Function:parentMenuFunction);
+//public SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
 KillXP(level)
 {
