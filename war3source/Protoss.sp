@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_Protoss.sp
+ * File: Protoss.sp
  * Description: The Protoss race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */

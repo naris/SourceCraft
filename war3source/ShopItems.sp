@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_ShopItems.sp
+ * File: ShopItems.sp
  * Description: The shop items that come with SourceCraft.
  * Author(s): Anthony Iacono
  * Modifications by: Naris (Murray Wilson)

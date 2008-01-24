@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_OrcishHorde.sp
+ * File: OrcishHorde.sp
  * Description: The Orcish Horde race for SourceCraft.
  * Author(s): Anthony Iacono 
  * Modifications by: Naris (Murray Wilson)

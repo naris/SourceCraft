@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_Al-Qaeda.sp
+ * File: Al-Qaeda.sp
  * Description: The Al-Qaeda race for SourceCraft.
  * Author(s): -=|JFH|=-Naris (Murray Wilson) 
  */

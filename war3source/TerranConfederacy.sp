@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_TerranConfederacy .sp
+ * File: TerranConfederacy .sp
  * Description: The Terran Confederacy race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */

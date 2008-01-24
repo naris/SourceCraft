@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: War3Source_UndeadScourge.sp
+ * File: UndeadScourge.sp
  * Description: The Undead Scourge race for SourceCraft.
  * Author(s): Anthony Iacono 
  * Modifications by: Naris (Murray Wilson)
