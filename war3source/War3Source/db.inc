@@ -10,6 +10,9 @@
 #endif
 #define _db_included
 
+// DBI
+new Handle:DBIDB = INVALID_HANDLE;
+
 public SQLTable()
 {
     if (DBIDB)

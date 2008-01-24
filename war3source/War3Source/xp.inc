@@ -26,6 +26,30 @@
 // Functions called from menus.inc
 public SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
+KillXP(level)
+{
+    new Handle:temp;
+    if(SAVE_ENABLED)
+        temp=GetArrayCell(vecLevelConfiguration,1);
+    else
+        temp=GetArrayCell(vecLevelConfiguration,3);
+    if(GetArraySize(temp)==MAX_LEVELS+1)
+        return GetArrayCell(temp,level);
+    return 0;
+}
+
+ReqLevelXP(level)
+{
+    new Handle:temp;
+    if(SAVE_ENABLED)
+        temp=GetArrayCell(vecLevelConfiguration,0);
+    else
+        temp=GetArrayCell(vecLevelConfiguration,2);
+    if(GetArraySize(temp)==MAX_LEVELS+1)
+        return GetArrayCell(temp,level);
+    return 0;
+}
+
 public DoLevelCheck(client,vectorpos)
 {
     new bool:m_Go=true;
@@ -226,3 +250,4 @@ public GiveCaptureBlockedXP(client,vectorpos)
     if(GetLevel(vectorpos,race)!=MAX_LEVELS)
         DoLevelCheck(client,vectorpos);
 }
+

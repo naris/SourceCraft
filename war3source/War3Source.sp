@@ -11,13 +11,49 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <keyvalues>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
 #define VERSION_NUM "1.0 $Revision$"
 #define VERSION     "$Revision$"
 
-// War3Source Includes
+// Temporary Definitions
+new Handle:arrayPlayers = INVALID_HANDLE;
+
+// ConVar definitions
+new Handle:m_SaveXPConVar         = INVALID_HANDLE;
+new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
+new Handle:m_MaxCredits           = INVALID_HANDLE;
+new Handle:m_Currency             = INVALID_HANDLE; 
+new Handle:m_Currencies           = INVALID_HANDLE; 
+
+#define SAVE_ENABLED       GetConVarInt(m_SaveXPConVar)==1
+#define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
+#define MAX_CREDITS        GetConVarInt(m_MaxCredits)
+
+// SourceCraft Includes
 #include "War3Source/War3Source"
+#include "War3Source/util"
+#include "War3Source/damage"
+#include "War3Source/immunity"
+#include "War3Source/offsets"
+#include "War3Source/races"
+#include "War3Source/xp"
+#include "War3Source/events"
+#include "War3Source/events_tf2"
+#include "War3Source/events_cstrike"
+#include "War3Source/credits"
+#include "War3Source/console"
+#include "War3Source/shopmenu"
+#include "War3Source/weapons"
+#include "War3Source/playertracking"
+#include "War3Source/db"
+#include "War3Source/natives"
+#include "War3Source/hooks"
+#include "War3Source/menus"
+#include "War3Source/log"
+#include "War3Source/strtoken"
+
 new bool:m_CalledReady=false;
 
 public Plugin:myinfo= 
@@ -208,5 +244,104 @@ public OnClientDisconnect(client)
 public OnGameFrame()
 {
     SaveAllHealth();
+}
+
+public bool:ParseSettings()
+{
+    new Handle:keyValue=CreateKeyValues("War3SourceSettings");
+    decl String:path[1024];
+    BuildPath(Path_SM,path,sizeof(path),"configs/war3source.ini");
+    FileToKeyValues(keyValue,path);
+    decl String:error[256];
+    DBIDB=SQL_DefConnect(error,255);
+    if(!DBIDB)
+    {
+        LogError("Unable to get a Database Connection.");
+    }
+    // Load level configuration
+    KvRewind(keyValue);
+    vecLevelConfiguration=CreateArray();
+    if(!KvJumpToKey(keyValue,"levels"))
+    {
+        LogError("KvJumpToKey failed in ParseSettings");
+        return false;
+    }
+    new Handle:longterm_required=CreateArray();
+    new Handle:longterm_killxp=CreateArray();
+    new Handle:shortterm_required=CreateArray();
+    new Handle:shortterm_killxp=CreateArray();
+    decl String:temp[2048];
+    if(!KvGotoFirstSubKey(keyValue))
+    {
+        LogError("KvJumpToKey failed in ParseSettings");
+        return false;
+    }
+    // required xp, long term
+    KvGetString(keyValue,"required_xp",temp,2047);
+    new tokencount=StrTokenCount(temp);
+    if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for required xp, long term in ParseSettings");
+        return false;
+    }
+    decl String:temp_iter[16];
+    for(new x=1;x<=tokencount;x++)
+    {
+        // store it
+        StrToken(temp,x,temp_iter,15);
+        PushArrayCell(longterm_required,StringToInt(temp_iter));
+    }
+    // kill xp, long term
+    KvGetString(keyValue,"kill_xp",temp,2047);
+    tokencount=StrTokenCount(temp);
+    if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for kill xp, long term in ParseSettings");
+        return false;
+    }
+    for(new x=1;x<=tokencount;x++)
+    {
+        // store it
+        StrToken(temp,x,temp_iter,15);
+        PushArrayCell(longterm_killxp,StringToInt(temp_iter));
+    }
+    if(!KvGotoNextKey(keyValue))
+    {
+        LogError("KvGotoNextKey failed in ParseSettings");
+        return false;
+    }
+    // required xp, short term
+    KvGetString(keyValue,"required_xp",temp,2047);
+    tokencount=StrTokenCount(temp);
+    if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for required xp, short term in ParseSettings");
+        return false;
+    }
+    for(new x=1;x<=tokencount;x++)
+    {
+        // store it
+        StrToken(temp,x,temp_iter,15);
+        PushArrayCell(shortterm_required,StringToInt(temp_iter));
+    }
+    // kill xp, short term
+    KvGetString(keyValue,"kill_xp",temp,2047);
+    tokencount=StrTokenCount(temp);
+    if(tokencount!=MAX_LEVELS+1)
+    {
+        LogError("Invalid tokencount for kill xp, short term in ParseSettings");
+        return false;
+    }
+    for(new x=1;x<=tokencount;x++)
+    {
+        // store it
+        StrToken(temp,x,temp_iter,15);
+        PushArrayCell(shortterm_killxp,StringToInt(temp_iter));
+    }
+    PushArrayCell(vecLevelConfiguration,longterm_required);
+    PushArrayCell(vecLevelConfiguration,longterm_killxp);
+    PushArrayCell(vecLevelConfiguration,shortterm_required);
+    PushArrayCell(vecLevelConfiguration,shortterm_killxp);
+    return true;
 }
 
