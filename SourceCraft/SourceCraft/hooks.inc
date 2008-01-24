@@ -10,8 +10,8 @@ public bool:InitHooks()
 {
     RegConsoleCmd("say",SayCommand);
     RegConsoleCmd("say_team",SayCommand);
-    RegConsoleCmd("+ultimate",UltimateCommand,"use war3 ultimate ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate",UltimateCommand,"use war3 ultimate ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
     return true;
 }
 
@@ -99,14 +99,12 @@ public Action:SayCommand(client,args)
             ShopMenu(client,vecpos,false);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"war3help",63) || CommandCheck(arg1,"wc3help",63) ||
-	       	    CommandCheck(arg1,"wchelp",63)   || CommandCheck(arg1,"help",63))
+        else if(CommandCheck(arg1,"schelp",63) || CommandCheck(arg1,"help",63))
         {
             Help(client);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"war3menu",63) || CommandCheck(arg1,"wc3menu",63) ||
-	       	    CommandCheck(arg1,"wcmenu",63))
+        else if(CommandCheck(arg1,"scmenu",63) || CommandCheck(arg1,"menu",63))
         {
             Menu(client,vecpos);
             return Plugin_Handled;

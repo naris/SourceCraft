@@ -13,27 +13,25 @@
 
 public InitCVars()
 {
-    CreateConVar("war3_version",VERSION,"War3Source version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY);
+    CreateConVar("sc_version",VERSION,"SourceCraft version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY);
 
-    m_SaveXPConVar=CreateConVar("war3_savexp","1");
-    m_MinimumUltimateLevel=CreateConVar("war3_minimumultimatelevel","8");
-    m_MaxCredits=CreateConVar("war3_maxcredits","40");
-    m_Currency=CreateConVar("war3_currency","credit", "Name of the currency");
-    m_Currencies=CreateConVar("war3_currencies","credits", "Name of the currency in plural form");
+    m_SaveXPConVar=CreateConVar("sc_savexp","1");
+    m_MinimumUltimateLevel=CreateConVar("sc_minimumultimatelevel","8");
+    m_MaxCredits=CreateConVar("sc_maxcredits","40");
+    m_Currency=CreateConVar("sc_currency","credit", "Name of the currency");
+    m_Currencies=CreateConVar("sc_currencies","credits", "Name of the currency in plural form");
 
-    RegAdminCmd("Setxp",CMD_SetXP,ADMFLAG_WAR3,"Set a player's XP");
-    RegAdminCmd("war3_givexp",CMD_GiveXP,ADMFLAG_WAR3,"Give a player XP");
-    RegAdminCmd("war3_removexp",CMD_RemoveXP,ADMFLAG_WAR3,"Remove some XP from a player");
-    RegAdminCmd("Setlevel",CMD_SetLevel,ADMFLAG_WAR3,"Set a player's level");
-    RegAdminCmd("war3_givelevel",CMD_GiveLevel,ADMFLAG_WAR3,"Give a player a single level");
-    RegAdminCmd("war3_removelevel",CMD_RemoveLevel,ADMFLAG_WAR3,"Remove a single level from a player");
-    RegAdminCmd("Setcredits",CMD_SetCredits,ADMFLAG_WAR3,"Set a player's credit count");
-    RegAdminCmd("war3_givecredits",CMD_GiveCredits,ADMFLAG_WAR3,"Give a player credits");
-    RegAdminCmd("war3_removecredits",CMD_RemoveCredits,ADMFLAG_WAR3,"Remove some credits from a player");
+    RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_WAR3,"Set a player's XP");
+    RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_WAR3,"Give a player XP");
+    RegAdminCmd("sc_removexp",CMD_RemoveXP,ADMFLAG_WAR3,"Remove some XP from a player");
+    RegAdminCmd("sc_setlevel",CMD_SetLevel,ADMFLAG_WAR3,"Set a player's level");
+    RegAdminCmd("sc_givelevel",CMD_GiveLevel,ADMFLAG_WAR3,"Give a player a single level");
+    RegAdminCmd("sc_removelevel",CMD_RemoveLevel,ADMFLAG_WAR3,"Remove a single level from a player");
+    RegAdminCmd("sc_setcredits",CMD_SetCredits,ADMFLAG_WAR3,"Set a player's credit count");
+    RegAdminCmd("sc_givecredits",CMD_GiveCredits,ADMFLAG_WAR3,"Give a player credits");
+    RegAdminCmd("sc_removecredits",CMD_RemoveCredits,ADMFLAG_WAR3,"Remove some credits from a player");
 
-    RegAdminCmd("wcadmin",Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
-    RegAdminCmd("wc3admin",Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
-    RegAdminCmd("war3admin",Admin,ADMFLAG_WAR3,"Brings up the War3Source admin panel.");
+    RegAdminCmd("sc_admin",Admin,ADMFLAG_WAR3,"Brings up the SourceCraft admin panel.");
 
     return true;
 }

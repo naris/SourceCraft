@@ -32,7 +32,7 @@ public bool:InitiateHelpVector()
 
 public InitHelpCommands()
 {
-    NewHelpCommand("say war3menu","Don't like keyboard shortcuts? You can \naccess all the menu-based functions from here.");
+    NewHelpCommand("say scmenu","Bring up the SourceCraft menu.");
     NewHelpCommand("say showxp","Show the current experience information for the current race.");
     NewHelpCommand("say changerace","Change to a different race.");
     NewHelpCommand("say raceinfo","Display information for all the races.");
@@ -56,7 +56,7 @@ public InitHelpCommands()
         NewHelpCommand("say showcredits","Show your current shop credit count.");
 
     NewHelpCommand("+ultimate","Use an ultimate that required a bind.");
-    NewHelpCommand("war3admin","Bring up the admin menu to modify player info.");
+    NewHelpCommand("sc_admin","Bring up the admin menu to modify player info.");
 }
 
 public Help(client)

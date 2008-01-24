@@ -46,7 +46,7 @@ public OnAdminMenuReady(Handle:topmenu)
         /* Save the Handle */
         hAdminMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hAdminMenu, "war3admin", TopMenuObject_Item, AdminMenu, server_commands, "war3admin", ADMFLAG_WAR3);
+        AddToTopMenu(hAdminMenu, "sc_admin", TopMenuObject_Item, AdminMenu, server_commands, "sc_admin", ADMFLAG_WAR3);
     }
 }
 
@@ -90,20 +90,20 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
 
 public Menu(client,vecpos)
 {
-    new Handle:war3Menu=CreateMenu(Menu_Select);
-    SetMenuExitButton(war3Menu,true);
-    SetMenuTitle(war3Menu,"[SourceCraft] Choose a task.");
+    new Handle:scMenu=CreateMenu(Menu_Select);
+    SetMenuExitButton(scMenu,true);
+    SetMenuTitle(scMenu,"[SourceCraft] Choose a task.");
     decl String:buf[4];
     Format(buf,sizeof(buf),"%d",vecpos);
-    AddMenuItem(war3Menu,buf,"View SourceCraft command list");
-    AddMenuItem(war3Menu,buf,"Change your race");
-    AddMenuItem(war3Menu,buf,"View your race's skills information");
-    AddMenuItem(war3Menu,buf,"Reset your skills");
-    AddMenuItem(war3Menu,buf,"Spend unused skill points");
-    AddMenuItem(war3Menu,buf,"Show current skill levels");
-    AddMenuItem(war3Menu,buf,"Show current items owned");
-    AddMenuItem(war3Menu,buf,"Bring up the shopmenu");
-    DisplayMenu(war3Menu,client,MENU_TIME_FOREVER);
+    AddMenuItem(scMenu,buf,"View SourceCraft command list");
+    AddMenuItem(scMenu,buf,"Change your race");
+    AddMenuItem(scMenu,buf,"View your race's skills information");
+    AddMenuItem(scMenu,buf,"Reset your skills");
+    AddMenuItem(scMenu,buf,"Spend unused skill points");
+    AddMenuItem(scMenu,buf,"Show current skill levels");
+    AddMenuItem(scMenu,buf,"Show current items owned");
+    AddMenuItem(scMenu,buf,"Bring up the shopmenu");
+    DisplayMenu(scMenu,client,MENU_TIME_FOREVER);
 }
 
 public Menu_Select(Handle:menu,MenuAction:action,client,selection)
@@ -121,7 +121,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
         {
             switch(selection)
             {
-                case 0: // war3help
+                case 0: // schelp
                 {
                     Help(client);
                 }
