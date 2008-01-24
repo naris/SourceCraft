@@ -1,14 +1,15 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: War3Source_Interface.inc
- * Description: The file to be included for creating races and whatnot.
+ * File: SourceCraft.inc
+ * Description: Definitions for SourceCraft Natives.
  * Author(s): Anthony Iacono  
+ * Modifications by: Naris (Murray Wilson)
  */
 
-#if defined _interface_included
+#if defined sourcecraft_included
  #endinput
 #endif
-#define _interface_included
+#define sourcecraft_included
 
 // The types of immunities you can get/set from.
 enum Immunity
@@ -20,7 +21,7 @@ enum Immunity
 };
 
 /**
- * Registers a race with the War3Source plugin
+ * Registers a race with the SourceCraft plugin
  * @param name: The name of the race. (max 64)
  * @param short: The shortname used for SQL stuff. (max 16) 
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
@@ -39,7 +40,7 @@ enum Immunity
 native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[], String:required_level[]="0");
 
 /**
- * Registers a shop item with the War3Source plugin
+ * Registers a shop item with the SourceCraft plugin
  * @param name: The name of the item. (max 64)
  * @param desc: The description of the item. (max 256) 
  * @param cost: The cost of the item as a string for vector reasons. (max 4 chars)
@@ -48,7 +49,7 @@ native CreateRace(String:name[],String:short[],String:switchmessage_instant[],St
 native CreateShopItem(String:name[],String:desc[],String:cost[]);
 
 /**
- * Registers a help command with the War3Source plugin for war3help
+ * Registers a help command with the SourceCraft plugin for help
  * @param name: The name of the command. (max 64)
  * @param desc: The description of the command. (max 256) 
  * @noreturn

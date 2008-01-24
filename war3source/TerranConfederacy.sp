@@ -12,10 +12,10 @@
 
 #include "jetpack.inc"
 
-#include "War3Source/War3Source_Interface"
+#include "SourceCraft/SourceCraft"
 
-#include "War3Source/util"
-#include "War3Source/health"
+#include "SourceCraft/util"
+#include "SourceCraft/health"
 
 new raceID; // The ID we are assigned to
 

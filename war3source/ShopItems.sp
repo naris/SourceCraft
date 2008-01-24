@@ -12,13 +12,13 @@
 #include <sdktools>
 #include <tf2>
 
-#include "War3Source/War3Source_Interface"
+#include "SourceCraft/SourceCraft"
 
-#include "War3Source/util"
-#include "War3Source/health"
-#include "War3Source/authtimer"
-#include "War3Source/respawn"
-#include "War3Source/log"
+#include "SourceCraft/util"
+#include "SourceCraft/health"
+#include "SourceCraft/authtimer"
+#include "SourceCraft/respawn"
+#include "SourceCraft/log"
 
 // Defines
 

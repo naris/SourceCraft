@@ -12,14 +12,14 @@
 
 #include "hgrsource.inc"
 
-#include "War3Source/War3Source_Interface"
+#include "SourceCraft/SourceCraft"
 
-#include "War3Source/util"
-#include "War3Source/range"
-#include "War3Source/trace"
-#include "War3Source/health"
-#include "War3Source/weapons"
-#include "War3Source/log"
+#include "SourceCraft/util"
+#include "SourceCraft/range"
+#include "SourceCraft/trace"
+#include "SourceCraft/health"
+#include "SourceCraft/weapons"
+#include "SourceCraft/log"
 
 new raceID; // The ID we are assigned to
 

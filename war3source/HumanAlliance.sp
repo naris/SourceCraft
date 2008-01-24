@@ -11,12 +11,12 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "War3Source/War3Source_Interface"
+#include "SourceCraft/SourceCraft"
 
-#include "War3Source/util"
-#include "War3Source/health"
-#include "War3Source/freeze"
-#include "War3Source/authtimer"
+#include "SourceCraft/util"
+#include "SourceCraft/health"
+#include "SourceCraft/freeze"
+#include "SourceCraft/authtimer"
 
 new raceID; // The ID we are assigned to
 
