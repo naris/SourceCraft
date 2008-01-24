@@ -116,9 +116,9 @@ public Native_GetRace(Handle:plugin,numParams)
 {
     if(numParams==1)
     {
-        new war3player=GetNativeCell(1);
-        if(war3player!=-1)
-            return GetRace(war3player);
+        new player=GetNativeCell(1);
+        if(player!=-1)
+            return GetRace(player);
     }
     return -1;
 }
@@ -127,10 +127,10 @@ public Native_GetLevel(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new race=GetNativeCell(2);
-        if(war3player!=-1&&race!=-1)
-            return GetLevel(war3player,race);
+        if(player!=-1&&race!=-1)
+            return GetLevel(player,race);
     }
     return -1;
 }
@@ -139,11 +139,11 @@ public Native_GetSkillLevel(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new race=GetNativeCell(2);
         new skill=GetNativeCell(3);
-        if(war3player!=-1&&race!=-1&&skill!=-1)
-            return GetSkillLevel(war3player,race,skill);
+        if(player!=-1&&race!=-1&&skill!=-1)
+            return GetSkillLevel(player,race,skill);
     }
     return -1;
 }
@@ -152,10 +152,10 @@ public Native_GetXP(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new race=GetNativeCell(2);
-        if(war3player!=-1&&race!=-1)
-            return GetXP(war3player,race);
+        if(player!=-1&&race!=-1)
+            return GetXP(player,race);
     }
     return -1;
 }
@@ -164,14 +164,14 @@ public Native_SetXP(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new race=GetNativeCell(2);
         new newxp=GetNativeCell(3);
-        new Handle:player=GetArrayCell(arrayPlayers,war3player);
-        if(war3player!=-1&&race!=-1&&newxp!=-1)
+        new Handle:playerHandle=GetArrayCell(arrayPlayers,player);
+        if(player!=-1&&race!=-1&&newxp!=-1)
         {
-            SetXP(war3player,race,newxp);
-            DoLevelCheck(GetArrayCell(player,0),war3player);
+            SetXP(player,race,newxp);
+            DoLevelCheck(GetArrayCell(playerHandle,0),player);
         }
     }
 }
@@ -180,10 +180,10 @@ public Native_GetOwnsItem(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new item=GetNativeCell(2);
-        if(war3player!=-1&&item!=-1)
-            return GetOwnsItem(war3player,item);
+        if(player!=-1&&item!=-1)
+            return GetOwnsItem(player,item);
     }
     return -1;
 }
@@ -192,11 +192,11 @@ public Native_SetOwnsItem(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new item=GetNativeCell(2);
         new owns=GetNativeCell(3);
-        if(war3player!=-1&&item!=-1)
-            SetOwnsItem(war3player,item,owns);
+        if(player!=-1&&item!=-1)
+            SetOwnsItem(player,item,owns);
     }
 }
 
@@ -204,10 +204,10 @@ public Native_GetImmunity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new immunity=GetNativeCell(2);
-        if(war3player!=-1&&immunity!=-1)
-            return GetImmunity(war3player,immunity);
+        if(player!=-1&&immunity!=-1)
+            return GetImmunity(player,immunity);
     }
     return -1;
 }
@@ -216,11 +216,11 @@ public Native_SetImmunity(Handle:plugin,numParams)
 {
     if(numParams==3)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new immunity=GetNativeCell(2);
         new imm_state=GetNativeCell(3);
-        if(war3player!=-1&&immunity!=-1&&imm_state!=-1)
-            SetImmunity(war3player,immunity,imm_state);
+        if(player!=-1&&immunity!=-1&&imm_state!=-1)
+            SetImmunity(player,immunity,imm_state);
     }
 }
 
@@ -228,11 +228,11 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        if(war3player != -1 && speed > 0)
+        if(player != -1 && speed > 0)
         {
-            new Handle:temp=GetPropertyInfo(war3player);
+            new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
@@ -265,7 +265,7 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(war3player,temp);
+            SetPropertyInfo(player,temp);
         }
     }
 }
@@ -274,11 +274,11 @@ public Native_SetMinGravity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
-        if(war3player!=-1&&gravity>0)
+        if(player!=-1&&gravity>0)
         {
-            new Handle:temp=GetPropertyInfo(war3player);
+            new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
@@ -311,7 +311,7 @@ public Native_SetMinGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(war3player,temp);
+            SetPropertyInfo(player,temp);
         }
     }
 }
@@ -320,13 +320,13 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
 {
     if(numParams >= 2 && numParams <= 4)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new visibility=GetNativeCell(2);
         new Float:meleeFactor = (numParams > 2) ? GetNativeCell(3) : 1.0;
         new Float:movementFactor = (numParams > 3) ? GetNativeCell(4) : 1.0;
-        if(war3player != -1 && visibility > -1)
+        if(player != -1 && visibility > -1)
         {
-            new Handle:temp=GetPropertyInfo(war3player);
+            new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
@@ -361,7 +361,7 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(war3player,temp);
+            SetPropertyInfo(player,temp);
         }
     }
 }
@@ -370,11 +370,11 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        if(war3player!=-1)
+        if(player!=-1)
         {
-            new Handle:temp=GetPropertyInfo(war3player);
+            new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
@@ -407,7 +407,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(war3player,temp);
+            SetPropertyInfo(player,temp);
         }
     }
 }
@@ -416,11 +416,11 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
-        if(war3player!=-1)
+        if(player!=-1)
         {
-            new Handle:temp=GetPropertyInfo(war3player);
+            new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
@@ -453,7 +453,7 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(war3player,temp);
+            SetPropertyInfo(player,temp);
         }
     }
 }
@@ -462,11 +462,11 @@ public Native_SetOverrideVisible(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        new war3player=GetNativeCell(1);
+        new player=GetNativeCell(1);
         new visibility=GetNativeCell(2);
-        if(war3player!=-1)
+        if(player!=-1)
         {
-            new Handle:temp=GetPropertyInfo(war3player);
+            new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
@@ -499,7 +499,7 @@ public Native_SetOverrideVisible(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,visibility); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(war3player,temp);
+            SetPropertyInfo(player,temp);
         }
     }
 }

@@ -35,7 +35,7 @@ new g_purpleGlow;
 new g_crystalSprite;
 new g_lightningSprite;
 
-new String:thunderWav[] = "war3/thunder1Long.mp3"; // "ambient/weather/thunder1.wav";
+new String:thunderWav[] = "sourcecraft/thunder1Long.mp3"; // "ambient/weather/thunder1.wav";
 
 public Plugin:myinfo = 
 {
@@ -56,7 +56,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarChainCooldown=CreateConVar("war3_chainlightningcooldown","30");
+    cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
 
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_death",PlayerDeathEvent);

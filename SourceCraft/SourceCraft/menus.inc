@@ -46,7 +46,7 @@ public OnAdminMenuReady(Handle:topmenu)
         /* Save the Handle */
         hAdminMenu = topmenu;
         new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hAdminMenu, "sc_admin", TopMenuObject_Item, AdminMenu, server_commands, "sc_admin", ADMFLAG_WAR3);
+        AddToTopMenu(hAdminMenu, "sc_admin", TopMenuObject_Item, AdminMenu, server_commands, "sc_admin", ADMFLAG_SOURCECRAFT);
     }
 }
 
@@ -66,7 +66,7 @@ public IntroMenu(client)
 {
     new Handle:introMenu=CreateMenu(IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
-    SetMenuTitle(introMenu,"Welcome to this SourceCraft server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type war3help in\nchat.\n%s",VERSION);
+    SetMenuTitle(introMenu,"Welcome to this SourceCraft server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type help in\nchat.\n%s",VERSION);
     SetMenuExitButton(introMenu,true);
     AddMenuItem(introMenu,"","Exit");
     DisplayMenu(introMenu,client, 20);
@@ -95,7 +95,7 @@ public Menu(client,vecpos)
     SetMenuTitle(scMenu,"[SourceCraft] Choose a task.");
     decl String:buf[4];
     Format(buf,sizeof(buf),"%d",vecpos);
-    AddMenuItem(scMenu,buf,"View SourceCraft command list");
+    AddMenuItem(scMenu,buf,"View command list");
     AddMenuItem(scMenu,buf,"Change your race");
     AddMenuItem(scMenu,buf,"View your race's skills information");
     AddMenuItem(scMenu,buf,"Reset your skills");

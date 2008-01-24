@@ -8,8 +8,8 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-//#define ADMFLAG_WAR3 ADMFLAG_RCON
-#define ADMFLAG_WAR3 ADMFLAG_CUSTOM1
+//#define ADMFLAG_SOURCECRAFT ADMFLAG_RCON
+#define ADMFLAG_SOURCECRAFT ADMFLAG_CUSTOM1
 
 public InitCVars()
 {
@@ -21,17 +21,17 @@ public InitCVars()
     m_Currency=CreateConVar("sc_currency","credit", "Name of the currency");
     m_Currencies=CreateConVar("sc_currencies","credits", "Name of the currency in plural form");
 
-    RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_WAR3,"Set a player's XP");
-    RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_WAR3,"Give a player XP");
-    RegAdminCmd("sc_removexp",CMD_RemoveXP,ADMFLAG_WAR3,"Remove some XP from a player");
-    RegAdminCmd("sc_setlevel",CMD_SetLevel,ADMFLAG_WAR3,"Set a player's level");
-    RegAdminCmd("sc_givelevel",CMD_GiveLevel,ADMFLAG_WAR3,"Give a player a single level");
-    RegAdminCmd("sc_removelevel",CMD_RemoveLevel,ADMFLAG_WAR3,"Remove a single level from a player");
-    RegAdminCmd("sc_setcredits",CMD_SetCredits,ADMFLAG_WAR3,"Set a player's credit count");
-    RegAdminCmd("sc_givecredits",CMD_GiveCredits,ADMFLAG_WAR3,"Give a player credits");
-    RegAdminCmd("sc_removecredits",CMD_RemoveCredits,ADMFLAG_WAR3,"Remove some credits from a player");
+    RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_SOURCECRAFT,"Set a player's XP");
+    RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_SOURCECRAFT,"Give a player XP");
+    RegAdminCmd("sc_removexp",CMD_RemoveXP,ADMFLAG_SOURCECRAFT,"Remove some XP from a player");
+    RegAdminCmd("sc_setlevel",CMD_SetLevel,ADMFLAG_SOURCECRAFT,"Set a player's level");
+    RegAdminCmd("sc_givelevel",CMD_GiveLevel,ADMFLAG_SOURCECRAFT,"Give a player a single level");
+    RegAdminCmd("sc_removelevel",CMD_RemoveLevel,ADMFLAG_SOURCECRAFT,"Remove a single level from a player");
+    RegAdminCmd("sc_setcredits",CMD_SetCredits,ADMFLAG_SOURCECRAFT,"Set a player's credit count");
+    RegAdminCmd("sc_givecredits",CMD_GiveCredits,ADMFLAG_SOURCECRAFT,"Give a player credits");
+    RegAdminCmd("sc_removecredits",CMD_RemoveCredits,ADMFLAG_SOURCECRAFT,"Remove some credits from a player");
 
-    RegAdminCmd("sc_admin",Admin,ADMFLAG_WAR3,"Brings up the SourceCraft admin panel.");
+    RegAdminCmd("sc_admin",Admin,ADMFLAG_SOURCECRAFT,"Brings up the SourceCraft admin panel.");
 
     return true;
 }
@@ -150,7 +150,7 @@ public Action:CMD_SetXP(client,args)
 public Action:CMD_GiveXP(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givexp <player> <xp>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givexp <player> <xp>");
     else
     {
         decl String:match[64];
@@ -192,7 +192,7 @@ public Action:CMD_GiveXP(client,args)
 public Action:CMD_RemoveXP(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_removexp <player> <xp>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_removexp <player> <xp>");
     else
     {
         decl String:match[64];
@@ -286,7 +286,7 @@ public Action:CMD_SetLevel(client,args)
 public Action:CMD_GiveLevel(client,args)
 {
     if(args!=1)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givelevel <player>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givelevel <player>");
     else
     {
         decl String:match[64];
@@ -330,7 +330,7 @@ public Action:CMD_GiveLevel(client,args)
 public Action:CMD_RemoveLevel(client,args)
 {
     if(args!=1)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_removelevel <player>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_removelevel <player>");
     else
     {
         decl String:match[64];
@@ -423,7 +423,7 @@ public Action:CMD_SetCredits(client,args)
 public Action:CMD_GiveCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givecredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givecredits <player> <amount>");
     else
     {
         decl String:match[64];
@@ -472,7 +472,7 @@ public Action:CMD_GiveCredits(client,args)
 public Action:CMD_RemoveCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: war3_givecredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givecredits <player> <amount>");
     else
     {
         decl String:match[64];

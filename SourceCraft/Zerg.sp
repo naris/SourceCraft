@@ -227,31 +227,31 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
-        new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = GetPlayer(victimIndex);
-        if (victimWar3player != -1)
+        new victimIndex  = GetClientOfUserId(victimUserid);
+        new victimPlayer = GetPlayer(victimIndex);
+        if (victimPlayer != -1)
         {
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
-                new attackerIndex      = GetClientOfUserId(attackerUserid);
-                new attackerWar3player = GetPlayer(attackerIndex);
-                if (attackerWar3player != -1)
+                new attackerIndex  = GetClientOfUserId(attackerUserid);
+                new attackerPlayer = GetPlayer(attackerIndex);
+                if (attackerPlayer != -1)
                 {
-                    if (GetRace(attackerWar3player) == raceID)
-                        Zerg_AdrenalGlands(event, attackerIndex, attackerWar3player, victimIndex);
+                    if (GetRace(attackerPlayer) == raceID)
+                        Zerg_AdrenalGlands(event, attackerIndex, attackerPlayer, victimIndex);
                 }
             }
 
             new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
             if (assisterUserid && victimUserid != assisterUserid)
             {
-                new assisterIndex      = GetClientOfUserId(assisterUserid);
-                new assisterWar3player = GetPlayer(assisterIndex);
-                if (assisterWar3player != -1)
+                new assisterIndex  = GetClientOfUserId(assisterUserid);
+                new assisterPlayer = GetPlayer(assisterIndex);
+                if (assisterPlayer != -1)
                 {
-                    if (GetRace(assisterWar3player) == raceID)
-                        Zerg_AdrenalGlands(event, assisterIndex, assisterWar3player, victimIndex);
+                    if (GetRace(assisterPlayer) == raceID)
+                        Zerg_AdrenalGlands(event, assisterIndex, assisterPlayer, victimIndex);
                 }
             }
         }

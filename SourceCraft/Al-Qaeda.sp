@@ -30,8 +30,8 @@ new g_purpleGlow;
 new g_smokeSprite;
 new g_lightningSprite;
 
-new String:allahWav[] = "war3/allahuakbar.wav";
-new String:kaboomWav[] = "war3/iraqi_engaging.wav";
+new String:allahWav[] = "sourcecraft/allahuakbar.wav";
+new String:kaboomWav[] = "sourcecraft/iraqi_engaging.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
 
 // Reincarnation variables

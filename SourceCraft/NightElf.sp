@@ -42,7 +42,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarEntangleCooldown=CreateConVar("war3_entangledrootscooldown","45");
+    cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
 
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
@@ -226,9 +226,9 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public bool:NightElf_Evasion(Handle:event, victimIndex, victimWar3player)
+public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)
 {
-    new skill_level_evasion = GetSkillLevel(victimWar3player,raceID,0);
+    new skill_level_evasion = GetSkillLevel(victimPlayer,raceID,0);
     if (skill_level_evasion)
     {
         new chance;

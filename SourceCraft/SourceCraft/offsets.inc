@@ -21,42 +21,42 @@ public bool:InitOffset()
     m_OffsetLifestate=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
     if(m_OffsetLifestate==-1)
     {
-        PrintToServer("[War3Source] Error finding life state offset.");
+        PrintToServer("[SourceCraft] Error finding life state offset.");
         ret=false;
     }
 
     m_OffsetSpeed=FindSendPropOffs("CBasePlayer","m_flLaggedMovementValue");
     if(m_OffsetSpeed==-1)
     {
-        PrintToServer("[War3Source] Error finding speed offset.");
+        PrintToServer("[SourceCraft] Error finding speed offset.");
         ret=false;
     }
 
     m_OwnerOffset = FindSendPropOffs("CBaseEntity", "m_hOwnerEntity");
     if(m_OwnerOffset==-1)
     {
-        PrintToServer("[War3Source] Error finding OwnerEntity offset.");
+        PrintToServer("[SourceCraft] Error finding OwnerEntity offset.");
         ret=false;
     }
 
     m_ColorOffset=FindSendPropOffs("CAI_BaseNPC","m_clrRender");
     if(m_ColorOffset==-1)
     {
-        PrintToServer("[War3Source] Error finding Color offset.");
+        PrintToServer("[SourceCraft] Error finding Color offset.");
         ret=false;
     }
 
     m_RenderModeOffset=FindSendPropOffs("CBaseAnimating","m_nRenderMode");
     if(m_RenderModeOffset==-1)
     {
-        PrintToServer("[War3Source] Error finding RenderMode offset.");
+        PrintToServer("[SourceCraft] Error finding RenderMode offset.");
         ret=false;
     }
 
     m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
     if(m_VelocityOffset == -1)
     {
-        PrintToServer("[War3Source] Error finding Velocity offset.");
+        PrintToServer("[SourceCraft] Error finding Velocity offset.");
         ret=false;
     }
 

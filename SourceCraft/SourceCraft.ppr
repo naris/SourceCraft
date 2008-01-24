@@ -1,7 +1,7 @@
 [Config]
 Relative path=1
-Compilator.FileName=C:\srcds\cstrike\addons\sourcemod\scripting\War3Source\compile.bat
-Compilator.DefaultDir=C:\srcds\cstrike\addons\sourcemod\scripting\War3Source\
+Compilator.FileName=C:\srcds\cstrike\addons\sourcemod\scripting\SourceCraft\compile.bat
+Compilator.DefaultDir=C:\srcds\cstrike\addons\sourcemod\scripting\SourceCraft\
 Compilator.SaveAll=1
 Compilator.Capture=0
 Compilator.HideOutput=0
@@ -11,24 +11,24 @@ LogtoEnd=1
 DontOpen=0
 FileFormat=0
 [Project tree]
-War3Source
+SourceCraft
 	+Header Files
-		War3Source\console.inc
-		War3Source\credits.inc
-		War3Source\events.inc
-		War3Source\hooks.inc
-		War3Source\immunity.inc
-		War3Source\menus.inc
-		War3Source\messages.inc
-		War3Source\mysql.inc
-		War3Source\natives.inc
-		War3Source\offsets.inc
-		War3Source\playertracking.inc
-		War3Source\races.inc
-		War3Source\shopmenu.inc
-		War3Source\War3Source.inc
-		War3Source\War3Source_Interface.inc
-		War3Source\xp.inc
+		SourceCraft\console.inc
+		SourceCraft\credits.inc
+		SourceCraft\events.inc
+		SourceCraft\hooks.inc
+		SourceCraft\immunity.inc
+		SourceCraft\menus.inc
+		SourceCraft\messages.inc
+		SourceCraft\mysql.inc
+		SourceCraft\natives.inc
+		SourceCraft\offsets.inc
+		SourceCraft\playertracking.inc
+		SourceCraft\races.inc
+		SourceCraft\shopmenu.inc
+		SourceCraft\War3Source.inc
+		SourceCraft\War3Source_Interface.inc
+		SourceCraft\xp.inc
 	+Include Folder
 		..\include\admin.inc
 		..\include\adminmenu.inc
@@ -77,21 +77,9 @@ War3Source
 		..\include\vector.inc
 		..\include\version.inc
 	+Source Files
-		War3Source.sp
-		War3Source_HumanAlliance.sp
-		War3Source_NightElf.sp
-		War3Source_OrcishHorde.sp
-		War3Source_ShopItems.sp
-		War3Source_UndeadScourge.sp
-[Open project files]
-0=..\autokick.sp
-1=War3Source.sp
-[Selected Project Files]
-Main=
-Selected=..\autokick.sp
-[..\autokick.sp]
-TopLine=14
-Caret=46,37
-[War3Source.sp]
-TopLine=91
-Caret=8,110
+		SourceCraft.sp
+		SourceCraft_HumanAlliance.sp
+		SourceCraft_NightElf.sp
+		SourceCraft_OrcishHorde.sp
+		SourceCraft_ShopItems.sp
+		SourceCraft_UndeadScourge.sp

@@ -40,8 +40,6 @@
 #define ITEM_GOGGLES         15 // The Goggles - They do nothing!
 #define MAXITEMS             15
  
-// War3Source stuff
-
 new myWepsOffset;
 new curWepOffset;
 new ammotypeOffset;
@@ -69,9 +67,9 @@ new shopItem[MAXITEMS+1];
 
 public Plugin:myinfo = 
 {
-    name = "War3Source - Shopitems",
+    name = "SourceCraft - Shopitems",
     author = "PimpinJuice",
-    description = "The shop items that come with War3Source.",
+    description = "The shop items that come with SourceCraft.",
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
@@ -124,7 +122,7 @@ public OnPluginReady()
 
 public LoadSDKToolStuff()
 {
-    hGameConf=LoadGameConfigFile("plugin.war3source");
+    hGameConf=LoadGameConfigFile("plugin.sourcecraft");
 
     ammoOffset = FindSendPropOffs("CBasePlayer", "m_iAmmo");
     if(curWepOffset==-1)
@@ -258,7 +256,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         GetArrayString(vecPlayerWeapons[client],x,wepName,127);
                         PushArrayString(temp,wepName);
                     }
-                    CreateTimer(0.2,War3Source_Ankh,temp);
+                    CreateTimer(0.2,Ankh,temp);
                 }
                 SetOwnsItem(player,shopItem[ITEM_ANKH],false);
             }
@@ -653,7 +651,7 @@ public Action:TrackWeapons(Handle:timer)
     return Plugin_Continue;
 }
 
-public Action:War3Source_Ankh(Handle:timer,any:temp)
+public Action:Ankh(Handle:timer,any:temp)
 {
     if (GameType == cstrike)
     {
