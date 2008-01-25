@@ -120,7 +120,7 @@ public SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
     {
         ClientCommand(client,"play buttons/button14.wav");
         SkillsInfo(client,gRaceForSkills[client],gSkillsMenuMode[client],
-                       gSkillsInfoParentMenuFunction[client]);
+                   gSkillsInfoParentMenuFunction[client]);
     }
     else if (action == MenuAction_Cancel)
     {
@@ -128,7 +128,7 @@ public SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
         {
             ClientCommand(client,"play buttons/button14.wav");
             SkillsInfo(client,gRaceForSkills[client],gSkillsMenuMode[client],
-                           gSkillsInfoParentMenuFunction[client]);
+                       gSkillsInfoParentMenuFunction[client]);
         }
     }
 }
@@ -137,15 +137,15 @@ public SkillsInfo_Skill(client,Handle:raceHandle,skill)
 {
     new Handle:menu=CreateMenu(SkillsInfo_Back);
     SetMenuExitButton(menu,true);
-    //new Handle:raceHandle=Race(race);
+    SetMenuExitBackButton(menu,true);
+
     decl String:name[64];
     GetArrayString(raceHandle,4+(skill*2),name,sizeof(name));
     decl String:desc[256];
     GetArrayString(raceHandle,4+(skill*2)+1,desc,sizeof(desc));
+
     SetMenuTitle(menu,"Skill information for %s\nDescription: %s",name,desc);
     AddMenuItem(menu,"","Back to the skills");
-    SetMenuExitButton(menu,true);
-    SetMenuExitBackButton(menu,true);
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
@@ -173,8 +173,8 @@ public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
         AddMenuItem(menu,buf,"Change to this Race");
     }
 
-    gSkillsMenuMode[client] = change;
     gRaceForSkills[client] = race;
+    gSkillsMenuMode[client] = change;
     gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
@@ -215,19 +215,20 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
     }
     else if (action == MenuAction_Cancel)
     {
-        if (selection == MenuCancel_ExitBack &&
-            gSkillsInfoParentMenuFunction[client] != INVALID_FUNCTION)
+        new Function:backFn = gSkillsInfoParentMenuFunction[client];
+        if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
         {
-            new vecpos=GetClientVectorPosition(client);
-            if(vecpos >- 1)
-            {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(vecpos);
-                Call_Finish(result);
-            }
+            decl result;
+            ClientCommand(client,"play buttons/button14.wav");
+            Call_StartFunction(INVALID_HANDLE, backFn);
+            Call_PushCell(client);
+
+            if (backFn == RaceMenu)
+                Call_PushCell(gSkillsMenuMode[client]);
+            else
+                Call_PushCell(GetClientVectorPosition(client));
+
+            Call_Finish(result);
         }
     }
 }

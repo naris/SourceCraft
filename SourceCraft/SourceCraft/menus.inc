@@ -86,9 +86,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
             m_FirstSpawn[client]=0;
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public MainMenu(client,vecpos)
@@ -155,9 +153,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public RaceMenu(client,bool:change,Function:parentMenuFunction)
@@ -234,25 +230,19 @@ public CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     }
     else if (action == MenuAction_Cancel)
     {
-        if (selection == MenuCancel_ExitBack &&
-            gRaceMenuParentMenuFunction[client] != INVALID_FUNCTION)
+        new Function:backFn = gRaceMenuParentMenuFunction[client];
+        if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
         {
-            new vecpos=GetClientVectorPosition(client);
-            if(vecpos >- 1)
-            {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(vecpos);
-                Call_Finish(result);
-            }
+            decl result;
+            ClientCommand(client,"play buttons/button14.wav");
+            Call_StartFunction(INVALID_HANDLE, backFn);
+            Call_PushCell(client);
+            Call_PushCell(GetClientVectorPosition(client));
+            Call_Finish(result);
         }
     }
     else if (action == MenuAction_End)
-    {
-        CloseHandle(menu);
-    }
+    CloseHandle(menu);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -280,9 +270,7 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public SkillMenu(client, vectorpos, Function:parentMenuFunction)
@@ -395,25 +383,19 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     }
     else if (action == MenuAction_Cancel)
     {
-        if (selection == MenuCancel_ExitBack &&
-            gSkillMenuParentMenuFunction[client] != INVALID_FUNCTION)
+        new Function:backFn = gSkillMenuParentMenuFunction[client];
+        if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
         {
-            new vecpos=GetClientVectorPosition(client);
-            if(vecpos >- 1)
-            {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gSkillMenuParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(vecpos);
-                Call_Finish(result);
-            }
+            decl result;
+            ClientCommand(client,"play buttons/button14.wav");
+            Call_StartFunction(INVALID_HANDLE, backFn);
+            Call_PushCell(client);
+            Call_PushCell(GetClientVectorPosition(client));
+            Call_Finish(result);
         }
     }
     else if (action == MenuAction_End)
-    {
-        CloseHandle(menu);
-    }
+    CloseHandle(menu);
 }
 
 public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
@@ -488,9 +470,7 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public ShopMenu_Item(client,vecpos,item)
@@ -590,18 +570,12 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            new vecpos=GetClientVectorPosition(client);
-            if(vecpos>-1)
-            {
-                ShopMenu(client,vecpos,gShopMenuMode[client],
-                         gShopMenuParentMenuFunction[client]);
-            }
+            ShopMenu(client,GetClientVectorPosition(client),
+                     gShopMenuMode[client],gShopMenuParentMenuFunction[client]);
         }
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public ShowItems(client,target,vectorpos,Function:parentMenuFunction)
@@ -691,9 +665,7 @@ public Admin_Selected(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public Admin_Player(client,targetvecpos)
@@ -808,9 +780,7 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public Admin_PlayerInfo(client,target)
@@ -893,9 +863,7 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
             Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 Admin_Return(Handle:menu,client)
@@ -1034,9 +1002,7 @@ public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
             Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public Admin_GiveShopItem(client,target)
@@ -1132,9 +1098,7 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
             Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public Admin_SetRace(client,target)
@@ -1214,9 +1178,7 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
             Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public Admin_Level(client,target)
@@ -1330,9 +1292,7 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
             Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
 
 public Admin_Credits(client,target)
@@ -1470,7 +1430,5 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
             Admin_Return(menu,client);
     }
     else if (action == MenuAction_End)
-    {
         CloseHandle(menu);
-    }
 }
