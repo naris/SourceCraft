@@ -19,27 +19,37 @@ public ShowCredits(client,vecpos)
 
 public GiveKillCredits(client,vectorpos)
 {
-    new curcredits=GetCredits(vectorpos);
+    new Action:result;
     new addcredits= (SAVE_ENABLED) ? KILL_CREDITS_LONGTERM : KILL_CREDITS_SHORTTERM;
-    new newcredits=curcredits+addcredits;
 
-    decl String:currencies[64];
-    GetConVarString((addcredits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+    Call_StartForward(g_OnCreditsGivenHandle);
+    Call_PushCell(client);
+    Call_PushCell(vectorpos);
+    Call_PushCellRef(addcredits);
+    Call_Finish(result);
+    if (result != Plugin_Stop)
+    {
+        new curcredits=GetCredits(vectorpos);
+        new newcredits=curcredits+addcredits;
 
-    if(newcredits <= MAX_CREDITS || MAX_CREDITS == 0)
-    {
-        SetCredits(vectorpos,newcredits);
-        PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for getting a kill.",
-                    COLOR_GREEN,COLOR_DEFAULT,addcredits, currencies);
-    }
-    else
-    {
-        new amt = MAX_CREDITS-curcredits;
-        if (amt > 0)
+        decl String:currencies[64];
+        GetConVarString((addcredits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+
+        if(newcredits <= MAX_CREDITS || MAX_CREDITS == 0)
         {
-            SetCredits(vectorpos,MAX_CREDITS);
-            PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s.",
-                        COLOR_GREEN,COLOR_DEFAULT,currencies,MAX_CREDITS,amt,currencies);
+            SetCredits(vectorpos,newcredits);
+            PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for getting a kill.",
+                        COLOR_GREEN,COLOR_DEFAULT,addcredits, currencies);
+        }
+        else
+        {
+            new amt = MAX_CREDITS-curcredits;
+            if (amt > 0)
+            {
+                SetCredits(vectorpos,MAX_CREDITS);
+                PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s.",
+                            COLOR_GREEN,COLOR_DEFAULT,currencies,MAX_CREDITS,amt,currencies);
+            }
         }
     }
 }

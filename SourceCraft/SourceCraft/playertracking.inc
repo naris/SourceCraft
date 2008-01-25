@@ -19,8 +19,7 @@
 #define TRACKING_COUNT 11
 
 // Global definition
-new Handle:g_OnRaceSelectedHandle;
-new Handle:g_OnSkillLevelChangedHandle;
+new Float:m_BaseSpeed[MAXPLAYERS+1];
 
 new bool:speedAltered[MAXPLAYERS+1];
 new bool:gravityAltered[MAXPLAYERS+1];

@@ -80,8 +80,8 @@ public OnConfigsExecuted()
 public OnPluginReady()
 {
     raceID=CreateRace("UAW", "uaw",
-                      "You are now an UAW.",
-                      "You will be an UAW when you die or respawn.",
+                      "You have joined the UAW.",
+                      "You will join the UAW when you die or respawn.",
                       "Inflated Wages",
                       "You get paid more and level faster.",
                       "Seniority",
@@ -135,6 +135,254 @@ public OnMapStart()
 public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
+}
+
+public OnXPGiven(client,player,&amount)
+{
+    if (GetRace(player)==raceID && IsPlayerAlive(client))
+    {
+        new skill_inflated_wages=GetSkillLevel(player,raceID,0);
+        if (skill_inflated_wages)
+        {
+            switch(skill_inflated_wages)
+            {
+                case 1:
+                    amount=RoundToNearest(float(amount)*1.5);
+                case 2:
+                    amount=RoundToNearest(float(amount)*2.0);
+                case 3:
+                    amount=RoundToNearest(float(amount)*2.5);
+                case 4:
+                    amount=RoundToNearest(float(amount)*3.0);
+            }
+        }
+    }
+}
+
+public OnCreditsGiven(client,player,&amount)
+{
+    if (GetRace(player)==raceID && IsPlayerAlive(client))
+    {
+        new skill_inflated_wages=GetSkillLevel(player,raceID,0);
+        if (skill_inflated_wages)
+        {
+            switch(skill_inflated_wages)
+            {
+                case 1:
+                    amount *= 2;
+                case 2:
+                    amount *= 3;
+                case 3:
+                    amount *= 4;
+                case 4:
+                    amount *= 5;
+            }
+        }
+    }
+}
+
+
+public OnUltimateCommand(client,player,race,bool:pressed)
+{
+    if (race==raceID && IsPlayerAlive(client))
+    {
+        if (pressed)
+            Hook(client);
+        else
+            UnHook(client);
+    }
+}
+
+public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid = GetEventInt(event,"userid");
+    new index  = GetClientOfUserId(userid);
+    new player = GetPlayer(index);
+    if (player > -1)
+    {
+        if (GetRace(player) == raceID)
+        {
+            new seniority_skill=GetSkillLevel(player,raceID,0);
+            if (seniority_skill)
+            {
+                new buyout, jobsBank, bump;
+                switch (seniority_skill)
+                {
+                    case 1:
+                        {
+                            bump=5;
+                            jobsBank=7;
+                            buyout=9;
+                        }
+                    case 2:
+                        {
+                            bump=10;
+                            jobsBank=15;
+                            buyout=22;
+                        }
+                    case 3:
+                        {
+                            bump=20;
+                            jobsBank=30;
+                            buyout=50;
+                        }
+                    case 4:
+                        {
+                            bump=35;
+                            jobsBank=50;
+                            buyout=63;
+                        }
+                }
+                new chance = GetRandomInt(1,100);
+                if (chance<=bump)
+                {
+                    BumpSomeone(index);
+                    m_TeleportOnSpawn[index]=true;
+                    GetClientAbsOrigin(index,m_SpawnLoc[index]);
+                    AuthTimer(0.5,index,RespawnPlayerHandle);
+                }
+                else if (chance<=jobsBank)
+                {
+                    m_JobsBank[index]=true;
+                    AuthTimer(0.5,index,RespawnPlayerHandle);
+                }
+                else if (chance<=buyout)
+                {
+                    // No monetary limit on UAW Buyout offers!
+                    new amount = GetRandomInt(1,100);
+                    decl String:currencies[64];
+                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+                    SetCredits(player, GetCredits(player)+amount);
+                    PrintToChat(index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
+                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                }
+            }
+        }
+    }
+}
+
+public BumpSomeone(client)
+{
+    new clientCount = GetClientCount();
+    for(new x=1;x<=clientCount;x++)
+    {
+        if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
+            GetClientTeam(x) == GetClientTeam(client))
+        {
+            if (GetRandomInt(1,100) <= 50)
+            {
+                PrintToChat(x,"%c[SourceCraft]%c You have bumped %N due to %cUnion Rules%c!",
+                            COLOR_GREEN,COLOR_DEFAULT,x,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(x,"%c[SourceCraft]%c You have been bumped by %N due to %cUnion Rules%c!",
+                            COLOR_GREEN,COLOR_DEFAULT,client,COLOR_TEAM,COLOR_DEFAULT);
+
+                new Float:location[3];
+                GetClientAbsOrigin(x,location);
+                TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
+                TE_SendToAll();
+
+                EmitSoundToAll(explodeWav,x);
+                ForcePlayerSuicide(x);
+                break;
+            }
+        }
+    }
+}
+
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        new player=GetPlayer(client);
+        if (player>-1)
+        {
+            new race = GetRace(player);
+            if (race == raceID)
+            {
+                new skill_workrules=GetSkillLevel(player,race,3);
+                if (skill_workrules)
+                    WorkRules(client, player, skill_workrules);
+
+                if (m_TeleportOnSpawn[client])
+                {
+                    m_TeleportOnSpawn[client]=false;
+                    TeleportEntity(client,m_SpawnLoc[client], NULL_VECTOR, NULL_VECTOR);
+                    TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
+                    TE_SendToAll();
+                }
+                else
+                {
+                    GetClientAbsOrigin(client,m_SpawnLoc[client]);
+
+                    if (m_JobsBank[client])
+                    {
+                        m_JobsBank[client]=false;
+                        TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
+                        TE_SendToAll();
+                        PrintToChat(client,"%c[SourceCraft]%c You have joined the %cJobs Bank%c",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+                }
+            }
+        }
+    }
+}
+
+public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    for(new x=1;x<=MAXPLAYERS;x++)
+    {
+        m_TeleportOnSpawn[x]=false;
+        m_JobsBank[x]=false;
+    }
+}
+
+public OnRaceSelected(client,player,oldrace,newrace)
+{
+    if (oldrace == raceID)
+    {
+        if (newrace != raceID)
+        {
+            m_TeleportOnSpawn[client]=false;
+            m_JobsBank[client]=false;
+        }
+    }
+    else
+    {
+        if (oldrace == raceID)
+            TakeHook(client);
+    }
+}
+
+public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+{
+    if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
+    {
+        if (skill==3)
+            WorkRules(client, player, newskilllevel);
+    }
+}
+
+public WorkRules(client, player, skilllevel)
+{
+    if (skilllevel)
+    {
+        new hookTime;
+        switch(skilllevel)
+        {
+            case 1:
+                hookTime=5;
+            case 2:
+                hookTime=15;
+            case 3:
+                hookTime=30;
+            case 4:
+                hookTime=45;
+        }
+        GiveHook(client,hookTime);
+    }
 }
 
 public Action:Negotiations(Handle:timer)
@@ -376,207 +624,3 @@ public Action:Negotiations(Handle:timer)
     }
     return Plugin_Continue;
 }
-
-public OnUltimateCommand(client,player,race,bool:pressed)
-{
-    if (race==raceID && IsPlayerAlive(client))
-    {
-        if (pressed)
-            Hook(client);
-        else
-            UnHook(client);
-    }
-}
-
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid = GetEventInt(event,"userid");
-    new index  = GetClientOfUserId(userid);
-    new player = GetPlayer(index);
-    if (player > -1)
-    {
-        if (GetRace(player) == raceID)
-        {
-            new seniority_skill=GetSkillLevel(player,raceID,0);
-            if (seniority_skill)
-            {
-                new buyout, jobsBank, bump;
-                switch (seniority_skill)
-                {
-                    case 1:
-                        {
-                            bump=5;
-                            jobsBank=7;
-                            buyout=9;
-                        }
-                    case 2:
-                        {
-                            bump=10;
-                            jobsBank=15;
-                            buyout=22;
-                        }
-                    case 3:
-                        {
-                            bump=20;
-                            jobsBank=30;
-                            buyout=50;
-                        }
-                    case 4:
-                        {
-                            bump=35;
-                            jobsBank=50;
-                            buyout=63;
-                        }
-                }
-                new chance = GetRandomInt(1,100);
-                if (chance<=bump)
-                {
-                    BumpSomeone(index);
-                    m_TeleportOnSpawn[index]=true;
-                    GetClientAbsOrigin(index,m_SpawnLoc[index]);
-                    AuthTimer(0.5,index,RespawnPlayerHandle);
-                }
-                else if (chance<=jobsBank)
-                {
-                    m_JobsBank[index]=true;
-                    AuthTimer(0.5,index,RespawnPlayerHandle);
-                }
-                else if (chance<=buyout)
-                {
-                    // No monetary limit on UAW Buyout offers!
-                    new amount = GetRandomInt(1,100);
-                    decl String:currencies[64];
-                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                    SetCredits(player, GetCredits(player)+amount);
-                    PrintToChat(index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
-                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-                }
-            }
-        }
-    }
-}
-
-public BumpSomeone(client)
-{
-    new clientCount = GetClientCount();
-    for(new x=1;x<=clientCount;x++)
-    {
-        if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
-            GetClientTeam(x) == GetClientTeam(client))
-        {
-            if (GetRandomInt(1,100) <= 50)
-            {
-                PrintToChat(x,"%c[SourceCraft]%c You have bumped %N due to %cUnion Rules%c!",
-                            COLOR_GREEN,COLOR_DEFAULT,x,COLOR_TEAM,COLOR_DEFAULT);
-                PrintToChat(x,"%c[SourceCraft]%c You have been bumped by %N due to %cUnion Rules%c!",
-                            COLOR_GREEN,COLOR_DEFAULT,client,COLOR_TEAM,COLOR_DEFAULT);
-
-                new Float:location[3];
-                GetClientAbsOrigin(x,location);
-                TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
-                TE_SendToAll();
-
-                EmitSoundToAll(explodeWav,x);
-                ForcePlayerSuicide(x);
-                break;
-            }
-        }
-    }
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-    {
-        new player=GetPlayer(client);
-        if (player>-1)
-        {
-            new race = GetRace(player);
-            if (race == raceID)
-            {
-                new skill_workrules=GetSkillLevel(player,race,3);
-                if (skill_workrules)
-                    WorkRules(client, player, skill_workrules);
-
-                if (m_TeleportOnSpawn[client])
-                {
-                    m_TeleportOnSpawn[client]=false;
-                    TeleportEntity(client,m_SpawnLoc[client], NULL_VECTOR, NULL_VECTOR);
-                    TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
-                    TE_SendToAll();
-                }
-                else
-                {
-                    GetClientAbsOrigin(client,m_SpawnLoc[client]);
-
-                    if (m_JobsBank[client])
-                    {
-                        m_JobsBank[client]=false;
-                        TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
-                        TE_SendToAll();
-                        PrintToChat(client,"%c[SourceCraft]%c You have joined the %cJobs Bank%c",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                    }
-                }
-            }
-        }
-    }
-}
-
-public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    for(new x=1;x<=MAXPLAYERS;x++)
-    {
-        m_TeleportOnSpawn[x]=false;
-        m_JobsBank[x]=false;
-    }
-}
-
-public OnRaceSelected(client,player,oldrace,newrace)
-{
-    if (oldrace == raceID)
-    {
-        if (newrace != raceID)
-        {
-            m_TeleportOnSpawn[client]=false;
-            m_JobsBank[client]=false;
-        }
-    }
-    else
-    {
-        if (oldrace == raceID)
-            TakeHook(client);
-    }
-}
-
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
-{
-    if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
-    {
-        if (skill==3)
-            WorkRules(client, player, newskilllevel);
-    }
-}
-
-public WorkRules(client, player, skilllevel)
-{
-    if (skilllevel)
-    {
-        new hookTime;
-        switch(skilllevel)
-        {
-            case 1:
-                hookTime=5;
-            case 2:
-                hookTime=15;
-            case 3:
-                hookTime=30;
-            case 4:
-                hookTime=45;
-        }
-        GiveHook(client,hookTime);
-    }
-}
-

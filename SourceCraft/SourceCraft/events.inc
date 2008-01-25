@@ -6,8 +6,6 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-new Float:m_BaseSpeed[MAXPLAYERS+1];
-
 public bool:HookEvents()
 {
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))

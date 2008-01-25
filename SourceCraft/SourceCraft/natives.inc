@@ -7,10 +7,15 @@
  */
 
 // Handles
-new Handle:g_OnPlayerAuthedHandle;
-new Handle:g_OnUltimateCommandHandle;
-new Handle:g_OnItemPurchaseHandle;
-new Handle:g_OnPluginReadyHandle;
+new Handle:g_OnPluginReadyHandle = INVALID_HANDLE;
+new Handle:g_OnPlayerAuthedHandle = INVALID_HANDLE;
+new Handle:g_OnUltimateCommandHandle = INVALID_HANDLE;
+new Handle:g_OnSkillLevelChangedHandle = INVALID_HANDLE;
+new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
+new Handle:g_OnItemPurchaseHandle = INVALID_HANDLE;
+new Handle:g_OnCreditsGivenHandle = INVALID_HANDLE;
+new Handle:g_OnXPGivenHandle = INVALID_HANDLE;
+
 
 public Native_CreateRace(Handle:plugin,numParams)
 {
@@ -586,5 +591,7 @@ public bool:InitForwards()
     g_OnRaceSelectedHandle=CreateGlobalForward("OnRaceSelected",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnSkillLevelChangedHandle=CreateGlobalForward("OnSkillLevelChanged",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnItemPurchaseHandle=CreateGlobalForward("OnItemPurchase",ET_Ignore,Param_Cell,Param_Cell,Param_Cell);
+    g_OnXPGivenHandle=CreateGlobalForward("OnXPGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef);
+    g_OnCreditsGivenHandle=CreateGlobalForward("OnCreditsGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef);
     return true;
 }
