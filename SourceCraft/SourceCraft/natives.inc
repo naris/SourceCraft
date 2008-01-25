@@ -135,6 +135,18 @@ public Native_GetLevel(Handle:plugin,numParams)
     return -1;
 }
 
+public Native_SetLevel(Handle:plugin,numParams)
+{
+    if(numParams==3)
+    {
+        new player=GetNativeCell(1);
+        new race=GetNativeCell(2);
+        new newlevel=GetNativeCell(3);
+        if(player!=-1&&race!=-1)
+            SetLevel(player,race,newlevel);
+    }
+}
+
 public Native_GetSkillLevel(Handle:plugin,numParams)
 {
     if(numParams==3)
@@ -146,6 +158,19 @@ public Native_GetSkillLevel(Handle:plugin,numParams)
             return GetSkillLevel(player,race,skill);
     }
     return -1;
+}
+
+public Native_SetSkillLevel(Handle:plugin,numParams)
+{
+    if(numParams==4)
+    {
+        new player=GetNativeCell(1);
+        new race=GetNativeCell(2);
+        new skill=GetNativeCell(3);
+        new newlevel=GetNativeCell(4);
+        if(player!=-1&&race!=-1&&skill!=-1)
+            SetSkillLevel(player,race,skill,newlevel);
+    }
 }
 
 public Native_GetXP(Handle:plugin,numParams)
@@ -175,6 +200,28 @@ public Native_SetXP(Handle:plugin,numParams)
         }
     }
 }
+public Native_GetCredits(Handle:plugin,numParams)
+{
+    if(numParams==1)
+    {
+        new player=GetNativeCell(1);
+        if(player!=-1)
+            return GetCredits(player);
+    }
+    return -1;
+}
+
+public Native_SetCredits(Handle:plugin,numParams)
+{
+    if(numParams==2)
+    {
+        new player=GetNativeCell(1);
+        new newcredits=GetNativeCell(2);
+        if(player!=-1)
+            SetCredits(player,newcredits);
+    }
+}
+
 
 public Native_GetOwnsItem(Handle:plugin,numParams)
 {

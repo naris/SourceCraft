@@ -41,9 +41,9 @@ new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Al-Qaeda",
+    name = "SourceCraft Race - Al-Qaeda",
     author = "-=|JFH|=-Naris (Murray Wilson)",
-    description = "The Al-Qaeda race for War3Source.",
+    description = "The Al-Qaeda race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://jigglysfunhouse.net/"
 };

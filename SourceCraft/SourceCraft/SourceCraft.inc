@@ -94,6 +94,15 @@ native GetPlayer(client);
 native GetLevel(player,race);
 
 /**
+ * Sets the current level for the provided race.
+ * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param race: The race ID returned from CreateRace
+ * @param newlevel: The level you want to set to 
+ * @noreturn
+ */
+native SetLevel(player,race,newlevel);
+
+/**
  * Gets the current race for the player.
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @return The return value will be the race of the player, if -1 then it failed.
@@ -125,6 +134,31 @@ native SetXP(player,race,newxp);
  * @return The return value will be the skill level, if -1 then it failed.
  */
 native GetSkillLevel(player,race,skill);
+
+/**
+ * Sets the current level for the skill for the provided race.
+ * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param race: The race ID returned from CreateRace
+ * @param skill: The skill you want to lookup with, (0==skill1,1==skill2,2==skill3,3==ultimate) 
+ * @param newlevel: The level you want to set to 
+ * @noreturn
+ */
+native SetSkillLevel(player,race,skill,newlevel);
+
+/**
+ * Gets the amount of Credits a player has.
+ * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @return The return value will be the xp, if -1 then it failed.
+ */
+native GetCredits(player);
+
+/**
+ * Sets the amunt of Credits a player has.
+ * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param newcredits: The XP you want to set to 
+ * @noreturn
+ */
+native SetCredits(player,newcredits);
 
 /**
  * Gets if the player owns a specific item.

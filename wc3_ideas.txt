@@ -34,11 +34,29 @@ S3: Suicide Bomber
 Ult: Mad Bomber
 
 Sick Farter
-S1: Repulsion (pushes other team members away)
-S2: Revulsion (prevent other team members from looking at him)
-S3: Slobber (drools on ground and makes it slippery so oppoenets slide around)
+S1: Repulsion/Revulsion (slaps other team members)
+S2:  (steals money from other team members)
+S3: Slobber (drools on ground and makes it slippery so opponents slide around)
 Ult: Farts toxic cloud that persists and kills enemies.
 
+UAW
+S1: Inflated Wages (Level Faster & Get more credits for everything)
+S2: Seniority (You don't die, someone else on your team does, or you get money)
+S3: Negotiations (various things at various times)
+Ult: Work Rules (hook)
+
+Negotiations:
+	Overtime/Premium Pay/Shift differential/COLA/Profit Sharing/Bonus - Get Money
+	Grievance/Shop Steward/Arbitration/Collective Baraining/Fringe Benefits - Get XP
+	Boycott/Strike/Picketing (you teleport back to spawn)
+	Lockout/Workforce Reduction (you die)
+	Bankruptcy (you die & lose level & XP)
+	Buyout (you die and get money for XP and Level)
+
+Seniority:
+	Buyout (get money for death)
+	Jobs Bank (you don't die, teleport to spawn)
+	Bumping (someone else on your team dies instead of you)
 
 Existing skills:
 increased speed
