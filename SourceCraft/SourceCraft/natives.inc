@@ -567,9 +567,13 @@ public bool:InitNatives()
     CreateNative("GetPlayer",Native_GetPlayer);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
+    CreateNative("SetLevel",Native_SetLevel);
     CreateNative("GetSkillLevel",Native_GetSkillLevel);
+    CreateNative("SetSkillLevel",Native_SetSkillLevel);
     CreateNative("GetXP",Native_GetXP);
     CreateNative("SetXP",Native_SetXP);
+    CreateNative("GetCredits",Native_GetXP);
+    CreateNative("SetCredits",Native_SetXP);
     CreateNative("GetOwnsItem",Native_GetOwnsItem);
     CreateNative("SetOwnsItem",Native_SetOwnsItem);
     CreateNative("GetImmunity",Native_GetImmunity);
