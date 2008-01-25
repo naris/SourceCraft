@@ -349,7 +349,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
-    CloseHandle(menu);
+        CloseHandle(menu);
 }
 
 public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
@@ -366,26 +366,40 @@ public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
     else
         SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,currencies);
 
+    new Handle:itemHandle;
     decl String:itemname[64];
     decl String:itembuf[4];
     decl String:linestr[96];
     decl String:cost[8];
-    new Handle:itemHandle;
+
+    new count = 0;
     for(new x=0;x<SHOPITEM_COUNT;x++)
     {
         if (shopmenu || GetOwnsItem(vectorpos,x))
         {
+            count++;
             Format(itembuf,sizeof(itembuf),"%d",x);
             itemHandle=ShopItem(x);
             GetArrayString(itemHandle,0,itemname,sizeof(itemname));
-            GetArrayString(itemHandle,2,cost,7);
-            Format(linestr,95,"%s - %s %s",itemname,cost,currencies);
-            AddMenuItem(shopMenu,itembuf,linestr);
+            if (shopmenu)
+            {
+                GetArrayString(itemHandle,2,cost,7);
+                Format(linestr,sizeof(linestr),"%s - %s %s",itemname,cost,currencies);
+                AddMenuItem(shopMenu,itembuf,linestr);
+            }
+            else
+                AddMenuItem(shopMenu,itembuf,itemname);
         }
     }
-    gShopMenuMode[client] = shopmenu;
-    gShopMenuParentMenuFunction[client]=parentMenuFunction;
-    DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+
+    if (count)
+    {
+        gShopMenuMode[client] = shopmenu;
+        gShopMenuParentMenuFunction[client]=parentMenuFunction;
+        DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+    }
+    else
+        ShowItems(client,client,vectorpos,parentMenuFunction);
 }
 
 public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -538,7 +552,7 @@ public ShowItems(client,target,vectorpos,Function:parentMenuFunction)
     new Handle:panel=CreatePanel();
 
     if (client == target)
-        SetPanelTitle(panel,"[SourceCraft] Here are your skill items.");
+        SetPanelTitle(panel,"[SourceCraft] Here are your shop items.");
     else
     {
         decl String:buffer[256];
