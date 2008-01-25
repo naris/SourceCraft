@@ -106,7 +106,7 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"scmenu",63) || CommandCheck(arg1,"menu",63))
         {
-            MainMenu(client,vecpos);
+            MainMenu(client,vecpos,INVALID_FUNCTION);
             return Plugin_Handled;
         }
 	}

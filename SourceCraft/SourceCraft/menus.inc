@@ -90,21 +90,21 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         CloseHandle(menu);
 }
 
-public MainMenu(client,vecpos)
+public MainMenu(client,vecpos,Function:parentMenuFunction)
 {
     new Handle:scMenu=CreateMenu(Menu_Select);
     SetMenuExitButton(scMenu,true);
     SetMenuTitle(scMenu,"[SourceCraft] Choose a task.");
     decl String:buf[4];
     Format(buf,sizeof(buf),"%d",vecpos);
-    AddMenuItem(scMenu,buf,"View command list");
+    AddMenuItem(scMenu,buf,"Bring up the shopmenu");
     AddMenuItem(scMenu,buf,"Change your race");
     AddMenuItem(scMenu,buf,"View your race's skills information");
     AddMenuItem(scMenu,buf,"Reset your skills");
     AddMenuItem(scMenu,buf,"Spend unused skill points");
     AddMenuItem(scMenu,buf,"Show current skill levels");
     AddMenuItem(scMenu,buf,"Show current items owned");
-    AddMenuItem(scMenu,buf,"Bring up the shopmenu");
+    AddMenuItem(scMenu,buf,"View command list");
     DisplayMenu(scMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -123,8 +123,8 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
         {
             switch(selection)
             {
-                case 0: // help
-                    Help(client,MainMenu);
+                case 0: // shopmenu
+                    ShopMenu(client,player,true,MainMenu);
                 case 1: // changerace
                     RaceMenu(client,true,MainMenu);
                 case 2: // skillsinfo
@@ -132,7 +132,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
                 case 3: // resetskills
                 {
                     ResetSkills(client,player);
-                    MainMenu(client,0);
+                    MainMenu(client,0,INVALID_FUNCTION);
                 }
                 case 4: // spendskills
                 {
@@ -148,8 +148,8 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
                     ShowSkills(client,client,player,MainMenu);
                 case 6: // showitems
                     ShopMenu(client,player,false,MainMenu);
-                case 7: // shopmenu
-                    ShopMenu(client,player,true,MainMenu);
+                case 7: // help
+                    Help(client,MainMenu);
             }
         }
     }

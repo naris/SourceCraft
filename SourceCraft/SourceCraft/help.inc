@@ -107,6 +107,7 @@ public HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 Call_StartFunction(INVALID_HANDLE, gHelpParentMenuFunction[client]);
                 Call_PushCell(client);
                 Call_PushCell(vecpos);
+                Call_PushCell(INVALID_FUNCTION);
                 Call_Finish(result);
             }
         }
