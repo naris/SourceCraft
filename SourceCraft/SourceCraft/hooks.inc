@@ -49,17 +49,17 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"changerace",63))
         {
-            RaceMenu(client, true, INVALID_FUNCTION);
+            RaceMenu(client,true,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"raceinfo",63))
         {
-            RaceMenu(client, false, INVALID_FUNCTION);
+            RaceMenu(client,false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"skillsinfo",63))
         {
-            SkillsInfo(client,vecpos);
+            SkillsInfo(client,GetRace(vecpos),false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"resetskills",63))
@@ -94,14 +94,14 @@ public Action:SayCommand(client,args)
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showitems",63) || CommandCheck(arg1,"inventory",63) ||
-               CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
+                CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
         {
             ShopMenu(client,vecpos,false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"schelp",63) || CommandCheck(arg1,"help",63))
         {
-            Help(client);
+            Help(client,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"scmenu",63) || CommandCheck(arg1,"menu",63))

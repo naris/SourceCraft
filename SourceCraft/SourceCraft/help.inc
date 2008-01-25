@@ -6,10 +6,12 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
+#define HELPCOMMAND_COUNT GetArraySize(vecHelpCommands)
+
 new Handle:vecHelpCommands       = INVALID_HANDLE;
 new Handle:vecLevelConfiguration = INVALID_HANDLE;
 
-#define HELPCOMMAND_COUNT GetArraySize(vecHelpCommands)
+new Function:gHelpParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 
 public Handle:HelpItem(command)
 {
@@ -59,10 +61,11 @@ public InitHelpCommands()
     NewHelpCommand("sc_admin","Bring up the admin menu to modify player info.");
 }
 
-public Help(client)
+public Help(client,Function:parentMenuFunction)
 {
     new Handle:helpMenu=CreateMenu(HelpMenu_Selected);
     SetMenuExitButton(helpMenu,true);
+    SetMenuExitBackButton(helpMenu,(parentMenuFunction != INVALID_FUNCTION));
     SetMenuTitle(helpMenu,"[SourceCraft] Select a command for more info.");
     decl String:commandname[64];
     decl String:helpbuf[4];
@@ -74,6 +77,7 @@ public Help(client)
         GetArrayString(commandHandle,0,commandname,63);
         AddMenuItem(helpMenu,helpbuf,commandname);
     }
+    gHelpParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(helpMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -90,6 +94,25 @@ public HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         if(command>-1&&command<HELPCOMMAND_COUNT)
             HelpMenu_Command(client,command);
     }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack &&
+            gHelpParentMenuFunction[client] != INVALID_FUNCTION)
+        {
+            new vecpos=GetClientVectorPosition(client);
+            if(vecpos >- 1)
+            {
+                decl result;
+                ClientCommand(client,"play buttons/button14.wav");
+                Call_StartFunction(INVALID_HANDLE, gHelpParentMenuFunction[client]);
+                Call_PushCell(client);
+                Call_PushCell(vecpos);
+                Call_Finish(result);
+            }
+        }
+    }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
 }
 
 public HelpMenu_Command(client,command)
@@ -113,7 +136,7 @@ public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        Help(client);
+        Help(client,gHelpParentMenuFunction[client]);
     }
     else if (action == MenuAction_End)
     {
@@ -121,8 +144,10 @@ public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuEnd_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            Help(client);
+            Help(client,gHelpParentMenuFunction[client]);
         }
     }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
 }
 

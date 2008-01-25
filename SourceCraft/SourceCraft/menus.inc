@@ -10,10 +10,11 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-new bool:gShopMenuMode[MAXPLAYERS+1];
 new Function:gRaceMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new Function:gSkillMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new Function:gShopMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new bool:gShopMenuMode[MAXPLAYERS+1];
+new bool:gRaceMenuMode[MAXPLAYERS+1];
 new gShowItemsTarget[MAXPLAYERS+1];
 
 new Handle:hAdminMenu = INVALID_HANDLE;
@@ -123,14 +124,17 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
         {
             switch(selection)
             {
-                case 0: // schelp
-                    Help(client);
+                case 0: // help
+                    Help(client,MainMenu);
                 case 1: // changerace
                     RaceMenu(client,true,MainMenu);
                 case 2: // skillsinfo
-                    SkillsInfo(client,player);
+                    SkillsInfo(client,GetRace(player),false,MainMenu);
                 case 3: // resetskills
+                {
                     ResetSkills(client,player);
+                    MainMenu(client,0);
+                }
                 case 4: // spendskills
                 {
                     new race=GetRace(player);
@@ -156,20 +160,14 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public RaceMenu(client, bool:change, Function:parentMenuFunction)
+public RaceMenu(client,bool:change,Function:parentMenuFunction)
 {
-    new Handle:crMenu;
+    new Handle:crMenu=CreateMenu(RaceMenu_Selected);
     
     if (change)
-    {
-        crMenu=CreateMenu(CRMenu_Selected);
         SetMenuTitle(crMenu, "[SourceCraft] Select your desired race.\n");
-    }
     else
-    {
-        crMenu=CreateMenu(RIMenu_Selected);
         SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
-    }
 
     SetMenuExitButton(crMenu,true);
     SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
@@ -197,6 +195,7 @@ public RaceMenu(client, bool:change, Function:parentMenuFunction)
         else
             AddMenuItem(crMenu,rbuf,rname);
     }
+    gRaceMenuMode[client]=change;
     gRaceMenuParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
 }
@@ -256,21 +255,12 @@ public CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public RIMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        new vecpos=GetClientVectorPosition(client);
-        if(vecpos > -1)
-        {
-            if(selection >= 0 && selection < RACE_COUNT)
-            {
-                // Okay, they selected a valid race
-                new Handle:raceHandle=Race(selection);
-                ShowSkillsInfo(client, raceHandle, RaceMenu);
-            }
-        }
+        SkillsInfo(client,selection,gRaceMenuMode[client],RaceMenu);
     }
     else if (action == MenuAction_Cancel)
     {
@@ -645,19 +635,20 @@ public ShowItems(client,target,vectorpos,Function:parentMenuFunction)
     gShowItemsTarget[client]=target;
     gShopMenuParentMenuFunction[client]=parentMenuFunction;
     SendPanelToClient(panel,client,ShowItems_Selected,0);
+    CloseHandle(panel);
 }
 
 public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-        if (gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
-        {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(gShowItemsTarget[client]);
-                Call_Finish(result);
-        }
+    if (gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
+    {
+        decl result;
+        ClientCommand(client,"play buttons/button14.wav");
+        Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
+        Call_PushCell(client);
+        Call_PushCell(gShowItemsTarget[client]);
+        Call_Finish(result);
+    }
 }
 
 public Action:Admin(client,args)

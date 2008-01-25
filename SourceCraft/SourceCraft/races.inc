@@ -29,10 +29,10 @@
 // A vector of race infomation
 new Handle:arrayRaces;
 
-new Handle:currentRaceForSkills[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
-
 new Function:gSkillsInfoParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new bool:gSkillsMenuMode[MAXPLAYERS+1];
 new gShowSkillsTarget[MAXPLAYERS+1];
+new gRaceForSkills[MAXPLAYERS+1];
 
 public Handle:CreateRace(const String:name[],                  const String:short[],
                          const String:switchmessage_instant[], const String:switchmessage_dead[],
@@ -119,36 +119,16 @@ public SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
     if(action==MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-
-        new Handle:raceHandle = currentRaceForSkills[client];
-        if(raceHandle == INVALID_HANDLE)
-        {
-            new vecpos=GetClientVectorPosition(client);
-            if(vecpos>-1)
-            {
-                new race=GetRace(vecpos);
-                raceHandle=Race(race);
-            }
-        }
-        ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
+        SkillsInfo(client,gRaceForSkills[client],gSkillsMenuMode[client],
+                       gSkillsInfoParentMenuFunction[client]);
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-
-            new Handle:raceHandle = currentRaceForSkills[client];
-            if(raceHandle == INVALID_HANDLE)
-            {
-                new vecpos=GetClientVectorPosition(client);
-                if(vecpos>-1)
-                {
-                    new race=GetRace(vecpos);
-                    raceHandle=Race(race);
-                }
-            }
-            ShowSkillsInfo(client,raceHandle,gSkillsInfoParentMenuFunction[client]);
+            SkillsInfo(client,gRaceForSkills[client],gSkillsMenuMode[client],
+                           gSkillsInfoParentMenuFunction[client]);
         }
     }
 }
@@ -169,6 +149,36 @@ public SkillsInfo_Skill(client,Handle:raceHandle,skill)
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
+public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
+{
+    new Handle:menu=CreateMenu(SkillsInfo_Selected);
+    SetMenuExitButton(menu,true);
+    SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
+
+    decl String:name[64];
+    new Handle:raceHandle=Race(race);
+    GetRaceName(raceHandle,name,sizeof(name));
+    SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
+
+    decl String:buf[64];
+    for(new x=0;x<SKILL_COUNT;x++)
+    {
+        GetArrayString(raceHandle,4+(x*2),buf,sizeof(buf));
+        AddMenuItem(menu,"",buf);
+    }
+    if (change)
+    {
+        Format(buf,sizeof(buf),"%d",race);
+        AddMenuItem(menu,"","",ITEMDRAW_SPACER);
+        AddMenuItem(menu,buf,"Change to this Race");
+    }
+
+    gSkillsMenuMode[client] = change;
+    gRaceForSkills[client] = race;
+    gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
+    DisplayMenu(menu,client,MENU_TIME_FOREVER);
+}
+
 public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
@@ -177,10 +187,30 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         new vecpos=GetClientVectorPosition(client);
         if(vecpos>-1)
         {
-            new skill=selection;
-            //new Handle:race=GetRace(Race(vecpos));
-            new Handle:race=currentRaceForSkills[client];
-            SkillsInfo_Skill(client,race,skill);
+            new race=gRaceForSkills[client];
+            new Handle:raceHandle=Race(race);
+            if (selection < SKILL_COUNT)
+                SkillsInfo_Skill(client,raceHandle,selection);
+            else
+            {
+                // They decided to change to this race.
+                if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
+                {
+                    SetPendingRace(vecpos,race);
+                    decl String:buf[192];
+                    GetArrayString(raceHandle,3,buf,sizeof(buf));
+                    PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+                }
+                else
+                {
+                    SetPendingRace(vecpos,-1);
+                    SetRace(vecpos,race);
+                    decl String:buf[192];
+                    GetArrayString(raceHandle,2,buf,sizeof(buf));
+                    PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
+                }
+                m_FirstSpawn[client]=0;
+            }
         }
     }
     else if (action == MenuAction_Cancel)
@@ -200,34 +230,6 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             }
         }
     }
-}
-
-public SkillsInfo(client,vecpos)
-{
-    new race=GetRace(vecpos);
-    new Handle:raceHandle=Race(race);
-    ShowSkillsInfo(client, raceHandle, INVALID_FUNCTION);
-}
-
-public ShowSkillsInfo(client,Handle:raceHandle,Function:parentMenuFunction)
-{
-    new Handle:menu=CreateMenu(SkillsInfo_Selected);
-    SetMenuExitButton(menu,true);
-    SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
-
-    decl String:name[64];
-    GetRaceName(raceHandle,name,sizeof(name));
-    SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
-
-    decl String:buf[64];
-    for(new x=0;x<SKILL_COUNT;x++)
-    {
-        GetArrayString(raceHandle,4+(x*2),buf,sizeof(buf));
-        AddMenuItem(menu,"",buf);
-    }
-    currentRaceForSkills[client] = raceHandle;
-    gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
-    DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
 public ResetSkills(client,vecpos)
@@ -272,19 +274,20 @@ public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
     gShowSkillsTarget[client]=target;
     gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
     SendPanelToClient(panel,client,ShowSkills_Selected,0);
+    CloseHandle(panel);
 }
 
 public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-        if (gSkillsInfoParentMenuFunction[client] != INVALID_FUNCTION)
-        {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(gShowSkillsTarget[client]);
-                Call_Finish(result);
-        }
+    if (gSkillsInfoParentMenuFunction[client] != INVALID_FUNCTION)
+    {
+        decl result;
+        ClientCommand(client,"play buttons/button14.wav");
+        Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
+        Call_PushCell(client);
+        Call_PushCell(gShowSkillsTarget[client]);
+        Call_Finish(result);
+    }
 }
 
 ResetSkillsNow(client,vecpos)
