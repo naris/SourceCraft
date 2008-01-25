@@ -31,7 +31,7 @@ public InitCVars()
     RegAdminCmd("sc_givecredits",CMD_GiveCredits,ADMFLAG_SOURCECRAFT,"Give a player credits");
     RegAdminCmd("sc_removecredits",CMD_RemoveCredits,ADMFLAG_SOURCECRAFT,"Remove some credits from a player");
 
-    RegAdminCmd("sc_admin",Admin,ADMFLAG_SOURCECRAFT,"Brings up the SourceCraft admin panel.");
+    RegAdminCmd("sc_admin",AdminMenu,ADMFLAG_SOURCECRAFT,"Brings up the SourceCraft admin panel.");
 
     return true;
 }

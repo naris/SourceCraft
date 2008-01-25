@@ -169,8 +169,10 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
             m_OffsetMaxSpeed[x]=0;
-            if (saveEnabled && IsClientInGame(x))
-                SavePlayerData(x,GetClientVectorPosition(x));
+            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
+            new client=GetArrayCell(playerHandle,0);
+            if (saveEnabled && IsClientInGame(client))
+                SavePlayerData(client,GetClientVectorPosition(client));
         }
     }
 }
@@ -181,8 +183,10 @@ public OnMapEnd()
     {
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
-            if (IsClientInGame(x))
-                SavePlayerData(x,GetClientVectorPosition(x));
+            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
+            new client=GetArrayCell(playerHandle,0);
+            if (IsClientInGame(client))
+                SavePlayerData(client,GetClientVectorPosition(client));
         }
     }
 }

@@ -228,6 +228,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             else
                 Call_PushCell(GetClientVectorPosition(client));
 
+            Call_PushCell(INVALID_FUNCTION);
             Call_Finish(result);
         }
     }
@@ -287,6 +288,7 @@ public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
         Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
         Call_PushCell(client);
         Call_PushCell(gShowSkillsTarget[client]);
+        Call_PushCell(INVALID_FUNCTION);
         Call_Finish(result);
     }
 }

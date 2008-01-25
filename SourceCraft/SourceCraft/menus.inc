@@ -10,14 +10,14 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
+new Function:gShopMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new Function:gRaceMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new Function:gSkillMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
-new Function:gShopMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new bool:gShopMenuMode[MAXPLAYERS+1];
 new bool:gRaceMenuMode[MAXPLAYERS+1];
 new gShowItemsTarget[MAXPLAYERS+1];
 
-new Handle:hAdminMenu = INVALID_HANDLE;
+new Handle:hTopAdminMenu = INVALID_HANDLE;
 
 public InitMenus()
 {
@@ -34,7 +34,7 @@ public InitMenus()
 public OnLibraryRemoved(const String:name[])
 {
     if (StrEqual(name, "adminmenu"))
-        hAdminMenu = INVALID_HANDLE;
+        hTopAdminMenu = INVALID_HANDLE;
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -44,16 +44,17 @@ public OnAdminMenuReady(Handle:topmenu)
     /************************************************************/
 
     /* Block us from being called twice */
-    if (topmenu != hAdminMenu)
+    if (topmenu != hTopAdminMenu)
     {
         /* Save the Handle */
-        hAdminMenu = topmenu;
-        new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        AddToTopMenu(hAdminMenu, "sc_admin", TopMenuObject_Item, AdminMenu, server_commands, "sc_admin", ADMFLAG_SOURCECRAFT);
+        hTopAdminMenu = topmenu;
+        new TopMenuObject:server_commands = FindTopMenuCategory(hTopAdminMenu, ADMINMENU_SERVERCOMMANDS);
+        AddToTopMenu(hTopAdminMenu, "sc_admin", TopMenuObject_Item, AdminTopMenu,
+                     server_commands, "sc_admin", ADMFLAG_SOURCECRAFT);
     }
 }
 
-public AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+public AdminTopMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
     {
@@ -61,7 +62,7 @@ public AdminMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, 
     }
     else if (action == TopMenuAction_SelectOption)
     {
-        Admin(param,param);
+        AdminMenu(param,param);
     }
 }
 
@@ -196,55 +197,6 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
     DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
 }
 
-public CRMenu_Selected(Handle:menu,MenuAction:action,client,selection)
-{
-    if (action == MenuAction_Select)
-    {
-        ClientCommand(client,"play buttons/button14.wav");
-        new vecpos=GetClientVectorPosition(client);
-        if(vecpos >- 1)
-        {
-            if(selection >= 0&&selection<RACE_COUNT)
-            {
-                // Okay, they selected a valid race
-                if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
-                {
-                    SetPendingRace(vecpos,selection);
-                    new Handle:race=Race(selection);
-                    decl String:buf[192];
-                    GetArrayString(race,3,buf,sizeof(buf));
-                    PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
-                }
-                else
-                {
-                    SetPendingRace(vecpos,-1);
-                    SetRace(vecpos,selection);
-                    new Handle:race=Race(selection);
-                    decl String:buf[192];
-                    GetArrayString(race,2,buf,sizeof(buf));
-                    PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
-                }
-                m_FirstSpawn[client]=0;
-            }
-        }
-    }
-    else if (action == MenuAction_Cancel)
-    {
-        new Function:backFn = gRaceMenuParentMenuFunction[client];
-        if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
-        {
-            decl result;
-            ClientCommand(client,"play buttons/button14.wav");
-            Call_StartFunction(INVALID_HANDLE, backFn);
-            Call_PushCell(client);
-            Call_PushCell(GetClientVectorPosition(client));
-            Call_Finish(result);
-        }
-    }
-    else if (action == MenuAction_End)
-    CloseHandle(menu);
-}
-
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
@@ -265,6 +217,7 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction[client]);
                 Call_PushCell(client);
                 Call_PushCell(vecpos);
+                Call_PushCell(INVALID_FUNCTION);
                 Call_Finish(result);
             }
         }
@@ -391,6 +344,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
             Call_StartFunction(INVALID_HANDLE, backFn);
             Call_PushCell(client);
             Call_PushCell(GetClientVectorPosition(client));
+            Call_PushCell(INVALID_FUNCTION);
             Call_Finish(result);
         }
     }
@@ -465,6 +419,7 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
                 Call_PushCell(client);
                 Call_PushCell(vecpos);
+                Call_PushCell(INVALID_FUNCTION);
                 Call_Finish(result);
             }
         }
@@ -621,11 +576,12 @@ public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
         Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
         Call_PushCell(client);
         Call_PushCell(gShowItemsTarget[client]);
+        Call_PushCell(INVALID_FUNCTION);
         Call_Finish(result);
     }
 }
 
-public Action:Admin(client,args)
+public Action:AdminMenu(client,args)
 {
     new Handle:adminMenu=CreateMenu(Admin_Selected);
     SetMenuExitButton(adminMenu,true);
@@ -768,7 +724,7 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player you selected has left the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -776,7 +732,7 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_End)
@@ -822,7 +778,7 @@ public Admin_PlayerInfo(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
-        Admin(client,0);
+        AdminMenu(client,0);
     }
 }
 
@@ -854,7 +810,7 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -882,7 +838,7 @@ Admin_Return(Handle:menu,client)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
-        Admin(client,0);
+        AdminMenu(client,0);
     }
 }
 
@@ -915,7 +871,7 @@ public Admin_XP(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
-        Admin(client,0);
+        AdminMenu(client,0);
     }
 }
 
@@ -993,7 +949,7 @@ public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -1089,7 +1045,7 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -1132,7 +1088,7 @@ public Admin_SetRace(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
-        Admin(client,0);
+        AdminMenu(client,0);
     }
 }
 
@@ -1169,7 +1125,7 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -1206,7 +1162,7 @@ public Admin_Level(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
-        Admin(client,0);
+        AdminMenu(client,0);
     }
 }
 
@@ -1283,7 +1239,7 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -1342,7 +1298,7 @@ public Admin_Credits(client,target)
     {
         PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                     COLOR_GREEN,COLOR_DEFAULT);
-        Admin(client,0);
+        AdminMenu(client,0);
     }
 }
 
@@ -1421,7 +1377,7 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
         {
             PrintToChat(client, "%c[SourceCraft] %cThe player has disconnected from the server.",
                         COLOR_GREEN,COLOR_DEFAULT);
-            Admin(client,0);
+            AdminMenu(client,0);
         }
     }
     else if (action == MenuAction_Cancel)
