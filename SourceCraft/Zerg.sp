@@ -40,7 +40,7 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
 
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -222,8 +222,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
@@ -239,7 +240,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (attackerPlayer != -1)
                 {
                     if (GetRace(attackerPlayer) == raceID)
-                        Zerg_AdrenalGlands(event, attackerIndex, attackerPlayer, victimIndex);
+                        changed |= Zerg_AdrenalGlands(event, attackerIndex, attackerPlayer, victimIndex);
                 }
             }
 
@@ -251,15 +252,16 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (assisterPlayer != -1)
                 {
                     if (GetRace(assisterPlayer) == raceID)
-                        Zerg_AdrenalGlands(event, assisterIndex, assisterPlayer, victimIndex);
+                        changed |= Zerg_AdrenalGlands(event, assisterIndex, assisterPlayer, victimIndex);
                 }
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 
-public Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
+public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
 {
     new skill_adrenal_glands=GetSkillLevel(player,raceID,1);
     if (skill_adrenal_glands)
@@ -301,11 +303,11 @@ public Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
 
                 TE_SetupSparks(Origin,Origin,255,1);
                 TE_SendToAll();
-                return amount;
+                return true;
             }
         }
     }
-    return 0;
+    return false;
 }
 
 public Zerg_Tentacles(client, player, skilllevel)

@@ -51,8 +51,8 @@ public OnPluginStart()
     cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","30");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
 
     if (GameType == tf2)
         HookEvent("player_changeclass",PlayerChangeClassEvent);

@@ -64,7 +64,7 @@ public OnPluginStart()
 
     cvarFartCooldown=CreateConVar("sc_fartcooldown","30");
 
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
 
     CreateTimer(2.0,Revulsion,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -151,8 +151,9 @@ public Action:AllowFart(Handle:timer,any:index)
 }
 
 // Events
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
@@ -168,7 +169,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (GetRace(attackerPlayer) == raceID)
                     {
-                        FesteringAbomination(event, attackerIndex, attackerPlayer, victimIndex);
+                        changed |= FesteringAbomination(event, attackerIndex, attackerPlayer, victimIndex);
                         new victimPlayer = GetPlayer(victimIndex);
                         if (victimPlayer != -1)
                             PickPocket(event, attackerIndex, attackerPlayer, victimIndex, victimPlayer);
@@ -185,7 +186,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (GetRace(assisterPlayer) == raceID)
                     {
-                        FesteringAbomination(event, assisterIndex, assisterPlayer, victimIndex);
+                        changed |= FesteringAbomination(event, assisterIndex, assisterPlayer, victimIndex);
                         new victimPlayer = GetPlayer(victimIndex);
                         if (victimPlayer != -1)
                             PickPocket(event, assisterIndex, assisterPlayer, victimIndex, victimPlayer);
@@ -194,9 +195,10 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public FesteringAbomination(Handle:event, index, player, victimIndex)
+public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -205,13 +207,13 @@ public FesteringAbomination(Handle:event, index, player, victimIndex)
         switch(skill_cs)
         {
             case 1:
-                chance=15;
+                chance=10;
             case 2:
-                chance=20;
+                chance=15;
             case 3:
-                chance=30;
+                chance=20;
             case 4:
-                chance=50;
+                chance=25;
         }
         if(GetRandomInt(1,100)<=chance)
         {
@@ -221,11 +223,11 @@ public FesteringAbomination(Handle:event, index, player, victimIndex)
                 case 1:
                     percent=0.4;
                 case 2:
-                    percent=1.067;
+                    percent=0.67;
                 case 3:
-                    percent=1.733;
+                    percent=1.233;
                 case 4:
-                    percent=2.4;
+                    percent=1.43;
             }
 
             new damage=GetDamage(event, victimIndex);
@@ -245,8 +247,10 @@ public FesteringAbomination(Handle:event, index, player, victimIndex)
             TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
+            return true;
         }
     }
+    return false;
 }
 
 public PickPocket(Handle:event, index, player, victimIndex, victimPlayer)

@@ -46,9 +46,9 @@ public OnPluginStart()
 {
     GetGameType();
 
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
+    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
 }
 
 public OnPluginReady()
@@ -198,8 +198,9 @@ public OnRaceSelected(client,player,oldrace,newrace)
     }
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimUserid = GetEventInt(event,"userid");
     if (victimUserid)
     {
@@ -216,8 +217,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (GetRace(attackerWar3player) == raceID)
                     {
-                        Undead_VampiricAura(event, attackerIndex, attackerWar3player,
-                                            victimIndex, victimWar3player);
+                        changed |= Undead_VampiricAura(event, attackerIndex, attackerWar3player,
+                                                       victimIndex, victimWar3player);
                     }
                 }
             }
@@ -231,13 +232,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (GetRace(assisterWar3player) == raceID)
                     {
-                        Undead_VampiricAura(event, assisterIndex, assisterWar3player,
-                                            victimIndex, victimWar3player);
+                        changed |= Undead_VampiricAura(event, assisterIndex, assisterWar3player,
+                                                       victimIndex, victimWar3player);
                     }
                 }
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 public Undead_UnholyAura(client, player, skilllevel)
@@ -310,7 +312,7 @@ public Undead_Levitation(client, player, skilllevel)
     SetMinGravity(player,gravity);
 }
 
-public Undead_VampiricAura(Handle:event, index, player, victim, victim_player)
+public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_player)
 {
     new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
@@ -364,8 +366,10 @@ public Undead_VampiricAura(Handle:event, index, player, victim, victim_player)
             TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
                                0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
             TE_SendToAll();
+            return true;
         }
     }
+    return false;
 }
 
 public Undead_SuicideBomber(client,player,ult_level,bool:ondeath)

@@ -57,7 +57,7 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
+    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
 
     CreateTimer(8.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
 }

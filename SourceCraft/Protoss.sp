@@ -58,8 +58,8 @@ public OnPluginStart()
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
 
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
     HookEvent("player_spawn",PlayerSpawnEvent);
 
     CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
@@ -168,24 +168,25 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         ResetCloakingAndDetector(client);
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
-        new victimIndex      = GetClientOfUserId(victimUserid);
+        new victimIndex  = GetClientOfUserId(victimUserid);
         new victimplayer = GetPlayer(victimIndex);
         if (victimplayer != -1)
         {
             new attackerUserid = GetEventInt(event,"attacker");
             if (attackerUserid && victimUserid != attackerUserid)
             {
-                new attackerIndex      = GetClientOfUserId(attackerUserid);
+                new attackerIndex  = GetClientOfUserId(attackerUserid);
                 new attackerplayer = GetPlayer(attackerIndex);
                 if (attackerplayer != -1)
                 {
                     if (GetRace(attackerplayer) == raceID)
-                        Protoss_Scarab(event, attackerIndex, attackerplayer, victimIndex);
+                        changed |= Protoss_Scarab(event, attackerIndex, attackerplayer, victimIndex);
                 }
             }
 
@@ -197,11 +198,12 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (assisterplayer != -1)
                 {
                     if (GetRace(assisterplayer) == raceID)
-                        Protoss_Scarab(event, assisterIndex, assisterplayer, victimIndex);
+                        changed |= Protoss_Scarab(event, assisterIndex, assisterplayer, victimIndex);
                 }
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -509,7 +511,7 @@ public Protoss_MindControl(client,player)
     }
 }
 
-public Protoss_Scarab(Handle:event, index, player, victimIndex)
+public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
@@ -563,9 +565,11 @@ public Protoss_Scarab(Handle:event, index, player, victimIndex)
                 TE_SetupExplosion(Origin,explosionModel,10.0,30,0,10,20);
                 TE_SendToAll();
                 EmitSoundToAll(explodeWav,victimIndex);
+                return true;
             }
         }
     }
+    return false;
 }
 
 public Action:AllowMindControl(Handle:timer,any:index)

@@ -85,8 +85,8 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
 
     if (GameType == tf2)
         HookEvent("player_changeclass",PlayerChangeClassEvent);
@@ -375,26 +375,27 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid          = GetEventInt(event,"userid");
     new attacker_userid = GetEventInt(event,"attacker");
     new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+    new bool:changed    = false;
 
     if(userid && attacker_userid && userid != attacker_userid)
     {
-        new index               = GetClientOfUserId(userid);
-        new attacker_index      = GetClientOfUserId(attacker_userid);
+        new index           = GetClientOfUserId(userid);
+        new attacker_index  = GetClientOfUserId(attacker_userid);
 
         new player          = GetPlayer(index);
         new player_attacker = GetPlayer(attacker_index);
 
-        new assister_index      = -1;
+        new assister_index  = -1;
         new player_assister = -1;
 
         if (assister_userid != 0)
         {
-            assister_index      = GetClientOfUserId(assister_userid);
+            assister_index  = GetClientOfUserId(assister_userid);
             player_assister = GetPlayer(assister_index);
         }
 
@@ -416,6 +417,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                             LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
 
                         SetHealth(index,newhealth);
+                        changed = true;
                     }
 
                     if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_CLAWS]))
@@ -430,6 +432,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                             LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
 
                         SetHealth(index,newhealth);
+                        changed = true;
                     }
                 }
 
@@ -437,6 +440,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     new newhealth=GetClientHealth(attacker_index)+2;
                     SetHealth(attacker_index,newhealth);
+                    changed = true;
 
                     decl String:victimName[64];
                     GetClientName(index,victimName,sizeof(victimName));
@@ -448,6 +452,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     new newhealth=GetClientHealth(assister_index)+2;
                     SetHealth(assister_index,newhealth);
+                    changed = true;
 
                     decl String:victimName[64];
                     GetClientName(index,victimName,sizeof(victimName));
@@ -486,11 +491,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                             SetHealth(index,(h1+h2)/2);
                         if(!h2)
                             SetHealth(index,0); // They should really be dead.
+
+                        changed = true;
                     }
                 }
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 // Item specific

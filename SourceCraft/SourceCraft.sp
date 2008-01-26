@@ -246,6 +246,21 @@ public OnGameFrame()
     SaveAllHealth();
 }
 
+public Action:OnLogAction(Handle:source, 
+                           Identity:ident,
+                           client,
+                           target,
+                           const String:message[])
+{
+    LogMessage("Logging src=%d,id=%d,c=%d,t=%d,%s\n", source, ident, client, target, message);
+
+    if(client && IsClientInGame(client))
+        PrintToChat(client, message);
+
+    return Plugin_Continue;
+}
+
+
 public bool:ParseSettings()
 {
     new Handle:keyValue=CreateKeyValues("SourceCraftSettings");

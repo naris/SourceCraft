@@ -44,7 +44,7 @@ public OnPluginStart()
 
     cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
 
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
     HookEvent("player_spawn",PlayerSpawnEvent);
 }
 
@@ -163,8 +163,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimuserid = GetEventInt(event,"userid");
     if (victimuserid)
     {
@@ -176,7 +177,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new victimrace = GetRace(playervictim);
             if (victimrace == raceID)
             {
-                evaded = NightElf_Evasion(event, victimindex, playervictim);
+                changed |= evaded = NightElf_Evasion(event, victimindex, playervictim);
             }
 
             new attackeruserid = GetEventInt(event,"attacker");
@@ -195,9 +196,11 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     if (victimrace == raceID && (!evaded || damage))
                     {
-                        NightElf_ThornsAura(event, attackerindex, playerattacker,
-                                            victimindex, playervictim, evaded, damage);
+                        damage += NightElf_ThornsAura(event, attackerindex, playerattacker,
+                                                      victimindex, playervictim, evaded, damage);
                     }
+                    if (damage)
+                        changed = true;
                 }
             }
 
@@ -217,13 +220,16 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     if (victimrace == raceID && (!evaded || damage))
                     {
-                        NightElf_ThornsAura(event, assisterindex, playerassister,
-                                            victimindex, playervictim, evaded, damage);
+                        damage += NightElf_ThornsAura(event, assisterindex, playerassister,
+                                                      victimindex, playervictim, evaded, damage);
                     }
+                    if (damage)
+                        changed = true;
                 }
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)

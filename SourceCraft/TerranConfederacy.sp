@@ -38,8 +38,8 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
 }
 
 public OnPluginReady()
@@ -186,8 +186,9 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
@@ -198,13 +199,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new victimrace = GetRace(victimplayer);
             if (victimrace == raceID)
             {
-                TerranConfederacy_Armor(event, victimIndex, victimplayer);
+                changed |= TerranConfederacy_Armor(event, victimIndex, victimplayer);
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public TerranConfederacy_Cloak(client, player, skilllevel)
+public bool:TerranConfederacy_Cloak(client, player, skilllevel)
 {
     new alpha;
     switch(skilllevel)
@@ -300,8 +302,8 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimplayer)
 
             PrintToChat(victimIndex,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
                         COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+            return true;
         }
-        return true;
     }
     return false;
 }

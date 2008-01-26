@@ -58,7 +58,7 @@ public OnPluginStart()
 
     cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
 
-    HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
     HookEvent("player_death",PlayerDeathEvent);
 
     if (GameType == cstrike)
@@ -151,8 +151,9 @@ public Action:AllowChainLightning(Handle:timer,any:index)
 }
 
 // Events
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {
@@ -168,8 +169,8 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (GetRace(attackerPlayer) == raceID)
                     {
-                        OrcishHorde_AcuteStrike(event, attackerIndex, attackerPlayer, victimIndex);
-                        OrcishHorde_AcuteGrenade(event, attackerIndex, attackerPlayer, victimIndex);
+                        changed |= OrcishHorde_AcuteStrike(event, attackerIndex, attackerPlayer, victimIndex);
+                        changed |= OrcishHorde_AcuteGrenade(event, attackerIndex, attackerPlayer, victimIndex);
                     }
                 }
             }
@@ -183,13 +184,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     if (GetRace(assisterPlayer) == raceID)
                     {
-                        OrcishHorde_AcuteStrike(event, assisterIndex, assisterPlayer, victimIndex);
-                        OrcishHorde_AcuteGrenade(event, assisterIndex, assisterPlayer, victimIndex);
+                        changed |= OrcishHorde_AcuteStrike(event, assisterIndex, assisterPlayer, victimIndex);
+                        changed |= OrcishHorde_AcuteGrenade(event, assisterIndex, assisterPlayer, victimIndex);
                     }
                 }
             }
         }
     }
+    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -277,7 +279,7 @@ public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast
     }
 }
 
-public OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
+public bool:OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -314,11 +316,13 @@ public OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
             TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
+            return true;
         }
     }
+    return false;
 }
 
-public OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
+public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
@@ -370,8 +374,10 @@ public OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
 
             TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
             TE_SendToAll();
+            return true;
         }
     }
+    return false;
 }
 
 public OrcishHorde_ChainLightning(player,client,ultlevel)
