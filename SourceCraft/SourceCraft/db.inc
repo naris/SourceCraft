@@ -18,7 +18,7 @@ public SQLTable()
     if (DBIDB)
     {
         // Create the tables, if they don;t exist
-        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_players (steamid varchar(64) not null, race varchar(30), credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(steamid))"))
+        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_players (steamid varchar(64) not null, name varchar(64), race varchar(30), credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(steamid))"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
@@ -126,8 +126,8 @@ public SavePlayerData(client,vectorpos)
 
             decl String:replaceQuery[512] = "";
             Format(replaceQuery,sizeof(replaceQuery),
-                   "REPLACE INTO w3s_players (steamid,race,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,current_timestamp)",
-                   steamid, raceName, credits, overall_level);
+                   "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%N','%s',%d,%d,current_timestamp)",
+                   steamid, client, raceName, credits, overall_level);
 
             if (!SQL_FastQuery(DBIDB,replaceQuery))
             {

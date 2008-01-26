@@ -62,7 +62,7 @@ public OnPluginStart()
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
 
-    //CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnPluginReady()
