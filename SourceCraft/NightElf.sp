@@ -294,13 +294,11 @@ public NightElf_ThornsAura(Handle:event, index, player, victimIndex, victimPlaye
                 {
                     newhp=0;
                     LogKill(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
-                    ForcePlayerSuicide(victimIndex); // Prevent double kill
                 }
                 else
-                {
                     LogDamage(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
-                    SetHealth(index,newhp);
-                }
+
+                SetHealth(index,newhp);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victimIndex, Origin);
@@ -343,13 +341,11 @@ public NightElf_TrueshotAura(Handle:event, index, player, victimIndex, evaded)
             {
                 newhp=0;
                 LogKill(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
-                ForcePlayerSuicide(victimIndex); // Prevent double kill
             }
             else
-            {
                 LogDamage(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
-                SetHealth(victimIndex,newhp);
-            }
+
+            SetHealth(victimIndex,newhp);
 
             new Float:Origin[3];
             GetClientAbsOrigin(victimIndex, Origin);

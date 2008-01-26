@@ -412,13 +412,11 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         {
                             newhealth=0;
                             LogKill(attacker_index, index, "item_claws", "Claws of Attack", 8);
-                            ForcePlayerSuicide(index); // Prevent double kill
                         }
                         else
-                        {
                             LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
-                            SetHealth(index,newhealth);
-                        }
+
+                        SetHealth(index,newhealth);
                         changed = true;
                     }
 
@@ -429,13 +427,11 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         {
                             newhealth=0;
                             LogKill(assister_index, index, "item_claws", "Claws of Attack", 8);
-                            ForcePlayerSuicide(index); // Prevent double kill
                         }
                         else
-                        {
                             LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
-                            SetHealth(index,newhealth);
-                        }
+
+                        SetHealth(index,newhealth);
                         changed = true;
                     }
                 }
@@ -494,10 +490,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         if(h2<h1)
                             SetHealth(index,(h1+h2)/2);
                         if(!h2)
-                        {
-                            //SetHealth(index,0); // They should really be dead.
-                            ForcePlayerSuicide(index); // Prevent double kill
-                        }
+                            SetHealth(index,0); // They should really be dead.
 
                         changed = true;
                     }

@@ -334,29 +334,31 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
         new leechhealth=RoundFloat(damage*percent_health);
         if(leechhealth)
         {
-            new victim_health=GetClientHealth(victim)-leechhealth;
-            if (victim_health < 0)
-            {
-                victim_health = 0;
-                ForcePlayerSuicide(victim); // Prevent double kill
-            }
-            else
-                SetHealth(victim,victim_health);
+            new victim_health=GetClientHealth(victim);
+            if (victim_health < leechhealth)
+                leechhealth = victim_health;
 
             new health=GetClientHealth(index)+leechhealth;
             SetHealth(index,health);
 
-            decl String:name[64];
-            GetClientName(index,name,63);
-            PrintToChat(victim,"%c[War3Source] %s %chas leeched %d hp from you using %cVampiric Aura%c.",
-                        COLOR_GREEN,name,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
+            victim_health -= leechhealth;
+            if (victim_health <= 0)
+            {
+                victim_health = 0;
+                LogKill(index, victim, "vampiric_aura", "Vampiric Aura", leechhealth);
+            }
+            else
+            {
+                PrintToChat(victim,"%c[War3Source] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
+                            COLOR_GREEN,index,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
 
-            decl String:victimName[64];
-            GetClientName(victim,victimName,63);
-            PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %s using %cVampiric Aura%c.",
-                        COLOR_GREEN,COLOR_DEFAULT,leechhealth,victimName,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
+                            COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim,COLOR_TEAM,COLOR_DEFAULT);
 
-            LogMessage("[War3Source] %s leeched %d health from %s\n", name, leechhealth, victimName);
+                LogMessage("[War3Source] %N leeched %d health from %N\n", index, leechhealth, victim);
+            }
+
+            SetHealth(victim,victim_health);
 
             new Float:start[3];
             GetClientAbsOrigin(index, start);

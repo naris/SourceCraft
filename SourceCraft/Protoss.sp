@@ -552,13 +552,11 @@ public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
                 {
                     new_health=0;
                     LogKill(index, victimIndex, "scarab", "Reaver Scarab", health_take);
-                    ForcePlayerSuicide(victimIndex); // Prevent double kill
                 }
                 else
-                {
                     LogDamage(index, victimIndex, "scarab", "Reaver Scarab", health_take);
-                    SetHealth(victimIndex,new_health);
-                }
+
+                SetHealth(victimIndex,new_health);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victimIndex, Origin);

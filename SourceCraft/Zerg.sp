@@ -291,13 +291,11 @@ public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
                 {
                     newhp=0;
                     LogKill(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
-                    ForcePlayerSuicide(victimIndex); // Prevent double kill
                 }
                 else
-                {
                     LogDamage(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
-                    SetHealth(victimIndex,newhp);
-                }
+
+                SetHealth(victimIndex,newhp);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victimIndex, Origin);
