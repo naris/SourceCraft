@@ -78,7 +78,7 @@ public OnPluginReady()
                       "Reveals enemy invisible units within range",
                       "Dark Archon Mind Control",
                       "Allows you to control an object from the opposite team.",
-                      "0"); // "16");
+                      "16");
 
     m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
     if(m_BuilderOffset[sentrygun] == -1)
