@@ -59,7 +59,7 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
 
-    CreateTimer(10.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(8.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnConfigsExecuted()
@@ -251,7 +251,7 @@ public BumpSomeone(client)
         {
             if (GetRandomInt(1,100) <= 50)
             {
-                PrintToChat(x,"%c[SourceCraft]%c You have bumped %N due to %cUnion Rules%c!",
+                PrintToChat(client,"%c[SourceCraft]%c You have bumped %N due to %cUnion Rules%c!",
                             COLOR_GREEN,COLOR_DEFAULT,x,COLOR_TEAM,COLOR_DEFAULT);
                 PrintToChat(x,"%c[SourceCraft]%c You have been bumped by %N due to %cUnion Rules%c!",
                             COLOR_GREEN,COLOR_DEFAULT,client,COLOR_TEAM,COLOR_DEFAULT);
