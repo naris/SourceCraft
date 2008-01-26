@@ -107,7 +107,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
             new maxplayers=GetMaxClients();
             for (new index=1;index<=maxplayers;index++)
             {
-                if (client != index && IsClientConnected(index) && IsPlayerAlive(index) &&
+                if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
                     GetClientTeam(index) != GetClientTeam(client))
                 {
                     new player_check=GetPlayer(index);

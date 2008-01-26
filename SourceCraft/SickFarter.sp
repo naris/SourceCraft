@@ -428,7 +428,7 @@ public Action:Revulsion(Handle:timer)
                         GetClientAbsOrigin(client, clientLoc);
                         for (new index=1;index<=maxplayers;index++)
                         {
-                            if (index != client && IsClientConnected(index))
+                            if (index != client && IsClientInGame(index))
                             {
                                 if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
                                 {

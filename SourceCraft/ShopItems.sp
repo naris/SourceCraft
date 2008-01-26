@@ -710,7 +710,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
             new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
             new lucky_player=GetArrayCell(playerList,lucky_player_iter);
             //EntityOrigin(lucky_player,teleLoc);
-            teleLoc[0]=spawnLoc[lucky_player][0] + 40.0;
+            teleLoc[0]=spawnLoc[lucky_player][0] + 5.0;
             teleLoc[1]=spawnLoc[lucky_player][1];
             teleLoc[2]=spawnLoc[lucky_player][2];
             TeleportEntity(client,teleLoc, NULL_VECTOR, NULL_VECTOR);
