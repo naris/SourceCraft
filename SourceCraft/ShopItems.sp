@@ -412,15 +412,13 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         {
                             newhealth=0;
                             LogKill(attacker_index, index, "item_claws", "Claws of Attack", 8);
+                            ForcePlayerSuicide(index); // Prevent double kill
                         }
                         else
+                        {
                             LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
-
-                        SetHealth(index,newhealth);
-
-                        if (newhealth <= 0)
-                            ForcePlayerSuicide(index); // Prevent double kill
-
+                            SetHealth(index,newhealth);
+                        }
                         changed = true;
                     }
 
@@ -431,15 +429,13 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         {
                             newhealth=0;
                             LogKill(assister_index, index, "item_claws", "Claws of Attack", 8);
+                            ForcePlayerSuicide(index); // Prevent double kill
                         }
                         else
+                        {
                             LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
-
-                        SetHealth(index,newhealth);
-
-                        if (newhealth <= 0)
-                            ForcePlayerSuicide(index); // Prevent double kill
-
+                            SetHealth(index,newhealth);
+                        }
                         changed = true;
                     }
                 }
@@ -499,7 +495,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                             SetHealth(index,(h1+h2)/2);
                         if(!h2)
                         {
-                            SetHealth(index,0); // They should really be dead.
+                            //SetHealth(index,0); // They should really be dead.
                             ForcePlayerSuicide(index); // Prevent double kill
                         }
 

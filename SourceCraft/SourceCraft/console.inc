@@ -115,11 +115,6 @@ public Action:CMD_SetXP(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new xp=StringToInt(buf);
         if(xp<0)
             xp=0;
@@ -127,17 +122,15 @@ public Action:CMD_SetXP(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new vecpos=GetClientVectorPosition(index);
             if(vecpos>-1)
             {
                 new race=GetRace(vecpos);
                 SetXP(vecpos,race,xp);
-                PrintToConsole(client,"[SourceCraft] You just set \"%s's\" XP to %d.",name,xp);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your XP to %d.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
+                PrintToConsole(client,"[SourceCraft] You just set \"%N's\" XP to %d.",index,xp);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" set your XP to %d.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
@@ -157,11 +150,6 @@ public Action:CMD_GiveXP(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new xp=StringToInt(buf);
         if(xp<0)
             xp=0;
@@ -169,17 +157,15 @@ public Action:CMD_GiveXP(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new vecpos=GetClientVectorPosition(index);
             if(vecpos>-1)
             {
                 new race=GetRace(vecpos);
                 SetXP(vecpos,race,GetXP(vecpos,race)+xp);
-                PrintToConsole(client,"[SourceCraft] You just gave %d XP to \"%s\".",xp,name);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you %d XP.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
+                PrintToConsole(client,"[SourceCraft] You just gave %d XP to \"%N\".",xp,index);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" gave you %d XP.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,xp);
                 DoLevelCheck(index,vecpos);
             }
         }
@@ -199,11 +185,6 @@ public Action:CMD_RemoveXP(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new xp=StringToInt(buf);
         if(xp<0)
             xp=0;
@@ -211,9 +192,7 @@ public Action:CMD_RemoveXP(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new vecpos=GetClientVectorPosition(index);
             if(vecpos>-1)
             {
@@ -222,9 +201,9 @@ public Action:CMD_RemoveXP(client,args)
                 if(newxp<0)
                     newxp=0;
                 SetXP(vecpos,race,newxp);
-                PrintToConsole(client,"[SourceCraft] You just removed %d XP from \"%s\".",xp,name);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d XP from you.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,xp);
+                PrintToConsole(client,"[SourceCraft] You just removed %d XP from \"%N\".",xp,index);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" removed %d XP from you.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,xp);
                 DoLevelCheck(index,vecpos);
             }
         }

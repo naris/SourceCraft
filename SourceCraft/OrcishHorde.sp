@@ -366,11 +366,13 @@ public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
             {
                 new_health=0;
                 LogKill(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
+                ForcePlayerSuicide(victimIndex); // Prevent double kill
             }
             else
+            {
                 LogDamage(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
-
-            SetHealth(victimIndex,new_health);
+                SetHealth(victimIndex,new_health);
+            }
 
             new Float:Origin[3];
             GetClientAbsOrigin(victimIndex, Origin);
@@ -378,10 +380,6 @@ public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
 
             TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
             TE_SendToAll();
-
-            if (new_health <= 0)
-                ForcePlayerSuicide(victimIndex); // Prevent double kill
-
             return true;
         }
     }
@@ -442,11 +440,13 @@ public OrcishHorde_ChainLightning(player,client,ultlevel)
                                     SetXP(player,raceID,newxp);
 
                                     LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                                    ForcePlayerSuicide(index); // Prevent double kill
                                 }
                                 else
+                                {
                                     LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-
-                                SetHealth(index,new_health);
+                                    SetHealth(index,new_health);
+                                }
 
                                 last=index;
                                 if (++count > num)

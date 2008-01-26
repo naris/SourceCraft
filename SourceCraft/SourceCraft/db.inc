@@ -124,10 +124,15 @@ public SavePlayerData(client,vectorpos)
             new credits       = GetCredits(vectorpos);
             new overall_level = GetOverallLevel(vectorpos);
 
+            decl String:name[64];
+            GetClientName(client,name,sizeof(name));
+            ReplaceString(name,sizeof(name),"\\","\\\\");
+            ReplaceString(name,sizeof(name),"'","''");
+
             decl String:replaceQuery[512] = "";
             Format(replaceQuery,sizeof(replaceQuery),
-                   "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%N','%s',%d,%d,current_timestamp)",
-                   steamid, client, raceName, credits, overall_level);
+                   "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)",
+                   steamid, name, raceName, credits, overall_level);
 
             if (!SQL_FastQuery(DBIDB,replaceQuery))
             {

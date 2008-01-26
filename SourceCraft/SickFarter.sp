@@ -237,11 +237,13 @@ public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
             {
                 new_health=0;
                 LogKill(index, victimIndex, "festering_abomination", "Festering Abomination", health_take);
+                ForcePlayerSuicide(index); // Prevent double kill
             }
             else
+            {
                 LogDamage(index, victimIndex, "festering_abomination", "Festering Abomination", health_take);
-
-            SetHealth(victimIndex,new_health);
+                SetHealth(victimIndex,new_health);
+            }
 
             new color[4] = { 100, 255, 55, 255 };
             TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,

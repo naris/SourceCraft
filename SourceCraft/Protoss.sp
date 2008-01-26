@@ -193,7 +193,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
             new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
             if (assisterUserid && victimUserid != assisterUserid)
             {
-                new assisterIndex      = GetClientOfUserId(assisterUserid);
+                new assisterIndex  = GetClientOfUserId(assisterUserid);
                 new assisterplayer = GetPlayer(assisterIndex);
                 if (assisterplayer != -1)
                 {
@@ -552,11 +552,13 @@ public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
                 {
                     new_health=0;
                     LogKill(index, victimIndex, "scarab", "Reaver Scarab", health_take);
+                    ForcePlayerSuicide(victimIndex); // Prevent double kill
                 }
                 else
+                {
                     LogDamage(index, victimIndex, "scarab", "Reaver Scarab", health_take);
-
-                SetHealth(victimIndex,new_health);
+                    SetHealth(victimIndex,new_health);
+                }
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victimIndex, Origin);
@@ -565,10 +567,6 @@ public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
                 TE_SetupExplosion(Origin,explosionModel,10.0,30,0,10,20);
                 TE_SendToAll();
                 EmitSoundToAll(explodeWav,victimIndex);
-
-                if (new_health <= 0)
-                    ForcePlayerSuicide(victimIndex); // Prevent double kill
-
                 return true;
             }
         }

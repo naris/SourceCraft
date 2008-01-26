@@ -126,10 +126,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                                                       0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                     TE_SendToAll();
 
-                                    decl String:name[64];
-                                    GetClientName(client,name,63);
-                                    PrintToChat(index,"%c[SourceCraft] %s %chas tied you down with %cEntangled Roots.%c",
-                                                COLOR_GREEN,name,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    PrintToChat(index,"%c[SourceCraft] %N %chas tied you down with %cEntangled Roots.%c",
+                                                COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     SetEntData(index,movetypeOffset,0,1);
                                     AuthTimer(10.0,index,UnfreezePlayer);
@@ -259,12 +257,9 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)
 
             SetHealth(victimIndex,newhp);
 
-            decl String:victimName[64];
-            GetClientName(victimIndex,victimName,63);
-
-            LogMessage("[SourceCraft] %s evaded an attack!\n", victimName);
-            PrintToChat(victimIndex,"%c[SourceCraft] %s %c evaded an attack!",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT);
+            LogMessage("[SourceCraft] %N evaded an attack!\n", victimIndex);
+            PrintToChat(victimIndex,"%c[SourceCraft] %N %c evaded an attack!",
+                        COLOR_GREEN,victimIndex,COLOR_DEFAULT);
             return true;
         }
     }
@@ -299,11 +294,13 @@ public NightElf_ThornsAura(Handle:event, index, player, victimIndex, victimPlaye
                 {
                     newhp=0;
                     LogKill(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
+                    ForcePlayerSuicide(victimIndex); // Prevent double kill
                 }
                 else
+                {
                     LogDamage(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
-
-                SetHealth(index,newhp);
+                    SetHealth(index,newhp);
+                }
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victimIndex, Origin);
@@ -311,10 +308,6 @@ public NightElf_ThornsAura(Handle:event, index, player, victimIndex, victimPlaye
 
                 TE_SetupSparks(Origin,Origin,255,1);
                 TE_SendToAll();
-
-                if (newhp <= 0)
-                    ForcePlayerSuicide(victimIndex); // Prevent double kill
-
                 return amount;
             }
         }
@@ -350,11 +343,13 @@ public NightElf_TrueshotAura(Handle:event, index, player, victimIndex, evaded)
             {
                 newhp=0;
                 LogKill(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
+                ForcePlayerSuicide(victimIndex); // Prevent double kill
             }
             else
+            {
                 LogDamage(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
-
-            SetHealth(victimIndex,newhp);
+                SetHealth(victimIndex,newhp);
+            }
 
             new Float:Origin[3];
             GetClientAbsOrigin(victimIndex, Origin);
@@ -362,10 +357,6 @@ public NightElf_TrueshotAura(Handle:event, index, player, victimIndex, evaded)
 
             TE_SetupSparks(Origin,Origin,255,1);
             TE_SendToAll();
-
-            if (newhp <= 0)
-                ForcePlayerSuicide(victimIndex); // Prevent double kill
-
             return amount;
         }
     }

@@ -336,8 +336,12 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
         {
             new victim_health=GetClientHealth(victim)-leechhealth;
             if (victim_health < 0)
+            {
                 victim_health = 0;
-            SetHealth(victim,victim_health);
+                ForcePlayerSuicide(victim); // Prevent double kill
+            }
+            else
+                SetHealth(victim,victim_health);
 
             new health=GetClientHealth(index)+leechhealth;
             SetHealth(index,health);
@@ -366,10 +370,6 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
             TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
                                0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
             TE_SendToAll();
-
-            if (victim_health <= 0)
-                ForcePlayerSuicide(victim); // Prevent double kill
-
             return true;
         }
     }
