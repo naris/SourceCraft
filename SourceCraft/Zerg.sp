@@ -40,7 +40,7 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent);
 
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }

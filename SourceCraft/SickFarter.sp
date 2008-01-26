@@ -64,7 +64,7 @@ public OnPluginStart()
 
     cvarFartCooldown=CreateConVar("sc_fartcooldown","30");
 
-    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent);
 
     CreateTimer(2.0,Revulsion,INVALID_HANDLE,TIMER_REPEAT);
 }

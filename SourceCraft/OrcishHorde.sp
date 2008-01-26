@@ -58,7 +58,7 @@ public OnPluginStart()
 
     cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
 
-    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_death",PlayerDeathEvent);
 
     if (GameType == cstrike)

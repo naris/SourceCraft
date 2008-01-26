@@ -44,7 +44,7 @@ public OnPluginStart()
 
     cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
 
-    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
 }
 

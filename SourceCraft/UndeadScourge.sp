@@ -46,9 +46,9 @@ public OnPluginStart()
 {
     GetGameType();
 
-    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
+    HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
+    HookEvent("player_death",PlayerDeathEvent);
 }
 
 public OnPluginReady()

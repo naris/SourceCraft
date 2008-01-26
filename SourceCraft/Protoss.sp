@@ -58,8 +58,8 @@ public OnPluginStart()
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
 
-    HookEvent("player_death",PlayerDeathEvent,EventHookMode_Pre);
-    HookEvent("player_hurt",PlayerHurtEvent,EventHookMode_Pre);
+    HookEvent("player_death",PlayerDeathEvent);
+    HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
 
     CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
