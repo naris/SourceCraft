@@ -417,6 +417,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                             LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
 
                         SetHealth(index,newhealth);
+
+                        if (newhealth <= 0)
+                            ForcePlayerSuicide(index); // Prevent double kill
+
                         changed = true;
                     }
 
@@ -432,6 +436,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                             LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
 
                         SetHealth(index,newhealth);
+
+                        if (newhealth <= 0)
+                            ForcePlayerSuicide(index); // Prevent double kill
+
                         changed = true;
                     }
                 }
@@ -490,7 +498,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         if(h2<h1)
                             SetHealth(index,(h1+h2)/2);
                         if(!h2)
+                        {
                             SetHealth(index,0); // They should really be dead.
+                            ForcePlayerSuicide(index); // Prevent double kill
+                        }
 
                         changed = true;
                     }

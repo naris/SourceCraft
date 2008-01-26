@@ -303,6 +303,10 @@ public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
 
                 TE_SetupSparks(Origin,Origin,255,1);
                 TE_SendToAll();
+
+                if (newhp <= 0)
+                    ForcePlayerSuicide(victimIndex); // Prevent double kill
+
                 return true;
             }
         }

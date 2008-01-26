@@ -316,6 +316,10 @@ public bool:OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
             TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
+
+            if (new_health <= 0)
+                ForcePlayerSuicide(victimIndex); // Prevent double kill
+
             return true;
         }
     }
@@ -374,6 +378,10 @@ public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
 
             TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
             TE_SendToAll();
+
+            if (new_health <= 0)
+                ForcePlayerSuicide(victimIndex); // Prevent double kill
+
             return true;
         }
     }

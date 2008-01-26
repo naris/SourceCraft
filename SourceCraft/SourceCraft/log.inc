@@ -54,8 +54,8 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
     PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
                    client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    //LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
-    //          client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
+    LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+              client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 }
 
 stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
@@ -86,8 +86,8 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
         PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
 
-        //LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
-        //          client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
+        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+                  client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
     }
     else
     {
@@ -100,7 +100,7 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
         PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                        client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
 
-        //LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
-        //          client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+                  client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
     }
 }

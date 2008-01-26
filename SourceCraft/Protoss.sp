@@ -565,6 +565,10 @@ public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
                 TE_SetupExplosion(Origin,explosionModel,10.0,30,0,10,20);
                 TE_SendToAll();
                 EmitSoundToAll(explodeWav,victimIndex);
+
+                if (new_health <= 0)
+                    ForcePlayerSuicide(victimIndex); // Prevent double kill
+
                 return true;
             }
         }

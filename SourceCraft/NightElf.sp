@@ -170,14 +170,14 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
     if (victimuserid)
     {
         new victimindex      = GetClientOfUserId(victimuserid);
-        new playervictim = GetPlayer(victimindex);
-        if (playervictim != -1)
+        new victimPlayer = GetPlayer(victimindex);
+        if (victimPlayer != -1)
         {
             new bool:evaded = false;
-            new victimrace = GetRace(playervictim);
+            new victimrace = GetRace(victimPlayer);
             if (victimrace == raceID)
             {
-                changed |= evaded = NightElf_Evasion(event, victimindex, playervictim);
+                changed |= evaded = NightElf_Evasion(event, victimindex, victimPlayer);
             }
 
             new attackeruserid = GetEventInt(event,"attacker");
@@ -197,7 +197,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                     if (victimrace == raceID && (!evaded || damage))
                     {
                         damage += NightElf_ThornsAura(event, attackerindex, playerattacker,
-                                                      victimindex, playervictim, evaded, damage);
+                                                      victimindex, victimPlayer, evaded, damage);
                     }
                     if (damage)
                         changed = true;
@@ -221,7 +221,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                     if (victimrace == raceID && (!evaded || damage))
                     {
                         damage += NightElf_ThornsAura(event, assisterindex, playerassister,
-                                                      victimindex, playervictim, evaded, damage);
+                                                      victimindex, victimPlayer, evaded, damage);
                     }
                     if (damage)
                         changed = true;
@@ -271,9 +271,9 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)
     return false;
 }
 
-public NightElf_ThornsAura(Handle:event, index, player, victimindex, playervictim, evaded, prev_damage)
+public NightElf_ThornsAura(Handle:event, index, player, victimIndex, victimPlayer, evaded, prev_damage)
 {
-    new skill_level_thorns = GetSkillLevel(playervictim,raceID,1);
+    new skill_level_thorns = GetSkillLevel(victimPlayer,raceID,1);
     if (skill_level_thorns)
     {
         if (!GetImmunity(player,Immunity_HealthTake))
@@ -292,25 +292,29 @@ public NightElf_ThornsAura(Handle:event, index, player, victimindex, playervicti
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new damage=GetDamage(event, victimindex);
+                new damage=GetDamage(event, victimIndex);
                 new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
                 new newhp=GetClientHealth(index)-amount;
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(victimindex, index, "thorns_aura", "Thorns Aura", amount);
+                    LogKill(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
                 }
                 else
-                    LogDamage(victimindex, index, "thorns_aura", "Thorns Aura", amount);
+                    LogDamage(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
 
                 SetHealth(index,newhp);
 
                 new Float:Origin[3];
-                GetClientAbsOrigin(victimindex, Origin);
+                GetClientAbsOrigin(victimIndex, Origin);
                 Origin[2] += 5;
 
                 TE_SetupSparks(Origin,Origin,255,1);
                 TE_SendToAll();
+
+                if (newhp <= 0)
+                    ForcePlayerSuicide(victimIndex); // Prevent double kill
+
                 return amount;
             }
         }
@@ -318,7 +322,7 @@ public NightElf_ThornsAura(Handle:event, index, player, victimindex, playervicti
     return 0;
 }
 
-public NightElf_TrueshotAura(Handle:event, index, player, victimindex, evaded)
+public NightElf_TrueshotAura(Handle:event, index, player, victimIndex, evaded)
 {
     // Trueshot Aura
     new skill_level_trueshot=GetSkillLevel(player,raceID,2);
@@ -339,25 +343,29 @@ public NightElf_TrueshotAura(Handle:event, index, player, victimindex, evaded)
                     percent=0.60;
             }
 
-            new damage=GetDamage(event, victimindex);
+            new damage=GetDamage(event, victimIndex);
             new amount=RoundFloat(float(damage)*percent);
-            new newhp=GetClientHealth(victimindex)-amount;
+            new newhp=GetClientHealth(victimIndex)-amount;
             if (newhp <= 0)
             {
                 newhp=0;
-                LogKill(index, victimindex, "trueshot_aura", "Trueshot Aura", amount);
+                LogKill(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
             }
             else
-                LogDamage(index, victimindex, "trueshot_aura", "Trueshot Aura", amount);
+                LogDamage(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
 
-            SetHealth(victimindex,newhp);
+            SetHealth(victimIndex,newhp);
 
             new Float:Origin[3];
-            GetClientAbsOrigin(victimindex, Origin);
+            GetClientAbsOrigin(victimIndex, Origin);
             Origin[2] += 5;
 
             TE_SetupSparks(Origin,Origin,255,1);
             TE_SendToAll();
+
+            if (newhp <= 0)
+                ForcePlayerSuicide(victimIndex); // Prevent double kill
+
             return amount;
         }
     }
