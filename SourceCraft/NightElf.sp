@@ -358,11 +358,8 @@ public NightElf_TrueshotAura(Handle:event, index, player, victimindex, evaded)
     return 0;
 }
 
-// Misc
-
 public Action:AllowEntangle(Handle:timer,any:index)
 {
     m_AllowEntangle[index]=true;
-    //CloseHandle(timer);
     return Plugin_Stop;
 }

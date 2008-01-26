@@ -20,8 +20,11 @@
 
 new raceID; // The ID we are assigned to
 
+new Handle:cvarMindControlCooldown = INVALID_HANDLE;
+
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
+new bool:m_AllowMindControl[MAXPLAYERS+1];
 
 enum objects { unknown, sentrygun, dispenser, teleporter };
 new m_BuilderOffset[objects];
@@ -53,8 +56,11 @@ public OnPluginStart()
 {
     GetGameType();
 
+    cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
+
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
+    HookEvent("player_spawn",PlayerSpawnEvent);
 
     //CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -134,6 +140,7 @@ public OnMapStart()
 public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
+    m_AllowMindControl[client]=true;
 }
 
 public OnRaceSelected(client,player,oldrace,race)
@@ -144,10 +151,10 @@ public OnRaceSelected(client,player,oldrace,race)
 
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
-    if (race==raceID && IsPlayerAlive(client))
+    if (race==raceID && IsPlayerAlive(client) &&
+        m_AllowMindControl[client] && pressed)
     {
-        if (pressed)
-            Protoss_MindControl(client,player);
+        Protoss_MindControl(client,player);
     }
 }
 
@@ -194,6 +201,16 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
         }
+    }
+}
+
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new index=GetClientOfUserId(userid);
+    if (index>0)
+    {
+        m_AllowMindControl[index]=true;
     }
 }
 
@@ -475,6 +492,13 @@ public Protoss_MindControl(client,player)
                                                 COLOR_GREEN,COLOR_DEFAULT,builderName,object);
                                     PrintToChat(builder,"%c[SourceCraft] %c %s has stolen your %s!",
                                                 COLOR_GREEN,COLOR_DEFAULT,clientName,object);
+
+                                    new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
+                                    if (cooldown > 0.0)
+                                    {
+                                        m_AllowMindControl[client]=false;
+                                        CreateTimer(cooldown,AllowMindControl,client);
+                                    }
                                 }
                             }
                         }
@@ -542,4 +566,10 @@ public Protoss_Scarab(Handle:event, index, player, victimIndex)
             }
         }
     }
+}
+
+public Action:AllowMindControl(Handle:timer,any:index)
+{
+    m_AllowMindControl[index]=true;
+    return Plugin_Stop;
 }

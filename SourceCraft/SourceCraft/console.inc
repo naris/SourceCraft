@@ -18,8 +18,8 @@ public InitCVars()
     m_SaveXPConVar=CreateConVar("sc_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("sc_minimumultimatelevel","8");
     m_MaxCredits=CreateConVar("sc_maxcredits","40");
-    m_Currency=CreateConVar("sc_currency","credit", "Name of the currency");
-    m_Currencies=CreateConVar("sc_currencies","credits", "Name of the currency in plural form");
+    m_Currency=CreateConVar("sc_currency","crystal", "Name of the currency");
+    m_Currencies=CreateConVar("sc_currencies","crystals", "Name of the currency in plural form");
 
     RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_SOURCECRAFT,"Set a player's XP");
     RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_SOURCECRAFT,"Give a player XP");

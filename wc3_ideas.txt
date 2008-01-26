@@ -35,8 +35,8 @@ Ult: Mad Bomber
 
 Sick Farter
 S1: Repulsion/Revulsion (slaps other team members)
-S2:  (steals money from other team members)
-S3: Slobber (drools on ground and makes it slippery so opponents slide around)
+S2: Pickpocket (steals money from other team members)
+S3: Festering Abomination (does extra damage)
 Ult: Farts toxic cloud that persists and kills enemies.
 
 UAW

@@ -25,11 +25,7 @@
 new raceID; // The ID we are assigned to
 
 new explosionModel;
-new g_beamSprite;
-new g_haloSprite;
 new g_purpleGlow;
-new g_smokeSprite;
-new g_lightningSprite;
 
 new String:explodeWav[] = "weapons/explode5.wav";
 
@@ -96,22 +92,6 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite = SetupModel("materials/models/props_lab/airlock_laser.vmt");
-    if (g_beamSprite == -1)
-        SetFailState("Couldn't find laser Model");
-
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
-
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-
     g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
     if (g_purpleGlow == -1)
         SetFailState("Couldn't find purpleglow Model");
