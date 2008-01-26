@@ -39,9 +39,9 @@ new Handle:m_Currencies = INVALID_HANDLE;
 
 public Plugin:myinfo = 
 {
-    name = "SourceCraft Race - Al-Qaeda",
+    name = "SourceCraft Race - UAW",
     author = "-=|JFH|=-Naris (Murray Wilson)",
-    description = "The Al-Qaeda race for War3Source.",
+    description = "The UAW race for War3Source.",
     version = "1.0.0.0",
     url = "http://jigglysfunhouse.net/"
 };

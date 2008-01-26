@@ -281,25 +281,28 @@ public PickPocket(Handle:event, index, player, victimIndex, victimPlayer)
                     percent=1.0;
             }
 
-            new cash=GetCredits(player);
             new victimCash=GetCredits(victimPlayer);
-            new amount = RoundFloat(float(victimCash) * percent);
+            if (victimCash > 0)
+            {
+                new cash=GetCredits(player);
+                new amount = RoundFloat(float(victimCash) * percent);
 
-            SetCredits(victimPlayer,victimCash-amount);
-            SetCredits(player,cash+amount);
+                SetCredits(victimPlayer,victimCash-amount);
+                SetCredits(player,cash+amount);
 
-            new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
-                              0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-            TE_SendToAll();
+                new color[4] = { 100, 255, 55, 255 };
+                TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
+                                  0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+                TE_SendToAll();
 
-            decl String:currencies[64];
-            GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+                decl String:currencies[64];
+                GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
 
-            PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
+                PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
                         COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victimIndex,COLOR_TEAM,COLOR_DEFAULT);
-            PrintToChat(victimIndex,"%c[SourceCraft]%c %N stole %d %s from you!",
+                PrintToChat(victimIndex,"%c[SourceCraft]%c %N stole %d %s from you!",
                         COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
+            }
         }
     }
 }
