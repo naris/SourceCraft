@@ -70,7 +70,7 @@ public IntroMenu(client)
 {
     new Handle:introMenu=CreateMenu(IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
-    SetMenuTitle(introMenu,"Welcome to this SourceCraft server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type help in\nchat.\n%s",VERSION);
+    SetMenuTitle(introMenu,"Welcome to this SourceCraft server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type help in\nchat or menu to use the menu system.\n%s",VERSION);
     SetMenuExitButton(introMenu,true);
     AddMenuItem(introMenu,"","Exit");
     DisplayMenu(introMenu,client, 20);
