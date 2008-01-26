@@ -55,12 +55,7 @@ stock IncreaseHealth(client, amount)
 
 stock SetHealth(entity,amount)
 {
-    /*
-    if (amount <= 0)
-        ForcePlayerSuicide(entity);
-    else
-    */
-        SetEntityHealth(entity,amount);
+    SetEntityHealth(entity,(amount <= 0) ? 0 : amount);
 }
 
 stock SetMaxHealth(entity,amount)
@@ -81,6 +76,8 @@ stock GetMaxHealth(entity)
 
 stock KillPlayer(client)
 {
+    // die! die! die!!!!
     ForcePlayerSuicide(client);
-    FakeClientCommand(client,"kill\n"); // die! die! die!!!!
+    //FakeClientCommand(client,"kill\n");
+    //SetEntityHealth(client,0);
 }

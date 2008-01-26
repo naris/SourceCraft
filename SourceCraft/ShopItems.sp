@@ -100,22 +100,22 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","4");
+    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","40");
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","7");
     shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","An additional 8 hp will be removed from the enemy on every successful attack.","3");
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
-    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","5");
+    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","15");
     shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","3");
     shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","10");
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","4");
     shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade or ammo or metal every 20 seconds.","5");
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","3");
-    shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","40");
+    shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","90");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
-    shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","15");
+    shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     LoadSDKToolStuff();
 }
