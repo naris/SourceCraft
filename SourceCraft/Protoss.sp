@@ -445,61 +445,63 @@ public Protoss_MindControl(client,player)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
                                 new builder = GetEntDataEnt(target, m_BuilderOffset[obj]); // Get the current owner of the object.
-                                new builderTeam = GetClientTeam(builder);
-                                new team = GetClientTeam(client);
-                                if (builderTeam != team)
+                                new player_check=GetPlayer(builder);
+                                if (player_check>-1)
                                 {
-                                    SetEntDataEnt(target, m_BuilderOffset[obj], client, true); // Change the builder to client
-
-                                    SetVariantInt(team); //Prep the value for the call below
-                                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                                    SetVariantInt(team); //Same thing again but we are changing SetTeam
-                                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-
-                                    EmitSoundToAll(controlWav,target);
-
-                                    new color[4] = { 0, 0, 0, 255 };
-                                    if (team == 3)
-                                        color[2] = 255; // Blue
-                                    else
-                                        color[0] = 255; // Red
-
-                                    TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                                       0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
-                                    TE_SendToAll();
-
-                                    TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
-                                    TE_SendToAll();
-
-                                    TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,5.0,5.0,255);
-                                    TE_SendToAll();
-
-                                    new Float:splashDir[3];
-                                    splashDir[0] = 0.0;
-                                    splashDir[1] = 0.0;
-                                    splashDir[2] = 100.0;
-                                    TE_SetupEnergySplash(targetLoc, splashDir, true);
-
-                                    decl String:clientName[64];
-                                    GetClientName(client,clientName,63);
-
-                                    decl String:builderName[64];
-                                    GetClientName(builder,builderName,63);
-
-                                    decl String:object[32] = "";
-                                    strcopy(object, sizeof(object), class[7]);
-                                    LogMessage("[SourceCraft] %s has stolen %s's %s!\n", clientName,builderName,object);
-                                    PrintToChat(client,"%c[SourceCraft] %c you have stolen %s's %s!",
-                                                COLOR_GREEN,COLOR_DEFAULT,builderName,object);
-                                    PrintToChat(builder,"%c[SourceCraft] %c %s has stolen your %s!",
-                                                COLOR_GREEN,COLOR_DEFAULT,clientName,object);
-
-                                    new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
-                                    if (cooldown > 0.0)
+                                    if (!GetImmunity(player_check,Immunity_Ultimates))
                                     {
-                                        m_AllowMindControl[client]=false;
-                                        CreateTimer(cooldown,AllowMindControl,client);
+                                        new builderTeam = GetClientTeam(builder);
+                                        new team = GetClientTeam(client);
+                                        if (builderTeam != team)
+                                        {
+                                            SetEntDataEnt(target, m_BuilderOffset[obj], client, true); // Change the builder to client
+
+                                            SetVariantInt(team); //Prep the value for the call below
+                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                                            SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+
+                                            EmitSoundToAll(controlWav,target);
+
+                                            new color[4] = { 0, 0, 0, 255 };
+                                            if (team == 3)
+                                                color[2] = 255; // Blue
+                                            else
+                                                color[0] = 255; // Red
+
+                                            TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
+                                                    0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
+                                            TE_SendToAll();
+
+                                            TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
+                                            TE_SendToAll();
+
+                                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,5.0,5.0,255);
+                                            TE_SendToAll();
+
+                                            new Float:splashDir[3];
+                                            splashDir[0] = 0.0;
+                                            splashDir[1] = 0.0;
+                                            splashDir[2] = 100.0;
+                                            TE_SetupEnergySplash(targetLoc, splashDir, true);
+
+                                            decl String:object[32] = "";
+                                            strcopy(object, sizeof(object), class[7]);
+
+                                            LogMessage("[SourceCraft] %N has stolen %s's %N!\n", client,builder,object);
+                                            PrintToChat(client,"%c[SourceCraft] %c you have stolen %N's %s!",
+                                                        COLOR_GREEN,COLOR_DEFAULT,builder,object);
+                                            PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
+                                                        COLOR_GREEN,COLOR_DEFAULT,client,object);
+
+                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
+                                            if (cooldown > 0.0)
+                                            {
+                                                m_AllowMindControl[client]=false;
+                                                CreateTimer(cooldown,AllowMindControl,client);
+                                            }
+                                        }
                                     }
                                 }
                             }

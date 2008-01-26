@@ -255,7 +255,7 @@ public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
 
 public PickPocket(Handle:event, index, player, victimIndex, victimPlayer)
 {
-    new skill_cs = GetSkillLevel(player,raceID,0);
+    new skill_cs = GetSkillLevel(player,raceID,1);
     if (skill_cs > 0)
     {
         new chance;
@@ -398,7 +398,7 @@ public Action:Revulsion(Handle:timer)
                 new player=GetPlayer(client);
                 if(player>=0 && GetRace(player) == raceID)
                 {
-                    new skill_revulsion=GetSkillLevel(player,raceID,1);
+                    new skill_revulsion=GetSkillLevel(player,raceID,2);
                     if (skill_revulsion)
                     {
                         new num=skill_revulsion*3;

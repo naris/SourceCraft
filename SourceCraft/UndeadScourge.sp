@@ -383,7 +383,7 @@ public Undead_SuicideBomber(client,player,ult_level,bool:ondeath)
     if (!ondeath)
     {
         m_Suicided[client]=true;
-        ForcePlayerSuicide(client);
+        KillPlayer(client);
     }
 
     new Float:radius;

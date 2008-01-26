@@ -10,7 +10,6 @@
 #endif
 #define _health_included
 
-stock healthOffset[MAXPLAYERS+1];
 stock maxHealthOffset[MAXPLAYERS+1];
 
 stock maxHealth[MAXPLAYERS+1];
@@ -18,8 +17,6 @@ stock bool:healthIncreased[MAXPLAYERS+1];
 
 stock SetupHealth(client)
 {
-    healthOffset[client]=FindDataMapOffs(client,"m_iHealth");
-
     if (GameType == tf2)
     {
         maxHealthOffset[client]=FindDataMapOffs(client,"m_iMaxHealth");
@@ -58,10 +55,12 @@ stock IncreaseHealth(client, amount)
 
 stock SetHealth(entity,amount)
 {
+    /*
     if (amount <= 0)
         ForcePlayerSuicide(entity);
     else
-        SetEntData(entity,healthOffset[entity],amount,1);
+    */
+        SetEntityHealth(entity,amount);
 }
 
 stock SetMaxHealth(entity,amount)
@@ -78,4 +77,10 @@ stock GetMaxHealth(entity)
         return GetEntData(entity,maxHealthOffset[entity],1);
     else
         return maxHealth[entity];
+}
+
+stock KillPlayer(client)
+{
+    ForcePlayerSuicide(client);
+    FakeClientCommand(client,"kill\n"); // die! die! die!!!!
 }

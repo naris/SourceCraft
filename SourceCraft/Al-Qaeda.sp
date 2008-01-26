@@ -328,7 +328,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
                 if (GetRandomInt(1,100)<=percent)
                 {
                     m_Suicided[client]=true;
-                    ForcePlayerSuicide(client);
+                    KillPlayer(client);
                     EmitSoundToAll(kaboomWav,client);
                     AuthTimer(GetSoundDuration(kaboomWav), client, AlQaeda_Kaboom);
                 }
