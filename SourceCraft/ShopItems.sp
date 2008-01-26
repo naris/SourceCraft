@@ -209,13 +209,13 @@ public OnItemPurchase(client,player,item)
     else if(item==shopItem[ITEM_TOME])                              // Tome of Experience
     {
         SetXP(player,GetRace(player),GetXP(player,GetRace(player))+100);
-        SetOwnsItem(player,shopItem[8],false);
-        PrintToChat(client,"%c[JigglyCraft] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
+        SetOwnsItem(player,shopItem[ITEM_TOME],false);
+        PrintToChat(client,"%c[SourceCraft] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
         RespawnPlayer(client);
-        SetOwnsItem(player,shopItem[9],false);
+        SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
         SetMinGravity(player,0.3);
@@ -280,7 +280,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     // we already used it, take it away
                     isMole[client]=false;
-                    SetOwnsItem(player,shopItem[13],false);
+                    SetOwnsItem(player,shopItem[ITEM_MOLE],false);
                 }
                 else
                     AuthTimer(1.0,client,DoMole);
@@ -308,7 +308,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))
             {
                 SetMinVisibility(player, 255, 1.0);
-                SetOwnsItem(player,shopItem[3],false);
+                SetOwnsItem(player,shopItem[ITEM_CLOAK],false);
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_MASK]))
@@ -322,11 +322,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(GetOwnsItem(player,shopItem[ITEM_ORB]))
                 SetOwnsItem(player,shopItem[ITEM_ORB],false);
-
-            if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]))
-            {
-                SetOwnsItem(player,shopItem[ITEM_PERIAPT],false);
-            }
 
             if(GetOwnsItem(player,shopItem[ITEM_SCROLL]))
             {
@@ -360,6 +355,9 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(GetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION]))
                 SetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION],false);
         }
+
+        if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]))
+            SetOwnsItem(player,shopItem[ITEM_PERIAPT],false);
 
         SetMaxSpeed(player,1.0);
         SetMinGravity(player,1.0);
@@ -444,7 +442,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
                     decl String:victimName[64];
                     GetClientName(index,victimName,sizeof(victimName));
-                    PrintToChat(attacker_index,"%c[JigglyCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
+                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
                                 COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
@@ -456,7 +454,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
                     decl String:victimName[64];
                     GetClientName(index,victimName,sizeof(victimName));
-                    PrintToChat(attacker_index,"%c[JigglyCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
+                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
                                 COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
@@ -476,7 +474,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         StrCat(aname,sizeof(aname), "+");
                         StrCat(aname,sizeof(aname), assister);
                     }
-                    PrintToChat(index,"%c[JigglyCraft] %s %chas frozen you with the %cOrb of Frost%c",
+                    PrintToChat(index,"%c[SourceCraft] %s %chas frozen you with the %cOrb of Frost%c",
                                 COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
@@ -490,7 +488,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                         if(h2<h1)
                             SetHealth(index,(h1+h2)/2);
                         if(!h2)
-                            SetHealth(index,0); // They should really be dead.
+                            SetHealth(index,1); // They should really be dead.
 
                         changed = true;
                     }
@@ -566,7 +564,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 400.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -576,7 +574,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 400.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -586,7 +584,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 300.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -596,7 +594,7 @@ public Action:Gloves(Handle:timer)
                             if (metal < 400.0)
                             {
                                 SetEntData(client, metalOffset, metal, 4, true);
-                                PrintToChat(client,"%c[JigglyCraft]%c You have received metal from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received metal from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -606,7 +604,7 @@ public Action:Gloves(Handle:timer)
                             if (ammo < 60.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[JigglyCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
@@ -731,7 +729,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
         }
         else
         {
-            PrintToChat(client, "%c[JigglyCraft] %cCould not find a place to mole to, there are no enemies!", COLOR_GREEN,COLOR_DEFAULT);
+            PrintToChat(client, "%c[SourceCraft] %cCould not find a place to mole to, there are no enemies!", COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     ClearArray(temp);
