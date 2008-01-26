@@ -161,6 +161,7 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    /*
     new bool:saveEnabled = SAVE_ENABLED;
     if (GameType == tf2)
     {
@@ -173,6 +174,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
                 SavePlayerData(client,GetClientVectorPosition(client));
         }
     }
+    */
 }
 
 public OnMapEnd()
