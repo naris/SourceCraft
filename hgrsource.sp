@@ -34,6 +34,7 @@ public Plugin:myinfo =
 new Handle:cvarAnnounce;
 // Sound handles
 new Handle:cvarGrabHitSound;
+new Handle:cvarSeekingSound;
 new Handle:cvarErrorSound;
 new Handle:cvarPullSound;
 new Handle:cvarDeniedSound;
@@ -106,9 +107,10 @@ new g_iNativeRopes;
 
 // Sounds
 new String:grabberHitWav[PLATFORM_MAX_PATH] = "soundcraft/ZLuHit00.wav"; // "weapons/crossbow/bolt_skewer1.wav";
-new String:pullerWav[PLATFORM_MAX_PATH] = "soundcraft/IntoNydus.wav"; // "weapons/crowwbow/hitbos2.wav";
+new String:pullerWav[PLATFORM_MAX_PATH] = "soundcraft/IntoNydus.wav"; // "weapons/crowwbow/hitbod2.wav";
 new String:deniedWav[PLATFORM_MAX_PATH] = "soundcraft/buzz.wav"; // "buttons/combine_button_locked.wav";
 new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/PError.wav"; // "player/suit_denydevice.wav";
+new String:seekingWav[PLATFORM_MAX_PATH] = "weapons/tripwire/ropeshoot.wav";
 new String:fireWav[PLATFORM_MAX_PATH] = "weapons/crossbow/fire1.wav";
 new String:hitWav[PLATFORM_MAX_PATH] = "weapons/crossbow/hit1.wav";
 
@@ -209,6 +211,7 @@ public OnPluginStart()
 
     // Sound cvars
     cvarGrabHitSound = CreateConVar("hgrsource_grab_sound", grabberHitWav, "sound when grab hits", FCVAR_PLUGIN);
+    cvarSeekingSound = CreateConVar("hgrsource_seeking_sound", seekingWav, "sound when grab is seeking a target", FCVAR_PLUGIN);
     cvarPullSound = CreateConVar("hgrsource_pull_sound", pullerWav, "sound when grab pulls", FCVAR_PLUGIN);
     cvarDeniedSound = CreateConVar("hgrsource_denied_sound", deniedWav, "access denied sound", FCVAR_PLUGIN);
     cvarErrorSound = CreateConVar("hgrsource_error_sound", errorWav, "error sound", FCVAR_PLUGIN);
@@ -259,6 +262,10 @@ public OnConfigsExecuted()
     GetConVarString(cvarGrabHitSound, grabberHitWav, sizeof(grabberHitWav));
     if (strlen(grabberHitWav))
         PrecacheSound(grabberHitWav, true);
+
+    GetConVarString(cvarSeekingSound, seekingWav, sizeof(seekingWav));
+    if (strlen(seekingWav))
+        PrecacheSound(seekingWav, true);
 
     GetConVarString(cvarDeniedSound, deniedWav, sizeof(deniedWav));
     PrecacheSound(deniedWav, true);
@@ -1055,6 +1062,8 @@ public Action:GrabSearch(Handle:timer,any:index)
             if (GetEntityNetClass(target,name,sizeof(name)) && StrContains(name, "Player"))
             {
                 // Found a player
+                StopSound(index,SNDCHAN_AUTO,seekingWav);
+
                 new Action:res;
                 Call_StartForward(fwdOnGrabbed);
                 Call_PushCell(index);
@@ -1076,18 +1085,20 @@ public Action:GrabSearch(Handle:timer,any:index)
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
                         CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
-                        //CloseHandle(timer); // Stop the timer
-                        return Plugin_Stop;
                     }
                     else
                     {
+                        Action_Drop(index);
                         EmitSoundToClient(index,errorWav);
                         PrintToChat(index,"%c[HGR:Source] %cTarget is too far away!",
                                     COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
+                //CloseHandle(timer); // Stop the timer
+                return Plugin_Stop;
             }
         }
+        EmitSoundToAll(seekingWav,index);
     }
     else
     {
@@ -1172,6 +1183,9 @@ public Action:Grabbing(Handle:timer,any:index)
 
 public Action_Drop(client)
 {
+    StopSound(client,SNDCHAN_AUTO,seekingWav);
+    StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
+
     gStatus[client][ACTION_GRAB]=false; // Tell plugin the grabber has dropped his target
     new target = gTargetindex[client];
     if(target>0)
