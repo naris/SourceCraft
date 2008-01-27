@@ -174,7 +174,7 @@ public Action:FlamingWrath(Handle:timer)
                                             {
                                                 new color[4] = { 255, 10, 55, 255 };
                                                 TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                        0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                                 TE_SendToAll();
 
                                                 new newhp=GetClientHealth(index)-skill_flaming_wrath;
@@ -187,6 +187,17 @@ public Action:FlamingWrath(Handle:timer)
                                                     LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
 
                                                 SetHealth(index,newhp);
+                                                if (newhp <= 0)
+                                                {
+                                                    new Handle:event = CreateEvent("player_death");
+                                                    if (event != INVALID_HANDLE)
+                                                    {
+                                                        SetEventInt(event, "userid", GetClientUserId(index));
+                                                        SetEventInt(event, "attacker", GetClientUserId(client));
+                                                        SetEventInt(event, "damage", skill_flaming_wrath);
+                                                        FireEvent(event);
+                                                    }
+                                                }
 
                                                 if (++count > num)
                                                     break;
@@ -448,6 +459,17 @@ public AlQaeda_Bomber(client,player,level,bool:ondeath)
                                     LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
                             }
                             SetHealth(x,newhealth);
+                            if (!ondeath && newhealth <= 0)
+                            {
+                                new Handle:event = CreateEvent("player_death");
+                                if (event != INVALID_HANDLE)
+                                {
+                                    SetEventInt(event, "userid", GetClientUserId(x));
+                                    SetEventInt(event, "attacker", GetClientUserId(client));
+                                    SetEventInt(event, "damage", hp);
+                                    FireEvent(event);
+                                }
+                            }
                         }
                     }
                 }
