@@ -171,7 +171,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                 else
                 {
                     PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
             }
         }

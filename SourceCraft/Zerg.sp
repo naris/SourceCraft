@@ -26,6 +26,8 @@ new raceID; // The ID we are assigned to
 new g_haloSprite;
 new g_lightningSprite;
 
+new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/PError.wav"; // "player/suit_denydevice.wav";
+
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Zerg",
@@ -71,6 +73,8 @@ public OnMapStart()
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
+
+    PrecacheSound(errorWav, true);
 }
 
 
@@ -187,6 +191,7 @@ public Action:OnGrabbed(client, target)
                 return Plugin_Continue;
         }
     }
+    EmitSoundToClient(client,errorWav);
     return Plugin_Stop;
 }
 
@@ -314,18 +319,30 @@ public Zerg_Tentacles(client, player, skilllevel)
 {
     if (skilllevel)
     {
-        new grabTime;
+        new duration, Float:range;
         switch(skilllevel)
         {
             case 1:
-                grabTime=5;
+            {
+                duration=5;
+                range=150.0;
+            }
             case 2:
-                grabTime=15;
+            {
+                duration=15;
+                range=300.0;
+            }
             case 3:
-                grabTime=30;
+            {
+                duration=30;
+                range=450.0;
+            }
             case 4:
-                grabTime=45;
+            {
+                duration=45;
+                range=0.0;
+            }
         }
-        GiveGrab(client,grabTime);
+        GiveGrab(client,duration,range);
     }
 }

@@ -392,18 +392,31 @@ public ChainLightning(player,client,ultlevel)
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
     {
+        new dmg;
         new num=ult_level*2;
         new Float:range=1.0;
         switch(ult_level)
         {
             case 1:
+            {
+                dmg=GetRandomInt(20,40);
                 range=300.0;
+            }
             case 2:
+            {
+                dmg=GetRandomInt(30,50);
                 range=450.0;
+            }
             case 3:
+            {
+                dmg=GetRandomInt(40,60);
                 range=650.0;
+            }
             case 4:
+            {
+                dmg=GetRandomInt(50,70);
                 range=800.0;
+            }
         }
         new count=0;
         new last=client;
@@ -428,10 +441,10 @@ public ChainLightning(player,client,ultlevel)
                             {
                                 new color[4] = { 10, 200, 255, 255 };
                                 TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
-                                        0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                                                  0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                                 TE_SendToAll();
 
-                                new new_health=GetClientHealth(index)-40;
+                                new new_health=GetClientHealth(index)-dmg;
                                 if (new_health <= 0)
                                 {
                                     new_health=0;
@@ -441,11 +454,13 @@ public ChainLightning(player,client,ultlevel)
                                     SetXP(player,raceID,newxp);
 
                                     LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                                    KillPlayer(index);
                                 }
                                 else
+                                {
                                     LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-
-                                SetHealth(index,new_health);
+                                    SetHealth(index,new_health);
+                                }
 
                                 last=index;
                                 if (++count > num)

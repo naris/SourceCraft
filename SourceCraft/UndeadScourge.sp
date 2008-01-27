@@ -346,6 +346,7 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
             {
                 victim_health = 0;
                 LogKill(index, victim, "vampiric_aura", "Vampiric Aura", leechhealth);
+                KillPlayer(index);
             }
             else
             {
@@ -356,9 +357,8 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
                             COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim,COLOR_TEAM,COLOR_DEFAULT);
 
                 LogToGame("[War3Source] %N leeched %d health from %N\n", index, leechhealth, victim);
+                SetHealth(victim,victim_health);
             }
-
-            SetHealth(victim,victim_health);
 
             new Float:start[3];
             GetClientAbsOrigin(index, start);
@@ -450,12 +450,13 @@ public Undead_SuicideBomber(client,player,ult_level,bool:ondeath)
                                 SetXP(player,raceID,newxp);
 
                                 LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                KillPlayer(x);
                             }
                             else
                             {
                                 LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                                SetHealth(x,newhealth);
                             }
-                            SetHealth(x,newhealth);
                         }
                     }
                 }

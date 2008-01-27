@@ -59,7 +59,7 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
 
-    CreateTimer(8.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(10.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnConfigsExecuted()
@@ -189,29 +189,29 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 switch (seniority_skill)
                 {
                     case 1:
-                        {
-                            bump=5;
-                            jobsBank=7;
-                            buyout=9;
-                        }
+                    {
+                        bump=5;
+                        jobsBank=7;
+                        buyout=9;
+                    }
                     case 2:
-                        {
-                            bump=10;
-                            jobsBank=15;
-                            buyout=22;
-                        }
+                    {
+                        bump=10;
+                        jobsBank=15;
+                        buyout=22;
+                    }
                     case 3:
-                        {
-                            bump=20;
-                            jobsBank=30;
-                            buyout=50;
-                        }
+                    {
+                        bump=20;
+                        jobsBank=30;
+                        buyout=50;
+                    }
                     case 4:
-                        {
-                            bump=35;
-                            jobsBank=50;
-                            buyout=63;
-                        }
+                    {
+                        bump=35;
+                        jobsBank=50;
+                        buyout=63;
+                    }
                 }
                 new chance = GetRandomInt(1,100);
                 if (chance<=bump)
@@ -234,7 +234,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                     SetCredits(player, GetCredits(player)+amount);
                     PrintToChat(index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
-                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
                 }
             }
         }
@@ -261,7 +261,7 @@ public BumpSomeone(client)
                 TE_SendToAll();
 
                 EmitSoundToAll(explodeWav,x);
-                ForcePlayerSuicide(x);
+                KillPlayer(x);
                 break;
             }
         }
@@ -348,19 +348,31 @@ public WorkRules(client, player, skilllevel)
 {
     if (skilllevel)
     {
-        new hookTime;
+        new duration, Float:range;
         switch(skilllevel)
         {
             case 1:
-                hookTime=5;
+            {
+                duration=2;
+                range=150.0;
+            }
             case 2:
-                hookTime=15;
+            {
+                duration=5;
+                range=300.0;
+            }
             case 3:
-                hookTime=30;
+            {
+                duration=8;
+                range=450.0;
+            }
             case 4:
-                hookTime=45;
+            {
+                duration=10;
+                range=0.0;
+            }
         }
-        GiveHook(client,hookTime);
+        GiveHook(client,duration,range);
     }
 }
 
@@ -536,7 +548,7 @@ public Action:Negotiations(Handle:timer)
                                     TE_SendToAll();
 
                                     EmitSoundToAll(explodeWav,client);
-                                    ForcePlayerSuicide(client);
+                                    KillPlayer(client);
                                 }
                                 case 16: // Workforce Reduction
                                 {
@@ -549,7 +561,7 @@ public Action:Negotiations(Handle:timer)
                                     TE_SendToAll();
 
                                     EmitSoundToAll(explodeWav,client);
-                                    ForcePlayerSuicide(client);
+                                    KillPlayer(client);
                                 }
                                 case 17: // Forced Buyout
                                 {
@@ -572,7 +584,7 @@ public Action:Negotiations(Handle:timer)
                                     TE_SendToAll();
 
                                     EmitSoundToAll(explodeWav,client);
-                                    ForcePlayerSuicide(client);
+                                    KillPlayer(client);
                                 }
                                 case 18: // Bankruptcy
                                 {
@@ -591,7 +603,7 @@ public Action:Negotiations(Handle:timer)
                                     TE_SendToAll();
 
                                     EmitSoundToAll(explodeWav,client);
-                                    ForcePlayerSuicide(client);
+                                    KillPlayer(client);
                                 }
                                 //case 19 & 20 do nothing
                             }

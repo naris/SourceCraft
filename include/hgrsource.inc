@@ -22,10 +22,12 @@ native ControlHookGrabRope(bool:plugin_only=true);
  * Give a hook to the player
  *
  * @param index 	Client index
- * @param limit     Time limit (in seconds) player can hook, <=0 is indefinate
+ * @param duration  How long (in seconds) player can hook, <=0 is unlimited (default 0)
+ * @param range     Range of the hook, <=0.0 is unlimited (default 0.0)
+ * @param flags     Not used yet.
  * @return			none
  */
-native GiveHook(client,limit=0);
+native GiveHook(client,duration=0,Float:range=0.0,flags=0);
 
 /**
  * Take the hook from the player
@@ -39,10 +41,12 @@ native TakeHook(client);
  * Give a grabber to the player
  *
  * @param index 	Client index
- * @param limit     Time limit (in seconds) player can grab, <=0 is indefinate
+ * @param duration  How long (in seconds) player can grab, <=0 is unlimited
+ * @param range     Range of the grab, <=0.0 is unlimited (default 0.0)
+ * @param flags     1==Puller (drag victim closer), 0==Grabber (keep distance constant {more or less}) (default 0)
  * @return			none
  */
-native GiveGrab(client,limit=0);
+native GiveGrab(client,duration=0,Float:range=0.0,flags=0);
 
 /**
  * Take the grabber from the player
@@ -56,10 +60,12 @@ native TakeGrab(client);
  * Give a rope to the player
  *
  * @param index 	Client index
- * @param limit     Time limit (in seconds) player can grab, <=0 is indefinate
+ * @param duration  How long (in seconds) player can rope, <=0 is unlimited
+ * @param range     Range of the rope, <=0.0 is unlimited (default 0.0)
+ * @param flags     Not used yet.
  * @return			none
  */
-native GiveRope(client,limit=0);
+native GiveRope(client,duration=0,Float:range=0.0,flags=0);
 
 /**
  * Take the rope from the player

@@ -77,7 +77,7 @@ stock GetMaxHealth(entity)
 stock KillPlayer(client)
 {
     // die! die! die!!!!
-    ForcePlayerSuicide(client);
-    //FakeClientCommand(client,"kill\n");
     //SetEntityHealth(client,0);
+    //ForcePlayerSuicide(client);
+    FakeClientCommand(client,"kill\n");
 }

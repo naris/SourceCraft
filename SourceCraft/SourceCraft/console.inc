@@ -13,7 +13,7 @@
 
 public InitCVars()
 {
-    CreateConVar("sc_version",VERSION,"SourceCraft version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY);
+    CreateConVar("sc_version",VERSION,"SourceCraft version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_UNLOGGED|FCVAR_DONTRECORD);
 
     m_SaveXPConVar=CreateConVar("sc_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("sc_minimumultimatelevel","8");

@@ -193,7 +193,7 @@ public Action:FlamingWrath(Handle:timer)
                                                     else
                                                     {
                                                         LogError("Unable to create player_death event!\n");
-                                                        ForcePlayerSuicide(index);
+                                                        KillPlayer(index);
                                                     }
                                                 }
                                                 else
@@ -448,11 +448,14 @@ public AlQaeda_Bomber(client,player,level,bool:ondeath)
                                 SetXP(player,raceID,newxp);
 
                                 if (ondeath)
+                                {
                                     LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                    SetHealth(x,newhealth);
+                                }
                                 else
                                 {
-                                    //LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);
-                                    ForcePlayerSuicide(x);
+                                    LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);
+                                    KillPlayer(x);
                                 }
                             }
                             else
@@ -461,8 +464,9 @@ public AlQaeda_Bomber(client,player,level,bool:ondeath)
                                     LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
                                 else
                                     LogDamage(client, x, "mad_bomber", "Mad Bomber", hp);
+
+                                SetHealth(x,newhealth);
                             }
-                            SetHealth(x,newhealth);
                         }
                     }
                 }

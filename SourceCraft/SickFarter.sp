@@ -368,11 +368,13 @@ public Fart(player,client,ultlevel)
                                     SetXP(player,raceID,newxp);
 
                                     LogKill(client, index, "fart", "Fart", 40, addxp);
+                                    KillPlayer(index);
                                 }
                                 else
+                                {
                                     LogDamage(client, index, "fart", "Fart", 40);
-
-                                SetHealth(index,new_health);
+                                    SetHealth(index,new_health);
+                                }
 
                                 if (++count > num)
                                     break;

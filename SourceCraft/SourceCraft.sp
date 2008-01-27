@@ -14,8 +14,7 @@
 #include <keyvalues>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION_NUM "1.0 $Revision$"
-#define VERSION     "$Revision$"
+#define VERSION     "1.0.1 $Revision$ beta"
 
 // Temporary Definitions
 new Handle:arrayPlayers = INVALID_HANDLE;
@@ -61,7 +60,7 @@ public Plugin:myinfo=
     name="SourceCraft",
     author="Naris (with some PimpinJuice code)",
     description="StarCraft/WarCraft for the Source engine.",
-    version=VERSION_NUM,
+    version=VERSION,
     url="http://www.jigglysfunhouse.net/"
 };
 

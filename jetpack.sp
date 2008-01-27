@@ -43,6 +43,8 @@
 // ConVars
 new Handle:sm_jetpack		= INVALID_HANDLE;
 new Handle:sm_jetpack_sound	= INVALID_HANDLE;
+new Handle:sm_jetpack_fuel_sound	= INVALID_HANDLE;
+new Handle:sm_jetpack_refuel_sound	= INVALID_HANDLE;
 new Handle:sm_jetpack_speed	= INVALID_HANDLE;
 new Handle:sm_jetpack_volume= INVALID_HANDLE;
 new Handle:sm_jetpack_fuel	= INVALID_HANDLE;
@@ -61,8 +63,10 @@ new g_iMoveCollide	= -1;
 new g_iMoveType		= -1;
 new g_iVelocity		= -1;
 
-// Soundfile
-new String:g_sSound[255]	= "vehicles/airboat/fan_blade_fullthrottle_loop1.wav";
+// Soundfiles
+new String:g_sSound[PLATFORM_MAX_PATH]	= "vehicles/airboat/fan_blade_fullthrottle_loop1.wav";
+new String:g_fSound[PLATFORM_MAX_PATH]	= "sourcecraft/OutOfGas.wav";
+new String:g_rSound[PLATFORM_MAX_PATH]	= "sourcecraft/Transmission.wav";
 
 // Is Jetpack Enabled
 new bool:g_bHasJetpack[MAXPLAYERS + 1];
@@ -120,6 +124,8 @@ public OnPluginStart()
 	CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	sm_jetpack = CreateConVar("sm_jetpack", "1", "enable jetpacks on the server", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	sm_jetpack_sound = CreateConVar("sm_jetpack_sound", g_sSound, "enable the jetpack sound", FCVAR_PLUGIN);
+	sm_jetpack_sound = CreateConVar("sm_jetpack_out_of_fuel_sound", g_fSound, "enable the jetpack out of fuel sound", FCVAR_PLUGIN);
+	sm_jetpack_sound = CreateConVar("sm_jetpack_refuel_sound", g_rSound, "enable the jetpack refuel sound", FCVAR_PLUGIN);
 	sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_PLUGIN);
 	sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_PLUGIN);
 	sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_PLUGIN);
@@ -196,7 +202,18 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public OnConfigsExecuted()
 {
 	GetConVarString(sm_jetpack_sound, g_sSound, sizeof(g_sSound));
-	PrecacheSound(g_sSound, true);
+	if (strlen(g_sSound))
+		PrecacheSound(g_sSound, true);
+
+	GetConVarString(sm_jetpack_fuel_sound, g_fSound, sizeof(g_fSound));
+	PrecacheSound(g_fSound, true);
+	if (strlen(g_fSound))
+		PrecacheSound(g_fSound, true);
+
+	GetConVarString(sm_jetpack_refuel_sound, g_rSound, sizeof(g_rSound));
+	PrecacheSound(g_rSound, true);
+	if (strlen(g_rSound))
+		PrecacheSound(g_rSound, true);
 }
 
 public OnGameFrame()
@@ -219,9 +236,10 @@ public OnGameFrame()
 						{
 							// Low on Fuel, Make it sputter.
 							if (g_iFuel[i] % 2)
-                            {
-								StopSound(i, SNDCHAN_AUTO, g_sSound);
+							{
 								SetMoveType(i, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
+								if (strlen(g_sSound))
+									StopSound(i, SNDCHAN_AUTO, g_sSound);
 							}
 							else
 							{
@@ -282,6 +300,8 @@ public OnGameFrame()
 						SendTopMessage(i, 1, 1, 255,0,0,128, "[] Your jetpack has run out of fuel");
 						PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
 									COLOR_GREEN,COLOR_DEFAULT);
+						if (strlen(g_fSound))
+							EmitSoundToClient(i, g_fSound);
 					}
 				}
 			}
@@ -302,6 +322,8 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 				SendTopMessage(client, 30, 1, 0,255,0,128, "[====+=====|=====+====]");
 				PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
 							COLOR_GREEN,COLOR_DEFAULT);
+				if (strlen(g_rSound))
+					EmitSoundToClient(client, g_rSound);
 			}
 		}
 	}
@@ -351,9 +373,13 @@ StartJetpack(client)
 	{
 		new Float:vecPos[3];
 		GetClientAbsOrigin(client, vecPos);
-		EmitSoundToAll(g_sSound, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
-				       GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1, vecPos, NULL_VECTOR, true, 0.0);
 		SetMoveType(client, MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
+		if (strlen(g_sSound))
+		{
+			EmitSoundToAll(g_sSound, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
+							GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1,
+							vecPos, NULL_VECTOR, true, 0.0);
+		}
 		g_bJetpackOn[client] = true;
 	}
 }
@@ -366,7 +392,9 @@ StopJetpack(client)
 		if(IsAlive(client))
 			SetMoveType(client, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
 	}
-	StopSound(client, SNDCHAN_AUTO, g_sSound);
+
+	if (strlen(g_sSound))
+		StopSound(client, SNDCHAN_AUTO, g_sSound);
 }
 
 SetMoveType(client, movetype, movecollide)
@@ -723,9 +751,9 @@ public OnAdminMenuReady(Handle:topmenu)
 		hAdminMenu = topmenu;
 		new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_PLAYERCOMMANDS);
 		oGiveJetpack = AddToTopMenu(hAdminMenu, "sm_give_jetpack", TopMenuObject_Item, AdminMenu,
-				server_commands, "sm_give_jetpack", ADMFLAG_JETPACK);
+									server_commands, "sm_give_jetpack", ADMFLAG_JETPACK);
 		oTakeJetpack = AddToTopMenu(hAdminMenu, "sm_take_jetpack", TopMenuObject_Item, AdminMenu,
-				server_commands, "sm_take_jetpack", ADMFLAG_JETPACK);
+									server_commands, "sm_take_jetpack", ADMFLAG_JETPACK);
 	}
 }
 
