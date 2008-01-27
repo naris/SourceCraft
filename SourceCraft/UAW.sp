@@ -246,10 +246,9 @@ public BumpSomeone(client)
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
     {
-        if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
-            GetClientTeam(x) == GetClientTeam(client))
+        if (x != client && IsClientConnected(x) && IsPlayerAlive(x))
         {
-            if (GetRandomInt(1,100) <= 50)
+            if (GetRandomInt(1,100) <= 0)
             {
                 PrintToChat(client,"%c[SourceCraft]%c You have bumped %N due to %cUnion Rules%c!",
                             COLOR_GREEN,COLOR_DEFAULT,x,COLOR_TEAM,COLOR_DEFAULT);

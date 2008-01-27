@@ -327,54 +327,57 @@ public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
     {
-        decl String:weapon[64];
-        GetEventString(event,"weapon",weapon,63);
-        if (!strlen(weapon))
-            GetClientWeapon(index, weapon, 63);
-
-        if (StrEqual(weapon,"hegrenade",false) ||
-            StrEqual(weapon,"tf_projectile_pipe",false) ||
-            StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
-            StrEqual(weapon,"tf_weapon_rocketlauncher",false) ||
-            StrEqual(weapon,"tf_projectile_rocket",false) ||
-            StrEqual(weapon,"weapon_frag_us",false) ||
-            StrEqual(weapon,"weapon_frag_ger",false) ||
-            StrEqual(weapon,"weapon_bazooka",false) ||
-            StrEqual(weapon,"weapon_pschreck",false))
+        if(GetRandomInt(1,100)<=50)
         {
-            new Float:percent;
-            switch(skill_cg)
+            decl String:weapon[64];
+            GetEventString(event,"weapon",weapon,63);
+            if (!strlen(weapon))
+                GetClientWeapon(index, weapon, 63);
+
+            if (StrEqual(weapon,"hegrenade",false) ||
+                StrEqual(weapon,"tf_projectile_pipe",false) ||
+                StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
+                StrEqual(weapon,"tf_weapon_rocketlauncher",false) ||
+                StrEqual(weapon,"tf_projectile_rocket",false) ||
+                StrEqual(weapon,"weapon_frag_us",false) ||
+                StrEqual(weapon,"weapon_frag_ger",false) ||
+                StrEqual(weapon,"weapon_bazooka",false) ||
+                StrEqual(weapon,"weapon_pschreck",false))
             {
-                case 1:
-                    percent=0.4;
-                case 2:
-                    percent=1.067;
-                case 3:
-                    percent=1.733;
-                case 4:
-                    percent=2.4;
+                new Float:percent;
+                switch(skill_cg)
+                {
+                    case 1:
+                        percent=0.4;
+                    case 2:
+                        percent=1.067;
+                    case 3:
+                        percent=1.33;
+                    case 4:
+                        percent=1.80;
+                }
+
+                new damage=GetDamage(event, victimIndex);
+                new health_take=RoundFloat(float(damage)*percent);
+                new new_health=GetClientHealth(victimIndex)-health_take;
+                if (new_health <= 0)
+                {
+                    new_health=0;
+                    LogKill(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
+                }
+                else
+                    LogDamage(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
+
+                SetHealth(victimIndex,new_health);
+
+                new Float:Origin[3];
+                GetClientAbsOrigin(victimIndex, Origin);
+                Origin[2] += 5;
+
+                TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
+                TE_SendToAll();
+                return true;
             }
-
-            new damage=GetDamage(event, victimIndex);
-            new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetClientHealth(victimIndex)-health_take;
-            if (new_health <= 0)
-            {
-                new_health=0;
-                LogKill(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
-            }
-            else
-                LogDamage(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
-
-            SetHealth(victimIndex,new_health);
-
-            new Float:Origin[3];
-            GetClientAbsOrigin(victimIndex, Origin);
-            Origin[2] += 5;
-
-            TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
-            TE_SendToAll();
-            return true;
         }
     }
     return false;

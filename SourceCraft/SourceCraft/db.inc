@@ -129,18 +129,22 @@ public SavePlayerData(client,vectorpos)
             ReplaceString(name,sizeof(name),"\\","\\\\");
             ReplaceString(name,sizeof(name),"'","''");
 
-            decl String:replaceQuery[512] = "";
-            Format(replaceQuery,sizeof(replaceQuery),
-                   "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)",
-                   steamid, name, raceName, credits, overall_level);
-
-            if (!SQL_FastQuery(DBIDB,replaceQuery))
+            decl String:SQLString[512] = "";
+            Format(SQLString,sizeof(SQLString),
+                   "INSERT INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race='%s', credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, raceName, credits, overall_level, raceName, credits, overall_level);
+            if (!SQL_FastQuery(DBIDB,SQLString))
             {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("[SourceCraft] Unable to replace player: %s\nSQL:%s\n",
-                         error, replaceQuery);
-                return;
+                Format(SQLString,sizeof(SQLString),
+                       "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)", steamid, name, raceName, credits, overall_level);
+
+                if (!SQL_FastQuery(DBIDB,SQLString))
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("[SourceCraft] Unable to replace player: %s\nSQL:%s\n",
+                             error, SQLString);
+                    return;
+                }
             }
 
             for(new raceId=0;raceId<RACE_COUNT;raceId++)
@@ -153,16 +157,16 @@ public SavePlayerData(client,vectorpos)
 
                 if (xp || level)
                 {
-                    Format(replaceQuery,sizeof(replaceQuery),
+                    Format(SQLString,sizeof(SQLString),
                            "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)",
                            steamid, raceName, xp, level);
 
-                    if (!SQL_FastQuery(DBIDB,replaceQuery))
+                    if (!SQL_FastQuery(DBIDB,SQLString))
                     {
                         decl String:error[256] = "";
                         SQL_GetError(DBIDB, error, sizeof(error));
                         LogError("[SourceCraft] Unable to replace player's race: %s\nSQL:%s\n",
-                                 error, replaceQuery);
+                                 error, SQLString);
                         return;
                     }
 
@@ -171,16 +175,16 @@ public SavePlayerData(client,vectorpos)
                         new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
                         if (skillLevel)
                         {
-                            Format(replaceQuery,sizeof(replaceQuery),
+                            Format(SQLString,sizeof(SQLString),
                                    "REPLACE INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d)",
                                    steamid, raceName, skill, skillLevel);
 
-                            if (!SQL_FastQuery(DBIDB,replaceQuery))
+                            if (!SQL_FastQuery(DBIDB,SQLString))
                             {
                                 decl String:error[256] = "";
                                 SQL_GetError(DBIDB, error, sizeof(error));
                                 LogError("[SourceCraft] Unable to insert player's skill: %s\nSQL:%s\n",
-                                         error, replaceQuery);
+                                         error, SQLString);
                                 return;
                             }
                         }
