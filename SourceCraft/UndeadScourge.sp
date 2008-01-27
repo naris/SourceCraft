@@ -355,7 +355,7 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
                 PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
                             COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim,COLOR_TEAM,COLOR_DEFAULT);
 
-                LogMessage("[War3Source] %N leeched %d health from %N\n", index, leechhealth, victim);
+                LogToGame("[War3Source] %N leeched %d health from %N\n", index, leechhealth, victim);
             }
 
             SetHealth(victim,victim_health);
@@ -424,7 +424,7 @@ public Undead_SuicideBomber(client,player,ult_level,bool:ondeath)
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
     {
-        if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
+        if (x != client && IsClientInGame(x) && IsPlayerAlive(x) &&
             GetClientTeam(x) != GetClientTeam(client))
         {
             new player_check=GetPlayer(x);

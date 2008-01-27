@@ -25,7 +25,7 @@ stock PlayerOfAuth(const String:auth[])
     decl String:authStr[64];
     for(new x=1;x<=max;x++)
     {
-        if(IsClientConnected(x))
+        if(IsClientInGame(x))
         {
             GetClientAuthString(x,authStr,63);
             if(StrEqual(auth,authStr))

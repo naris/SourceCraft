@@ -127,7 +127,7 @@ public Action:Regeneration(Handle:timer)
                         GetClientAbsOrigin(client, clientLoc);
                         for (new index=1;index<=maxplayers;index++)
                         {
-                            if (index != client && IsClientConnected(index) && IsPlayerAlive(index) &&
+                            if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
                                 GetClientTeam(index) == GetClientTeam(client))
                             {
                                 new player_check=GetPlayer(index);
@@ -177,7 +177,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public Action:OnGrabbed(client, target)
 {
-    if (target != client && IsClientConnected(target) && IsPlayerAlive(target) &&
+    if (target != client && IsClientInGame(target) && IsPlayerAlive(target) &&
         GetClientTeam(target) != GetClientTeam(client))
     {
         new player_check=GetPlayer(target);

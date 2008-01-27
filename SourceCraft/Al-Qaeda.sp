@@ -158,7 +158,7 @@ public Action:FlamingWrath(Handle:timer)
                         GetClientAbsOrigin(client, clientLoc);
                         for (new index=1;index<=maxplayers;index++)
                         {
-                            if (index != client && IsClientConnected(index))
+                            if (index != client && IsClientInGame(index))
                             {
                                 if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
                                 {
@@ -181,14 +181,7 @@ public Action:FlamingWrath(Handle:timer)
                                                 if (newhp <= 0)
                                                 {
                                                     newhp=0;
-                                                    LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                                }
-                                                else
-                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-
-                                                SetHealth(index,newhp);
-                                                if (newhp <= 0)
-                                                {
+                                                    //LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
                                                     new Handle:event = CreateEvent("player_death");
                                                     if (event != INVALID_HANDLE)
                                                     {
@@ -197,6 +190,16 @@ public Action:FlamingWrath(Handle:timer)
                                                         SetEventInt(event, "damage", skill_flaming_wrath);
                                                         FireEvent(event);
                                                     }
+                                                    else
+                                                    {
+                                                        LogError("Unable to create player_death event!\n");
+                                                        ForcePlayerSuicide(index);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                                    SetHealth(index,newhp);
                                                 }
 
                                                 if (++count > num)
@@ -233,8 +236,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new userid     = GetEventInt(event,"userid");
-    new index      = GetClientOfUserId(userid);
+    new userid = GetEventInt(event,"userid");
+    new index  = GetClientOfUserId(userid);
     new player = GetPlayer(index);
     if (player > -1)
     {
@@ -267,13 +270,13 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         return;
                     }
                 }
+            }
 
-                new suicide_skill=GetSkillLevel(player,raceID,2);
-                if (suicide_skill)
-                {
-                    EmitSoundToAll(kaboomWav,index);
-                    AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
-                }
+            new suicide_skill=GetSkillLevel(player,raceID,2);
+            if (suicide_skill)
+            {
+                EmitSoundToAll(kaboomWav,index);
+                AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
             }
         }
     }
@@ -339,9 +342,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
                 if (GetRandomInt(1,100)<=percent)
                 {
                     m_Suicided[client]=true;
-                    KillPlayer(client);
-                    EmitSoundToAll(kaboomWav,client);
-                    AuthTimer(GetSoundDuration(kaboomWav), client, AlQaeda_Kaboom);
+                    ForcePlayerSuicide(client);
                 }
                 else
                     AlQaeda_Bomber(client,player,ult_level,false);
@@ -421,7 +422,7 @@ public AlQaeda_Bomber(client,player,level,bool:ondeath)
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
     {
-        if (x != client && IsClientConnected(x) && IsPlayerAlive(x) &&
+        if (x != client && IsClientInGame(x) && IsPlayerAlive(x) &&
             GetClientTeam(x) != GetClientTeam(client))
         {
             new player_check=GetPlayer(x);
@@ -447,29 +448,21 @@ public AlQaeda_Bomber(client,player,level,bool:ondeath)
                                 SetXP(player,raceID,newxp);
 
                                 if (ondeath)
-                                    LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);
-                                else
                                     LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                else
+                                {
+                                    //LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);
+                                    ForcePlayerSuicide(x);
+                                }
                             }
                             else
                             {
                                 if (ondeath)
-                                    LogDamage(client, x, "mad_bomber", "Mad Bomber", hp);
-                                else
                                     LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                                else
+                                    LogDamage(client, x, "mad_bomber", "Mad Bomber", hp);
                             }
                             SetHealth(x,newhealth);
-                            if (!ondeath && newhealth <= 0)
-                            {
-                                new Handle:event = CreateEvent("player_death");
-                                if (event != INVALID_HANDLE)
-                                {
-                                    SetEventInt(event, "userid", GetClientUserId(x));
-                                    SetEventInt(event, "attacker", GetClientUserId(client));
-                                    SetEventInt(event, "damage", hp);
-                                    FireEvent(event);
-                                }
-                            }
                         }
                     }
                 }

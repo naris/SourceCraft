@@ -133,7 +133,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
         new skill = GetSkillLevel(player,race,3);
         if (skill)
         {
-            OrcishHorde_ChainLightning(player,client,skill);
+            ChainLightning(player,client,skill);
             new Float:cooldown = GetConVarFloat(cvarChainCooldown);
             if (cooldown > 0.0)
             {
@@ -169,8 +169,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 {
                     if (GetRace(attackerPlayer) == raceID)
                     {
-                        changed |= OrcishHorde_AcuteStrike(event, attackerIndex, attackerPlayer, victimIndex);
-                        changed |= OrcishHorde_AcuteGrenade(event, attackerIndex, attackerPlayer, victimIndex);
+                        if (AcuteGrenade(event, attackerIndex, attackerPlayer, victimIndex))
+                            changed = true;
+                        else
+                            changed |= AcuteStrike(event, attackerIndex, attackerPlayer, victimIndex);
                     }
                 }
             }
@@ -184,8 +186,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 {
                     if (GetRace(assisterPlayer) == raceID)
                     {
-                        changed |= OrcishHorde_AcuteStrike(event, assisterIndex, assisterPlayer, victimIndex);
-                        changed |= OrcishHorde_AcuteGrenade(event, assisterIndex, assisterPlayer, victimIndex);
+                        if (AcuteGrenade(event, assisterIndex, assisterPlayer, victimIndex))
+                            changed = true;
+                        else
+                            changed |= AcuteStrike(event, assisterIndex, assisterPlayer, victimIndex);
                     }
                 }
             }
@@ -279,7 +283,7 @@ public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast
     }
 }
 
-public bool:OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
+public bool:AcuteStrike(Handle:event, index, player, victimIndex)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -322,7 +326,7 @@ public bool:OrcishHorde_AcuteStrike(Handle:event, index, player, victimIndex)
     return false;
 }
 
-public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
+public bool:AcuteGrenade(Handle:event, index, player, victimIndex)
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
@@ -383,7 +387,7 @@ public bool:OrcishHorde_AcuteGrenade(Handle:event, index, player, victimIndex)
     return false;
 }
 
-public OrcishHorde_ChainLightning(player,client,ultlevel)
+public ChainLightning(player,client,ultlevel)
 {
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)

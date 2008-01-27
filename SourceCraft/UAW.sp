@@ -246,7 +246,7 @@ public BumpSomeone(client)
     new clientCount = GetClientCount();
     for(new x=1;x<=clientCount;x++)
     {
-        if (x != client && IsClientConnected(x) && IsPlayerAlive(x))
+        if (x != client && IsClientInGame(x) && IsPlayerAlive(x))
         {
             if (GetRandomInt(1,100) <= 0)
             {
