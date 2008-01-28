@@ -91,19 +91,19 @@ public OnRaceSelected(client,player,oldrace,race)
         {
             new skill_cloak=GetSkillLevel(player,race,0);
             if (skill_cloak)
-                TerranConfederacy_Cloak(client, player, skill_cloak);
+                Cloak(client, player, skill_cloak);
 
             new skill_armor = GetSkillLevel(player,raceID,1);
             if (skill_armor)
-                TerranConfederacy_SetupArmor(client, skill_armor);
+                SetupArmor(client, skill_armor);
 
             new skill_stimpacks = GetSkillLevel(player,race,2);
             if (skill_stimpacks)
-                TerranConfederacy_Stimpacks(client, player, skill_stimpacks);
+                Stimpacks(client, player, skill_stimpacks);
 
             new skill_jetpack=GetSkillLevel(player,race,3);
             if (skill_jetpack)
-                TerranConfederacy_Jetpack(client, player, skill_jetpack);
+                Jetpack(client, skill_jetpack);
         }
     }
 }
@@ -124,13 +124,13 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
         if (skill==0)
-            TerranConfederacy_Cloak(client, player, newskilllevel);
+            Cloak(client, player, newskilllevel);
         else if (skill==1)
-            TerranConfederacy_SetupArmor(client, newskilllevel);
+            SetupArmor(client, newskilllevel);
         else if (skill==2)
-            TerranConfederacy_Stimpacks(client, player, newskilllevel);
+            Stimpacks(client, player, newskilllevel);
         else if (skill==3)
-            TerranConfederacy_Jetpack(client, player, newskilllevel);
+            Jetpack(client, newskilllevel);
     }
 }
 
@@ -143,7 +143,7 @@ public OnItemPurchase(client,player,item)
         if (boots == item)
         {
             new skill=GetSkillLevel(player,race,2);
-            TerranConfederacy_Stimpacks(client, player, skill);
+            Stimpacks(client, player, skill);
         }
     }
 }
@@ -165,19 +165,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 new skill_cloak=GetSkillLevel(player,race,0);
                 if (skill_cloak)
-                    TerranConfederacy_Cloak(client, player, skill_cloak);
+                    Cloak(client, player, skill_cloak);
 
                 new skill_armor = GetSkillLevel(player,raceID,1);
                 if (skill_armor)
-                    TerranConfederacy_SetupArmor(client, skill_armor);
+                    SetupArmor(client, skill_armor);
 
                 new skill_stimpacks = GetSkillLevel(player,race,2);
                 if (skill_stimpacks)
-                    TerranConfederacy_Stimpacks(client, player, skill_stimpacks);
+                    Stimpacks(client, player, skill_stimpacks);
 
                 new skill_jetpack=GetSkillLevel(player,race,3);
                 if (skill_jetpack)
-                    TerranConfederacy_Jetpack(client, player, skill_jetpack);
+                    Jetpack(client, skill_jetpack);
             }
         }
     }
@@ -220,14 +220,14 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
             new victimrace = GetRace(victimplayer);
             if (victimrace == raceID)
             {
-                changed |= TerranConfederacy_Armor(event, victimIndex, victimplayer);
+                changed |= Armor(event, victimIndex, victimplayer);
             }
         }
     }
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:TerranConfederacy_Cloak(client, player, skilllevel)
+bool:Cloak(client, player, skilllevel)
 {
     new alpha;
     switch(skilllevel)
@@ -262,7 +262,7 @@ public bool:TerranConfederacy_Cloak(client, player, skilllevel)
     SetMinVisibility(player,alpha, 0.80, 0.0);
 }
 
-public TerranConfederacy_SetupArmor(client, skilllevel)
+SetupArmor(client, skilllevel)
 {
     switch (skilllevel)
     {
@@ -273,7 +273,7 @@ public TerranConfederacy_SetupArmor(client, skilllevel)
     }
 }
 
-public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimplayer)
+bool:Armor(Handle:event, victimIndex, victimplayer)
 {
     new skill_level_armor = GetSkillLevel(victimplayer,raceID,1);
     if (skill_level_armor)
@@ -329,7 +329,7 @@ public bool:TerranConfederacy_Armor(Handle:event, victimIndex, victimplayer)
     return false;
 }
 
-public TerranConfederacy_Stimpacks(client, player, skilllevel)
+Stimpacks(client, player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
@@ -364,7 +364,7 @@ public TerranConfederacy_Stimpacks(client, player, skilllevel)
     SetMaxSpeed(player,speed);
 }
 
-public TerranConfederacy_Jetpack(client, player, skilllevel)
+Jetpack(client, skilllevel)
 {
     if (skilllevel)
     {

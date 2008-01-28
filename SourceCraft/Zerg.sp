@@ -271,45 +271,46 @@ public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {
-        decl String:wepName[128];
-        if (GetEventString(event,"weapon", wepName, sizeof(wepName))>0)
+        decl String:weapon[128];
+        GetEventString(event,"weapon", weapon, sizeof(weapon));
+        if (!strlen(weapon))
+            GetClientWeapon(index, weapon, sizeof(weapon));
+
+        if (IsDamageFromMelee(weapon))
         {
-            if (IsDamageFromMelee(wepName))
+            new Float:percent;
+            switch(skill_adrenal_glands)
             {
-                new Float:percent;
-                switch(skill_adrenal_glands)
-                {
-                    case 1:
-                        percent=0.20;
-                    case 2:
-                        percent=0.55;
-                    case 3:
-                        percent=0.75;
-                    case 4:
-                        percent=1.00;
-                }
-
-                new damage=GetDamage(event, victimIndex);
-                new amount=RoundFloat(float(damage)*percent);
-                new newhp=GetClientHealth(victimIndex)-amount;
-                if (newhp <= 0)
-                {
-                    newhp=0;
-                    LogKill(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
-                }
-                else
-                    LogDamage(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
-
-                SetHealth(victimIndex,newhp);
-
-                new Float:Origin[3];
-                GetClientAbsOrigin(victimIndex, Origin);
-                Origin[2] += 5;
-
-                TE_SetupSparks(Origin,Origin,255,1);
-                TE_SendToAll();
-                return true;
+                case 1:
+                    percent=0.20;
+                case 2:
+                    percent=0.55;
+                case 3:
+                    percent=0.75;
+                case 4:
+                    percent=1.00;
             }
+
+            new damage=GetDamage(event, victimIndex);
+            new amount=RoundFloat(float(damage)*percent);
+            new newhp=GetClientHealth(victimIndex)-amount;
+            if (newhp <= 0)
+            {
+                newhp=0;
+                LogKill(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
+            }
+            else
+                LogDamage(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
+
+            SetHealth(victimIndex,newhp);
+
+            new Float:Origin[3];
+            GetClientAbsOrigin(victimIndex, Origin);
+            Origin[2] += 5;
+
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
+            return true;
         }
     }
     return false;
@@ -343,8 +344,6 @@ public Zerg_Tentacles(client, player, skilllevel)
                 range=0.0;
             }
         }
-        LogMessage("Giving grab to %N\n", client);
         GiveGrab(client,duration,range,1);
-        LogMessage("Gave grab to %N\n", client);
     }
 }

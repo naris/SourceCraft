@@ -109,7 +109,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
         {
             new ult_level = GetSkillLevel(player,race,0);
             if (ult_level)
-                Undead_SuicideBomber(client,player,ult_level,false);
+                SuicideBomber(client,player,ult_level,false);
         }
     }
 }
@@ -125,7 +125,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new ult_level=GetSkillLevel(player,raceID,0);
             if (ult_level)
-                Undead_SuicideBomber(index,player,ult_level,true);
+                SuicideBomber(index,player,ult_level,true);
         }
     }
 }
@@ -145,11 +145,11 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 new skilllevel_unholy = GetSkillLevel(player,race,1);
                 if (skilllevel_unholy)
-                    Undead_UnholyAura(index, player, skilllevel_unholy);
+                    UnholyAura(index, player, skilllevel_unholy);
 
                 new skilllevel_levi = GetSkillLevel(player,race,2);
                 if (skilllevel_levi)
-                    Undead_Levitation(index, player, skilllevel_levi);
+                    Levitation(index, player, skilllevel_levi);
             }
         }
     }
@@ -160,9 +160,9 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     if(race == raceID && GetRace(player) == raceID)
     {
         if (skill==1)
-            Undead_UnholyAura(client, player, newskilllevel);
+            UnholyAura(client, player, newskilllevel);
         else if (skill==2)
-            Undead_Levitation(client, player, newskilllevel);
+            Levitation(client, player, newskilllevel);
     }
 }
 
@@ -175,7 +175,7 @@ public OnItemPurchase(client,player,item)
         if (boots == item)
         {
             new skilllevel_unholy = GetSkillLevel(player,race,1);
-            Undead_UnholyAura(client,player, skilllevel_unholy);
+            UnholyAura(client,player, skilllevel_unholy);
         }
         else
         {
@@ -183,18 +183,31 @@ public OnItemPurchase(client,player,item)
             if (sock == item)
             {
                 new skilllevel_levi = GetSkillLevel(player,race,2);
-                Undead_Levitation(client,player, skilllevel_levi);
+                Levitation(client,player, skilllevel_levi);
             }
         }
     }
 }
 
-public OnRaceSelected(client,player,oldrace,newrace)
+public OnRaceSelected(client,player,oldrace,race)
 {
-    if (oldrace == raceID && newrace != raceID)
+    if (race != oldrace)
     {
-        SetMaxSpeed(player,1.0);
-        SetMinGravity(player,1.0);
+        if (oldrace == raceID)
+        {
+            SetMaxSpeed(player,1.0);
+            SetMinGravity(player,1.0);
+        }
+        else if (race == raceID)
+        {
+            new skilllevel_unholy = GetSkillLevel(player,race,1);
+            if (skilllevel_unholy)
+                UnholyAura(client, player, skilllevel_unholy);
+
+            new skilllevel_levi = GetSkillLevel(player,race,2);
+            if (skilllevel_levi)
+                Levitation(client, player, skilllevel_levi);
+        }
     }
 }
 
@@ -217,7 +230,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 {
                     if (GetRace(attackerWar3player) == raceID)
                     {
-                        changed |= Undead_VampiricAura(event, attackerIndex, attackerWar3player,
+                        changed |= VampiricAura(event, attackerIndex, attackerWar3player,
                                                        victimIndex, victimWar3player);
                     }
                 }
@@ -232,7 +245,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 {
                     if (GetRace(assisterWar3player) == raceID)
                     {
-                        changed |= Undead_VampiricAura(event, assisterIndex, assisterWar3player,
+                        changed |= VampiricAura(event, assisterIndex, assisterWar3player,
                                                        victimIndex, victimWar3player);
                     }
                 }
@@ -242,7 +255,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public Undead_UnholyAura(client, player, skilllevel)
+UnholyAura(client, player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
@@ -277,7 +290,7 @@ public Undead_UnholyAura(client, player, skilllevel)
     SetMaxSpeed(player,speed);
 }
 
-public Undead_Levitation(client, player, skilllevel)
+Levitation(client, player, skilllevel)
 {
     new Float:gravity=1.0;
     switch (skilllevel)
@@ -312,7 +325,7 @@ public Undead_Levitation(client, player, skilllevel)
     SetMinGravity(player,gravity);
 }
 
-public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_player)
+bool:VampiricAura(Handle:event, index, player, victim, victim_player)
 {
     new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
@@ -378,7 +391,7 @@ public bool:Undead_VampiricAura(Handle:event, index, player, victim, victim_play
     return false;
 }
 
-public Undead_SuicideBomber(client,player,ult_level,bool:ondeath)
+SuicideBomber(client,player,ult_level,bool:ondeath)
 {
     if (!ondeath)
     {
