@@ -575,7 +575,7 @@ public Action:Negotiations(Handle:timer)
                                     SetSkillLevel(player, raceID, 3, 0);
                                     SetCredits(player, GetCredits(player)+amount);
                                     PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies);
 
                                     new Float:location[3];
                                     GetClientAbsOrigin(client,location);
