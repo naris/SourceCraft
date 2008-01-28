@@ -248,14 +248,20 @@ public OnGameFrame()
 public bool:ParseSettings()
 {
     new Handle:keyValue=CreateKeyValues("SourceCraftSettings");
-    decl String:path[1024];
+    decl String:path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM,path,sizeof(path),"configs/sourcecraft.ini");
     FileToKeyValues(keyValue,path);
     decl String:error[256];
-    DBIDB=SQL_DefConnect(error,255);
-    if(!DBIDB)
+    DBIDB=SQL_DefConnect(error,sizeof(error));
+    if(DBIDB)
     {
-        LogError("Unable to get a Database Connection.");
+        decl String:driver[64]="";
+        SQL_GetDriverIdent(DBIDB, driver, sizeof(driver));
+        DB_IsMySQL = !strncmp(driver, "mysql", 5, false);
+    }
+    else
+    {
+        LogError("Unable to get a Database Connection: %s", error);
     }
     // Load level configuration
     KvRewind(keyValue);
