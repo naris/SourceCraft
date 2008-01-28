@@ -105,21 +105,34 @@ public OnPlayerAuthed(client,player)
 
 public OnRaceSelected(client,player,oldrace,race)
 {
-    if (race != oldrace && oldrace == raceID)
+    if (race != oldrace)
     {
-        m_TeleportCount[client]=0;
-
-        // Reset MaxHealth back to normal
-        if (healthIncreased[client] && GameType == tf2)
+        if (oldrace == raceID)
         {
-            SetMaxHealth(client, maxHealth[client]);
-            healthIncreased[client] = false;
+            m_TeleportCount[client]=0;
+
+            // Reset MaxHealth back to normal
+            if (healthIncreased[client] && GameType == tf2)
+            {
+                SetMaxHealth(client, maxHealth[client]);
+                healthIncreased[client] = false;
+            }
+
+            // Reset invisibility
+            if (player != -1)
+            {
+                SetMinVisibility(player, 255, 1.0);
+            }
         }
-
-        // Reset invisibility
-        if (player != -1)
+        else if (race == raceID)
         {
-            SetMinVisibility(player, 255, 1.0);
+            new skill_invis=GetSkillLevel(player,race,0);
+            if (skill_invis)
+                Invisibility(client, player, skill_invis);
+
+            new skill_devo=GetSkillLevel(player,race,1);
+            if (skill_devo)
+                DevotionAura(client, player, skill_devo);
         }
     }
 }
@@ -159,8 +172,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                     PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing!",
                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                    HumanAlliance_Teleport(client,player,ult_level, toSpawn,
-                                           GetSysTickCount() - m_UltimatePressed[client]);
+                    Teleport(client,player,ult_level, toSpawn,
+                             GetSysTickCount() - m_UltimatePressed[client]);
                     if (!toSpawn)
                     {
                         new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
@@ -188,10 +201,12 @@ public Action:AllowTeleport(Handle:timer,any:index)
 
 public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race == raceID && skill==0 && newskilllevel > 0 &&
-       GetRace(player) == raceID && IsPlayerAlive(client))
+    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
-        HumanAlliance_Invisibility(client, player, newskilllevel);
+        if (skill == 0)
+            Invisibility(client, player, newskilllevel);
+        else if (skill == 1)
+            DevotionAura(client, player, newskilllevel);
     }
 }
 
@@ -204,7 +219,7 @@ public OnItemPurchase(client,player,item)
         if (cloak == item)
         {
             new skill_invis=GetSkillLevel(player,race,0);
-            HumanAlliance_Invisibility(client, player, skill_invis);
+            Invisibility(client, player, skill_invis);
         }
     }
 }
@@ -236,41 +251,11 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 new skill_invis=GetSkillLevel(player,race,0);
                 if (skill_invis)
-                {
-                    HumanAlliance_Invisibility(client, player, skill_invis);
-                }
+                    Invisibility(client, player, skill_invis);
 
                 new skill_devo=GetSkillLevel(player,race,1);
                 if (skill_devo)
-                {
-                    // Devotion Aura
-                    new hpadd;
-                    switch(skill_devo)
-                    {
-                        case 1:
-                            hpadd=15;
-                        case 2:
-                            hpadd=26;
-                        case 3:
-                            hpadd=38;
-                        case 4:
-                            hpadd=50;
-                    }
-                    IncreaseHealth(client,hpadd);
-
-                    new Float:start[3];
-                    GetClientAbsOrigin(client, start);
-
-                    new Float:end[3];
-                    end[0] = start[0];
-                    end[1] = start[1];
-                    end[2] = start[2] + 150;
-
-                    new color[4] = { 200, 255, 205, 255 };
-                    TE_SetupBeamPoints(start,end,g_lightningSprite,g_haloSprite,
-                                       0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
-                    TE_SendToAll();
-                }
+                    DevotionAura(client, player, skill_devo);
             }
         }
     }
@@ -316,7 +301,7 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (attackerPlayer != -1)
                 {
                     if (GetRace(attackerPlayer) == raceID)
-                        HumanAlliance_Bash(attackerPlayer, victimIndex);
+                        Bash(attackerPlayer, victimIndex);
                 }
             }
 
@@ -328,14 +313,14 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (assisterPlayer != -1)
                 {
                     if (GetRace(assisterPlayer) == raceID)
-                        HumanAlliance_Bash(assisterPlayer, victimIndex);
+                        Bash(assisterPlayer, victimIndex);
                 }
             }
         }
     }
 }
 
-public HumanAlliance_Invisibility(client, player, skilllevel)
+public Invisibility(client, player, skilllevel)
 {
     new alpha;
     switch(skilllevel)
@@ -370,7 +355,38 @@ public HumanAlliance_Invisibility(client, player, skilllevel)
     SetMinVisibility(player,alpha, 0.90, 1.0);
 }
 
-public HumanAlliance_Bash(player, victim)
+public DevotionAura(client, player, skill_devo)
+{
+    new hpadd;
+    switch(skill_devo)
+    {
+        case 1:
+            hpadd=15;
+        case 2:
+            hpadd=26;
+        case 3:
+            hpadd=38;
+        case 4:
+            hpadd=50;
+    }
+    IncreaseHealth(client,hpadd);
+
+    new Float:start[3];
+    GetClientAbsOrigin(client, start);
+
+    new Float:end[3];
+    end[0] = start[0];
+    end[1] = start[1];
+    end[2] = start[2] + 150;
+
+    new color[4] = { 200, 255, 205, 255 };
+    TE_SetupBeamPoints(start,end,g_lightningSprite,g_haloSprite,
+                       0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
+    TE_SendToAll();
+}
+
+
+public Bash(player, victim)
 {
     new skill_bash=GetSkillLevel(player,raceID,2);
     if (skill_bash)
@@ -400,7 +416,7 @@ public HumanAlliance_Bash(player, victim)
     }
 }
 
-public HumanAlliance_Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
+public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
 {
     new Float:origin[3];
     GetClientAbsOrigin(client, origin);

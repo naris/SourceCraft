@@ -65,8 +65,8 @@ new g_iVelocity		= -1;
 
 // Soundfiles
 new String:g_sSound[PLATFORM_MAX_PATH]	= "vehicles/airboat/fan_blade_fullthrottle_loop1.wav";
-new String:g_fSound[PLATFORM_MAX_PATH]	= "sourcecraft/OutOfGas.wav";
-new String:g_rSound[PLATFORM_MAX_PATH]	= "sourcecraft/Transmission.wav";
+new String:g_fSound[PLATFORM_MAX_PATH]	= "sourcecraft/OutOfGas.wav"; // "common/bugreporter_failed.wav"
+new String:g_rSound[PLATFORM_MAX_PATH]	= "sourcecraft/Transmission.wav"; // "hl1/fvox/activated.wav"
 
 // Is Jetpack Enabled
 new bool:g_bHasJetpack[MAXPLAYERS + 1];
@@ -166,10 +166,28 @@ public OnPluginStart()
 	}
 }
 
+stock SetupSound(const String:wav[], bool:preload=false)
+{
+    if (strlen(wav))
+    {
+        PrecacheSound(wav,preload);
+
+        decl String:file[PLATFORM_MAX_PATH+1];
+        Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+
+        if(FileExists(file))
+            AddFileToDownloadsTable(file);
+    }
+}
+
 public OnMapStart()
 {
 	g_fTimer = 0.0;
 	g_iMaxClients = GetMaxClients();
+
+	SetupSound(g_sSound,true);
+	SetupSound(g_fSound,true);
+	SetupSound(g_rSound,true);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -206,12 +224,10 @@ public OnConfigsExecuted()
 		PrecacheSound(g_sSound, true);
 
 	GetConVarString(sm_jetpack_fuel_sound, g_fSound, sizeof(g_fSound));
-	PrecacheSound(g_fSound, true);
 	if (strlen(g_fSound))
 		PrecacheSound(g_fSound, true);
 
 	GetConVarString(sm_jetpack_refuel_sound, g_rSound, sizeof(g_rSound));
-	PrecacheSound(g_rSound, true);
 	if (strlen(g_rSound))
 		PrecacheSound(g_rSound, true);
 }

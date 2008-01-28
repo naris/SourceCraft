@@ -40,13 +40,15 @@ stock Mod:GetGameType()
     return GameType;
 }
 
-stock SetupSound(const String:wav[])
+stock SetupSound(const String:wav[], bool:preload=false)
 {
-    PrecacheSound(wav);
+    PrecacheSound(wav,preload);
 
     decl String:file[PLATFORM_MAX_PATH+1];
     Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
-    AddFileToDownloadsTable(file);
+
+    if(FileExists(file))
+        AddFileToDownloadsTable(file);
 }
 
 stock SetupModel(const String:model[])

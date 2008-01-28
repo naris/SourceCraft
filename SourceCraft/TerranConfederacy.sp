@@ -80,10 +80,31 @@ public OnPlayerAuthed(client,player)
 
 public OnRaceSelected(client,player,oldrace,race)
 {
-    if (race != oldrace && oldrace == raceID)
+    if (race != oldrace)
     {
-        TakeJetpack(client);
-        SetMinVisibility(player, 255, 1.0, 1.0);
+        if (oldrace == raceID)
+        {
+            TakeJetpack(client);
+            SetMinVisibility(player, 255, 1.0, 1.0);
+        }
+        else if (race == raceID)
+        {
+            new skill_cloak=GetSkillLevel(player,race,0);
+            if (skill_cloak)
+                TerranConfederacy_Cloak(client, player, skill_cloak);
+
+            new skill_armor = GetSkillLevel(player,raceID,1);
+            if (skill_armor)
+                TerranConfederacy_SetupArmor(client, skill_armor);
+
+            new skill_stimpacks = GetSkillLevel(player,race,2);
+            if (skill_stimpacks)
+                TerranConfederacy_Stimpacks(client, player, skill_stimpacks);
+
+            new skill_jetpack=GetSkillLevel(player,race,3);
+            if (skill_jetpack)
+                TerranConfederacy_Jetpack(client, player, skill_jetpack);
+        }
     }
 }
 
@@ -100,7 +121,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
+    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
         if (skill==0)
             TerranConfederacy_Cloak(client, player, newskilllevel);

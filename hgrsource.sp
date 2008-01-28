@@ -106,10 +106,10 @@ new g_iNativeGrabs;
 new g_iNativeRopes;
 
 // Sounds
-new String:grabberHitWav[PLATFORM_MAX_PATH] = "soundcraft/ZLuHit00.wav"; // "weapons/crossbow/bolt_skewer1.wav";
-new String:pullerWav[PLATFORM_MAX_PATH] = "soundcraft/IntoNydus.wav"; // "weapons/crowwbow/hitbod2.wav";
-new String:deniedWav[PLATFORM_MAX_PATH] = "soundcraft/buzz.wav"; // "buttons/combine_button_locked.wav";
-new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/PError.wav"; // "player/suit_denydevice.wav";
+new String:grabberHitWav[PLATFORM_MAX_PATH] = "sourcecraft/ZLuHit00.wav"; // "weapons/crossbow/bolt_skewer1.wav";
+new String:pullerWav[PLATFORM_MAX_PATH] = "sourcecraft/IntoNydus.wav"; // "weapons/crowwbow/hitbod2.wav";
+new String:deniedWav[PLATFORM_MAX_PATH] = "sourcecraft/buzz.wav"; // "buttons/combine_button_locked.wav";
+new String:errorWav[PLATFORM_MAX_PATH] = "sourcecraft/PError.wav"; // "player/suit_denydevice.wav";
 new String:seekingWav[PLATFORM_MAX_PATH] = "weapons/tripwire/ropeshoot.wav";
 new String:fireWav[PLATFORM_MAX_PATH] = "weapons/crossbow/fire1.wav";
 new String:hitWav[PLATFORM_MAX_PATH] = "weapons/crossbow/hit1.wav";
@@ -268,29 +268,49 @@ public OnConfigsExecuted()
         PrecacheSound(seekingWav, true);
 
     GetConVarString(cvarDeniedSound, deniedWav, sizeof(deniedWav));
-    PrecacheSound(deniedWav, true);
     if (strlen(deniedWav))
         PrecacheSound(deniedWav, true);
 
     GetConVarString(cvarErrorSound, errorWav, sizeof(errorWav));
-    PrecacheSound(errorWav, true);
     if (strlen(errorWav))
         PrecacheSound(errorWav, true);
 
     GetConVarString(cvarPullSound, pullerWav, sizeof(pullerWav));
-    PrecacheSound(pullerWav, true);
     if (strlen(pullerWav))
         PrecacheSound(pullerWav, true);
 
     GetConVarString(cvarFireSound, fireWav, sizeof(fireWav));
-    PrecacheSound(fireWav, true);
     if (strlen(fireWav))
         PrecacheSound(fireWav, true);
 
     GetConVarString(cvarHitSound, hitWav, sizeof(hitWav));
-    PrecacheSound(hitWav, true);
     if (strlen(hitWav))
         PrecacheSound(hitWav, true);
+}
+
+stock SetupSound(const String:wav[], bool:preload=false)
+{
+    if (strlen(wav))
+    {
+        PrecacheSound(wav,preload);
+
+        decl String:file[PLATFORM_MAX_PATH+1];
+        Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+
+        if(FileExists(file))
+            AddFileToDownloadsTable(file);
+    }
+}
+
+public OnMapStart()
+{
+    SetupSound(grabberHitWav,true);
+    SetupSound(seekingWav,true);
+    SetupSound(deniedWav,true);
+    SetupSound(errorWav,true);
+    SetupSound(pullerWav,true);
+    SetupSound(fireWav,true);
+    SetupSound(hitWav,true);
 }
 
 /********

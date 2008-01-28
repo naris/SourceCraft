@@ -74,7 +74,7 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    PrecacheSound(errorWav, true);
+    SetupSound(errorWav,true);
 }
 
 
@@ -343,6 +343,6 @@ public Zerg_Tentacles(client, player, skilllevel)
                 range=0.0;
             }
         }
-        GiveGrab(client,duration,range);
+        GiveGrab(client,duration,range,1);
     }
 }

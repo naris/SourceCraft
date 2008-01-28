@@ -270,15 +270,10 @@ public Action:Load_Sounds(Handle:timer){
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 					if (strlen(filelocation)){
-						Format(dl, sizeof(filelocation), "sound/%s", filelocation);
-						if(FileExists(dl)){
-							PrecacheSound(filelocation, true);
-							if (download){
-								AddFileToDownloadsTable(dl);
-							}
-						}
-						if (count == 1){
-							break;
+						Format(dl, sizeof(dl), "sound/%s", filelocation);
+						PrecacheSound(filelocation, true);
+						if(download && FileExists(dl)){
+							AddFileToDownloadsTable(dl);
 						}
 					}
 				}
