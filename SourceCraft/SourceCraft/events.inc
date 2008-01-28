@@ -21,6 +21,12 @@ public bool:HookEvents()
 
     if (GameType == tf2)
     {
+        if(!HookEventEx("player_changeclass",PlayerChangeClass))
+        {
+            PrintToServer("[SourceCraft] Could not hook the player_changeclass event.");
+            return false;
+        }
+
         if(!HookEventEx("teamplay_round_active",RoundActive))
         {
             PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
@@ -49,6 +55,13 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
+        if (index > 0)
+        {
+            new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
+            if (maxSpeed > 100)
+                m_BaseSpeed[index]=maxSpeed;
+        }
+
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
         {
@@ -143,6 +156,18 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
+public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client > 0)
+    {
+        new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+        if (maxSpeed > 100)
+            m_BaseSpeed[client]=maxSpeed;
+    }
+}
+
 public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 {
     if (GameType == tf2)
@@ -151,11 +176,8 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
             new client=GetArrayCell(playerHandle,0);
-            if(m_BaseSpeed[client] < 100.0 && IsClientInGame(client))
-            {
-                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
+            if(IsClientInGame(client))
                 m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-            }
         }
     }
 }
