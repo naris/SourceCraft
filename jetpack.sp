@@ -131,8 +131,8 @@ public OnPluginStart()
 	sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN);
 
 	// Create ConCommands
-	RegConsoleCmd("+sm_jetpack", JetpackP, "use jetpack (keydown)", FCVAR_GAMEDLL);
-	RegConsoleCmd("-sm_jetpack", JetpackM, "use jetpack (keyup)", FCVAR_GAMEDLL);
+	RegConsoleCmd("+sm_jetpack", JetpackPressed, "use jetpack (keydown)", FCVAR_GAMEDLL);
+	RegConsoleCmd("-sm_jetpack", JetpackReleased, "use jetpack (keyup)", FCVAR_GAMEDLL);
 
 	// Register admin cmds
 	RegAdminCmd("sm_jetpack_give",Command_GiveJetpack,ADMFLAG_JETPACK,"","give a jetpack to a player");
@@ -232,24 +232,24 @@ public OnGameFrame()
 		{
 			if(g_bJetpackOn[i])
 			{
-				if (g_iFuel[i] != 0)
+				if(!IsPlayerAlive(i))
+					StopJetpack(i);
+				else
 				{
-					if(!IsPlayerAlive(i))
-						StopJetpack(i);
-					else
+					if (g_iFuel[i] != 0)
 					{
 						if (g_iFuel[i] > 0 && g_iFuel[i] < 25)
 						{
 							// Low on Fuel, Make it sputter.
 							if (g_iFuel[i] % 2)
 							{
+								StopJetpackSound(i);
 								SetMoveType(i, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
-								if (g_sSound[0])
-									StopSound(i, SNDCHAN_AUTO, g_sSound);
 							}
 							else
 							{
-								StartJetpack(i);
+								EmitJetpackSound(i);
+								SetMoveType(i, MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
 								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
 								AddFireEffect(i);
 							}
@@ -266,7 +266,7 @@ public OnGameFrame()
 							/* Display the Fuel Gauge */
 							decl String:gauge[30] = "[====+=====|=====+====]";
 							new Float:percent = float(g_iFuel[i]) / float(g_iRefuelAmount[i]);
-							new pos = RoundFloat(percent * 21.0);
+							new pos = RoundFloat(percent * 20.0)+1;
 							if (pos < 21)
 							{
 								gauge{pos} = ']';
@@ -295,19 +295,19 @@ public OnGameFrame()
 							SendTopMessage(i, pos+2, 1, r,g,b,255, gauge);
 						}
 					}
-				}
 
-				if (g_iFuel[i] == 0)
-				{
-					StopJetpack(i);
-					CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
-					if(GetConVarBool(sm_jetpack_announce))
+					if (g_iFuel[i] == 0)
 					{
-						SendTopMessage(i, 1, 1, 255,0,0,128, "[] Your jetpack has run out of fuel");
-						PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
-									COLOR_GREEN,COLOR_DEFAULT);
-						if (g_fSound[0])
-							EmitSoundToClient(i, g_fSound);
+						StopJetpack(i);
+						CreateTimer(g_fRefuelingTime[i],RefuelJetpack,i);
+						if(GetConVarBool(sm_jetpack_announce))
+						{
+							SendTopMessage(i, 1, 1, 255,0,0,128, "[] Your jetpack has run out of fuel");
+							PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
+										COLOR_GREEN,COLOR_DEFAULT);
+							if (g_fSound[0])
+								EmitSoundToClient(i, g_fSound);
+						}
 					}
 				}
 			}
@@ -325,7 +325,7 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 			g_iFuel[client] = tank_size;
 			if(GetConVarBool(sm_jetpack_announce))
 			{
-				SendTopMessage(client, 30, 1, 0,255,0,128, "[====+=====|=====+====]");
+				SendTopMessage(client, 30, 2, 0,255,0,128, "[====+=====|=====+====]");
 				PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
 							COLOR_GREEN,COLOR_DEFAULT);
 				if (g_rSound[0])
@@ -357,7 +357,7 @@ public OnClientDisconnect(client)
 	}
 }
 
-public Action:JetpackP(client, args)
+public Action:JetpackPressed(client, args)
 {
 	if ((g_iNativeJetpacks > 0 || GetConVarBool(sm_jetpack)) && 
 	    g_bHasJetpack[client] && !g_bJetpackOn[client] && IsPlayerAlive(client))
@@ -367,7 +367,7 @@ public Action:JetpackP(client, args)
 	return Plugin_Continue;
 }
 
-public Action:JetpackM(client, args)
+public Action:JetpackReleased(client, args)
 {
 	StopJetpack(client);
 	return Plugin_Continue;
@@ -377,28 +377,37 @@ StartJetpack(client)
 {
 	if (g_iFuel[client] != 0)
 	{
-		new Float:vecPos[3];
-		GetClientAbsOrigin(client, vecPos);
+		EmitJetpackSound(client);
 		SetMoveType(client, MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
-		if (g_sSound[0])
-		{
-			EmitSoundToAll(g_sSound, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
-							GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1,
-							vecPos, NULL_VECTOR, true, 0.0);
-		}
 		g_bJetpackOn[client] = true;
 	}
 }
 
 StopJetpack(client)
 {
+	StopJetpackSound(client);
 	if (g_bJetpackOn[client])
 	{
 		g_bJetpackOn[client] = false;
 		if(IsPlayerAlive(client))
 			SetMoveType(client, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
 	}
+}
 
+EmitJetpackSound(client)
+{
+	if (g_sSound[0])
+	{
+		new Float:vecPos[3];
+		GetClientAbsOrigin(client, vecPos);
+		EmitSoundToAll(g_sSound, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
+					   GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1,
+					   vecPos, NULL_VECTOR, true, 0.0);
+  }
+}
+
+StopJetpackSound(client)
+{
 	if (g_sSound[0])
 		StopSound(client, SNDCHAN_AUTO, g_sSound);
 }
