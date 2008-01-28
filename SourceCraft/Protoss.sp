@@ -21,6 +21,7 @@
 new raceID; // The ID we are assigned to
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
+new Handle:cvarMindControlEnable = INVALID_HANDLE;
 
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
@@ -57,6 +58,7 @@ public OnPluginStart()
     GetGameType();
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
+    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
 
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
@@ -385,9 +387,12 @@ public Protoss_MindControl(client,player)
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
     {
-        PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
-                    COLOR_GREEN,COLOR_DEFAULT);
-        return;
+        if (!GetConVarBool(cvarMindControlEnable))
+        {
+            PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
+                        COLOR_GREEN,COLOR_DEFAULT);
+            return;
+        }
 
         new Float:range, percent;
         switch(ult_level)
@@ -444,11 +449,11 @@ public Protoss_MindControl(client,player)
                         if (obj != unknown)
                         {
                             //Check to see if the object is still being built
-                            new building = GetEntDataEnt(target, m_BuildingOffset[obj]);
+                            new building = GetEntDataEnt2(target, m_BuildingOffset[obj]);
                             if (building != 1)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                                new builder = GetEntDataEnt(target, m_BuilderOffset[obj]); // Get the current owner of the object.
+                                new builder = GetEntDataEnt2(target, m_BuilderOffset[obj]); // Get the current owner of the object.
                                 new player_check=GetPlayer(builder);
                                 if (player_check>-1)
                                 {
@@ -458,7 +463,7 @@ public Protoss_MindControl(client,player)
                                         new team = GetClientTeam(client);
                                         if (builderTeam != team)
                                         {
-                                            SetEntDataEnt(target, m_BuilderOffset[obj], client, true); // Change the builder to client
+                                            SetEntDataEnt2(target, m_BuilderOffset[obj], client, true); // Change the builder to client
 
                                             SetVariantInt(team); //Prep the value for the call below
                                             AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
@@ -475,13 +480,14 @@ public Protoss_MindControl(client,player)
                                                 color[0] = 255; // Red
 
                                             TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                                    0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
+                                                               0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
                                             TE_SendToAll();
 
                                             TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
                                             TE_SendToAll();
 
-                                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,5.0,5.0,255);
+                                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,
+                                                               5.0,5.0,255);
                                             TE_SendToAll();
 
                                             new Float:splashDir[3];
@@ -493,7 +499,8 @@ public Protoss_MindControl(client,player)
                                             decl String:object[32] = "";
                                             strcopy(object, sizeof(object), class[7]);
 
-                                            LogToGame("[SourceCraft] %N has stolen %N's %s!\n", client,builder,object);
+                                            LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
+                                                      client,builder,object);
                                             PrintToChat(client,"%c[SourceCraft] %c you have stolen %N's %s!",
                                                         COLOR_GREEN,COLOR_DEFAULT,builder,object);
                                             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",

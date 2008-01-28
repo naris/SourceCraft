@@ -388,8 +388,8 @@ stock MakeVisible(client)
             {
                 if(IsValidEdict(y))
                 {
-                    if(GetEntDataEnt(y,m_OwnerOffset)==client)
-                    SetRenderColor(y,255,255,255,255);
+                    if(GetEntDataEnt2(y,m_OwnerOffset)==client)
+                        SetRenderColor(y,255,255,255,255);
                 }
             }
             SetRenderColor(client,255,255,255,255);
@@ -406,21 +406,13 @@ stock MakeInvisible(client, visibility)
         {
             if (IsValidEdict(obj))
             {
-                if (GetEntDataEnt(obj,m_OwnerOffset) == client)
+                if (GetEntDataEnt2(obj,m_OwnerOffset) == client)
                 {
                     decl String:name[32] = "";
                     if (!GetEntityNetClass(obj,name,sizeof(name)) ||
                         !StrEqual(name, "CCaptureFlag"))
                     {
-                        if (!StrEqual(name, "CSniperDot"))
-                        {
-                            // If the sniper is sniping, make minimum visibility 100
-                            // and don't hide the sniper dot!
-                            if (visibility < 100)
-                                visibility = 100;
-                        }
-                        else
-                            SetRenderColor(obj,255,255,255,visibility);
+                        SetRenderColor(obj,255,255,255,visibility);
                     }
                 }
             }
