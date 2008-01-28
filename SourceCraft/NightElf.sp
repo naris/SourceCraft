@@ -257,7 +257,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)
 
             SetHealth(victimIndex,newhp);
 
-            LogMessage("[SourceCraft] %N evaded an attack!\n", victimIndex);
+            LogToGame("[SourceCraft] %N evaded an attack!\n", victimIndex);
             PrintToChat(victimIndex,"%c[SourceCraft] %N %c evaded an attack!",
                         COLOR_GREEN,victimIndex,COLOR_DEFAULT);
             return true;
