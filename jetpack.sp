@@ -158,7 +158,7 @@ public OnPluginStart()
 
 stock SetupSound(const String:wav[], bool:preload=false)
 {
-    if (strlen(wav))
+    if (wav[0])
     {
         PrecacheSound(wav,preload);
 
@@ -210,15 +210,15 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public OnConfigsExecuted()
 {
 	GetConVarString(sm_jetpack_sound, g_sSound, sizeof(g_sSound));
-	if (strlen(g_sSound))
+	if (g_sSound[0])
 		PrecacheSound(g_sSound, true);
 
 	GetConVarString(sm_jetpack_fuel_sound, g_fSound, sizeof(g_fSound));
-	if (strlen(g_fSound))
+	if (g_fSound[0])
 		PrecacheSound(g_fSound, true);
 
 	GetConVarString(sm_jetpack_refuel_sound, g_rSound, sizeof(g_rSound));
-	if (strlen(g_rSound))
+	if (g_rSound[0])
 		PrecacheSound(g_rSound, true);
 }
 
@@ -244,7 +244,7 @@ public OnGameFrame()
 							if (g_iFuel[i] % 2)
 							{
 								SetMoveType(i, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
-								if (strlen(g_sSound))
+								if (g_sSound[0])
 									StopSound(i, SNDCHAN_AUTO, g_sSound);
 							}
 							else
@@ -306,7 +306,7 @@ public OnGameFrame()
 						SendTopMessage(i, 1, 1, 255,0,0,128, "[] Your jetpack has run out of fuel");
 						PrintToChat(i,"%c[Jetpack] %cYour jetpack has run out of fuel",
 									COLOR_GREEN,COLOR_DEFAULT);
-						if (strlen(g_fSound))
+						if (g_fSound[0])
 							EmitSoundToClient(i, g_fSound);
 					}
 				}
@@ -328,7 +328,7 @@ public Action:RefuelJetpack(Handle:timer,any:client)
 				SendTopMessage(client, 30, 1, 0,255,0,128, "[====+=====|=====+====]");
 				PrintToChat(client,"%c[Jetpack] %cYour jetpack has been refueled",
 							COLOR_GREEN,COLOR_DEFAULT);
-				if (strlen(g_rSound))
+				if (g_rSound[0])
 					EmitSoundToClient(client, g_rSound);
 			}
 		}
@@ -380,7 +380,7 @@ StartJetpack(client)
 		new Float:vecPos[3];
 		GetClientAbsOrigin(client, vecPos);
 		SetMoveType(client, MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
-		if (strlen(g_sSound))
+		if (g_sSound[0])
 		{
 			EmitSoundToAll(g_sSound, client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS,
 							GetConVarFloat(sm_jetpack_volume), SNDPITCH_NORMAL, -1,
@@ -399,7 +399,7 @@ StopJetpack(client)
 			SetMoveType(client, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
 	}
 
-	if (strlen(g_sSound))
+	if (g_sSound[0])
 		StopSound(client, SNDCHAN_AUTO, g_sSound);
 }
 
