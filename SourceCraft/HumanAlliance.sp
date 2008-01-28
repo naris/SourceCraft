@@ -72,8 +72,6 @@ public OnPluginReady()
                       "Teleport",
                       "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
-    FindMoveTypeOffset();
-
     m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
     if(m_VelocityOffset == -1)
         SetFailState("[SourceCraft] Error finding Velocity offset.");
@@ -154,12 +152,13 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                     new bool:toSpawn = false;
                     if (m_TeleportCount[client] >= 1)
                     {
+                        // Check to see if player got stuck with 1st teleport
                         new Float:vecVelocity[3];
                         GetEntDataVector(client, m_VelocityOffset, vecVelocity);
                         if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 &&
                             (vecVelocity[2] >= -10.0 && vecVelocity[2] <= 10.0))
                         {
-                            toSpawn = true;
+                            toSpawn = true; // If player is stuck, allow teleport to spawn.
                         }
                         else
                         {
@@ -455,6 +454,9 @@ public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
                 range=(float(time_pressed) / 3000.0) * 600.0;
         }
 
+        LogMessage("Teleport %N Time=%d, Level=%d, Rage=%f\n",
+                   client, time_pressed, ult_level, range);
+
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
         GetClientEyeAngles(client,clientang);
@@ -465,6 +467,11 @@ public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
         {
             new Float:size[3];
             GetClientMaxs(client, size);
+
+            LogMessage("Teleport %N, DidHit, end=%f,%f,%f; size=%f,%f,%f\n",
+                       client, destloc[0], destloc[1], destloc[2],
+                               size[0], size[1], size[2]);
+
             if (destloc[0] > clientloc[0])
                 destloc[0] -= size[0];
             else
@@ -492,6 +499,9 @@ public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
                 distance[1] *= -1;
             if (distance[2] < 0)
                 distance[2] *= -1;
+
+            LogMessage("Teleport %N, DidNotHit, dist=%f,%f,%f\n",
+                       client, distance[0], distance[1], distance[2]);
 
             // Limit the teleport location to remain within the range
             for (new i = 0; i<=2; i++)
@@ -526,6 +536,9 @@ public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
             }
         }
     }
+
+    LogMessage("Teleport %N To %f,%f,%f\n",
+               client, destloc[0], destloc[1], destloc[2]);
 
     TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
     EmitSoundToAll(teleportWav,client);

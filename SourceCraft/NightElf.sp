@@ -61,8 +61,6 @@ public OnPluginReady()
                       "Does 10-60% extra damage to the \nenemy, chance is 30%.",
                       "Entangled Roots",
                       "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
-
-    FindMoveTypeOffset();
 }
 
 public OnMapStart()
@@ -129,7 +127,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                                     PrintToChat(index,"%c[SourceCraft] %N %chas tied you down with %cEntangled Roots.%c",
                                                 COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                                    SetEntData(index,movetypeOffset,0,1);
+                                    FreezeEntity(index);
                                     AuthTimer(10.0,index,UnfreezePlayer);
                                 }
                             }

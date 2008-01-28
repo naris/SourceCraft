@@ -10,23 +10,14 @@
 #endif
 #define _freeze_included
 
-stock movetypeOffset   = 0;
-
-stock FindMoveTypeOffset()
-{
-    movetypeOffset=FindSendPropOffs("CBaseEntity","movetype");
-    if(movetypeOffset==-1)
-        SetFailState("Couldn't find MoveType offset");
-}
-
 stock FreezeEntity(entity)
 {
-    SetEntData(entity,movetypeOffset,0,1);
+    SetEntityMoveType(entity,MOVETYPE_NONE); // Freeze client
 }
 
 stock UnFreezeEntity(entity)
 {
-    SetEntData(entity,movetypeOffset,2,1);
+    SetEntityMoveType(entity,MOVETYPE_WALK); // Unfreeze client
 }
 
 public Action:UnfreezePlayer(Handle:timer,Handle:temp)
