@@ -65,7 +65,8 @@ new Handle:cvarRopeRed;
 new Handle:cvarRopeGreen;
 new Handle:cvarRopeBlue;
 // Forward handles
-new Handle:fwdOnGrabbed;
+new Handle:fwdOnGrab;
+new Handle:fwdOnDrop;
 
 // Client status arrays
 new bool:gStatus[MAXPLAYERS+1][3];
@@ -151,7 +152,8 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
     CreateNative("Detach",Native_Detach);
     CreateNative("RopeToggle",Native_RopeToggle);
 
-    fwdOnGrabbed=CreateGlobalForward("OnGrabbed",ET_Hook,Param_Cell,Param_Cell);
+    fwdOnGrab=CreateGlobalForward("OnGrab",ET_Hook,Param_Cell,Param_Cell);
+    fwdOnDrop=CreateGlobalForward("OnDrop",ET_Ignore,Param_Cell,Param_Cell);
 
     return true;
 }
@@ -1081,7 +1083,7 @@ public Action:GrabSearch(Handle:timer,any:index)
                 if (limit <= 0.0 || limit >= distance)
                 {
                     new Action:res;
-                    Call_StartForward(fwdOnGrabbed);
+                    Call_StartForward(fwdOnGrab);
                     Call_PushCell(index);
                     Call_PushCell(target);
                     Call_Finish(res);
@@ -1094,7 +1096,6 @@ public Action:GrabSearch(Handle:timer,any:index)
                         {
                             gMaxSpeed[target] = GetEntPropFloat(target,Prop_Data,"m_flMaxspeed");
                             SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",10.0); // Slow the target down.
-                            //SetEntDataFloat(target,m_OffsetMaxSpeed[target], 0.5);
                         }
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
@@ -1229,6 +1230,12 @@ public Action_Drop(client)
             gGrabbed[target]=false; // Tell plugin the target is no longer being grabbed
 
         gTargetIndex[client]=-1;
+
+        new Action:res;
+        Call_StartForward(fwdOnDrop);
+        Call_PushCell(client);
+        Call_PushCell(target);
+        Call_Finish(res);
     }
     else if(HasAccess(client,Grab))
         PrintCenterText(client,"No target found");
