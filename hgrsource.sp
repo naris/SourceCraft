@@ -88,6 +88,7 @@ new Float:gRopeDist[MAXPLAYERS+1];
 new bool:gAllowedClients[MAXPLAYERS+1][3];
 new Float:gAllowedRange[MAXPLAYERS+1][3];
 new gAllowedDuration[MAXPLAYERS+1][3];
+new gRemainingDuration[MAXPLAYERS+1];
 new gFlags[MAXPLAYERS+1][3];
 
 // Offset variables
@@ -220,7 +221,7 @@ public OnPluginStart()
     cvarHookEnable=CreateConVar("hgrsource_hook_enable","1","This will enable the hook feature of this plugin");
     cvarHookAdminOnly=CreateConVar("hgrsource_hook_adminonly","1","If 1, only admins can use hook");
     cvarHookSpeed=CreateConVar("hgrsource_hook_speed","5.0","The speed of the player using hook");
-    cvarHookBeamColor=CreateConVar("hgrsource_hook_color","2","The color of the hook, 0 = White, 1 = Team color, 2= custom");
+    cvarHookBeamColor=CreateConVar("hgrsource_hook_color","1","The color of the hook, 0 = White, 1 = Team color, 2= custom");
     cvarHookRed=CreateConVar("hgrsource_hook_red","255","The red component of the beam (Only if you are using a custom color)");
     cvarHookGreen=CreateConVar("hgrsource_hook_green","0","The green component of the beam (Only if you are using a custom color)");
     cvarHookBlue=CreateConVar("hgrsource_hook_blue","0","The blue component of the beam (Only if you are using a custom color)");
@@ -229,7 +230,7 @@ public OnPluginStart()
     cvarGrabEnable=CreateConVar("hgrsource_grab_enable","1","This will enable the grab feature of this plugin");
     cvarGrabAdminOnly=CreateConVar("hgrsource_grab_adminonly","1","If 1, only admins can use grab");
     cvarGrabSpeed=CreateConVar("hgrsource_grab_speed","5.0","The speed of the grabbers target");
-    cvarGrabBeamColor=CreateConVar("hgrsource_grab_color","2","The color of the grab beam, 0 = White, 1 = Team color");
+    cvarGrabBeamColor=CreateConVar("hgrsource_grab_color","1","The color of the grab beam, 0 = White, 1 = Team color");
     cvarGrabRed=CreateConVar("hgrsource_grab_red","0","The red component of the beam (Only if you are using a custom color)");
     cvarGrabGreen=CreateConVar("hgrsource_grab_green","0","The green component of the beam (Only if you are using a custom color)");
     cvarGrabBlue=CreateConVar("hgrsource_grab_blue","255","The blue component of the beam (Only if you are using a custom color)");
@@ -238,7 +239,7 @@ public OnPluginStart()
     cvarRopeEnable=CreateConVar("hgrsource_rope_enable","1","This will enable the rope feature of this plugin");
     cvarRopeAdminOnly=CreateConVar("hgrsource_rope_adminonly","1","If 1, only admins can use rope");
     cvarRopeSpeed=CreateConVar("hgrsource_rope_speed","5.0","The speed of the player using rope");
-    cvarRopeBeamColor=CreateConVar("hgrsource_rope_color","2","The color of the rope, 0 = White, 1 = Team color");
+    cvarRopeBeamColor=CreateConVar("hgrsource_rope_color","1","The color of the rope, 0 = White, 1 = Team color");
     cvarRopeRed=CreateConVar("hgrsource_rope_red","0","The red component of the beam (Only if you are using a custom color)");
     cvarRopeGreen=CreateConVar("hgrsource_rope_green","255","The green component of the beam (Only if you are using a custom color)");
     cvarRopeBlue=CreateConVar("hgrsource_rope_blue","0","The blue component of the beam (Only if you are using a custom color)");
@@ -925,6 +926,7 @@ public Action_Hook(client)
                     {
                         SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
                         gStatus[client][ACTION_HOOK]=true; // Tell plugin the player is hooking
+                        gRemainingDuration[client] = gAllowedDuration[client][ACTION_HOOK];
                         Hook_Push(client);
                         CreateTimer(0.1,Hooking,client,TIMER_REPEAT); // Create hooking loop
                         EmitSoundFromOrigin(hitWav,gHookEndloc[client]); // Emit sound from where the hook landed
@@ -940,13 +942,13 @@ public Action_Hook(client)
                 {
                     EmitSoundToClient(client,deniedWav);
                     PrintToChat(client,"%c[HGR:Source] %cYou don't have a %chook%c",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
                 else
                 {
                     EmitSoundToClient(client,deniedWav);
                     PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %chook%c",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
             }
         }
@@ -954,14 +956,14 @@ public Action_Hook(client)
         {
             EmitSoundToClient(client,deniedWav);
             PrintToChat(client,"%c[HGR:Source] %cERROR: Please notify server administrator",
-                    COLOR_GREEN,COLOR_DEFAULT);
+                        COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     else
     {
         EmitSoundToClient(client,deniedWav);
         PrintToChat(client,"%c[HGR:Source] Hook %cis currently disabled",
-                COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
@@ -987,10 +989,10 @@ public Action:Hooking(Handle:timer,any:index)
 {
     if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_HOOK]&&!gGrabbed[index])
     {
-        if (gAllowedDuration[index][ACTION_ROPE] > 0)
+        if (gRemainingDuration[index] > 0)
         {
-            gAllowedDuration[index][ACTION_ROPE]--;
-            if (gAllowedDuration[index][ACTION_ROPE] <= 0)
+            gRemainingDuration[index]--;
+            if (gRemainingDuration[index] <= 0)
             {
                 Action_UnHook(index);
                 //CloseHandle(timer); // Stop the timer
@@ -1112,6 +1114,7 @@ public Action:GrabSearch(Handle:timer,any:index)
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
                         gTargetIndex[index]=target;
+                        gRemainingDuration[index] = gAllowedDuration[index][ACTION_GRAB];
                         CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
                         return Plugin_Stop;
                     }
@@ -1151,10 +1154,10 @@ public Action:Grabbing(Handle:timer,any:index)
         new target = gTargetIndex[index];
         if(target>64||IsClientInGame(target)&&IsPlayerAlive(target))
         {
-            if (gAllowedDuration[index][ACTION_GRAB] > 0)
+            if (gRemainingDuration[index] > 0)
             {
-                gAllowedDuration[index][ACTION_GRAB]--;
-                if (gAllowedDuration[index][ACTION_GRAB] <= 0)
+                gRemainingDuration[index]--;
+                if (gRemainingDuration[index] <= 0)
                 {
                     Action_Drop(index);
                     //CloseHandle(timer); // Stop the timer
@@ -1274,6 +1277,7 @@ public Action_Rope(client)
                     {
                         gRopeDist[client]=GetDistanceBetween(clientloc,gRopeEndloc[client]);
                         gStatus[client][ACTION_ROPE]=true; // Tell plugin the player is roping
+                        gRemainingDuration[client] = gAllowedDuration[client][ACTION_ROPE];
                         CreateTimer(0.1,Roping,client,TIMER_REPEAT); // Create roping loop
                         EmitSoundFromOrigin(hitWav,gRopeEndloc[client]); // Emit sound from the end of the rope
                     }
@@ -1319,10 +1323,10 @@ public Action:Roping(Handle:timer,any:index)
 {
     if(IsClientInGame(index)&&gStatus[index][ACTION_ROPE]&&IsPlayerAlive(index)&&!gGrabbed[index])
     {
-        if (gAllowedDuration[index][ACTION_ROPE] > 0)
+        if (gRemainingDuration[index] > 0)
         {
-            gAllowedDuration[index][ACTION_ROPE]--;
-            if (gAllowedDuration[index][ACTION_ROPE] <= 0)
+            gRemainingDuration[index]--;
+            if (gRemainingDuration[index] <= 0)
             {
                 Action_Detach(index);
                 //CloseHandle(timer); // Stop the timer
