@@ -489,7 +489,7 @@ public Protoss_MindControl(client,player)
                                             decl String:object[32] = "";
                                             strcopy(object, sizeof(object), class[7]);
 
-                                            LogMessage("[SourceCraft] %N has stolen %s's %N!\n", client,builder,object);
+                                            LogMessage("[SourceCraft] %N has stolen %N's %s!\n", client,builder,object);
                                             PrintToChat(client,"%c[SourceCraft] %c you have stolen %N's %s!",
                                                         COLOR_GREEN,COLOR_DEFAULT,builder,object);
                                             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
