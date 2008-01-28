@@ -268,13 +268,13 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
 public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
 {
-    new skill_adrenal_glands=GetSkillLevel(player,raceID,1);
+    new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {
         decl String:wepName[128];
         if (GetEventString(event,"weapon", wepName, sizeof(wepName))>0)
         {
-            if (IsDamageFromMelee(wepName) && GetRandomInt(1,100) <= 75)
+            if (IsDamageFromMelee(wepName))
             {
                 new Float:percent;
                 switch(skill_adrenal_glands)
