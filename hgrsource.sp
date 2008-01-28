@@ -77,6 +77,7 @@ new Float:gHookEndloc[MAXPLAYERS+1][3];
 new gTargetindex[MAXPLAYERS+1];
 new Float:gGrabDist[MAXPLAYERS+1];
 new bool:gGrabbed[MAXPLAYERS+1];
+new gGrabCounter[MAXPLAYERS+1];
 
 // Rope arrays
 new Float:gRopeEndloc[MAXPLAYERS+1][3];
@@ -93,7 +94,6 @@ new OriginOffset;
 new GetVelocityOffset_0;
 new GetVelocityOffset_1;
 new GetVelocityOffset_2;
-new LifeStateOffset;
 new MoveTypeOffset;
 
 // Precache variables
@@ -110,7 +110,7 @@ new String:grabberHitWav[PLATFORM_MAX_PATH] = "sourcecraft/ZLuHit00.wav"; // "we
 new String:pullerWav[PLATFORM_MAX_PATH] = "sourcecraft/IntoNydus.wav"; // "weapons/crowwbow/hitbod2.wav";
 new String:deniedWav[PLATFORM_MAX_PATH] = "sourcecraft/buzz.wav"; // "buttons/combine_button_locked.wav";
 new String:errorWav[PLATFORM_MAX_PATH] = "sourcecraft/PError.wav"; // "player/suit_denydevice.wav";
-new String:seekingWav[PLATFORM_MAX_PATH] = "weapons/tripwire/ropeshoot.wav";
+new String:seekingWav[PLATFORM_MAX_PATH] = "sourcecraft/ropeshoot2.wav"; // "weapons/crossbow/bolt_fly4.wav"; // "weapons/tripwire/ropeshoot.wav";
 new String:fireWav[PLATFORM_MAX_PATH] = "weapons/crossbow/fire1.wav";
 new String:hitWav[PLATFORM_MAX_PATH] = "weapons/crossbow/hit1.wav";
 
@@ -199,9 +199,6 @@ public OnPluginStart()
     GetVelocityOffset_2=FindSendPropOffs("CBasePlayer","m_vecVelocity[2]");
     if(GetVelocityOffset_2==-1)
         SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_2 offset, aborting");
-    LifeStateOffset=FindSendPropOffs("CAI_BaseNPC","m_lifeState");
-    if(LifeStateOffset==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the LifeState offset, aborting");
     MoveTypeOffset=FindSendPropOffs("CAI_BaseNPC","movetype");
     if(MoveTypeOffset==-1)
         SetFailState("[HGR:Source] Error: Failed to find the MoveType offset, aborting");
@@ -346,7 +343,7 @@ public Native_Hook(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
             Action_Hook(client);
     }
 }
@@ -356,7 +353,7 @@ public Native_UnHook(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
             Action_UnHook(client);
     }
 }
@@ -366,7 +363,7 @@ public Native_HookToggle(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             if(gStatus[client][ACTION_HOOK])
                 gStatus[client][ACTION_HOOK]=false;
@@ -381,7 +378,7 @@ public Native_Grab(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
             Action_Grab(client);
     }
 }
@@ -391,7 +388,7 @@ public Native_Drop(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
             Action_Drop(client);
     }
 }
@@ -401,7 +398,7 @@ public Native_GrabToggle(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             if(gStatus[client][ACTION_GRAB])
                 gStatus[client][ACTION_GRAB]=false;
@@ -416,7 +413,7 @@ public Native_Rope(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
             Action_Rope(client);
     }
 }
@@ -426,7 +423,7 @@ public Native_Detach(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
             Action_Detach(client);
     }
 }
@@ -436,7 +433,7 @@ public Native_RopeToggle(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             if(gStatus[client][ACTION_ROPE])
                 gStatus[client][ACTION_ROPE]=false;
@@ -448,10 +445,10 @@ public Native_RopeToggle(Handle:plugin,numParams)
 
 public Native_GiveHook(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 2)
+    if(numParams >= 1 && numParams <= 4)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             new duration=0,Float:range=0.0,flags=0;
             if (numParams >= 2)
@@ -471,7 +468,7 @@ public Native_TakeHook(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             ClientAccess(client,Take,Hook,0,0.0,0);
             g_iNativeHooks--;
@@ -481,10 +478,10 @@ public Native_TakeHook(Handle:plugin,numParams)
 
 public Native_GiveGrab(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 2)
+    if(numParams >= 1 && numParams <= 4)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             new duration=0,Float:range=0.0,flags=0;
             if (numParams >= 2)
@@ -504,7 +501,7 @@ public Native_TakeGrab(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             ClientAccess(client,Take,Grab,0,0.0,0);
             g_iNativeGrabs--;
@@ -514,10 +511,10 @@ public Native_TakeGrab(Handle:plugin,numParams)
 
 public Native_GiveRope(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 2)
+    if(numParams >= 1 && numParams <= 4)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             new duration=0,Float:range=0.0,flags=0;
             if (numParams >= 2)
@@ -537,7 +534,7 @@ public Native_TakeRope(Handle:plugin,numParams)
     if(numParams == 1)
     {
         new client = GetNativeCell(1);
-        if(IsClientAlive(client))
+        if(IsPlayerAlive(client))
         {
             ClientAccess(client,Take,Rope,0,0.0,0);
             g_iNativeRopes--;
@@ -557,7 +554,7 @@ public Action:HookCmd(client,argc)
 
 public Action:UnHookCmd(client,argc)
 {
-    if(IsClientAlive(client))
+    if(IsPlayerAlive(client))
         Action_UnHook(client);
     return Plugin_Handled;
 }
@@ -579,7 +576,7 @@ public Action:GrabCmd(client,argc)
 
 public Action:DropCmd(client,argc)
 {
-    if(IsClientAlive(client))
+    if(IsPlayerAlive(client))
         Action_Drop(client);
     return Plugin_Handled;
 }
@@ -601,7 +598,7 @@ public Action:RopeCmd(client,argc)
 
 public Action:DetachCmd(client,argc)
 {
-    if(IsClientAlive(client))
+    if(IsPlayerAlive(client))
         Action_Detach(client);
     return Plugin_Handled;
 }
@@ -748,29 +745,29 @@ public Access(const String:target[],HGRSourceAccess:access,HGRSourceAction:actio
     return count;
 }
 
-public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,Duration,Float:Range,flags)
+public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duration,Float:range,flags)
 {
     if(access==Give)
     {
         if(action==Hook)
         {
             gAllowedClients[client][ACTION_HOOK]=true;
-            gAllowedDuration[client][ACTION_HOOK]=Duration;
-            gAllowedRange[client][ACTION_HOOK]=Range;
+            gAllowedDuration[client][ACTION_HOOK]=duration;
+            gAllowedRange[client][ACTION_HOOK]=range;
             gFlags[client][ACTION_HOOK]=flags;
         }
         else if(action==Grab)
         {
             gAllowedClients[client][ACTION_GRAB]=true;
-            gAllowedDuration[client][ACTION_GRAB]=Duration;
-            gAllowedRange[client][ACTION_GRAB]=Range;
+            gAllowedDuration[client][ACTION_GRAB]=duration;
+            gAllowedRange[client][ACTION_GRAB]=range;
             gFlags[client][ACTION_GRAB]=flags;
         }
         else if(action==Rope)
         {
             gAllowedClients[client][ACTION_ROPE]=true;
-            gAllowedDuration[client][ACTION_ROPE]=Duration;
-            gAllowedRange[client][ACTION_ROPE]=Range;
+            gAllowedDuration[client][ACTION_ROPE]=duration;
+            gAllowedRange[client][ACTION_ROPE]=range;
             gFlags[client][ACTION_ROPE]=flags;
         }
     }
@@ -907,7 +904,7 @@ public Action_Hook(client)
     {
         if(client>0)
         {
-            if(IsClientAlive(client)&&!gStatus[client][ACTION_HOOK]&&!gStatus[client][ACTION_ROPE]&&!gGrabbed[client])
+            if(IsPlayerAlive(client)&&!gStatus[client][ACTION_HOOK]&&!gStatus[client][ACTION_ROPE]&&!gGrabbed[client])
             {
                 if(HasAccess(client,Hook))
                 {
@@ -922,13 +919,14 @@ public Action_Hook(client)
 
                     new Float:limit=gAllowedRange[client][ACTION_GRAB];
                     new Float:distance=GetDistanceBetween(clientloc,gHookEndloc[client]);
+                    LogMessage("Hook Distance=%f, Max=%f\n", distance, limit);
                     if (limit == 0.0 || distance <= limit)
                     {
-                        EmitSoundFromOriginWithDelay(hitWav,gHookEndloc[client],0.5); // Emit sound from where the hook landed
                         SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
                         gStatus[client][ACTION_HOOK]=true; // Tell plugin the player is hooking
                         Hook_Push(client);
                         CreateTimer(0.1,Hooking,client,TIMER_REPEAT); // Create hooking loop
+                        EmitSoundFromOrigin(hitWav,gHookEndloc[client]); // Emit sound from where the hook landed
                     }
                     else
                     {
@@ -986,7 +984,7 @@ public Hook_Push(client)
 
 public Action:Hooking(Handle:timer,any:index)
 {
-    if(IsClientInGame(index)&&IsClientAlive(index)&&gStatus[index][ACTION_HOOK]&&!gGrabbed[index])
+    if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_HOOK]&&!gGrabbed[index])
     {
         if (gAllowedDuration[index][ACTION_ROPE] > 0)
         {
@@ -1026,7 +1024,7 @@ public Action_Grab(client)
     {
         if(client>0)
         {
-            if(IsClientAlive(client)&&!gStatus[client][ACTION_GRAB]&&!gGrabbed[client])
+            if(IsPlayerAlive(client)&&!gStatus[client][ACTION_GRAB]&&!gGrabbed[client])
             {
                 if(HasAccess(client,Grab))
                 {
@@ -1048,7 +1046,9 @@ public Action_Grab(client)
                 }
             }
             else
+            {
                 EmitSoundToClient(client,deniedWav);
+            }
         }
         else
         {
@@ -1068,7 +1068,7 @@ public Action_Grab(client)
 public Action:GrabSearch(Handle:timer,any:index)
 {
     PrintCenterText(index,"Searching for a target..."); // Tell client the plugin is searching for a target
-    if(IsClientInGame(index)&&IsClientAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
+    if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
     {
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(index,clientloc); // Get seekers eye coordinate
@@ -1083,19 +1083,21 @@ public Action:GrabSearch(Handle:timer,any:index)
             {
                 // Found a player
                 StopSound(index,SNDCHAN_AUTO,seekingWav);
+                gGrabCounter[index]=0;
 
-                new Action:res;
-                Call_StartForward(fwdOnGrabbed);
-                Call_PushCell(index);
-                Call_PushCell(target);
-                Call_Finish(res);
-                if (res == Plugin_Continue)
+                new Float:targetloc[3];
+                GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
+                new Float:distance=GetDistanceBetween(clientloc,targetloc);
+                new Float:limit=gAllowedRange[index][ACTION_GRAB];
+                LogMessage("Hook Distance=%f, Max=%f\n", distance, limit);
+                if (limit <= 0.0 || limit >= distance)
                 {
-                    new Float:targetloc[3];
-                    GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
-                    new Float:distance=GetDistanceBetween(clientloc,targetloc);
-                    new Float:limit=gAllowedRange[index][ACTION_GRAB];
-                    if (limit <= 0.0 || limit >= distance)
+                    new Action:res;
+                    Call_StartForward(fwdOnGrabbed);
+                    Call_PushCell(index);
+                    Call_PushCell(target);
+                    Call_Finish(res);
+                    if (res == Plugin_Continue)
                     {
                         gGrabDist[index]=distance; // Tell plugin the distance between the 2 to maintain
                         EmitSoundFromOrigin(grabberHitWav,targetloc); // Emit sound from the entity being grabbed
@@ -1105,20 +1107,26 @@ public Action:GrabSearch(Handle:timer,any:index)
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
                         CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+                        return Plugin_Stop;
                     }
-                    else
-                    {
-                        Action_Drop(index);
-                        EmitSoundToClient(index,errorWav);
-                        PrintToChat(index,"%c[HGR:Source] %cTarget is too far away!",
-                                    COLOR_GREEN,COLOR_DEFAULT);
-                    }
+                }
+                else
+                {
+                    Action_Drop(index);
+                    EmitSoundToClient(index,errorWav);
+                    PrintToChat(index,"%c[HGR:Source] %cTarget is too far away!",
+                                COLOR_GREEN,COLOR_DEFAULT);
                 }
                 //CloseHandle(timer); // Stop the timer
                 return Plugin_Stop;
             }
         }
-        EmitSoundToAll(seekingWav,index);
+        if (!gGrabCounter[index] || ++gGrabCounter[index] >= 100)
+        {
+            StopSound(index,SNDCHAN_AUTO,seekingWav);
+            EmitSoundToClient(index,seekingWav);
+            gGrabCounter[index]=1;
+        }
     }
     else
     {
@@ -1132,10 +1140,10 @@ public Action:GrabSearch(Handle:timer,any:index)
 public Action:Grabbing(Handle:timer,any:index)
 {
     PrintCenterText(index,"Target found, release key/toggle off to drop");
-    if(IsClientInGame(index)&&IsClientAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
+    if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
     {
         new target = gTargetindex[index];
-        if(target>64||IsClientInGame(target)&&IsClientAlive(target))
+        if(target>64||IsClientInGame(target)&&IsPlayerAlive(target))
         {
             if (gAllowedDuration[index][ACTION_GRAB] > 0)
             {
@@ -1157,12 +1165,18 @@ public Action:Grabbing(Handle:timer,any:index)
             if (gFlags[index][ACTION_GRAB] != 0) // Grabber is a Puller
             {
                 // Adjust the distance if the target is closer, or drag the victim in.
-                EmitSoundFromOrigin(pullerWav,targetloc); // Emit sound from the entity being pulled
                 new Float:targetDistance=GetDistanceBetween(clientloc,targetloc);
                 if (gGrabDist[index] > targetDistance)
                     gGrabDist[index] = targetDistance;
                 else if (gGrabDist[index] > 1)
                     gGrabDist[index]--;
+
+                if (!gGrabCounter[index] || ++gGrabCounter[index] >= 100)
+                {
+                    StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
+                    EmitSoundFromOrigin(pullerWav,targetloc); // Emit sound from the entity being pulled
+                    gGrabCounter[index]=1;
+                }
             }
 
             TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Find where the player is aiming
@@ -1205,6 +1219,7 @@ public Action_Drop(client)
 {
     StopSound(client,SNDCHAN_AUTO,seekingWav);
     StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
+    gGrabCounter[client]=0;
 
     gStatus[client][ACTION_GRAB]=false; // Tell plugin the grabber has dropped his target
     new target = gTargetindex[client];
@@ -1221,7 +1236,7 @@ public Action_Drop(client)
 
         gTargetindex[client]=-1;
     }
-    else
+    else if(HasAccess(client,Grab))
         PrintCenterText(client,"No target found");
 }
 
@@ -1235,7 +1250,7 @@ public Action_Rope(client)
     {
         if(client>0)
         {
-            if(IsClientAlive(client)&&!gStatus[client][ACTION_ROPE]&&!gStatus[client][ACTION_HOOK]&&!gGrabbed[client])
+            if(IsPlayerAlive(client)&&!gStatus[client][ACTION_ROPE]&&!gStatus[client][ACTION_HOOK]&&!gGrabbed[client])
             {
                 if(HasAccess(client,Rope))
                 {
@@ -1251,10 +1266,10 @@ public Action_Rope(client)
                     new Float:limit=gAllowedRange[client][ACTION_ROPE];
                     if (limit <= 0.0 || limit >= GetDistanceBetween(clientloc,gRopeEndloc[client]))
                     {
-                        EmitSoundFromOriginWithDelay(hitWav,gRopeEndloc[client],0.5); // Emit sound from the end of the rope
                         gRopeDist[client]=GetDistanceBetween(clientloc,gRopeEndloc[client]);
                         gStatus[client][ACTION_ROPE]=true; // Tell plugin the player is roping
                         CreateTimer(0.1,Roping,client,TIMER_REPEAT); // Create roping loop
+                        EmitSoundFromOrigin(hitWav,gRopeEndloc[client]); // Emit sound from the end of the rope
                     }
                     else
                     {
@@ -1296,7 +1311,7 @@ public Action_Rope(client)
 
 public Action:Roping(Handle:timer,any:index)
 {
-    if(IsClientInGame(index)&&gStatus[index][ACTION_ROPE]&&IsClientAlive(index)&&!gGrabbed[index])
+    if(IsClientInGame(index)&&gStatus[index][ACTION_ROPE]&&IsPlayerAlive(index)&&!gGrabbed[index])
     {
         if (gAllowedDuration[index][ACTION_ROPE] > 0)
         {
@@ -1376,13 +1391,6 @@ public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
                    NULL_VECTOR,true,0.0);
 }
 
-public EmitSoundFromOriginWithDelay(const String:sound[],const Float:orig[3], Float:delay)
-{
-    EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,
-                   SND_DELAY,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,
-                   NULL_VECTOR,true,delay);
-}
-
 public GetEntityOrigin(entity,Float:output[3])
 {
     GetEntDataVector(entity,OriginOffset,output);
@@ -1393,11 +1401,6 @@ public GetVelocity(client,Float:output[3])
     output[0]=GetEntDataFloat(client,GetVelocityOffset_0);
     output[1]=GetEntDataFloat(client,GetVelocityOffset_1);
     output[2]=GetEntDataFloat(client,GetVelocityOffset_2);
-}
-
-public IsClientAlive(client)
-{
-    return bool:!GetEntData(client,LifeStateOffset,1);
 }
 
 /****************

@@ -343,6 +343,8 @@ public Zerg_Tentacles(client, player, skilllevel)
                 range=0.0;
             }
         }
+        LogMessage("Giving grab to %N\n", client);
         GiveGrab(client,duration,range,1);
+        LogMessage("Gave grab to %N\n", client);
     }
 }

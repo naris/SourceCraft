@@ -372,7 +372,9 @@ public WorkRules(client, player, skilllevel)
                 range=0.0;
             }
         }
+        LogMessage("Giving hook to %N\n", client);
         GiveHook(client,duration,range);
+        LogMessage("Gave hook to %N\n", client);
     }
 }
 
