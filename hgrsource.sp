@@ -221,7 +221,7 @@ public OnPluginStart()
     cvarHookEnable=CreateConVar("hgrsource_hook_enable","1","This will enable the hook feature of this plugin");
     cvarHookAdminOnly=CreateConVar("hgrsource_hook_adminonly","1","If 1, only admins can use hook");
     cvarHookSpeed=CreateConVar("hgrsource_hook_speed","5.0","The speed of the player using hook");
-    cvarHookBeamColor=CreateConVar("hgrsource_hook_color","1","The color of the hook, 0 = White, 1 = Team color, 2= custom");
+    cvarHookBeamColor=CreateConVar("hgrsource_hook_color","1","The color of the hook, 0=White, 1=Team color, 2=custom");
     cvarHookRed=CreateConVar("hgrsource_hook_red","255","The red component of the beam (Only if you are using a custom color)");
     cvarHookGreen=CreateConVar("hgrsource_hook_green","0","The green component of the beam (Only if you are using a custom color)");
     cvarHookBlue=CreateConVar("hgrsource_hook_blue","0","The blue component of the beam (Only if you are using a custom color)");
@@ -230,7 +230,7 @@ public OnPluginStart()
     cvarGrabEnable=CreateConVar("hgrsource_grab_enable","1","This will enable the grab feature of this plugin");
     cvarGrabAdminOnly=CreateConVar("hgrsource_grab_adminonly","1","If 1, only admins can use grab");
     cvarGrabSpeed=CreateConVar("hgrsource_grab_speed","5.0","The speed of the grabbers target");
-    cvarGrabBeamColor=CreateConVar("hgrsource_grab_color","1","The color of the grab beam, 0 = White, 1 = Team color");
+    cvarGrabBeamColor=CreateConVar("hgrsource_grab_color","1","The color of the grab beam, 0=White, 1=Team color, 2=custom");
     cvarGrabRed=CreateConVar("hgrsource_grab_red","0","The red component of the beam (Only if you are using a custom color)");
     cvarGrabGreen=CreateConVar("hgrsource_grab_green","0","The green component of the beam (Only if you are using a custom color)");
     cvarGrabBlue=CreateConVar("hgrsource_grab_blue","255","The blue component of the beam (Only if you are using a custom color)");
@@ -239,7 +239,7 @@ public OnPluginStart()
     cvarRopeEnable=CreateConVar("hgrsource_rope_enable","1","This will enable the rope feature of this plugin");
     cvarRopeAdminOnly=CreateConVar("hgrsource_rope_adminonly","1","If 1, only admins can use rope");
     cvarRopeSpeed=CreateConVar("hgrsource_rope_speed","5.0","The speed of the player using rope");
-    cvarRopeBeamColor=CreateConVar("hgrsource_rope_color","1","The color of the rope, 0 = White, 1 = Team color");
+    cvarRopeBeamColor=CreateConVar("hgrsource_rope_color","1","The color of the rope, 0=White, 1=Team color, 2=custom");
     cvarRopeRed=CreateConVar("hgrsource_rope_red","0","The red component of the beam (Only if you are using a custom color)");
     cvarRopeGreen=CreateConVar("hgrsource_rope_green","255","The green component of the beam (Only if you are using a custom color)");
     cvarRopeBlue=CreateConVar("hgrsource_rope_blue","0","The blue component of the beam (Only if you are using a custom color)");
@@ -248,7 +248,8 @@ public OnPluginStart()
     AutoExecConfig();
 
     // Public cvar
-    CreateConVar("hgrsource_version",VERSION,"[HGR:Source] Current version of this plugin",FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_UNLOGGED|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("hgrsource_version",VERSION,"[HGR:Source] Current version of this plugin",
+                 FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_UNLOGGED|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
     PrintToServer("----------------|         HGR:Source Loaded         |---------------");
 }
@@ -921,7 +922,7 @@ public Action_Hook(client)
 
                     new Float:limit=gAllowedRange[client][ACTION_GRAB];
                     new Float:distance=GetDistanceBetween(clientloc,gHookEndloc[client]);
-                    LogMessage("Hook Distance=%f, Max=%f\n", distance, limit);
+                    LogMessage("Hook Distance=%f, Max=%f, Client=%N\n", distance, limit, client);
                     if (limit == 0.0 || distance <= limit)
                     {
                         SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
@@ -1092,7 +1093,7 @@ public Action:GrabSearch(Handle:timer,any:index)
                 GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
                 new Float:distance=GetDistanceBetween(clientloc,targetloc);
                 new Float:limit=gAllowedRange[index][ACTION_GRAB];
-                LogMessage("Hook Distance=%f, Max=%f\n", distance, limit);
+                LogMessage("Grab Distance=%f, Max=%f, Client=%N\n", distance, limit, index);
                 if (limit <= 0.0 || limit >= distance)
                 {
                     new Action:res;
