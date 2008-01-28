@@ -27,8 +27,6 @@
 
 #define PLUGIN_VERSION "2.0.3"
 
-#define MOVETYPE_WALK		2
-#define MOVETYPE_FLYGRAVITY	5
 #define MOVECOLLIDE_DEFAULT	0
 #define MOVECOLLIDE_FLY_BOUNCE	1
 
@@ -59,7 +57,6 @@ new TopMenuObject:oTakeJetpack = INVALID_TOPMENUOBJECT;
 
 // SendProp Offsets
 new g_iMoveCollide	= -1;
-new g_iMoveType		= -1;
 new g_iVelocity		= -1;
 
 // Soundfiles
@@ -147,9 +144,6 @@ public OnPluginStart()
 	// Find SendProp Offsets
 	if((g_iMoveCollide = FindSendPropOffs("CBaseEntity", "movecollide")) == -1)
 		LogError("Could not find offset for CBaseEntity::movecollide");
-		
-	if((g_iMoveType = FindSendPropOffs("CBaseEntity", "movetype")) == -1)
-		LogError("Could not find offset for CBaseEntity::movetype");
 		
 	if((g_iVelocity = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]")) == -1)
 		LogError("Could not find offset for CBasePlayer::m_vecVelocity[0]");
@@ -409,12 +403,11 @@ StopJetpack(client)
 		StopSound(client, SNDCHAN_AUTO, g_sSound);
 }
 
-SetMoveType(client, movetype, movecollide)
+SetMoveType(client, MoveType:movetype, movecollide)
 {
-	if(g_iMoveType == -1) return;
-	SetEntData(client, g_iMoveType, movetype);
-	if(g_iMoveCollide == -1) return;
-	SetEntData(client, g_iMoveCollide, movecollide);
+	SetEntityMoveType(client,movetype);
+	if(g_iMoveCollide != -1)
+		SetEntData(client, g_iMoveCollide, movecollide);
 }
 
 AddVelocity(client, Float:speed)

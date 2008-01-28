@@ -92,9 +92,7 @@ new gRemainingDuration[MAXPLAYERS+1];
 new gFlags[MAXPLAYERS+1][3];
 
 // Offset variables
-new GetVelocityOffset_0;
-new GetVelocityOffset_1;
-new GetVelocityOffset_2;
+new gGetVelocityOffset;
 
 // Precache variables
 new precache_laser;
@@ -187,15 +185,9 @@ public OnPluginStart()
     RegAdminCmd("hgrsource_takerope",TakeRope,ADMFLAG_GENERIC);
 
     // Find offsets
-    GetVelocityOffset_0=FindSendPropOffs("CBasePlayer","m_vecVelocity[0]");
-    if(GetVelocityOffset_0==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_0 offset, aborting");
-    GetVelocityOffset_1=FindSendPropOffs("CBasePlayer","m_vecVelocity[1]");
-    if(GetVelocityOffset_1==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_1 offset, aborting");
-    GetVelocityOffset_2=FindSendPropOffs("CBasePlayer","m_vecVelocity[2]");
-    if(GetVelocityOffset_2==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_2 offset, aborting");
+    gGetVelocityOffset=FindSendPropOffs("CBasePlayer","m_vecVelocity[0]");
+    if(gGetVelocityOffset==-1)
+        SetFailState("[HGR:Source] Error: Failed to find the GetVelocity offset, aborting");
 
     // General cvars
     cvarAnnounce=CreateConVar("hgrsource_announce","1","This will enable announcements that the plugin is loaded");
@@ -1396,9 +1388,7 @@ public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
 
 public GetVelocity(client,Float:output[3])
 {
-    output[0]=GetEntDataFloat(client,GetVelocityOffset_0);
-    output[1]=GetEntDataFloat(client,GetVelocityOffset_1);
-    output[2]=GetEntDataFloat(client,GetVelocityOffset_2);
+    GetEntDataVector(client, gGetVelocityOffset, output);
 }
 
 /****************
