@@ -54,6 +54,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         {
             PendingCheck(index,vecpos);
             ShowXP(index,vecpos);
+            ShowCredits(index,vecpos);
             new race=GetRace(vecpos);
             if (m_FirstSpawn[index])
                 IntroMenu(index);

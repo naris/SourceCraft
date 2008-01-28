@@ -83,7 +83,7 @@ public OnPluginReady()
                       "Seniority",
                       "Gives you a 15-80% chance of immediately respawning where you died.",
                       "Negotiations",
-                      "Various good and bad things happen at random intervals\nYou might get or lose money and experience, you might also die",
+                      "Various good and bad things happen at random intervals\nYou might get or lose money and experience,\nyou might also die or even be set back to level 0!",
                       "Work Rules",
                       "Use your ultimate bind to hook a line to a wall and traverse it.",
                       "16");
@@ -186,37 +186,57 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new seniority_skill=GetSkillLevel(player,raceID,0);
             if (seniority_skill)
             {
-                new buyout, jobsBank, bump;
+                new buyout, jobsBank, sheltered;
                 switch (seniority_skill)
                 {
                     case 1:
                     {
-                        bump=5;
+                        sheltered=5;
                         jobsBank=7;
                         buyout=9;
                     }
                     case 2:
                     {
-                        bump=10;
+                        sheltered=10;
                         jobsBank=15;
                         buyout=22;
                     }
                     case 3:
                     {
-                        bump=20;
+                        sheltered=20;
                         jobsBank=30;
                         buyout=50;
                     }
                     case 4:
                     {
-                        bump=35;
+                        sheltered=35;
                         jobsBank=50;
                         buyout=63;
                     }
                 }
                 new chance = GetRandomInt(1,100);
-                if (chance<=bump)
+                if (chance<=sheltered)
                 {
+                    PrintToChat(index,"%c[SourceCraft]%c You have sheltered due to %cSeniority%c!",
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+
+                    new attackerUserid = GetEventInt(event,"attacker");
+                    if (attackerUserid && attackerUserid != userid)
+                    {
+                        new attackerIndex = GetClientOfUserId(attackerUserid);
+                        PrintToChat(attackerIndex,"%c[SourceCraft]%c %N has been sheltered from your attack due to %cSeniority%c!",
+                                    COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+
+                    new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+                    if (assisterUserid && assisterUserid != userid)
+                    {
+                        new assisterIndex = GetClientOfUserId(assisterUserid);
+                        PrintToChat(assisterIndex,"%c[SourceCraft]%c %N has been sheltered from your attack due to %cSeniority%c!",
+                                    COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+
+
                     m_TeleportOnSpawn[index]=true;
                     GetClientAbsOrigin(index,m_SpawnLoc[index]);
                     AuthTimer(0.5,index,RespawnPlayerHandle);
@@ -236,33 +256,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     PrintToChat(index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
                                 COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
                 }
-            }
-        }
-    }
-}
-
-public BumpSomeone(client)
-{
-    new clientCount = GetClientCount();
-    for(new x=1;x<=clientCount;x++)
-    {
-        if (x != client && IsClientInGame(x) && IsPlayerAlive(x))
-        {
-            if (GetRandomInt(1,100) <= 0)
-            {
-                PrintToChat(client,"%c[SourceCraft]%c You have bumped %N due to %cUnion Rules%c!",
-                            COLOR_GREEN,COLOR_DEFAULT,x,COLOR_TEAM,COLOR_DEFAULT);
-                PrintToChat(x,"%c[SourceCraft]%c You have been bumped by %N due to %cUnion Rules%c!",
-                            COLOR_GREEN,COLOR_DEFAULT,client,COLOR_TEAM,COLOR_DEFAULT);
-
-                new Float:location[3];
-                GetClientAbsOrigin(x,location);
-                TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
-                TE_SendToAll();
-
-                EmitSoundToAll(explodeWav,x);
-                KillPlayer(x);
-                break;
             }
         }
     }
@@ -414,67 +407,20 @@ public Action:Negotiations(Handle:timer)
                              * Bankruptcy (you die & lose level & XP)
                              */
                             // No monetary limit on UAW Money!
-                            switch(GetRandomInt(1,20))
+                            switch(GetRandomInt(1,30))
                             {
                                 case 1: // Overtime
-                                {
-                                    new amount = GetRandomInt(1,10);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %cOvertime%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-                                }
+                                    AddCredits(client, player, GetRandomInt(1,10), "Overtime");
                                 case 2: // Premium Pay
-                                {
-                                    new amount = GetRandomInt(1,10);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %cPremium Pay%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-
-                                }
+                                    AddCredits(client, player, GetRandomInt(1,10), "Premium Pay");
                                 case 3: // Shift Differential 
-                                {
-                                    new amount = GetRandomInt(1,10);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %cShift Differential Pay%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-
-                                }
+                                    AddCredits(client, player, GetRandomInt(1,10), "Shift Differential Pay");
                                 case 4: // COLA 
-                                {
-                                    new amount = GetRandomInt(1,10);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %cCOLA%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-
-                                }
+                                    AddCredits(client, player, GetRandomInt(1,10), "COLA");
                                 case 5: // Profit Sharing 
-                                {
-                                    new amount = GetRandomInt(1,10);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %cProfit Sharing%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-
-                                }
+                                    AddCredits(client, player, GetRandomInt(1,10), "Profit Sharing");
                                 case 6: // Bonus
-                                {
-                                    new amount = GetRandomInt(1,10);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from a %cBonus%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-
-                                }
+                                    AddCredits(client, player, GetRandomInt(1,10), "Bonus");
                                 case 7: // Grievance
                                 {
                                     new amount = GetRandomInt(1,10);
@@ -567,15 +513,20 @@ public Action:Negotiations(Handle:timer)
                                     new amount = GetRandomInt(100,1000);
                                     decl String:currencies[64];
                                     GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+                                    new level = GetLevel(player, raceID);
+                                    if (level)
+                                    {
+                                        level -= GetRandomInt(1,level);
+                                        SetLevel(player, raceID, level);
+                                        SetSkillLevel(player, raceID, 0, 0);
+                                        SetSkillLevel(player, raceID, 1, 0);
+                                        SetSkillLevel(player, raceID, 2, 0);
+                                        SetSkillLevel(player, raceID, 3, 0);
+                                    }
                                     SetXP(player, raceID, 0);
-                                    SetLevel(player, raceID, 0);
-                                    SetSkillLevel(player, raceID, 0, 0);
-                                    SetSkillLevel(player, raceID, 1, 0);
-                                    SetSkillLevel(player, raceID, 2, 0);
-                                    SetSkillLevel(player, raceID, 3, 0);
                                     SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s, you have been reduced to level %d!",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies,level);
 
                                     new Float:location[3];
                                     GetClientAbsOrigin(client,location);
@@ -593,7 +544,7 @@ public Action:Negotiations(Handle:timer)
                                     SetSkillLevel(player, raceID, 1, 0);
                                     SetSkillLevel(player, raceID, 2, 0);
                                     SetSkillLevel(player, raceID, 3, 0);
-                                    PrintToChat(client,"%c[SourceCraft]%c Your employer has gone into %cBankruptcy%c!",
+                                    PrintToChat(client,"%c[SourceCraft]%c Your employer has gone into %cBankruptcy%c, you have been reduced to level 0!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     new Float:location[3];
@@ -627,6 +578,8 @@ public Action:Negotiations(Handle:timer)
                                     EmitSoundToAll(explodeWav,client);
                                     KillPlayer(client);
                                 }
+                                case 21: // Dues Collection
+                                    CollectDues(client, player);
                             }
                         }
                     }
@@ -636,3 +589,50 @@ public Action:Negotiations(Handle:timer)
     }
     return Plugin_Continue;
 }
+
+AddCredits(client, player, amount, const String:reason[])
+{
+    decl String:currencies[64];
+    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+    SetCredits(player, GetCredits(player)+amount);
+    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %c%s%c!",
+                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,reason,COLOR_TEAM,COLOR_DEFAULT);
+}
+
+public CollectDues(client,player)
+{
+    decl String:currency[64];
+    GetConVarString(m_Currency, currency, sizeof(currency));
+
+    decl String:currencies[64];
+    GetConVarString(m_Currencies, currencies, sizeof(currencies));
+
+    new amount      = 0;
+    new clientTeam  = GetClientTeam(client);
+    new clientCount = GetClientCount();
+    for(new victim=1;victim<=clientCount;victim++)
+    {
+        if (victim != client && IsClientInGame(victim) &&
+            IsPlayerAlive(victim) && GetClientTeam(victim) == clientTeam)
+        {
+            new victimPlayer = GetPlayer(victim);
+            new victimFunds  = GetCredits(victimPlayer);
+            new donation     = GetRandomInt(1,5);
+            if (donation > victimFunds)
+                donation = victimFunds;
+
+            amount += donation;
+            SetCredits(victimPlayer, victimFunds-donation);
+
+            PrintToChat(victim,"%c[SourceCraft]%c You have donated %d %s to %N for %cUnion Dues%c!",
+                        COLOR_GREEN,COLOR_DEFAULT,
+                        donation, (donation != 1) ? currency : currencies, client,
+                        COLOR_TEAM,COLOR_DEFAULT);
+        }
+
+        PrintToChat(client,"%c[SourceCraft]%c You have collected %d %s for %cUnion Dues%c!",
+                    COLOR_GREEN,COLOR_DEFAULT, amount, (amount != 1) ? currency : currencies,
+                    COLOR_TEAM,COLOR_DEFAULT);
+    }
+}
+

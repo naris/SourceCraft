@@ -162,73 +162,79 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new bool:changed=false;
-    new victimuserid = GetEventInt(event,"userid");
-    if (victimuserid)
+    new victimUserid = GetEventInt(event,"userid");
+    if (victimUserid)
     {
-        new victimindex      = GetClientOfUserId(victimuserid);
-        new victimPlayer = GetPlayer(victimindex);
+        new victimIndex  = GetClientOfUserId(victimUserid);
+        new victimPlayer = GetPlayer(victimIndex);
         if (victimPlayer != -1)
         {
+            new attackerIndex  = 0;
+            new attackerPlayer = -1;
+            new attackerUserid = GetEventInt(event,"attacker");
+            if (attackerUserid && victimUserid != attackerUserid)
+            {
+                attackerIndex  = GetClientOfUserId(attackerUserid);
+                attackerPlayer = GetPlayer(attackerIndex);
+            }
+
+            new assisterIndex  = 0;
+            new assisterPlayer = -1;
+            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
+            if (assisterUserid && victimUserid != assisterUserid)
+            {
+                assisterIndex  = GetClientOfUserId(assisterUserid);
+                assisterPlayer = GetPlayer(assisterIndex);
+            }
+
             new bool:evaded = false;
-            new victimrace = GetRace(victimPlayer);
-            if (victimrace == raceID)
+            new victimRace = GetRace(victimPlayer);
+            if (victimRace == raceID)
             {
-                changed |= evaded = NightElf_Evasion(event, victimindex, victimPlayer);
+                changed |= evaded = NightElf_Evasion(event, victimIndex, victimPlayer, attackerIndex, assisterIndex);
             }
 
-            new attackeruserid = GetEventInt(event,"attacker");
-            if (attackeruserid && victimuserid != attackeruserid)
+            if (attackerUserid && victimUserid != attackerUserid && attackerPlayer != -1)
             {
-                new attackerindex = GetClientOfUserId(attackeruserid);
-                new playerattacker=GetPlayer(attackerindex);
-                if (playerattacker != -1)
+                new damage = 0;
+                if (GetRace(attackerPlayer)==raceID)
                 {
-                    new damage = 0;
-                    if (GetRace(playerattacker)==raceID)
-                    {
-                        damage = NightElf_TrueshotAura(event, attackerindex,
-                                                       playerattacker, victimindex, evaded);
-                    }
-
-                    if (victimrace == raceID && (!evaded || damage))
-                    {
-                        damage += NightElf_ThornsAura(event, attackerindex, playerattacker,
-                                                      victimindex, victimPlayer, evaded, damage);
-                    }
-                    if (damage)
-                        changed = true;
+                    damage = NightElf_TrueshotAura(event, attackerIndex,
+                                                   attackerPlayer, victimIndex, evaded);
                 }
+
+                if (victimRace == raceID && (!evaded || damage))
+                {
+                    damage += NightElf_ThornsAura(event, attackerIndex, attackerPlayer,
+                                                  victimIndex, victimPlayer, evaded, damage);
+                }
+                if (damage)
+                    changed = true;
             }
 
-            new assisteruserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisteruserid && victimuserid != assisteruserid)
+            if (assisterUserid && victimUserid != assisterUserid && assisterPlayer != -1)
             {
-                new assisterindex=GetClientOfUserId(assisteruserid);
-                new playerassister=GetPlayer(assisterindex);
-                if (playerassister != -1)
+                new damage = 0;
+                if (GetRace(assisterPlayer)==raceID)
                 {
-                    new damage = 0;
-                    if (GetRace(playerassister)==raceID)
-                    {
-                        damage = NightElf_TrueshotAura(event, assisterindex,
-                                                       playerassister, victimindex, evaded);
-                    }
-
-                    if (victimrace == raceID && (!evaded || damage))
-                    {
-                        damage += NightElf_ThornsAura(event, assisterindex, playerassister,
-                                                      victimindex, victimPlayer, evaded, damage);
-                    }
-                    if (damage)
-                        changed = true;
+                    damage = NightElf_TrueshotAura(event, assisterIndex,
+                                                   assisterPlayer, victimIndex, evaded);
                 }
+
+                if (victimRace == raceID && (!evaded || damage))
+                {
+                    damage += NightElf_ThornsAura(event, assisterIndex, assisterPlayer,
+                                                  victimIndex, victimPlayer, evaded, damage);
+                }
+                if (damage)
+                    changed = true;
             }
         }
     }
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)
+public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer, attackerIndex, assisterIndex)
 {
     new skill_level_evasion = GetSkillLevel(victimPlayer,raceID,0);
     if (skill_level_evasion)
@@ -255,9 +261,17 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer)
 
             SetHealth(victimIndex,newhp);
 
-            LogToGame("[SourceCraft] %N evaded an attack!\n", victimIndex);
-            PrintToChat(victimIndex,"%c[SourceCraft] %N %c evaded an attack!",
-                        COLOR_GREEN,victimIndex,COLOR_DEFAULT);
+            LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victimIndex, attackerIndex);
+            PrintToChat(victimIndex,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attackerIndex);
+            PrintToChat(attackerIndex,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                        COLOR_GREEN,victimIndex,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+
+            if (assisterIndex)
+            {
+                PrintToChat(assisterIndex,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                            COLOR_GREEN,victimIndex,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+            }
             return true;
         }
     }
