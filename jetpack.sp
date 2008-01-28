@@ -58,7 +58,6 @@ new TopMenuObject:oGiveJetpack = INVALID_TOPMENUOBJECT;
 new TopMenuObject:oTakeJetpack = INVALID_TOPMENUOBJECT;
 
 // SendProp Offsets
-new g_iLifeState	= -1;
 new g_iMoveCollide	= -1;
 new g_iMoveType		= -1;
 new g_iVelocity		= -1;
@@ -146,9 +145,6 @@ public OnPluginStart()
 	HookEvent("player_spawn",PlayerSpawnEvent);
 	
 	// Find SendProp Offsets
-	if((g_iLifeState = FindSendPropOffs("CBasePlayer", "m_lifeState")) == -1)
-		LogError("Could not find offset for CBasePlayer::m_lifeState");
-		
 	if((g_iMoveCollide = FindSendPropOffs("CBaseEntity", "movecollide")) == -1)
 		LogError("Could not find offset for CBaseEntity::movecollide");
 		
@@ -244,7 +240,7 @@ public OnGameFrame()
 			{
 				if (g_iFuel[i] != 0)
 				{
-					if(!IsAlive(i))
+					if(!IsPlayerAlive(i))
 						StopJetpack(i);
 					else
 					{
@@ -370,7 +366,7 @@ public OnClientDisconnect(client)
 public Action:JetpackP(client, args)
 {
 	if ((g_iNativeJetpacks > 0 || GetConVarBool(sm_jetpack)) && 
-	    g_bHasJetpack[client] && !g_bJetpackOn[client] && IsAlive(client))
+	    g_bHasJetpack[client] && !g_bJetpackOn[client] && IsPlayerAlive(client))
 	{
 		StartJetpack(client);
 	}
@@ -405,7 +401,7 @@ StopJetpack(client)
 	if (g_bJetpackOn[client])
 	{
 		g_bJetpackOn[client] = false;
-		if(IsAlive(client))
+		if(IsPlayerAlive(client))
 			SetMoveType(client, MOVETYPE_WALK, MOVECOLLIDE_DEFAULT);
 	}
 
@@ -470,17 +466,12 @@ AddFireEffect(client)
 	TE_SendToAll();
 }
 
-bool:IsAlive(client)
-{
-	return (g_iLifeState != -1 && GetEntData(client, g_iLifeState, 1) == LIFE_ALIVE);
-}
-
 public Native_StartJetpack(Handle:plugin,numParams)
 {
 	if(numParams == 1)
 	{
 		new client = GetNativeCell(1);
-		if(g_bHasJetpack[client] && !g_bJetpackOn[client] && IsAlive(client))
+		if(g_bHasJetpack[client] && !g_bJetpackOn[client] && IsPlayerAlive(client))
 		{
 			StartJetpack(client);
 			return 1;

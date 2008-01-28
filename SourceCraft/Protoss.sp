@@ -385,6 +385,10 @@ public Protoss_MindControl(client,player)
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
     {
+        PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
+                    COLOR_GREEN,COLOR_DEFAULT);
+        return;
+
         new Float:range, percent;
         switch(ult_level)
         {
