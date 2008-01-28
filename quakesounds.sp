@@ -108,6 +108,7 @@ Versions:
 		* Modified by -=|JFH|=- Naris
 		* Added support for TF2
 		* Added ability to assign seperate sounds to each melee weapon.
+		* Fixed error when someone get >= 50 kills.
 */
 
 
@@ -466,11 +467,23 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 			soundId = MELEE;
 	}
 
-	if(assisterClient && killNumSetting[consecutiveKills[assisterClient]])
-		soundId = killNumSetting[consecutiveKills[assisterClient]];
+	if(assisterClient)
+	{
+		new kills = consecutiveKills[assisterClient];
+		if (kills > 50)
+		    kills = 50;
+		if (killNumSetting[kills])
+			soundId = killNumSetting[kills];
+	}
 
-	if(attackerClient && killNumSetting[consecutiveKills[attackerClient]])
-			soundId = killNumSetting[consecutiveKills[attackerClient]];
+	if(attackerClient)
+	{
+		new kills = consecutiveKills[attackerClient];
+		if (kills > 50)
+		    kills = 50;
+		if (killNumSetting[kills])
+			soundId = killNumSetting[kills];
+	}
 
 	if(assisterClient && assisterClient != victimClient && (settingsArray[DOUBLECOMBO] ||
 								settingsArray[TRIPLECOMBO] ||

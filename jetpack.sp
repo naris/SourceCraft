@@ -124,8 +124,8 @@ public OnPluginStart()
 	CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	sm_jetpack = CreateConVar("sm_jetpack", "1", "enable jetpacks on the server", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	sm_jetpack_sound = CreateConVar("sm_jetpack_sound", g_sSound, "enable the jetpack sound", FCVAR_PLUGIN);
-	sm_jetpack_sound = CreateConVar("sm_jetpack_out_of_fuel_sound", g_fSound, "enable the jetpack out of fuel sound", FCVAR_PLUGIN);
-	sm_jetpack_sound = CreateConVar("sm_jetpack_refuel_sound", g_rSound, "enable the jetpack refuel sound", FCVAR_PLUGIN);
+	sm_jetpack_fuel_sound = CreateConVar("sm_jetpack_out_of_fuel_sound", g_fSound, "enable the jetpack out of fuel sound", FCVAR_PLUGIN);
+	sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", g_rSound, "enable the jetpack refuel sound", FCVAR_PLUGIN);
 	sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_PLUGIN);
 	sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_PLUGIN);
 	sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_PLUGIN);

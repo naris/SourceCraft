@@ -194,8 +194,14 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 public Action:AllowTeleport(Handle:timer,any:index)
 {
     m_TeleportCount[index]=0;
-    PrintToChat(index,"%c[SourceCraft]%c Your %cTeleport%c has recharged and can be used again.",
-                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+    if(IsClientInGame(index))
+    {
+        if (IsPlayerAlive(index))
+        {
+            PrintToChat(index,"%c[SourceCraft]%c Your %cTeleport%c has recharged and can be used again.",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+        }
+    }
     return Plugin_Stop;
 }
 
