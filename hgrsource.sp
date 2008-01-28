@@ -74,10 +74,11 @@ new bool:gStatus[MAXPLAYERS+1][3];
 new Float:gHookEndloc[MAXPLAYERS+1][3];
 
 // Grab arrays
-new gTargetindex[MAXPLAYERS+1];
+new gTargetIndex[MAXPLAYERS+1];
 new Float:gGrabDist[MAXPLAYERS+1];
 new bool:gGrabbed[MAXPLAYERS+1];
 new gGrabCounter[MAXPLAYERS+1];
+new Float:gMaxSpeed[MAXPLAYERS+1];
 
 // Rope arrays
 new Float:gRopeEndloc[MAXPLAYERS+1][3];
@@ -106,10 +107,10 @@ new g_iNativeGrabs;
 new g_iNativeRopes;
 
 // Sounds
-new String:grabberHitWav[PLATFORM_MAX_PATH] = "sourcecraft/ZLuHit00.wav"; // "weapons/crossbow/bolt_skewer1.wav";
-new String:pullerWav[PLATFORM_MAX_PATH] = "sourcecraft/IntoNydus.wav"; // "weapons/crowwbow/hitbod2.wav";
+new String:grabberHitWav[PLATFORM_MAX_PATH] = "sourcecraft/zluhit00.wav"; // "weapons/crossbow/bolt_skewer1.wav";
+new String:pullerWav[PLATFORM_MAX_PATH] = "sourcecraft/intonydus.wav"; // "weapons/crowwbow/hitbod2.wav";
 new String:deniedWav[PLATFORM_MAX_PATH] = "sourcecraft/buzz.wav"; // "buttons/combine_button_locked.wav";
-new String:errorWav[PLATFORM_MAX_PATH] = "sourcecraft/PError.wav"; // "player/suit_denydevice.wav";
+new String:errorWav[PLATFORM_MAX_PATH] = "sourcecraft/perror.wav"; // "player/suit_denydevice.wav";
 new String:seekingWav[PLATFORM_MAX_PATH] = "sourcecraft/ropeshoot2.wav"; // "weapons/crossbow/bolt_fly4.wav"; // "weapons/tripwire/ropeshoot.wav";
 new String:fireWav[PLATFORM_MAX_PATH] = "weapons/crossbow/fire1.wav";
 new String:hitWav[PLATFORM_MAX_PATH] = "weapons/crossbow/hit1.wav";
@@ -1074,8 +1075,8 @@ public Action:GrabSearch(Handle:timer,any:index)
         GetClientEyePosition(index,clientloc); // Get seekers eye coordinate
         GetClientEyeAngles(index,clientang); // Get angle of where the player is looking
         TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayGrabEnt); // Create a ray that tells where the player is looking
-        new target = gTargetindex[index]=TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
-        if(target>0 && target<=64 && IsClientInGame(target))
+        new target = TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
+        if (target>0 && target<=64 && IsClientInGame(target))
         {
             // Found something
             decl String:name[32] = "";
@@ -1103,9 +1104,14 @@ public Action:GrabSearch(Handle:timer,any:index)
                         EmitSoundFromOrigin(grabberHitWav,targetloc); // Emit sound from the entity being grabbed
                         SetEntPropFloat(target,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so the target moves around easy
                         if (gFlags[index][ACTION_GRAB] != 0) // Grabber is a Puller
-                            SetEntPropFloat(target,Prop_Data,"m_flLaggedMovementValue",0.5); // Slow the target down.
+                        {
+                            gMaxSpeed[target] = GetEntPropFloat(target,Prop_Data,"m_flMaxspeed");
+                            SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",10.0); // Slow the target down.
+                            //SetEntDataFloat(target,m_OffsetMaxSpeed[target], 0.5);
+                        }
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
+                        gTargetIndex[index]=target;
                         CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
                         return Plugin_Stop;
                     }
@@ -1142,7 +1148,7 @@ public Action:Grabbing(Handle:timer,any:index)
     PrintCenterText(index,"Target found, release key/toggle off to drop");
     if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
     {
-        new target = gTargetindex[index];
+        new target = gTargetIndex[index];
         if(target>64||IsClientInGame(target)&&IsPlayerAlive(target))
         {
             if (gAllowedDuration[index][ACTION_GRAB] > 0)
@@ -1191,7 +1197,7 @@ public Action:Grabbing(Handle:timer,any:index)
             velocity[0]=(((distance[0]*que)+clientloc[0])-targetloc[0])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
             velocity[1]=(((distance[1]*que)+clientloc[1])-targetloc[1])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
             velocity[2]=(((distance[2]*que)+clientloc[2])-targetloc[2])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
-            TeleportEntity(gTargetindex[index],NULL_VECTOR,NULL_VECTOR,velocity);
+            TeleportEntity(gTargetIndex[index],NULL_VECTOR,NULL_VECTOR,velocity);
             // Make a beam from grabber to grabbed
             new color[4];
             if(target<=64)
@@ -1222,19 +1228,19 @@ public Action_Drop(client)
     gGrabCounter[client]=0;
 
     gStatus[client][ACTION_GRAB]=false; // Tell plugin the grabber has dropped his target
-    new target = gTargetindex[client];
+    new target = gTargetIndex[client];
     if(target>0)
     {
         PrintCenterText(client,"Target has been dropped");
         SetEntPropFloat(target,Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
 
         if (gFlags[client][ACTION_GRAB] != 0) // Grabber is a Puller
-            SetEntPropFloat(target,Prop_Data,"m_flLaggedMovementValue",1.0); // Set speed back to normal
+            SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",gMaxSpeed[target]);
 
         if(target>0&&target<=64&&IsClientInGame(target))
             gGrabbed[target]=false; // Tell plugin the target is no longer being grabbed
 
-        gTargetindex[client]=-1;
+        gTargetIndex[client]=-1;
     }
     else if(HasAccess(client,Grab))
         PrintCenterText(client,"No target found");
