@@ -92,11 +92,9 @@ new gRemainingDuration[MAXPLAYERS+1];
 new gFlags[MAXPLAYERS+1][3];
 
 // Offset variables
-new OriginOffset;
 new GetVelocityOffset_0;
 new GetVelocityOffset_1;
 new GetVelocityOffset_2;
-new MoveTypeOffset;
 
 // Precache variables
 new precache_laser;
@@ -189,9 +187,6 @@ public OnPluginStart()
     RegAdminCmd("hgrsource_takerope",TakeRope,ADMFLAG_GENERIC);
 
     // Find offsets
-    OriginOffset=FindSendPropOffs("CBaseEntity","m_vecOrigin");
-    if(OriginOffset==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the Origin offset, aborting");
     GetVelocityOffset_0=FindSendPropOffs("CBasePlayer","m_vecVelocity[0]");
     if(GetVelocityOffset_0==-1)
         SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_0 offset, aborting");
@@ -201,9 +196,6 @@ public OnPluginStart()
     GetVelocityOffset_2=FindSendPropOffs("CBasePlayer","m_vecVelocity[2]");
     if(GetVelocityOffset_2==-1)
         SetFailState("[HGR:Source] Error: Failed to find the GetVelocity_2 offset, aborting");
-    MoveTypeOffset=FindSendPropOffs("CAI_BaseNPC","movetype");
-    if(MoveTypeOffset==-1)
-        SetFailState("[HGR:Source] Error: Failed to find the MoveType offset, aborting");
 
     // General cvars
     cvarAnnounce=CreateConVar("hgrsource_announce","1","This will enable announcements that the plugin is loaded");
@@ -981,7 +973,7 @@ public Hook_Push(client)
     new Float:distance=GetDistanceBetween(clientloc,gHookEndloc[client]);
     if(distance<30.0)
     {
-        SetEntData(client,MoveTypeOffset,0,1); // Freeze client
+        SetEntityMoveType(client,MOVETYPE_NONE); // Freeze client
         SetEntPropFloat(client,Prop_Data,"m_flGravity",1.0); // Set grav to normal
     }
 }
@@ -1015,7 +1007,7 @@ public Action_UnHook(client)
 {
     gStatus[client][ACTION_HOOK]=false; // Tell plugin the client is not hooking
     SetEntPropFloat(client,Prop_Data,"m_flGravity",1.0); // Set grav to normal
-    SetEntData(client,MoveTypeOffset,2,1); // Unfreeze client
+    SetEntityMoveType(client,MOVETYPE_WALK); // Unfreeze client
 }
 
 /******
@@ -1090,7 +1082,7 @@ public Action:GrabSearch(Handle:timer,any:index)
                 gGrabCounter[index]=0;
 
                 new Float:targetloc[3];
-                GetEntityOrigin(target,targetloc); // Find the target's xyz coordinate
+                GetClientAbsOrigin(target,targetloc); // Find the target's xyz coordinate
                 new Float:distance=GetDistanceBetween(clientloc,targetloc);
                 new Float:limit=gAllowedRange[index][ACTION_GRAB];
                 LogMessage("Grab Distance=%f, Max=%f, Client=%N\n", distance, limit, index);
@@ -1170,7 +1162,7 @@ public Action:Grabbing(Handle:timer,any:index)
             new Float:clientloc[3],Float:clientang[3],Float:targetloc[3],Float:endvec[3],Float:distance[3];
             GetClientAbsOrigin(index,clientloc);
             GetClientEyeAngles(index,clientang);
-            GetEntityOrigin(target,targetloc);
+            GetClientAbsOrigin(target,targetloc);
 
             if (gFlags[index][ACTION_GRAB] != 0) // Grabber is a Puller
             {
@@ -1400,11 +1392,6 @@ public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
     EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,
                    SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,
                    NULL_VECTOR,true,0.0);
-}
-
-public GetEntityOrigin(entity,Float:output[3])
-{
-    GetEntDataVector(entity,OriginOffset,output);
 }
 
 public GetVelocity(client,Float:output[3])
