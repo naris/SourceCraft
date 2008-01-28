@@ -65,8 +65,8 @@ new g_iVelocity		= -1;
 
 // Soundfiles
 new String:g_sSound[PLATFORM_MAX_PATH]	= "vehicles/airboat/fan_blade_fullthrottle_loop1.wav";
-new String:g_fSound[PLATFORM_MAX_PATH]	= "sourcecraft/OutOfGas.wav"; // "common/bugreporter_failed.wav"
-new String:g_rSound[PLATFORM_MAX_PATH]	= "sourcecraft/Transmission.wav"; // "hl1/fvox/activated.wav"
+new String:g_fSound[PLATFORM_MAX_PATH]	= "sourcecraft/outofgas.wav"; // "common/bugreporter_failed.wav"
+new String:g_rSound[PLATFORM_MAX_PATH]	= "sourcecraft/transmission.wav"; // "hl1/fvox/activated.wav"
 
 // Is Jetpack Enabled
 new bool:g_bHasJetpack[MAXPLAYERS + 1];
