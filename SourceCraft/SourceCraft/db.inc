@@ -147,9 +147,12 @@ public SavePlayerData(client,vectorpos)
                     break;
                 else
                 {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+
                     if (bUpdateIsOK)
                     {
-                        LogMessage("INSERT ON DUPLICATE UPDATE failed, using REPLACE!\n");
+                        LogMessage("INSERT ON DUPLICATE UPDATE failed, using REPLACE! %s\nSQL:%s\n",error, SQLString);
                         bUpdateIsOK = false;
                     }
                     else
