@@ -157,8 +157,6 @@ public SavePlayerData(client,vectorpos)
                     }
                     else
                     {
-                        decl String:error[256] = "";
-                        SQL_GetError(DBIDB, error, sizeof(error));
                         LogError("Unable to replace player's race: %s\nSQL:%s\n",
                                  error, SQLString);
                         return;

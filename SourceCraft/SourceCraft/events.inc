@@ -57,11 +57,17 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        if (index > 0)
+        if (index > 0 && m_BaseSpeed[index] == 0.0)
         {
-            speedAltered[index]=true;
-            if(GameType == tf2)
-                m_BaseSpeed[index]=GetNormalSpeed(index);
+            if (m_OffsetMaxSpeed[index] == 0)
+                m_OffsetMaxSpeed[index]=FindDataMapOffs(index,"m_flMaxspeed");
+
+            new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
+            if (maxSpeed > 100)
+                m_BaseSpeed[index]=maxSpeed;
+
+            LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
+                       index, m_BaseSpeed[index], maxSpeed, GetNormalSpeed(index));
         }
 
         new vecpos=GetClientVectorPosition(index);
@@ -164,13 +170,15 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client > 0)
     {
+        m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
         new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
         if (maxSpeed > 100)
         {
-            speedAltered[client]=true;
-            if(GameType == tf2)
-                m_BaseSpeed[client]=GetNormalSpeed(client);
+            m_BaseSpeed[client]=maxSpeed;
         }
+        speedAltered[client]=true;
+        LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
+                   client, m_BaseSpeed[client],maxSpeed,GetNormalSpeed(client));
     }
 }
 
@@ -184,9 +192,13 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             new client=GetArrayCell(playerHandle,0);
             if(IsClientInGame(client))
             {
+                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
                 speedAltered[client]=true;
-                if(GameType == tf2)
-                    m_BaseSpeed[client]=GetNormalSpeed(client);
+                new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                m_BaseSpeed[client]=maxSpeed;
+
+                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
+                           client, m_BaseSpeed[client],maxSpeed,GetNormalSpeed(client));
             }
         }
     }
