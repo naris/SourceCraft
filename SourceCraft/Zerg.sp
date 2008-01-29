@@ -85,9 +85,19 @@ public OnPlayerAuthed(client,player)
 
 public OnRaceSelected(client,player,oldrace,race)
 {
-    if (race != oldrace && oldrace == raceID)
-        TakeGrab(client);
+    if (race != oldrace)
+    {
+        if (oldrace == raceID)
+            TakeGrab(client);
+        else if (race == raceID)
+        {
+            new skill_tentacles=GetSkillLevel(player,race,3);
+            if (skill_tentacles)
+                Zerg_Tentacles(client, player, skill_tentacles);
+        }
+    }
 }
+
 
 public Action:Regeneration(Handle:timer)
 {
@@ -276,6 +286,8 @@ public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
         if (!strlen(weapon))
             GetClientWeapon(index, weapon, sizeof(weapon));
 
+        LogMessage("Zerg_Adrenal for %N, weapon=%s\n", index, weapon);
+
         if (IsDamageFromMelee(weapon))
         {
             new Float:percent;
@@ -294,6 +306,7 @@ public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
             new damage=GetDamage(event, victimIndex);
             new amount=RoundFloat(float(damage)*percent);
             new newhp=GetClientHealth(victimIndex)-amount;
+            LogMessage("ZerAdrenal for %N, damage=%d,amount=%d\n", index, damage, amount);
             if (newhp <= 0)
             {
                 newhp=0;

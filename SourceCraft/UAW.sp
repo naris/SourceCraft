@@ -311,20 +311,22 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public OnRaceSelected(client,player,oldrace,newrace)
+public OnRaceSelected(client,player,oldrace,race)
 {
-    if (oldrace == raceID)
-    {
-        if (newrace != raceID)
-        {
-            m_TeleportOnSpawn[client]=false;
-            m_JobsBank[client]=false;
-        }
-    }
-    else
+    if (race != oldrace)
     {
         if (oldrace == raceID)
             TakeHook(client);
+        else if (race == raceID)
+        {
+            m_JobsBank[client]=false;
+            m_TeleportOnSpawn[client]=false;
+
+            new skill_workrules=GetSkillLevel(player,race,3);
+            if (skill_workrules)
+                WorkRules(client, player, skill_workrules);
+
+        }
     }
 }
 
@@ -346,22 +348,22 @@ public WorkRules(client, player, skilllevel)
         {
             case 1:
             {
-                duration=2;
+                duration=5;
                 range=150.0;
             }
             case 2:
             {
-                duration=5;
+                duration=10;
                 range=300.0;
             }
             case 3:
             {
-                duration=8;
+                duration=20;
                 range=450.0;
             }
             case 4:
             {
-                duration=10;
+                duration=30;
                 range=0.0;
             }
         }
@@ -484,76 +486,96 @@ public Action:Negotiations(Handle:timer)
                                 }
                                 case 15: // Lockout
                                 {
-                                    PrintToChat(client,"%c[SourceCraft]%c Your employer has instituted a %cLockout%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    if (GetRandomInt(1,100) > 25)
+                                        client--; // Get a different Negotiation
+                                    else
+                                    {
+                                        PrintToChat(client,"%c[SourceCraft]%c Your employer has instituted a %cLockout%c!",
+                                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                                    new Float:location[3];
-                                    GetClientAbsOrigin(client,location);
-                                    TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
-                                    TE_SendToAll();
+                                        new Float:location[3];
+                                        GetClientAbsOrigin(client,location);
+                                        TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
+                                        TE_SendToAll();
 
-                                    EmitSoundToAll(explodeWav,client);
-                                    KillPlayer(client);
+                                        EmitSoundToAll(explodeWav,client);
+                                        KillPlayer(client);
+                                    }
                                 }
                                 case 16: // Workforce Reduction
                                 {
-                                    PrintToChat(client,"%c[SourceCraft]%c You have been layed off due to a %cWorkforce Reduction%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    if (GetRandomInt(1,100) > 25)
+                                        client--; // Get a different Negotiation
+                                    else
+                                    {
+                                        PrintToChat(client,"%c[SourceCraft]%c You have been layed off due to a %cWorkforce Reduction%c!",
+                                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                                    new Float:location[3];
-                                    GetClientAbsOrigin(client,location);
-                                    TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
-                                    TE_SendToAll();
+                                        new Float:location[3];
+                                        GetClientAbsOrigin(client,location);
+                                        TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
+                                        TE_SendToAll();
 
-                                    EmitSoundToAll(explodeWav,client);
-                                    KillPlayer(client);
+                                        EmitSoundToAll(explodeWav,client);
+                                        KillPlayer(client);
+                                    }
                                 }
                                 case 17: // Forced Buyout
                                 {
-                                    new amount = GetRandomInt(100,1000);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                                    new level = GetLevel(player, raceID);
-                                    if (level)
+                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 25)
+                                        client--; // Get a different Negotiation
+                                    else
                                     {
-                                        level -= GetRandomInt(1,level);
-                                        SetLevel(player, raceID, level);
+                                        new amount = GetRandomInt(100,1000);
+                                        decl String:currencies[64];
+                                        GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+                                        new level = GetLevel(player, raceID);
+                                        if (level)
+                                        {
+                                            level -= GetRandomInt(1,level);
+                                            SetLevel(player, raceID, level);
+                                            SetSkillLevel(player, raceID, 0, 0);
+                                            SetSkillLevel(player, raceID, 1, 0);
+                                            SetSkillLevel(player, raceID, 2, 0);
+                                            SetSkillLevel(player, raceID, 3, 0);
+                                        }
+                                        SetXP(player, raceID, 0);
+                                        SetCredits(player, GetCredits(player)+amount);
+                                        PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s, you have been reduced to level %d!",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies,level);
+
+                                        new Float:location[3];
+                                        GetClientAbsOrigin(client,location);
+                                        TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
+                                        TE_SendToAll();
+
+                                        EmitSoundToAll(explodeWav,client);
+                                        KillPlayer(client);
+                                    }
+                                }
+                                case 18: // Bankruptcy
+                                {
+                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 25)
+                                        client--; // Get a different Negotiation
+                                    else
+                                    {
+                                        SetXP(player, raceID, 0);
+                                        SetLevel(player, raceID, 0);
                                         SetSkillLevel(player, raceID, 0, 0);
                                         SetSkillLevel(player, raceID, 1, 0);
                                         SetSkillLevel(player, raceID, 2, 0);
                                         SetSkillLevel(player, raceID, 3, 0);
-                                    }
-                                    SetXP(player, raceID, 0);
-                                    SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s, you have been reduced to level %d!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies,level);
-
-                                    new Float:location[3];
-                                    GetClientAbsOrigin(client,location);
-                                    TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
-                                    TE_SendToAll();
-
-                                    EmitSoundToAll(explodeWav,client);
-                                    KillPlayer(client);
-                                }
-                                case 18: // Bankruptcy
-                                {
-                                    SetXP(player, raceID, 0);
-                                    SetLevel(player, raceID, 0);
-                                    SetSkillLevel(player, raceID, 0, 0);
-                                    SetSkillLevel(player, raceID, 1, 0);
-                                    SetSkillLevel(player, raceID, 2, 0);
-                                    SetSkillLevel(player, raceID, 3, 0);
-                                    PrintToChat(client,"%c[SourceCraft]%c Your employer has gone into %cBankruptcy%c, you have been reduced to level 0!",
+                                        PrintToChat(client,"%c[SourceCraft]%c Your employer has gone into %cBankruptcy%c, you have been reduced to level 0!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                                    new Float:location[3];
-                                    GetClientAbsOrigin(client,location);
-                                    TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
-                                    TE_SendToAll();
+                                        new Float:location[3];
+                                        GetClientAbsOrigin(client,location);
+                                        TE_SetupExplosion(location,explosionModel,10.0,30,0,50,20);
+                                        TE_SendToAll();
 
-                                    EmitSoundToAll(explodeWav,client);
-                                    KillPlayer(client);
+                                        EmitSoundToAll(explodeWav,client);
+                                        KillPlayer(client);
+                                    }
                                 }
                                 case 19: // Union Dues
                                 {
@@ -563,12 +585,12 @@ public Action:Negotiations(Handle:timer)
                                     GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                                     SetCredits(player, amount-balance);
                                     PrintToChat(client,"%c[SourceCraft]%c You must pay %d %s for %cUnion Dues%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                                 case 20: // OSHA
                                 {
                                     PrintToChat(client,"%c[SourceCraft]%c You have been forced to leave due to %cOSHA Rules%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     new Float:location[3];
                                     GetClientAbsOrigin(client,location);

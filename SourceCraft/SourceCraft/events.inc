@@ -164,7 +164,10 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
     {
         new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
         if (maxSpeed > 100)
+        {
             m_BaseSpeed[client]=maxSpeed;
+            SetEntDataFloat(client,m_OffsetSpeed,maxSpeed);
+        }
     }
 }
 
