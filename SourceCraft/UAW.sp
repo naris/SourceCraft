@@ -487,7 +487,7 @@ public Action:Negotiations(Handle:timer)
                                 }
                                 case 15: // Lockout
                                 {
-                                    if (GetRandomInt(1,100) > 25)
+                                    if (GetRandomInt(1,100) > 20)
                                         client--; // Get a different Negotiation
                                     else
                                     {
@@ -505,7 +505,7 @@ public Action:Negotiations(Handle:timer)
                                 }
                                 case 16: // Workforce Reduction
                                 {
-                                    if (GetRandomInt(1,100) > 25)
+                                    if (GetRandomInt(1,100) > 20)
                                         client--; // Get a different Negotiation
                                     else
                                     {
@@ -523,7 +523,7 @@ public Action:Negotiations(Handle:timer)
                                 }
                                 case 17: // Forced Buyout
                                 {
-                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 15)
+                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 5)
                                         client--; // Get a different Negotiation
                                     else
                                     {
