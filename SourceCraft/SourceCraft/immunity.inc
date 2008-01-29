@@ -7,7 +7,7 @@ Author(s): Anthony Iacono
 #define IMMUNITY_COUNT 4
 
 /* Pulled directly from the interface:
-enum War3Immunity
+enum Immunity
 {
 	Immunity_Ultimates = 0, // Immune from ultimates
 	Immunity_HealthTake = 1, // Immune from health taking

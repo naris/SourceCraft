@@ -65,12 +65,12 @@ public OnPluginReady()
     raceID=CreateRace("Human Alliance", "human",
                       "You are now part of the Human Alliance.",
                       "You will be part of the Human Alliance when you die or respawn.",
-                      "Invisibility",
-                      "Makes you partially invisible, \n62% visibility - 37% visibility.",
+                      "Immunity",
+                      "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking at level 3,\nand Ultimates at Level 4.",
                       "Devotion Aura",
                       "Gives you additional 15-50 health each round.",
                       "Bash",
-                      "Have a 15-32% chance to render an \nenemy immobile for 1 second.",
+                      "Have a 15-32\% chance to render an \nenemy immobile for 1 second.",
                       "Teleport",
                       "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
@@ -117,22 +117,16 @@ public OnRaceSelected(client,player,oldrace,race)
                 SetMaxHealth(client, maxHealth[client]);
                 healthIncreased[client] = false;
             }
-
-            // Reset invisibility
-            if (player != -1)
-            {
-                SetMinVisibility(player, 255, 1.0);
-            }
         }
         else if (race == raceID)
         {
-            new skill_invis=GetSkillLevel(player,race,0);
-            if (skill_invis)
-                Invisibility(client, player, skill_invis);
+            new skill_immune=GetSkillLevel(player,race,0);
+            if (skill_immune)
+                DoImmunity(client, player, skill_immune);
 
             new skill_devo=GetSkillLevel(player,race,1);
             if (skill_devo)
-                DevotionAura(client, player, skill_devo);
+                DevotionAura(client, skill_devo);
         }
     }
 }
@@ -173,7 +167,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                     PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing!",
                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                    Teleport(client,player,ult_level, toSpawn,
+                    Teleport(client,ult_level, toSpawn,
                              GetSysTickCount() - m_UltimatePressed[client]);
                     if (!toSpawn)
                     {
@@ -212,23 +206,9 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
         if (skill == 0)
-            Invisibility(client, player, newskilllevel);
+            DoImmunity(client, player, newskilllevel);
         else if (skill == 1)
-            DevotionAura(client, player, newskilllevel);
-    }
-}
-
-public OnItemPurchase(client,player,item)
-{
-    new race=GetRace(player);
-    if (race == raceID && IsPlayerAlive(client))
-    {
-        new cloak = GetShopItem("Cloak of Shadows");
-        if (cloak == item)
-        {
-            new skill_invis=GetSkillLevel(player,race,0);
-            Invisibility(client, player, skill_invis);
-        }
+            DevotionAura(client, newskilllevel);
     }
 }
 
@@ -257,13 +237,13 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_invis=GetSkillLevel(player,race,0);
-                if (skill_invis)
-                    Invisibility(client, player, skill_invis);
+                new skill_immune=GetSkillLevel(player,race,0);
+                if (skill_immune)
+                    DoImmunity(client, player, skill_immune);
 
                 new skill_devo=GetSkillLevel(player,race,1);
                 if (skill_devo)
-                    DevotionAura(client, player, skill_devo);
+                    DevotionAura(client, skill_devo);
             }
         }
     }
@@ -283,13 +263,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         {
             SetMaxHealth(client, maxHealth[client]);
             healthIncreased[client] = false;
-        }
-
-        // Reset invisibility
-        new player=GetPlayer(client);
-        if (player != -1)
-        {
-            SetMinVisibility(player, 255, 1.0);
         }
     }
 }
@@ -332,42 +305,33 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Invisibility(client, player, skilllevel)
+DoImmunity(client, player, skilllevel)
 {
-    new alpha;
-    switch(skilllevel)
+    if (skilllevel >= 1)
     {
-        case 1:
-            alpha=158;
-        case 2:
-            alpha=137;
-        case 3:
-            alpha=115;
-        case 4:
-            alpha=100; // 94;
+        SetImmunity(player,Immunity_ShopItems,true);
+        if (skilllevel >= 2)
+        {
+            SetImmunity(player,Immunity_Explosion,true);
+            if (skilllevel >= 3)
+            {
+                SetImmunity(player,Immunity_HealthTake,true);
+                if (skilllevel >= 4)
+                    SetImmunity(player,Immunity_Ultimates,true);
+            }
+        }
+
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
+
+        new color[4] = { 0, 255, 50, 128 };
+        TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
+                              0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+        TE_SendToAll();
     }
-
-    /* If the Player also has the Cloak of Shadows,
-     * Decrease the visibility further
-     */
-    new cloak = GetShopItem("Cloak of Shadows");
-    if (cloak != -1 && GetOwnsItem(player,cloak))
-    {
-        alpha *= 0.90;
-    }
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new color[4] = { 0, 255, 50, 128 };
-    TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                          0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
-    TE_SendToAll();
-
-    SetMinVisibility(player,alpha, 0.90, 1.0);
 }
 
-public DevotionAura(client, player, skill_devo)
+DevotionAura(client, skill_devo)
 {
     new hpadd;
     switch(skill_devo)
@@ -398,7 +362,7 @@ public DevotionAura(client, player, skill_devo)
 }
 
 
-public Bash(player, victim)
+Bash(player, victim)
 {
     new skill_bash=GetSkillLevel(player,raceID,2);
     if (skill_bash)
@@ -428,7 +392,7 @@ public Bash(player, victim)
     }
 }
 
-public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
+Teleport(client,ult_level, bool:to_spawn, time_pressed)
 {
     new Float:origin[3];
     GetClientAbsOrigin(client, origin);
