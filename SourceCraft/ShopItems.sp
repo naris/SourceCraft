@@ -54,6 +54,7 @@ new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Float:spawnLoc[MAXPLAYERS+1][3];
 new bool:usedPeriapt[MAXPLAYERS+1];
 new bool:isMole[MAXPLAYERS+1];
+new Float:gClawTime[MAXPLAYERS+1];
 
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
@@ -418,21 +419,12 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
                 if (!GetImmunity(player,Immunity_HealthTake))
                 {
-                    if (GetOwnsItem(player_attacker,shopItem[ITEM_CLAWS]))
+                    if (GetOwnsItem(player_attacker,shopItem[ITEM_CLAWS]) &&
+                        GetGameTime() - gClawTime[attacker_index] > 0.200)
                     {
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
                             amount = 8;
-
-                        if (GameType == tf2)
-                        {
-                            switch (TF_GetClass(index))
-                            {
-                                case TF2_HEAVY: amount = 1;
-                                case TF2_PYRO:  amount = 1;
-                                case TF2_ENG:   amount = 1;
-                            }
-                        }
 
                         new newhealth=GetClientHealth(index)-amount;
                         if (newhealth <= 0)
@@ -444,10 +436,12 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                             LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
 
                         SetHealth(index,newhealth);
+                        gClawTime[attacker_index] = GetGameTime();
                         changed = true;
                     }
 
-                    if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_CLAWS]))
+                    if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_CLAWS]) &&
+                        GetGameTime() - gClawTime[assister_index] > 0.200)
                     {
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
@@ -462,6 +456,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                             LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
 
                         SetHealth(index,newhealth);
+                        gClawTime[assister_index] = GetGameTime();
                         changed = true;
                     }
                 }

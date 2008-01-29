@@ -28,6 +28,7 @@ new Handle:cvarReaverScarabEnable = INVALID_HANDLE;
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new bool:m_AllowMindControl[MAXPLAYERS+1];
+new Float:gReaverScarabTime[MAXPLAYERS+1];
 
 enum objects { unknown, sentrygun, dispenser, teleporter };
 new m_BuilderOffset[objects];
@@ -195,7 +196,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 if (attackerplayer != -1)
                 {
                     if (GetRace(attackerplayer) == raceID)
-                        changed |= Scarab(event, attackerIndex, attackerplayer, victimIndex);
+                        changed |= ReaverScarab(event, attackerIndex, attackerplayer, victimIndex);
                 }
             }
 
@@ -207,7 +208,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 if (assisterplayer != -1)
                 {
                     if (GetRace(assisterplayer) == raceID)
-                        changed |= Scarab(event, assisterIndex, assisterplayer, victimIndex);
+                        changed |= ReaverScarab(event, assisterIndex, assisterplayer, victimIndex);
                 }
             }
         }
@@ -321,7 +322,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                                 EmitSoundToClient(client, cloakWav);
                                                 LogToGame("[SourceCraft] %s has been cloaked by %s!\n", name,clientName);
                                                 PrintToChat(index,"%c[SourceCraft] %s %c has been cloaked by %s!",
-                                                        COLOR_GREEN,name,COLOR_DEFAULT,clientName);
+                                                            COLOR_GREEN,name,COLOR_DEFAULT,clientName);
                                             }
                                         }
                                         else if (m_Cloaked[client][index])
@@ -531,7 +532,7 @@ public MindControl(client,player)
     }
 }
 
-public bool:Scarab(Handle:event, index, player, victimIndex)
+public bool:ReaverScarab(Handle:event, index, player, victimIndex)
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
@@ -561,7 +562,8 @@ public bool:Scarab(Handle:event, index, player, victimIndex)
             }
         }
 
-        if (GetRandomInt(1,100) <= chance)
+        if (GetRandomInt(1,100) <= chance &&
+            GetGameTime() - gReaverScarabTime[index] > 0.200)
         {
             if (!GetConVarBool(cvarReaverScarabEnable))
             {
@@ -570,19 +572,8 @@ public bool:Scarab(Handle:event, index, player, victimIndex)
                 return false;
             }
 
-            new bool:reduced = false;
-            if (GameType == tf2)
-            {
-                switch (TF_GetClass(index))
-                {
-                    case TF2_HEAVY: reduced = true;
-                    case TF2_PYRO:  reduced = true;
-                    case TF2_ENG:   reduced = true;
-                }
-            }
-
             new damage=GetDamage(event, victimIndex);
-            new health_take= reduced ? RoundToFloor(float(damage)*percent) : 1;
+            new health_take= RoundToFloor(float(damage)*percent);
             if (health_take > 0)
             {
                 new new_health=GetClientHealth(victimIndex)-health_take;
@@ -596,7 +587,7 @@ public bool:Scarab(Handle:event, index, player, victimIndex)
 
                 SetHealth(victimIndex,new_health);
 
-                if (!reduced)
+                if (GetGameTime() - gReaverScarabTime[index] >= 10.0)
                 {
                     new Float:Origin[3];
                     GetClientAbsOrigin(victimIndex, Origin);
@@ -607,6 +598,7 @@ public bool:Scarab(Handle:event, index, player, victimIndex)
                 }
 
                 EmitSoundToAll(explodeWav,victimIndex);
+                gReaverScarabTime[index] = GetGameTime();
                 return true;
             }
         }
