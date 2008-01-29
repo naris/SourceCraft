@@ -23,22 +23,22 @@ public SQLTable()
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("[SourceCraft] Error in the creation of the w3s_players SQL table:%s", error);
-            SetFailState("[SourceCraft] Error in the creation of the w3s_players SQL table");
+            LogError("Error in the creation of the w3s_players SQL table:%s", error);
+            SetFailState("Error in the creation of the w3s_players SQL table");
         }
         else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_races (steamid varchar(64) not null, race varchar(30) not null, xp int default 0, level int default 0, PRIMARY KEY(steamid,race))"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("[SourceCraft] Error in the creation of the w3s_skills SQL table:%s", error);
-            SetFailState("[SourceCraft] Error in the creation of the w3s_skills SQL table");
+            LogError("Error in the creation of the w3s_skills SQL table:%s", error);
+            SetFailState("Error in the creation of the w3s_skills SQL table");
         }
         else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_skills (steamid varchar(64) not null, race varchar(30) not null, skill int not null, skill_level int default 0,  PRIMARY KEY(steamid,race,skill))"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("[SourceCraft] Error in the creation of the w3s_skills SQL table:%s", error);
-            SetFailState("[SourceCraft] Error in the creation of the w3s_skills SQL table");
+            LogError("Error in the creation of the w3s_skills SQL table:%s", error);
+            SetFailState("Error in the creation of the w3s_skills SQL table");
         }
     }
 }
@@ -132,24 +132,35 @@ public SavePlayerData(client,vectorpos)
 
             decl String:SQLString[512] = "";
 
-            if (bUpdateIsOK)
+            for(;;) // loop until break.
             {
-                Format(SQLString,sizeof(SQLString),
-                       "INSERT INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race='%s', credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, raceName, credits, overall_level, raceName, credits, overall_level);
-            }
-            else
-            {
-                Format(SQLString,sizeof(SQLString),
-                       "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)", steamid, name, raceName, credits, overall_level);
-            }
+                if (bUpdateIsOK)
+                {
+                    Format(SQLString,sizeof(SQLString), "INSERT INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race='%s', credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, raceName, credits, overall_level, raceName, credits, overall_level);
+                }
+                else
+                {
+                    Format(SQLString,sizeof(SQLString), "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)", steamid, name, raceName, credits, overall_level);
+                }
 
-            if (!SQL_FastQuery(DBIDB,SQLString))
-            {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("[SourceCraft] Unable to replace player: %s\nSQL:%s\n",
-                         error, SQLString);
-                return;
+                if (SQL_FastQuery(DBIDB,SQLString))
+                    break;
+                else
+                {
+                    if (bUpdateIsOK)
+                    {
+                        LogMessage("INSERT ON DUPLICATE UPDATE failed, using REPLACE!\n");
+                        bUpdateIsOK = false;
+                    }
+                    else
+                    {
+                        decl String:error[256] = "";
+                        SQL_GetError(DBIDB, error, sizeof(error));
+                        LogError("Unable to replace player's race: %s\nSQL:%s\n",
+                                 error, SQLString);
+                        return;
+                    }
+                }
             }
 
             for(new raceId=0;raceId<RACE_COUNT;raceId++)
@@ -162,36 +173,21 @@ public SavePlayerData(client,vectorpos)
 
                 if (xp || level)
                 {
-                    for(;;) // loop until break.
+                    if (bUpdateIsOK)
                     {
-                        if (bUpdateIsOK)
-                        {
-                            Format(SQLString,sizeof(SQLString),
-                                "INSERT INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d",
-                                steamid, raceName, xp, level, xp, level);
-                        }
-                        else
-                        {
-                            Format(SQLString,sizeof(SQLString),
-                                   "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)",
-                                   steamid, raceName, xp, level);
-                        }
-
-                        if (SQL_FastQuery(DBIDB,SQLString))
-                        break;
-                        else
-                        {
-                            if (bUpdateIsOK)
-                                bUpdateIsOK = false;
-                            else
-                            {
-                                decl String:error[256] = "";
-                                SQL_GetError(DBIDB, error, sizeof(error));
-                                LogError("[SourceCraft] Unable to replace player's race: %s\nSQL:%s\n",
-                                         error, SQLString);
-                                return;
-                            }
-                        }
+                        Format(SQLString,sizeof(SQLString), "INSERT INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", steamid, raceName, xp, level, xp, level);
+                    }
+                    else
+                    {
+                        Format(SQLString,sizeof(SQLString), "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)", steamid, raceName, xp, level);
+                    }
+                    if (!SQL_FastQuery(DBIDB,SQLString))
+                    {
+                        decl String:error[256] = "";
+                        SQL_GetError(DBIDB, error, sizeof(error));
+                        LogError("Unable to replace player: %s\nSQL:%s\n",
+                                 error, SQLString);
+                        return;
                     }
 
                     for(new skill=0;skill<SKILL_COUNT;skill++)
@@ -201,22 +197,18 @@ public SavePlayerData(client,vectorpos)
                         {
                             if (bUpdateIsOK)
                             {
-                                Format(SQLString,sizeof(SQLString),
-                                       "INSERT INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d",
-                                       steamid, raceName, skill, skillLevel, skillLevel);
+                                Format(SQLString,sizeof(SQLString), "INSERT INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", steamid, raceName, skill, skillLevel, skillLevel);
                             }
                             else
                             {
-                                Format(SQLString,sizeof(SQLString),
-                                      "REPLACE INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d)",
-                                      steamid, raceName, skill, skillLevel);
+                                Format(SQLString,sizeof(SQLString), "REPLACE INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d)", steamid, raceName, skill, skillLevel);
                             }
 
                             if (!SQL_FastQuery(DBIDB,SQLString))
                             {
                                 decl String:error[256] = "";
                                 SQL_GetError(DBIDB, error, sizeof(error));
-                                LogError("[SourceCraft] Unable to insert player's skill: %s\nSQL:%s\n",
+                                LogError("Unable to insert player's skill: %s\nSQL:%s\n",
                                          error, SQLString);
                                 return;
                             }
