@@ -48,6 +48,8 @@ new ammoOffset; // Primary Ammo
 new ammo2Offset; // Secondary Ammo
 new metalOffset; // metal (3rd Ammo)
 
+new Handle:cvarClawsEnable = INVALID_HANDLE;
+
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Float:spawnLoc[MAXPLAYERS+1][3];
 new bool:usedPeriapt[MAXPLAYERS+1];
@@ -84,6 +86,8 @@ public OnPluginStart()
 {
     GetGameType();
 
+    cvarClawsEnable=CreateConVar("sc_clawsenable","0");
+
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
@@ -102,7 +106,12 @@ public OnPluginReady()
 {
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","40");
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","7");
-    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","3");
+
+    if (GetConVarBool(cvarClawsEnable))
+    {
+        shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","3");
+    }
+
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");

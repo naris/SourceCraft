@@ -23,6 +23,7 @@ new raceID; // The ID we are assigned to
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
 new Handle:cvarMindControlEnable = INVALID_HANDLE;
+new Handle:cvarReaverScarabEnable = INVALID_HANDLE;
 
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
@@ -60,6 +61,7 @@ public OnPluginStart()
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
     cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
+    cvarReaverScarabEnable=CreateConVar("sc_reaverscarabenable","0");
 
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);
@@ -74,7 +76,7 @@ public OnPluginReady()
                       "You are now part of the Protoss.",
                       "You will be part of the Protoss when you die or respawn.",
                       "Reaver Scarabs",
-                      "Explode upon contact with enemies, causing increased damage.",
+                      "Explode upon contact with enemies, causing increased damage. (Disabled)",
                       "Arbiter Reality-Warping Field",
                       "Cloaks all friendly units within range",
                       "Observer Sensors",
@@ -557,6 +559,13 @@ public bool:Scarab(Handle:event, index, player, victimIndex)
 
         if (GetRandomInt(1,100) <= chance)
         {
+            if (!GetConVarBool(cvarReaverScarabEnable))
+            {
+                PrintToChat(index,"%c[SourceCraft] %c Sorry, Reaver Scarab has been disabled for testing purposes!",
+                            COLOR_GREEN,COLOR_DEFAULT);
+                return false;
+            }
+
             new bool:reduced = false;
             if (GameType == tf2)
             {
