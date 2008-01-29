@@ -248,6 +248,7 @@ public OnGameFrame()
 							}
 							else
 							{
+								StopJetpackSound(i); // Make SURE sound was stopped before!
 								EmitJetpackSound(i);
 								SetMoveType(i, MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE);
 								AddVelocity(i, GetConVarFloat(sm_jetpack_speed));
