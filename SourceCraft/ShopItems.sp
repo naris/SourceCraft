@@ -300,6 +300,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "ShopItem::PlayerDeathEvent", -1);
+
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     new player=GetPlayer(client);
@@ -384,6 +386,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "ShopItem::PlayerHurtEvent", -1);
+
     new userid          = GetEventInt(event,"userid");
     new attacker_userid = GetEventInt(event,"attacker");
     new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;

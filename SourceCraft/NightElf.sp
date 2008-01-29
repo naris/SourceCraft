@@ -161,6 +161,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "NightElf::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid = GetEventInt(event,"userid");
     if (victimUserid)
@@ -191,7 +193,8 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
             new victimRace = GetRace(victimPlayer);
             if (victimRace == raceID)
             {
-                changed |= evaded = NightElf_Evasion(event, victimIndex, victimPlayer, attackerIndex, assisterIndex);
+                changed |= evaded = Evasion(event, victimIndex, victimPlayer,
+                                            attackerIndex, assisterIndex);
             }
 
             if (attackerUserid && victimUserid != attackerUserid && attackerPlayer != -1)
@@ -199,14 +202,14 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 new damage = 0;
                 if (GetRace(attackerPlayer)==raceID)
                 {
-                    damage = NightElf_TrueshotAura(event, attackerIndex,
-                                                   attackerPlayer, victimIndex, evaded);
+                    damage = TrueshotAura(event, attackerIndex,
+                                          attackerPlayer, victimIndex, evaded);
                 }
 
                 if (victimRace == raceID && (!evaded || damage))
                 {
-                    damage += NightElf_ThornsAura(event, attackerIndex, attackerPlayer,
-                                                  victimIndex, victimPlayer, evaded, damage);
+                    damage += ThornsAura(event, attackerIndex, attackerPlayer,
+                                         victimIndex, victimPlayer, evaded, damage);
                 }
                 if (damage)
                     changed = true;
@@ -217,14 +220,14 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 new damage = 0;
                 if (GetRace(assisterPlayer)==raceID)
                 {
-                    damage = NightElf_TrueshotAura(event, assisterIndex,
-                                                   assisterPlayer, victimIndex, evaded);
+                    damage = TrueshotAura(event, assisterIndex,
+                                          assisterPlayer, victimIndex, evaded);
                 }
 
                 if (victimRace == raceID && (!evaded || damage))
                 {
-                    damage += NightElf_ThornsAura(event, assisterIndex, assisterPlayer,
-                                                  victimIndex, victimPlayer, evaded, damage);
+                    damage += ThornsAura(event, assisterIndex, assisterPlayer,
+                                         victimIndex, victimPlayer, evaded, damage);
                 }
                 if (damage)
                     changed = true;
@@ -234,7 +237,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer, attackerIndex, assisterIndex)
+public bool:Evasion(Handle:event, victimIndex, victimPlayer, attackerIndex, assisterIndex)
 {
     new skill_level_evasion = GetSkillLevel(victimPlayer,raceID,0);
     if (skill_level_evasion)
@@ -278,7 +281,7 @@ public bool:NightElf_Evasion(Handle:event, victimIndex, victimPlayer, attackerIn
     return false;
 }
 
-public NightElf_ThornsAura(Handle:event, index, player, victimIndex, victimPlayer, evaded, prev_damage)
+public ThornsAura(Handle:event, index, player, victimIndex, victimPlayer, evaded, prev_damage)
 {
     new skill_level_thorns = GetSkillLevel(victimPlayer,raceID,1);
     if (skill_level_thorns)
@@ -325,7 +328,7 @@ public NightElf_ThornsAura(Handle:event, index, player, victimIndex, victimPlaye
     return 0;
 }
 
-public NightElf_TrueshotAura(Handle:event, index, player, victimIndex, evaded)
+public TrueshotAura(Handle:event, index, player, victimIndex, evaded)
 {
     // Trueshot Aura
     new skill_level_trueshot=GetSkillLevel(player,raceID,2);

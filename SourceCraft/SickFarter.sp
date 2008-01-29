@@ -153,6 +153,8 @@ public Action:AllowFart(Handle:timer,any:index)
 // Events
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "SickFarter::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)

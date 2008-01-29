@@ -18,6 +18,8 @@
 #include "SourceCraft/freeze"
 #include "SourceCraft/authtimer"
 
+#include "SourceCraft/log" // for debugging
+
 new raceID; // The ID we are assigned to
 
 new String:teleportWav[] = "beams/beamstart5.wav";
@@ -269,6 +271,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event,"HumanAlliance::PlayerDeathEvent", raceID);
+
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
 
@@ -292,6 +296,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event,"HumanAlliance::PlayerDeathEvent", raceID);
+
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
     {

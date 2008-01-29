@@ -125,99 +125,6 @@ public OnPlayerAuthed(client,player)
     SetupHealth(client);
 }
 
-public Action:FlamingWrath(Handle:timer)
-{
-    new maxplayers=GetMaxClients();
-    for(new client=1;client<=maxplayers;client++)
-    {
-        if(IsClientInGame(client))
-        {
-            if (IsPlayerAlive(client))
-            {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
-                {
-                    new skill_flaming_wrath=GetSkillLevel(player,raceID,1);
-                    if (skill_flaming_wrath)
-                    {
-                        new num=skill_flaming_wrath*2;
-                        new Float:range=1.0;
-                        switch(skill_flaming_wrath)
-                        {
-                            case 1:
-                                range=300.0;
-                            case 2:
-                                range=450.0;
-                            case 3:
-                                range=650.0;
-                            case 4:
-                                range=800.0;
-                        }
-                        new count=0;
-                        new Float:clientLoc[3];
-                        GetClientAbsOrigin(client, clientLoc);
-                        for (new index=1;index<=maxplayers;index++)
-                        {
-                            if (index != client && IsClientInGame(index))
-                            {
-                                if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
-                                {
-                                    new player_check=GetPlayer(index);
-                                    if (player_check>-1)
-                                    {
-                                        if (!GetImmunity(player_check, Immunity_HealthTake) &&
-                                            IsInRange(client,index,range))
-                                        {
-                                            new Float:indexLoc[3];
-                                            GetClientAbsOrigin(index, indexLoc);
-                                            if (TraceTarget(client, index, clientLoc, indexLoc))
-                                            {
-                                                new color[4] = { 255, 10, 55, 255 };
-                                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                                TE_SendToAll();
-
-                                                new newhp=GetClientHealth(index)-skill_flaming_wrath;
-                                                if (newhp <= 0)
-                                                {
-                                                    newhp=0;
-                                                    //LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                                    new Handle:event = CreateEvent("player_death");
-                                                    if (event != INVALID_HANDLE)
-                                                    {
-                                                        SetEventInt(event, "userid", GetClientUserId(index));
-                                                        SetEventInt(event, "attacker", GetClientUserId(client));
-                                                        SetEventInt(event, "damage", skill_flaming_wrath);
-                                                        FireEvent(event);
-                                                    }
-                                                    else
-                                                    {
-                                                        LogError("Unable to create player_death event!\n");
-                                                        KillPlayer(index);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                                    SetHealth(index,newhp);
-                                                }
-
-                                                if (++count > num)
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return Plugin_Continue;
-}
-
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (pressed)
@@ -228,14 +135,29 @@ public OnUltimateCommand(client,player,race,bool:pressed)
             if (level)
             {
                 EmitSoundToAll(allahWav,client);
-                AuthTimer(GetSoundDuration(allahWav), client, AlQaeda_MadBomber);
+                AuthTimer(GetSoundDuration(allahWav), client, MadBomber);
             }
         }
     }
 }
 
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client && m_IsRespawning[client])
+    {
+        m_IsRespawning[client]=false;
+        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+        TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
+        TE_SendToAll();
+    }
+}
+
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event,"Al-Qaeda::PlayerDeathEvent",raceID);
+
     new userid = GetEventInt(event,"userid");
     new index  = GetClientOfUserId(userid);
     new player = GetPlayer(index);
@@ -276,22 +198,9 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (suicide_skill)
             {
                 EmitSoundToAll(kaboomWav,index);
-                AuthTimer(GetSoundDuration(kaboomWav), index, AlQaeda_Kaboom);
+                AuthTimer(GetSoundDuration(kaboomWav), index, Kaboom);
             }
         }
-    }
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client && m_IsRespawning[client])
-    {
-        m_IsRespawning[client]=false;
-        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
-        TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
-        TE_SendToAll();
     }
 }
 
@@ -313,7 +222,7 @@ public OnRaceSelected(client,player,oldrace,newrace)
     }
 }
 
-public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
+public Action:MadBomber(Handle:timer,any:temp)
 {
     decl String:auth[64];
     GetArrayString(temp,0,auth,63);
@@ -345,7 +254,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
                     ForcePlayerSuicide(client);
                 }
                 else
-                    AlQaeda_Bomber(client,player,ult_level,false);
+                    Bomber(client,player,ult_level,false);
             }
         }
     }
@@ -353,7 +262,7 @@ public Action:AlQaeda_MadBomber(Handle:timer,any:temp)
     return Plugin_Stop;
 }
 
-public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
+public Action:Kaboom(Handle:timer,any:temp)
 {
     decl String:auth[64];
     GetArrayString(temp,0,auth,63);
@@ -364,14 +273,14 @@ public Action:AlQaeda_Kaboom(Handle:timer,any:temp)
         if (player > -1)
         {
             new suicide_skill=GetSkillLevel(player,raceID,2);
-            AlQaeda_Bomber(client,player,suicide_skill,true);
+            Bomber(client,player,suicide_skill,true);
         }
     }
     ClearArray(temp);
     return Plugin_Stop;
 }
 
-public AlQaeda_Bomber(client,player,level,bool:ondeath)
+public Bomber(client,player,level,bool:ondeath)
 {
     new Float:radius;
     new r_int, damage;
@@ -474,3 +383,97 @@ public AlQaeda_Bomber(client,player,level,bool:ondeath)
         }
     }
 }
+
+public Action:FlamingWrath(Handle:timer)
+{
+    new maxplayers=GetMaxClients();
+    for(new client=1;client<=maxplayers;client++)
+    {
+        if(IsClientInGame(client))
+        {
+            if (IsPlayerAlive(client))
+            {
+                new player=GetPlayer(client);
+                if(player>=0 && GetRace(player) == raceID)
+                {
+                    new skill_flaming_wrath=GetSkillLevel(player,raceID,1);
+                    if (skill_flaming_wrath)
+                    {
+                        new num=skill_flaming_wrath*2;
+                        new Float:range=1.0;
+                        switch(skill_flaming_wrath)
+                        {
+                            case 1:
+                                range=300.0;
+                            case 2:
+                                range=450.0;
+                            case 3:
+                                range=650.0;
+                            case 4:
+                                range=800.0;
+                        }
+                        new count=0;
+                        new Float:clientLoc[3];
+                        GetClientAbsOrigin(client, clientLoc);
+                        for (new index=1;index<=maxplayers;index++)
+                        {
+                            if (index != client && IsClientInGame(index))
+                            {
+                                if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
+                                {
+                                    new player_check=GetPlayer(index);
+                                    if (player_check>-1)
+                                    {
+                                        if (!GetImmunity(player_check, Immunity_HealthTake) &&
+                                            IsInRange(client,index,range))
+                                        {
+                                            new Float:indexLoc[3];
+                                            GetClientAbsOrigin(index, indexLoc);
+                                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                                            {
+                                                new color[4] = { 255, 10, 55, 255 };
+                                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                                TE_SendToAll();
+
+                                                new newhp=GetClientHealth(index)-skill_flaming_wrath;
+                                                if (newhp <= 0)
+                                                {
+                                                    newhp=0;
+                                                    //LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                                    new Handle:event = CreateEvent("player_death");
+                                                    if (event != INVALID_HANDLE)
+                                                    {
+                                                        SetEventInt(event, "userid", GetClientUserId(index));
+                                                        SetEventInt(event, "attacker", GetClientUserId(client));
+                                                        SetEventInt(event, "damage", skill_flaming_wrath);
+                                                        FireEvent(event);
+                                                    }
+                                                    else
+                                                    {
+                                                        LogError("Unable to create player_death event!\n");
+                                                        KillPlayer(index);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                                    SetHealth(index,newhp);
+                                                }
+
+                                                if (++count > num)
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return Plugin_Continue;
+}
+

@@ -166,6 +166,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 // Events
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "Protoss::PlayerDeathEvent", raceID);
+
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
 
@@ -175,6 +177,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "Protoss::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)

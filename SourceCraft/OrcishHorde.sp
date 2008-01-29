@@ -151,8 +151,37 @@ public Action:AllowChainLightning(Handle:timer,any:index)
 }
 
 // Events
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        new player=GetPlayer(client);
+        if (player>-1)
+        {
+            new race=GetRace(player);
+            if (race==raceID)
+            {
+                if (m_IsRespawning[client])
+                {
+                    m_IsRespawning[client]=false;
+
+                    if (GameType != cstrike)
+                        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+
+                    TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
+                    TE_SendToAll();
+                }
+            }
+        }
+    }
+}
+
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "OrcishHorde::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)
@@ -198,35 +227,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-    {
-        new player=GetPlayer(client);
-        if (player>-1)
-        {
-            new race=GetRace(player);
-            if (race==raceID)
-            {
-                if (m_IsRespawning[client])
-                {
-                    m_IsRespawning[client]=false;
-
-                    if (GameType != cstrike)
-                        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
-
-                    TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
-                    TE_SendToAll();
-                }
-            }
-        }
-    }
-}
-
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "OrcishHorde::PlayerDeathEvent", raceID);
+
     new userid=GetEventInt(event,"userid");
     new index=GetClientOfUserId(userid);
     new player=GetPlayer(index);

@@ -116,6 +116,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "UndeadScourge::PlayerDeathEvent", raceID);
+
     new userid     = GetEventInt(event,"userid");
     new index      = GetClientOfUserId(userid);
     new player = GetPlayer(index);
@@ -213,6 +215,8 @@ public OnRaceSelected(client,player,oldrace,race)
 
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "UndeadScourge::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid = GetEventInt(event,"userid");
     if (victimUserid)

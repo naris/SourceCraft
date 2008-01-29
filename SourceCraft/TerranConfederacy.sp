@@ -17,6 +17,8 @@
 #include "SourceCraft/util"
 #include "SourceCraft/health"
 
+#include "SourceCraft/log" // for debugging
+
 new raceID; // The ID we are assigned to
 
 new g_smokeSprite;
@@ -185,6 +187,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "TerranConfederacy::PlayerDeathEvent", raceID);
+
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
 
@@ -209,6 +213,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "TerranConfederacy::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)

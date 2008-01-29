@@ -239,6 +239,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "Zerg::PlayerHurtEvent", raceID);
+
     new bool:changed=false;
     new victimUserid=GetEventInt(event,"userid");
     if (victimUserid)

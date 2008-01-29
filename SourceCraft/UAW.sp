@@ -162,7 +162,6 @@ public OnCreditsGiven(client,player,&amount)
     }
 }
 
-
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
@@ -174,8 +173,51 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        new player=GetPlayer(client);
+        if (player>-1)
+        {
+            new race = GetRace(player);
+            if (race == raceID)
+            {
+                new skill_workrules=GetSkillLevel(player,race,3);
+                if (skill_workrules)
+                    WorkRules(client, player, skill_workrules);
+
+                if (m_TeleportOnSpawn[client])
+                {
+                    m_TeleportOnSpawn[client]=false;
+                    TeleportEntity(client,m_SpawnLoc[client], NULL_VECTOR, NULL_VECTOR);
+                    TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
+                    TE_SendToAll();
+                }
+                else
+                {
+                    GetClientAbsOrigin(client,m_SpawnLoc[client]);
+
+                    if (m_JobsBank[client])
+                    {
+                        m_JobsBank[client]=false;
+                        TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
+                        TE_SendToAll();
+                        PrintToChat(client,"%c[SourceCraft]%c You have joined the %cJobs Bank%c",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+                }
+            }
+        }
+    }
+}
+
 public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogEventDamage(event, "TerranConfederacy::PlayerDeathEvent", raceID);
+
     new userid = GetEventInt(event,"userid");
     new index  = GetClientOfUserId(userid);
     new player = GetPlayer(index);
@@ -255,47 +297,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     SetCredits(player, GetCredits(player)+amount);
                     PrintToChat(index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
                                 COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
-                }
-            }
-        }
-    }
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-    {
-        new player=GetPlayer(client);
-        if (player>-1)
-        {
-            new race = GetRace(player);
-            if (race == raceID)
-            {
-                new skill_workrules=GetSkillLevel(player,race,3);
-                if (skill_workrules)
-                    WorkRules(client, player, skill_workrules);
-
-                if (m_TeleportOnSpawn[client])
-                {
-                    m_TeleportOnSpawn[client]=false;
-                    TeleportEntity(client,m_SpawnLoc[client], NULL_VECTOR, NULL_VECTOR);
-                    TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
-                    TE_SendToAll();
-                }
-                else
-                {
-                    GetClientAbsOrigin(client,m_SpawnLoc[client]);
-
-                    if (m_JobsBank[client])
-                    {
-                        m_JobsBank[client]=false;
-                        TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
-                        TE_SendToAll();
-                        PrintToChat(client,"%c[SourceCraft]%c You have joined the %cJobs Bank%c",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                    }
                 }
             }
         }
