@@ -473,19 +473,19 @@ public Teleport(client,player,ult_level, bool:to_spawn, time_pressed)
                                size[0], size[1], size[2]);
 
             if (destloc[0] > clientloc[0])
-                destloc[0] -= size[0];
+                destloc[0] -= size[0] + 5.0;
             else
-                destloc[0] += size[0];
+                destloc[0] += size[0] + 5.0;
 
             if (destloc[1] > clientloc[1])
-                destloc[1] -= size[1];
+                destloc[1] -= size[1] + 5.0;
             else
-                destloc[1] += size[1];
+                destloc[1] += size[1] + 5.0;
 
             if (destloc[2] > clientloc[2])
-                destloc[2] -= size[2];
+                destloc[2] -= size[2] + 5.0;
             else
-                destloc[2] += size[2];
+                destloc[2] += size[2] + 5.0;
         }
         else
         {

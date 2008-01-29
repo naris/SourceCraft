@@ -102,7 +102,7 @@ public OnPluginReady()
 {
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","40");
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","7");
-    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","An additional 8 hp will be removed from the enemy on every successful attack.","3");
+    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","3");
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
@@ -401,11 +401,27 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
         {
             if(!GetImmunity(player,Immunity_ShopItems))
             {
+                new damage=GetDamage(event, index);
+
                 if (!GetImmunity(player,Immunity_HealthTake))
                 {
                     if (GetOwnsItem(player_attacker,shopItem[ITEM_CLAWS]))
                     {
-                        new newhealth=GetClientHealth(index)-8;
+                        new amount=RoundToFloor(float(damage)*0.10);
+                        if (amount > 8)
+                            amount = 8;
+
+                        if (GameType == tf2)
+                        {
+                            switch (TF_GetClass(index))
+                            {
+                                case TF2_HEAVY: amount = 1;
+                                case TF2_PYRO:  amount = 1;
+                                case TF2_ENG:   amount = 1;
+                            }
+                        }
+
+                        new newhealth=GetClientHealth(index)-amount;
                         if (newhealth <= 0)
                         {
                             newhealth=0;
@@ -420,7 +436,10 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
                     if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_CLAWS]))
                     {
-                        new newhealth = GetClientHealth(index)-8;
+                        new amount=RoundToFloor(float(damage)*0.10);
+                        if (amount > 8)
+                            amount = 8;
+                        new newhealth=GetClientHealth(index)-amount;
                         if (newhealth <= 0)
                         {
                             newhealth=0;
@@ -482,7 +501,6 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 {
                     if(isMole[attacker_index])
                     {
-                        new damage=GetDamage(event, index);
                         new h1=GetEventInt(event,"health")+damage;
                         new h2=GetClientHealth(index);
                         if(h2<h1)

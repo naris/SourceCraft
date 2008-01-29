@@ -9,6 +9,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2>
 
 #include "SourceCraft/SourceCraft"
 
@@ -156,7 +157,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     if (race==raceID && IsPlayerAlive(client) &&
         m_AllowMindControl[client] && pressed)
     {
-        Protoss_MindControl(client,player);
+        MindControl(client,player);
     }
 }
 
@@ -188,7 +189,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 if (attackerplayer != -1)
                 {
                     if (GetRace(attackerplayer) == raceID)
-                        changed |= Protoss_Scarab(event, attackerIndex, attackerplayer, victimIndex);
+                        changed |= Scarab(event, attackerIndex, attackerplayer, victimIndex);
                 }
             }
 
@@ -200,7 +201,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
                 if (assisterplayer != -1)
                 {
                     if (GetRace(assisterplayer) == raceID)
-                        changed |= Protoss_Scarab(event, assisterIndex, assisterplayer, victimIndex);
+                        changed |= Scarab(event, assisterIndex, assisterplayer, victimIndex);
                 }
             }
         }
@@ -382,7 +383,7 @@ public ResetCloakingAndDetector(client)
     }
 }
 
-public Protoss_MindControl(client,player)
+public MindControl(client,player)
 {
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
@@ -524,7 +525,7 @@ public Protoss_MindControl(client,player)
     }
 }
 
-public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
+public bool:Scarab(Handle:event, index, player, victimIndex)
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
@@ -540,24 +541,35 @@ public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
             case 2:
             {
                 chance=40;
-                percent=0.57;
+                percent=0.37;
             }
             case 3:
             {
                 chance=60;
-                percent=0.83;
+                percent=0.53;
             }
             case 4:
             {
                 chance=90;
-                percent=1.00;
+                percent=0.73;
             }
         }
 
         if (GetRandomInt(1,100) <= chance)
         {
+            new bool:reduced = false;
+            if (GameType == tf2)
+            {
+                switch (TF_GetClass(index))
+                {
+                    case TF2_HEAVY: reduced = true;
+                    case TF2_PYRO:  reduced = true;
+                    case TF2_ENG:   reduced = true;
+                }
+            }
+
             new damage=GetDamage(event, victimIndex);
-            new health_take=RoundFloat(float(damage)*percent);
+            new health_take= reduced ? RoundToFloor(float(damage)*percent) : 1;
             if (health_take > 0)
             {
                 new new_health=GetClientHealth(victimIndex)-health_take;
@@ -571,12 +583,16 @@ public bool:Protoss_Scarab(Handle:event, index, player, victimIndex)
 
                 SetHealth(victimIndex,new_health);
 
-                new Float:Origin[3];
-                GetClientAbsOrigin(victimIndex, Origin);
-                Origin[2] += 5;
+                if (!reduced)
+                {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(victimIndex, Origin);
+                    Origin[2] += 5;
 
-                TE_SetupExplosion(Origin,explosionModel,10.0,30,0,10,20);
-                TE_SendToAll();
+                    TE_SetupExplosion(Origin,explosionModel,5.0,1,0,5,10);
+                    TE_SendToAll();
+                }
+
                 EmitSoundToAll(explodeWav,victimIndex);
                 return true;
             }

@@ -522,7 +522,7 @@ public Action:Negotiations(Handle:timer)
                                 }
                                 case 17: // Forced Buyout
                                 {
-                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 25)
+                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 15)
                                         client--; // Get a different Negotiation
                                     else
                                     {
@@ -555,7 +555,7 @@ public Action:Negotiations(Handle:timer)
                                 }
                                 case 18: // Bankruptcy
                                 {
-                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 25)
+                                    if (GetLevel(player,raceID) < 14 || GetRandomInt(1,100) > 5)
                                         client--; // Get a different Negotiation
                                     else
                                     {

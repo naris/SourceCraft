@@ -56,4 +56,3 @@ stock SetupModel(const String:model[])
     AddFileToDownloadsTable(model);
     return PrecacheModel(model);
 }
-

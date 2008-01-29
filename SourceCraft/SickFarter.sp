@@ -221,13 +221,13 @@ public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
             switch(skill_cs)
             {
                 case 1:
-                    percent=0.4;
+                    percent=0.10;
                 case 2:
-                    percent=0.67;
+                    percent=0.27;
                 case 3:
-                    percent=1.233;
+                    percent=0.47;
                 case 4:
-                    percent=1.43;
+                    percent=0.67;
             }
 
             new damage=GetDamage(event, victimIndex);

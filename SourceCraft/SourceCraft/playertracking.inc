@@ -3,14 +3,13 @@
  * File: playertracking.inc
  * Description: Holds all the storage for players, temporary and long term.
  * Author(s): Anthony Iacono  
+ * Modifications by: Naris (Murray Wilson)
  */
 
 #if defined _player_tracking_included
  #endinput
 #endif
 #define _player_tracking_included
-
-#include <tf2>
 
 #define INFO_COUNT     7 // 0)client index, 1)race, 2)pending race,
                          // 3)pending skill reset, 4)credits,
@@ -20,7 +19,6 @@
 
 // Global definition
 new Float:m_BaseSpeed[MAXPLAYERS+1];
-
 new bool:speedAltered[MAXPLAYERS+1];
 new bool:gravityAltered[MAXPLAYERS+1];
 new bool:visibilityAltered[MAXPLAYERS+1];

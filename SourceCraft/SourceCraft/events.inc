@@ -6,6 +6,8 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
+#include "SourceCraft/tf2classes"
+
 public bool:HookEvents()
 {
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))
@@ -57,9 +59,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new index=GetClientOfUserId(userid);
         if (index > 0)
         {
-            new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
-            if (maxSpeed > 100)
-                m_BaseSpeed[index]=maxSpeed;
+            speedAltered[index]=true;
+            if(GameType == tf2)
+                m_BaseSpeed[index]=GetNormalSpeed(index);
         }
 
         new vecpos=GetClientVectorPosition(index);
@@ -165,8 +167,9 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
         new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
         if (maxSpeed > 100)
         {
-            m_BaseSpeed[client]=maxSpeed;
-            SetEntDataFloat(client,m_OffsetSpeed,maxSpeed);
+            speedAltered[client]=true;
+            if(GameType == tf2)
+                m_BaseSpeed[client]=GetNormalSpeed(client);
         }
     }
 }
@@ -180,7 +183,11 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
             new client=GetArrayCell(playerHandle,0);
             if(IsClientInGame(client))
-                m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+            {
+                speedAltered[client]=true;
+                if(GameType == tf2)
+                    m_BaseSpeed[client]=GetNormalSpeed(client);
+            }
         }
     }
 }

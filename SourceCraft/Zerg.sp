@@ -281,14 +281,10 @@ public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {
-        decl String:weapon[128];
-        GetEventString(event,"weapon", weapon, sizeof(weapon));
-        if (!strlen(weapon))
-            GetClientWeapon(index, weapon, sizeof(weapon));
+        decl String:weapon[64];
+        GetClientWeapon(index, weapon, sizeof(weapon));
 
-        LogMessage("Zerg_Adrenal for %N, weapon=%s\n", index, weapon);
-
-        if (IsDamageFromMelee(weapon))
+        if (IsEquipmentMelee(weapon))
         {
             new Float:percent;
             switch(skill_adrenal_glands)

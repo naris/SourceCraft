@@ -12,6 +12,7 @@
 
 #include <sourcemod>
 #include <keyvalues>
+#include <tf2>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
 #define VERSION     "1.0.1 $Revision$ beta"
