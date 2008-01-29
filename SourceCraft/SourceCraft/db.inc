@@ -12,7 +12,7 @@
 
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
-new bool:DB_IsMySQL = false;
+new bool:bUpdateIsOK = true;
 
 public SQLTable()
 {
@@ -132,7 +132,7 @@ public SavePlayerData(client,vectorpos)
 
             decl String:SQLString[512] = "";
 
-            if (DB_IsMySQL)
+            if (bUpdateIsOK)
             {
                 Format(SQLString,sizeof(SQLString),
                        "INSERT INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race='%s', credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, raceName, credits, overall_level, raceName, credits, overall_level);
@@ -162,26 +162,36 @@ public SavePlayerData(client,vectorpos)
 
                 if (xp || level)
                 {
-                    if (DB_IsMySQL)
+                    for(;;) // loop until break.
                     {
-                        Format(SQLString,sizeof(SQLString),
-                               "INSERT INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d",
-                               steamid, raceName, xp, level, xp, level);
-                    }
-                    else
-                    {
-                        Format(SQLString,sizeof(SQLString),
-                               "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)",
-                               steamid, raceName, xp, level);
-                    }
+                        if (bUpdateIsOK)
+                        {
+                            Format(SQLString,sizeof(SQLString),
+                                "INSERT INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d",
+                                steamid, raceName, xp, level, xp, level);
+                        }
+                        else
+                        {
+                            Format(SQLString,sizeof(SQLString),
+                                   "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)",
+                                   steamid, raceName, xp, level);
+                        }
 
-                    if (!SQL_FastQuery(DBIDB,SQLString))
-                    {
-                        decl String:error[256] = "";
-                        SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("[SourceCraft] Unable to replace player's race: %s\nSQL:%s\n",
-                                 error, SQLString);
-                        return;
+                        if (SQL_FastQuery(DBIDB,SQLString))
+                        break;
+                        else
+                        {
+                            if (bUpdateIsOK)
+                                bUpdateIsOK = false;
+                            else
+                            {
+                                decl String:error[256] = "";
+                                SQL_GetError(DBIDB, error, sizeof(error));
+                                LogError("[SourceCraft] Unable to replace player's race: %s\nSQL:%s\n",
+                                         error, SQLString);
+                                return;
+                            }
+                        }
                     }
 
                     for(new skill=0;skill<SKILL_COUNT;skill++)
@@ -189,7 +199,7 @@ public SavePlayerData(client,vectorpos)
                         new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
                         if (skillLevel)
                         {
-                            if (DB_IsMySQL)
+                            if (bUpdateIsOK)
                             {
                                 Format(SQLString,sizeof(SQLString),
                                        "INSERT INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d",

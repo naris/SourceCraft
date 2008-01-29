@@ -253,16 +253,9 @@ public bool:ParseSettings()
     FileToKeyValues(keyValue,path);
     decl String:error[256];
     DBIDB=SQL_DefConnect(error,sizeof(error));
-    if(DBIDB)
-    {
-        decl String:driver[64]="";
-        SQL_GetDriverIdent(DBIDB, driver, sizeof(driver));
-        DB_IsMySQL = !strncmp(driver, "mysql", 5, false);
-    }
-    else
-    {
+    if(!DBIDB)
         LogError("Unable to get a Database Connection: %s", error);
-    }
+
     // Load level configuration
     KvRewind(keyValue);
     vecLevelConfiguration=CreateArray();
