@@ -55,10 +55,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 public OnPluginStart()
 {
     GetGameType();
-
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-
     CreateTimer(10.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
 }
 
@@ -214,90 +211,83 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, "TerranConfederacy::PlayerDeathEvent", raceID);
+    LogEventDamage(event, damage, "TerranConfederacy::PlayerDeathEvent", raceID);
 
-    new userid = GetEventInt(event,"userid");
-    new index  = GetClientOfUserId(userid);
-    new player = GetPlayer(index);
-    if (player > -1)
+    if (victim_race == raceID)
     {
-        if (GetRace(player) == raceID)
+        new seniority_skill=GetSkillLevel(victim_player,raceID,0);
+        if (seniority_skill)
         {
-            new seniority_skill=GetSkillLevel(player,raceID,0);
-            if (seniority_skill)
+            new buyout, jobsBank, sheltered;
+            switch (seniority_skill)
             {
-                new buyout, jobsBank, sheltered;
-                switch (seniority_skill)
+                case 1:
                 {
-                    case 1:
-                    {
-                        sheltered=5;
-                        jobsBank=7;
-                        buyout=9;
-                    }
-                    case 2:
-                    {
-                        sheltered=10;
-                        jobsBank=15;
-                        buyout=22;
-                    }
-                    case 3:
-                    {
-                        sheltered=20;
-                        jobsBank=30;
-                        buyout=50;
-                    }
-                    case 4:
-                    {
-                        sheltered=35;
-                        jobsBank=50;
-                        buyout=63;
-                    }
+                    sheltered=5;
+                    jobsBank=7;
+                    buyout=9;
                 }
-                new chance = GetRandomInt(1,100);
-                if (chance<=sheltered)
+                case 2:
                 {
-                    PrintToChat(index,"%c[SourceCraft]%c You have sheltered due to %cSeniority%c!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-
-                    new attackerUserid = GetEventInt(event,"attacker");
-                    if (attackerUserid && attackerUserid != userid)
-                    {
-                        new attackerIndex = GetClientOfUserId(attackerUserid);
-                        PrintToChat(attackerIndex,"%c[SourceCraft]%c %N has been sheltered from your attack due to %cSeniority%c!",
-                                    COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
-                    }
-
-                    new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-                    if (assisterUserid && assisterUserid != userid)
-                    {
-                        new assisterIndex = GetClientOfUserId(assisterUserid);
-                        PrintToChat(assisterIndex,"%c[SourceCraft]%c %N has been sheltered from your attack due to %cSeniority%c!",
-                                    COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
-                    }
-
-
-                    m_TeleportOnSpawn[index]=true;
-                    GetClientAbsOrigin(index,m_SpawnLoc[index]);
-                    AuthTimer(0.5,index,RespawnPlayerHandle);
+                    sheltered=10;
+                    jobsBank=15;
+                    buyout=22;
                 }
-                else if (chance<=jobsBank)
+                case 3:
                 {
-                    m_JobsBank[index]=true;
-                    AuthTimer(0.5,index,RespawnPlayerHandle);
+                    sheltered=20;
+                    jobsBank=30;
+                    buyout=50;
                 }
-                else if (chance<=buyout)
+                case 4:
                 {
-                    // No monetary limit on UAW Buyout offers!
-                    new amount = GetRandomInt(1,100);
-                    decl String:currencies[64];
-                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-                    SetCredits(player, GetCredits(player)+amount);
-                    PrintToChat(index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
-                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                    sheltered=35;
+                    jobsBank=50;
+                    buyout=63;
                 }
+            }
+            new chance = GetRandomInt(1,100);
+            if (chance<=sheltered)
+            {
+                PrintToChat(victim_index,"%c[SourceCraft]%c You have been sheltered from an attack due to %cSeniority%c!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+
+                if (attacker_index && attacker_index != victim_index)
+                {
+                    PrintToChat(attacker_index,"%c[SourceCraft]%c %N has been sheltered from your attack due to %cSeniority%c!",
+                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                }
+
+                if (assister_index && assister_index != victim_index)
+                {
+                    PrintToChat(assister_index,"%c[SourceCraft]%c %N has been sheltered from your attack due to %cSeniority%c!",
+                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                }
+
+                m_TeleportOnSpawn[victim_index]=true;
+                GetClientAbsOrigin(victim_index,m_SpawnLoc[victim_index]);
+                AuthTimer(0.5,victim_index,RespawnPlayerHandle);
+            }
+            else if (chance<=jobsBank)
+            {
+                m_JobsBank[victim_index]=true;
+                AuthTimer(0.5,victim_index,RespawnPlayerHandle);
+            }
+            else if (chance<=buyout)
+            {
+                // No monetary limit on UAW Buyout offers!
+                new amount = GetRandomInt(1,100);
+                decl String:currencies[64];
+                GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+                SetCredits(victim_player, GetCredits(victim_player)+amount);
+                PrintToChat(victim_index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
+                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
             }
         }
     }
@@ -326,7 +316,6 @@ public OnRaceSelected(client,player,oldrace,race)
             new skill_workrules=GetSkillLevel(player,race,3);
             if (skill_workrules)
                 WorkRules(client, player, skill_workrules);
-
         }
     }
 }
@@ -543,7 +532,7 @@ public Action:Negotiations(Handle:timer)
                                         SetXP(player, raceID, 0);
                                         SetCredits(player, GetCredits(player)+amount);
                                         PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s, you have been reduced to level %d!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies,level);
+                                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies,level);
 
                                         new Float:location[3];
                                         GetClientAbsOrigin(client,location);
@@ -567,7 +556,7 @@ public Action:Negotiations(Handle:timer)
                                         SetSkillLevel(player, raceID, 2, 0);
                                         SetSkillLevel(player, raceID, 3, 0);
                                         PrintToChat(client,"%c[SourceCraft]%c Your employer has gone into %cBankruptcy%c, you have been reduced to level 0!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                         new Float:location[3];
                                         GetClientAbsOrigin(client,location);
@@ -586,12 +575,12 @@ public Action:Negotiations(Handle:timer)
                                     GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                                     SetCredits(player, amount-balance);
                                     PrintToChat(client,"%c[SourceCraft]%c You must pay %d %s for %cUnion Dues%c!",
-                                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                                 case 20: // OSHA
                                 {
                                     PrintToChat(client,"%c[SourceCraft]%c You have been forced to leave due to %cOSHA Rules%c!",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     new Float:location[3];
                                     GetClientAbsOrigin(client,location);
