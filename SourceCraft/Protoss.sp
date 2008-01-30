@@ -62,7 +62,7 @@ public OnPluginStart()
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
     cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
-    cvarReaverScarabEnable=CreateConVar("sc_reaverscarabenable","0");
+    cvarReaverScarabEnable=CreateConVar("sc_reaverscarabenable","1");
 
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_hurt",PlayerHurtEvent);

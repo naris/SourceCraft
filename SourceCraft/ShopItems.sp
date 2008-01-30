@@ -87,7 +87,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarClawsEnable=CreateConVar("sc_clawsenable","0");
+    cvarClawsEnable=CreateConVar("sc_clawsenable","1");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
     HookEvent("player_death",PlayerDeathEvent);
@@ -110,7 +110,7 @@ public OnPluginReady()
 
     if (GetConVarBool(cvarClawsEnable))
     {
-        shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","3");
+        shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","90");
     }
 
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
