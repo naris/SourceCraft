@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: TerranConfederacy .sp
- * Description: The Terran Confederacy race for SourceCraft.
+ * File: Zerg.sp
+ * Description: The Zerg race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */
  
@@ -42,7 +42,6 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
 
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -237,92 +236,73 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
 {
-    LogEventDamage(event, "Zerg::PlayerHurtEvent", raceID);
-
     new bool:changed=false;
-    new victimUserid=GetEventInt(event,"userid");
-    if (victimUserid)
-    {
-        new victimIndex  = GetClientOfUserId(victimUserid);
-        new victimPlayer = GetPlayer(victimIndex);
-        if (victimPlayer != -1)
-        {
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
-            {
-                new attackerIndex  = GetClientOfUserId(attackerUserid);
-                new attackerPlayer = GetPlayer(attackerIndex);
-                if (attackerPlayer != -1)
-                {
-                    if (GetRace(attackerPlayer) == raceID)
-                        changed |= Zerg_AdrenalGlands(event, attackerIndex, attackerPlayer, victimIndex);
-                }
-            }
 
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid && victimUserid != assisterUserid)
-            {
-                new assisterIndex  = GetClientOfUserId(assisterUserid);
-                new assisterPlayer = GetPlayer(assisterIndex);
-                if (assisterPlayer != -1)
-                {
-                    if (GetRace(assisterPlayer) == raceID)
-                        changed |= Zerg_AdrenalGlands(event, assisterIndex, assisterPlayer, victimIndex);
-                }
-            }
+    LogEventDamage(event, damage, "Zerg::PlayerHurtEvent", raceID);
+
+    decl String:weapon[64] = "";
+    new bool:is_equipment=GetWeapon(event,attacker_index,weapon,sizeof(weapon));
+    if (IsMelee(weapon, is_equipment))
+    {
+        if (attacker_race == raceID && attacker_index != victim_index)
+        {
+            if (Zerg_AdrenalGlands(damage, victim_index, attacker_index, attacker_player))
+                changed = true;
+        }
+
+        if (assister_race == raceID && assister_index != victim_index)
+        {
+            if (Zerg_AdrenalGlands(damage, victim_index, assister_index, assister_player))
+                changed = true;
         }
     }
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 
-public bool:Zerg_AdrenalGlands(Handle:event, index, player, victimIndex)
+public bool:Zerg_AdrenalGlands(damage, victim_index, index, player)
 {
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {
-        decl String:weapon[64];
-        GetClientWeapon(index, weapon, sizeof(weapon));
-
-        if (IsEquipmentMelee(weapon))
+        new Float:percent;
+        switch(skill_adrenal_glands)
         {
-            new Float:percent;
-            switch(skill_adrenal_glands)
-            {
-                case 1:
-                    percent=0.20;
-                case 2:
-                    percent=0.55;
-                case 3:
-                    percent=0.75;
-                case 4:
-                    percent=1.00;
-            }
-
-            new damage=GetDamage(event, victimIndex);
-            new amount=RoundFloat(float(damage)*percent);
-            new newhp=GetClientHealth(victimIndex)-amount;
-            LogMessage("ZerAdrenal for %N, damage=%d,amount=%d\n", index, damage, amount);
-            if (newhp <= 0)
-            {
-                newhp=0;
-                LogKill(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
-            }
-            else
-                LogDamage(index, victimIndex, "adrenal_glands", "Adrenal Glands", amount);
-
-            SetHealth(victimIndex,newhp);
-
-            new Float:Origin[3];
-            GetClientAbsOrigin(victimIndex, Origin);
-            Origin[2] += 5;
-
-            TE_SetupSparks(Origin,Origin,255,1);
-            TE_SendToAll();
-            return true;
+            case 1:
+                percent=0.20;
+            case 2:
+                percent=0.55;
+            case 3:
+                percent=0.75;
+            case 4:
+                percent=1.00;
         }
+
+        new amount=RoundFloat(float(damage)*percent);
+        new newhp=GetClientHealth(victim_index)-amount;
+        LogMessage("ZerAdrenal for %N, damage=%d,amount=%d\n", index, damage, amount);
+        if (newhp <= 0)
+        {
+            newhp=0;
+            LogKill(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
+        }
+        else
+            LogDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
+
+        SetHealth(victim_index,newhp);
+
+        new Float:Origin[3];
+        GetClientAbsOrigin(victim_index, Origin);
+        Origin[2] += 5;
+
+        TE_SetupSparks(Origin,Origin,255,1);
+        TE_SendToAll();
+        return true;
     }
     return false;
 }
