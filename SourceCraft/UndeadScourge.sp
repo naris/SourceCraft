@@ -34,9 +34,9 @@ new bool:m_Suicided[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
-    name = "War3Source Race - Undead Scourge",
+    name = "SourceCraft Race - Undead Scourge",
     author = "PimpinJuice",
-    description = "The Undead Scourge race for War3Source.",
+    description = "The Undead Scourge race for SourceCraft.",
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
@@ -46,9 +46,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
 }
 
 public OnPluginReady()
@@ -114,49 +112,6 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    LogEventDamage(event, "UndeadScourge::PlayerDeathEvent", raceID);
-
-    new userid     = GetEventInt(event,"userid");
-    new index      = GetClientOfUserId(userid);
-    new player = GetPlayer(index);
-    if (player > -1 && !m_Suicided[index])
-    {
-        if(GetRace(player) == raceID)
-        {
-            new ult_level=GetSkillLevel(player,raceID,0);
-            if (ult_level)
-                SuicideBomber(index,player,ult_level,true);
-        }
-    }
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid     = GetEventInt(event,"userid");
-    new index      = GetClientOfUserId(userid);
-    if (index)
-    {
-        new player = GetPlayer(index);
-        if (player > -1)
-        {
-            m_Suicided[index]=false;
-            new race=GetRace(player);
-            if(race==raceID)
-            {
-                new skilllevel_unholy = GetSkillLevel(player,race,1);
-                if (skilllevel_unholy)
-                    UnholyAura(index, player, skilllevel_unholy);
-
-                new skilllevel_levi = GetSkillLevel(player,race,2);
-                if (skilllevel_levi)
-                    Levitation(index, player, skilllevel_levi);
-            }
-        }
-    }
-}
-
 public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
     if(race == raceID && GetRace(player) == raceID)
@@ -213,48 +168,67 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    LogEventDamage(event, "UndeadScourge::PlayerHurtEvent", raceID);
-
-    new bool:changed=false;
-    new victimUserid = GetEventInt(event,"userid");
-    if (victimUserid)
+    new userid     = GetEventInt(event,"userid");
+    new index      = GetClientOfUserId(userid);
+    if (index)
     {
-        new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimWar3player = GetPlayer(victimIndex);
-        if (victimWar3player != -1)
+        new player = GetPlayer(index);
+        if (player > -1)
         {
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
+            m_Suicided[index]=false;
+            new race=GetRace(player);
+            if(race==raceID)
             {
-                new attackerIndex      = GetClientOfUserId(attackerUserid);
-                new attackerWar3player = GetPlayer(attackerIndex);
-                if (attackerWar3player != -1)
-                {
-                    if (GetRace(attackerWar3player) == raceID)
-                    {
-                        changed |= VampiricAura(event, attackerIndex, attackerWar3player,
-                                                       victimIndex, victimWar3player);
-                    }
-                }
-            }
+                new skilllevel_unholy = GetSkillLevel(player,race,1);
+                if (skilllevel_unholy)
+                    UnholyAura(index, player, skilllevel_unholy);
 
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid && victimUserid != assisterUserid)
-            {
-                new assisterIndex      = GetClientOfUserId(assisterUserid);
-                new assisterWar3player = GetPlayer(assisterIndex);
-                if (assisterWar3player != -1)
-                {
-                    if (GetRace(assisterWar3player) == raceID)
-                    {
-                        changed |= VampiricAura(event, assisterIndex, assisterWar3player,
-                                                       victimIndex, victimWar3player);
-                    }
-                }
+                new skilllevel_levi = GetSkillLevel(player,race,2);
+                if (skilllevel_levi)
+                    Levitation(index, player, skilllevel_levi);
             }
         }
+    }
+    return Plugin_Continue;
+}
+
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
+{
+    LogEventDamage(event, damage, "UndeadScourge::PlayerDeathEvent", raceID);
+
+    if (victim_race == raceID && !m_Suicided[victim_index])
+    {
+        new ult_level=GetSkillLevel(victim_player,raceID,0);
+        if (ult_level)
+            SuicideBomber(victim_index,victim_player,ult_level,true);
+    }
+    return Plugin_Continue;
+}
+
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
+{
+    LogEventDamage(event, damage, "UndeadScourge::PlayerHurtEvent", raceID);
+
+    new bool:changed=false;
+    if (attacker_race == raceID && attacker_index != victim_index)
+    {
+        if (VampiricAura(damage, attacker_index, attacker_player, victim_index, victim_player))
+            changed = true;
+    }
+
+    if (assister_race == raceID && assister_index != victim_index)
+    {
+        if (VampiricAura(damage, assister_index, assister_player, victim_index, victim_player))
+            changed = true;
     }
     return changed ? Plugin_Changed : Plugin_Continue;
 }
@@ -329,7 +303,7 @@ Levitation(client, player, skilllevel)
     SetMinGravity(player,gravity);
 }
 
-bool:VampiricAura(Handle:event, index, player, victim, victim_player)
+bool:VampiricAura(damage, victim_index, victim_player, index, player)
 {
     new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
@@ -347,11 +321,10 @@ bool:VampiricAura(Handle:event, index, player, victim, victim_player)
             case 4:
                 percent_health=0.30;
         }
-        new Float:damage=float(GetDamage(event, victim));
-        new leechhealth=RoundFloat(damage*percent_health);
+        new leechhealth=RoundFloat(float(damage)*percent_health);
         if(leechhealth)
         {
-            new victim_health=GetClientHealth(victim);
+            new victim_health=GetClientHealth(victim_index);
             if (victim_health < leechhealth)
                 leechhealth = victim_health;
 
@@ -362,20 +335,20 @@ bool:VampiricAura(Handle:event, index, player, victim, victim_player)
             if (victim_health <= 0)
             {
                 victim_health = 0;
-                LogKill(index, victim, "vampiric_aura", "Vampiric Aura", leechhealth);
-                KillPlayer(index);
+                LogKill(index, victim_index, "vampiric_aura", "Vampiric Aura", leechhealth);
             }
             else
             {
-                PrintToChat(victim,"%c[War3Source] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
+                PrintToChat(victim_index,"%c[SourceCraft] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
                             COLOR_GREEN,index,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
 
-                PrintToChat(index,"%c[War3Source]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
-                            COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(index,"%c[SourceCraft]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
+                            COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim_index,COLOR_TEAM,COLOR_DEFAULT);
 
-                LogToGame("[War3Source] %N leeched %d health from %N\n", index, leechhealth, victim);
-                SetHealth(victim,victim_health);
+                LogToGame("[SourceCraft] %N leeched %d health from %N\n", index, leechhealth, victim_index);
             }
+
+            SetHealth(victim_index, victim_health);
 
             new Float:start[3];
             GetClientAbsOrigin(index, start);
