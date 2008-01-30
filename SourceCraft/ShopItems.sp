@@ -89,10 +89,14 @@ public OnPluginStart()
 
     cvarClawsEnable=CreateConVar("sc_clawsenable","1");
 
-    HookEvent("player_spawn",PlayerSpawnEvent);
+    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+        SetFailState("Couldn't hook the player_spawn event.");
 
     if (GameType == tf2)
-        HookEvent("player_changeclass",PlayerChangeClassEvent);
+    {
+        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
+            SetFailState("Couldn't hook the player_changeclass event.");
+    }
 
     CreateTimer(20.0,Gloves,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);

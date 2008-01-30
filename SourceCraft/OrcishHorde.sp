@@ -58,14 +58,26 @@ public OnPluginStart()
 
     cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
 
+    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+        SetFailState("Couldn't hook the player_spawn event.");
+
     if (GameType == cstrike)
-        HookEvent("round_start",RoundStartEvent);
+    {
+        if (!HookEvent("round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the round_start event.");
+    }
     else if (GameType == dod)
-        HookEvent("dod_round_start",RoundStartEvent);
+    {
+        if (!HookEvent("dod_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the dod_round_start event.");
+    }
     else if (GameType == tf2)
     {
-        HookEvent("teamplay_round_start",RoundStartEvent);
-        HookEvent("teamplay_suddendeath_begin",SuddenDeathBeginEvent);
+        if (!HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_start event.");
+
+        if (!HookEvent("teamplay_suddendeath_begin",SuddenDeathBeginEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_suddendeath_begin event.");
     }
 }
 
@@ -148,7 +160,7 @@ public Action:AllowChainLightning(Handle:timer,any:index)
 }
 
 // Events
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
@@ -173,6 +185,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,

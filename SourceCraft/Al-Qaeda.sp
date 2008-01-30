@@ -58,7 +58,8 @@ public OnPluginStart()
 {
     GetGameType();
 
-    HookEvent("player_spawn",PlayerSpawnEvent);
+    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+        SetFailState("Couldn't hook the player_spawn event.");
 
     CreateTimer(3.0,FlamingWrath,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -140,7 +141,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
@@ -151,6 +152,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
         TE_SendToAll();
     }
+    return Plugin_Continue;
 }
 
 public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
@@ -187,7 +189,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                     m_IsRespawning[victim_index]=true;
                     GetClientAbsOrigin(victim_index,m_DeathLoc[victim_index]);
                     AuthTimer(0.5,victim_index,RespawnPlayerHandle);
-                    return;
+                    return Plugin_Continue;
                 }
             }
         }
@@ -199,15 +201,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
             AuthTimer(GetSoundDuration(kaboomWav), victim_index, Kaboom);
         }
     }
-}
-
-public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    for(new x=1;x<=MAXPLAYERS;x++)
-    {
-        m_IsRespawning[x]=false;
-        m_Suicided[x]=false;
-    }
+    return Plugin_Continue;
 }
 
 public OnRaceSelected(client,player,oldrace,newrace)

@@ -52,10 +52,14 @@ public OnPluginStart()
 
     cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","30");
 
-    HookEvent("player_spawn",PlayerSpawnEvent);
+    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+        SetFailState("Couldn't hook the player_spawn event.");
 
     if (GameType == tf2)
-        HookEvent("player_changeclass",PlayerChangeClassEvent);
+    {
+        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
+            SetFailState("Couldn't hook the player_changeclass event.");
+    }
 }
 
 public OnPluginReady()
@@ -128,7 +132,6 @@ public OnRaceSelected(client,player,oldrace,race)
         }
     }
 }
-
 
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
@@ -211,15 +214,17 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 }
 
 // Events
-public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     if (client)
         ResetMaxHealth(client);
+
+    return Plugin_Continue;
 }
 
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
@@ -245,6 +250,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
+    return Plugin_Continue;
 }
 
 public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
@@ -261,6 +267,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
         SetMaxHealth(victim_index, maxHealth[victim_index]);
         healthIncreased[victim_index] = false;
     }
+    return Plugin_Continue;
 }
 
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
@@ -281,6 +288,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         if (assister_race == raceID)
             Bash(victim_index, assister_player);
     }
+    return Plugin_Continue;
 }
 
 DoImmunity(client, player, skilllevel)

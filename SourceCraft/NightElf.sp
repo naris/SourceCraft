@@ -42,6 +42,9 @@ public OnPluginStart()
 {
     GetGameType();
 
+    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+        SetFailState("Couldn't hook the player_spawn event.");
+
     cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
 }
 
@@ -116,7 +119,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         if (victim_race == raceID)
         {
             amount += ThornsAura(damage, victim_index, victim_player,
-                                         attacker_index, attacker_player);
+                                 attacker_index, attacker_player);
         }
 
         if (amount)
@@ -135,7 +138,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         if (victim_race == raceID)
         {
             amount += ThornsAura(damage, victim_index, victim_player,
-                                         assister_index, assister_player);
+                                 assister_index, assister_player);
         }
 
         if (amount)

@@ -10,17 +10,17 @@
 
 public bool:HookEvents()
 {
-    if(!HookEventEx("player_spawn",PlayerSpawnEvent))
+    if(!HookEventEx("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
     {
         PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
     }
-    if(!HookEventEx("player_hurt",PlayerHurtEvent))
+    if(!HookEventEx("player_hurt",PlayerHurtEvent,EventHookMode_Post))
     {
         PrintToServer("[SourceCraft] Could not hook the player_hurt event.");
         return false;
     }
-    if(!HookEventEx("player_death",PlayerDeathEvent))
+    if(!HookEventEx("player_death",PlayerDeathEvent,EventHookMode_Post))
     {
         PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
@@ -28,25 +28,25 @@ public bool:HookEvents()
 
     if (GameType == tf2)
     {
-        if(!HookEventEx("player_changeclass",PlayerChangeClass))
+        if(!HookEventEx("player_changeclass",PlayerChangeClass,EventHookMode_Post))
         {
             PrintToServer("[SourceCraft] Could not hook the player_changeclass event.");
             return false;
         }
 
-        if(!HookEventEx("teamplay_round_active",RoundActive))
+        if(!HookEventEx("teamplay_round_active",RoundActive,EventHookMode_PostNoCopy))
         {
             PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
         }
 
-        if(!HookEventEx("teamplay_round_win",RoundOver))
+        if(!HookEventEx("teamplay_round_win",RoundOver,EventHookMode_PostNoCopy))
         {
             PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
         }
 
-        if(!HookEventEx("teamplay_round_stalemate",RoundOver))
+        if(!HookEventEx("teamplay_round_stalemate",RoundOver,EventHookMode_PostNoCopy))
         {
             PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
