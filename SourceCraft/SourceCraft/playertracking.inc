@@ -309,7 +309,7 @@ public Action:PlayerProperties(Handle:timer)
                                 newSpeed = m_BaseSpeed[client] * speed;
                             }
 
-                            LogMessage("Set speed of %N to %f, cur=%f, base=%f, speed=%f, class_speed=%f\n",
+                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, speed=%f, class_speed=%f\n",
                                        client, newSpeed, curSpeed, m_BaseSpeed[client], speed,
                                        GetNormalSpeed(client));
 
@@ -333,8 +333,9 @@ public Action:PlayerProperties(Handle:timer)
             else
             {
                 new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                LogMessage("Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
-                           client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client));
+                LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
+                           client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
+                           GetNormalSpeed(client));
             }
 
             if (visibilityAltered[client] || overridePlayerVisibility || (visibility >= 0 && visibility < 255))

@@ -57,7 +57,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        if (index > 0 && m_BaseSpeed[index] == 0.0)
+        if (index > 0)
         {
             if (m_OffsetMaxSpeed[index] == 0)
                 m_OffsetMaxSpeed[index]=FindDataMapOffs(index,"m_flMaxspeed");

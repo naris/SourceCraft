@@ -15,7 +15,7 @@
 #include <tf2>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION     "1.0.1 $Revision$ beta"
+#define VERSION     "1.0.2 $Revision$ beta"
 
 // Temporary Definitions
 new Handle:arrayPlayers = INVALID_HANDLE;
