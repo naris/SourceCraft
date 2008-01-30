@@ -161,8 +161,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     if (attacker_race == raceID && attacker_index != victim_index)
     {
         if (victim_player != -1)
-            PickPocket(event, attacker_index, attacker_player, victim_index, victim_player);
-        if (FesteringAbomination(damage, attacker_index, attacker_player, victim_index))
+            PickPocket(victim_index, victim_player, attacker_index, attacker_player);
+
+        if (FesteringAbomination(damage, victim_index, attacker_index, attacker_player))
             changed = true;
 
     }
@@ -170,15 +171,16 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     if (assister_race == raceID && assister_index != victim_index)
     {
         if (victim_player != -1)
-            PickPocket(event, assister_index, assister_player, victim_index, victim_player);
-        if (FesteringAbomination(damage, assister_index, assister_player, victim_index))
+            PickPocket(victim_index, victim_player, assister_index, assister_player);
+
+        if (FesteringAbomination(damage, victim_index, assister_index, assister_player))
             changed = true;
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:FesteringAbomination(damage, index, player, victim_index)
+public bool:FesteringAbomination(damage, victim_index, index, player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -232,13 +234,13 @@ public bool:FesteringAbomination(damage, index, player, victim_index)
     return false;
 }
 
-public PickPocket(Handle:event, index, player, victim_index, victim_player)
+public PickPocket(victim_index, victim_player, index, player)
 {
-    new skill_cs = GetSkillLevel(player,raceID,1);
-    if (skill_cs > 0)
+    new skill_pp = GetSkillLevel(player,raceID,1);
+    if (skill_pp > 0)
     {
         new chance;
-        switch(skill_cs)
+        switch(skill_pp)
         {
             case 1:
                 chance=15;
@@ -252,7 +254,7 @@ public PickPocket(Handle:event, index, player, victim_index, victim_player)
         if(GetRandomInt(1,100)<=chance)
         {
             new Float:percent;
-            switch(skill_cs)
+            switch(skill_pp)
             {
                 case 1:
                     percent=0.20;
