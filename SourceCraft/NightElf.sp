@@ -43,9 +43,6 @@ public OnPluginStart()
     GetGameType();
 
     cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
-
-    HookEvent("player_hurt",PlayerHurtEvent);
-    HookEvent("player_spawn",PlayerSpawnEvent);
 }
 
 public OnPluginReady()
@@ -78,6 +75,208 @@ public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
     m_AllowEntangle[client]=true;
+}
+
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new index=GetClientOfUserId(userid);
+    if (index>0)
+    {
+        m_AllowEntangle[index]=true;
+    }
+}
+
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
+{
+    LogEventDamage(event, damage, "NightElf::PlayerHurtEvent", raceID);
+
+    new bool:changed=false;
+    if (victim_race == raceID)
+    {
+        changed |= Evasion(damage, victim_index, victim_player,
+                           attacker_index, assister_index);
+    }
+
+    if (attacker_index && attacker_index != victim_index)
+    {
+        new amount = 0;
+
+        if (attacker_race == raceID)
+        {
+            amount = TrueshotAura(damage, victim_index,
+                                  attacker_index, attacker_player);
+            if (amount)
+                changed = true;
+        }
+
+        if (victim_race == raceID)
+        {
+            amount += ThornsAura(damage, victim_index, victim_player,
+                                         attacker_index, attacker_player);
+        }
+
+        if (amount)
+            changed = true;
+    }
+
+    if (assister_index && assister_index != victim_index)
+    {
+        new amount = 0;
+        if (assister_race == raceID)
+        {
+            amount = TrueshotAura(damage, victim_index,
+                                  assister_index, assister_player);
+        }
+
+        if (victim_race == raceID)
+        {
+            amount += ThornsAura(damage, victim_index, victim_player,
+                                         assister_index, assister_player);
+        }
+
+        if (amount)
+            changed = true;
+    }
+
+    return changed ? Plugin_Changed : Plugin_Continue;
+}
+
+public bool:Evasion(damage, victim_index, victim_player, attacker_index, assister_index)
+{
+    new skill_level_evasion = GetSkillLevel(victim_player,raceID,0);
+    if (skill_level_evasion)
+    {
+        new chance;
+        switch(skill_level_evasion)
+        {
+            case 1:
+                chance=5;
+            case 2:
+                chance=15;
+            case 3:
+                chance=20;
+            case 4:
+                chance=30;
+        }
+        if (GetRandomInt(1,100) <= chance)
+        {
+            new newhp=GetClientHealth(victim_index)+damage;
+            new maxhp=GetMaxHealth(victim_index);
+            if (newhp > maxhp)
+                newhp = maxhp;
+
+            SetHealth(victim_index,newhp);
+
+            LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victim_index, attacker_index);
+            PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
+            PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                        COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+
+            if (assister_index)
+            {
+                PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+public ThornsAura(damage, victim_index, victim_player, index, player)
+{
+    new skill_level_thorns = GetSkillLevel(victim_player,raceID,1);
+    if (skill_level_thorns)
+    {
+        if (!GetImmunity(player,Immunity_HealthTake))
+        {
+            new chance;
+            switch(skill_level_thorns)
+            {
+                case 1:
+                    chance=15;
+                case 2:
+                    chance=25;
+                case 3:
+                    chance=35;
+                case 4:
+                    chance=50;
+            }
+            if(GetRandomInt(1,100) <= chance)
+            {
+                new amount=RoundToNearest(damage * 0.30);
+                new newhp=GetClientHealth(index)-amount;
+                if (newhp <= 0)
+                {
+                    newhp=0;
+                    LogKill(victim_index, index, "thorns_aura", "Thorns Aura", amount);
+                }
+                else
+                    LogDamage(victim_index, index, "thorns_aura", "Thorns Aura", amount);
+
+                SetHealth(index,newhp);
+
+                new Float:Origin[3];
+                GetClientAbsOrigin(victim_index, Origin);
+                Origin[2] += 5;
+
+                TE_SetupSparks(Origin,Origin,255,1);
+                TE_SendToAll();
+                return amount;
+            }
+        }
+    }
+    return 0;
+}
+
+public TrueshotAura(damage, victim_index, index, player)
+{
+    // Trueshot Aura
+    new skill_level_trueshot=GetSkillLevel(player,raceID,2);
+    if (skill_level_trueshot)
+    {
+        if (GetRandomInt(1,100) <= 30)
+        {
+            new Float:percent;
+            switch(skill_level_trueshot)
+            {
+                case 1:
+                    percent=0.10;
+                case 2:
+                    percent=0.25;
+                case 3:
+                    percent=0.40;
+                case 4:
+                    percent=0.60;
+            }
+
+            new amount=RoundFloat(float(damage)*percent);
+            new newhp=GetClientHealth(victim_index)-amount;
+            if (newhp <= 0)
+            {
+                newhp=0;
+                LogKill(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+            }
+            else
+                LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+
+            SetHealth(victim_index,newhp);
+
+            new Float:Origin[3];
+            GetClientAbsOrigin(victim_index, Origin);
+            Origin[2] += 5;
+
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
+            return amount;
+        }
+    }
+    return 0;
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)
@@ -147,231 +346,6 @@ public OnUltimateCommand(client,player,race,bool:pressed)
             }
         }
     }
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    if (index>0)
-    {
-        m_AllowEntangle[index]=true;
-    }
-}
-
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    LogEventDamage(event, "NightElf::PlayerHurtEvent", raceID);
-
-    new bool:changed=false;
-    new victimUserid = GetEventInt(event,"userid");
-    if (victimUserid)
-    {
-        new victimIndex  = GetClientOfUserId(victimUserid);
-        new victimPlayer = GetPlayer(victimIndex);
-        if (victimPlayer != -1)
-        {
-            new attackerIndex  = 0;
-            new attackerPlayer = -1;
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
-            {
-                attackerIndex  = GetClientOfUserId(attackerUserid);
-                attackerPlayer = GetPlayer(attackerIndex);
-            }
-
-            new assisterIndex  = 0;
-            new assisterPlayer = -1;
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid && victimUserid != assisterUserid)
-            {
-                assisterIndex  = GetClientOfUserId(assisterUserid);
-                assisterPlayer = GetPlayer(assisterIndex);
-            }
-
-            new bool:evaded = false;
-            new victimRace = GetRace(victimPlayer);
-            if (victimRace == raceID)
-            {
-                changed |= evaded = Evasion(event, victimIndex, victimPlayer,
-                                            attackerIndex, assisterIndex);
-            }
-
-            if (attackerUserid && victimUserid != attackerUserid && attackerPlayer != -1)
-            {
-                new damage = 0;
-                if (GetRace(attackerPlayer)==raceID)
-                {
-                    damage = TrueshotAura(event, attackerIndex,
-                                          attackerPlayer, victimIndex, evaded);
-                }
-
-                if (victimRace == raceID && (!evaded || damage))
-                {
-                    damage += ThornsAura(event, attackerIndex, attackerPlayer,
-                                         victimIndex, victimPlayer, evaded, damage);
-                }
-                if (damage)
-                    changed = true;
-            }
-
-            if (assisterUserid && victimUserid != assisterUserid && assisterPlayer != -1)
-            {
-                new damage = 0;
-                if (GetRace(assisterPlayer)==raceID)
-                {
-                    damage = TrueshotAura(event, assisterIndex,
-                                          assisterPlayer, victimIndex, evaded);
-                }
-
-                if (victimRace == raceID && (!evaded || damage))
-                {
-                    damage += ThornsAura(event, assisterIndex, assisterPlayer,
-                                         victimIndex, victimPlayer, evaded, damage);
-                }
-                if (damage)
-                    changed = true;
-            }
-        }
-    }
-    return changed ? Plugin_Changed : Plugin_Continue;
-}
-
-public bool:Evasion(Handle:event, victimIndex, victimPlayer, attackerIndex, assisterIndex)
-{
-    new skill_level_evasion = GetSkillLevel(victimPlayer,raceID,0);
-    if (skill_level_evasion)
-    {
-        new chance;
-        switch(skill_level_evasion)
-        {
-            case 1:
-                chance=5;
-            case 2:
-                chance=15;
-            case 3:
-                chance=20;
-            case 4:
-                chance=30;
-        }
-        if (GetRandomInt(1,100) <= chance)
-        {
-            new losthp=GetDamage(event, victimIndex);
-            new newhp=GetClientHealth(victimIndex)+losthp;
-            new maxhp=GetMaxHealth(victimIndex);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetHealth(victimIndex,newhp);
-
-            LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victimIndex, attackerIndex);
-            PrintToChat(victimIndex,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attackerIndex);
-            PrintToChat(attackerIndex,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                        COLOR_GREEN,victimIndex,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-
-            if (assisterIndex)
-            {
-                PrintToChat(assisterIndex,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victimIndex,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-public ThornsAura(Handle:event, index, player, victimIndex, victimPlayer, evaded, prev_damage)
-{
-    new skill_level_thorns = GetSkillLevel(victimPlayer,raceID,1);
-    if (skill_level_thorns)
-    {
-        if (!GetImmunity(player,Immunity_HealthTake))
-        {
-            new chance;
-            switch(skill_level_thorns)
-            {
-                case 1:
-                    chance=15;
-                case 2:
-                    chance=25;
-                case 3:
-                    chance=35;
-                case 4:
-                    chance=50;
-            }
-            if(GetRandomInt(1,100) <= chance)
-            {
-                new damage=GetDamage(event, victimIndex);
-                new amount=RoundToNearest((damage + (evaded ? 0 : prev_damage)) * 0.30);
-                new newhp=GetClientHealth(index)-amount;
-                if (newhp <= 0)
-                {
-                    newhp=0;
-                    LogKill(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
-                }
-                else
-                    LogDamage(victimIndex, index, "thorns_aura", "Thorns Aura", amount);
-
-                SetHealth(index,newhp);
-
-                new Float:Origin[3];
-                GetClientAbsOrigin(victimIndex, Origin);
-                Origin[2] += 5;
-
-                TE_SetupSparks(Origin,Origin,255,1);
-                TE_SendToAll();
-                return amount;
-            }
-        }
-    }
-    return 0;
-}
-
-public TrueshotAura(Handle:event, index, player, victimIndex, evaded)
-{
-    // Trueshot Aura
-    new skill_level_trueshot=GetSkillLevel(player,raceID,2);
-    if (skill_level_trueshot)
-    {
-        if (GetRandomInt(1,100) <= (evaded) ? 10 : 30)
-        {
-            new Float:percent;
-            switch(skill_level_trueshot)
-            {
-                case 1:
-                    percent=0.10;
-                case 2:
-                    percent=0.25;
-                case 3:
-                    percent=0.40;
-                case 4:
-                    percent=0.60;
-            }
-
-            new damage=GetDamage(event, victimIndex);
-            new amount=RoundFloat(float(damage)*percent);
-            new newhp=GetClientHealth(victimIndex)-amount;
-            if (newhp <= 0)
-            {
-                newhp=0;
-                LogKill(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
-            }
-            else
-                LogDamage(index, victimIndex, "trueshot_aura", "Trueshot Aura", amount);
-
-            SetHealth(victimIndex,newhp);
-
-            new Float:Origin[3];
-            GetClientAbsOrigin(victimIndex, Origin);
-            Origin[2] += 5;
-
-            TE_SetupSparks(Origin,Origin,255,1);
-            TE_SendToAll();
-            return amount;
-        }
-    }
-    return 0;
 }
 
 public Action:AllowEntangle(Handle:timer,any:index)

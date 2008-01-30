@@ -59,7 +59,6 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
 
     CreateTimer(3.0,FlamingWrath,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -154,52 +153,50 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event,"Al-Qaeda::PlayerDeathEvent",raceID);
+    LogEventDamage(event,damage,"Al-Qaeda::PlayerDeathEvent",raceID);
 
-    new userid = GetEventInt(event,"userid");
-    new index  = GetClientOfUserId(userid);
-    new player = GetPlayer(index);
-    if (player > -1)
+    if (victim_race == raceID)
     {
-        if (GetRace(player) == raceID)
+        if (m_Suicided[victim_index])
+            m_Suicided[victim_index]=false;
+        else
         {
-            if (m_Suicided[index])
-                m_Suicided[index]=false;
-            else
+            new reincarnation_skill=GetSkillLevel(victim_player,victim_race,0);
+            if (reincarnation_skill)
             {
-                new reincarnation_skill=GetSkillLevel(player,raceID,0);
-                if (reincarnation_skill)
+                new percent;
+                switch (reincarnation_skill)
                 {
-                    new percent;
-                    switch (reincarnation_skill)
-                    {
-                        case 1:
-                            percent=9;
-                        case 2:
-                            percent=22;
-                        case 3:
-                            percent=36;
-                        case 4:
-                            percent=53;
-                    }
-                    if (GetRandomInt(1,100)<=percent)
-                    {
-                        m_IsRespawning[index]=true;
-                        GetClientAbsOrigin(index,m_DeathLoc[index]);
-                        AuthTimer(0.5,index,RespawnPlayerHandle);
-                        return;
-                    }
+                    case 1:
+                        percent=9;
+                    case 2:
+                        percent=22;
+                    case 3:
+                        percent=36;
+                    case 4:
+                        percent=53;
+                }
+                if (GetRandomInt(1,100)<=percent)
+                {
+                    m_IsRespawning[victim_index]=true;
+                    GetClientAbsOrigin(victim_index,m_DeathLoc[victim_index]);
+                    AuthTimer(0.5,victim_index,RespawnPlayerHandle);
+                    return;
                 }
             }
+        }
 
-            new suicide_skill=GetSkillLevel(player,raceID,2);
-            if (suicide_skill)
-            {
-                EmitSoundToAll(kaboomWav,index);
-                AuthTimer(GetSoundDuration(kaboomWav), index, Kaboom);
-            }
+        new suicide_skill=GetSkillLevel(victim_player,victim_race,2);
+        if (suicide_skill)
+        {
+            EmitSoundToAll(kaboomWav,victim_index);
+            AuthTimer(GetSoundDuration(kaboomWav), victim_index, Kaboom);
         }
     }
 }

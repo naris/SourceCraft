@@ -15,7 +15,8 @@ new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
 new Handle:g_OnItemPurchaseHandle = INVALID_HANDLE;
 new Handle:g_OnCreditsGivenHandle = INVALID_HANDLE;
 new Handle:g_OnXPGivenHandle = INVALID_HANDLE;
-
+new Handle:g_OnPlayerHurtEventHandle = INVALID_HANDLE;
+new Handle:g_OnPlayerDeathEventHandle = INVALID_HANDLE;
 
 public Native_CreateRace(Handle:plugin,numParams)
 {
@@ -87,24 +88,6 @@ public Native_GetShopItem(Handle:plugin,numParams)
         GetNativeString(1,name,sizeof(name));
         return GetShopItem(name);
     }
-    else
-        return -1;
-}
-
-public Native_GetSavedHealth(Handle:plugin,numParams)
-{
-    if(numParams==1)
-        return GetSavedHealth(GetNativeCell(1));
-    else
-        return -1;
-}
-
-public Native_GetDamage(Handle:plugin,numParams)
-{
-    if(numParams==1)
-        return GetDamage(Handle:GetNativeCell(1), 0);
-    else if(numParams==2)
-        return GetDamage(Handle:GetNativeCell(1), GetNativeCell(2));
     else
         return -1;
 }
@@ -562,8 +545,6 @@ public bool:InitNatives()
     CreateNative("CreateShopItem",Native_CreateShopItem);
     CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
     CreateNative("GetShopItem",Native_GetShopItem);
-    CreateNative("GetSavedHealth",Native_GetSavedHealth);
-    CreateNative("GetDamage",Native_GetDamage);
     CreateNative("GetPlayer",Native_GetPlayer);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
@@ -597,5 +578,7 @@ public bool:InitForwards()
     g_OnItemPurchaseHandle=CreateGlobalForward("OnItemPurchase",ET_Ignore,Param_Cell,Param_Cell,Param_Cell);
     g_OnXPGivenHandle=CreateGlobalForward("OnXPGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef);
     g_OnCreditsGivenHandle=CreateGlobalForward("OnCreditsGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef);
+    g_OnPlayerHurtEventHandle=CreateGlobalForward("OnPlayerDeathEvent",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_String,Param_Cell);
+    g_OnPlayerDeathEventHandle=CreateGlobalForward("OnPlayerDeathEvent",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_String,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     return true;
 }

@@ -37,7 +37,10 @@ enum Immunity
  * @param required_level: The overeall level the player must obtain before changing to this race. (as a string)
  * @return The return value will be the race index or -1 if there was a problem.
  */         
-native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[], String:required_level[]="0");
+native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
+                  String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],
+                  String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[],
+                  String:required_level[]="0");
 
 /**
  * Registers a shop item with the SourceCraft plugin
@@ -62,21 +65,6 @@ native CreateHelpCommand(String:name[],String:desc[]);
  * @return The return value will be the item index or -1 if there was a problem.
  */         
 native GetShopItem(String:name[]);
-
-/**
- * Gets the health of client that was saved in the last GameFrame
- * @param client: The client's index you want.
- * @return The return value will be the amount of health client had last GameFrame.
- */
-native GetSavedHealth(client);
-
-/**
- * Gets (or Calculates) damage for the given event.
- * @param event: The Handle to the event
- * @param client: The client's index you want (defaults to userid from event)
- * @return The return value will be the amount of damage
- */
-native GetDamage(Handle:event, client=0);
 
 /**
  * Gets the Player ID used for the rest of the interface natives.
@@ -283,7 +271,8 @@ forward OnRaceSelected(client,player,oldrace,newrace);
 #define OnRaceChanged OnRaceSelected
 
 /**
- * Gets called when the +ultimate or -ultimate command is called, IT ISNT ALWAYS FOR YOUR RACE, YOU NEED TO CHECK!!!
+ * Gets called when the +ultimate or -ultimate command is called,
+ * IT ISN'T ALWAYS FOR YOUR RACE, YOU NEED TO CHECK!!!
  * @param client: The client's index.
  * @param player: The player ID of the client.
  * @param race: The race for which it was called.
@@ -309,3 +298,46 @@ forward OnItemPurchase(client,player,item);
  * @param newskilllevel: The new skill level.   
  */
 forward OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel);
+
+/**
+ * Gets called for player_hurt
+ * @param victim_index: The victim's index.
+ * @param victim_player: The player ID of the victim.
+ * @param attacker_race: The race of the victim.
+ * @param attacker_index: The attacker's index.
+ * @param attacker_player: The player ID of the attacker.
+ * @param attacker_race: The race of the attacker.
+ * @param assister_index: The attacker's assister.
+ * @param assister_player: The player ID of the assister.
+ * @param assister_race: The race of the assister.
+ * @param damage: The amount of damage infliced on the victim.
+ */
+forward Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage);
+
+/**
+ * Gets called for player_death
+ * @param victim_index: The victim's index.
+ * @param victim_player: The player ID of the victim.
+ * @param attacker_race: The race of the victim.
+ * @param attacker_index: The attacker's index.
+ * @param attacker_player: The player ID of the attacker.
+ * @param attacker_race: The race of the attacker.
+ * @param assister_index: The attacker's assister.
+ * @param assister_player: The player ID of the assister.
+ * @param assister_race: The race of the assister.
+ * @param damage: The amount of damage infliced on the victim.
+ * @param weapon: The weapon used by the attacker.
+ * @param is_equipment: Set to true if weapon is client weapon, false if from event.
+ * @param customkill: The custom kill value from TF2.
+ * @param headshot: Set to true for headshots.
+ * @param backstab: Set to true for backstabs.
+ * @param melee: Set to true when a melee weapon (knife, etc) was used.
+ */
+forward Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                  attacker_index,attacker_player,attacker_race,
+                                  assister_index,assister_player,assister_race,
+                                  damage,const String:weapon[],bool:is_equipment,
+                                  customkill,bool:headshot,bool:backstab,bool:melee);

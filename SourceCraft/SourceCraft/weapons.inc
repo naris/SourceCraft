@@ -73,3 +73,7 @@ stock bool:IsDamageFromMelee(const String:wepName[])
     return false;
 }
 
+stock bool:IsMelee(const String:wepName[], bool:is_equipment)
+{
+    return is_equipment ? IsEquipmentMelee(wepName) : IsDamageFromMelee(wepName);
+}

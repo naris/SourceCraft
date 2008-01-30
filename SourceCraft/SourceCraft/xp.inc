@@ -10,8 +10,9 @@
  
 #define MAX_LEVELS 16
 #define HEADSHOT_XP 10
-#define KNIFE_XP 20
-#define BACKSTAB_XP 25
+#define BACKSTAB_XP 10
+#define ASSIST_XP 10
+#define MELEE_XP 20
 
 #define DEFUSE_XP 20
 #define PLANT_XP 20
@@ -111,7 +112,7 @@ public ShowXP(client,vecpos)
     }
 }
 
-public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife,bool:backstab)
+public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:backstab,bool:melee,bool:assist)
 {
     new Action:result,amount;
     new race=GetRace(vectorpos);
@@ -135,11 +136,17 @@ public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:knife,bool:backstab
         PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for a backstab.",
                     COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
     }
-    else if (knife)
+    else if (melee)
     {
-        amount+=KNIFE_XP;
+        amount+=MELEE_XP;
         PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for a knife/shovel/wrench/etc kill.",
-                    COLOR_GREEN,COLOR_DEFAULT,KNIFE_XP);
+                    COLOR_GREEN,COLOR_DEFAULT,MELEE_XP);
+    }
+    else if (assist)
+    {
+        amount+=ASSIST_XP;
+        PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for assisting a kill.",
+                    COLOR_GREEN,COLOR_DEFAULT,ASSIST_XP);
     }
     
     Call_StartForward(g_OnXPGivenHandle);

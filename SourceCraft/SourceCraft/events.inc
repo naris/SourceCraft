@@ -15,6 +15,11 @@ public bool:HookEvents()
         PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
     }
+    if(!HookEventEx("player_hurt",PlayerHurtEvent))
+    {
+        PrintToServer("[SourceCraft] Could not hook the player_hurt event.");
+        return false;
+    }
     if(!HookEventEx("player_death",PlayerDeathEvent))
     {
         PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
@@ -84,83 +89,158 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new uid_victim=GetEventInt(event,"userid");
-    new victimIndex=GetClientOfUserId(uid_victim);
+    new Action:result=Plugin_Continue;
 
-    if(uid_victim > 0)
+    new victim_userid=GetEventInt(event,"userid");
+    new victim_index=GetClientOfUserId(victim_userid);
+    if (victim_index)
     {
-        new vecposvictim=GetClientVectorPosition(victimIndex);
-        if(vecposvictim!=-1)
-        {
-            PendingCheck(victimIndex,vecposvictim);
-            new race=GetRace(vecposvictim);
-            if(GetSkillCount(vecposvictim,race)<GetLevel(vecposvictim,race))
-                SkillMenu(victimIndex, vecposvictim, INVALID_FUNCTION);
-        }
-    }
+        new victim_player=GetClientVectorPosition(victim_index);
+        new victim_race=(victim_player > -1) ? GetRace(victim_player) : -1;
 
-    new uid_attacker=GetEventInt(event,"attacker");
-    if(uid_victim != uid_attacker && uid_attacker > 0)
+        new attacker_userid=GetEventInt(event,"attacker");
+        new attacker_index=GetClientOfUserId(attacker_userid);
+        new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : -1;
+        new attacker_race=(attacker_player != -1) ? GetRace(attacker_player) : -1;
+
+        new assister_userid=GetEventInt(event,"assister");
+        new assister_index=GetClientOfUserId(assister_userid);
+        new assister_player=(assister_index) ? GetClientVectorPosition(assister_index) : -1;
+        new assister_race=(assister_player != -1) ? GetRace(assister_player) : -1;
+
+        new damage=GetDamage(event, victim_index);
+
+        Call_StartForward(g_OnPlayerHurtEventHandle);
+        Call_PushCell(event);
+        Call_PushCell(victim_index);
+        Call_PushCell(victim_player);
+        Call_PushCell(victim_race);
+        Call_PushCell(attacker_index);
+        Call_PushCell(attacker_player);
+        Call_PushCell(attacker_race);
+        Call_PushCell(assister_index);
+        Call_PushCell(assister_player);
+        Call_PushCell(assister_race);
+        Call_PushCell(damage);
+        Call_Finish(result);
+
+        SaveHealth(victim_index);
+
+        if (attacker_index)
+            SaveHealth(attacker_index);
+
+        if (assister_index)
+            SaveHealth(assister_index);
+    }
+    return result;
+}
+
+public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new Action:result       = Plugin_Continue;
+
+    new victim_userid=GetEventInt(event,"userid");
+    new victim_index=GetClientOfUserId(victim_userid);
+    if (victim_index)
     {
-        new attackerIndex=GetClientOfUserId(uid_attacker);
-        new vecPos=GetClientVectorPosition(attackerIndex);
-        if(vecPos != -1 && GetClientTeam(attackerIndex) != GetClientTeam(victimIndex))
+        new customkill;
+        new bool:backstab;
+        new bool:headshot;
+
+        new victim_player=GetClientVectorPosition(victim_index);
+        new victim_race=(victim_player != -1) ? GetRace(victim_player) : -1;
+
+        new attacker_userid=GetEventInt(event,"attacker");
+        new attacker_index=GetClientOfUserId(attacker_userid);
+        new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : 0;
+        new attacker_race=(attacker_player != -1) ? GetRace(attacker_player) : -1;
+
+        new assister_userid=GetEventInt(event,"assister");
+        new assister_index=GetClientOfUserId(assister_index);
+        new assister_player=(assister_index) ? GetClientVectorPosition(assister_index) : -1;
+        new assister_race=(assister_player != -1) ? GetRace(assister_player) : -1;
+
+        new bool:is_equipment;
+        decl String:weapon[64]  = "";
+        GetWeapon(event, attacker_index, weapon, sizeof(weapon));
+
+        if (GameType == cstrike)
         {
-            decl String:weapon[64];
-            GetEventString(event,"weapon",weapon,63);
-            if (!strlen(weapon))
-                GetClientWeapon(attackerIndex, weapon, 63);
-
-            new bool:backstab = false;
-            new bool:headshot = false;
-            new bool:melee    = false;
-            if (GameType == cstrike)
-            {
-                headshot = GetEventBool(event,"headshot");
-                melee    = StrEqual(weapon,"knife");
-            }
-            else if(GameType == tf2)
-            {
-                decl String:customkill[64];
-                GetEventString(event,"customkill",customkill,63);
-
-                headshot = StrEqual(customkill,"headshot");
-                backstab = StrEqual(customkill,"backstab");
-                melee    = (StrEqual(weapon,"knife") ||
-                            StrEqual(weapon,"shovel") ||
-                            StrEqual(weapon,"wrench") ||
-                            StrEqual(weapon,"bat") ||
-                            StrEqual(weapon,"bonesaw") ||
-                            StrEqual(weapon,"bottle") ||
-                            StrEqual(weapon,"club") ||
-                            StrEqual(weapon,"fireaxe") ||
-                            StrEqual(weapon,"fists"));
-            }
-            else if(GameType == dod)
-            {
-                headshot = GetEventBool(event,"headshot");
-                melee    = (StrEqual(weapon,"amerknife") ||
-                            StrEqual(weapon,"spade"));
-            }
-
-            GiveKillXP(attackerIndex,vecPos,victimIndex,headshot,melee,backstab);
-            GiveKillCredits(attackerIndex,vecPos);
+            headshot   = GetEventBool(event,"headshot");
+            customkill = headshot ? 1 : 0;
+            backstab   = false;
         }
-    }
-
-    new uid_assister=GetEventInt(event,"assister");
-    if(uid_assister > 0)
-    {
-        new assisterIndex=GetClientOfUserId(uid_assister);
-        new vecPos=GetClientVectorPosition(assisterIndex);
-        if(vecPos != -1 && GetClientTeam(assisterIndex) != GetClientTeam(victimIndex))
+        else if(GameType == dod)
         {
-            GiveKillXP(assisterIndex,vecPos,victimIndex,false,false,false);
-            GiveKillCredits(assisterIndex,vecPos);
+            headshot   = GetEventBool(event,"headshot");
+            customkill = headshot ? 1 : 0;
+            backstab   = false;
         }
+        else if(GameType == tf2)
+        {
+            customkill = GetEventInt(event,"customkill");
+            headshot   = (customkill == 1);
+            backstab   = (customkill == 2);
+        }
+
+        new bool:melee = IsMelee(weapon, is_equipment);
+        new damage     = GetDamage(event, victim_index);
+
+        Call_StartForward(g_OnPlayerDeathEventHandle);
+        Call_PushCell(event);
+        Call_PushCell(victim_index);
+        Call_PushCell(victim_player);
+        Call_PushCell(victim_race);
+        Call_PushCell(attacker_index);
+        Call_PushCell(attacker_player);
+        Call_PushCell(attacker_race);
+        Call_PushCell(assister_index);
+        Call_PushCell(assister_player);
+        Call_PushCell(assister_race);
+        Call_PushCell(damage);
+        Call_PushString(weapon);
+        Call_PushCell(is_equipment);
+        Call_PushCell(customkill);
+        Call_PushCell(headshot);
+        Call_PushCell(backstab);
+        Call_PushCell(melee);
+        Call_Finish(result);
+
+        if (attacker_userid != victim_userid && attacker_player != -1 && 
+            GetClientTeam(attacker_index) != GetClientTeam(victim_index))
+        {
+            GiveKillCredits(attacker_index,attacker_player);
+            GiveKillXP(attacker_index,attacker_player,victim_index,
+                       headshot,backstab,melee,false);
+        }
+
+        if (assister_userid != victim_userid && assister_player != -1 && 
+            GetClientTeam(assister_index) != GetClientTeam(victim_index))
+        {
+            GiveKillCredits(assister_index,assister_player);
+            GiveKillXP(assister_index,assister_player,victim_index,
+                       false,false,false,true);
+        }
+
+        if (victim_player!=-1)
+        {
+            PendingCheck(victim_index,victim_player);
+            new race=GetRace(victim_player);
+            if(GetSkillCount(victim_player,race)<GetLevel(victim_player,race))
+                SkillMenu(victim_index, victim_player, INVALID_FUNCTION);
+        }
+
+        SaveHealth(victim_index);
+
+        if (attacker_index)
+            SaveHealth(attacker_index);
+
+        if (assister_index)
+            SaveHealth(assister_index);
     }
+    return result;
 }
 
 public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)

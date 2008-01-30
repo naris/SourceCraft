@@ -53,8 +53,6 @@ public OnPluginStart()
     cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","30");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
 
     if (GameType == tf2)
         HookEvent("player_changeclass",PlayerChangeClassEvent);
@@ -249,59 +247,39 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event,"HumanAlliance::PlayerDeathEvent", raceID);
+    LogEventDamage(event,damage,"HumanAlliance::PlayerDeathEvent", raceID);
 
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-
-    if (client)
+    // Reset MaxHealth back to normal
+    if (GameType == tf2 && healthIncreased[victim_index])
     {
-        // Reset MaxHealth back to normal
-        if (healthIncreased[client] && GameType == tf2)
-        {
-            SetMaxHealth(client, maxHealth[client]);
-            healthIncreased[client] = false;
-        }
+        SetMaxHealth(victim_index, maxHealth[victim_index]);
+        healthIncreased[victim_index] = false;
     }
 }
 
-public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
 {
-    LogEventDamage(event,"HumanAlliance::PlayerDeathEvent", raceID);
+    LogEventDamage(event,damage,"HumanAlliance::PlayerHurtEvent", raceID);
 
-    new victimUserid=GetEventInt(event,"userid");
-    if (victimUserid)
+    if (attacker_index && attacker_index != victim_index)
     {
-        new victimIndex  = GetClientOfUserId(victimUserid);
-        new victimPlayer = GetPlayer(victimIndex);
-        if (victimPlayer != -1)
-        {
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
-            {
-                new attackerIndex  = GetClientOfUserId(attackerUserid);
-                new attackerPlayer = GetPlayer(attackerIndex);
-                if (attackerPlayer != -1)
-                {
-                    if (GetRace(attackerPlayer) == raceID)
-                        Bash(attackerPlayer, victimIndex);
-                }
-            }
+        if (attacker_race == raceID)
+            Bash(victim_index, attacker_player);
+    }
 
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid != 0)
-            {
-                new assisterIndex  = GetClientOfUserId(assisterUserid);
-                new assisterPlayer = GetPlayer(assisterIndex);
-                if (assisterPlayer != -1)
-                {
-                    if (GetRace(assisterPlayer) == raceID)
-                        Bash(assisterPlayer, victimIndex);
-                }
-            }
-        }
+    if (assister_index && assister_index != victim_index)
+    {
+        if (assister_race == raceID)
+            Bash(victim_index, assister_player);
     }
 }
 
@@ -362,7 +340,7 @@ DevotionAura(client, skill_devo)
 }
 
 
-Bash(player, victim)
+Bash(victim_index, player)
 {
     new skill_bash=GetSkillLevel(player,raceID,2);
     if (skill_bash)
@@ -383,11 +361,11 @@ Bash(player, victim)
         if (GetRandomInt(1,100)<=percent)
         {
             new Float:Origin[3];
-            GetClientAbsOrigin(victim, Origin);
+            GetClientAbsOrigin(victim_index, Origin);
             TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
 
-            FreezeEntity(victim);
-            AuthTimer(1.0,victim,UnfreezePlayer);
+            FreezeEntity(victim_index);
+            AuthTimer(1.0,victim_index,UnfreezePlayer);
         }
     }
 }

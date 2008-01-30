@@ -58,9 +58,6 @@ public OnPluginStart()
 
     cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
 
-    HookEvent("player_hurt",PlayerHurtEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-
     if (GameType == cstrike)
         HookEvent("round_start",RoundStartEvent);
     else if (GameType == dod)
@@ -178,92 +175,73 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
 {
-    LogEventDamage(event, "OrcishHorde::PlayerHurtEvent", raceID);
+    LogEventDamage(event, damage, "OrcishHorde::PlayerHurtEvent", raceID);
 
     new bool:changed=false;
-    new victimUserid=GetEventInt(event,"userid");
-    if (victimUserid)
-    {
-        new victimIndex  = GetClientOfUserId(victimUserid);
-        if (victimIndex != -1)
-        {
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
-            {
-                new attackerIndex  = GetClientOfUserId(attackerUserid);
-                new attackerPlayer = GetPlayer(attackerIndex);
-                if (attackerPlayer != -1)
-                {
-                    if (GetRace(attackerPlayer) == raceID)
-                    {
-                        if (AcuteGrenade(event, attackerIndex, attackerPlayer, victimIndex))
-                            changed = true;
-                        else
-                            changed |= AcuteStrike(event, attackerIndex, attackerPlayer, victimIndex);
-                    }
-                }
-            }
 
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid && victimUserid != assisterUserid)
-            {
-                new assisterIndex  = GetClientOfUserId(assisterUserid);
-                new assisterPlayer = GetPlayer(assisterIndex);
-                if (assisterPlayer != -1)
-                {
-                    if (GetRace(assisterPlayer) == raceID)
-                    {
-                        if (AcuteGrenade(event, assisterIndex, assisterPlayer, victimIndex))
-                            changed = true;
-                        else
-                            changed |= AcuteStrike(event, assisterIndex, assisterPlayer, victimIndex);
-                    }
-                }
-            }
-        }
+    decl String:weapon[64] = "";
+    new bool:is_equipment = GetWeapon(event, attacker_index, weapon, sizeof(weapon));
+
+    if (attacker_race == raceID && victim_index != attacker_index)
+    {
+        if (AcuteGrenade(damage, victim_index, attacker_index, attacker_player,
+                         weapon,is_equipment))
+            changed = true;
+        else
+            changed |= AcuteStrike(damage, victim_index, attacker_index, attacker_player);
     }
+
+    if (assister_race == raceID && victim_index != assister_index)
+    {
+        if (AcuteGrenade(damage, victim_index, assister_index, assister_player,
+                         weapon,is_equipment))
+            changed = true;
+        else
+            changed |= AcuteStrike(damage, victim_index, assister_index, assister_player);
+    }
+
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, "OrcishHorde::PlayerDeathEvent", raceID);
+    LogEventDamage(event, damage, "OrcishHorde::PlayerDeathEvent", raceID);
 
-    new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    new player=GetPlayer(index);
-    if (player>-1)
+    if (victim_race==raceID && (!m_HasRespawned[victim_index] || GameType != cstrike))
     {
-        new race=GetRace(player);
-        if (race==raceID && (!m_HasRespawned[index] || GameType != cstrike))
+        new skill=GetSkillLevel(victim_player,victim_race,2);
+        if (skill)
         {
-            new skill=GetSkillLevel(player,race,2);
-            if (skill)
+            new percent;
+            switch (skill)
             {
-                new percent;
-                switch (skill)
-                {
-                    case 1:
-                        percent=15;
-                    case 2:
-                        percent=37;
-                    case 3:
-                        percent=59;
-                    case 4:
-                        percent=80;
-                }
-                if (GetRandomInt(1,100)<=percent)
-                {
-                    GetClientAbsOrigin(index, m_DeathLoc[index]);
-                    TE_SetupGlowSprite(m_DeathLoc[index],g_purpleGlow,1.0,3.5,150);
-                    TE_SendToAll();
+                case 1:
+                    percent=15;
+                case 2:
+                    percent=37;
+                case 3:
+                    percent=59;
+                case 4:
+                    percent=80;
+            }
+            if (GetRandomInt(1,100)<=percent)
+            {
+                GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
+                TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
+                TE_SendToAll();
 
-                    AuthTimer(0.5,index,RespawnPlayerHandle);
-                    m_HasRespawned[index]=true;
-                    m_IsRespawning[index]=true;
-                }
+                AuthTimer(0.5,victim_index,RespawnPlayerHandle);
+                m_HasRespawned[victim_index]=true;
+                m_IsRespawning[victim_index]=true;
             }
         }
     }
@@ -287,7 +265,7 @@ public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast
     }
 }
 
-public bool:AcuteStrike(Handle:event, index, player, victimIndex)
+public bool:AcuteStrike(damage, victim_index, index, player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -307,21 +285,20 @@ public bool:AcuteStrike(Handle:event, index, player, victimIndex)
                     percent=2.4;
             }
 
-            new damage=GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetClientHealth(victimIndex)-health_take;
+            new new_health=GetClientHealth(victim_index)-health_take;
             if (new_health <= 0)
             {
                 new_health=0;
-                LogKill(index, victimIndex, "acute_strike", "Acute Strike", health_take);
+                LogKill(index, victim_index, "acute_strike", "Acute Strike", health_take);
             }
             else
-                LogDamage(index, victimIndex, "acute_strike", "Acute Strike", health_take);
+                LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
 
-            SetHealth(victimIndex,new_health);
+            SetHealth(victim_index,new_health);
 
             new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
+            TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
             return true;
@@ -330,18 +307,14 @@ public bool:AcuteStrike(Handle:event, index, player, victimIndex)
     return false;
 }
 
-public bool:AcuteGrenade(Handle:event, index, player, victimIndex)
+public bool:AcuteGrenade(damage, victim_index, index, player,
+                         const String:weapon[], bool:is_equipment)
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
     {
         if(GetRandomInt(1,100)<=50)
         {
-            decl String:weapon[64];
-            GetEventString(event,"weapon",weapon,63);
-            if (!strlen(weapon))
-                GetClientWeapon(index, weapon, 63);
-
             if (StrEqual(weapon,"hegrenade",false) ||
                 StrEqual(weapon,"tf_projectile_pipe",false) ||
                 StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
@@ -365,21 +338,20 @@ public bool:AcuteGrenade(Handle:event, index, player, victimIndex)
                         percent=1.80;
                 }
 
-                new damage=GetDamage(event, victimIndex);
                 new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetClientHealth(victimIndex)-health_take;
+                new new_health=GetClientHealth(victim_index)-health_take;
                 if (new_health <= 0)
                 {
                     new_health=0;
-                    LogKill(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
+                    LogKill(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
                 }
                 else
-                    LogDamage(index, victimIndex, "acute_grenade", "Acute Grenade", health_take);
+                    LogDamage(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
 
-                SetHealth(victimIndex,new_health);
+                SetHealth(victim_index,new_health);
 
                 new Float:Origin[3];
-                GetClientAbsOrigin(victimIndex, Origin);
+                GetClientAbsOrigin(victim_index, Origin);
                 Origin[2] += 5;
 
                 TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);

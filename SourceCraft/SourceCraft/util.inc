@@ -56,3 +56,20 @@ stock SetupModel(const String:model[])
     AddFileToDownloadsTable(model);
     return PrecacheModel(model);
 }
+
+stock bool:GetWeapon(Handle:event, attacker_index,
+                     String:buffer[], buffersize)
+{
+    new bool:is_equipment;
+
+    GetEventString(event, "weapon", buffer, buffersize);
+    if (attacker_index && !buffer[0])
+    {
+        GetClientWeapon(attacker_index, buffer, buffersize);
+        is_equipment = true;
+    }
+    else
+        is_equipment = false;
+
+    return is_equipment;
+}

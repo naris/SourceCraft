@@ -64,8 +64,6 @@ public OnPluginStart()
     cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
     cvarReaverScarabEnable=CreateConVar("sc_reaverscarabenable","1");
 
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
 
     CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
@@ -164,58 +162,6 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-// Events
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    LogEventDamage(event, "Protoss::PlayerDeathEvent", raceID);
-
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-
-    if (client)
-        ResetCloakingAndDetector(client);
-}
-
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    LogEventDamage(event, "Protoss::PlayerHurtEvent", raceID);
-
-    new bool:changed=false;
-    new victimUserid=GetEventInt(event,"userid");
-    if (victimUserid)
-    {
-        new victimIndex  = GetClientOfUserId(victimUserid);
-        new victimplayer = GetPlayer(victimIndex);
-        if (victimplayer != -1)
-        {
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
-            {
-                new attackerIndex  = GetClientOfUserId(attackerUserid);
-                new attackerplayer = GetPlayer(attackerIndex);
-                if (attackerplayer != -1)
-                {
-                    if (GetRace(attackerplayer) == raceID)
-                        changed |= ReaverScarab(event, attackerIndex, attackerplayer, victimIndex);
-                }
-            }
-
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid && victimUserid != assisterUserid)
-            {
-                new assisterIndex  = GetClientOfUserId(assisterUserid);
-                new assisterplayer = GetPlayer(assisterIndex);
-                if (assisterplayer != -1)
-                {
-                    if (GetRace(assisterplayer) == raceID)
-                        changed |= ReaverScarab(event, assisterIndex, assisterplayer, victimIndex);
-                }
-            }
-        }
-    }
-    return changed ? Plugin_Changed : Plugin_Continue;
-}
-
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -224,6 +170,263 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         m_AllowMindControl[index]=true;
     }
+}
+
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
+{
+    new bool:changed=false;
+
+    LogEventDamage(event, damage, "Protoss::PlayerHurtEvent", raceID);
+
+    if (attacker_race == raceID && victim_index != attacker_index)
+    {
+        if (ReaverScarab(damage, victim_index, attacker_index, attacker_player))
+            changed = true;
+    }
+
+    if (assister_race == raceID && victim_index != assister_index)
+    {
+        if (ReaverScarab(damage, victim_index, assister_index, assister_player))
+            changed = true;
+    }
+
+    return changed ? Plugin_Changed : Plugin_Continue;
+}
+
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
+{
+    LogEventDamage(event, damage, "Protoss::PlayerDeathEvent", raceID);
+
+    if (victim_index && victim_race == raceID)
+        ResetCloakingAndDetector(victim_index);
+}
+
+public bool:ReaverScarab(damage, victim_index, index, player)
+{
+    new skill_cg = GetSkillLevel(player,raceID,1);
+    if (skill_cg > 0)
+    {
+        new Float:percent, chance;
+        switch(skill_cg)
+        {
+            case 1:
+            {
+                chance=20;
+                percent=0.24;
+            }
+            case 2:
+            {
+                chance=40;
+                percent=0.37;
+            }
+            case 3:
+            {
+                chance=60;
+                percent=0.53;
+            }
+            case 4:
+            {
+                chance=90;
+                percent=0.73;
+            }
+        }
+
+        if (GetRandomInt(1,100) <= chance &&
+            GetGameTime() - gReaverScarabTime[index] > 0.200)
+        {
+            if (!GetConVarBool(cvarReaverScarabEnable))
+            {
+                PrintToChat(index,"%c[SourceCraft] %c Sorry, Reaver Scarab has been disabled for testing purposes!",
+                            COLOR_GREEN,COLOR_DEFAULT);
+                return false;
+            }
+
+            new health_take= RoundToFloor(float(damage)*percent);
+            if (health_take > 0)
+            {
+                new new_health=GetClientHealth(victim_index)-health_take;
+                if (new_health <= 0)
+                {
+                    new_health=0;
+                    LogKill(index, victim_index, "scarab", "Reaver Scarab", health_take);
+                }
+                else
+                    LogDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
+
+                SetHealth(victim_index,new_health);
+
+                if (GetGameTime() - gReaverScarabTime[index] >= 10.0)
+                {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(victim_index, Origin);
+                    Origin[2] += 5;
+
+                    TE_SetupExplosion(Origin,explosionModel,5.0,1,0,5,10);
+                    TE_SendToAll();
+                }
+
+                EmitSoundToAll(explodeWav,victim_index);
+                gReaverScarabTime[index] = GetGameTime();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+public MindControl(client,player)
+{
+    new ult_level=GetSkillLevel(player,raceID,3);
+    if(ult_level)
+    {
+        if (!GetConVarBool(cvarMindControlEnable))
+        {
+            PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
+                        COLOR_GREEN,COLOR_DEFAULT);
+            return;
+        }
+
+        new Float:range, percent;
+        switch(ult_level)
+        {
+            case 1:
+            {
+                range=150.0;
+                percent=30;
+            }
+            case 2:
+            {
+                range=300.0;
+                percent=50;
+            }
+            case 3:
+            {
+                range=450.0;
+                percent=70;
+            }
+            case 4:
+            {
+                range=650.0;
+                percent=90;
+            }
+        }
+
+        new target = TraceAimTarget(client);
+        if (target >= 0)
+        {
+            new Float:clientLoc[3];
+            GetClientAbsOrigin(client, clientLoc);
+
+            new Float:targetLoc[3];
+            TR_GetEndPosition(targetLoc);
+
+            if (IsPointInRange(clientLoc,targetLoc,range))
+            {
+                new Float:distance=DistanceBetween(clientLoc,targetLoc);
+                if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
+                {
+                    decl String:class[32] = "";
+                    if (GetEntityNetClass(target,class,sizeof(class)))
+                    {
+                        new objects:obj;
+                        if (StrEqual(class, "CObjectSentrygun", false))
+                            obj = sentrygun;
+                        else if (StrEqual(class, "CObjectDispenser", false))
+                            obj = dispenser;
+                        else if (StrEqual(class, "CObjectTeleporter", false))
+                            obj = teleporter;
+                        else
+                            obj = unknown;
+
+                        if (obj != unknown)
+                        {
+                            //Check to see if the object is still being built
+                            new building = GetEntDataEnt2(target, m_BuildingOffset[obj]);
+                            if (building != 1)
+                            {
+                                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
+                                new builder = GetEntDataEnt2(target, m_BuilderOffset[obj]); // Get the current owner of the object.
+                                new player_check=GetPlayer(builder);
+                                if (player_check>-1)
+                                {
+                                    if (!GetImmunity(player_check,Immunity_Ultimates))
+                                    {
+                                        new builderTeam = GetClientTeam(builder);
+                                        new team = GetClientTeam(client);
+                                        if (builderTeam != team)
+                                        {
+                                            SetEntDataEnt2(target, m_BuilderOffset[obj], client, true); // Change the builder to client
+
+                                            SetVariantInt(team); //Prep the value for the call below
+                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                                            SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+
+                                            EmitSoundToAll(controlWav,target);
+
+                                            new color[4] = { 0, 0, 0, 255 };
+                                            if (team == 3)
+                                                color[2] = 255; // Blue
+                                            else
+                                                color[0] = 255; // Red
+
+                                            TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
+                                                               0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
+                                            TE_SendToAll();
+
+                                            TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
+                                            TE_SendToAll();
+
+                                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,
+                                                               5.0,5.0,255);
+                                            TE_SendToAll();
+
+                                            new Float:splashDir[3];
+                                            splashDir[0] = 0.0;
+                                            splashDir[1] = 0.0;
+                                            splashDir[2] = 100.0;
+                                            TE_SetupEnergySplash(targetLoc, splashDir, true);
+
+                                            decl String:object[32] = "";
+                                            strcopy(object, sizeof(object), class[7]);
+
+                                            LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
+                                                      client,builder,object);
+                                            PrintToChat(client,"%c[SourceCraft] %c you have stolen %N's %s!",
+                                                        COLOR_GREEN,COLOR_DEFAULT,builder,object);
+                                            PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
+                                                        COLOR_GREEN,COLOR_DEFAULT,client,object);
+
+                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
+                                            if (cooldown > 0.0)
+                                            {
+                                                m_AllowMindControl[client]=false;
+                                                CreateTimer(cooldown,AllowMindControl,client);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+public Action:AllowMindControl(Handle:timer,any:index)
+{
+    m_AllowMindControl[index]=true;
+    return Plugin_Stop;
 }
 
 public Action:CloakingAndDetector(Handle:timer)
@@ -388,226 +591,4 @@ public ResetCloakingAndDetector(client)
             }
         }
     }
-}
-
-public MindControl(client,player)
-{
-    new ult_level=GetSkillLevel(player,raceID,3);
-    if(ult_level)
-    {
-        if (!GetConVarBool(cvarMindControlEnable))
-        {
-            PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
-                        COLOR_GREEN,COLOR_DEFAULT);
-            return;
-        }
-
-        new Float:range, percent;
-        switch(ult_level)
-        {
-            case 1:
-            {
-                range=150.0;
-                percent=30;
-            }
-            case 2:
-            {
-                range=300.0;
-                percent=50;
-            }
-            case 3:
-            {
-                range=450.0;
-                percent=70;
-            }
-            case 4:
-            {
-                range=650.0;
-                percent=90;
-            }
-        }
-
-        new target = TraceAimTarget(client);
-        if (target >= 0)
-        {
-            new Float:clientLoc[3];
-            GetClientAbsOrigin(client, clientLoc);
-
-            new Float:targetLoc[3];
-            TR_GetEndPosition(targetLoc);
-
-            if (IsPointInRange(clientLoc,targetLoc,range))
-            {
-                new Float:distance=DistanceBetween(clientLoc,targetLoc);
-                if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
-                {
-                    decl String:class[32] = "";
-                    if (GetEntityNetClass(target,class,sizeof(class)))
-                    {
-                        new objects:obj;
-                        if (StrEqual(class, "CObjectSentrygun", false))
-                            obj = sentrygun;
-                        else if (StrEqual(class, "CObjectDispenser", false))
-                            obj = dispenser;
-                        else if (StrEqual(class, "CObjectTeleporter", false))
-                            obj = teleporter;
-                        else
-                            obj = unknown;
-
-                        if (obj != unknown)
-                        {
-                            //Check to see if the object is still being built
-                            new building = GetEntDataEnt2(target, m_BuildingOffset[obj]);
-                            if (building != 1)
-                            {
-                                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                                new builder = GetEntDataEnt2(target, m_BuilderOffset[obj]); // Get the current owner of the object.
-                                new player_check=GetPlayer(builder);
-                                if (player_check>-1)
-                                {
-                                    if (!GetImmunity(player_check,Immunity_Ultimates))
-                                    {
-                                        new builderTeam = GetClientTeam(builder);
-                                        new team = GetClientTeam(client);
-                                        if (builderTeam != team)
-                                        {
-                                            SetEntDataEnt2(target, m_BuilderOffset[obj], client, true); // Change the builder to client
-
-                                            SetVariantInt(team); //Prep the value for the call below
-                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                                            SetVariantInt(team); //Same thing again but we are changing SetTeam
-                                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-
-                                            EmitSoundToAll(controlWav,target);
-
-                                            new color[4] = { 0, 0, 0, 255 };
-                                            if (team == 3)
-                                                color[2] = 255; // Blue
-                                            else
-                                                color[0] = 255; // Red
-
-                                            TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                                               0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
-                                            TE_SendToAll();
-
-                                            TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
-                                            TE_SendToAll();
-
-                                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,
-                                                               5.0,5.0,255);
-                                            TE_SendToAll();
-
-                                            new Float:splashDir[3];
-                                            splashDir[0] = 0.0;
-                                            splashDir[1] = 0.0;
-                                            splashDir[2] = 100.0;
-                                            TE_SetupEnergySplash(targetLoc, splashDir, true);
-
-                                            decl String:object[32] = "";
-                                            strcopy(object, sizeof(object), class[7]);
-
-                                            LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
-                                                      client,builder,object);
-                                            PrintToChat(client,"%c[SourceCraft] %c you have stolen %N's %s!",
-                                                        COLOR_GREEN,COLOR_DEFAULT,builder,object);
-                                            PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
-                                                        COLOR_GREEN,COLOR_DEFAULT,client,object);
-
-                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
-                                            if (cooldown > 0.0)
-                                            {
-                                                m_AllowMindControl[client]=false;
-                                                CreateTimer(cooldown,AllowMindControl,client);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-public bool:ReaverScarab(Handle:event, index, player, victimIndex)
-{
-    new skill_cg = GetSkillLevel(player,raceID,1);
-    if (skill_cg > 0)
-    {
-        new Float:percent, chance;
-        switch(skill_cg)
-        {
-            case 1:
-            {
-                chance=20;
-                percent=0.24;
-            }
-            case 2:
-            {
-                chance=40;
-                percent=0.37;
-            }
-            case 3:
-            {
-                chance=60;
-                percent=0.53;
-            }
-            case 4:
-            {
-                chance=90;
-                percent=0.73;
-            }
-        }
-
-        if (GetRandomInt(1,100) <= chance &&
-            GetGameTime() - gReaverScarabTime[index] > 0.200)
-        {
-            if (!GetConVarBool(cvarReaverScarabEnable))
-            {
-                PrintToChat(index,"%c[SourceCraft] %c Sorry, Reaver Scarab has been disabled for testing purposes!",
-                            COLOR_GREEN,COLOR_DEFAULT);
-                return false;
-            }
-
-            new damage=GetDamage(event, victimIndex);
-            new health_take= RoundToFloor(float(damage)*percent);
-            if (health_take > 0)
-            {
-                new new_health=GetClientHealth(victimIndex)-health_take;
-                if (new_health <= 0)
-                {
-                    new_health=0;
-                    LogKill(index, victimIndex, "scarab", "Reaver Scarab", health_take);
-                }
-                else
-                    LogDamage(index, victimIndex, "scarab", "Reaver Scarab", health_take);
-
-                SetHealth(victimIndex,new_health);
-
-                if (GetGameTime() - gReaverScarabTime[index] >= 10.0)
-                {
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(victimIndex, Origin);
-                    Origin[2] += 5;
-
-                    TE_SetupExplosion(Origin,explosionModel,5.0,1,0,5,10);
-                    TE_SendToAll();
-                }
-
-                EmitSoundToAll(explodeWav,victimIndex);
-                gReaverScarabTime[index] = GetGameTime();
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-public Action:AllowMindControl(Handle:timer,any:index)
-{
-    m_AllowMindControl[index]=true;
-    return Plugin_Stop;
 }

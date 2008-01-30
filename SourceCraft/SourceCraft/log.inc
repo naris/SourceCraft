@@ -105,7 +105,7 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
     }
 }
 
-stock LogEventDamage(Handle:event,const String:source[], race_id)
+stock LogEventDamage(Handle:event,damage,const String:source[], race_id)
 {
     new userid=GetEventInt(event,"userid");
     new victim=GetClientOfUserId(userid);
@@ -125,8 +125,6 @@ stock LogEventDamage(Handle:event,const String:source[], race_id)
     if (race_id == victim_race   || race_id == attacker_race ||
         race_id == assister_race || race_id < 0)
     {
-        new damage=GetDamage(event,victim);
-
         new health=0;
         decl String:team[64] = "";
         decl String:steamID[64] = "";

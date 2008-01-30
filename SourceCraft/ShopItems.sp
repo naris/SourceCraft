@@ -90,8 +90,6 @@ public OnPluginStart()
     cvarClawsEnable=CreateConVar("sc_clawsenable","1");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
 
     if (GameType == tf2)
         HookEvent("player_changeclass",PlayerChangeClassEvent);
@@ -299,222 +297,201 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, "ShopItem::PlayerDeathEvent", -1);
+    LogEventDamage(event, damage, "ShopItem::PlayerDeathEvent", -1);
 
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    new player=GetPlayer(client);
-    if(player>-1)
+    if(victim_player>-1)
     {
         if (GameType == cstrike ||
-            !GetOwnsItem(player,shopItem[ITEM_ANKH]))
+            !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
         {
-            if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))
-                SetOwnsItem(player,shopItem[ITEM_BOOTS],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_BOOTS]))
+                SetOwnsItem(victim_player,shopItem[ITEM_BOOTS],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_CLAWS]))
-                SetOwnsItem(player,shopItem[ITEM_CLAWS],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_CLAWS]))
+                SetOwnsItem(victim_player,shopItem[ITEM_CLAWS],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))
+            if(GetOwnsItem(victim_player,shopItem[ITEM_CLOAK]))
             {
-                SetMinVisibility(player, 255, 1.0);
-                SetOwnsItem(player,shopItem[ITEM_CLOAK],false);
+                SetMinVisibility(victim_player, 255, 1.0);
+                SetOwnsItem(victim_player,shopItem[ITEM_CLOAK],false);
             }
 
-            if(GetOwnsItem(player,shopItem[ITEM_MASK]))
-                SetOwnsItem(player,shopItem[ITEM_MASK],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_MASK]))
+                SetOwnsItem(victim_player,shopItem[ITEM_MASK],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_NECKLACE]))
+            if(GetOwnsItem(victim_player,shopItem[ITEM_NECKLACE]))
             {
-                SetOwnsItem(player,shopItem[ITEM_NECKLACE],false);
-                SetImmunity(player,Immunity_Ultimates,false);
+                SetOwnsItem(victim_player,shopItem[ITEM_NECKLACE],false);
+                SetImmunity(victim_player,Immunity_Ultimates,false);
             }
 
-            if(GetOwnsItem(player,shopItem[ITEM_ORB]))
-                SetOwnsItem(player,shopItem[ITEM_ORB],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_ORB]))
+                SetOwnsItem(victim_player,shopItem[ITEM_ORB],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_SCROLL]))
+            if(GetOwnsItem(victim_player,shopItem[ITEM_SCROLL]))
             {
-                SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
-                AuthTimer(1.0,client,RespawnPlayerHandle);
+                SetOwnsItem(victim_player,shopItem[ITEM_SCROLL],false);
+                AuthTimer(1.0,victim_index,RespawnPlayerHandle);
             }
 
-            if(GetOwnsItem(player,shopItem[ITEM_SOCK]))
-                SetOwnsItem(player,shopItem[ITEM_SOCK],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_SOCK]))
+                SetOwnsItem(victim_player,shopItem[ITEM_SOCK],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_GLOVES]))
-                SetOwnsItem(player,shopItem[ITEM_GLOVES],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_GLOVES]))
+                SetOwnsItem(victim_player,shopItem[ITEM_GLOVES],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_GOGGLES]))
-                SetOwnsItem(player,shopItem[ITEM_GOGGLES],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
+                SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_RING]))
-                SetOwnsItem(player,shopItem[ITEM_RING],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_RING]))
+                SetOwnsItem(victim_player,shopItem[ITEM_RING],false);
 
-            if(GetOwnsItem(player,shopItem[ITEM_MOLE]))
+            if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE]))
             {
                 // We need to check to use mole, or did we JUST use it?
-                if(isMole[client])
+                if(isMole[victim_index])
                 {
                     // we already used it, take it away
-                    isMole[client]=false;
-                    SetOwnsItem(player,shopItem[ITEM_MOLE],false);
+                    isMole[victim_index]=false;
+                    SetOwnsItem(victim_player,shopItem[ITEM_MOLE],false);
                 }
             }
 
-            if(GetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION]))
-                SetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
+                SetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION],false);
         }
 
-        if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]))
-            SetOwnsItem(player,shopItem[ITEM_PERIAPT],false);
+        if(GetOwnsItem(victim_player,shopItem[ITEM_PERIAPT]))
+            SetOwnsItem(victim_player,shopItem[ITEM_PERIAPT],false);
 
-        SetMaxSpeed(player,1.0);
-        SetMinGravity(player,1.0);
+        SetMaxSpeed(victim_player,1.0);
+        SetMinGravity(victim_player,1.0);
 
         // Reset Overrides when players die
-        SetOverrideSpeed(player,1.0);
+        SetOverrideSpeed(victim_player,1.0);
 
         // Reset MaxHealth back to normal
-        if (usedPeriapt[client] && GameType == tf2)
-            SetMaxHealth(client, maxHealth[client]);
+        if (usedPeriapt[victim_index] && GameType == tf2)
+            SetMaxHealth(victim_index, maxHealth[victim_index]);
 
-        usedPeriapt[client]=false;
+        usedPeriapt[victim_index]=false;
     }
 }
 
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
 {
-    LogEventDamage(event, "ShopItem::PlayerHurtEvent", -1);
-
-    new userid          = GetEventInt(event,"userid");
-    new attacker_userid = GetEventInt(event,"attacker");
-    new assister_userid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
     new bool:changed    = false;
 
-    if(userid && attacker_userid && userid != attacker_userid)
+    LogEventDamage(event, damage, "ShopItem::PlayerHurtEvent", -1);
+
+    if(victim_index && victim_index != attacker_index)
     {
-        new index           = GetClientOfUserId(userid);
-        new attacker_index  = GetClientOfUserId(attacker_userid);
-
-        new player          = GetPlayer(index);
-        new player_attacker = GetPlayer(attacker_index);
-
-        new assister_index  = -1;
-        new player_assister = -1;
-
-        if (assister_userid != 0)
+        if(victim_player !=-1 && attacker_player != -1)
         {
-            assister_index  = GetClientOfUserId(assister_userid);
-            player_assister = GetPlayer(assister_index);
-        }
-
-        if(player !=-1 && player_attacker != -1)
-        {
-            if(!GetImmunity(player,Immunity_ShopItems))
+            if(!GetImmunity(victim_player,Immunity_ShopItems))
             {
-                new damage=GetDamage(event, index);
-
-                if (!GetImmunity(player,Immunity_HealthTake))
+                if (!GetImmunity(victim_player,Immunity_HealthTake))
                 {
-                    if (GetOwnsItem(player_attacker,shopItem[ITEM_CLAWS]) &&
+                    if (GetOwnsItem(attacker_player,shopItem[ITEM_CLAWS]) &&
                         GetGameTime() - gClawTime[attacker_index] > 0.200)
                     {
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
                             amount = 8;
 
-                        new newhealth=GetClientHealth(index)-amount;
+                        new newhealth=GetClientHealth(victim_index)-amount;
                         if (newhealth <= 0)
                         {
                             newhealth=0;
-                            LogKill(attacker_index, index, "item_claws", "Claws of Attack", 8);
+                            LogKill(attacker_index, victim_index, "item_claws", "Claws of Attack", amount);
                         }
                         else
-                            LogDamage(attacker_index, index, "item_claws", "Claws of Attack", 8);
+                            LogDamage(attacker_index, victim_index, "item_claws", "Claws of Attack", amount);
 
-                        SetHealth(index,newhealth);
+                        SetHealth(victim_index,newhealth);
                         gClawTime[attacker_index] = GetGameTime();
                         changed = true;
                     }
 
-                    if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_CLAWS]) &&
+                    if (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_CLAWS]) &&
                         GetGameTime() - gClawTime[assister_index] > 0.200)
                     {
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
                             amount = 8;
-                        new newhealth=GetClientHealth(index)-amount;
+                        new newhealth=GetClientHealth(victim_index)-amount;
                         if (newhealth <= 0)
                         {
                             newhealth=0;
-                            LogKill(assister_index, index, "item_claws", "Claws of Attack", 8);
+                            LogKill(assister_index, victim_index, "item_claws", "Claws of Attack", amount);
                         }
                         else
-                            LogDamage(assister_index, index, "item_claws", "Claws of Attack", 8);
+                            LogDamage(assister_index, victim_index, "item_claws", "Claws of Attack", amount);
 
-                        SetHealth(index,newhealth);
+                        SetHealth(victim_index,newhealth);
                         gClawTime[assister_index] = GetGameTime();
                         changed = true;
                     }
                 }
 
-                if (GetOwnsItem(player_attacker,shopItem[ITEM_MASK]))
+                if (GetOwnsItem(attacker_player,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(attacker_index)+2;
                     SetHealth(attacker_index,newhealth);
                     changed = true;
 
-                    decl String:victimName[64];
-                    GetClientName(index,victimName,sizeof(victimName));
-                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
-                                COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
+                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
+                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (player_assister != -1 && GetOwnsItem(player_assister,shopItem[ITEM_MASK]))
+                if (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(assister_index)+2;
                     SetHealth(assister_index,newhealth);
                     changed = true;
 
-                    decl String:victimName[64];
-                    GetClientName(index,victimName,sizeof(victimName));
-                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %s using %cMask of Death%c.",
-                                COLOR_GREEN,COLOR_DEFAULT,victimName,COLOR_TEAM,COLOR_DEFAULT);
+                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
+                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (GetOwnsItem(player_attacker,shopItem[ITEM_ORB]) ||
-                    (player_assister != -1 &&
-                     GetOwnsItem(player_assister,shopItem[ITEM_ORB])))
+                if (GetOwnsItem(attacker_player,shopItem[ITEM_ORB]) ||
+                    (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_ORB])))
                 {
-                    SetOverrideSpeed(player,0.5);
-                    AuthTimer(5.0,index,RestoreSpeed);
+                    SetOverrideSpeed(victim_player,0.5);
+                    AuthTimer(5.0,victim_index,RestoreSpeed);
 
                     decl String:aname[128];
                     GetClientName(attacker_index,aname,sizeof(aname));
                     if (assister_index > -1)
                     {
                         decl String:assister[64];
-                        GetClientName(attacker_index,assister,sizeof(aname));
+                        GetClientName(assister_index,assister,sizeof(aname));
                         StrCat(aname,sizeof(aname), "+");
                         StrCat(aname,sizeof(aname), assister);
                     }
-                    PrintToChat(index,"%c[SourceCraft] %s %chas frozen you with the %cOrb of Frost%c",
+                    PrintToChat(victim_index,"%c[SourceCraft] %s %chas frozen you with the %cOrb of Frost%c",
                                 COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (GetOwnsItem(player,shopItem[ITEM_MOLE_PROTECTION]))
+                if (GetOwnsItem(attacker_player,shopItem[ITEM_MOLE_PROTECTION]))
                 {
                     if(isMole[attacker_index])
                     {
                         new h1=GetEventInt(event,"health")+damage;
-                        new h2=GetClientHealth(index);
-                        if(h2<h1)
-                            SetHealth(index,(h1+h2)/2);
+                        new h2=GetClientHealth(victim_index);
                         if(!h2)
-                            SetHealth(index,1); // They should really be dead.
+                            SetHealth(victim_index,0); // They should really be dead.
+                        else if(h2<h1)
+                            SetHealth(victim_index,(h1+h2)/2);
 
                         changed = true;
                     }
