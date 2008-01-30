@@ -380,11 +380,13 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
             visibility *= meleeFactor;
     }
 
-    if (m_VelocityOffset != -1 && movementFactor != 1.0 && movementFactor != -1.0)
+    if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
+                                      IN_MOVERIGHT|IN_SPEED|IN_JUMP|
+                                      IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
     {
-        if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
-            visibility *= movementFactor;
+        visibility *= movementFactor;
     }
+
     return visibility;
 }
 

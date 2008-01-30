@@ -102,7 +102,7 @@ public Native_GetSavedHealth(Handle:plugin,numParams)
 public Native_GetDamage(Handle:plugin,numParams)
 {
     if(numParams==1)
-        return GetDamage(GetNativeCell(1));
+        return GetDamage(Handle:GetNativeCell(1), 0);
     else if(numParams==2)
         return GetDamage(Handle:GetNativeCell(1), GetNativeCell(2));
     else
