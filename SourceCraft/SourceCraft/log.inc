@@ -165,6 +165,12 @@ stock LogEventDamage(Handle:event,const String:source[], race_id)
 
             new assisterHealth=GetClientHealth(assister);
 
+            LogMessage("[%s] \"%N<%d><%s><%s>[%d]\"+\"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s+%s)\n",
+                       source, attacker, attacker, steamID, team, health,
+                       assister, assister,assisterID, assisterTeam, assisterHealth,
+                       victim, victim, victimID, victimTeam, victimHealth,
+                       damage, event_weapon, attacker_weapon, assister_weapon);
+
             LogToGame("[%s] \"%N<%d><%s><%s>[%d]\"+\"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s+%s)\n",
                       source, attacker, attacker, steamID, team, health,
                       assister, assister,assisterID, assisterTeam, assisterHealth,
@@ -173,6 +179,10 @@ stock LogEventDamage(Handle:event,const String:source[], race_id)
         }
         else
         {
+            LogMessage("[%s] \"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s)\n",
+                       source, attacker, attacker, steamID, team, health,
+                       victim, victim, victimID, victimTeam, victimHealth,
+                       damage, event_weapon, attacker_weapon);
             LogToGame("[%s] \"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s)\n",
                       source, attacker, attacker, steamID, team, health,
                       victim, victim, victimID, victimTeam, victimHealth,
