@@ -64,8 +64,6 @@ public OnPluginStart()
 
     cvarFartCooldown=CreateConVar("sc_fartcooldown","30");
 
-    HookEvent("player_hurt",PlayerHurtEvent);
-
     CreateTimer(2.0,Revulsion,INVALID_HANDLE,TIMER_REPEAT);
 }
 
@@ -151,56 +149,36 @@ public Action:AllowFart(Handle:timer,any:index)
 }
 
 // Events
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
 {
-    LogEventDamage(event, "SickFarter::PlayerHurtEvent", raceID);
-
     new bool:changed=false;
-    new victimUserid=GetEventInt(event,"userid");
-    if (victimUserid)
-    {
-        new victimIndex  = GetClientOfUserId(victimUserid);
-        if (victimIndex != -1)
-        {
-            new attackerUserid = GetEventInt(event,"attacker");
-            if (attackerUserid && victimUserid != attackerUserid)
-            {
-                new attackerIndex  = GetClientOfUserId(attackerUserid);
-                new attackerPlayer = GetPlayer(attackerIndex);
-                if (attackerPlayer != -1)
-                {
-                    if (GetRace(attackerPlayer) == raceID)
-                    {
-                        changed |= FesteringAbomination(event, attackerIndex, attackerPlayer, victimIndex);
-                        new victimPlayer = GetPlayer(victimIndex);
-                        if (victimPlayer != -1)
-                            PickPocket(event, attackerIndex, attackerPlayer, victimIndex, victimPlayer);
-                    }
-                }
-            }
 
-            new assisterUserid = (GameType==tf2) ? GetEventInt(event,"assister") : 0;
-            if (assisterUserid && victimUserid != assisterUserid)
-            {
-                new assisterIndex  = GetClientOfUserId(assisterUserid);
-                new assisterPlayer = GetPlayer(assisterIndex);
-                if (assisterPlayer != -1)
-                {
-                    if (GetRace(assisterPlayer) == raceID)
-                    {
-                        changed |= FesteringAbomination(event, assisterIndex, assisterPlayer, victimIndex);
-                        new victimPlayer = GetPlayer(victimIndex);
-                        if (victimPlayer != -1)
-                            PickPocket(event, assisterIndex, assisterPlayer, victimIndex, victimPlayer);
-                    }
-                }
-            }
-        }
+    LogEventDamage(event, damage, "SickFarter::PlayerHurtEvent", raceID);
+
+    if (attacker_race == raceID && attacker_index != victim_index)
+    {
+        if (victim_player != -1)
+            PickPocket(event, attacker_index, attacker_player, victim_index, victim_player);
+        if (FesteringAbomination(damage, attacker_index, attacker_player, victim_index))
+            changed = true;
+
     }
+
+    if (assister_race == raceID && assister_index != victim_index)
+    {
+        if (victim_player != -1)
+            PickPocket(event, assister_index, assister_player, victim_index, victim_player);
+        if (FesteringAbomination(damage, assister_index, assister_player, victim_index))
+            changed = true;
+    }
+
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
+public bool:FesteringAbomination(damage, index, player, victim_index)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -232,21 +210,20 @@ public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
                     percent=0.67;
             }
 
-            new damage=GetDamage(event, victimIndex);
             new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetClientHealth(victimIndex)-health_take;
+            new new_health=GetClientHealth(victim_index)-health_take;
             if (new_health <= 0)
             {
                 new_health=0;
-                LogKill(index, victimIndex, "festering_abomination", "Festering Abomination", health_take);
+                LogKill(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
             }
             else
-                LogDamage(index, victimIndex, "festering_abomination", "Festering Abomination", health_take);
+                LogDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
 
-            SetHealth(victimIndex,new_health);
+            SetHealth(victim_index,new_health);
 
             new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
+            TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
             TE_SendToAll();
             return true;
@@ -255,7 +232,7 @@ public bool:FesteringAbomination(Handle:event, index, player, victimIndex)
     return false;
 }
 
-public PickPocket(Handle:event, index, player, victimIndex, victimPlayer)
+public PickPocket(Handle:event, index, player, victim_index, victim_player)
 {
     new skill_cs = GetSkillLevel(player,raceID,1);
     if (skill_cs > 0)
@@ -287,17 +264,17 @@ public PickPocket(Handle:event, index, player, victimIndex, victimPlayer)
                     percent=1.0;
             }
 
-            new victimCash=GetCredits(victimPlayer);
-            if (victimCash > 0)
+            new victim_cash=GetCredits(victim_player);
+            if (victim_cash > 0)
             {
                 new cash=GetCredits(player);
-                new amount = RoundFloat(float(victimCash) * percent);
+                new amount = RoundFloat(float(victim_cash) * percent);
 
-                SetCredits(victimPlayer,victimCash-amount);
+                SetCredits(victim_player,victim_cash-amount);
                 SetCredits(player,cash+amount);
 
                 new color[4] = { 100, 255, 55, 255 };
-                TE_SetupBeamLaser(index,victimIndex,g_lightningSprite,g_haloSprite,
+                TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
                                   0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
                 TE_SendToAll();
 
@@ -305,9 +282,9 @@ public PickPocket(Handle:event, index, player, victimIndex, victimPlayer)
                 GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
 
                 PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
-                        COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victimIndex,COLOR_TEAM,COLOR_DEFAULT);
-                PrintToChat(victimIndex,"%c[SourceCraft]%c %N stole %d %s from you!",
-                        COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
+                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
+                            COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
             }
         }
     }
