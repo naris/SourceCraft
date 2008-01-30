@@ -40,8 +40,6 @@ public OnPluginStart()
     GetGameType();
 
     HookEvent("player_spawn",PlayerSpawnEvent);
-    HookEvent("player_death",PlayerDeathEvent);
-    HookEvent("player_hurt",PlayerHurtEvent);
 }
 
 public OnPluginReady()
@@ -185,51 +183,44 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
+                                 attacker_index,attacker_player,attacker_race,
+                                 assister_index,assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, "TerranConfederacy::PlayerDeathEvent", raceID);
+    LogEventDamage(event, damage, "TerranConfederacy::PlayerDeathEvent", raceID);
 
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-
-    if (client)
+    if (victim_index)
     {
         // Reset MaxHealth back to normal
-        if (healthIncreased[client] && GameType == tf2)
+        if (healthIncreased[victim_index] && GameType == tf2)
         {
-            SetMaxHealth(client, maxHealth[client]);
-            healthIncreased[client] = false;
+            SetMaxHealth(victim_index, maxHealth[victim_index]);
+            healthIncreased[victim_index] = false;
         }
 
         // Reset invisibility
-        new player=GetPlayer(client);
-        if (player != -1)
+        if (victim_player != -1)
         {
-            SetMinVisibility(player, 255, 1.0, 1.0);
+            SetMinVisibility(victim_player, 255, 1.0, 1.0);
         }
 
     }
 }
 
-public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
 {
-    LogEventDamage(event, "TerranConfederacy::PlayerHurtEvent", raceID);
-
     new bool:changed=false;
-    new victimUserid=GetEventInt(event,"userid");
-    if (victimUserid)
-    {
-        new victimIndex      = GetClientOfUserId(victimUserid);
-        new victimplayer = GetPlayer(victimIndex);
-        if (victimplayer != -1)
-        {
-            new victimrace = GetRace(victimplayer);
-            if (victimrace == raceID)
-            {
-                changed |= Armor(event, victimIndex, victimplayer);
-            }
-        }
-    }
+
+    LogEventDamage(event, damage, "TerranConfederacy::PlayerHurtEvent", raceID);
+
+    if (victim_race == raceID)
+        changed = Armor(damage, victim_index, victim_player);
+
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
@@ -279,9 +270,9 @@ SetupArmor(client, skilllevel)
     }
 }
 
-bool:Armor(Handle:event, victimIndex, victimplayer)
+bool:Armor(damage, victim_index, victim_player)
 {
-    new skill_level_armor = GetSkillLevel(victimplayer,raceID,1);
+    new skill_level_armor = GetSkillLevel(victim_player,raceID,1);
     if (skill_level_armor)
     {
         new Float:from_percent,Float:to_percent;
@@ -308,26 +299,25 @@ bool:Armor(Handle:event, victimIndex, victimplayer)
                 to_percent=0.80;
             }
         }
-        new damage=GetDamage(event, victimIndex);
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        new armor=m_Armor[victimIndex];
+        new armor=m_Armor[victim_index];
         if (amount > armor)
             amount = armor;
         if (amount > 0)
         {
-            new newhp=GetClientHealth(victimIndex)+amount;
-            new maxhp=GetMaxHealth(victimIndex);
+            new newhp=GetClientHealth(victim_index)+amount;
+            new maxhp=GetMaxHealth(victim_index);
             if (newhp > maxhp)
                 newhp = maxhp;
 
-            SetHealth(victimIndex,newhp);
+            SetHealth(victim_index,newhp);
 
-            m_Armor[victimIndex] = armor - amount;
+            m_Armor[victim_index] = armor - amount;
 
             decl String:victimName[64];
-            GetClientName(victimIndex,victimName,63);
+            GetClientName(victim_index,victimName,63);
 
-            PrintToChat(victimIndex,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
+            PrintToChat(victim_index,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
                         COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
             return true;
         }
