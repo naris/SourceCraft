@@ -287,13 +287,16 @@ public Action:PlayerProperties(Handle:timer)
                 }
             }
 
-            if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
+            if (GameType == tf2)
             {
-                if (GameType == tf2)
+                new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                if (m_BaseSpeed[client] == 0.0)
+                    m_BaseSpeed[client] == curSpeed;
+                        
+                if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
                 {
                     if (m_BaseSpeed[client] > 1.0 && m_OffsetMaxSpeed[client])
                     {
-                        new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
                         if (curSpeed > 1.0 || speedAltered[client]) // Don't alter initial map freeze
                         {
                             new Float:newSpeed;
@@ -309,33 +312,32 @@ public Action:PlayerProperties(Handle:timer)
                                 newSpeed = m_BaseSpeed[client] * speed;
                             }
 
-                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, speed=%f, class_speed=%f\n",
-                                       client, newSpeed, curSpeed, m_BaseSpeed[client], speed,
-                                       GetNormalSpeed(client));
+                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
+                                       client, newSpeed, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
+                                       speed, speedAltered[client], overridePlayerSpeed);
 
                             if (curSpeed != newSpeed)
                                 SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                        }
+
+                        if (speed == 1.0)
+                        {
+                            // Speed is back to normal, Reset the altered flag
+                            speedAltered[client]=false;
                         }
                     }
                 }
                 else
                 {
-                    if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                        SetEntDataFloat(client,m_OffsetSpeed,speed);
-                }
-
-                if (speed == 1.0)
-                {
-                    // Speed is back to normal, Reset the altered flag
-                    speedAltered[client]=false;
+                    LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
+                               client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
+                               GetNormalSpeed(client));
                 }
             }
             else
             {
-                new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
-                           client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
-                           GetNormalSpeed(client));
+                if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                    SetEntDataFloat(client,m_OffsetSpeed,speed);
             }
 
             if (visibilityAltered[client] || overridePlayerVisibility || (visibility >= 0 && visibility < 255))

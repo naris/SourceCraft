@@ -63,8 +63,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 m_OffsetMaxSpeed[index]=FindDataMapOffs(index,"m_flMaxspeed");
 
             new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
-            if (maxSpeed > 100)
-                m_BaseSpeed[index]=maxSpeed;
+            m_BaseSpeed[index]=maxSpeed;
 
             LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
                        index, m_BaseSpeed[index], maxSpeed, GetNormalSpeed(index));
