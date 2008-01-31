@@ -152,11 +152,11 @@ native ToggleRope(client);
  * @param client: The index of the client that used the grabber.
  * @param target: The index of the target that got grabbed
  */
-forward OnGrab(client,target);
+forward Action:OnGrab(client,target);
 
 /**
  * Gets called when the grabber drops someone
  * @param client: The index of the client that used the grabber.
  * @param target: The index of the target that got grabbed
  */
-forward OnDrop(client,target);
+forward Action:OnDrop(client,target);

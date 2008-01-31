@@ -241,12 +241,10 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         speed=overridespeed;
                         overridePlayerSpeed=true;
-                        speedAltered[client]=true;
                     }
                     else if(checkSpeed>speed)
                     {
                         speed=checkSpeed;
-                        speedAltered[client]=true;
                     }
                 }
 
@@ -293,7 +291,7 @@ public Action:PlayerProperties(Handle:timer)
                 if (m_BaseSpeed[client] == 0.0)
                     m_BaseSpeed[client] == curSpeed;
                         
-                if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
+                if (overridePlayerSpeed || speed != 1.0 || speedAltered[client])
                 {
                     new Float:newSpeed;
                     if (m_BaseSpeed[client] > 100.0 && curSpeed > 50.0 && curSpeed < 200.0)
@@ -315,11 +313,7 @@ public Action:PlayerProperties(Handle:timer)
                     if (curSpeed != newSpeed)
                         SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
 
-                    if (speed == 1.0)
-                    {
-                        // Speed is back to normal, Reset the altered flag
-                        speedAltered[client]=false;
-                    }
+                    speedAltered[client] = (speed != 1.0);
                 }
                 else
                 {
@@ -377,11 +371,11 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
             visibility *= meleeFactor;
     }
 
-    if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
-                                      IN_MOVERIGHT|IN_SPEED|IN_JUMP|
-                                      IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
+    if (movementFactor != 1.0 && movementFactor != -1.0)
     {
-        if (m_VelocityOffset != -1 && movementFactor != 1.0 && movementFactor != -1.0)
+        if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
+                                          IN_MOVERIGHT|IN_SPEED|IN_JUMP|
+                                          IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
         {
             if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
                 visibility *= movementFactor;

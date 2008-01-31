@@ -1095,7 +1095,7 @@ public Action:GrabSearch(Handle:timer,any:index)
                         if (gFlags[index][ACTION_GRAB] != 0) // Grabber is a Puller
                         {
                             gMaxSpeed[target] = GetEntPropFloat(target,Prop_Data,"m_flMaxspeed");
-                            SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",10.0); // Slow the target down.
+                            SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",100.0); // Slow the target down.
                         }
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed

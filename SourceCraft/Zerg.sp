@@ -188,10 +188,10 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public Action:OnGrabbed(client, target)
+public Action:OnGrab(client, target)
 {
     if (target != client && IsClientInGame(target) && IsPlayerAlive(target) &&
-        GetClientTeam(target) != GetClientTeam(client))
+        GetClientTeam(client) != GetClientTeam(target))
     {
         new player_check=GetPlayer(target);
         if (player_check>-1)
