@@ -409,29 +409,27 @@ SuicideBomber(client,player,ult_level,bool:ondeath)
     TE_SendToAll();
     EmitSoundToAll(explodeWav,client);
 
-    new Float:clientLoc[3];
-    GetClientAbsOrigin(client, clientLoc);
-    new clientCount = GetClientCount();
-    for(new x=1;x<=clientCount;x++)
+    new count = GetClientCount();
+    for(new index=1;index<=count;index++)
     {
-        if (x != client && IsClientInGame(x) && IsPlayerAlive(x) &&
-            GetClientTeam(x) != GetClientTeam(client))
+        if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(index) != GetClientTeam(client))
         {
-            new player_check=GetPlayer(x);
-            if (player_check>-1)
+            new check_player=GetPlayer(index);
+            if (check_player>-1)
             {
-                if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                    !GetImmunity(player_check,Immunity_Explosion))
+                if (!GetImmunity(check_player,Immunity_Ultimates) &&
+                    !GetImmunity(check_player,Immunity_Explosion))
                 {
-                    new Float:location_check[3];
-                    GetClientAbsOrigin(x,location_check);
+                    new Float:check_location[3];
+                    GetClientAbsOrigin(index,check_location);
 
-                    new hp=PowerOfRange(client_location,radius,location_check,300);
+                    new hp=PowerOfRange(client_location,radius,check_location,300);
                     if (hp)
                     {
-                        if (TraceTarget(client, x, clientLoc, location_check))
+                        if (TraceTarget(client, index, client_location, check_location))
                         {
-                            new newhealth = GetClientHealth(x)-hp;
+                            new newhealth = GetClientHealth(index)-hp;
                             if (newhealth <= 0)
                             {
                                 newhealth=0;
@@ -439,13 +437,13 @@ SuicideBomber(client,player,ult_level,bool:ondeath)
                                 new newxp=GetXP(player,raceID)+addxp;
                                 SetXP(player,raceID,newxp);
 
-                                LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                KillPlayer(x);
+                                LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                KillPlayer(index);
                             }
                             else
                             {
-                                LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
-                                SetHealth(x,newhealth);
+                                LogDamage(client, index, "suicide_bomb", "Suicide Bomb", hp);
+                                SetHealth(index,newhealth);
                             }
                         }
                     }
