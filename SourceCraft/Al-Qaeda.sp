@@ -279,33 +279,27 @@ public Bomber(client,player,level,bool:ondeath)
     {
         case 1:
         {
+            radius = 100.0;
+            r_int  = 100;
+            damage = 25;
+        }
+        case 2:
+        {
             radius = 200.0;
             r_int  = 200;
             damage = 50;
         }
-        case 2:
+        case 3:
         {
             radius = 250.0;
             r_int  = 250;
             damage = 70;
         }
-        case 3:
+        case 4:
         {
             radius = 300.0;
             r_int  = 300;
             damage = 80;
-        }
-        case 4:
-        {
-            radius = 350.0;
-            r_int  = 350;
-            damage = 100;
-        }
-        default:
-        {
-            radius = 100.0;
-            r_int  = 100;
-            damage = 25;
         }
     }
 

@@ -6,8 +6,6 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-#include "SourceCraft/tf2classes"
-
 public bool:HookEvents()
 {
     if(!HookEventEx("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
@@ -34,19 +32,13 @@ public bool:HookEvents()
             return false;
         }
 
+        if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
+        {
+            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+            return false;
+        }
+
         if(!HookEventEx("teamplay_round_active",RoundActive,EventHookMode_PostNoCopy))
-        {
-            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
-            return false;
-        }
-
-        if(!HookEventEx("teamplay_round_win",RoundOver,EventHookMode_PostNoCopy))
-        {
-            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
-            return false;
-        }
-
-        if(!HookEventEx("teamplay_round_stalemate",RoundOver,EventHookMode_PostNoCopy))
         {
             PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
             return false;
@@ -62,7 +54,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        if (index > 0)
+        if (index > 0 && g_RoundActive)
         {
             if (m_OffsetMaxSpeed[index] == 0)
                 m_OffsetMaxSpeed[index]=FindDataMapOffs(index,"m_flMaxspeed");
@@ -139,7 +131,7 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
 public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new Action:result       = Plugin_Continue;
+    new Action:result = Plugin_Continue;
 
     new victim_userid=GetEventInt(event,"userid");
     new victim_index=GetClientOfUserId(victim_userid);
@@ -260,8 +252,15 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
+public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    g_RoundActive = false;
+}
+
 public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    g_RoundActive = true;
+
     if (GameType == tf2)
     {
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
@@ -277,24 +276,6 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
-}
-
-public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    /*
-    new bool:saveEnabled = SAVE_ENABLED;
-    if (GameType == tf2)
-    {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
-        {
-            m_OffsetMaxSpeed[x]=0;
-            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
-            new client=GetArrayCell(playerHandle,0);
-            if (saveEnabled && IsClientInGame(client))
-                SavePlayerData(client,GetClientVectorPosition(client));
-        }
-    }
-    */
 }
 
 public OnMapEnd()

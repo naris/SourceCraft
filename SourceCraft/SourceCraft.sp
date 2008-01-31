@@ -32,8 +32,9 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #define MAX_CREDITS        GetConVarInt(m_MaxCredits)
 
 // SourceCraft Includes
-#include "SourceCraft/help"
 #include "SourceCraft/util"
+#include "SourceCraft/tf2classes"
+#include "SourceCraft/help"
 #include "SourceCraft/damage"
 #include "SourceCraft/immunity"
 #include "SourceCraft/offsets"
