@@ -49,63 +49,6 @@ public bool:HookTFEvents()
         return false;
     }
 
-    if(!HookEvent("controlpoint_starttouch", EventDump,EventHookMode_Post))
-    //short player
-    //short area
-    {
-        LogError("Could not hook the controlpoint_starttouch event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_endtouch", EventDump,EventHookMode_Post))
-    //short player
-    //short area
-    {
-        LogError("Could not hook the controlpoint_endtouch event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_initialized", EventDump,EventHookMode_PostNoCopy))
-    {
-        LogError("Could not hook the controlpoint_initialized event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_updateimages", EventDump,EventHookMode_Post))
-    //short index
-    {
-        LogError("Could not hook the controlpoint_updateimages event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_updatelayout", EventDump,EventHookMode_Post))
-    //short index
-    {
-        LogError("Could not hook the controlpoint_updatelayout event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_updatecapping", EventDump,EventHookMode_Post))
-    //short index
-    {
-        LogError("Could not hook the controlpoint_updatecapping event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_updateowner", EventDump,EventHookMode_Post))
-    //short index
-    {
-        LogError("Could not hook the controlpoint_updateowner event.");
-        return false;
-    }
-
-    if(!HookEvent("controlpoint_pulse_element", EventDump,EventHookMode_Post))
-    //short player
-    {
-        LogError("Could not hook the controlpoint_pulse_element event.");
-        return false;
-    }
-
     if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
     {
         LogError("Could not hook the teamplay_round_start event.");
@@ -135,7 +78,56 @@ public bool:HookTFEvents()
         LogError("Could not hook the teamplay_win_panel event.");
         return false;
     }
-    
+   
+    if(!HookEvent("controlpoint_starttouch", DumpEvent,EventHookMode_Post))
+    //short player
+    //short area
+    {
+        LogError("Could not hook the controlpoint_starttouch event.");
+    }
+
+    if(!HookEvent("controlpoint_endtouch", DumpEvent,EventHookMode_Post))
+    //short player
+    //short area
+    {
+        LogError("Could not hook the controlpoint_endtouch event.");
+    }
+
+    if(!HookEvent("controlpoint_initialized", DumpEvent,EventHookMode_PostNoCopy))
+    {
+        LogError("Could not hook the controlpoint_initialized event.");
+    }
+
+    if(!HookEvent("controlpoint_updateimages", DumpEvent,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updateimages event.");
+    }
+
+    if(!HookEvent("controlpoint_updatelayout", DumpEvent,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updatelayout event.");
+    }
+
+    if(!HookEvent("controlpoint_updatecapping", DumpEvent,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updatecapping event.");
+    }
+
+    if(!HookEvent("controlpoint_updateowner", DumpEvent,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updateowner event.");
+    }
+
+    if(!HookEvent("controlpoint_pulse_element", DumpEvent,EventHookMode_Post))
+    //short player
+    {
+        LogError("Could not hook the controlpoint_pulse_element event.");
+    }
+ 
     return true;
 }
 
@@ -358,20 +350,5 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
             GiveMvpXP(index,vecpos,score,points);
         }
     }
-}
-
-public EventDump(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new player = GetEventInt(event, "player");
-    new area = GetEventInt(event, "area");
-    new index = GetEventInt(event, "index");
-    LogMessage("Event %s, player=%d, area=%d, index=%d\n", name, player, area, index);
-
-    if (player && IsClientInGame(player))
-        PrintToChat(player, "Event %s, player=%d, area=%d, index=%d", name, player, area, index);
-
-    new client=1;
-    if (IsClientInGame(client))
-        PrintToChat(client, "Event %s, player=%d, area=%d, index=%d", name, player, area, index);
 }
 

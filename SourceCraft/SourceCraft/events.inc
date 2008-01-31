@@ -10,20 +10,45 @@ public bool:HookEvents()
 {
     if(!HookEventEx("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
+        LogError("Could not hook the player_spawn event.");
         return false;
     }
 
     if(!HookEventEx("player_hurt",PlayerHurtEvent,EventHookMode_Pre))
     {
-        PrintToServer("[SourceCraft] Could not hook the player_hurt event.");
+        LogError("Could not hook the player_hurt event.");
         return false;
     }
 
     if(!HookEventEx("player_death",PlayerDeathEvent,EventHookMode_Pre))
     {
-        PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
+        LogError("Could not hook the player_spawn event.");
         return false;
+    }
+
+    if(!HookEventEx("player_shoot",DumpEvent,EventHookMode_Post))
+    {
+        LogError("Could not hook the player_shoot event.");
+    }
+
+    if(!HookEventEx("player_score",DumpEvent,EventHookMode_Post))
+    {
+        LogError("Could not hook the player_shoot event.");
+    }
+
+    if(!HookEventEx("player_team",DumpEvent,EventHookMode_Post))
+    {
+        LogError("Could not hook the player_team event.");
+    }
+
+    if(!HookEventEx("player_class",DumpEvent,EventHookMode_Post))
+    {
+        LogError("Could not hook the player_class event.");
+    }
+
+    if(!HookEventEx("team_score",DumpEvent,EventHookMode_Post))
+    {
+        LogError("Could not hook the team_score event.");
     }
 
     return true;
@@ -263,3 +288,31 @@ public OnMapEnd()
         }
     }
 }
+
+public DumpEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new player = GetEventInt(event, "player");
+    new index = GetEventInt(event, "index");
+    new area = GetEventInt(event, "area");
+
+    new userid = GetEventInt(event, "userid");
+    new teamid = GetEventInt(event, "teamid");
+    new score = GetEventInt(event, "score");
+
+    LogMessage("Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d\n",
+               name, player, area, index, userid, teamid, score);
+
+    if (player && IsClientInGame(player))
+        PrintToChat(player, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+                    name, player, area, index, userid, teamid, score);
+
+    if (userid && IsClientInGame(userid))
+        PrintToChat(userid, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+                    name, player, area, index, userid, teamid, score);
+
+    new client=1;
+    if (IsClientInGame(client))
+        PrintToChat(client, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+                    name, player, area, index, userid, teamid, score);
+}
+
