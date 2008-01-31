@@ -314,26 +314,26 @@ public Bomber(client,player,level,bool:ondeath)
     EmitSoundToAll(explodeWav,client);
 
     new clientCount = GetClientCount();
-    for(new x=1;x<=clientCount;x++)
+    for(new index=1;index<=clientCount;index++)
     {
-        if (x != client && IsClientInGame(x) && IsPlayerAlive(x) &&
-            GetClientTeam(x) != GetClientTeam(client))
+        if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(index) != GetClientTeam(client))
         {
-            new player_check=GetPlayer(x);
-            if (player_check>-1)
+            new check_player=GetPlayer(index);
+            if (check_player>-1)
             {
-                if (!(ondeath || GetImmunity(player_check,Immunity_Ultimates)) &&
-                    !GetImmunity(player_check,Immunity_Explosion))
+                if (!ondeath && !GetImmunity(check_player,Immunity_Ultimates) &&
+                                !GetImmunity(check_player,Immunity_Explosion))
                 {
-                    new Float:location_check[3];
-                    GetClientAbsOrigin(x,location_check);
+                    new Float:check_location[3];
+                    GetClientAbsOrigin(index,check_location);
 
-                    new hp=PowerOfRange(client_location,radius,location_check,damage);
+                    new hp=PowerOfRange(client_location,radius,check_location,damage);
                     if (hp)
                     {
-                        if (TraceTarget(client, x, client_location, location_check))
+                        if (TraceTarget(client, index, client_location, check_location))
                         {
-                            new newhealth = GetClientHealth(x)-hp;
+                            new newhealth = GetClientHealth(index)-hp;
                             if (newhealth <= 0)
                             {
                                 newhealth=0;
@@ -343,23 +343,23 @@ public Bomber(client,player,level,bool:ondeath)
 
                                 if (ondeath)
                                 {
-                                    LogKill(client, x, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                    SetHealth(x,newhealth);
+                                    LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                    SetHealth(index,newhealth);
                                 }
                                 else
                                 {
-                                    LogKill(client, x, "mad_bomber", "Mad Bomber", hp, addxp);
-                                    KillPlayer(x);
+                                    LogKill(client, index, "mad_bomber", "Mad Bomber", hp, addxp);
+                                    KillPlayer(index);
                                 }
                             }
                             else
                             {
                                 if (ondeath)
-                                    LogDamage(client, x, "suicide_bomb", "Suicide Bomb", hp);
+                                    LogDamage(client, index, "suicide_bomb", "Suicide Bomb", hp);
                                 else
-                                    LogDamage(client, x, "mad_bomber", "Mad Bomber", hp);
+                                    LogDamage(client, index, "mad_bomber", "Mad Bomber", hp);
 
-                                SetHealth(x,newhealth);
+                                SetHealth(index,newhealth);
                             }
                         }
                     }
