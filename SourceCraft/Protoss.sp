@@ -239,7 +239,7 @@ public bool:ReaverScarab(damage, victim_index, index, player)
         }
 
         if (GetRandomInt(1,100) <= chance &&
-            GetGameTime() - gReaverScarabTime[index] > 0.200)
+            GetGameTime() - gReaverScarabTime[index] > 1.000)
         {
             if (!GetConVarBool(cvarReaverScarabEnable))
             {

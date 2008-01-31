@@ -406,7 +406,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                 if (!GetImmunity(victim_player,Immunity_HealthTake))
                 {
                     if (GetOwnsItem(attacker_player,shopItem[ITEM_CLAWS]) &&
-                        GetGameTime() - gClawTime[attacker_index] > 0.200)
+                        GetGameTime() - gClawTime[attacker_index] > 1.000)
                     {
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
