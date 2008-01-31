@@ -73,6 +73,12 @@ public bool:HookTFEvents()
         return false;
     }
 
+    if(!HookEventEx("teamplay_win_panel",GameWin,EventHookMode_Post))
+    {
+        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        return false;
+    }
+    
     return true;
 }
 
@@ -195,6 +201,27 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     g_RoundActive = false;
 }
 
+public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    g_RoundActive = true;
+
+    if (GameType == tf2)
+    {
+        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        {
+            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
+            new client=GetArrayCell(playerHandle,0);
+            if(IsClientInGame(client))
+            {
+                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
+                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f\n",
+                           client, m_BaseSpeed[client],GetNormalSpeed(client));
+            }
+        }
+    }
+}
+
 public RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
 {
     g_RoundActive = false;
@@ -216,23 +243,63 @@ public RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
+public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    g_RoundActive = true;
+    g_RoundActive = false;
 
-    if (GameType == tf2)
+    new team  = GetEventInt(event,"winning_team");
+    new score = (team == 2) ? GetEventInt(event,"blue_score")
+                            : GetEventInt(event,"red_score");
+
+    new count = GetClientCount();
+    for(new index=1;index<=count;index++)
     {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        if (IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(index) == team)
         {
-            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
-            new client=GetArrayCell(playerHandle,0);
-            if(IsClientInGame(client))
+            new vecpos=GetClientVectorPosition(index);
+            if (vecpos>-1)
             {
-                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
-                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f\n",
-                           client, m_BaseSpeed[client],GetNormalSpeed(client));
+                GiveGameWinCredits(index,vecpos,score);
+                GiveGameWinXP(index,vecpos,score);
             }
         }
     }
+
+    new index = GetEventInt(event, "player_1");
+    if (index)
+    {
+        new vecpos=GetClientVectorPosition(index);
+        if (vecpos>-1)
+        {
+            new points = GetEventInt(event,"player_1_points");
+            GiveMvpCredits(index,vecpos,1,points);
+            GiveMvpXP(index,vecpos,score,points);
+        }
+    }
+
+    index = GetEventInt(event, "player_2");
+    if (index)
+    {
+        new vecpos=GetClientVectorPosition(index);
+        if (vecpos>-1)
+        {
+            new points = GetEventInt(event,"player_2_points");
+            GiveMvpCredits(index,vecpos,2,points);
+            GiveMvpXP(index,vecpos,score,points);
+        }
+    }
+
+    index = GetEventInt(event, "player_3");
+    if (index)
+    {
+        new vecpos=GetClientVectorPosition(index);
+        if (vecpos>-1)
+        {
+            new points = GetEventInt(event,"player_3_points");
+            GiveMvpCredits(index,vecpos,3,points);
+            GiveMvpXP(index,vecpos,score,points);
+        }
+    }
 }
+

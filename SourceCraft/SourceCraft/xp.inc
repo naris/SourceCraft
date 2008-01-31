@@ -8,28 +8,30 @@
  * Modifications by: Naris (Murray Wilson)
  */
  
-#define MAX_LEVELS 16
+#define MAX_LEVELS          16
 
-#define HEADSHOT_XP 10
-#define BACKSTAB_XP 10
-#define ASSIST_XP 10
-#define MELEE_XP 20
-#define DOMINATED_XP 15
-#define REVENGE_XP 15
+#define HEADSHOT_XP         10
+#define BACKSTAB_XP         10
+#define ASSIST_XP           10
+#define MELEE_XP            20
+#define DOMINATED_XP        15
+#define REVENGE_XP          15
 
-#define BUILD_XP 10
-#define DESTROY_XP 10
-#define CHARGE_XP 20
+#define BUILD_XP            10
+#define DESTROY_XP          10
+#define CHARGE_XP           20
 
-#define DEFUSE_XP 20
-#define PLANT_XP 20
-#define HOSTAGERESCUED_XP 20
+#define DEFUSE_XP           20
+#define PLANT_XP            20
+#define HOSTAGERESCUED_XP   20
 
-#define BLOCK_XP 5
-#define CAPTURE_FLAG_XP 20
-#define CAPTURE_POINT_XP 20
+#define BLOCK_XP             5
+#define CAPTURE_FLAG_XP     20
+#define CAPTURE_POINT_XP    20
 
-#define WIN_XP 20
+#define ROUND_WIN_XP        20
+#define GAME_WIN_XP         10 // Multiplied by score
+#define MVP_XP               5 // Multiplied by place * points
 
 // Functions called from menus.inc
 //public SkillMenu(client, vectorpos, Function:parentMenuFunction);
@@ -237,7 +239,20 @@ public GiveCaptureBlockedXP(client,vectorpos)
 public GiveRoundWinXP(client,vectorpos)
 {
     // Called when a team wins a round
-    GiveXP(client,vectorpos,WIN_XP, "winning a round");
+    GiveXP(client,vectorpos,ROUND_WIN_XP, "winning a round");
+}
+
+public GiveGameWinXP(client,vectorpos,score)
+{
+    // Called when a team wins a round
+    GiveXP(client,vectorpos,GAME_WIN_XP*score, "winning the game");
+}
+
+public GiveMvpXP(client,vectorpos,place,points)
+{
+    new String:reason[64];
+    Format(reason,sizeof(reason),"being MVP #%d with $d points",place, points);
+    GiveXP(client,vectorpos,points*place*MVP_XP,reason);
 }
 
 public GiveXP(client,vectorpos, amount, const String:reason[])

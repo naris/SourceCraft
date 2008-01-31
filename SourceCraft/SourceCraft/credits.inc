@@ -5,13 +5,15 @@
  * Author(s): Anthony Iacono  
  */
  
-#define KILL_CREDITS_LONGTERM 2
-#define KILL_CREDITS_SHORTTERM 3
+#define KILL_CREDITS_LONGTERM   2
+#define KILL_CREDITS_SHORTTERM  3
 
-#define FLAG_CREDITS 5
-#define CHARGE_CREDITS 10
+#define FLAG_CREDITS            5
+#define CHARGE_CREDITS         10
 
-#define WIN_CREDITS 8
+#define ROUND_WIN_CREDITS       8
+#define GAME_WIN_CREDITS        2 // Multiplied by score
+#define MVP_CREDITS             1 // Multiplied by place * points
 
 public ShowCredits(client,vecpos)
 {
@@ -40,7 +42,19 @@ public GiveChargeDeployedCredits(client,vectorpos)
 
 public GiveRoundWinCredits(client,vectorpos)
 {
-    GiveCredits(client,vectorpos,WIN_CREDITS,"winning the round");
+    GiveCredits(client,vectorpos,ROUND_WIN_CREDITS,"winning a round");
+}
+
+public GiveGameWinCredits(client,vectorpos,score)
+{
+    GiveCredits(client,vectorpos,GAME_WIN_CREDITS*score,"winning the game");
+}
+
+public GiveMvpCredits(client,vectorpos,place,points)
+{
+    new String:reason[64];
+    Format(reason,sizeof(reason),"being MVP #%d with %d points",place,points);
+    GiveCredits(client,vectorpos,points*place*MVP_CREDITS,reason);
 }
 
 public GiveCredits(client,vectorpos, amount, const String:reason[])
