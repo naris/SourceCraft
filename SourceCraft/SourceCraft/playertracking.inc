@@ -293,46 +293,46 @@ public Action:PlayerProperties(Handle:timer)
                 if (m_BaseSpeed[client] == 0.0)
                     m_BaseSpeed[client] == curSpeed;
                         
-                if (m_BaseSpeed[client] > 1.0 && curSpeed > 1.0)  // Don't alter initial map freeze
+                if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
                 {
-                    if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
+                    new Float:newSpeed;
+                    if (curSpeed < 200.0)
                     {
-                        new Float:newSpeed;
-                        if (curSpeed < 200.0)
-                        {
-                            // Speed for heavy  while firing == 80, while not firing == 230
-                            // Speed for sniper while zoomed == 80, while not zoomed == 300
-                            // ensure we don't accelerate firing heavy or zoomed sniper too much!
-                            newSpeed = 80.0 * speed;
-                        }
-                        else
-                        {
-                            newSpeed = m_BaseSpeed[client] * speed;
-                        }
-
-                        LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
-                                   client, newSpeed, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
-                                   speed, speedAltered[client], overridePlayerSpeed);
-
-                        if (curSpeed != newSpeed)
-                            SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
-
-                        if (speed == 1.0)
-                        {
-                            // Speed is back to normal, Reset the altered flag
-                            speedAltered[client]=false;
-                        }
+                        // Speed for heavy  while firing == 80, while not firing == 230
+                        // Speed for sniper while zoomed == 80, while not zoomed == 300
+                        // ensure we don't accelerate firing heavy or zoomed sniper too much!
+                        newSpeed = 80.0 * speed;
                     }
                     else
                     {
-                        LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
-                                   client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
-                                   GetNormalSpeed(client));
+                        newSpeed = m_BaseSpeed[client] * speed;
                     }
+
+                    LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
+                               client, newSpeed, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
+                               speed, speedAltered[client], overridePlayerSpeed);
+
+                    if (curSpeed != newSpeed)
+                        SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+
+                    if (speed == 1.0)
+                    {
+                        // Speed is back to normal, Reset the altered flag
+                        speedAltered[client]=false;
+                    }
+                }
+                else
+                {
+                    LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
+                               client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
+                               GetNormalSpeed(client));
                 }
             }
             else // not tf2
             {
+                LogMessage("[playertracking] Set NOn TF2 speed of %N to %f, speed=%f, altered=%d, override=%d\n",
+                           client, speed, speedAltered[client], overridePlayerSpeed);
+
                 if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
                     SetEntDataFloat(client,m_OffsetSpeed,speed);
             }
