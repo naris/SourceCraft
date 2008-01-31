@@ -9,20 +9,27 @@
  */
  
 #define MAX_LEVELS 16
+
 #define HEADSHOT_XP 10
 #define BACKSTAB_XP 10
 #define ASSIST_XP 10
 #define MELEE_XP 20
+#define DOMINATED_XP 15
+#define REVENGE_XP 15
+
+#define BUILD_XP 10
+#define DESTROY_XP 10
+#define CHARGE_XP 20
 
 #define DEFUSE_XP 20
 #define PLANT_XP 20
 #define HOSTAGERESCUED_XP 20
 
-#define BUILD_XP 5
-#define DESTROY_XP 5
 #define BLOCK_XP 5
 #define CAPTURE_FLAG_XP 20
 #define CAPTURE_POINT_XP 20
+
+#define WIN_XP 20
 
 // Functions called from menus.inc
 //public SkillMenu(client, vectorpos, Function:parentMenuFunction);
@@ -112,17 +119,17 @@ public ShowXP(client,vecpos)
     }
 }
 
-public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:backstab,bool:melee,bool:assist)
+public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:backstab,bool:melee,
+                  bool:dominated,bool:revenge,bool:assist)
 {
-    new Action:result,amount;
-    new race=GetRace(vectorpos);
+    new amount;
     if(victim>0)
     {
         new vic_vec=GetClientVectorPosition(victim);
         amount=KillXP(GetLevel(vic_vec,GetRace(vic_vec)));
     }
     else
-        amount=KillXP(GetLevel(vectorpos,race));
+        amount=KillXP(GetLevel(vectorpos,GetRace(vectorpos)));
 
     if (headshot)
     {
@@ -142,201 +149,137 @@ public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:backstab,bool:melee
         PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for a knife/shovel/wrench/etc kill.",
                     COLOR_GREEN,COLOR_DEFAULT,MELEE_XP);
     }
-    else if (assist)
+
+    if (dominated)
+    {
+        amount+=DOMINATED_XP;
+        PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for domination!",
+                    COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
+    }
+    
+    if (revenge)
+    {
+        amount+=REVENGE_XP;
+        PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for a revenge kill!",
+                    COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
+    }
+
+    if (assist)
     {
         amount+=ASSIST_XP;
         PrintToChat(client,"%c[SourceCraft] %cYou get %d additional experience for assisting a kill.",
                     COLOR_GREEN,COLOR_DEFAULT,ASSIST_XP);
     }
     
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        SetXP(vectorpos,race,GetXP(vectorpos,race)+amount);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for getting a kill.",
-                    COLOR_GREEN,COLOR_DEFAULT,amount);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    GiveXP(client,vectorpos,amount, "getting a kill");
 }
 
 public GiveDefuseXP(client,vectorpos)
 {
     // Called when a player defuses the bomb
-    new Action:result;
-    new amount=DEFUSE_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for defusing the bomb.",
-                    COLOR_GREEN,COLOR_DEFAULT,DEFUSE_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    GiveXP(client,vectorpos,DEFUSE_XP, "defusing the bomb");
 }
 
 public GivePlantXP(client,vectorpos)
 {
     // Called when a player plants the bomb
-    new Action:result;
-    new amount=PLANT_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for planting the bomb.",
-                    COLOR_GREEN,COLOR_DEFAULT,PLANT_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    GiveXP(client,vectorpos,PLANT_XP, "planting the bomb");
 }
 
 public GiveHostageRescuedXP(client,vectorpos)
 {
     // Called when a player rescues a hostage
-    new Action:result;
-    new amount=HOSTAGERESCUED_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for rescuing a hostage.",
-                    COLOR_GREEN,COLOR_DEFAULT,HOSTAGERESCUED_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    GiveXP(client,vectorpos,HOSTAGERESCUED_XP, "rescuing a hostage");
+}
+
+public GiveChargeDeployedXP(client,vectorpos)
+{
+    // Called when a player deploys thier charge (medic goes uber)
+    GiveXP(client,vectorpos,CHARGE_XP, "deploying Ubercharge");
 }
 
 public GiveObjectBuiltXP(client,vectorpos)
 {
-    // Called when a player captures a flag
-    new Action:result;
-    new amount=DESTROY_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for building something.",
-                    COLOR_GREEN,COLOR_DEFAULT,BUILD_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    // Called when a player builds an object
+    GiveXP(client,vectorpos,BUILD_XP, "building something");
+}
+
+public TakeObjectBuiltXP(client,vectorpos)
+{
+    // Called when a player destroys thier own object
+    TakeXP(client,vectorpos,BUILD_XP, "destroying your own object");
 }
 
 public GiveObjectDestroyedXP(client,vectorpos)
 {
-    // Called when a player captures a flag
-    new Action:result;
-    new amount=DESTROY_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for destroying something.",
-                    COLOR_GREEN,COLOR_DEFAULT,DESTROY_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    // Called when a player destroys an object
+    GiveXP(client,vectorpos,DESTROY_XP, "destroying something");
 }
 
 public GiveFlagCapturedXP(client,vectorpos)
 {
     // Called when a player captures a flag
-    new Action:result;
-    new amount=CAPTURE_FLAG_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for capturing the flag.",
-                    COLOR_GREEN,COLOR_DEFAULT,CAPTURE_FLAG_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    GiveXP(client,vectorpos,CAPTURE_FLAG_XP, "capturing the flag");
 }
 
 public GivePointCapturedXP(client,vectorpos)
 {
     // Called when a player captures a point
-    new Action:result;
-    new amount=CAPTURE_POINT_XP;
-    Call_StartForward(g_OnXPGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(vectorpos);
-    Call_PushCellRef(amount);
-    Call_Finish(result);
-    if (result != Plugin_Stop)
-    {
-        new race=GetRace(vectorpos);
-        new newxp=GetXP(vectorpos,race)+amount;
-        SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for capturing a point.",
-                    COLOR_GREEN,COLOR_DEFAULT,CAPTURE_POINT_XP);
-        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-            DoLevelCheck(client,vectorpos);
-    }
+    GiveXP(client,vectorpos,CAPTURE_POINT_XP, "capturing a point");
 }
 
 public GiveCaptureBlockedXP(client,vectorpos)
 {
     // Called when a player blocks a capture
+    GiveXP(client,vectorpos,BLOCK_XP, "blocking a point");
+}
+
+public GiveRoundWinXP(client,vectorpos)
+{
+    // Called when a team wins a round
+    GiveXP(client,vectorpos,WIN_XP, "winning a round");
+}
+
+public GiveXP(client,vectorpos, amount, const String:reason[])
+{
+    // Called when a player is given XP
     new Action:result;
-    new amount=BLOCK_XP;
     Call_StartForward(g_OnXPGivenHandle);
     Call_PushCell(client);
     Call_PushCell(vectorpos);
     Call_PushCellRef(amount);
+    Call_PushCell(false);
     Call_Finish(result);
     if (result != Plugin_Stop)
     {
         new race=GetRace(vectorpos);
         new newxp=GetXP(vectorpos,race)+amount;
         SetXP(vectorpos,race,newxp);
-        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for blocking a point.",
-                    COLOR_GREEN,COLOR_DEFAULT,BLOCK_XP);
+        PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,amount, reason);
         if(GetLevel(vectorpos,race)!=MAX_LEVELS)
             DoLevelCheck(client,vectorpos);
     }
 }
 
+public TakeXP(client,vectorpos, amount, const String:reason[])
+{
+    // Called when a player destroys thier own object
+    new Action:result;
+    Call_StartForward(g_OnXPGivenHandle);
+    Call_PushCell(client);
+    Call_PushCell(vectorpos);
+    Call_PushCellRef(amount);
+    Call_PushCell(true);
+    Call_Finish(result);
+    if (result != Plugin_Stop)
+    {
+        new race=GetRace(vectorpos);
+        new newxp=GetXP(vectorpos,race)-amount;
+        SetXP(vectorpos,race,newxp);
+        PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,amount, reason);
+        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
+            DoLevelCheck(client,vectorpos);
+    }
+}

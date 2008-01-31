@@ -13,36 +13,17 @@ public bool:HookEvents()
         PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
     }
-    if(!HookEventEx("player_hurt",PlayerHurtEvent,EventHookMode_Post))
+
+    if(!HookEventEx("player_hurt",PlayerHurtEvent,EventHookMode_Pre))
     {
         PrintToServer("[SourceCraft] Could not hook the player_hurt event.");
         return false;
     }
-    if(!HookEventEx("player_death",PlayerDeathEvent,EventHookMode_Post))
+
+    if(!HookEventEx("player_death",PlayerDeathEvent,EventHookMode_Pre))
     {
         PrintToServer("[SourceCraft] Could not hook the player_spawn event.");
         return false;
-    }
-
-    if (GameType == tf2)
-    {
-        if(!HookEventEx("player_changeclass",PlayerChangeClass,EventHookMode_Post))
-        {
-            PrintToServer("[SourceCraft] Could not hook the player_changeclass event.");
-            return false;
-        }
-
-        if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
-        {
-            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
-            return false;
-        }
-
-        if(!HookEventEx("teamplay_round_active",RoundActive,EventHookMode_PostNoCopy))
-        {
-            PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
-            return false;
-        }
     }
 
     return true;
@@ -54,17 +35,21 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        if (index > 0 && g_RoundActive)
+        if (index > 0)
         {
+            SaveHealth(index);
             if (m_OffsetMaxSpeed[index] == 0)
                 m_OffsetMaxSpeed[index]=FindDataMapOffs(index,"m_flMaxspeed");
 
-            new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
-            m_BaseSpeed[index]=maxSpeed;
+            if (g_RoundActive)
+            {
+                new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
+                m_BaseSpeed[index] = maxSpeed;
 
-            LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
-                       index, m_BaseSpeed[index], maxSpeed, GetNormalSpeed(index));
-        }
+                LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
+                           index, m_BaseSpeed[index], maxSpeed, GetNormalSpeed(index));
+                }
+            }
 
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
@@ -148,11 +133,15 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         new attacker_index=GetClientOfUserId(attacker_userid);
         new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : 0;
         new attacker_race=(attacker_player != -1) ? GetRace(attacker_player) : -1;
+        new bool:attacker_dominated=bool:GetEventInt(event,"dominated");
+        new bool:attacker_revenge=bool:GetEventInt(event,"revenge");
 
         new assister_userid=GetEventInt(event,"assister");
         new assister_index=GetClientOfUserId(assister_index);
         new assister_player=(assister_index) ? GetClientVectorPosition(assister_index) : -1;
         new assister_race=(assister_player != -1) ? GetRace(assister_player) : -1;
+        new bool:assister_dominated=bool:GetEventInt(event,"assister_dominated");
+        new bool:assister_revenge=bool:GetEventInt(event,"assister_revenge");
 
         new bool:is_equipment;
         decl String:weapon[64]  = "";
@@ -206,7 +195,8 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             {
                 GiveKillCredits(attacker_index,attacker_player);
                 GiveKillXP(attacker_index,attacker_player,victim_index,
-                           headshot,backstab,melee,false);
+                           headshot,backstab,melee,attacker_dominated,
+                           attacker_revenge,false);
             }
         }
 
@@ -216,7 +206,8 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             {
                 GiveKillCredits(assister_index,assister_player);
                 GiveKillXP(assister_index,assister_player,victim_index,
-                           false,false,false,true);
+                           headshot,backstab,melee,assister_dominated,
+                           assister_revenge,true);
             }
         }
 
@@ -246,38 +237,15 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
     if (client > 0)
     {
         m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
-        new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-        if (maxSpeed > 100)
+        if (g_RoundActive)
         {
+            new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
             m_BaseSpeed[client]=maxSpeed;
-        }
-        LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
-                   client, m_BaseSpeed[client],maxSpeed,GetNormalSpeed(client));
-    }
-}
 
-public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    g_RoundActive = false;
-}
-
-public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    g_RoundActive = true;
-
-    if (GameType == tf2)
-    {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
-        {
-            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
-            new client=GetArrayCell(playerHandle,0);
-            if(IsClientInGame(client))
-            {
-                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
-                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f\n",
-                           client, m_BaseSpeed[client],GetNormalSpeed(client));
-            }
+            new class=GetEventInt(event,"class");
+            LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d\n",
+                       client, m_BaseSpeed[client], maxSpeed, GetNormalSpeed(client),
+                       GetNormalSpeed(class), TF_GetClass(client) ,class);
         }
     }
 }

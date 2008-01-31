@@ -300,6 +300,24 @@ forward OnItemPurchase(client,player,item);
 forward OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel);
 
 /**
+ * Gets called when XP is given to a player
+ * @param client: The client's index.
+ * @param player: The player ID of the client.
+ * @param amount: The amount given (updateable).
+ * @param taken: The amount is to be taken instead of given.
+ */
+forward OnXPGiven(client,player,&amount,bool:taken);
+
+/**
+ * Gets called when credits are given to a player
+ * @param client: The client's index.
+ * @param player: The player ID of the client.
+ * @param amount: The amount given (updateable).
+ * @param taken: The amount is to be taken instead of given.
+ */
+forward OnCreditsGiven(client,player,&amount,bool:taken);
+
+/**
  * Gets called for player_hurt
  * @param victim_index: The victim's index.
  * @param victim_player: The player ID of the victim.

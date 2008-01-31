@@ -20,6 +20,7 @@
 #include "SourceCraft/authtimer"
 #include "SourceCraft/respawn"
 #include "SourceCraft/log"
+#include "SourceCraft/weapons"
 
 new raceID; // The ID we are assigned to
 

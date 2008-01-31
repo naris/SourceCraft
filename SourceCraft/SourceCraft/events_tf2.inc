@@ -7,44 +7,91 @@
 
 public bool:HookTFEvents()
 {
-    if(!HookEvent("player_builtobject", EventObjectBuilt))
+    if(!HookEventEx("player_changeclass",PlayerChangeClass,EventHookMode_Post))
+    {
+        PrintToServer("[SourceCraft] Could not hook the player_changeclass event.");
+        return false;
+    }
+
+    if(!HookEvent("player_chargedeployed", PlayerChargeDeployed))
+    {
+        PrintToServer("[SourceCraft] Could not hook the player_chargedeployed event.");
+        return false;
+    }
+
+    if(!HookEvent("player_builtobject", PlayerBuiltObject))
     {
         PrintToServer("[SourceCraft] Could not hook the player_builtobject event.");
         return false;
     }
+
     if(!HookEvent("object_destroyed", EventObjectDestroyed))
     {
         PrintToServer("[SourceCraft] Could not hook the object_destroyed event.");
         return false;
     }
+
     if(!HookEvent("teamplay_flag_event", EventFlagEvent))
     {
         PrintToServer("[SourceCraft] Could not hook the teamplay_flag_event.");
         return false;
     }
+
     if(!HookEvent("teamplay_point_captured", EventPointCaptured))
     {
         PrintToServer("[SourceCraft] Could not hook the teampoint_point_captured event.");
         return false;
     }
+
     if(!HookEvent("teamplay_capture_blocked", EventCaptureBlocked))
     {
         PrintToServer("[SourceCraft] Could not hook the teadmplay_capture_blocked event.");
         return false;
     }
 
-    /*
-    if(!HookEvent("teamplay_round_win", RoundWin))
+    if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_round_win event.");
+        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
         return false;
     }
-    */
+
+    if(!HookEventEx("teamplay_round_active",RoundActive,EventHookMode_PostNoCopy))
+    {
+        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        return false;
+    }
+
+    if(!HookEventEx("teamplay_round_win",RoundWin,EventHookMode_Post))
+    {
+        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        return false;
+    }
+
+    if(!HookEventEx("teamplay_round_stalemate",RoundOver,EventHookMode_PostNoCopy))
+    {
+        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        return false;
+    }
 
     return true;
 }
 
-public EventObjectBuilt(Handle:event,const String:name[],bool:dontBroadcast)
+public PlayerChargeDeployed(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
+    {
+        new index=GetClientOfUserId(userid);
+        new vecpos=GetClientVectorPosition(index);
+        if(vecpos!=-1)
+        {
+            GiveChargeDeployedXP(index,vecpos);
+            GiveChargeDeployedCredits(index,vecpos);
+        }
+    }
+}
+
+public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     if (userid > 0)
@@ -58,23 +105,36 @@ public EventObjectBuilt(Handle:event,const String:name[],bool:dontBroadcast)
 
 public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    new userid = GetEventInt(event,"userid");
     new attacker = GetEventInt(event,"attacker");
-    if (attacker > 0)
+    if (attacker > 0 && attacker != userid)
     {
         new index=GetClientOfUserId(attacker);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GiveObjectDestroyedXP(index,vecpos);
     }
+    else
+    {
+        new index=GetClientOfUserId(userid);
+        new vecpos=GetClientVectorPosition(index);
+        if(vecpos!=-1)
+            TakeObjectBuiltXP(index,vecpos);
+    }
 
     new assister = GetEventInt(event,"assister");
-    if (assister> 0)
+    if (assister> 0 && assister != userid)
     {
         new index=GetClientOfUserId(assister);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GiveObjectDestroyedXP(index,vecpos);
     }
+
+    decl String:weapon[64] = "";
+    GetEventString(event, "weapon", weapon, sizeof(weapon));
+    LogMessage("%N+%N destroyed %N's %d with %s\n", attacker, assister, userid,
+               GetEventInt(event,"objecttype"), weapon);
 }
 
 public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -83,11 +143,17 @@ public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (player>0)
     {
         new eventtype = GetEventInt(event,"eventtype");
-        if (eventtype == 2) // Point Captured
+        if (eventtype == 2) // Flag Captured
         {
             new vecpos=GetClientVectorPosition(player);
             if (vecpos!=-1)
                 GiveFlagCapturedXP(player,vecpos);
+        }
+        else if (eventtype == 1) // Flag Picked Up
+        {
+            new vecpos=GetClientVectorPosition(player);
+            if (vecpos!=-1)
+                GivePickedUpFlagCredits(player,vecpos);
         }
     }
 }
@@ -116,5 +182,57 @@ public EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             GiveCaptureBlockedXP(index,vecpos);
+    }
+}
+
+public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    g_RoundActive = false;
+}
+
+public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    g_RoundActive = false;
+}
+
+public RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    g_RoundActive = false;
+
+    new team  = GetEventInt(event,"team");
+    new count = GetClientCount();
+    for(new index=1;index<=count;index++)
+    {
+        if (IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(index) == team)
+        {
+            new vecpos=GetClientVectorPosition(index);
+            if (vecpos>-1)
+            {
+                GiveRoundWinCredits(index,vecpos);
+                GiveRoundWinXP(index,vecpos);
+            }
+        }
+    }
+}
+
+public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    g_RoundActive = true;
+
+    if (GameType == tf2)
+    {
+        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        {
+            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
+            new client=GetArrayCell(playerHandle,0);
+            if(IsClientInGame(client))
+            {
+                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
+                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f\n",
+                           client, m_BaseSpeed[client],GetNormalSpeed(client));
+            }
+        }
     }
 }

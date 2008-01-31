@@ -14,7 +14,8 @@ stock Float:GetNormalSpeed(client)
 {
     if (GameType == tf2)
     {
-        switch (TF_GetClass(client))
+        new class;
+        switch (class = TF_GetClass(client))
         {
             case TF2_SCOUT:     return 400.0;
             case TF2_SNIPER:    return 300.0;
@@ -25,6 +26,7 @@ stock Float:GetNormalSpeed(client)
             case TF2_PYRO:      return 300.0;
             case TF2_SPY:       return 300.0;
             case TF2_ENG:       return 300.0;
+            default:            LogMessage("Unknown TF2 class %d\n", class);
         }
     }
     return 0.0;

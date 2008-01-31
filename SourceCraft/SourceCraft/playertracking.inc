@@ -18,7 +18,7 @@
 #define TRACKING_COUNT 11
 
 // Global definition
-new bool:g_RoundActive = false;
+new bool:g_RoundActive = true;
 
 new Float:m_BaseSpeed[MAXPLAYERS+1];
 new bool:speedAltered[MAXPLAYERS+1];
