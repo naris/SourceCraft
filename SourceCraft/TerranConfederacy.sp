@@ -333,11 +333,11 @@ Stimpacks(client, player, skilllevel)
         case 1:
             speed=1.10;
         case 2:
-            speed=1.21;
+            speed=1.15;
         case 3:
-            speed=1.32;
+            speed=1.20;
         case 4:
-            speed=1.50;
+            speed=1.25;
     }
 
     /* If the Player also has the Boots of Speed,

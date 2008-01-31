@@ -296,7 +296,7 @@ public Action:PlayerProperties(Handle:timer)
                 if (speedAltered[client] || overridePlayerSpeed || speed != 1.0)
                 {
                     new Float:newSpeed;
-                    if (curSpeed < 200.0)
+                    if (m_BaseSpeed[client] > 100.0 && curSpeed > 50.0 && curSpeed < 200.0)
                     {
                         // Speed for heavy  while firing == 80, while not firing == 230
                         // Speed for sniper while zoomed == 80, while not zoomed == 300
@@ -381,7 +381,11 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
                                       IN_MOVERIGHT|IN_SPEED|IN_JUMP|
                                       IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
     {
-        visibility *= movementFactor;
+        if (m_VelocityOffset != -1 && movementFactor != 1.0 && movementFactor != -1.0)
+        {
+            if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
+                visibility *= movementFactor;
+        }
     }
 
     return visibility;
