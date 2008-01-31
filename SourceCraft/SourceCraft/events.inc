@@ -200,20 +200,24 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         Call_PushCell(melee);
         Call_Finish(result);
 
-        if (attacker_userid != victim_userid && attacker_player != -1 && 
-            GetClientTeam(attacker_index) != GetClientTeam(victim_index))
+        if (attacker_player != -1 && attacker_userid != victim_userid)
         {
-            GiveKillCredits(attacker_index,attacker_player);
-            GiveKillXP(attacker_index,attacker_player,victim_index,
-                       headshot,backstab,melee,false);
+            if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
+            {
+                GiveKillCredits(attacker_index,attacker_player);
+                GiveKillXP(attacker_index,attacker_player,victim_index,
+                           headshot,backstab,melee,false);
+            }
         }
 
-        if (assister_userid != victim_userid && assister_player != -1 && 
-            GetClientTeam(assister_index) != GetClientTeam(victim_index))
+        if (assister_player != -1 && assister_userid != victim_userid)
         {
-            GiveKillCredits(assister_index,assister_player);
-            GiveKillXP(assister_index,assister_player,victim_index,
-                       false,false,false,true);
+            if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
+            {
+                GiveKillCredits(assister_index,assister_player);
+                GiveKillXP(assister_index,assister_player,victim_index,
+                           false,false,false,true);
+            }
         }
 
         if (victim_player!=-1)
