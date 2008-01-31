@@ -9,73 +9,130 @@ public bool:HookTFEvents()
 {
     if(!HookEventEx("player_changeclass",PlayerChangeClass,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the player_changeclass event.");
+        LogError("Could not hook the player_changeclass event.");
         return false;
     }
 
-    if(!HookEvent("player_chargedeployed", PlayerChargeDeployed))
+    if(!HookEvent("player_chargedeployed", PlayerChargeDeployed,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the player_chargedeployed event.");
+        LogError("Could not hook the player_chargedeployed event.");
         return false;
     }
 
-    if(!HookEvent("player_builtobject", PlayerBuiltObject))
+    if(!HookEvent("player_builtobject", PlayerBuiltObject,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the player_builtobject event.");
+        LogError("Could not hook the player_builtobject event.");
         return false;
     }
 
-    if(!HookEvent("object_destroyed", EventObjectDestroyed))
+    if(!HookEvent("object_destroyed", EventObjectDestroyed,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the object_destroyed event.");
+        LogError("Could not hook the object_destroyed event.");
         return false;
     }
 
-    if(!HookEvent("teamplay_flag_event", EventFlagEvent))
+    if(!HookEvent("teamplay_flag_event", EventFlagEvent,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_flag_event.");
+        LogError("Could not hook the teamplay_flag_event.");
         return false;
     }
 
-    if(!HookEvent("teamplay_point_captured", EventPointCaptured))
+    if(!HookEvent("teamplay_point_captured", EventPointCaptured,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the teampoint_point_captured event.");
+        LogError("Could not hook the teampoint_point_captured event.");
         return false;
     }
 
-    if(!HookEvent("teamplay_capture_blocked", EventCaptureBlocked))
+    if(!HookEvent("teamplay_capture_blocked", EventCaptureBlocked,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the teadmplay_capture_blocked event.");
+        LogError("Could not hook the teadmplay_capture_blocked event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_starttouch", EventDump,EventHookMode_Post))
+    //short player
+    //short area
+    {
+        LogError("Could not hook the controlpoint_starttouch event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_endtouch", EventDump,EventHookMode_Post))
+    //short player
+    //short area
+    {
+        LogError("Could not hook the controlpoint_endtouch event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_initialized", EventDump,EventHookMode_PostNoCopy))
+    {
+        LogError("Could not hook the controlpoint_initialized event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_updateimages", EventDump,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updateimages event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_updatelayout", EventDump,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updatelayout event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_updatecapping", EventDump,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updatecapping event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_updateowner", EventDump,EventHookMode_Post))
+    //short index
+    {
+        LogError("Could not hook the controlpoint_updateowner event.");
+        return false;
+    }
+
+    if(!HookEvent("controlpoint_pulse_element", EventDump,EventHookMode_Post))
+    //short player
+    {
+        LogError("Could not hook the controlpoint_pulse_element event.");
         return false;
     }
 
     if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        LogError("Could not hook the teamplay_round_start event.");
         return false;
     }
 
     if(!HookEventEx("teamplay_round_active",RoundActive,EventHookMode_PostNoCopy))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        LogError("Could not hook the teamplay_round_active event.");
         return false;
     }
 
     if(!HookEventEx("teamplay_round_win",RoundWin,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        LogError("Could not hook the teamplay_round_win event.");
         return false;
     }
 
     if(!HookEventEx("teamplay_round_stalemate",RoundOver,EventHookMode_PostNoCopy))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        LogError("Could not hook the teamplay_round_stalemate event.");
         return false;
     }
 
     if(!HookEventEx("teamplay_win_panel",GameWin,EventHookMode_Post))
     {
-        PrintToServer("[SourceCraft] Could not hook the teamplay_round_active event.");
+        LogError("Could not hook the teamplay_win_panel event.");
         return false;
     }
     
@@ -301,5 +358,20 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
             GiveMvpXP(index,vecpos,score,points);
         }
     }
+}
+
+public EventDump(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new player = GetEventInt(event, "player");
+    new area = GetEventInt(event, "area");
+    new index = GetEventInt(event, "index");
+    LogMessage("Event %s, player=%d, area=%d, index=%d\n", name, player, area, index);
+
+    if (player && IsClientInGame(player))
+        PrintToChat(player, "Event %s, player=%d, area=%d, index=%d", name, player, area, index);
+
+    new client=1;
+    if (IsClientInGame(client))
+        PrintToChat(client, "Event %s, player=%d, area=%d, index=%d", name, player, area, index);
 }
 
