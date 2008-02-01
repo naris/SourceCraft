@@ -163,8 +163,11 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         if (victim_player != -1)
             PickPocket(victim_index, victim_player, attacker_index, attacker_player);
 
-        if (FesteringAbomination(damage, victim_index, attacker_index, attacker_player))
-            changed = true;
+        if (attacker_player != -1)
+        {
+            if (FesteringAbomination(damage, victim_index, attacker_index, attacker_player))
+                changed = true;
+        }
 
     }
 
@@ -173,8 +176,11 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         if (victim_player != -1)
             PickPocket(victim_index, victim_player, assister_index, assister_player);
 
-        if (FesteringAbomination(damage, victim_index, assister_index, assister_player))
-            changed = true;
+        if (assister_player != -1)
+        {
+            if (FesteringAbomination(damage, victim_index, assister_index, assister_player))
+                changed = true;
+        }
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
@@ -311,14 +317,23 @@ public Fart(player,client,ultlevel)
                 range=800.0;
         }
 
+        EmitSoundToAll(blowerWav,client);
+
         new Float:clientLoc[3];
         GetClientAbsOrigin(client, clientLoc);
-        gFartLoc[client][0] =  clientLoc[0];
-        gFartLoc[client][1] =  clientLoc[1];
-        gFartLoc[client][2] =  clientLoc[2];
+        gFartLoc[client][0] = clientLoc[0];
+        gFartLoc[client][1] = clientLoc[1];
+        gFartLoc[client][2] = clientLoc[2];
 
-        EmitSoundToAll(blowerWav,client);
-        TE_SetupSmoke(clientLoc,g_smokeSprite,range,1);
+        new Float:dir[3];
+        dir[0] = 0;
+        dir[1] = 0;
+        dir[2] = 2.0;
+
+        TE_SetupSmoke(clientLoc,g_smokeSprite,range/10.0,1);
+        TE_SendToAll();
+
+        TE_SetupDust(clientLoc,dir,range,1.0);
         TE_SendToAll();
 
         new count=0;

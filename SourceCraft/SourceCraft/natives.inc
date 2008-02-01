@@ -92,6 +92,85 @@ public Native_GetShopItem(Handle:plugin,numParams)
         return -1;
 }
 
+/**
+ * Take health from (damage) a player
+ * @param client: The client's index you want.
+ * @param damage: The amount to damage to deal to the client.
+ * @param weapon: The weapon used to deal the damage to the client.
+ * @param attacker: The index of the attacker.
+ * @param attacker: The index of the assister.
+ * @noreturn
+ * native HurtPlayer(client, damage, const String:weapon[]="", attacker=0, assister=0);
+ */
+public Native_HurtPlayer(Handle:plugin,numParams)
+{
+    if (numParams >= 2 && numParams <= 5)
+    {
+        new victim = GetNativeCell(1);
+        new damage = GetNativeCell(2);
+        new health = GetHealth(victim) - damage;
+        SetHealth(victim,health);
+        new Handle:event = CreateEvent("player_hurt");
+        if (event != INVALID_HANDLE)
+        {
+            SetEventInt(event, "userid", GetClientUserId(victim));
+            SetEventInt(event, "attacker", (numParams >= 4) ? GetClientUserId(GetNativeCell(4)) : 0);
+            SetEventInt(event, "health", health);
+            SetEventInt(event, "damage", damage);
+            if (numParams >= 3)
+            {
+                decl weapon[64] = "";
+                GetNativeString(3,weapon,sizeof(weapon));
+                SetEventString(event, "weapon", weapon);
+            }
+            SetEventInt(event, "assister", (numParams >= 5) ? GetClientUserId(GetNativeCell(5)) : 0);
+            SetEventBool(event, "from_sourcemod" true);
+            FireEvent(event);
+        }
+        SaveHealth(victim);
+    }
+    else
+        return -1;
+}
+
+/**
+ * Kill a player.
+ * @param client: The client's index you want.
+ * @param weapon: The weapon used to deal the damage to the client.
+ * @param attacker: The index of the attacker.
+ * @param attacker: The index of the assister.
+ * @noreturn
+ * native KillPlayer(client, const String:weapon[]="", attacker=0, assister=0);
+ */
+public Native_KillPlayer(Handle:plugin,numParams)
+{
+    if (numParams >= 1 && numParams <= 4)
+    {
+        new victim = GetNativeCell(1);
+        /*
+        SetHealth(client,0);
+        new Handle:event = CreateEvent("player_death");
+        if (event != INVALID_HANDLE)
+        {
+            SetEventInt(event, "userid", GetClientUserId(victim));
+            SetEventInt(event, "attacker", (numParams >= 4) ? GetClientUserId(GetNativeCell(4)) : 0);
+            if (numParams >= 3)
+            {
+                decl weapon[64] = "";
+                GetNativeString(3,weapon,sizeof(weapon));
+                SetEventString(event, "weapon", weapon);
+            }
+            SetEventInt(event, "assister", (numParams >= 5) ? GetClientUserId(GetNativeCell(5)) : 0);
+            SetEventBool(event, "from_sourcemod" true);
+            FireEvent(event);
+        }
+        /*
+        ForcePlayerSuicide(victim);
+        SaveHealth(victim);
+    }
+    else
+        return -1;}
+
 public Native_GetPlayer(Handle:plugin,numParams)
 {
     if(numParams==1)
@@ -545,6 +624,8 @@ public bool:InitNatives()
     CreateNative("CreateShopItem",Native_CreateShopItem);
     CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
     CreateNative("GetShopItem",Native_GetShopItem);
+    CreateNative("HurtPlayer",Native_HurtPlayer);
+    CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("GetPlayer",Native_GetPlayer);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);

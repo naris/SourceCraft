@@ -67,6 +67,27 @@ native CreateHelpCommand(String:name[],String:desc[]);
 native GetShopItem(String:name[]);
 
 /**
+ * Take health from (damage) a player
+ * @param client: The client's index you want.
+ * @param damage: The amount to damage to deal to the client.
+ * @param weapon: The weapon used to deal the damage to the client.
+ * @param attacker: The index of the attacker.
+ * @param attacker: The index of the assister.
+ * @noreturn
+ */
+native HurtPlayer(client, damage, const String:weapon[]="", attacker=0, assister=0);
+
+/**
+ * Kill a player.
+ * @param client: The client's index you want.
+ * @param weapon: The weapon used to deal the damage to the client.
+ * @param attacker: The index of the attacker.
+ * @param attacker: The index of the assister.
+ * @noreturn
+ */
+native KillPlayer(client, const String:weapon[]="", attacker=0, assister=0);
+
+/**
  * Gets the Player ID used for the rest of the interface natives.
  * @param client: The client's index you want.
  * @return The return value will be the Player ID, -1 on failure.
