@@ -34,6 +34,11 @@ enum objects { unknown, sentrygun, dispenser, teleporter };
 new m_BuilderOffset[objects];
 new m_BuildingOffset[objects];
 
+// Arrays to keep track of stolen objects
+new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
+new Handle:m_StolenBuilderList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
+new Handle:m_StolenClassList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
+
 new g_redGlow;
 new g_blueGlow;
 new g_haloSprite;
@@ -61,10 +66,20 @@ public OnPluginStart()
     GetGameType();
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
-    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
+    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
     cvarReaverScarabEnable=CreateConVar("sc_reaverscarabenable","1");
 
-    HookEvent("player_spawn",PlayerSpawnEvent);
+    if(!HookEventEx("player_spawn",PlayerSpawnEvent))
+        SetFailState("Could not hook the player_spawn event.");
+
+    if (GameType == tf2)
+    {
+        if(!HookEventEx("teamplay_round_win",RoundOver,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_round_win event.");
+
+        if(!HookEventEx("teamplay_round_stalemate",RoundOver,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_round_stalemate event.");
+    }
 
     CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -150,7 +165,10 @@ public OnPlayerAuthed(client,player)
 public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
+    {
         ResetCloakingAndDetector(client);
+        ResetMindControledObjects(client);
+    }
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)
@@ -205,10 +223,22 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     LogEventDamage(event, damage, "Protoss::PlayerDeathEvent", raceID);
 
     if (victim_index && victim_race == raceID)
+    {
         ResetCloakingAndDetector(victim_index);
+        ResetMindControledObjects(victim_index);
+    }
 }
 
-public bool:ReaverScarab(damage, victim_index, index, player)
+public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new maxplayers=GetMaxClients();
+    for (new index=1;index<=maxplayers;index++)
+    {
+        ResetMindControledObjects(index);
+    }
+}
+
+bool:ReaverScarab(damage, victim_index, index, player)
 {
     new skill_cg = GetSkillLevel(player,raceID,0);
     if (skill_cg > 0)
@@ -281,7 +311,7 @@ public bool:ReaverScarab(damage, victim_index, index, player)
     return false;
 }
 
-public MindControl(client,player)
+MindControl(client,player)
 {
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
@@ -362,6 +392,20 @@ public MindControl(client,player)
                                         new team = GetClientTeam(client);
                                         if (builderTeam != team)
                                         {
+                                            if (m_StolenObjectList[client] == INVALID_HANDLE)
+                                                m_StolenObjectList[client] = CreateArray();
+
+                                            if (m_StolenBuilderList[client] == INVALID_HANDLE)
+                                                m_StolenBuilderList[client] = CreateArray();
+
+                                            if (m_StolenClassList[client] == INVALID_HANDLE)
+                                                m_StolenClassList[client] = CreateArray();
+
+                                            // Keep a list of stolen object and thier original owners.
+                                            PushArrayCell(m_StolenObjectList[client], target);
+                                            PushArrayCell(m_StolenBuilderList[client], builder);
+                                            PushArrayCell(m_StolenClassList[client], obj);
+
                                             SetEntDataEnt2(target, m_BuilderOffset[obj], client, true); // Change the builder to client
 
                                             SetVariantInt(team); //Prep the value for the call below
@@ -422,6 +466,68 @@ public MindControl(client,player)
         }
     }
 }
+
+ResetMindControledObjects(client)
+{
+    if (m_StolenObjectList[client] != INVALID_HANDLE)
+    {
+        new size = GetArraySize(m_StolenObjectList[client]);
+        for (new index = 0; index < size; index++)
+        {
+            new target = GetArrayCell(m_StolenObjectList[client], index);
+            if (IsValidEntity(target))
+            {
+                decl String:class[32] = "";
+                if (GetEntityNetClass(target,class,sizeof(class)))
+                {
+                    new objects:obj2;
+                    if (StrEqual(class, "CObjectSentrygun", false))
+                        obj2 = sentrygun;
+                    else if (StrEqual(class, "CObjectDispenser", false))
+                        obj2 = dispenser;
+                    else if (StrEqual(class, "CObjectTeleporter", false))
+                        obj2 = teleporter;
+                    else
+                        obj2 = unknown;
+
+                    // Is the object still what we stole?
+                    new objects:obj = objects:GetArrayCell(m_StolenClassList[client], index);
+                    if (obj == obj2)
+                    {
+                        // Do we still own it?
+                        if (GetEntDataEnt2(target, m_BuilderOffset[obj]) == client)
+                        {
+                            // Is the original builser still around?
+                            new builder = GetArrayCell(m_StolenBuilderList[client], index);
+                            if (IsClientInGame(builder) && TF_GetClass(builder) == TF2_ENG)
+                            {
+                                // Give it back.
+                                new team = GetClientTeam(builder);
+                                SetEntDataEnt2(target, m_BuilderOffset[obj], builder, true); // Change the builder back
+
+                                SetVariantInt(team); //Prep the value for the call below
+                                AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                                SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                            }
+                            else
+                            {
+                                // Zap it.
+                                //SetEntityHealth(target, 0); // Kill the object.
+                                RemoveEdict(target); // Remove the object.
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ClearArray(m_StolenObjectList[client]);
+        ClearArray(m_StolenBuilderList[client]);
+        ClearArray(m_StolenClassList[client]);
+    }
+}
+
 
 public Action:AllowMindControl(Handle:timer,any:index)
 {
@@ -580,7 +686,7 @@ public Action:CloakingAndDetector(Handle:timer)
     return Plugin_Continue;
 }
 
-public ResetCloakingAndDetector(client)
+ResetCloakingAndDetector(client)
 {
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
