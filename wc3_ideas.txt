@@ -4,63 +4,7 @@ Jig: heal teammates
 
 Jig: ultimate to freeze person
 
-Me: Bomberman Ultimate == multiple bombings ala suicide bug
-
-
 //TF2 Teams, 3=Blue Team | 2 = Red Team
-
-Terran
-S1: Invisibility w/total when not moving
-S2: Armor
-S3: speed
-Ult: Jetpack
-
-Zerg
-S1: Adrenal Glands (Increased Melee Attack)
-S2: Regeneration
-S3: Healing Aura (Jigs Idea)
-Ult: Grab
-
-Protoss
-S1: Shields 
-S2: Cloaking field (cloaks teammates but NOT player)
-S3: Detector (Detects invisible things [makes them glow])
-Ult: Mind Control (steal sg/dispaenser/teleport)
-
-Al Queda
-S1: Ressurectiuon (respawn and teleport back to orig pos)
-S2: Flaming Wrath (anti healing aura)
-S3: Suicide Bomber
-Ult: Mad Bomber
-
-Sick Farter
-S1: Festering Abomination (does extra damage)
-S2: Pickpocket (steals money from other team members)
-S3: Repulsion/Revulsion (slaps other team members)
-Ult: Farts toxic cloud that persists and kills enemies.
-
-UAW
-S1: Inflated Wages (Level Faster & Get more credits for everything)
-S2: Seniority (You don't die, someone else on your team does, or you get money)
-S3: Negotiations (various things at various times)
-Ult: Work Rules (hook)
-
-Negotiations:
-	Overtime/Premium Pay/Shift differential/COLA/Profit Sharing/Bonus - Get Money
-	Grievance/Shop Steward/Arbitration/Collective Baraining/Fringe Benefits - Get XP
-	Boycott/Strike/Picketing (you teleport back to spawn)
-	Lockout/Workforce Reduction (you die)
-	Bankruptcy (you die & lose level & XP)
-	Buyout (you die and get money for XP and Level)
-
-Seniority:
-	Buyout (get money for death)
-	Jobs Bank (you don't die, teleport to spawn)
-	Bumping (someone else on your team dies instead of you)
-
-Existing skills:
-increased speed
-
 
 Skill Ideas:
 increased Projectile damage
@@ -70,26 +14,6 @@ Blink (Total Inis for very short time)
 Ultimate Ideas:
   Portal
 
-
-
-After some tests here are some known bugs.
-
-All of the following items/skills do not work.
-
-Mask of Death
-Boots of Speed
-Invisibility --> Varies from person to person sometimes it works, sometimes it doesnt work. (May not be bugged)
-Unholy aura
-Sock of the Feather
-Critical Grenade?? (Tried on Demoman with no results)
-
-All of the following skills/items DO work.
-Mole
-Periapt of Health.
-Levitation -- Was working on all classes. Then I switched to scout, it worked and was CRAZY, then all of a sudden it stopped working on any class.
-Thorns Aura
-Trueshot aura
-Vampiric Aura
 
 I was able to find much of the variables such as m_flMaxSpeed and m_nModelIndex while playing with some cheat on that showed a whole load of text and data that was constantly changing. I even found the name for the Cloak meter for not just spy but all classes as for some reason Valve has all of them set at a max of 100 this is how it showed on screen (or at least close to it)
 
