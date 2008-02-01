@@ -652,7 +652,7 @@ public bool:InitNatives()
     CreateNative("GetShopItem",Native_GetShopItem);
     CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("HurtPlayer",Native_HurtPlayer);
-    CreateNative("HealPlayer",Native_HurtPlayer);
+    CreateNative("HealPlayer",Native_HealPlayer);
     CreateNative("GetPlayer",Native_GetPlayer);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
