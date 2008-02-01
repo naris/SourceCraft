@@ -80,15 +80,11 @@ public bool:HookTFEvents()
     }
    
     if(!HookEvent("controlpoint_starttouch", DumpEvent,EventHookMode_Post))
-    //short player
-    //short area
     {
         LogError("Could not hook the controlpoint_starttouch event.");
     }
 
     if(!HookEvent("controlpoint_endtouch", DumpEvent,EventHookMode_Post))
-    //short player
-    //short area
     {
         LogError("Could not hook the controlpoint_endtouch event.");
     }
@@ -99,31 +95,26 @@ public bool:HookTFEvents()
     }
 
     if(!HookEvent("controlpoint_updateimages", DumpEvent,EventHookMode_Post))
-    //short index
     {
         LogError("Could not hook the controlpoint_updateimages event.");
     }
 
     if(!HookEvent("controlpoint_updatelayout", DumpEvent,EventHookMode_Post))
-    //short index
     {
         LogError("Could not hook the controlpoint_updatelayout event.");
     }
 
     if(!HookEvent("controlpoint_updatecapping", DumpEvent,EventHookMode_Post))
-    //short index
     {
         LogError("Could not hook the controlpoint_updatecapping event.");
     }
 
     if(!HookEvent("controlpoint_updateowner", DumpEvent,EventHookMode_Post))
-    //short index
     {
         LogError("Could not hook the controlpoint_updateowner event.");
     }
 
     if(!HookEvent("controlpoint_pulse_element", DumpEvent,EventHookMode_Post))
-    //short player
     {
         LogError("Could not hook the controlpoint_pulse_element event.");
     }
