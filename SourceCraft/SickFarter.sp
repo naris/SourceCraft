@@ -276,7 +276,7 @@ public PickPocket(victim_index, victim_player, index, player)
             if (victim_cash > 0)
             {
                 new cash=GetCredits(player);
-                new amount = RoundFloat(float(victim_cash) * percent);
+                new amount = RoundToCeil(float(victim_cash) * percent);
 
                 SetCredits(victim_player,victim_cash-amount);
                 SetCredits(player,cash+amount);

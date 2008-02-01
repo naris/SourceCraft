@@ -105,7 +105,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new ult_level = GetSkillLevel(player,race,0);
+            new ult_level = GetSkillLevel(player,race,3);
             if (ult_level)
                 SuicideBomber(client,player,ult_level,false);
         }
@@ -204,7 +204,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 
     if (victim_race == raceID && !m_Suicided[victim_index])
     {
-        new ult_level=GetSkillLevel(victim_player,raceID,0);
+        new ult_level=GetSkillLevel(victim_player,raceID,3);
         if (ult_level)
             SuicideBomber(victim_index,victim_player,ult_level,true);
     }

@@ -210,7 +210,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 
 public bool:ReaverScarab(damage, victim_index, index, player)
 {
-    new skill_cg = GetSkillLevel(player,raceID,1);
+    new skill_cg = GetSkillLevel(player,raceID,0);
     if (skill_cg > 0)
     {
         new Float:percent, chance;
@@ -496,6 +496,16 @@ public Action:CloakingAndDetector(Handle:timer)
 
                                     if (GetClientTeam(index) == GetClientTeam(client))
                                     {
+                                        new check_player = GetPlayer(index);
+                                        if (check_player>-1)
+                                        {
+                                            if (GetRace(check_player) == raceID &&
+                                                GetSkillLevel(check_player,raceID,1) > 0)
+                                            {
+                                                continue; // Don't cloak other arbiters!
+                                            }
+                                        }
+
                                         new bool:cloak = (cloaked_visibility < 255 &&
                                                           IsInRange(client,index,cloaking_range));
                                         if (cloak)
@@ -517,7 +527,7 @@ public Action:CloakingAndDetector(Handle:timer)
 
                                         if (cloak)
                                         {
-                                            SetMinVisibility(player_check, cloaked_visibility);
+                                            SetMinVisibility(player_check, cloaked_visibility,0.5,0.0);
                                             m_Cloaked[client][index] = true;
 
                                             if (!m_Cloaked[client][index])

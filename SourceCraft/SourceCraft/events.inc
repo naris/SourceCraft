@@ -307,7 +307,7 @@ public DumpEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
     LogMessage("Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d\n",
                name, player, area, index, userid, teamid, score);
-    /*
+    /**/
     if (player && IsClientInGame(player))
         PrintToChat(player, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
                     name, player, area, index, userid, teamid, score);
@@ -317,9 +317,9 @@ public DumpEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     name, player, area, index, userid, teamid, score);
 
     new client=1;
-    if (IsClientInGame(client))
+    if (client != player && IsClientInGame(client))
         PrintToChat(client, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
                     name, player, area, index, userid, teamid, score);
-    */               
+    /**/               
 }
 
