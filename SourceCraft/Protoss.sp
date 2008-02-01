@@ -260,7 +260,7 @@ public bool:ReaverScarab(damage, victim_index, index, player)
                 else
                     LogDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
 
-                SetHealth(victim_index,new_health);
+                SetEntityHealth(victim_index,new_health);
 
                 if (GetGameTime() - gReaverScarabTime[index] >= 10.0)
                 {

@@ -116,7 +116,7 @@ public Action:Regeneration(Handle:timer)
                         new newhp=GetClientHealth(client)+skill_regeneration;
                         new maxhp=(GameType == tf2) ? GetMaxHealth(client) : 100;
                         if(newhp<=maxhp)
-                            SetHealth(client,newhp);
+                            SetEntityHealth(client,newhp);
                     }
 
                     new skill_healing_aura=GetSkillLevel(player,raceID,2);
@@ -160,7 +160,7 @@ public Action:Regeneration(Handle:timer)
                                             new newhp=GetClientHealth(index)+skill_healing_aura;
                                             new maxhp=(GameType == tf2) ? GetMaxHealth(index) : 100;
                                             if(newhp<=maxhp)
-                                                SetHealth(index,newhp);
+                                                HealPlayer(index,newhp);
 
                                             if (++count > num)
                                                 break;
@@ -294,7 +294,7 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, index, player)
         else
             LogDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
 
-        SetHealth(victim_index,newhp);
+        SetEntityHealth(victim_index,newhp);
 
         new Float:Origin[3];
         GetClientAbsOrigin(victim_index, Origin);

@@ -310,7 +310,7 @@ bool:Armor(damage, victim_index, victim_player)
             if (newhp > maxhp)
                 newhp = maxhp;
 
-            SetHealth(victim_index,newhp);
+            SetEntityHealth(victim_index,newhp);
 
             m_Armor[victim_index] = armor - amount;
 

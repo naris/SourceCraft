@@ -50,12 +50,7 @@ stock IncreaseHealth(client, amount)
         SetMaxHealth(client, health);
         healthIncreased[client] = true;
     }
-    SetHealth(client, health);
-}
-
-stock SetHealth(entity,amount)
-{
-    SetEntityHealth(entity,(amount <= 0) ? 0 : amount);
+    SetEntityHealth(client, health);
 }
 
 stock SetMaxHealth(entity,amount)
@@ -72,12 +67,4 @@ stock GetMaxHealth(entity)
         return GetEntData(entity,maxHealthOffset[entity],1);
     else
         return maxHealth[entity];
-}
-
-stock KillPlayer(client)
-{
-    // die! die! die!!!!
-    //SetEntityHealth(client,0);
-    //ForcePlayerSuicide(client);
-    FakeClientCommand(client,"kill\n");
 }

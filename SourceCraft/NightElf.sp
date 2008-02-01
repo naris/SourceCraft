@@ -172,7 +172,7 @@ public bool:Evasion(damage, victim_index, victim_player, attacker_index, assiste
             if (newhp > maxhp)
                 newhp = maxhp;
 
-            SetHealth(victim_index,newhp);
+            SetEntityHealth(victim_index,newhp);
 
             LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victim_index, attacker_index);
             PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
@@ -222,7 +222,7 @@ public ThornsAura(damage, victim_index, victim_player, index, player)
                 else
                     LogDamage(victim_index, index, "thorns_aura", "Thorns Aura", amount);
 
-                SetHealth(index,newhp);
+                SetEntityHealth(index,newhp);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victim_index, Origin);
@@ -268,7 +268,7 @@ public TrueshotAura(damage, victim_index, index, player)
             else
                 LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
 
-            SetHealth(victim_index,newhp);
+            SetEntityHealth(victim_index,newhp);
 
             new Float:Origin[3];
             GetClientAbsOrigin(victim_index, Origin);

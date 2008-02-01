@@ -344,7 +344,7 @@ public Bomber(client,player,level,bool:ondeath)
                                 if (ondeath)
                                 {
                                     LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                    SetHealth(index,newhealth);
+                                    SetEntityHealth(index,newhealth);
                                 }
                                 else
                                 {
@@ -359,7 +359,7 @@ public Bomber(client,player,level,bool:ondeath)
                                 else
                                     LogDamage(client, index, "mad_bomber", "Mad Bomber", hp);
 
-                                SetHealth(index,newhealth);
+                                SetEntityHealth(index,newhealth);
                             }
                         }
                     }
@@ -426,24 +426,12 @@ public Action:FlamingWrath(Handle:timer)
                                                 {
                                                     newhp=0;
                                                     //LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                                    new Handle:event = CreateEvent("player_death");
-                                                    if (event != INVALID_HANDLE)
-                                                    {
-                                                        SetEventInt(event, "userid", GetClientUserId(index));
-                                                        SetEventInt(event, "attacker", GetClientUserId(client));
-                                                        SetEventInt(event, "damage", skill_flaming_wrath);
-                                                        FireEvent(event);
-                                                    }
-                                                    else
-                                                    {
-                                                        LogError("Unable to create player_death event!\n");
-                                                        KillPlayer(index);
-                                                    }
+                                                    KillPlayer(index,client,"flaming_wrath");
                                                 }
                                                 else
                                                 {
                                                     LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                                    SetHealth(index,newhp);
+                                                    HurtPlayer(index,skill_flaming_wrath,client,"flaming_wrath");
                                                 }
 
                                                 if (++count > num)

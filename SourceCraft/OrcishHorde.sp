@@ -309,7 +309,7 @@ public bool:AcuteStrike(damage, victim_index, index, player)
             else
                 LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
 
-            SetHealth(victim_index,new_health);
+            SetEntityHealth(victim_index,new_health);
 
             new color[4] = { 100, 255, 55, 255 };
             TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
@@ -362,7 +362,7 @@ public bool:AcuteGrenade(damage, victim_index, index, player,
                 else
                     LogDamage(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
 
-                SetHealth(victim_index,new_health);
+                SetEntityHealth(victim_index,new_health);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victim_index, Origin);
@@ -449,7 +449,7 @@ public ChainLightning(player,client,ultlevel)
                                 else
                                 {
                                     LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-                                    SetHealth(index,new_health);
+                                    HurtPlayer(index, dmg, client, "chain_lightning");
                                 }
 
                                 last=index;

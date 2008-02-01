@@ -228,7 +228,7 @@ public bool:FesteringAbomination(damage, victim_index, index, player)
             else
                 LogDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
 
-            SetHealth(victim_index,new_health);
+            SetEntityHealth(victim_index,new_health);
 
             new color[4] = { 100, 255, 55, 255 };
             TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
@@ -326,8 +326,8 @@ public Fart(player,client,ultlevel)
         gFartLoc[client][2] = clientLoc[2];
 
         new Float:dir[3];
-        dir[0] = 0;
-        dir[1] = 0;
+        dir[0] = 0.0;
+        dir[1] = 0.0;
         dir[2] = 2.0;
 
         TE_SetupSmoke(clientLoc,g_smokeSprite,range/10.0,1);
@@ -363,13 +363,13 @@ public Fart(player,client,ultlevel)
                                     new newxp=GetXP(player,raceID)+addxp;
                                     SetXP(player,raceID,newxp);
 
-                                    LogKill(client, index, "fart", "Fart", 40, addxp);
+                                    //LogKill(client, index, "fart", "Fart", 40, addxp);
                                     KillPlayer(index);
                                 }
                                 else
                                 {
                                     LogDamage(client, index, "fart", "Fart", 40);
-                                    SetHealth(index,new_health);
+                                    HurtPlayer(index, 40, client, "fart");
                                 }
 
                                 if (++count > num)
