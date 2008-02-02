@@ -142,15 +142,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     {
         new skill = GetSkillLevel(player,race,3);
         if (skill)
-        {
             ChainLightning(player,client,skill);
-            new Float:cooldown = GetConVarFloat(cvarChainCooldown);
-            if (cooldown > 0.0)
-            {
-                m_AllowChainLightning[client]=false;
-                CreateTimer(cooldown,AllowChainLightning,client);
-            }
-        }
     }
 }
 
@@ -379,89 +371,91 @@ public bool:AcuteGrenade(damage, victim_index, index, player,
 
 public ChainLightning(player,client,ultlevel)
 {
-    new ult_level=GetSkillLevel(player,raceID,3);
-    if(ult_level)
+    new dmg;
+    new num=ultlevel*2;
+    new Float:range=1.0;
+    switch(ultlevel)
     {
-        new dmg;
-        new num=ult_level*2;
-        new Float:range=1.0;
-        switch(ult_level)
+        case 1:
         {
-            case 1:
-            {
-                dmg=GetRandomInt(20,40);
-                range=300.0;
-            }
-            case 2:
-            {
-                dmg=GetRandomInt(30,50);
-                range=450.0;
-            }
-            case 3:
-            {
-                dmg=GetRandomInt(40,60);
-                range=650.0;
-            }
-            case 4:
-            {
-                dmg=GetRandomInt(50,70);
-                range=800.0;
-            }
+            dmg=GetRandomInt(20,40);
+            range=300.0;
         }
-        new count=0;
-        new last=client;
-        new Float:clientLoc[3];
-        GetClientAbsOrigin(client, clientLoc);
-        new maxplayers=GetMaxClients();
-        for(new index=1;index<=maxplayers;index++)
+        case 2:
         {
-            if (client != index && IsClientInGame(index) &&
-                IsPlayerAlive(index) && GetClientTeam(client) != GetClientTeam(index))
+            dmg=GetRandomInt(30,50);
+            range=450.0;
+        }
+        case 3:
+        {
+            dmg=GetRandomInt(40,60);
+            range=650.0;
+        }
+        case 4:
+        {
+            dmg=GetRandomInt(50,70);
+            range=800.0;
+        }
+    }
+    new count=0;
+    new last=client;
+    new Float:clientLoc[3];
+    GetClientAbsOrigin(client, clientLoc);
+    new maxplayers=GetMaxClients();
+    for(new index=1;index<=maxplayers;index++)
+    {
+        if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(client) != GetClientTeam(index))
+        {
+            new player_check=GetPlayer(index);
+            if (player_check>-1)
             {
-                new player_check=GetPlayer(index);
-                if (player_check>-1)
+                if (!GetImmunity(player_check,Immunity_Ultimates))
                 {
-                    if (!GetImmunity(player_check,Immunity_Ultimates))
+                    if (IsInRange(client,index,range))
                     {
-                        if (IsInRange(client,index,range))
+                        new Float:indexLoc[3];
+                        GetClientAbsOrigin(index, indexLoc);
+                        if (TraceTarget(client, index, clientLoc, indexLoc))
                         {
-                            new Float:indexLoc[3];
-                            GetClientAbsOrigin(index, indexLoc);
-                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                            new color[4] = { 10, 200, 255, 255 };
+                            TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
+                                              0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                            TE_SendToAll();
+
+                            new new_health=GetClientHealth(index)-dmg;
+                            if (new_health <= 0)
                             {
-                                new color[4] = { 10, 200, 255, 255 };
-                                TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
-                                                  0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                                TE_SendToAll();
+                                new_health=0;
 
-                                new new_health=GetClientHealth(index)-dmg;
-                                if (new_health <= 0)
-                                {
-                                    new_health=0;
+                                new addxp=5+ultlevel;
+                                new newxp=GetXP(player,raceID)+addxp;
+                                SetXP(player,raceID,newxp);
 
-                                    new addxp=5+ultlevel;
-                                    new newxp=GetXP(player,raceID)+addxp;
-                                    SetXP(player,raceID,newxp);
-
-                                    LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
-                                    KillPlayer(index);
-                                }
-                                else
-                                {
-                                    LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-                                    HurtPlayer(index, dmg, client, "chain_lightning");
-                                }
-
-                                last=index;
-                                if (++count > num)
-                                    break;
+                                LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
+                                KillPlayer(index);
                             }
+                            else
+                            {
+                                LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
+                                HurtPlayer(index, dmg, client, "chain_lightning");
+                            }
+
+                            last=index;
+                            if (++count > num)
+                                break;
                         }
                     }
                 }
             }
         }
-        EmitSoundToAll(thunderWav,client);
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+    }
+    EmitSoundToAll(thunderWav,client);
+    new Float:cooldown = GetConVarFloat(cvarChainCooldown);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    if (cooldown > 0.0)
+    {
+        m_AllowChainLightning[client]=false;
+        CreateTimer(cooldown,AllowChainLightning,client);
     }
 }

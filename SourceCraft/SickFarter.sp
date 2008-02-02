@@ -23,7 +23,7 @@
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowFart[MAXPLAYERS+1];
-new Float:gFartLoc[MAXPLAYERS+1][3];
+//new Float:gFartLoc[MAXPLAYERS+1][3];
 
 new Handle:m_Currency   = INVALID_HANDLE; 
 new Handle:m_Currencies = INVALID_HANDLE; 
@@ -130,22 +130,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     {
         new skill = GetSkillLevel(player,race,3);
         if (skill)
-        {
             Fart(player,client,skill);
-            new Float:cooldown = GetConVarFloat(cvarFartCooldown);
-            if (cooldown > 0.0)
-            {
-                m_AllowFart[client]=false;
-                CreateTimer(cooldown,AllowFart,client);
-            }
-        }
     }
-}
-
-public Action:AllowFart(Handle:timer,any:index)
-{
-    m_AllowFart[index]=true;
-    return Plugin_Stop;
 }
 
 // Events
@@ -300,88 +286,104 @@ public PickPocket(victim_index, victim_player, index, player)
 
 public Fart(player,client,ultlevel)
 {
-    new ult_level=GetSkillLevel(player,raceID,3);
-    if(ult_level)
+    new num=ultlevel*3;
+    new Float:range;
+    switch(ultlevel)
     {
-        new num=ult_level*3;
-        new Float:range=1.0;
-        switch(ult_level)
+        case 1:
+            range=300.0;
+        case 2:
+            range=450.0;
+        case 3:
+            range=650.0;
+        case 4:
+            range=800.0;
+    }
+
+    EmitSoundToAll(blowerWav,client);
+
+    new Float:clientLoc[3];
+    GetClientAbsOrigin(client, clientLoc);
+
+    TE_Start("Bubble Trail");
+    TE_SendToAll();
+
+    //gFartLoc[client][0] = clientLoc[0];
+    //gFartLoc[client][1] = clientLoc[1];
+    //gFartLoc[client][2] = clientLoc[2];
+
+    //TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,1);
+    //TE_SendToAll();
+
+    //TE_SetupSmoke(clientLoc,g_smokeSprite,range/10.0,1);
+    //TE_SendToAll();
+
+    //new Float:dir[3];
+    //dir[0] = 0.0;
+    //dir[1] = 0.0;
+    //dir[2] = 2.0;
+    //TE_SetupDust(clientLoc,dir,range,1.0);
+    //TE_SendToAll();
+
+    new count=0;
+    new maxplayers=GetMaxClients();
+    for(new index=1;index<=maxplayers;index++)
+    {
+        if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
+            GetClientTeam(client) != GetClientTeam(index))
         {
-            case 1:
-                range=300.0;
-            case 2:
-                range=450.0;
-            case 3:
-                range=650.0;
-            case 4:
-                range=800.0;
-        }
-
-        EmitSoundToAll(blowerWav,client);
-
-        new Float:clientLoc[3];
-        GetClientAbsOrigin(client, clientLoc);
-        gFartLoc[client][0] = clientLoc[0];
-        gFartLoc[client][1] = clientLoc[1];
-        gFartLoc[client][2] = clientLoc[2];
-
-        new Float:dir[3];
-        dir[0] = 0.0;
-        dir[1] = 0.0;
-        dir[2] = 2.0;
-
-        TE_SetupSmoke(clientLoc,g_smokeSprite,range/10.0,1);
-        TE_SendToAll();
-
-        TE_SetupDust(clientLoc,dir,range,1.0);
-        TE_SendToAll();
-
-        new count=0;
-        new maxplayers=GetMaxClients();
-        for(new index=1;index<=maxplayers;index++)
-        {
-            if (client != index && IsClientInGame(index) &&
-                IsPlayerAlive(index) && GetClientTeam(client) != GetClientTeam(index))
+            new player_check=GetPlayer(index);
+            if (player_check>-1)
             {
-                new player_check=GetPlayer(index);
-                if (player_check>-1)
+                if (!GetImmunity(player_check,Immunity_Ultimates))
                 {
-                    if (!GetImmunity(player_check,Immunity_Ultimates))
+                    if ( IsInRange(client,index,range))
                     {
-                        if ( IsInRange(client,index,range))
+                        new Float:indexLoc[3];
+                        GetClientAbsOrigin(client, indexLoc);
+                        if (TraceTarget(client, index, clientLoc, indexLoc))
                         {
-                            new Float:indexLoc[3];
-                            GetClientAbsOrigin(client, indexLoc);
-                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                            new new_health=GetClientHealth(index)-40;
+                            if (new_health <= 0)
                             {
-                                new new_health=GetClientHealth(index)-40;
-                                if (new_health <= 0)
-                                {
-                                    new_health=0;
+                                new_health=0;
 
-                                    new addxp=5+ultlevel;
-                                    new newxp=GetXP(player,raceID)+addxp;
-                                    SetXP(player,raceID,newxp);
+                                new addxp=5+ultlevel;
+                                new newxp=GetXP(player,raceID)+addxp;
+                                SetXP(player,raceID,newxp);
 
-                                    //LogKill(client, index, "fart", "Fart", 40, addxp);
-                                    KillPlayer(index);
-                                }
-                                else
-                                {
-                                    LogDamage(client, index, "fart", "Fart", 40);
-                                    HurtPlayer(index, 40, client, "fart");
-                                }
-
-                                if (++count > num)
-                                    break;
+                                //LogKill(client, index, "fart", "Fart", 40, addxp);
+                                KillPlayer(index);
                             }
+                            else
+                            {
+                                LogDamage(client, index, "fart", "Fart", 40);
+                                HurtPlayer(index, 40, client, "fart");
+                            }
+
+                            if (++count > num)
+                                break;
                         }
                     }
                 }
             }
         }
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFart%c, you now need to wait 45 seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
     }
+    new Float:cooldown = GetConVarFloat(cvarFartCooldown);
+
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFart%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+
+    if (cooldown > 0.0)
+    {
+        m_AllowFart[client]=false;
+        CreateTimer(cooldown,AllowFart,client);
+    }
+}
+
+public Action:AllowFart(Handle:timer,any:index)
+{
+    m_AllowFart[index]=true;
+    return Plugin_Stop;
 }
 
 public Action:Revulsion(Handle:timer)

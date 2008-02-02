@@ -299,7 +299,7 @@ public Action:PlayerProperties(Handle:timer)
                 {
                     new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
                     if (m_BaseSpeed[client] == 0.0)
-                    m_BaseSpeed[client] == curSpeed;
+                        m_BaseSpeed[client] == curSpeed;
 
                     if (overridePlayerSpeed || speed != 1.0 || speedAltered[client])
                     {
@@ -316,12 +316,13 @@ public Action:PlayerProperties(Handle:timer)
                             newSpeed = m_BaseSpeed[client] * speed;
                         }
 
-                        LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
-                                    client, newSpeed, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
-                                    speed, speedAltered[client], overridePlayerSpeed);
-
                         if (curSpeed != newSpeed)
+                        {
                             SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
+                                       client, newSpeed, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
+                                       speed, speedAltered[client], overridePlayerSpeed);
+                        }
 
                         speedAltered[client] = (speed != 1.0);
                     }
