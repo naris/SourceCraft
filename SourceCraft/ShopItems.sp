@@ -12,13 +12,13 @@
 #include <sdktools>
 #include <tf2>
 
-#include "SourceCraft/SourceCraft"
+#include "sc/SourceCraft"
 
-#include "SourceCraft/util"
-#include "SourceCraft/health"
-#include "SourceCraft/authtimer"
-#include "SourceCraft/respawn"
-#include "SourceCraft/log"
+#include "sc/util"
+#include "sc/health"
+#include "sc/authtimer"
+#include "sc/respawn"
+#include "sc/log"
 
 // Defines
 

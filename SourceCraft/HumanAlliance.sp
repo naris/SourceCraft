@@ -11,14 +11,14 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "SourceCraft/SourceCraft"
+#include "sc/SourceCraft"
 
-#include "SourceCraft/util"
-#include "SourceCraft/health"
-#include "SourceCraft/freeze"
-#include "SourceCraft/authtimer"
+#include "sc/util"
+#include "sc/health"
+#include "sc/freeze"
+#include "sc/authtimer"
 
-#include "SourceCraft/log" // for debugging
+#include "sc/log" // for debugging
 
 new raceID; // The ID we are assigned to
 

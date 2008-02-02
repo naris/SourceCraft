@@ -12,12 +12,12 @@
 
 #include "jetpack.inc"
 
-#include "SourceCraft/SourceCraft"
+#include "sc/SourceCraft"
 
-#include "SourceCraft/util"
-#include "SourceCraft/health"
+#include "sc/util"
+#include "sc/health"
 
-#include "SourceCraft/log" // for debugging
+#include "sc/log" // for debugging
 
 new raceID; // The ID we are assigned to
 

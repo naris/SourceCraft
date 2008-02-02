@@ -11,16 +11,16 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "SourceCraft/SourceCraft"
+#include "sc/SourceCraft"
 
-#include "SourceCraft/util"
-#include "SourceCraft/range"
-#include "SourceCraft/trace"
-#include "SourceCraft/health"
-#include "SourceCraft/authtimer"
-#include "SourceCraft/respawn"
-#include "SourceCraft/log"
-#include "SourceCraft/weapons"
+#include "sc/util"
+#include "sc/range"
+#include "sc/trace"
+#include "sc/health"
+#include "sc/authtimer"
+#include "sc/respawn"
+#include "sc/log"
+#include "sc/weapons"
 
 new raceID; // The ID we are assigned to
 

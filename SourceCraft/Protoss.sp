@@ -11,13 +11,13 @@
 #include <sdktools>
 #include <tf2>
 
-#include "SourceCraft/SourceCraft"
+#include "sc/SourceCraft"
 
-#include "SourceCraft/util"
-#include "SourceCraft/range"
-#include "SourceCraft/trace"
-#include "SourceCraft/health"
-#include "SourceCraft/log"
+#include "sc/util"
+#include "sc/range"
+#include "sc/trace"
+#include "sc/health"
+#include "sc/log"
 
 new raceID; // The ID we are assigned to
 
