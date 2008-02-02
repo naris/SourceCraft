@@ -55,7 +55,11 @@ stock GetDamage(Handle:event, client=0)
             {
                 new prevHealth = savedHealth[client]; 
                 if (prevHealth)
+                {
                     damage = prevHealth - GetEventInt(event,"health");
+                    if (damage < 0)
+                        damage = 0;
+                }
             }
         }
     }
