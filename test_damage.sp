@@ -10,9 +10,9 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "SourceCraft/SourceCraft/util"
-#include "SourceCraft/SourceCraft/health"
-#include "SourceCraft/SourceCraft/damage"
+#include "SourceCraft/sc/util"
+#include "SourceCraft/sc/health"
+#include "SourceCraft/sc/engine/damage"
 
 public Plugin:myinfo = 
 {
