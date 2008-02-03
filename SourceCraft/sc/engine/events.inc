@@ -72,7 +72,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 m_BaseSpeed[index] = maxSpeed;
 
                 LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f",
-                           index, m_BaseSpeed[index], maxSpeed, GetNormalSpeed(index));
+                           index, m_BaseSpeed[index], maxSpeed, GetClassSpeed(index));
                 }
             }
 

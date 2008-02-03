@@ -65,6 +65,10 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added more comprensive error checking
 		* Changed !soundlist to call Sound_Menu() instead of List_Sounds().
+	1.11  Feb 03, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added separate cm_admin_warn convar.
+		* Added unlimited sounds when limit == 0.
 
 
 Todo:
@@ -77,6 +81,7 @@ Cvarlist (default value):
 	sm_sound_warn 3			 Number of sounds to warn person at
 	sm_sound_limit 5 		 Maximum sounds per person
 	sm_sound_admin_limit 5 		 Maximum sounds per admin
+	sm_sound_admin_warn 3		 Number of sounds to admin person at
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	 Time between each sound trigger, 0.0 to disable checking
@@ -151,6 +156,7 @@ new Handle:cvarjoinspawn = INVALID_HANDLE;
 new Handle:cvarspecificjoinexit = INVALID_HANDLE;
 new Handle:cvartimebetween = INVALID_HANDLE;
 new Handle:cvaradmintime = INVALID_HANDLE;
+new Handle:cvaradminwarn = INVALID_HANDLE;
 new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
@@ -175,14 +181,15 @@ public Plugin:myinfo =
 public OnPluginStart(){
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
-	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at",FCVAR_PLUGIN);
-	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person",FCVAR_PLUGIN);
+	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
+	cvarsoundlimit = CreateConVar("sm_sound_limit","5","Maximum sounds per person (0 for unlimited)",FCVAR_PLUGIN);
 	cvarjoinexit = CreateConVar("sm_join_exit","0","Play sounds when someone joins or exits the game",FCVAR_PLUGIN);
 	cvarjoinspawn = CreateConVar("sm_join_spawn","1","Wait until the player spawns before playing the join sound",FCVAR_PLUGIN);
 	cvarspecificjoinexit = CreateConVar("sm_specific_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	cvaradmintime = CreateConVar("sm_time_between_admin_sounds","4.5","Time between each admin sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
-	cvaradminlimit = CreateConVar("sm_sound_admin_limit","5","Maximum sounds per admin",FCVAR_PLUGIN);
+	cvaradminwarn = CreateConVar("sm_admin_warn","0","Number of sounds to warn admin at (0 for no warnings)",FCVAR_PLUGIN);
+	cvaradminlimit = CreateConVar("sm_sound_admin_limit","0","Maximum sounds per admin (0 for unlimited)",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -590,7 +597,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new soundLimit = isadmin ? GetConVarInt(cvaradminlimit) : GetConVarInt(cvarsoundlimit);	
-	if (SndCount[client] < soundLimit && globalLastSound < thetime){
+	if ((soundLimit && SndCount[client] < soundLimit) && globalLastSound < thetime){
 		SndCount[client]  = SndCount[client] + 1;
 		LastSound[client] = thetime + waitTime;
 		globalLastSound   = thetime + soundTime;
@@ -621,8 +628,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		if ((SndCount[client]) >= soundLimit){
 			PrintToChat(client,"[Say Sounds] Sorry, you have reached your sound quota!");
 		}else{
-			new soundWarn = GetConVarInt(cvarsoundwarn);	
-			if ((SndCount[client]) == soundWarn){
+			new soundWarn = isadmin ? GetConVarInt(cvaradminwarn) : GetConVarInt(cvarsoundwarn);	
+			if (soundWarn && SndCount[client] == soundWarn){
 				new numberleft;
 				numberleft = (soundLimit - soundWarn);
 				PrintToChat(client,"[Say Sounds] You only have %d sounds left!",numberleft);

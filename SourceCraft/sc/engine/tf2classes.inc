@@ -10,7 +10,7 @@
 #endif
 #define _tf2classes_included
 
-stock Float:GetNormalSpeed(client)
+stock Float:GetClassSpeed(client)
 {
     if (GameType == tf2)
     {
