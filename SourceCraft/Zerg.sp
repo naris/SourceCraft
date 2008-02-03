@@ -285,7 +285,7 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, index, player)
 
         new amount=RoundFloat(float(damage)*percent);
         new newhp=GetClientHealth(victim_index)-amount;
-        LogMessage("ZerAdrenal for %N, damage=%d,amount=%d\n", index, damage, amount);
+        LogMessage("ZerAdrenal for %N, damage=%d,amount=%d", index, damage, amount);
         if (newhp <= 0)
         {
             newhp=0;

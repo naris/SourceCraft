@@ -135,7 +135,7 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
             m_BaseSpeed[client]=maxSpeed;
 
             new class=GetEventInt(event,"class");
-            LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d\n",
+            LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d",
                        client, m_BaseSpeed[client], maxSpeed, GetNormalSpeed(client),
                        GetNormalSpeed(class), TF_GetClass(client) ,class);
         }
@@ -199,7 +199,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 
     decl String:weapon[64] = "";
     GetEventString(event, "weapon", weapon, sizeof(weapon));
-    LogMessage("%N+%N destroyed %N's %d with %s\n", attacker, assister, userid,
+    LogMessage("%N+%N destroyed %N's %d with %s", attacker, assister, userid,
                GetEventInt(event,"objecttype"), weapon);
 }
 
@@ -275,7 +275,7 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
                 m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f\n",
+                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f",
                            client, m_BaseSpeed[client],GetNormalSpeed(client));
             }
         }

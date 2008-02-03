@@ -26,7 +26,7 @@ stock Float:GetNormalSpeed(client)
             case TF2_PYRO:      return 300.0;
             case TF2_SPY:       return 300.0;
             case TF2_ENG:       return 300.0;
-            default:            LogMessage("Unknown TF2 class %d\n", class);
+            default:            LogMessage("Unknown TF2 class %d", class);
         }
     }
     return 0.0;

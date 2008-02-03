@@ -410,7 +410,7 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
                 range=(float(time_pressed) / 3000.0) * 600.0;
         }
 
-        LogMessage("Teleport %N Time=%d, Level=%d, Rage=%f\n",
+        LogMessage("Teleport %N Time=%d, Level=%d, Rage=%f",
                    client, time_pressed, ult_level, range);
 
         new Float:clientloc[3],Float:clientang[3];
@@ -424,7 +424,7 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
             new Float:size[3];
             GetClientMaxs(client, size);
 
-            LogMessage("Teleport %N, DidHit, end=%f,%f,%f; size=%f,%f,%f\n",
+            LogMessage("Teleport %N, DidHit, end=%f,%f,%f; size=%f,%f,%f",
                        client, destloc[0], destloc[1], destloc[2],
                                size[0], size[1], size[2]);
 
@@ -456,7 +456,7 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
             if (distance[2] < 0)
                 distance[2] *= -1;
 
-            LogMessage("Teleport %N, DidNotHit, dist=%f,%f,%f\n",
+            LogMessage("Teleport %N, DidNotHit, dist=%f,%f,%f",
                        client, distance[0], distance[1], distance[2]);
 
             // Limit the teleport location to remain within the range
@@ -493,7 +493,7 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
         }
     }
 
-    LogMessage("Teleport %N To %f,%f,%f\n",
+    LogMessage("Teleport %N To %f,%f,%f",
                client, destloc[0], destloc[1], destloc[2]);
 
     TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);

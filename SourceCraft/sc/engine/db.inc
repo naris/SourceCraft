@@ -152,12 +152,12 @@ public SavePlayerData(client,vectorpos)
 
                     if (bUpdateIsOK)
                     {
-                        LogMessage("INSERT ON DUPLICATE UPDATE failed, using REPLACE! %s\nSQL:%s\n",error, SQLString);
+                        LogMessage("INSERT ON DUPLICATE UPDATE failed, using REPLACE! %s\nSQL:%s",error, SQLString);
                         bUpdateIsOK = false;
                     }
                     else
                     {
-                        LogError("Unable to replace player's race: %s\nSQL:%s\n",
+                        LogError("Unable to replace player's race: %s\nSQL:%s",
                                  error, SQLString);
                         return;
                     }

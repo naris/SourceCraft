@@ -400,8 +400,8 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,1.0); // visibility movement factor
-                PushArrayCell(indiceHandle,0.0); // force speed?
-                PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,1.0); // force speed?
+                PushArrayCell(indiceHandle,1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
@@ -446,8 +446,8 @@ public Native_SetMinGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,1.0); // visibility movement factor
-                PushArrayCell(indiceHandle,0.0); // force speed?
-                PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,1.0); // force speed?
+                PushArrayCell(indiceHandle,1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
@@ -496,8 +496,8 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,visibility); // minvisibility 
                 PushArrayCell(indiceHandle,meleeFactor); // visibility melee factor
                 PushArrayCell(indiceHandle,movementFactor); // visibility movement factor
-                PushArrayCell(indiceHandle,0.0); // force speed?
-                PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,1.0); // force speed?
+                PushArrayCell(indiceHandle,1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
@@ -512,6 +512,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
     {
         new player=GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
+        LogMessage("[natives] Set overridespeed of %N to %f", player, speed);
         if(player!=-1)
         {
             new Handle:temp=GetPropertyInfo(player);
@@ -543,7 +544,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,speed); // force speed?
-                PushArrayCell(indiceHandle,0.0); // force gravity?
+                PushArrayCell(indiceHandle,1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
@@ -588,7 +589,7 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,1.0); // visibility movement factor
-                PushArrayCell(indiceHandle,0.0); // force speed?
+                PushArrayCell(indiceHandle,1.0); // force speed?
                 PushArrayCell(indiceHandle,gravity); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
@@ -634,8 +635,8 @@ public Native_SetOverrideVisible(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,255); // minvisibility 
                 PushArrayCell(indiceHandle,1.0); // visibility melee factor
                 PushArrayCell(indiceHandle,1.0); // visibility movement factor
-                PushArrayCell(indiceHandle,0.0); // force speed?
-                PushArrayCell(indiceHandle,0); // force gravity?
+                PushArrayCell(indiceHandle,1.0); // force speed?
+                PushArrayCell(indiceHandle,1.0); // force gravity?
                 PushArrayCell(indiceHandle,visibility); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }

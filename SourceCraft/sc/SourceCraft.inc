@@ -255,7 +255,7 @@ native SetMinVisibility(player,visibility=255,Float:melee_factor=1.0,Float:movem
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native SetOverrideSpeed(player,Float:speed=0.0);
+native SetOverrideSpeed(player,Float:speed=1.0);
 
 /**
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
@@ -265,7 +265,7 @@ native SetOverrideSpeed(player,Float:speed=0.0);
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native SetOverrideGravity(player,Float:gravity=0.0);
+native SetOverrideGravity(player,Float:gravity=1.0);
 
 /**
  * Overrides the (in)visibility for SourceCraft , useful for punishing them or whatever.

@@ -249,6 +249,7 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         if(overridespeed != 1.0)
                         {
+                            LogMessage("[playertracking] Found overridespeed of %N to %f", client, overridespeed);
                             speed=overridespeed;
                             overridePlayerSpeed=true;
                         }
@@ -320,7 +321,7 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
                             new Float:classSpeed = GetNormalSpeed(client);
-                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
+                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
                                        client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed, speed, speedAltered[client], overridePlayerSpeed);
                         }
 
@@ -331,18 +332,18 @@ public Action:PlayerProperties(Handle:timer)
                         new Float:classSpeed = GetNormalSpeed(client);
                         if (curSpeed != classSpeed)
                         {
-                            LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
+                            LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f",
                                         client, curSpeed, m_BaseSpeed[client], classSpeed);
                         }
                     }
                 }
                 else // not tf2
                 {
-                    LogMessage("[playertracking] Set NON TF2 speed of %N to %f, speed=%f, altered=%d, override=%d\n",
+                    LogMessage("[playertracking] Set NON TF2 speed of %N to %f, speed=%f, altered=%d, override=%d",
                         client, speed, speedAltered[client], overridePlayerSpeed);
 
-                    //if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                    //    SetEntDataFloat(client,m_OffsetSpeed,speed);
+                    if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                        SetEntDataFloat(client,m_OffsetSpeed,speed);
                 }
 
                 if (visibilityAltered[client] || overridePlayerVisibility || (visibility >= 0 && visibility < 255))

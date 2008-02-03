@@ -71,7 +71,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed[index]);
                 m_BaseSpeed[index] = maxSpeed;
 
-                LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f\n",
+                LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f",
                            index, m_BaseSpeed[index], maxSpeed, GetNormalSpeed(index));
                 }
             }
@@ -285,7 +285,7 @@ public DumpEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new teamid = GetEventInt(event, "teamid");
     new score = GetEventInt(event, "score");
 
-    LogMessage("Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d\n",
+    LogMessage("Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
                name, player, area, index, userid, teamid, score);
     /*
     if (player && IsClientInGame(player))
