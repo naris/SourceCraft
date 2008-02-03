@@ -30,9 +30,7 @@ new Handle:m_Currencies = INVALID_HANDLE;
 new Handle:cvarFartCooldown = INVALID_HANDLE;
 
 new g_haloSprite;
-new g_purpleGlow;
 new g_smokeSprite;
-new g_crystalSprite;
 new g_lightningSprite;
 
 new String:anxiousWav[] = "misc/anxious.wav";
@@ -85,25 +83,17 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    g_smokeSprite = PrecacheModel("materials/sprites/smoke.vmt");
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    g_lightningSprite = PrecacheModel("materials/sprites/lgtning.vmt");
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
-
-    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
-    if (g_crystalSprite == -1)
-        SetFailState("Couldn't find crystal_beam Model");
-
-    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
-    if (g_purpleGlow == -1)
-        SetFailState("Couldn't find purpleglow Model");
 
     SetupSound(blowerWav);
     SetupSound(anxiousWav);
@@ -305,25 +295,22 @@ public Fart(player,client,ultlevel)
     new Float:clientLoc[3];
     GetClientAbsOrigin(client, clientLoc);
 
-    //TE_Start("Bubble Trail");
-    //TE_SendToAll();
-
     //gFartLoc[client][0] = clientLoc[0];
     //gFartLoc[client][1] = clientLoc[1];
     //gFartLoc[client][2] = clientLoc[2];
 
-    TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,1);
+    TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,50);
     TE_SendToAll();
 
-    //TE_SetupSmoke(clientLoc,g_smokeSprite,range/10.0,1);
-    //TE_SendToAll();
+    TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
+    TE_SendToAll();
 
-    //new Float:dir[3];
-    //dir[0] = 0.0;
-    //dir[1] = 0.0;
-    //dir[2] = 2.0;
-    //TE_SetupDust(clientLoc,dir,range,1.0);
-    //TE_SendToAll();
+    new Float:dir[3];
+    dir[0] = 0.0;
+    dir[1] = 0.0;
+    dir[2] = 2.0;
+    TE_SetupDust(clientLoc,dir,range,100.0);
+    TE_SendToAll();
 
     new count=0;
     new maxplayers=GetMaxClients();

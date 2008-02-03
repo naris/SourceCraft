@@ -122,6 +122,26 @@ public bool:HookTFEvents()
     return true;
 }
 
+public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client > 0)
+    {
+        m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
+        if (g_RoundActive)
+        {
+            new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+            m_BaseSpeed[client]=maxSpeed;
+
+            new class=GetEventInt(event,"class");
+            LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d\n",
+                       client, m_BaseSpeed[client], maxSpeed, GetNormalSpeed(client),
+                       GetNormalSpeed(class), TF_GetClass(client) ,class);
+        }
+    }
+}
+
 public PlayerChargeDeployed(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");

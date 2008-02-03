@@ -518,7 +518,7 @@ public Action:RestoreSpeed(Handle:timer,any:temp)
     {
         new player=GetPlayer(client);
         if(player>-1)
-            SetOverrideSpeed(player,0.0);
+            SetOverrideSpeed(player,1.0);
     }
     ClearArray(temp);
     return Plugin_Stop;

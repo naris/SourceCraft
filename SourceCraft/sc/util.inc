@@ -53,7 +53,7 @@ stock SetupSound(const String:wav[], bool:preload=false)
 
 stock SetupModel(const String:model[])
 {
-    AddFileToDownloadsTable(model);
+    //AddFileToDownloadsTable(model);
     return PrecacheModel(model);
 }
 
