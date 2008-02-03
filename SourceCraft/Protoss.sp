@@ -162,6 +162,12 @@ public OnPlayerAuthed(client,player)
     m_AllowMindControl[client]=true;
 }
 
+public OnClientDisconnect(client)
+{
+    ResetCloakingAndDetector(client);
+    ResetMindControledObjects(client);
+}
+
 public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
@@ -234,6 +240,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
     {
+        ResetCloakingAndDetector(index);
         ResetMindControledObjects(index);
     }
 }
