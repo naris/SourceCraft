@@ -67,7 +67,7 @@ Versions:
 		* Changed !soundlist to call Sound_Menu() instead of List_Sounds().
 	1.11  Feb 03, 2008
 		* Modified by -=|JFH|=-Naris
-		* Added separate cm_admin_warn convar.
+		* Added separate sm_sound_admin_warn convar.
 		* Added unlimited sounds when limit == 0.
 
 
@@ -146,7 +146,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.9"
+#define PLUGIN_VERSION "1.11"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
@@ -188,7 +188,7 @@ public OnPluginStart(){
 	cvarspecificjoinexit = CreateConVar("sm_specific_join_exit","0","Play sounds when specific steam ID joins or exits the game",FCVAR_PLUGIN);
 	cvartimebetween = CreateConVar("sm_time_between_sounds","4.5","Time between each sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	cvaradmintime = CreateConVar("sm_time_between_admin_sounds","4.5","Time between each admin sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
-	cvaradminwarn = CreateConVar("sm_admin_warn","0","Number of sounds to warn admin at (0 for no warnings)",FCVAR_PLUGIN);
+	cvaradminwarn = CreateConVar("sm_sound_admin_warn","0","Number of sounds to warn admin at (0 for no warnings)",FCVAR_PLUGIN);
 	cvaradminlimit = CreateConVar("sm_sound_admin_limit","0","Maximum sounds per admin (0 for unlimited)",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
