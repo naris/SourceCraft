@@ -305,15 +305,15 @@ public Fart(player,client,ultlevel)
     new Float:clientLoc[3];
     GetClientAbsOrigin(client, clientLoc);
 
-    TE_Start("Bubble Trail");
-    TE_SendToAll();
+    //TE_Start("Bubble Trail");
+    //TE_SendToAll();
 
     //gFartLoc[client][0] = clientLoc[0];
     //gFartLoc[client][1] = clientLoc[1];
     //gFartLoc[client][2] = clientLoc[2];
 
-    //TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,1);
-    //TE_SendToAll();
+    TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,1);
+    TE_SendToAll();
 
     //TE_SetupSmoke(clientLoc,g_smokeSprite,range/10.0,1);
     //TE_SendToAll();
