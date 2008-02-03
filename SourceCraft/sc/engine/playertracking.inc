@@ -247,7 +247,7 @@ public Action:PlayerProperties(Handle:timer)
 
                     if(!overridePlayerSpeed)
                     {
-                        if(overridespeed>0.0)
+                        if(overridespeed != 1.0)
                         {
                             speed=overridespeed;
                             overridePlayerSpeed=true;
@@ -260,7 +260,7 @@ public Action:PlayerProperties(Handle:timer)
 
                     if(!overridePlayerGravity)
                     {
-                        if(overridespeed>0.0)
+                        if(overridegravity != 1.0)
                         {
                             gravity=overridegravity;
                             overridePlayerGravity=true;
@@ -319,27 +319,30 @@ public Action:PlayerProperties(Handle:timer)
                         if (curSpeed != newSpeed)
                         {
                             SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                            new Float:classSpeed = GetNormalSpeed(client);
                             LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d\n",
-                                       client, newSpeed, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
-                                       speed, speedAltered[client], overridePlayerSpeed);
+                                       client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed, speed, speedAltered[client], overridePlayerSpeed);
                         }
 
                         speedAltered[client] = (speed != 1.0);
                     }
                     else
                     {
-                        LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
-                                    client, curSpeed, m_BaseSpeed[client], GetNormalSpeed(client),
-                                    GetNormalSpeed(client));
+                        new Float:classSpeed = GetNormalSpeed(client);
+                        if (curSpeed != classSpeed)
+                        {
+                            LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f\n",
+                                        client, curSpeed, m_BaseSpeed[client], classSpeed);
+                        }
                     }
                 }
                 else // not tf2
                 {
-                    LogMessage("[playertracking] Set NOn TF2 speed of %N to %f, speed=%f, altered=%d, override=%d\n",
+                    LogMessage("[playertracking] Set NON TF2 speed of %N to %f, speed=%f, altered=%d, override=%d\n",
                         client, speed, speedAltered[client], overridePlayerSpeed);
 
-                    if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                        SetEntDataFloat(client,m_OffsetSpeed,speed);
+                    //if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                    //    SetEntDataFloat(client,m_OffsetSpeed,speed);
                 }
 
                 if (visibilityAltered[client] || overridePlayerVisibility || (visibility >= 0 && visibility < 255))
@@ -409,10 +412,10 @@ stock MakeVisible(client)
                 if(IsValidEdict(y))
                 {
                     if(GetEntDataEnt2(y,m_OwnerOffset)==client)
-                        SetRenderColor(y,255,255,255,255);
+                        SetEntityRenderColor(y,255,255,255,255);
                 }
             }
-            SetRenderColor(client,255,255,255,255);
+            SetEntityRenderColor(client,255,255,255,255);
         }
     }
 }
@@ -432,25 +435,11 @@ stock MakeInvisible(client, visibility)
                     if (!GetEntityNetClass(obj,name,sizeof(name)) ||
                         !StrEqual(name, "CCaptureFlag"))
                     {
-                        SetRenderColor(obj,255,255,255,visibility);
+                        SetEntityRenderColor(obj,255,255,255,visibility);
                     }
                 }
             }
         }
     }
-    SetRenderColor(client,255,255,255,visibility);
-}
-
-stock SetRenderColor(entity,r,g,b,a)
-{
-	if (m_ColorOffset != -1)
-    {
-        SetEntData(entity,m_ColorOffset,r,1,true);
-        SetEntData(entity,m_ColorOffset+1,g,1,true);
-        SetEntData(entity,m_ColorOffset+2,b,1,true);
-        SetEntData(entity,m_ColorOffset+3,a,1,true);
-
-        if(m_RenderModeOffset != -1)
-            SetEntData(entity,m_RenderModeOffset,3,1,true);
-    }
+    SetEntityRenderColor(client,255,255,255,visibility);
 }
