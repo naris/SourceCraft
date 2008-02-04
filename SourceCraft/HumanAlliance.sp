@@ -230,16 +230,16 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SetupMaxHealth(client);
-        GetClientAbsOrigin(client,spawnLoc[client]);
-        m_TeleportCount[client]=0;
-
         new player=GetPlayer(client);
         if (player>-1)
         {
             new race = GetRace(player);
             if (race == raceID)
             {
+                SetupMaxHealth(client);
+                GetClientAbsOrigin(client,spawnLoc[client]);
+                m_TeleportCount[client]=0;
+
                 new skill_immune=GetSkillLevel(player,race,0);
                 if (skill_immune)
                     DoImmunity(client, player, skill_immune);
@@ -262,7 +262,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     LogEventDamage(event,damage,"HumanAlliance::PlayerDeathEvent", raceID);
 
     // Reset MaxHealth back to normal
-    if (GameType == tf2 && healthIncreased[victim_index])
+    if (victim_race == raceID && GameType == tf2 && healthIncreased[victim_index])
     {
         SetMaxHealth(victim_index, maxHealth[victim_index]);
         healthIncreased[victim_index] = false;

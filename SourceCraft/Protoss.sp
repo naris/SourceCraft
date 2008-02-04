@@ -34,6 +34,8 @@ enum objects { unknown, sentrygun, dispenser, teleporter };
 new m_BuilderOffset[objects];
 new m_BuildingOffset[objects];
 
+new m_OffsetCloakMeter[MAXPLAYERS+1];
+
 // Arrays to keep track of stolen objects
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Handle:m_StolenBuilderList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
@@ -192,7 +194,16 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
-        m_AllowMindControl[index]=true;
+        // Set CloakMeter up for ALL races (it's needed for victims) Mwuhaha!!
+        m_OffsetCloakMeter[index]=FindDataMapOffs(index,"m_flCloakMeter");
+        
+        new player=GetPlayer(index);
+        if (player>-1)
+        {
+            new race = GetRace(player);
+            if (race == raceID)
+                m_AllowMindControl[index]=true;
+        }
     }
 }
 
@@ -676,6 +687,11 @@ public Action:CloakingAndDetector(Handle:timer)
                                             SetOverrideVisible(player_check, 255);
                                             if (TF_GetClass(player_check) == TF2_SPY)
                                             {
+                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter[index]);
+                                                if (cloakMeter > 0.0 && cloakMeter <= 100.0)
+                                                {
+                                                    SetEntDataFloat(index,m_OffsetCloakMeter[index], 0.0);
+                                                }
                                             }
                                             m_Detected[client][index] = true;
                                         }

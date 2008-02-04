@@ -10,7 +10,7 @@ Superman’s Cape – Hangs down your back and stops BackStabs- Stabs become normal 
 
 Human Alliance
 
-Invis – Useless at lower levels. Needs an Evade component to compensate. Switching to Melee makes you COMPLETE VISABLE. Level 4 should be complete invisibility when not moving. Totally visible when moving.
+Removed:Invis – Useless at lower levels. Needs an Evade component to compensate. Switching to Melee makes you COMPLETE VISABLE. Level 4 should be complete invisibility when not moving. Totally visible when moving.
 
 Fixed:Devotion Aura gives no health ever.
 
@@ -44,7 +44,7 @@ Negations happen all the time without ever buying any levels of this skill.
 
 Hook works great on level 1, why would I buy more?
 
-When I buy levels in inflated wages I get the other 2 abilities as well. Also Please make it harder for the negotiation random of "employer goes bankrupt" to happen. It hit me twice in a 90 minute span. 
+Fixed:When I buy levels in inflated wages I get the other 2 abilities as well. Also Please make it harder for the negotiation random of "employer goes bankrupt" to happen. It hit me twice in a 90 minute span. 
 
 Fixed:UAW cannot get ultimate because of bankruptcy occurring very frequently. 
 

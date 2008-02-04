@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 :
- * File: TerranConfederacy .sp
+ * File: TerranConfederacy.sp
  * Description: The Terran Confederacy race for SourceCraft.
  * Author(s): -=|JFH|=-Naris
  */
@@ -21,6 +21,7 @@
 
 new raceID; // The ID we are assigned to
 
+new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
@@ -47,14 +48,14 @@ public OnPluginReady()
     raceID=CreateRace("Terran Confederacy", "terran",
                       "You are now part of the Terran Confederacy.",
                       "You will be part of the Terran Confederacy when you die or respawn.",
-                      "Cloaking Device",
-                      "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still",
+                      "Depleted U-238 Shells",
+                      "Increases damage",
                       "Heavy Armor",
                       "Reduces damage.",
                       "Stimpacks",
                       "Gives you a speed boost, 8-36% faster.",
                       "Jetpack",
-                      "Allows you to fly until you run out of fuel.");
+                      "Allows you to fly until you run out of fuel.","16");
 
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
@@ -63,6 +64,10 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
+
     g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
@@ -71,7 +76,6 @@ public OnMapStart()
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 }
-
 
 public OnPlayerAuthed(client,player)
 {
@@ -89,10 +93,6 @@ public OnRaceSelected(client,player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new skill_cloak=GetSkillLevel(player,race,0);
-            if (skill_cloak)
-                Cloak(client, player, skill_cloak);
-
             new skill_armor = GetSkillLevel(player,raceID,1);
             if (skill_armor)
                 SetupArmor(client, skill_armor);
@@ -123,9 +123,7 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
-        if (skill==0)
-            Cloak(client, player, newskilllevel);
-        else if (skill==1)
+        if (skill==1)
             SetupArmor(client, newskilllevel);
         else if (skill==2)
             Stimpacks(client, player, newskilllevel);
@@ -163,10 +161,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_cloak=GetSkillLevel(player,race,0);
-                if (skill_cloak)
-                    Cloak(client, player, skill_cloak);
-
                 new skill_armor = GetSkillLevel(player,raceID,1);
                 if (skill_armor)
                     SetupArmor(client, skill_armor);
@@ -191,21 +185,10 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 {
     LogEventDamage(event, damage, "TerranConfederacy::PlayerDeathEvent", raceID);
 
-    if (victim_index)
+    // Reset invisibility
+    if (victim_player != -1 && victim_race == raceID)
     {
-        // Reset MaxHealth back to normal
-        if (healthIncreased[victim_index] && GameType == tf2)
-        {
-            SetMaxHealth(victim_index, maxHealth[victim_index]);
-            healthIncreased[victim_index] = false;
-        }
-
-        // Reset invisibility
-        if (victim_player != -1)
-        {
-            SetMinVisibility(victim_player, 255, 1.0, 1.0);
-        }
-
+        SetMinVisibility(victim_player, 255, 1.0, 1.0);
     }
 }
 
@@ -221,42 +204,17 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     if (victim_race == raceID)
         changed = Armor(damage, victim_index, victim_player);
 
+    if (attacker_race == raceID && victim_index != attacker_index)
+    {
+        changed |= U238Shells(damage, victim_index, attacker_index, attacker_player);
+    }
+
+    if (assister_race == raceID && victim_index != assister_index)
+    {
+        changed |= U238Shells(damage, victim_index, assister_index, assister_player);
+    }
+
     return changed ? Plugin_Changed : Plugin_Continue;
-}
-
-bool:Cloak(client, player, skilllevel)
-{
-    new alpha;
-    switch(skilllevel)
-    {
-        case 1:
-            alpha=210;
-        case 2:
-            alpha=190;
-        case 3:
-            alpha=170;
-        case 4:
-            alpha=150;
-    }
-
-    /* If the Player also has the Cloak of Shadows,
-     * Decrease the visibility further
-     */
-    new cloak = GetShopItem("Cloak of Shadows");
-    if (cloak != -1 && GetOwnsItem(player,cloak))
-    {
-        alpha *= 0.90;
-    }
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new color[4] = { 0, 255, 50, 128 };
-    TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                          0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
-    TE_SendToAll();
-
-    SetMinVisibility(player,alpha, 0.80, 0.0);
 }
 
 SetupArmor(client, skilllevel)
@@ -319,6 +277,48 @@ bool:Armor(damage, victim_index, victim_player)
 
             PrintToChat(victim_index,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
                         COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool:U238Shells(damage, victim_index, index, player)
+{
+    new skill_cs = GetSkillLevel(player,raceID,0);
+    if (skill_cs > 0)
+    {
+        if(GetRandomInt(1,100)<=25)
+        {
+            new Float:percent;
+            switch(skill_cs)
+            {
+                case 1:
+                    percent=0.30;
+                case 2:
+                    percent=0.50;
+                case 3:
+                    percent=0.80;
+                case 4:
+                    percent=1.00;
+            }
+
+            new health_take=RoundFloat(float(damage)*percent);
+            new new_health=GetClientHealth(victim_index)-health_take;
+            if (new_health <= 0)
+            {
+                new_health=0;
+                LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
+            }
+            else
+                LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
+
+            SetEntityHealth(victim_index,new_health);
+
+            new color[4] = { 100, 255, 55, 255 };
+            TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
+                              0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+            TE_SendToAll();
             return true;
         }
     }

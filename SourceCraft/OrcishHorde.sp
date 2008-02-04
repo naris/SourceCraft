@@ -191,12 +191,11 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     new bool:changed=false;
 
     decl String:weapon[64] = "";
-    new bool:is_equipment = GetWeapon(event, attacker_index, weapon, sizeof(weapon));
+    GetWeapon(event, attacker_index, weapon, sizeof(weapon));
 
     if (attacker_race == raceID && victim_index != attacker_index)
     {
-        if (AcuteGrenade(damage, victim_index, attacker_index, attacker_player,
-                         weapon,is_equipment))
+        if (AcuteGrenade(damage, victim_index, attacker_index, attacker_player, weapon))
             changed = true;
         else
             changed |= AcuteStrike(damage, victim_index, attacker_index, attacker_player);
@@ -204,8 +203,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
     if (assister_race == raceID && victim_index != assister_index)
     {
-        if (AcuteGrenade(damage, victim_index, assister_index, assister_player,
-                         weapon,is_equipment))
+        if (AcuteGrenade(damage, victim_index, assister_index, assister_player, weapon))
             changed = true;
         else
             changed |= AcuteStrike(damage, victim_index, assister_index, assister_player);
@@ -271,7 +269,7 @@ public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast
     }
 }
 
-public bool:AcuteStrike(damage, victim_index, index, player)
+bool:AcuteStrike(damage, victim_index, index, player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -282,13 +280,13 @@ public bool:AcuteStrike(damage, victim_index, index, player)
             switch(skill_cs)
             {
                 case 1:
-                    percent=0.4;
+                    percent=0.30;
                 case 2:
-                    percent=1.067;
+                    percent=0.60;
                 case 3:
-                    percent=1.733;
+                    percent=0.90;
                 case 4:
-                    percent=2.4;
+                    percent=1.20;
             }
 
             new health_take=RoundFloat(float(damage)*percent);
@@ -313,8 +311,7 @@ public bool:AcuteStrike(damage, victim_index, index, player)
     return false;
 }
 
-public bool:AcuteGrenade(damage, victim_index, index, player,
-                         const String:weapon[], bool:is_equipment)
+bool:AcuteGrenade(damage, victim_index, index, player, const String:weapon[])
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0)
@@ -369,7 +366,7 @@ public bool:AcuteGrenade(damage, victim_index, index, player,
     return false;
 }
 
-public ChainLightning(player,client,ultlevel)
+ChainLightning(player,client,ultlevel)
 {
     new dmg;
     new num=ultlevel*2;
