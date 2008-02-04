@@ -42,7 +42,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     HookEvent("player_spawn",PlayerSpawnEvent);
-    CreateTimer(2.0,TrackVariables,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(1.0,TrackVariables,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnClientDisconnect(client)
@@ -107,23 +107,24 @@ public Action:TrackVariables(Handle:timer)
             if(IsPlayerAlive(client))
             {
                 new tfClass = TF_GetClass(client);
-                new class = GetEntData(client,m_OffsetClass[client]);
-                new Float:cloakMeter = GetEntDataFloat(client,m_OffsetCloakMeter[client]);
-                new disguiseTeam = GetEntData(client,m_OffsetDisguiseTeam[client]);
-                new disguiseClass = GetEntData(client,m_OffsetDisguiseClass[client]);
-                new disguiseTarget = GetEntData(client,m_OffsetDisguiseTargetIndex[client]);
-                new disguiseHealth = GetEntData(client,m_OffsetDisguiseHealth[client]);
-                new desiredDisguiseTeam = GetEntData(client,m_OffsetDesiredDisguiseTeam[client]);
-                new desiredDisguiseClass = GetEntData(client,m_OffsetDesiredDisguiseClass[client]);
-                new Float:invisChangeCompleteTime = GetEntDataFloat(client,m_OffsetInvisChangeCompleteTime[client]);
-                new critMult = GetEntData(client,m_OffsetCritMult[client]);
-                new Float:stealthNoAttackExpire = GetEntDataFloat(client,m_OffsetStealthNoAttackExpire[client]);
-                new Float:stealthNextChangeTime = GetEntDataFloat(client,m_OffsetStealthNextChangeTime[client]);
-                new playerState = GetEntData(client,m_OffsetPlayerState[client]);
-                new numHealers = GetEntData(client,m_OffsetNumHealers[client]);
-                new playerCond = GetEntData(client,m_OffsetPlayerCond[client]);
-                new bool:poisened = bool:GetEntData(client,m_OffsetPoisoned[client]);
-                new bool:wearingSuit = bool:GetEntData(client,m_OffsetWearingSuit[client]);
+                new class = m_OffsetClass[client] ? GetEntData(client,m_OffsetClass[client]) : -99;
+                new Float:cloakMeter = m_OffsetCloakMeter[client] ? GetEntDataFloat(client,m_OffsetCloakMeter[client]) : -99.9;
+                new disguiseTeam = m_OffsetDisguiseTeam[client] ? GetEntData(client,m_OffsetDisguiseTeam[client]) : -99;
+                new disguiseClass = m_OffsetDisguiseClass[client] ? GetEntData(client,m_OffsetDisguiseClass[client]) : -99;
+                new disguiseTarget = m_OffsetDisguiseTargetIndex[client] ? GetEntData(client,m_OffsetDisguiseTargetIndex[client]) : -99;
+                new disguiseHealth = m_OffsetDisguiseHealth[client] ? GetEntData(client,m_OffsetDisguiseHealth[client]) : -99;
+                new desiredDisguiseTeam = m_OffsetDesiredDisguiseTeam[client] ? GetEntData(client,m_OffsetDesiredDisguiseTeam[client]) : -99;
+                new desiredDisguiseClass = m_OffsetDesiredDisguiseClass[client] ? GetEntData(client,m_OffsetDesiredDisguiseClass[client]) : -99;
+                new Float:invisChangeCompleteTime = m_OffsetInvisChangeCompleteTime[client] ? GetEntDataFloat(client,m_OffsetInvisChangeCompleteTime[client]) : -99.9;
+                new critMult = m_OffsetCritMult[client] ? GetEntData(client,m_OffsetCritMult[client]) : -99;
+                new Float:stealthNoAttackExpire = m_OffsetStealthNoAttackExpire[client] ? GetEntDataFloat(client,m_OffsetStealthNoAttackExpire[client]) : -99.9;
+                new Float:stealthNextChangeTime = m_OffsetStealthNextChangeTime[client] ? GetEntDataFloat(client,m_OffsetStealthNextChangeTime[client]) : -99.9;
+                new playerState = m_OffsetPlayerState[client] ? GetEntData(client,m_OffsetPlayerState[client]) : -99;
+                new numHealers = m_OffsetNumHealers[client] ? GetEntData(client,m_OffsetNumHealers[client]) : -99;
+                new playerCond = m_OffsetPlayerCond[client] ? GetEntData(client,m_OffsetPlayerCond[client]) : -99;
+                new poisened = m_OffsetPoisoned[client] ? GetEntData(client,m_OffsetPoisoned[client]) : -99;
+                new wearingSuit = m_OffsetWearingSuit[client] ? GetEntData(client,m_OffsetWearingSuit[client]) : -99;
+
                 LogMessage("client=%N,tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisened=%d,wearingSuit=%d",client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit);
                 PrintToChat( client,"tfC=%d,c=%d,cMeter=%f,dTeam=%d,dClass=%d,dTarget=%d,dHealth=%d,dDTeam=%d,dDClass=%d,iCCTime=%f,cMult=%d,sNAExpire=%f,sNCTime=%f,pState=%d,nHealers=%d,pCond=%d,p=%d,Suit=%d",tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit);
             }
