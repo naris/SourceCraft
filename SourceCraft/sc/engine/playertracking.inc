@@ -320,7 +320,7 @@ public Action:PlayerProperties(Handle:timer)
                         if (curSpeed != newSpeed)
                         {
                             SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
-                            if (newSpeed = 0.0)
+                            if (newSpeed == 0.0)
                                 SetEntityMoveType(client, MOVETYPE_NONE);
                             else if (curSpeed == 0.0)
                                 SetEntityMoveType(client, MOVETYPE_WALK);
