@@ -18,18 +18,30 @@
 #include "sc/health"
 #include "sc/range"
 #include "sc/trace"
+#include "sc/freeze"
+#include "sc/authtimer"
 
 #include "sc/log" // for debugging
 
 new raceID; // The ID we are assigned to
 
+new explosionModel;
 new g_smokeSprite;
 new g_lightningSprite;
 
+new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
+new Handle:cvarNuclearLockTime = INVALID_HANDLE;
+new Handle:cvarNuclearCooldown = INVALID_HANDLE;
+
 new bool:m_AllowNuclearLaunch[MAXPLAYERS+1];
+new bool:m_NuclearLaunchInitiated[MAXPLAYERS+1];
+
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
 new m_OffsetCloakMeter[MAXPLAYERS+1];
+
+new String:launchWav[] = "weapons/explode5.wav";
+new String:explodeWav[] = "weapons/explode5.wav";
 
 public Plugin:myinfo = 
 {
@@ -44,6 +56,10 @@ public OnPluginStart()
 {
     GetGameType();
 
+    cvarNuclearLaunchTime=CreateConVar("sc_nuclearlaunchtime","20");
+    cvarNuclearLockTime=CreateConVar("sc_nuclearlocktime","5");
+    cvarNuclearCooldown=CreateConVar("sc_nuclearlaunchcooldown","300");
+
     HookEvent("player_spawn",PlayerSpawnEvent);
 
     CreateTimer(2.0,OcularImplants,INVALID_HANDLE,TIMER_REPEAT);
@@ -57,7 +73,7 @@ public OnPluginReady()
                       "Personal Cloaking Device",
                       "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still",
                       "Lockdown",
-                      "Freezes an enemy when he shoots you, or when you shoot him.",
+                      "Have a 15-52\% chance to render an \nenemy immobile for 1 second.",
                       "Ocular Implants",
                       "Detect cloaked units around you.",
                       "Nuclear Launch",
@@ -74,6 +90,16 @@ public OnMapStart()
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
+
+    if (GameType == tf2)
+        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
+    else
+        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
+
+    if (explosionModel == -1)
+        SetFailState("Couldn't find Explosion Model");
+
+    SetupSound(explodeWav);
 }
 
 public OnPlayerAuthed(client,player)
@@ -108,11 +134,12 @@ public OnRaceSelected(client,player,oldrace,race)
 
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
-    if (race==raceID && m_AllowNuclearLaunch[client] &&
+    if (race==raceID && pressed && m_AllowNuclearLaunch[client] &&
         IsPlayerAlive(client))
     {
-        if (pressed)
-            LaunchNuclearDevice(client);
+        new ult_level=GetSkillLevel(player,race,3);
+        if(ult_level)
+            LaunchNuclearDevice(client,player);
     }
 }
 
@@ -157,15 +184,40 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 {
     LogEventDamage(event, damage, "TerranGhost::PlayerDeathEvent", raceID);
 
-    if (victim_index)
+    if (victim_player != -1 && victim_race == raceID)
     {
-        // Reset invisibility
-        if (victim_player != -1)
-        {
-            SetMinVisibility(victim_player, 255, 1.0, 1.0);
-        }
+        SetMinVisibility(victim_player, 255, 1.0, 1.0);
 
+        if (m_NuclearLaunchInitiated[victim_index])
+        {
+            m_NuclearLaunchInitiated[victim_index]=false;
+            SetOverrideSpeed(victim_player, 1.0);
+        }
     }
+}
+
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
+                                attacker_index,attacker_player,attacker_race,
+                                assister_index,assister_player,assister_race,
+                                damage)
+{
+    LogEventDamage(event,damage,"TerranGhost::PlayerHurtEvent", raceID);
+
+    if (attacker_index && attacker_index != victim_index)
+    {
+        if (victim_race == raceID)
+            LockDown(attacker_index, victim_player);
+
+        if (attacker_race == raceID)
+            LockDown(victim_index, attacker_player);
+    }
+
+    if (assister_index && assister_index != victim_index)
+    {
+        if (assister_race == raceID)
+            LockDown(victim_index, assister_player);
+    }
+    return Plugin_Continue;
 }
 
 bool:Cloak(client, player, skilllevel)
@@ -201,6 +253,35 @@ bool:Cloak(client, player, skilllevel)
     TE_SendToAll();
 
     SetMinVisibility(player,alpha, 0.80, 0.0);
+}
+
+LockDown(victim_index, player)
+{
+    new skill_lockdown=GetSkillLevel(player,raceID,1);
+    if (skill_lockdown)
+    {
+        new percent;
+        switch(skill_lockdown)
+        {
+            case 1:
+                percent=15;
+            case 2:
+                percent=21;
+            case 3:
+                percent=37;
+            case 4:
+                percent=52;
+        }
+        if (GetRandomInt(1,100)<=percent)
+        {
+            new Float:Origin[3];
+            GetClientAbsOrigin(victim_index, Origin);
+            TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
+
+            FreezeEntity(victim_index);
+            AuthTimer(1.0,victim_index,UnfreezePlayer);
+        }
+    }
 }
 
 public Action:OcularImplants(Handle:timer)
@@ -305,93 +386,128 @@ ResetOcularImplants(client)
     }
 }
 
-NuclearExplosion(player,client,ultlevel)
+LaunchNuclearDevice(client,player)
 {
-    new dmg;
-    new num=ultlevel*2;
-    new Float:range=1.0;
-    switch(ultlevel)
+    EmitSoundToAll(launchWav,client);
+    SetOverrideSpeed(player, 0.0);
+
+    new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
+    m_AllowNuclearLaunch[client]=false;
+    m_NuclearLaunchInitiated[client]=true;
+    CreateTimer(launchTime,NuclearLockOn,client);
+}
+
+public Action:NuclearLockOn(Handle:timer,any:client)
+{
+    new player = GetPlayer(client);
+    if (m_NuclearLaunchInitiated[client])
     {
-        case 1:
-        {
-            dmg=GetRandomInt(20,40);
-            range=300.0;
-        }
-        case 2:
-        {
-            dmg=GetRandomInt(30,50);
-            range=450.0;
-        }
-        case 3:
-        {
-            dmg=GetRandomInt(40,60);
-            range=650.0;
-        }
-        case 4:
-        {
-            dmg=GetRandomInt(50,70);
-            range=800.0;
-        }
+        SetOverrideSpeed(player, 1.0);
+        new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
+        PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %3.1f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
+        CreateTimer(lockTime,NuclearExplosion,client);
     }
-    new count=0;
-    new last=client;
-    new Float:clientLoc[3];
-    GetClientAbsOrigin(client, clientLoc);
-    new maxplayers=GetMaxClients();
-    for(new index=1;index<=maxplayers;index++)
+    else
     {
-        if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
-            GetClientTeam(client) != GetClientTeam(index))
+        new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        CreateTimer(cooldown,AllowNuclearLaunch,client);
+    }
+}
+
+public Action:NuclearExplosion(Handle:timer,any:client)
+{
+    new num    = 0;
+    new player = GetPlayer(client);
+    if (m_NuclearLaunchInitiated[client] && player != -1)
+    {
+        new Float:radius;
+        new r_int;
+        new ult_level=GetSkillLevel(player,raceID,3);
+        switch(ult_level)
         {
-            new player_check=GetPlayer(index);
-            if (player_check>-1)
-            {
-                if (!GetImmunity(player_check,Immunity_Ultimates))
+            case 1:
                 {
-                    if (IsInRange(client,index,range))
+                    radius = 300.0;
+                    r_int  = 300;
+                }
+            case 2:
+                {
+                    radius = 450.0;
+                    r_int  = 450;
+                }
+            case 3:
+                {
+                    radius = 600.0;
+                    r_int  = 600;
+                }
+            case 4:
+                {
+                    radius = 850.0;
+                    r_int  = 850;
+                }
+        }
+
+        new Float:client_location[3];
+        GetClientAbsOrigin(client,client_location);
+
+        TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
+        TE_SendToAll();
+        EmitSoundToAll(explodeWav,client);
+
+        new count = GetClientCount();
+        for(new index=1;index<=count;index++)
+        {
+            if (IsClientInGame(index) && IsPlayerAlive(index))
+            {
+                new check_player=GetPlayer(index);
+                if (check_player>-1)
+                {
+                    if (!GetImmunity(check_player,Immunity_Ultimates) &&
+                            !GetImmunity(check_player,Immunity_Explosion))
                     {
-                        new Float:indexLoc[3];
-                        GetClientAbsOrigin(index, indexLoc);
-                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                        new Float:check_location[3];
+                        GetClientAbsOrigin(index,check_location);
+
+                        new hp=PowerOfRange(client_location,radius,check_location,600);
+                        if (hp)
                         {
-                            new color[4] = { 10, 200, 255, 255 };
-                            TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
-                                              0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                            TE_SendToAll();
-
-                            new new_health=GetClientHealth(index)-dmg;
-                            if (new_health <= 0)
+                            if (TraceTarget(client, index, client_location, check_location))
                             {
-                                new_health=0;
+                                new newhealth = GetClientHealth(index)-hp;
+                                if (newhealth <= 0)
+                                {
+                                    newhealth=0;
+                                    new addxp=5+ult_level;
+                                    new newxp=GetXP(player,raceID)+addxp;
+                                    SetXP(player,raceID,newxp);
 
-                                new addxp=5+ultlevel;
-                                new newxp=GetXP(player,raceID)+addxp;
-                                SetXP(player,raceID,newxp);
-
-                                LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
-                                KillPlayer(index);
+                                    //LogKill(client, index, "nuclear_launch", "Nuclear Launch", hp, addxp);
+                                    KillPlayer(index,client,"nuclear_launch");
+                                }
+                                else
+                                {
+                                    LogDamage(client, index, "nuclear_launch", "Nuclear Launch", hp);
+                                    HurtPlayer(index,hp,client,"nuclear_launch");
+                                }
+                                num++;
                             }
-                            else
-                            {
-                                LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-                                HurtPlayer(index, dmg, client, "chain_lightning");
-                            }
-
-                            last=index;
-                            if (++count > num)
-                                break;
                         }
                     }
                 }
             }
         }
     }
-    EmitSoundToAll(thunderWav,client);
-    new Float:cooldown = GetConVarFloat(cvarChainCooldown);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
-    if (cooldown > 0.0)
-    {
-        m_AllowChainLightning[client]=false;
-        CreateTimer(cooldown,AllowChainLightning,client);
-    }
+    new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, num, cooldown);
+    CreateTimer(cooldown,AllowNuclearLaunch,client);
+
 }
+
+public Action:AllowNuclearLaunch(Handle:timer,any:index)
+{
+    m_AllowNuclearLaunch[index]=true;
+    return Plugin_Stop;
+}
+

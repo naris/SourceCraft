@@ -249,7 +249,7 @@ native SetMinVisibility(player,visibility=255,Float:melee_factor=1.0,Float:movem
 
 /**
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
- * Pass 0.0 as speed when you want the SourceCraft system to take over again,
+ * Pass 1.0 as speed when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param speed: The speed you want to pass.
@@ -259,7 +259,7 @@ native SetOverrideSpeed(player,Float:speed=1.0);
 
 /**
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
- * Pass 0.0 as gravity when you want the SourceCraft system to take over again,
+ * Pass 1.0 as gravity when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param gravity: The gravity you want to pass.

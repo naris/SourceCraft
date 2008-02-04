@@ -347,7 +347,6 @@ DevotionAura(client, skill_devo)
     TE_SendToAll();
 }
 
-
 Bash(victim_index, player)
 {
     new skill_bash=GetSkillLevel(player,raceID,2);

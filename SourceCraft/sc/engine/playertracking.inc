@@ -320,6 +320,11 @@ public Action:PlayerProperties(Handle:timer)
                         if (curSpeed != newSpeed)
                         {
                             SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                            if (newSpeed = 0.0)
+                                SetEntityMoveType(client, MOVETYPE_NONE);
+                            else if (curSpeed == 0.0)
+                                SetEntityMoveType(client, MOVETYPE_WALK);
+
                             new Float:classSpeed = GetClassSpeed(client);
                             LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
                                        client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed, speed, speedAltered[client], overridePlayerSpeed);

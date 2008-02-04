@@ -146,12 +146,6 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public Action:AllowChainLightning(Handle:timer,any:index)
-{
-    m_AllowChainLightning[index]=true;
-    return Plugin_Stop;
-}
-
 // Events
 public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
@@ -456,3 +450,10 @@ ChainLightning(player,client,ultlevel)
         CreateTimer(cooldown,AllowChainLightning,client);
     }
 }
+
+public Action:AllowChainLightning(Handle:timer,any:index)
+{
+    m_AllowChainLightning[index]=true;
+    return Plugin_Stop;
+}
+
