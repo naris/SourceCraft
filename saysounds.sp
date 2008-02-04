@@ -134,6 +134,12 @@ File Format:
 				"count"	"4"		// number of sounds (default is 1)
 				"duration" "5.0"	// This will apply no matter which sound is selected
 			}
+			"STEAM_0:0:xxxxxx" // trigger for specific STEAM ID
+			{
+				"file"	"misc/myhouse.mp3" // name of sound to play when joining
+				"exit"	"misc/goodbye.mp3" // name of sound to play when leaving
+				"admin"	"0"
+			}
 			"doh"  // Minimun configuration for sounds
 			{
 				"file"	"misc/doh.wav"	// This will set all other options to default values
