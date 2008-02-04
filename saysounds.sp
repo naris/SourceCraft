@@ -69,6 +69,10 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added separate sm_sound_admin_warn convar.
 		* Added unlimited sounds when limit == 0.
+	1.12  Feb 03, 2008
+		* Modified by -=|JFH|=-Naris
+		* Fixed message that limit was passed when unlimited
+		* Fixed grammar in warning.
 
 
 Todo:
@@ -80,8 +84,9 @@ Cvarlist (default value):
 	sm_sound_enable 1		 Turns Sounds On/Off
 	sm_sound_warn 3			 Number of sounds to warn person at
 	sm_sound_limit 5 		 Maximum sounds per person
-	sm_sound_admin_limit 5 		 Maximum sounds per admin
-	sm_sound_admin_warn 3		 Number of sounds to admin person at
+	sm_sound_admin_limit 0 		 Maximum sounds per admin
+	sm_sound_admin_warn 0		 Number of sounds to warn admin at
+	sm_sound_announce 0		 Turns on announcements when a sound is played
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	 Time between each sound trigger, 0.0 to disable checking
@@ -158,6 +163,7 @@ new Handle:cvartimebetween = INVALID_HANDLE;
 new Handle:cvaradmintime = INVALID_HANDLE;
 new Handle:cvaradminwarn = INVALID_HANDLE;
 new Handle:cvaradminlimit = INVALID_HANDLE;
+new Handle:cvarannounce = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
@@ -190,6 +196,7 @@ public OnPluginStart(){
 	cvaradmintime = CreateConVar("sm_time_between_admin_sounds","4.5","Time between each admin sound trigger, 0.0 to disable checking",FCVAR_PLUGIN);
 	cvaradminwarn = CreateConVar("sm_sound_admin_warn","0","Number of sounds to warn admin at (0 for no warnings)",FCVAR_PLUGIN);
 	cvaradminlimit = CreateConVar("sm_sound_admin_limit","0","Maximum sounds per admin (0 for unlimited)",FCVAR_PLUGIN);
+	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -329,10 +336,10 @@ public CheckJoin(client, const String:auth[]){
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
-					Send_Sound(client,filelocation);
+					Send_Sound(client,filelocation, "");
 					SndCount[client] = 0;
 					return;
-				}else if (Submit_Sound(client)){
+				}else if (Submit_Sound(client,"")){
 					SndCount[client] = 0;
 					return;
 				}
@@ -342,7 +349,7 @@ public CheckJoin(client, const String:auth[]){
 		if(GetConVarBool(cvarjoinexit)){
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, "JoinSound")){
-				Submit_Sound(client);
+				Submit_Sound(client,"");
 				SndCount[client] = 0;
 			}
 		}
@@ -365,10 +372,10 @@ public OnClientDisconnect(client){
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "exit", filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
-					Send_Sound(client,filelocation);
+					Send_Sound(client,filelocation, "");
 					SndCount[client] = 0;
 					return;
-				}else if (Submit_Sound(client)){
+				}else if (Submit_Sound(client,"")){
 					SndCount[client] = 0;
 					return;
 				}
@@ -377,13 +384,13 @@ public OnClientDisconnect(client){
 
 		KvRewind(listfile);
 		if (KvJumpToKey(listfile, "ExitSound")){
-			Submit_Sound(client);
+			Submit_Sound(client,"");
 			SndCount[client] = 0;
 		}
 	}
 }
 
-bool:Submit_Sound(client)
+bool:Submit_Sound(client,const String:name[])
 {
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:file[8] = "file";
@@ -396,13 +403,13 @@ bool:Submit_Sound(client)
 		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
 	}
 	if (strlen(filelocation)){
-		Send_Sound(client, filelocation);
+		Send_Sound(client, filelocation,name);
 		return true;
 	}
 	return false;
 }
 
-Send_Sound(client, String:filelocation[])
+Send_Sound(client, const String:filelocation[], const String:name[])
 {
 	new adminonly = KvGetNum(listfile, "admin",0);
 	new singleonly = KvGetNum(listfile, "single",0);
@@ -414,6 +421,7 @@ Send_Sound(client, String:filelocation[])
 	WritePackCell(pack, singleonly);
 	WritePackFloat(pack, duration);
 	WritePackString(pack, filelocation);
+	WritePackString(pack, name);
 }
 
 public Action:Command_Say(client,args){
@@ -473,7 +481,7 @@ public Action:Command_Say(client,args){
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
-				Submit_Sound(client);
+				Submit_Sound(client,buffer);
 				break;
 			}
 		} while (KvGotoNextKey(listfile));
@@ -535,7 +543,7 @@ public Action:Command_InsurgencySay(client,args){
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if (strcmp(speech[startidx],buffer,false) == 0){
-				Submit_Sound(client);
+				Submit_Sound(client,buffer);
 				break;
 			}
 		} while (KvGotoNextKey(listfile));
@@ -547,12 +555,14 @@ public Action:Command_InsurgencySay(client,args){
 
 public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
+	decl String:name[PLATFORM_MAX_PATH+1];
 	ResetPack(pack);
 	new client = ReadPackCell(pack);
 	new adminonly = ReadPackCell(pack);
 	new singleonly = ReadPackCell(pack);
 	new Float:duration = ReadPackFloat(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
+	ReadPackString(pack, name , sizeof(name));
 
 	new bool:isadmin = false;
 	if (IsClientInGame(client))
@@ -598,7 +608,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 
 	new soundLimit = isadmin ? GetConVarInt(cvaradminlimit) : GetConVarInt(cvarsoundlimit);	
 	if ((soundLimit && SndCount[client] < soundLimit) && globalLastSound < thetime){
-		SndCount[client]  = SndCount[client] + 1;
+		SndCount[client]++;
 		LastSound[client] = thetime + waitTime;
 		globalLastSound   = thetime + soundTime;
 
@@ -624,15 +634,24 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		}
 	}
 
-	if(IsClientInGame(client)){
-		if ((SndCount[client]) >= soundLimit){
+	if (name[0] != 0 && GetConVarBool(cvarannounce)){
+		PrintToChatAll("%N played %s", client, name);
+	}
+
+	if(soundLimit && IsClientInGame(client)){
+		if (SndCount[client] > soundLimit){
 			PrintToChat(client,"[Say Sounds] Sorry, you have reached your sound quota!");
+		}else if (SndCount[client] == soundLimit){
+			PrintToChat(client,"[Say Sounds] You have no sounds left to use!");
+			SndCount[client]++; // Increment so we get the sorry message next time.
 		}else{
 			new soundWarn = isadmin ? GetConVarInt(cvaradminwarn) : GetConVarInt(cvarsoundwarn);	
-			if (soundWarn && SndCount[client] == soundWarn){
-				new numberleft;
-				numberleft = (soundLimit - soundWarn);
-				PrintToChat(client,"[Say Sounds] You only have %d sounds left!",numberleft);
+			if (soundWarn == 0 || SndCount[client] <= soundWarn){
+				new numberleft = (soundLimit -  SndCount[client]);
+				if (numberleft == 1)
+					PrintToChat(client,"[Say Sounds] You only have %d sound left to use!",numberleft);
+				else
+					PrintToChat(client,"[Say Sounds] You only have %d sounds left to use!",numberleft);
 			}
 		}
 	}
@@ -830,7 +849,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 			do{
 				KvGetSectionName(listfile, buffer, sizeof(buffer));
 				if (strcmp(SelectionDispText,buffer,false) == 0){
-					Submit_Sound(client);
+					Submit_Sound(client,buffer);
 					break;
 				}
 			} while (KvGotoNextKey(listfile));

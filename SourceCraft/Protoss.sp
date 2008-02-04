@@ -674,6 +674,9 @@ public Action:CloakingAndDetector(Handle:timer)
                                         if (detect)
                                         {
                                             SetOverrideVisible(player_check, 255);
+                                            if (TF_GetClass(player_check) == TF2_SPY)
+                                            {
+                                            }
                                             m_Detected[client][index] = true;
                                         }
                                         else if (m_Detected[client][index])

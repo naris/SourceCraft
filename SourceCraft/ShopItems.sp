@@ -68,6 +68,8 @@ new Handle:hSetModel      = INVALID_HANDLE;
 
 new shopItem[MAXITEMS+1];
 
+new String:bennyHillWav[] = "sourcecraft/yaketysax.mp3";
+
 public Plugin:myinfo = 
 {
     name = "SourceCraft - Shopitems",
@@ -200,6 +202,11 @@ public LoadSDKToolStuff()
     }
 }
 
+public OnMapStart()
+{
+    SetupSound(bennyHillWav);
+}
+
 public OnPlayerAuthed(client,player)
 {
     SetupHealth(client);
@@ -211,7 +218,10 @@ public OnPlayerAuthed(client,player)
 public OnItemPurchase(client,player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
+    {
         SetMaxSpeed(player,1.4);
+        EmitSoundToAll(bennyHillWav,client);
+    }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
         SetMinVisibility(player, (GameType == tf2) ? 140 : 160, 0.50);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
@@ -274,7 +284,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
+            {
                 SetMaxSpeed(player,1.4);
+                EmitSoundToAll(bennyHillWav,client);
+            }
 
             if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
                 SetMinVisibility(player, (GameType == tf2) ? 140 : 160, 0.80);

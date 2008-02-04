@@ -413,10 +413,16 @@ stock MakeVisible(client)
                 if(IsValidEdict(y))
                 {
                     if(GetEntDataEnt2(y,m_OwnerOffset)==client)
+                    {
                         SetEntityRenderColor(y,255,255,255,255);
+                        SetEntityRenderMode(client,RENDER_NORMAL);
+                        SetEntityRenderFx(client,RENDERFX_NONE);
+                    }
                 }
             }
             SetEntityRenderColor(client,255,255,255,255);
+            SetEntityRenderMode(client,RENDER_NORMAL);
+            SetEntityRenderFx(client,RENDERFX_NONE);
         }
     }
 }
@@ -437,10 +443,14 @@ stock MakeInvisible(client, visibility)
                         !StrEqual(name, "CCaptureFlag"))
                     {
                         SetEntityRenderColor(obj,255,255,255,visibility);
+                        SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+                        SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
                     }
                 }
             }
         }
     }
     SetEntityRenderColor(client,255,255,255,visibility);
+    SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+    SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
 }
