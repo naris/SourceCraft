@@ -286,22 +286,22 @@ bool:ReaverScarab(damage, victim_index, index, player)
             case 1:
             {
                 chance=20;
-                percent=0.24;
+                percent=0.14;
             }
             case 2:
             {
                 chance=40;
-                percent=0.37;
+                percent=0.27;
             }
             case 3:
             {
                 chance=60;
-                percent=0.53;
+                percent=0.43;
             }
             case 4:
             {
                 chance=90;
-                percent=0.73;
+                percent=0.63;
             }
         }
 
@@ -704,7 +704,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                         if (detect)
                                         {
                                             SetOverrideVisible(player_check, 255);
-                                            if (TF_GetClass(player_check) == TF2_SPY)
+                                            if (TF_GetClass(index) == TF2_SPY)
                                             {
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)

@@ -1349,8 +1349,9 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
                         credadd=10;
                 }
                 new newcred=GetCredits(targetvecpos)+credadd;
-                if(newcred>MAX_CREDITS)
-                    newcred=MAX_CREDITS;
+                new maxCredits = GetConVarInt(m_MaxCredits);
+                if(newcred>maxCredits)
+                    newcred=maxCredits;
                 SetCredits(targetvecpos,newcred);
 
                 PrintToChat(client, "%c[SourceCraft] %cYou gave \"%s\" %d %s(s).",

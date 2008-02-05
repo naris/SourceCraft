@@ -371,8 +371,9 @@ public Action:CMD_SetCredits(client,args)
         new credits=StringToInt(buf);
         if(credits<0)
             credits=0;
-        if(credits>MAX_CREDITS)
-            credits=MAX_CREDITS;
+        new maxCredits = GetConVarInt(m_MaxCredits);
+        if(credits>maxCredits)
+            credits=maxCredits;
             
         decl String:currencies[64];
         GetConVarString(m_Currencies, currencies, 63);
@@ -434,8 +435,9 @@ public Action:CMD_GiveCredits(client,args)
                 new newcreds=GetCredits(vecpos)+credits;
                 if(newcreds<0)
                     newcreds=0;
-                if(newcreds>MAX_CREDITS)
-                    newcreds=MAX_CREDITS;
+                new maxCredits = GetConVarInt(m_MaxCredits);
+                if(newcreds>maxCredits)
+                    newcreds=maxCredits;
                 SetCredits(vecpos,newcreds);
                 PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" %d %s.",name,credits,currencies);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" give you %d %s.",
@@ -483,8 +485,9 @@ public Action:CMD_RemoveCredits(client,args)
                 new newcreds=GetCredits(vecpos)-credits;
                 if(newcreds<0)
                     newcreds=0;
-                if(newcreds>MAX_CREDITS)
-                    newcreds=MAX_CREDITS;
+                new maxCredits = GetConVarInt(m_MaxCredits);
+                if(newcreds>maxCredits)
+                    newcreds=maxCredits;
                 SetCredits(vecpos,newcreds);
                 PrintToConsole(client,"[SourceCraft] You just removed %d %s from player \"%s\".",credits,currencies,name);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d %s from you.",

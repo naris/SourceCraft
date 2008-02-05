@@ -537,7 +537,14 @@ public Action:NuclearExplosion(Handle:timer,any:client)
 
 public Action:AllowNuclearLaunch(Handle:timer,any:index)
 {
-    m_AllowNuclearLaunch[index]=true;
+    if (IsClientInGame(index))
+    {
+        if (IsPlayerAlive(index))
+        {
+            EmitSoundToClient(index,readyWav);
+            m_AllowNuclearLaunch[index]=true;
+        }
+    }
     return Plugin_Stop;
 }
 

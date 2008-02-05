@@ -470,8 +470,8 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(assisterClient)
 	{
 		new kills = consecutiveKills[assisterClient];
-		if (kills > 50)
-		    kills = 50;
+		if (kills > 49)
+		    kills = 49;
 		if (killNumSetting[kills])
 			soundId = killNumSetting[kills];
 	}
@@ -479,8 +479,8 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(attackerClient)
 	{
 		new kills = consecutiveKills[attackerClient];
-		if (kills > 50)
-		    kills = 50;
+		if (kills > 49)
+		    kills = 49;
 		if (killNumSetting[kills])
 			soundId = killNumSetting[kills];
 	}

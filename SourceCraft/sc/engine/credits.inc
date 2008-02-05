@@ -73,7 +73,8 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
     decl String:currencies[64];
     GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
 
-    if(newcredits <= MAX_CREDITS || MAX_CREDITS == 0)
+    new maxCredits = GetConVarInt(m_MaxCredits);
+    if(newcredits <= maxCredits || maxCredits == 0)
     {
         SetCredits(vectorpos,amount);
         PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
@@ -81,12 +82,12 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
     }
     else
     {
-        new amt = MAX_CREDITS-amount;
+        new amt = maxCredits-amount;
         if (amt > 0)
         {
-            SetCredits(vectorpos,MAX_CREDITS);
+            SetCredits(vectorpos,maxCredits);
             PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s for %s.",
-                    COLOR_GREEN,COLOR_DEFAULT,currencies,MAX_CREDITS,amt,currencies, reason);
+                    COLOR_GREEN,COLOR_DEFAULT,currencies,maxCredits,amt,currencies, reason);
         }
     }
 }

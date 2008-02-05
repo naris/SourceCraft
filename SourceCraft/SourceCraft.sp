@@ -29,7 +29,6 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 
 #define SAVE_ENABLED       GetConVarInt(m_SaveXPConVar)==1
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
-#define MAX_CREDITS        GetConVarInt(m_MaxCredits)
 
 // SourceCraft Includes
 #include "sc/util"
