@@ -128,10 +128,9 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client > 0)
     {
-        m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
         if (g_RoundActive)
         {
-            new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+            new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
             m_BaseSpeed[client]=maxSpeed;
 
             new class=GetEventInt(event,"class");
@@ -273,8 +272,7 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             new client=GetArrayCell(playerHandle,0);
             if(IsClientInGame(client))
             {
-                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
-                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed);
                 LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f",
                            client, m_BaseSpeed[client],GetClassSpeed(client));
             }

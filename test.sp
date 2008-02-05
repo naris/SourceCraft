@@ -31,6 +31,10 @@ new m_OffsetPlayerCond;
 new m_OffsetClass;
 new m_OffsetPoisoned;
 new m_OffsetWearingSuit;
+new m_OffsetBonusProgress;
+new m_OffsetBonusChallenge;
+new m_OffsetAirDash;
+new m_OffsetMaxspeed;
 
 public Plugin:myinfo = 
 {
@@ -66,6 +70,10 @@ public OnMapStart()
         m_OffsetClass=FindSendPropInfo("CTFPlayer","m_iClass");
         m_OffsetPoisoned=FindSendPropInfo("CTFPlayer","m_bPoisoned");
         m_OffsetWearingSuit=FindSendPropInfo("CTFPlayer","m_bWearingSuit");
+        m_OffsetBonusProgress=FindSendPropInfo("CTFPlayer","m_iBonusProgress");
+        m_OffsetBonusChallenge=FindSendPropInfo("CTFPlayer","m_iBonusChallenge");
+        m_OffsetAirDash=FindSendPropInfo("CTFPlayer","m_bAirDash");
+        m_OffsetMaxspeed=FindSendPropInfo("CTFPlayer","m_flMaxspeed");
 }
 
 public Action:TrackVariables(Handle:timer)
@@ -95,9 +103,12 @@ public Action:TrackVariables(Handle:timer)
                 new playerCond = m_OffsetPlayerCond>0 ? GetEntData(client,m_OffsetPlayerCond) : -99;
                 new poisened = m_OffsetPoisoned>0 ? GetEntData(client,m_OffsetPoisoned) : -99;
                 new wearingSuit = m_OffsetWearingSuit>0 ? GetEntData(client,m_OffsetWearingSuit) : -99;
+                new bonusProgress = m_OffsetBonusProgress>0 ? GetEntData(client,m_OffsetBonusProgress) : -99;
+                new bonusChallenge = m_OffsetBonusChallenge>0 ? GetEntData(client,m_OffsetBonusChallenge) : -99;
+                new airDash = m_OffsetAirDash>0 ? GetEntData(client,m_OffsetAirDash) : -99;
 
-                LogMessage("client=%N,tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisoned=%d,wearingSuit=%d",client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit);
-                PrintToChat( client,"dTeam=%d,dClass=%d,dTarget=%d,dHealth=%d,dDTeam=%d,dDClass=%d,iCCTime=%f,cMult=%d,sNAExpire=%f,sNCTime=%f,pState=%d,nHealers=%d,pCond=%d",disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond);
+                LogMessage("client=%N,tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisoned=%d,wearingSuit=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d",client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit,bonusProgress,bonusChallenge,airDash);
+                PrintToChat( client,"critMult=%d,pState=%d,nHealers=%d,pCond=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d,sNAExpire=%f,sNCTime=%f",critMult,playerState,numHealers,playerCond,bonusProgress,bonusChallenge,airDash,stealthNoAttackExpire,stealthNextChangeTime);
             }
         }
     }
@@ -106,8 +117,9 @@ public Action:TrackVariables(Handle:timer)
 
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
-    if (m_OffsetCloakMeter>0)
+    if (IsPlayerAlive(client))
     {
+        SetEntDataFloat(client,m_OffsetCloakMeter, 0.0);
         SetEntData(client,m_OffsetDisguiseTeam, 0);
         SetEntData(client,m_OffsetDisguiseClass, 0);
         SetEntData(client,m_OffsetDisguiseHealth, 0);

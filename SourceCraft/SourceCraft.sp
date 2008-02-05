@@ -204,14 +204,6 @@ public OnClientPutInServer(client)
             new res;
             Call_Finish(res);
 
-            m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
-
-            if (GameType == tf2)
-            {
-                m_OffsetMaxSpeed[client]=FindDataMapOffs(client,"m_flMaxspeed");
-                m_BaseSpeed[client]= GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
-            }
-
             new vecpos=GetClientVectorPosition(client);
             if(SAVE_ENABLED)
                 m_FirstSpawn[client]=LoadPlayerData(client,vecpos);

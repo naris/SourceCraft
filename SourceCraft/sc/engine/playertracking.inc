@@ -298,7 +298,7 @@ public Action:PlayerProperties(Handle:timer)
 
                 if (GameType == tf2)
                 {
-                    new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed[client]);
+                    new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
                     if (m_BaseSpeed[client] == 0.0)
                         m_BaseSpeed[client] == curSpeed;
 
@@ -319,7 +319,7 @@ public Action:PlayerProperties(Handle:timer)
 
                         if (curSpeed != newSpeed)
                         {
-                            SetEntDataFloat(client,m_OffsetMaxSpeed[client], newSpeed);
+                            SetEntDataFloat(client,m_OffsetMaxSpeed, newSpeed);
                             if (newSpeed == 0.0)
                                 SetEntityMoveType(client, MOVETYPE_NONE);
                             else if (curSpeed == 0.0)
@@ -368,8 +368,8 @@ public Action:PlayerProperties(Handle:timer)
 
                 if (gravityAltered[client] || overridePlayerGravity || gravity != 1.0)
                 {
-                    if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
-                        SetEntDataFloat(client,m_OffsetGravity[client], gravity);
+                    if (GetEntDataFloat(client,m_OffsetGravity) != gravity)
+                        SetEntDataFloat(client,m_OffsetGravity, gravity);
 
                     if (gravity == 1.0)
                     {
