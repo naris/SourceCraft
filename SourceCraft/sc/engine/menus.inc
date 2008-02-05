@@ -19,6 +19,9 @@ new gShowItemsTarget[MAXPLAYERS+1];
 
 new Handle:hTopAdminMenu = INVALID_HANDLE;
 
+new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
+
+
 public InitMenus()
 {
     /* Account for late loading */
@@ -523,6 +526,7 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
                 }
                 else
                 {
+                    EmitSoundToClient(client,notEnoughWav);
                     PrintToChat(client, "%c[SourceCraft] %cYou can not afford the %s.",
                                 COLOR_GREEN,COLOR_DEFAULT,itemname);
                 }

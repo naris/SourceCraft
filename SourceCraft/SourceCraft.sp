@@ -12,6 +12,7 @@
 
 #include <sourcemod>
 #include <keyvalues>
+#include <sdktools>
 #include <tf2>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick

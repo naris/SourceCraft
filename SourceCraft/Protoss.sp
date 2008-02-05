@@ -631,12 +631,6 @@ public Action:CloakingAndDetector(Handle:timer)
                                 new player_check=GetPlayer(index);
                                 if (player_check>-1)
                                 {
-                                    decl String:clientName[64];
-                                    GetClientName(client,clientName,63);
-
-                                    decl String:name[64];
-                                    GetClientName(index,name,63);
-
                                     if (GetClientTeam(index) == GetClientTeam(client))
                                     {
                                         new check_player = GetPlayer(index);
@@ -676,9 +670,9 @@ public Action:CloakingAndDetector(Handle:timer)
                                             if (!m_Cloaked[client][index])
                                             {
                                                 EmitSoundToClient(client, cloakWav);
-                                                LogToGame("[SourceCraft] %s has been cloaked by %s!\n", name,clientName);
-                                                PrintToChat(index,"%c[SourceCraft] %s %c has been cloaked by %s!",
-                                                            COLOR_GREEN,name,COLOR_DEFAULT,clientName);
+                                                LogToGame("[SourceCraft] %N has been cloaked by %N!\n", index,client);
+                                                PrintToChat(index,"%c[SourceCraft] %N %c has been cloaked by %N!",
+                                                            COLOR_GREEN,index,COLOR_DEFAULT,client);
                                             }
                                         }
                                         else if (m_Cloaked[client][index])
@@ -687,9 +681,9 @@ public Action:CloakingAndDetector(Handle:timer)
                                             m_Cloaked[client][index] = false;
 
                                             EmitSoundToClient(client, unCloakWav);
-                                            LogToGame("[SourceCraft] %s has been uncloaked!\n", name);
-                                            PrintToChat(index,"%c[SourceCraft] %s %c has been uncloaked!",
-                                                        COLOR_GREEN,name,COLOR_DEFAULT);
+                                            LogToGame("[SourceCraft] %N has been uncloaked!\n", index);
+                                            PrintToChat(index,"%c[SourceCraft] %N %c has been uncloaked!",
+                                                        COLOR_GREEN,index,COLOR_DEFAULT);
                                         }
                                     }
                                     else
