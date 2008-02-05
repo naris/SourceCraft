@@ -337,14 +337,14 @@ public Action:PlayerProperties(Handle:timer)
                         new Float:classSpeed = GetClassSpeed(client);
                         if (curSpeed != classSpeed)
                         {
-                            LogMessage("[playertracking] Speed of %N is %f, cur=%f, base=%f, class_speed=%f",
+                            LogMessage("[playertracking] Speed of %N is %f, base=%f, class_speed=%f",
                                         client, curSpeed, m_BaseSpeed[client], classSpeed);
                         }
                     }
                 }
                 else // not tf2
                 {
-                    LogMessage("[playertracking] Set NON TF2 speed of %N to %f, speed=%f, altered=%d, override=%d",
+                    LogMessage("[playertracking] Set NON TF2 speed of %N to %f, altered=%d, override=%d",
                         client, speed, speedAltered[client], overridePlayerSpeed);
 
                     if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)

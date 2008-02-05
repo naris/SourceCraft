@@ -34,7 +34,10 @@ enum objects { unknown, sentrygun, dispenser, teleporter };
 new m_BuilderOffset[objects];
 new m_BuildingOffset[objects];
 
-new m_OffsetCloakMeter[MAXPLAYERS+1];
+new m_OffsetCloakMeter;
+new m_OffsetDisguiseTeam;
+new m_OffsetDisguiseClass;
+new m_OffsetDisguiseHealth;
 
 // Arrays to keep track of stolen objects
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
@@ -100,30 +103,6 @@ public OnPluginReady()
                       "Dark Archon Mind Control",
                       "Allows you to control an object from the opposite team.",
                       "16");
-
-    m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
-    if(m_BuilderOffset[sentrygun] == -1)
-        SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
-
-    m_BuildingOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
-    if(m_BuildingOffset[sentrygun] == -1)
-        SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
-
-    m_BuilderOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_hBuilder");
-    if(m_BuilderOffset[dispenser] == -1)
-        SetFailState("[SourceCraft] Error finding Dispenser Builder offset.");
-
-    m_BuildingOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_bBuilding");
-    if(m_BuildingOffset[dispenser] == -1)
-        SetFailState("[SourceCraft] Error finding Dispenser Building offset.");
-
-    m_BuilderOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_hBuilder");
-    if(m_BuilderOffset[teleporter] == -1)
-        SetFailState("[SourceCraft] Error finding Teleporter Builder offset.");
-
-    m_BuildingOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_bBuilding");
-    if(m_BuildingOffset[teleporter] == -1)
-        SetFailState("[SourceCraft] Error finding Teleporter Building offset.");
 }
 
 public OnMapStart()
@@ -151,6 +130,49 @@ public OnMapStart()
     explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
+
+    if (GameType == tf2)
+    {
+        m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
+        if (m_OffsetCloakMeter == -1)
+            SetFailState("Couldn't find CloakMeter Offset");
+
+        m_OffsetDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDisguiseTeam");
+        if (m_OffsetDisguiseTeam == -1)
+            SetFailState("Couldn't find DisguiseTeam Offset");
+
+        m_OffsetDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDisguiseClass");
+        if (m_OffsetDisguiseClass == -1)
+            SetFailState("Couldn't find DisguiseClass Offset");
+
+        m_OffsetDisguiseHealth=FindSendPropInfo("CTFPlayer","m_iDisguiseHealth");
+        if (m_OffsetDisguiseHealth == -1)
+            SetFailState("Couldn't find DisguiseHealth Offset");
+
+        m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
+        if(m_BuilderOffset[sentrygun] == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
+
+        m_BuildingOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
+        if(m_BuildingOffset[sentrygun] == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
+
+        m_BuilderOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_hBuilder");
+        if(m_BuilderOffset[dispenser] == -1)
+            SetFailState("[SourceCraft] Error finding Dispenser Builder offset.");
+
+        m_BuildingOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_bBuilding");
+        if(m_BuildingOffset[dispenser] == -1)
+            SetFailState("[SourceCraft] Error finding Dispenser Building offset.");
+
+        m_BuilderOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_hBuilder");
+        if(m_BuilderOffset[teleporter] == -1)
+            SetFailState("[SourceCraft] Error finding Teleporter Builder offset.");
+
+        m_BuildingOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_bBuilding");
+        if(m_BuildingOffset[teleporter] == -1)
+            SetFailState("[SourceCraft] Error finding Teleporter Building offset.");
+    }
 
     SetupSound(explodeWav);
     SetupSound(controlWav);
@@ -194,9 +216,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
-        // Set CloakMeter up for ALL races (it's needed for victims) Mwuhaha!!
-        m_OffsetCloakMeter[index]=FindDataMapOffs(index,"m_flCloakMeter");
-        
         new player=GetPlayer(index);
         if (player>-1)
         {
@@ -687,10 +706,18 @@ public Action:CloakingAndDetector(Handle:timer)
                                             SetOverrideVisible(player_check, 255);
                                             if (TF_GetClass(player_check) == TF2_SPY)
                                             {
-                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter[index]);
+                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
                                                 {
-                                                    SetEntDataFloat(index,m_OffsetCloakMeter[index], 0.0);
+                                                    SetEntDataFloat(index,m_OffsetCloakMeter, 0.0);
+                                                }
+
+                                                new disguiseTeam = GetEntData(index,m_OffsetDisguiseTeam);
+                                                if (disguiseTeam != 0)
+                                                {
+                                                    SetEntData(index,m_OffsetDisguiseTeam, 0);
+                                                    SetEntData(index,m_OffsetDisguiseClass, 0);
+                                                    SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
                                             }
                                             m_Detected[client][index] = true;

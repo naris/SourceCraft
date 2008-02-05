@@ -29,6 +29,11 @@ new explosionModel;
 new g_smokeSprite;
 new g_lightningSprite;
 
+new m_OffsetCloakMeter;
+new m_OffsetDisguiseTeam;
+new m_OffsetDisguiseClass;
+new m_OffsetDisguiseHealth;
+
 new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
 new Handle:cvarNuclearCooldown = INVALID_HANDLE;
@@ -37,8 +42,6 @@ new bool:m_AllowNuclearLaunch[MAXPLAYERS+1];
 new bool:m_NuclearLaunchInitiated[MAXPLAYERS+1];
 
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
-
-new m_OffsetCloakMeter[MAXPLAYERS+1];
 
 new String:launchWav[] = "weapons/explode5.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
@@ -98,6 +101,25 @@ public OnMapStart()
 
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
+
+    if (GameType == tf2)
+    {
+        m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
+        if (m_OffsetCloakMeter == -1)
+            SetFailState("Couldn't find CloakMeter Offset");
+
+        m_OffsetDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDisguiseTeam");
+        if (m_OffsetDisguiseTeam == -1)
+            SetFailState("Couldn't find DisguiseTeam Offset");
+
+        m_OffsetDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDisguiseClass");
+        if (m_OffsetDisguiseClass == -1)
+            SetFailState("Couldn't find DisguiseClass Offset");
+
+        m_OffsetDisguiseHealth=FindSendPropInfo("CTFPlayer","m_iDisguiseHealth");
+        if (m_OffsetDisguiseHealth == -1)
+            SetFailState("Couldn't find DisguiseHealth Offset");
+    }
 
     SetupSound(explodeWav);
 }
@@ -159,9 +181,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        // Set CloakMeter up for ALL races (it's needed for victims) Mwuhaha!!
-        m_OffsetCloakMeter[client]=FindDataMapOffs(client,"m_flCloakMeter");
-
         new player=GetPlayer(client);
         if (player>-1)
         {
@@ -344,10 +363,18 @@ public Action:OcularImplants(Handle:timer)
                                             SetOverrideVisible(player_check, 255);
                                             if (TF_GetClass(player_check) == TF2_SPY)
                                             {
-                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter[index]);
+                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
                                                 {
-                                                    SetEntDataFloat(index,m_OffsetCloakMeter[index], 0.0);
+                                                    SetEntDataFloat(index,m_OffsetCloakMeter, 0.0);
+                                                }
+
+                                                new disguiseTeam = GetEntData(index,m_OffsetDisguiseTeam);
+                                                if (disguiseTeam != 0)
+                                                {
+                                                    SetEntData(index,m_OffsetDisguiseTeam, 0);
+                                                    SetEntData(index,m_OffsetDisguiseClass, 0);
+                                                    SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
                                             }
                                             m_Detected[client][index] = true;
