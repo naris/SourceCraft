@@ -219,7 +219,7 @@ public OnItemPurchase(client,player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
     {
-        SetMaxSpeed(player,1.4);
+        SetMaxSpeed(player,1.2);
         EmitSoundToAll(bennyHillWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
@@ -240,7 +240,7 @@ public OnItemPurchase(client,player,item)
         SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
-        SetMinGravity(player,0.3);
+        SetMinGravity(player,0.5);
 }
 
 public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -285,7 +285,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
             {
-                SetMaxSpeed(player,1.4);
+                SetMaxSpeed(player,1.2);
                 EmitSoundToAll(bennyHillWav,client);
             }
 
@@ -296,7 +296,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 UsePeriapt(client);
 
             if(GetOwnsItem(player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
-                SetMinGravity(player,0.3);
+                SetMinGravity(player,0.5);
 
             if(GetOwnsItem(player,shopItem[ITEM_MOLE]))                            // Mole
             {

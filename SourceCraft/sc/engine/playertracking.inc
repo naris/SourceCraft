@@ -320,10 +320,12 @@ public Action:PlayerProperties(Handle:timer)
                         if (curSpeed != newSpeed)
                         {
                             SetEntDataFloat(client,m_OffsetMaxSpeed, newSpeed);
+                            /*
                             if (newSpeed == 0.0)
                                 SetEntityMoveType(client, MOVETYPE_NONE);
                             else if (curSpeed == 0.0)
                                 SetEntityMoveType(client, MOVETYPE_WALK);
+                            */
 
                             new Float:classSpeed = GetClassSpeed(client);
                             LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
@@ -368,8 +370,8 @@ public Action:PlayerProperties(Handle:timer)
 
                 if (gravityAltered[client] || overridePlayerGravity || gravity != 1.0)
                 {
-                    if (GetEntDataFloat(client,m_OffsetGravity) != gravity)
-                        SetEntDataFloat(client,m_OffsetGravity, gravity);
+                    if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
+                        SetEntDataFloat(client,m_OffsetGravity[client], gravity);
 
                     if (gravity == 1.0)
                     {

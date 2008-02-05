@@ -203,7 +203,7 @@ public OnClientPutInServer(client)
             Call_PushCell(GetClientVectorPosition(client));
             new res;
             Call_Finish(res);
-
+            m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
             new vecpos=GetClientVectorPosition(client);
             if(SAVE_ENABLED)
                 m_FirstSpawn[client]=LoadPlayerData(client,vecpos);
