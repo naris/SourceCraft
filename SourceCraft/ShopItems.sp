@@ -210,8 +210,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    SetupHealth(client);
-
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
@@ -242,14 +240,6 @@ public OnItemPurchase(client,player,item)
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
         SetMinGravity(player,0.5);
-}
-
-public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-        ResetMaxHealth(client);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)

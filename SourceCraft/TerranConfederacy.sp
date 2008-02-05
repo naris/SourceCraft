@@ -77,11 +77,6 @@ public OnMapStart()
         SetFailState("Couldn't find lghtning Model");
 }
 
-public OnPlayerAuthed(client,player)
-{
-    SetupHealth(client);
-}
-
 public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace)

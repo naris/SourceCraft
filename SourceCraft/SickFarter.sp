@@ -15,7 +15,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
 #include "sc/authtimer"
 #include "sc/respawn"
 #include "sc/log"
@@ -101,7 +100,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    SetupHealth(client);
     m_AllowFart[client]=true;
 }
 

@@ -17,7 +17,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
 #include "sc/authtimer"
 #include "sc/respawn"
 #include "sc/log"
@@ -108,11 +107,6 @@ public OnMapStart()
     }
 
     SetupSound(explodeWav);
-}
-
-public OnPlayerAuthed(client,player)
-{
-    SetupHealth(client);
 }
 
 public OnXPGiven(client,player,&amount)

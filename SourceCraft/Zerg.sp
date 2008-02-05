@@ -76,12 +76,6 @@ public OnMapStart()
     SetupSound(errorWav,true);
 }
 
-
-public OnPlayerAuthed(client,player)
-{
-    SetupHealth(client);
-}
-
 public OnRaceSelected(client,player,oldrace,race)
 {
     if (race != oldrace)

@@ -15,7 +15,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
 #include "sc/authtimer"
 #include "sc/respawn"
 #include "sc/log"
@@ -118,11 +117,6 @@ public OnMapStart()
     SetupSound(allahWav);
     SetupSound(kaboomWav);
     SetupSound(explodeWav);
-}
-
-public OnPlayerAuthed(client,player)
-{
-    SetupHealth(client);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)

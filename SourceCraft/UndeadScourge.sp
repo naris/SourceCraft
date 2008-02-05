@@ -16,7 +16,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
@@ -92,11 +91,6 @@ public OnMapStart()
         SetFailState("Couldn't find Explosion Model");
 
     SetupSound(explodeWav);
-}
-
-public OnPlayerAuthed(client,player)
-{
-    SetupHealth(client);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)

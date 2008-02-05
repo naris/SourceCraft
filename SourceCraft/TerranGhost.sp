@@ -15,7 +15,6 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
-#include "sc/health"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/freeze"
@@ -128,7 +127,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    SetupHealth(client);
     m_AllowNuclearLaunch[client]=true;
 }
 

@@ -19,17 +19,11 @@ stock FindUberOffsets()
     {
         m_OffsetNumHealers=FindSendPropInfo("CTFPlayer","m_nNumHealers");
         if(m_OffsetNumHealers == -1)
-        {
-            LogError("[SourceCraft] Error finding NumHealers offset.");
-            ret=false;
-        }
+            SetFailState("[SourceCraft] Error finding NumHealers offset.");
 
         m_OffsetPlayerCond=FindSendPropInfo("CTFPlayer","m_nPlayerCond");
         if(m_OffsetPlayerCond == -1)
-        {
-            LogError("[SourceCraft] Error finding PlayerCond offset.");
-            ret=false;
-        }
+            SetFailState("[SourceCraft] Error finding PlayerCond offset.");
     }
 }
 
@@ -37,7 +31,7 @@ stock IsUber(client)
 {
     if (GameType == tf2)
         return GetEntData(client,m_OffsetNumHealers) > 0 &&
-               (GetEntData(client,m_OffsetPlayerCond) & 2080);
+               (GetEntData(client,m_OffsetPlayerCond) & 2080) != 0;
     else
         return false;
 }
