@@ -86,7 +86,7 @@ public OnPluginStart()
             SetFailState("Could not hook the teamplay_round_stalemate event.");
     }
 
-    CreateTimer(2.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(1.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnPluginReady()

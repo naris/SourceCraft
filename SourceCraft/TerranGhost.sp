@@ -65,7 +65,7 @@ public OnPluginStart()
 
     HookEvent("player_spawn",PlayerSpawnEvent);
 
-    CreateTimer(2.0,OcularImplants,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(1.0,OcularImplants,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnPluginReady()
