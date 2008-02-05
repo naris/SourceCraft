@@ -17,9 +17,9 @@
 #define DOMINATED_XP        15
 #define REVENGE_XP          15
 
-#define BUILD_XP            10
-#define DESTROY_XP          10
-#define CHARGE_XP           20
+#define BUILD_XP             5
+#define DESTROY_XP           5
+#define CHARGE_XP           30
 
 #define DEFUSE_XP           20
 #define PLANT_XP            20
@@ -221,7 +221,7 @@ public GiveObjectDestroyedXP(client,vectorpos)
 public GiveFlagCapturedXP(client,vectorpos)
 {
     // Called when a player captures a flag
-    GiveXP(client,vectorpos,CAPTURE_FLAG_XP, "capturing the flag");
+    GiveXP(client,vectorpos,CAPTURE_FLAG_XP, "capturing the intelligence");
 }
 
 public GivePointCapturedXP(client,vectorpos)
@@ -251,7 +251,7 @@ public GiveGameWinXP(client,vectorpos,score)
 public GiveMvpXP(client,vectorpos,place,points)
 {
     new String:reason[64];
-    Format(reason,sizeof(reason),"being MVP #%d with $d points",place, points);
+    Format(reason,sizeof(reason),"being MVP #%d with %d points",place, points);
     GiveXP(client,vectorpos,points*place*MVP_XP,reason);
 }
 

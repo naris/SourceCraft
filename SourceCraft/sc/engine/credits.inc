@@ -4,12 +4,13 @@
  * Description: The shopmenu credit system. 
  * Author(s): Anthony Iacono  
  */
- 
+
 #define KILL_CREDITS_LONGTERM   2
 #define KILL_CREDITS_SHORTTERM  3
 
 #define FLAG_CREDITS            5
-#define CHARGE_CREDITS         10
+#define POINT_CREDITS           5
+#define CHARGE_CREDITS         15
 
 #define ROUND_WIN_CREDITS       8
 #define GAME_WIN_CREDITS        2 // Multiplied by score
@@ -33,6 +34,11 @@ public GiveKillCredits(client,vectorpos)
 public GivePickedUpFlagCredits(client,vectorpos)
 {
     GiveCredits(client,vectorpos,FLAG_CREDITS,"picking up the flag");
+}
+
+public GivePointCapturedCredits(client,vectorpos)
+{
+    GiveCredits(client,vectorpos,FLAG_CREDITS,"capturing a point");
 }
 
 public GiveChargeDeployedCredits(client,vectorpos)

@@ -33,12 +33,13 @@
 #define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
-#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades or ammo or metal over time
+#define ITEM_PACK            11 // Ammo Pack - Given HE Grenades or ammo or metal over time
 #define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
 #define ITEM_GOGGLES         15 // The Goggles - They do nothing!
-#define MAXITEMS             15
+#define ITEM_ADMIN           16 // Purchase Admin on the Server
+#define MAXITEMS             14
  
 new myWepsOffset;
 new curWepOffset;
@@ -100,7 +101,7 @@ public OnPluginStart()
             SetFailState("Couldn't hook the player_changeclass event.");
     }
 
-    CreateTimer(20.0,Gloves,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 
     if (GameType == cstrike)
@@ -121,14 +122,14 @@ public OnPluginReady()
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
     shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","15");
-    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","3");
+    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","50");
     shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","50");
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
-    shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade or ammo or metal every 20 seconds.","5");
-    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","3");
-    shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","90");
-    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","5");
+    shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack","You will be given ammo or metal every 10 seconds.","35");
+    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","15");
+    shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
+    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
     shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     LoadSDKToolStuff();
@@ -360,8 +361,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
             if(GetOwnsItem(victim_player,shopItem[ITEM_SOCK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_SOCK],false);
 
-            if(GetOwnsItem(victim_player,shopItem[ITEM_GLOVES]))
-                SetOwnsItem(victim_player,shopItem[ITEM_GLOVES],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_PACK]))
+                SetOwnsItem(victim_player,shopItem[ITEM_PACK],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
                 SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
@@ -557,7 +558,7 @@ public Action:Regeneration(Handle:timer)
     return Plugin_Continue;
 }
 
-public Action:Gloves(Handle:timer)
+public Action:AmmoPack(Handle:timer)
 {
     new maxclients=GetMaxClients();
     for(new client=1;client<=maxclients;client++)
@@ -565,7 +566,7 @@ public Action:Gloves(Handle:timer)
         if(IsClientInGame(client) && IsPlayerAlive(client))
         {
             new player=GetPlayer(client);
-            if (player>=0 && GetOwnsItem(player,shopItem[ITEM_GLOVES]))
+            if (player>=0 && GetOwnsItem(player,shopItem[ITEM_PACK]))
             {
                 if (GameType == cstrike)
                 {
@@ -582,51 +583,51 @@ public Action:Gloves(Handle:timer)
                     {
                         case TF2_HEAVY: 
                         {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 10;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 20;
                             if (ammo < 400.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cInfinite Ammo Pack%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_PYRO: 
                         {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 10;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 20;
                             if (ammo < 400.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_MEDIC: 
                         {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 10;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 20;
                             if (ammo < 300.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         case TF2_ENG: // Gets Metal instead of Ammo
                         {
-                            new metal = GetEntData(client, metalOffset, 4) + 10;
+                            new metal = GetEntData(client, metalOffset, 4) + 20;
                             if (metal < 400.0)
                             {
                                 SetEntData(client, metalOffset, metal, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received metal from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received metal from %cInfinite Ammo Pack%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
                         default:
                         {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 2;
+                            new ammo = GetEntData(client, ammoOffset, 4) + 8;
                             if (ammo < 60.0)
                             {
                                 SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cFlaming Gloves of Warmth%c.",
+                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
                                             COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }

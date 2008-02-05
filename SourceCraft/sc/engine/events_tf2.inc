@@ -234,7 +234,10 @@ public EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
             new index  = cappers{i};
             new vecpos = GetClientVectorPosition(index);
             if (vecpos != -1)
+            {
                 GivePointCapturedXP(index,vecpos);
+                GivePointCapturedCredits(index,vecpos);
+            }
         }
     }
 }
@@ -332,7 +335,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new points = GetEventInt(event,"player_1_points");
             GiveMvpCredits(index,vecpos,1,points);
-            GiveMvpXP(index,vecpos,score,points);
+            GiveMvpXP(index,vecpos,1,points);
         }
     }
 
@@ -344,7 +347,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new points = GetEventInt(event,"player_2_points");
             GiveMvpCredits(index,vecpos,2,points);
-            GiveMvpXP(index,vecpos,score,points);
+            GiveMvpXP(index,vecpos,2,points);
         }
     }
 
@@ -356,7 +359,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new points = GetEventInt(event,"player_3_points");
             GiveMvpCredits(index,vecpos,3,points);
-            GiveMvpXP(index,vecpos,score,points);
+            GiveMvpXP(index,vecpos,3,points);
         }
     }
 }
