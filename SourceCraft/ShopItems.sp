@@ -37,8 +37,8 @@
 #define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
 #define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
-#define ITEM_GOGGLES         15 // The Goggles - They do nothing!
-#define ITEM_ADMIN           16 // Purchase Admin on the Server
+//#define ITEM_GOGGLES       15 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         16 // Purchase Admin on the Server
 #define MAXITEMS             14
  
 new myWepsOffset;
@@ -130,7 +130,7 @@ public OnPluginReady()
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","15");
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
-    shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
+    //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     LoadSDKToolStuff();
 }
@@ -364,8 +364,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
             if(GetOwnsItem(victim_player,shopItem[ITEM_PACK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_PACK],false);
 
-            if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
-                SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
+            //if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
+            //    SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_RING]))
                 SetOwnsItem(victim_player,shopItem[ITEM_RING],false);
