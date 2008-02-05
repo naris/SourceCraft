@@ -122,7 +122,7 @@ public OnPluginReady()
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
     shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","15");
     shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","3");
-    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","10");
+    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","50");
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
     shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth","You will be given a grenade or ammo or metal every 20 seconds.","5");
@@ -230,9 +230,9 @@ public OnItemPurchase(client,player,item)
         UsePeriapt(client);
     else if(item==shopItem[ITEM_TOME])                              // Tome of Experience
     {
-        SetXP(player,GetRace(player),GetXP(player,GetRace(player))+100);
+        SetXP(player,GetRace(player),GetXP(player,GetRace(player))+25);
         SetOwnsItem(player,shopItem[ITEM_TOME],false);
-        PrintToChat(client,"%c[SourceCraft] %cYou gained 100XP.",COLOR_GREEN,COLOR_DEFAULT);
+        PrintToChat(client,"%c[SourceCraft] %cYou gained 25XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
