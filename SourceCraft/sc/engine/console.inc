@@ -17,7 +17,7 @@ public InitCVars()
 
     m_SaveXPConVar=CreateConVar("sc_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("sc_minimumultimatelevel","8");
-    m_MaxCredits=CreateConVar("sc_maxcredits","40");
+    m_MaxCredits=CreateConVar("sc_maxcredits","100");
     m_Currency=CreateConVar("sc_currency","crystal", "Name of the currency");
     m_Currencies=CreateConVar("sc_currencies","crystals", "Name of the currency in plural form");
 

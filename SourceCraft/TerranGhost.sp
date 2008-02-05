@@ -43,8 +43,10 @@ new bool:m_NuclearLaunchInitiated[MAXPLAYERS+1];
 
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
-new String:launchWav[] = "weapons/explode5.wav";
-new String:explodeWav[] = "weapons/explode5.wav";
+new String:readyWav[] = "sourcecraft/taupd07.wav";
+new String:launchWav[] = "sourcecraft/tnsfir00.wav";
+new String:detectedWav[] = "sourcecraft/taupd04.wav";
+new String:explodeWav[] = "sourcecraft/tnshit00.wav";
 
 public Plugin:myinfo = 
 {
@@ -415,7 +417,7 @@ ResetOcularImplants(client)
 
 LaunchNuclearDevice(client,player)
 {
-    EmitSoundToAll(launchWav,client);
+    EmitSoundToAll(detectedWav,client);
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
@@ -430,6 +432,7 @@ public Action:NuclearLockOn(Handle:timer,any:client)
     new player = GetPlayer(client);
     if (m_NuclearLaunchInitiated[client])
     {
+        EmitSoundToAll(launchWav,client);
         SetOverrideSpeed(player, 1.0);
         new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
         PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %3.1f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
