@@ -639,7 +639,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 					EmitSound(clientlist, clientcount, filelocation);
 				}
 				if (name[0] != 0){
-					LogMessage("%s%N played %s", isadmin ? "Admin " : "", client, name);
+					LogMessage("%s%N played %s%s", isadmin ? "Admin " : "", client,
+					                               adminonly ? "admin sound " : "", name);
 					if (GetConVarBool(cvarannounce)){
 						PrintToChatAll("%N played %s", client, name);
 					}
