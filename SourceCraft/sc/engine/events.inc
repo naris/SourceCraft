@@ -159,7 +159,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
 
             new attacker_userid=GetEventInt(event,"attacker");
             new attacker_index=GetClientOfUserId(attacker_userid);
-            new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : 0;
+            new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : -1;
             new attacker_race=(attacker_player != -1) ? GetRace(attacker_player) : -1;
             new bool:attacker_dominated=bool:GetEventInt(event,"dominated");
             new bool:attacker_revenge=bool:GetEventInt(event,"revenge");
@@ -217,43 +217,47 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             Call_PushCell(melee);
             Call_Finish(result);
 
-            if (attacker_player != -1 && attacker_userid != victim_userid)
-            {
-                if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
-                {
-                    GiveKillCredits(attacker_index,attacker_player);
-                    GiveKillXP(attacker_index,attacker_player,victim_index,
-                               headshot,backstab,melee,attacker_dominated,
-                               attacker_revenge,false);
-                }
-            }
-
-            if (assister_player != -1 && assister_userid != victim_userid)
-            {
-                if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
-                {
-                    GiveKillCredits(assister_index,assister_player);
-                    GiveKillXP(assister_index,assister_player,victim_index,
-                               headshot,backstab,melee,assister_dominated,
-                               assister_revenge,true);
-                }
-            }
-
-            if (victim_player!=-1)
-            {
-                PendingCheck(victim_index,victim_player);
-                new race=GetRace(victim_player);
-                if(GetSkillCount(victim_player,race)<GetLevel(victim_player,race))
-                    SkillMenu(victim_index, victim_player, INVALID_FUNCTION);
-            }
-
-            SaveHealth(victim_index);
-
             if (attacker_index)
+            {
+                if (attacker_player != -1 && attacker_userid != victim_userid)
+                {
+                    if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
+                    {
+                        GiveKillCredits(attacker_index,attacker_player);
+                        GiveKillXP(attacker_index,attacker_player,victim_index,
+                                   headshot,backstab,melee,attacker_dominated,
+                                   attacker_revenge,false);
+                    }
+                }
                 SaveHealth(attacker_index);
+            }
 
             if (assister_index)
+            {
+                if (assister_player != -1 && assister_userid != victim_userid)
+                {
+                    if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
+                    {
+                        GiveKillCredits(assister_index,assister_player);
+                        GiveKillXP(assister_index,assister_player,victim_index,
+                                   headshot,backstab,melee,assister_dominated,
+                                   assister_revenge,true);
+                    }
+                }
                 SaveHealth(assister_index);
+            }
+
+            if (victim_index)
+            {
+                if (victim_player!=-1)
+                {
+                    PendingCheck(victim_index,victim_player);
+                    new race=GetRace(victim_player);
+                    if(GetSkillCount(victim_player,race)<GetLevel(victim_player,race))
+                        SkillMenu(victim_index, victim_player, INVALID_FUNCTION);
+                }
+                SaveHealth(victim_index);
+            }
         }
     }
     return result;
