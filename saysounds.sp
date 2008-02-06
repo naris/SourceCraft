@@ -73,6 +73,10 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Fixed message that limit was passed when unlimited
 		* Fixed grammar in warning.
+	1.13  Feb 06, 2008
+		* Modified by -=|JFH|=-Naris
+		* Fix bug in unlimited sounds.
+		* Added logging.
 
 
 Todo:
