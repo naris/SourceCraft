@@ -76,7 +76,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    SetupHealth(client);
     m_AllowEntangle[client]=true;
 }
 
@@ -86,6 +85,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
+        SetupMaxHealth(index);
         m_AllowEntangle[index]=true;
     }
 }

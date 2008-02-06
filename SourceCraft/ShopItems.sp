@@ -214,6 +214,14 @@ public OnPlayerAuthed(client,player)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
 
+public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+        ResetMaxHealth(client);
+}
+
 public OnItemPurchase(client,player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed

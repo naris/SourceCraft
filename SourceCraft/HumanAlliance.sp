@@ -103,7 +103,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    SetupHealth(client);
     m_TeleportCount[client]=0;
 }
 
@@ -232,6 +231,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
+        SetupMaxHealth(client);
         new player=GetPlayer(client);
         if (player>-1)
         {

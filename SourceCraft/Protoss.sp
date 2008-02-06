@@ -182,7 +182,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    SetupHealth(client);
     m_AllowMindControl[client]=true;
 }
 
@@ -216,6 +215,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
+        SetupMaxHealth(index);
         new player=GetPlayer(index);
         if (player>-1)
         {

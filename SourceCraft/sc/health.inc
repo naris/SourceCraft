@@ -47,9 +47,9 @@ stock IncreaseHealth(client, amount)
 stock ResetMaxHealth(client)
 {
     if (GameType == tf2)
-        SetMaxHealth(maxHealth[client]);
+        SetMaxHealth(client,maxHealth[client]);
     else
-        maxHealth[client] = GetClientHealth(client);
+        maxHealth[client] = 100;
 }
 
 stock SetMaxHealth(entity,amount)
