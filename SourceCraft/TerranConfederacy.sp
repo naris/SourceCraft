@@ -59,7 +59,6 @@ public OnPluginReady()
                       "Allows you to fly until you run out of fuel.","16");
 
     FindUberOffsets();
-    FindMaxHealthOffset();
 
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
@@ -105,6 +104,11 @@ public OnRaceSelected(client,player,oldrace,race)
                 Jetpack(client, skill_jetpack);
         }
     }
+}
+
+public OnPlayerAuthed(client,player)
+{
+    FindMaxHealthOffset(client);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)

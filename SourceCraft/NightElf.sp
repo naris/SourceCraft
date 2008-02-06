@@ -63,7 +63,6 @@ public OnPluginReady()
                       "Entangled Roots",
                       "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
-    FindMaxHealthOffset();
     FindUberOffsets();
 }
 
@@ -80,6 +79,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     m_AllowEntangle[client]=true;
 }
 

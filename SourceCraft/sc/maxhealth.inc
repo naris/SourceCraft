@@ -10,25 +10,34 @@
 #endif
 #define _maxhealth_included
 
-stock m_OffsetMaxHealth;
+stock m_OffsetMaxHealth[MAXPLAYERS+1];
 
 stock maxHealth[MAXPLAYERS+1];
 stock bool:healthIncreased[MAXPLAYERS+1];
 
-stock FindMaxHealthOffset()
+stock FindMaxHealthOffset(client)
 {
     if (GameType == tf2)
     {
-        m_OffsetMaxHealth=FindSendPropInfo("CTFPlayer", "m_iMaxHealth");
-        if(m_OffsetMaxHealth == -1)
-            SetFailState("Error finding MaxHealth offset.");
+        m_OffsetMaxHealth[client]=FindDataMapOffs(client,"m_iMaxHealth");
+        if(m_OffsetMaxHealth[client] == -1)
+            LogError("Error finding MaxHealth offset for %d.", client);
     }
 }
 
 stock SetMaxHealth(entity,amount)
 {
     if (GameType == tf2)
-        SetEntData(entity,m_OffsetMaxHealth,amount);
+    {
+        if (entity <= MAXPLAYERS && m_OffsetMaxHealth[entity])
+            SetEntData(entity,m_OffsetMaxHealth[entity],amount);
+        else
+        {
+            new offset = FindDataMapOffs(entity,"m_iMaxHealth");
+            if (offset)
+                SetEntData(entity,offset,amount);
+        }
+    }
     else
         maxHealth[entity] = amount;
 }
@@ -36,7 +45,18 @@ stock SetMaxHealth(entity,amount)
 stock GetMaxHealth(entity)
 {
     if (GameType == tf2)
-        return GetEntData(entity,m_OffsetMaxHealth);
+    {
+        if (entity <= MAXPLAYERS && m_OffsetMaxHealth[entity])
+            return GetEntData(entity,m_OffsetMaxHealth[entity]);
+        else
+        {
+            new offset = FindDataMapOffs(entity,"m_iMaxHealth");
+            if (offset)
+                return GetEntData(entity,offset);
+            else
+                return -1;
+        }
+    }
     else
         return maxHealth[entity];
 }

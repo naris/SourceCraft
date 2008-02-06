@@ -125,7 +125,6 @@ public OnPluginReady()
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     FindUberOffsets();
-    FindMaxHealthOffset();
     LoadSDKToolStuff();
 }
 
@@ -204,6 +203,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
@@ -542,7 +542,7 @@ public Action:Regeneration(Handle:timer)
             if(player>=0 && GetOwnsItem(player,shopItem[ITEM_RING]))
             {
                 new newhp=GetClientHealth(x)+1;
-                new maxhp=(GameType == tf2) ? GetMaxHealth(x) : 100;
+                new maxhp=GetMaxHealth(x);
                 if(newhp<=maxhp)
                     SetEntityHealth(x,newhp);
             }

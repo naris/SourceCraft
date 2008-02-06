@@ -62,7 +62,6 @@ public OnPluginReady()
                       "Reach out and grab an opponent.");
 
     FindUberOffsets();
-    FindMaxHealthOffset();
 
     ControlHookGrabRope(true);
 }
@@ -78,6 +77,11 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 
     SetupSound(errorWav,true);
+}
+
+public OnPlayerAuthed(client,player)
+{
+    FindMaxHealthOffset(client);
 }
 
 public OnRaceSelected(client,player,oldrace,race)
@@ -112,7 +116,7 @@ public Action:Regeneration(Handle:timer)
                     if (skill_regeneration)
                     {
                         new newhp=GetClientHealth(client)+skill_regeneration;
-                        new maxhp=(GameType == tf2) ? GetMaxHealth(client) : 100;
+                        new maxhp=GetMaxHealth(client);
                         if(newhp<=maxhp)
                             SetEntityHealth(client,newhp);
                     }
@@ -156,7 +160,7 @@ public Action:Regeneration(Handle:timer)
                                             TE_SendToAll();
 
                                             new newhp=GetClientHealth(index)+skill_healing_aura;
-                                            new maxhp=(GameType == tf2) ? GetMaxHealth(index) : 100;
+                                            new maxhp=GetMaxHealth(index);
                                             if(newhp<=maxhp)
                                                 HealPlayer(index,newhp);
 

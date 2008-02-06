@@ -76,8 +76,6 @@ public OnPluginReady()
                       "Teleport",
                       "Allows you to teleport to where you \naim, 60-105 feet being the range.");
 
-    FindMaxHealthOffset();
-
     m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
     if(m_VelocityOffset == -1)
         SetFailState("[SourceCraft] Error finding Velocity offset.");
@@ -103,6 +101,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     m_TeleportCount[client]=0;
 }
 
