@@ -16,7 +16,7 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
+#include "sc/maxhealth"
 #include "sc/freeze"
 #include "sc/authtimer"
 #include "sc/log"
@@ -61,6 +61,8 @@ public OnPluginReady()
                       "Does 10-60% extra damage to the \nenemy, chance is 30%.",
                       "Entangled Roots",
                       "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
+
+    FindMaxHealthOffset();
 }
 
 public OnMapStart()
@@ -85,7 +87,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
-        SetupMaxHealth(index);
         m_AllowEntangle[index]=true;
     }
 }

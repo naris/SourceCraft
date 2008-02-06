@@ -15,7 +15,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
-#include "sc/health"
+#include "sc/maxhealth"
 #include "sc/authtimer"
 #include "sc/respawn"
 #include "sc/log"
@@ -132,6 +132,7 @@ public OnPluginReady()
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
+    FindMaxHealthOffset();
     LoadSDKToolStuff();
 }
 
@@ -256,7 +257,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SetupMaxHealth(client);
+        SaveMaxHealth(client);
         GetClientAbsOrigin(client,spawnLoc[client]);
 
         new player=GetPlayer(client);
@@ -393,10 +394,11 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
         SetOverrideSpeed(victim_player,1.0);
 
         // Reset MaxHealth back to normal
-        if (usedPeriapt[victim_index] && GameType == tf2)
-            SetMaxHealth(victim_index, maxHealth[victim_index]);
-
-        usedPeriapt[victim_index]=false;
+        if (usedPeriapt[victim_index])
+        {
+            usedPeriapt[victim_index]=false;
+            ResetMaxHealth(victim_index);
+        }
     }
 }
 

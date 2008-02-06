@@ -14,9 +14,9 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
-#include "sc/health"
 #include "sc/freeze"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 
 #include "sc/log" // for debugging
 
@@ -113,13 +113,7 @@ public OnRaceSelected(client,player,oldrace,race)
         if (oldrace == raceID)
         {
             m_TeleportCount[client]=0;
-
-            // Reset MaxHealth back to normal
-            if (healthIncreased[client] && GameType == tf2)
-            {
-                SetMaxHealth(client, maxHealth[client]);
-                healthIncreased[client] = false;
-            }
+            ResetMaxHealth(client);
         }
         else if (race == raceID)
         {
@@ -231,14 +225,13 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SetupMaxHealth(client);
+        SaveMaxHealth(client);
         new player=GetPlayer(client);
         if (player>-1)
         {
             new race = GetRace(player);
             if (race == raceID)
             {
-                SetupMaxHealth(client);
                 GetClientAbsOrigin(client,spawnLoc[client]);
                 m_TeleportCount[client]=0;
 
@@ -264,11 +257,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     LogEventDamage(event,damage,"HumanAlliance::PlayerDeathEvent", raceID);
 
     // Reset MaxHealth back to normal
-    if (victim_race == raceID && GameType == tf2 && healthIncreased[victim_index])
-    {
-        SetMaxHealth(victim_index, maxHealth[victim_index]);
-        healthIncreased[victim_index] = false;
-    }
+    if (victim_race == raceID)
+        ResetMaxHealth(victim_index);
+
     return Plugin_Continue;
 }
 

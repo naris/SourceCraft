@@ -25,7 +25,23 @@ stock FindMaxHealthOffset()
     }
 }
 
-stock SetupMaxHealth(client)
+stock SetMaxHealth(entity,amount)
+{
+    if (GameType == tf2)
+        SetEntData(entity,m_OffsetMaxHealth,amount);
+    else
+        maxHealth[entity] = amount;
+}
+
+stock GetMaxHealth(entity)
+{
+    if (GameType == tf2)
+        return GetEntData(entity,m_OffsetMaxHealth);
+    else
+        return maxHealth[entity];
+}
+
+stock SaveMaxHealth(client)
 {
     if (GameType == tf2)
         maxHealth[client] = GetMaxHealth(client);
@@ -46,24 +62,12 @@ stock IncreaseHealth(client, amount)
 
 stock ResetMaxHealth(client)
 {
-    if (GameType == tf2)
-        SetMaxHealth(client,maxHealth[client]);
-    else
-        maxHealth[client] = 100;
-}
-
-stock SetMaxHealth(entity,amount)
-{
-    if (GameType == tf2)
-        SetEntData(entity,m_OffsetMaxHealth,amount);
-    else
-        maxHealth[entity] = amount;
-}
-
-stock GetMaxHealth(entity)
-{
-    if (GameType == tf2)
-        return GetEntData(entity,m_OffsetMaxHealth);
-    else
-        return maxHealth[entity];
+    if (healthIncreased[client])
+    {
+        healthIncreased[client] = false;
+        if (GameType == tf2)
+            SetMaxHealth(client,maxHealth[client]);
+        else
+            maxHealth[client] = 100;
+    }
 }

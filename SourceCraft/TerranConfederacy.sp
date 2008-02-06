@@ -15,7 +15,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
-#include "sc/health"
+#include "sc/maxhealth"
 
 #include "sc/log" // for debugging
 
@@ -60,6 +60,7 @@ public OnPluginReady()
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+    FindMaxHealthOffset();
 }
 
 public OnMapStart()
@@ -148,7 +149,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SetupMaxHealth(client);
         new player=GetPlayer(client);
         if (player>-1)
         {

@@ -17,7 +17,7 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
+#include "sc/maxhealth"
 #include "sc/weapons"
 #include "sc/log"
 
@@ -61,6 +61,7 @@ public OnPluginReady()
                       "Reach out and grab an opponent.");
 
     ControlHookGrabRope(true);
+    FindMaxHealthOffset();
 }
 
 public OnMapStart()
@@ -214,8 +215,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SetupMaxHealth(client);
-
         new player=GetPlayer(client);
         if (player>-1)
         {

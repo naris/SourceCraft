@@ -16,7 +16,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/health"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
@@ -103,33 +102,6 @@ public OnPluginReady()
                       "Dark Archon Mind Control",
                       "Allows you to control an object from the opposite team.",
                       "16");
-}
-
-public OnMapStart()
-{
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
-
-    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find blueglow Model");
-
-    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
-    if (g_redGlow == -1)
-        SetFailState("Couldn't find redglow Model");
-
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
-    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
-    if (explosionModel == -1)
-        SetFailState("Couldn't find Explosion Model");
 
     if (GameType == tf2)
     {
@@ -173,6 +145,33 @@ public OnMapStart()
         if(m_BuildingOffset[teleporter] == -1)
             SetFailState("[SourceCraft] Error finding Teleporter Building offset.");
     }
+}
+
+public OnMapStart()
+{
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
+
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find halo Model");
+
+    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
+    if (g_haloSprite == -1)
+        SetFailState("Couldn't find blueglow Model");
+
+    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
+    if (g_redGlow == -1)
+        SetFailState("Couldn't find redglow Model");
+
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    if (g_smokeSprite == -1)
+        SetFailState("Couldn't find smoke Model");
+
+    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
+    if (explosionModel == -1)
+        SetFailState("Couldn't find Explosion Model");
 
     SetupSound(explodeWav);
     SetupSound(controlWav);
@@ -215,7 +214,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
-        SetupMaxHealth(index);
         new player=GetPlayer(index);
         if (player>-1)
         {
