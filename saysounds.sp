@@ -613,38 +613,43 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new soundLimit = isadmin ? GetConVarInt(cvaradminlimit) : GetConVarInt(cvarsoundlimit);	
-	if ((soundLimit && SndCount[client] < soundLimit) && globalLastSound < thetime){
-		SndCount[client]++;
-		LastSound[client] = thetime + waitTime;
-		globalLastSound   = thetime + soundTime;
+	if (soundLimit <= 0 || SndCount[client] < soundLimit){
+		if (globalLastSound < thetime){
+			SndCount[client]++;
+			LastSound[client] = thetime + waitTime;
+			globalLastSound   = thetime + soundTime;
 
-		if (adminonly)
-			globalLastAdminSound = thetime + adminTime;
+			if (adminonly)
+				globalLastAdminSound = thetime + adminTime;
 
-		if (singleonly){
-			if(SndOn[client] && IsClientInGame(client)){
-				EmitSoundToClient(client, filelocation);
-			}
-		}else{
-			new clientlist[MAXPLAYERS+1];
-			new clientcount = 0;
-			new playersconnected = GetMaxClients();
-			for (new i = 1; i <= playersconnected; i++){
-				if(SndOn[i] && IsClientInGame(i)){
-					clientlist[clientcount++] = i;
+			if (singleonly){
+				if(SndOn[client] && IsClientInGame(client)){
+					EmitSoundToClient(client, filelocation);
+				}
+			}else{
+				new clientlist[MAXPLAYERS+1];
+				new clientcount = 0;
+				new playersconnected = GetMaxClients();
+				for (new i = 1; i <= playersconnected; i++){
+					if(SndOn[i] && IsClientInGame(i)){
+						clientlist[clientcount++] = i;
+					}
+				}
+				if (clientcount){
+					EmitSound(clientlist, clientcount, filelocation);
+				}
+				if (name[0] != 0){
+					LogMessage("%s%N played %s", isadmin ? "Admin " : "", client, name);
+					if (GetConVarBool(cvarannounce)){
+						PrintToChatAll("%N played %s", client, name);
+					}
 				}
 			}
-			if (clientcount){
-				EmitSound(clientlist, clientcount, filelocation);
-			}
 		}
+		else
+			PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
 	}
-
-	if (name[0] != 0 && GetConVarBool(cvarannounce)){
-		PrintToChatAll("%N played %s", client, name);
-	}
-
-	if(soundLimit && IsClientInGame(client)){
+	else if(soundLimit <= 0 && IsClientInGame(client)){
 		if (SndCount[client] > soundLimit){
 			PrintToChat(client,"[Say Sounds] Sorry, you have reached your sound quota!");
 		}else if (SndCount[client] == soundLimit){
