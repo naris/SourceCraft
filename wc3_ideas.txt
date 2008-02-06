@@ -19,3 +19,27 @@ I was able to find much of the variables such as m_flMaxSpeed and m_nModelIndex 
 
 m_flCloakMeter float (100.000000) <-- and this value would decrease at a rate of 10/second until it reached zero then trigering the regeneration of 3.3/second. I know that the rates are changeable by convars and I was wondering how to add cheats to an admins lap without requiring sv_cheats to be set to "1". I have used BeetlesMod and have no problem and if I could do this on there I probably would since I find it more beginner friendly than SourceMod but I am a fast learner when it comes to coding.
 
+
+ Sweet TF2 entity tools.
+
+CODE
+Launch TF2
+Start a multiplayer server
+sv_cheats 1
+developer 2
+build a sentry gun
+place the x-hair over the sentry gun and type ent_text
+This will show a good bit of info about that entity. This works for any entity in game.
+
+
+CODE
+You can also use
+dtwatchent
+This command will show you all the variables of an entity that get updated.
+Using the ent_text above get the entity index number.
+For an example lets say the sentry gun entity index is 12
+I would run the command like this
+dtwatchent 12
+
+It will fill the console with all the changes and names of variables. You can use source mod to modify those variables.
+
