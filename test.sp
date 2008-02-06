@@ -106,9 +106,10 @@ public Action:TrackVariables(Handle:timer)
                 new bonusProgress = m_OffsetBonusProgress>0 ? GetEntData(client,m_OffsetBonusProgress) : -99;
                 new bonusChallenge = m_OffsetBonusChallenge>0 ? GetEntData(client,m_OffsetBonusChallenge) : -99;
                 new airDash = m_OffsetAirDash>0 ? GetEntData(client,m_OffsetAirDash) : -99;
+                new Float:maxSpeed= m_OffsetMaxspeed>0 ? GetEntDataFloat(client,m_OffsetMaxspeed) : -99.9;
 
-                LogMessage("client=%N,tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisoned=%d,wearingSuit=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d",client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit,bonusProgress,bonusChallenge,airDash);
-                PrintToChat( client,"critMult=%d,pState=%d,nHealers=%d,pCond=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d,sNAExpire=%f,sNCTime=%f",critMult,playerState,numHealers,playerCond,bonusProgress,bonusChallenge,airDash,stealthNoAttackExpire,stealthNextChangeTime);
+                LogMessage("client=%N,tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisoned=%d,wearingSuit=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d,maxSpeed=%f",client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit,bonusProgress,bonusChallenge,airDash,maxSpeed);
+                PrintToChat( client,"dT=%d,dC=%d,dTrg=%d,dH=%d,dDT=%d,dDC=%d,iC=%f,sNAE=%f,sNC=%f,pS=%d,pC=%d,bP=%d,bC=%d,aD=%d",disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,stealthNoAttackExpire,stealthNextChangeTime,playerState,playerCond,bonusProgress,bonusChallenge,airDash);
             }
         }
     }
