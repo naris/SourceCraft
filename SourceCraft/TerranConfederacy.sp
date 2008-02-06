@@ -149,7 +149,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (client)
     {
         SetupMaxHealth(client);
-
         new player=GetPlayer(client);
         if (player>-1)
         {
