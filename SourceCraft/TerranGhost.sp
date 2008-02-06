@@ -15,6 +15,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/freeze"
@@ -83,25 +84,8 @@ public OnPluginReady()
                       "Nuclear Launch",
                       "Launches a Nuclear Device that does extreme damage to all players in the area.",
                       "32");
-}
 
-public OnMapStart()
-{
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-
-    if (GameType == tf2)
-        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
-    else
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
-
-    if (explosionModel == -1)
-        SetFailState("Couldn't find Explosion Model");
+    FindUberOffsets();
 
     if (GameType == tf2)
     {
@@ -121,6 +105,25 @@ public OnMapStart()
         if (m_OffsetDisguiseHealth == -1)
             SetFailState("Couldn't find DisguiseHealth Offset");
     }
+}
+
+public OnMapStart()
+{
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    if (g_smokeSprite == -1)
+        SetFailState("Couldn't find smoke Model");
+
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    if (g_lightningSprite == -1)
+        SetFailState("Couldn't find lghtning Model");
+
+    if (GameType == tf2)
+        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
+    else
+        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
+
+    if (explosionModel == -1)
+        SetFailState("Couldn't find Explosion Model");
 
     SetupSound(explodeWav);
 }
@@ -493,7 +496,8 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                 if (check_player>-1)
                 {
                     if (!GetImmunity(check_player,Immunity_Ultimates) &&
-                            !GetImmunity(check_player,Immunity_Explosion))
+                        !GetImmunity(check_player,Immunity_Explosion) &&
+                        !IsUber(index))
                     {
                         new Float:check_location[3];
                         GetClientAbsOrigin(index,check_location);

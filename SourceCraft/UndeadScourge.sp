@@ -14,6 +14,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/log"
@@ -61,6 +62,8 @@ public OnPluginReady()
                       "Allows you to jump higher by \nreducing your gravity by 8-64%.",
                       "Suicide Bomber",
                       "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
+
+    FindUberOffsets();
 
 }
 
@@ -301,7 +304,8 @@ bool:VampiricAura(damage, victim_index, victim_player, index, player)
 {
     new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
-        !GetImmunity(victim_player, Immunity_HealthTake))
+        !GetImmunity(victim_player, Immunity_HealthTake) &&
+        !IsUber(victim_index))
     {
         new Float:percent_health;
         switch(skill)
@@ -413,7 +417,8 @@ SuicideBomber(client,player,ult_level,bool:ondeath)
             if (check_player>-1)
             {
                 if (!GetImmunity(check_player,Immunity_Ultimates) &&
-                    !GetImmunity(check_player,Immunity_Explosion))
+                    !GetImmunity(check_player,Immunity_Explosion) &&
+                    !IsUber(index))
                 {
                     new Float:check_location[3];
                     GetClientAbsOrigin(index,check_location);

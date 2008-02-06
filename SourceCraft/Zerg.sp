@@ -15,6 +15,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/maxhealth"
@@ -60,8 +61,10 @@ public OnPluginReady()
                       "Tentacles",
                       "Reach out and grab an opponent.");
 
-    ControlHookGrabRope(true);
+    FindUberOffsets();
     FindMaxHealthOffset();
+
+    ControlHookGrabRope(true);
 }
 
 public OnMapStart()
@@ -244,58 +247,68 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     {
         if (attacker_race == raceID && attacker_index != victim_index)
         {
-            if (Zerg_AdrenalGlands(damage, victim_index, attacker_index, attacker_player))
+            if (Zerg_AdrenalGlands(damage, victim_index, victim_player,
+                                   attacker_index, attacker_player))
+            {
                 changed = true;
+            }
         }
 
         if (assister_race == raceID && assister_index != victim_index)
         {
-            if (Zerg_AdrenalGlands(damage, victim_index, assister_index, assister_player))
+            if (Zerg_AdrenalGlands(damage, victim_index, victim_player,
+                                   assister_index, assister_player))
+            {
                 changed = true;
+            }
         }
     }
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
 
-public bool:Zerg_AdrenalGlands(damage, victim_index, index, player)
+public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, player)
 {
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {
-        new Float:percent;
-        switch(skill_adrenal_glands)
+        if (!GetImmunity(victim_player,Immunity_HealthTake) &&
+            !IsUber(victim_index))
         {
-            case 1:
-                percent=0.20;
-            case 2:
-                percent=0.55;
-            case 3:
-                percent=0.75;
-            case 4:
-                percent=1.00;
+            new Float:percent;
+            switch(skill_adrenal_glands)
+            {
+                case 1:
+                    percent=0.20;
+                case 2:
+                    percent=0.55;
+                case 3:
+                    percent=0.75;
+                case 4:
+                    percent=1.00;
+            }
+
+            new amount=RoundFloat(float(damage)*percent);
+            new newhp=GetClientHealth(victim_index)-amount;
+            LogMessage("ZerAdrenal for %N, damage=%d,amount=%d", index, damage, amount);
+            if (newhp <= 0)
+            {
+                newhp=0;
+                LogKill(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
+            }
+            else
+                LogDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
+
+            SetEntityHealth(victim_index,newhp);
+
+            new Float:Origin[3];
+            GetClientAbsOrigin(victim_index, Origin);
+            Origin[2] += 5;
+
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
+            return true;
         }
-
-        new amount=RoundFloat(float(damage)*percent);
-        new newhp=GetClientHealth(victim_index)-amount;
-        LogMessage("ZerAdrenal for %N, damage=%d,amount=%d", index, damage, amount);
-        if (newhp <= 0)
-        {
-            newhp=0;
-            LogKill(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
-        }
-        else
-            LogDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
-
-        SetEntityHealth(victim_index,newhp);
-
-        new Float:Origin[3];
-        GetClientAbsOrigin(victim_index, Origin);
-        Origin[2] += 5;
-
-        TE_SetupSparks(Origin,Origin,255,1);
-        TE_SendToAll();
-        return true;
     }
     return false;
 }

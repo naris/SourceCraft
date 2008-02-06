@@ -14,12 +14,13 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
 #include "sc/respawn"
-#include "sc/log"
 #include "sc/weapons"
+#include "sc/log"
 
 new raceID; // The ID we are assigned to
 
@@ -95,6 +96,8 @@ public OnPluginReady()
                       "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
                       "Chain Lightning", // Ultimate Name
                       "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
+
+    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -187,18 +190,30 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
     if (attacker_race == raceID && victim_index != attacker_index)
     {
-        if (AcuteGrenade(damage, victim_index, attacker_index, attacker_player, weapon))
+        if (AcuteGrenade(damage, victim_index, victim_player,
+                         attacker_index, attacker_player, weapon))
+        {
             changed = true;
-        else
-            changed |= AcuteStrike(damage, victim_index, attacker_index, attacker_player);
+        }
+        else if (AcuteStrike(damage, victim_index, victim_player,
+                             attacker_index, attacker_player))
+        {
+            changed = true;
+        }
     }
 
     if (assister_race == raceID && victim_index != assister_index)
     {
-        if (AcuteGrenade(damage, victim_index, assister_index, assister_player, weapon))
+        if (AcuteGrenade(damage, victim_index, victim_player,
+                         assister_index, assister_player, weapon))
+        {
             changed = true;
-        else
-            changed |= AcuteStrike(damage, victim_index, assister_index, assister_player);
+        }
+        else if (AcuteStrike(damage, victim_index, victim_player,
+                             assister_index, assister_player))
+        {
+            changed = true;
+        }
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
@@ -261,10 +276,10 @@ public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast
     }
 }
 
-bool:AcuteStrike(damage, victim_index, index, player)
+bool:AcuteStrike(damage, victim_index, victim_player, index, player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
-    if (skill_cs > 0)
+    if (skill_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
     {
         if(GetRandomInt(1,100)<=15)
         {
@@ -303,10 +318,10 @@ bool:AcuteStrike(damage, victim_index, index, player)
     return false;
 }
 
-bool:AcuteGrenade(damage, victim_index, index, player, const String:weapon[])
+bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const String:weapon[])
 {
     new skill_cg = GetSkillLevel(player,raceID,1);
-    if (skill_cg > 0)
+    if (skill_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
     {
         if(GetRandomInt(1,100)<=50)
         {
@@ -399,7 +414,8 @@ ChainLightning(player,client,ultlevel)
             new player_check=GetPlayer(index);
             if (player_check>-1)
             {
-                if (!GetImmunity(player_check,Immunity_Ultimates))
+                if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                    !GetImmunity(player_check,Immunity_HealthTake) && !IsUber(index))
                 {
                     if (IsInRange(client,index,range))
                     {

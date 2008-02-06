@@ -14,11 +14,12 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/maxhealth"
 #include "sc/freeze"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
@@ -63,6 +64,7 @@ public OnPluginReady()
                       "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
     FindMaxHealthOffset();
+    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -197,7 +199,7 @@ public ThornsAura(damage, victim_index, victim_player, index, player)
     new skill_level_thorns = GetSkillLevel(victim_player,raceID,1);
     if (skill_level_thorns)
     {
-        if (!GetImmunity(player,Immunity_HealthTake))
+        if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
         {
             new chance;
             switch(skill_level_thorns)
@@ -242,7 +244,7 @@ public TrueshotAura(damage, victim_index, index, player)
 {
     // Trueshot Aura
     new skill_level_trueshot=GetSkillLevel(player,raceID,2);
-    if (skill_level_trueshot)
+    if (skill_level_trueshot && !IsUber(victim_index))
     {
         if (GetRandomInt(1,100) <= 30)
         {

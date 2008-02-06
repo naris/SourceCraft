@@ -14,6 +14,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/log"
@@ -22,7 +23,6 @@ new raceID; // The ID we are assigned to
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
 new Handle:cvarMindControlEnable = INVALID_HANDLE;
-new Handle:cvarReaverScarabEnable = INVALID_HANDLE;
 
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
@@ -71,7 +71,6 @@ public OnPluginStart()
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
     cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
-    cvarReaverScarabEnable=CreateConVar("sc_reaverscarabenable","1");
 
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))
         SetFailState("Could not hook the player_spawn event.");
@@ -102,6 +101,8 @@ public OnPluginReady()
                       "Dark Archon Mind Control",
                       "Allows you to control an object from the opposite team.",
                       "16");
+
+    FindUberOffsets();
 
     if (GameType == tf2)
     {
@@ -235,14 +236,20 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
     if (attacker_race == raceID && victim_index != attacker_index)
     {
-        if (ReaverScarab(damage, victim_index, attacker_index, attacker_player))
+        if (ReaverScarab(damage, victim_index, victim_player,
+                         attacker_index, attacker_player))
+        {
             changed = true;
+        }
     }
 
     if (assister_race == raceID && victim_index != assister_index)
     {
-        if (ReaverScarab(damage, victim_index, assister_index, assister_player))
+        if (ReaverScarab(damage, victim_index, victim_player,
+                         assister_index, assister_player))
+        {
             changed = true;
+        }
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
@@ -273,7 +280,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-bool:ReaverScarab(damage, victim_index, index, player)
+bool:ReaverScarab(damage, victim_index, victim_player, index, player)
 {
     new skill_cg = GetSkillLevel(player,raceID,0);
     if (skill_cg > 0)
@@ -303,16 +310,9 @@ bool:ReaverScarab(damage, victim_index, index, player)
             }
         }
 
-        if (GetRandomInt(1,100) <= chance &&
-            GetGameTime() - gReaverScarabTime[index] > 1.000)
+        if (!GetImmunity(victim_player,Immunity_Explosion) && !IsUber(victim_index) &&
+            GetRandomInt(1,100) <= chance && GetGameTime() - gReaverScarabTime[index] > 1.000)
         {
-            if (!GetConVarBool(cvarReaverScarabEnable))
-            {
-                PrintToChat(index,"%c[SourceCraft] %c Sorry, Reaver Scarab has been disabled for testing purposes!",
-                            COLOR_GREEN,COLOR_DEFAULT);
-                return false;
-            }
-
             new health_take= RoundToFloor(float(damage)*percent);
             if (health_take > 0)
             {

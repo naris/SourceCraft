@@ -15,6 +15,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/maxhealth"
 
 #include "sc/log" // for debugging
@@ -57,10 +58,12 @@ public OnPluginReady()
                       "Jetpack",
                       "Allows you to fly until you run out of fuel.","16");
 
+    FindUberOffsets();
+    FindMaxHealthOffset();
+
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
-    FindMaxHealthOffset();
 }
 
 public OnMapStart()
@@ -282,38 +285,41 @@ bool:U238Shells(damage, victim_index, index, player)
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
     {
-        if(GetRandomInt(1,100)<=25)
+        if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
         {
-            new Float:percent;
-            switch(skill_cs)
+            if(GetRandomInt(1,100)<=25)
             {
-                case 1:
-                    percent=0.30;
-                case 2:
-                    percent=0.50;
-                case 3:
-                    percent=0.80;
-                case 4:
-                    percent=1.00;
+                new Float:percent;
+                switch(skill_cs)
+                {
+                    case 1:
+                        percent=0.30;
+                    case 2:
+                        percent=0.50;
+                    case 3:
+                        percent=0.80;
+                    case 4:
+                        percent=1.00;
+                }
+
+                new health_take=RoundFloat(float(damage)*percent);
+                new new_health=GetClientHealth(victim_index)-health_take;
+                if (new_health <= 0)
+                {
+                    new_health=0;
+                    LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
+                }
+                else
+                    LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
+
+                SetEntityHealth(victim_index,new_health);
+
+                new color[4] = { 100, 255, 55, 255 };
+                TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
+                        0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+                TE_SendToAll();
+                return true;
             }
-
-            new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetClientHealth(victim_index)-health_take;
-            if (new_health <= 0)
-            {
-                new_health=0;
-                LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
-            }
-            else
-                LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
-
-            SetEntityHealth(victim_index,new_health);
-
-            new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                              0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-            TE_SendToAll();
-            return true;
         }
     }
     return false;

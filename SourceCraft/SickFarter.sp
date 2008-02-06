@@ -13,6 +13,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -78,6 +79,8 @@ public OnPluginReady()
                       "Your level of Revulsion is so high, all enemies quake as you approach.", // Skill 3 Description
                       "Fart", // Ultimate Name
                       "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.");
+
+    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -165,50 +168,53 @@ public bool:FesteringAbomination(damage, victim_index, index, player)
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
     {
-        new chance;
-        switch(skill_cs)
+        if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
         {
-            case 1:
-                chance=10;
-            case 2:
-                chance=15;
-            case 3:
-                chance=20;
-            case 4:
-                chance=25;
-        }
-        if(GetRandomInt(1,100)<=chance)
-        {
-            new Float:percent;
+            new chance;
             switch(skill_cs)
             {
                 case 1:
-                    percent=0.10;
+                    chance=10;
                 case 2:
-                    percent=0.27;
+                    chance=15;
                 case 3:
-                    percent=0.47;
+                    chance=20;
                 case 4:
-                    percent=0.67;
+                    chance=25;
             }
-
-            new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetClientHealth(victim_index)-health_take;
-            if (new_health <= 0)
+            if(GetRandomInt(1,100)<=chance)
             {
-                new_health=0;
-                LogKill(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
+                new Float:percent;
+                switch(skill_cs)
+                {
+                    case 1:
+                        percent=0.10;
+                    case 2:
+                        percent=0.27;
+                    case 3:
+                        percent=0.47;
+                    case 4:
+                        percent=0.67;
+                }
+
+                new health_take=RoundFloat(float(damage)*percent);
+                new new_health=GetClientHealth(victim_index)-health_take;
+                if (new_health <= 0)
+                {
+                    new_health=0;
+                    LogKill(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
+                }
+                else
+                    LogDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
+
+                SetEntityHealth(victim_index,new_health);
+
+                new color[4] = { 100, 255, 55, 255 };
+                TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
+                                  0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+                TE_SendToAll();
+                return true;
             }
-            else
-                LogDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
-
-            SetEntityHealth(victim_index,new_health);
-
-            new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                              0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-            TE_SendToAll();
-            return true;
         }
     }
     return false;
@@ -320,7 +326,8 @@ public Fart(player,client,ultlevel)
             new player_check=GetPlayer(index);
             if (player_check>-1)
             {
-                if (!GetImmunity(player_check,Immunity_Ultimates))
+                if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                    !GetImmunity(player_check,Immunity_HealthTake) && !IsUber(index))
                 {
                     if ( IsInRange(client,index,range))
                     {

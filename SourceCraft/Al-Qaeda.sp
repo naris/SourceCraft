@@ -13,6 +13,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -77,6 +78,7 @@ public OnPluginReady()
                       "Mad Bomber",
                       "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!");
 
+    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -311,7 +313,7 @@ public Bomber(client,player,level,bool:ondeath)
     for(new index=1;index<=clientCount;index++)
     {
         if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
-            GetClientTeam(index) != GetClientTeam(client))
+            GetClientTeam(index) != GetClientTeam(client) && !IsUber(index))
         {
             new check_player=GetPlayer(index);
             if (check_player>-1)
@@ -398,7 +400,9 @@ public Action:FlamingWrath(Handle:timer)
                         {
                             if (index != client && IsClientInGame(index))
                             {
-                                if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
+                                if (IsPlayerAlive(index) &&
+                                    GetClientTeam(index) != GetClientTeam(client) &&
+                                    !IsUber(index))
                                 {
                                     new player_check=GetPlayer(index);
                                     if (player_check>-1)
