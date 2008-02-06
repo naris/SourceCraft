@@ -665,7 +665,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 			SndCount[client]++; // Increment so we get the sorry message next time.
 		}else{
 			new soundWarn = isadmin ? GetConVarInt(cvaradminwarn) : GetConVarInt(cvarsoundwarn);	
-			if (soundWarn <= 0 || SndCount[client] <= soundWarn){
+			if (soundWarn <= 0 || SndCount[client] >= soundWarn){
 				new numberleft = (soundLimit -  SndCount[client]);
 				if (numberleft == 1)
 					PrintToChat(client,"[Say Sounds] You only have %d sound left to use!",numberleft);
