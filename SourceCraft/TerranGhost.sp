@@ -379,6 +379,10 @@ public Action:OcularImplants(Handle:timer)
                                                     SetEntData(index,m_OffsetDisguiseClass, 0);
                                                     SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
+
+                                                // Set the disguise(8) and cloak(16) bits to 0.
+                                                new playerCond = GetEntData(client,m_OffsetPlayerCond);
+                                                SetEntData(index,playerCond & (~24), 0);
                                             }
                                             m_Detected[client][index] = true;
                                         }
