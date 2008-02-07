@@ -73,27 +73,30 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
     Call_PushCell(false);
     Call_Finish(result);
 
-    new curcredits=GetCredits(vectorpos);
-    new newcredits=curcredits+amount;
-
-    decl String:currencies[64];
-    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-
-    new maxCredits = GetConVarInt(m_MaxCredits);
-    if(newcredits <= maxCredits || maxCredits == 0)
+    if (result != Plugin_Stop)
     {
-        SetCredits(vectorpos,amount);
-        PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
-                COLOR_GREEN,COLOR_DEFAULT,amount, currencies, reason);
-    }
-    else
-    {
-        new amt = maxCredits-amount;
-        if (amt > 0)
+        new curcredits=GetCredits(vectorpos);
+        new newcredits=curcredits+amount;
+
+        decl String:currencies[64];
+        GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+
+        new maxCredits = GetConVarInt(m_MaxCredits);
+        if(newcredits <= maxCredits || maxCredits == 0)
         {
-            SetCredits(vectorpos,maxCredits);
-            PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s for %s.",
-                    COLOR_GREEN,COLOR_DEFAULT,currencies,maxCredits,amt,currencies, reason);
+            SetCredits(vectorpos,newcredits);
+            PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,amount, currencies, reason);
+        }
+        else
+        {
+            new amt = maxCredits-amount;
+            if (amt > 0)
+            {
+                SetCredits(vectorpos,maxCredits);
+                PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s for %s.",
+                        COLOR_GREEN,COLOR_DEFAULT,currencies,maxCredits,amt,currencies, reason);
+            }
         }
     }
 }

@@ -265,6 +265,7 @@ public GiveXP(client,vectorpos, amount, const String:reason[])
     Call_PushCellRef(amount);
     Call_PushCell(false);
     Call_Finish(result);
+
     if (result != Plugin_Stop)
     {
         new race=GetRace(vectorpos);
@@ -288,11 +289,14 @@ public TakeXP(client,vectorpos, amount, const String:reason[])
     Call_PushCell(true);
     Call_Finish(result);
 
-    new race=GetRace(vectorpos);
-    new newxp=GetXP(vectorpos,race)-amount;
-    SetXP(vectorpos,race,newxp);
-    PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
-                COLOR_GREEN,COLOR_DEFAULT,amount, reason);
-    if(GetLevel(vectorpos,race)!=MAX_LEVELS)
-        DoLevelCheck(client,vectorpos);
+    if (result != Plugin_Stop)
+    {
+        new race=GetRace(vectorpos);
+        new newxp=GetXP(vectorpos,race)-amount;
+        SetXP(vectorpos,race,newxp);
+        PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,amount, reason);
+        if(GetLevel(vectorpos,race)!=MAX_LEVELS)
+            DoLevelCheck(client,vectorpos);
+    }
 }

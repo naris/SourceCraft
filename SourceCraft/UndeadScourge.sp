@@ -236,13 +236,13 @@ UnholyAura(client, player, skilllevel)
     switch (skilllevel)
     {
         case 1:
-            speed=1.08;
+            speed=1.05;
         case 2:
-            speed=1.1733;
+            speed=1.10;
         case 3:
-            speed=1.266;
+            speed=1.15;
         case 4:
-            speed=1.36;
+            speed=1.20;
     }
 
     /* If the Player also has the Boots of Speed,
