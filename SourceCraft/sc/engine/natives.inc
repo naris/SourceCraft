@@ -512,7 +512,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
     {
         new player=GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        LogMessage("[natives] Set overridespeed of %N to %f", player, speed);
+        LogMessage("[natives] Set overridespeed of %d to %f", player, speed);
         if(player!=-1)
         {
             new Handle:temp=GetPropertyInfo(player);

@@ -651,7 +651,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 				}
 			}
 		}
-		else{
+		else if(IsClientInGame(client)){
 			PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
 			return Plugin_Handled;
 		}

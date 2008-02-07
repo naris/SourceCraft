@@ -711,6 +711,9 @@ public Action:CloakingAndDetector(Handle:timer)
                                                     SetEntData(index,m_OffsetDisguiseClass, 0);
                                                     SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
+
+                                                new playerCond = GetEntData(client,m_OffsetPlayerCond);
+                                                SetEntData(index,playerCond & (~8), 0);
                                             }
                                             m_Detected[client][index] = true;
                                         }

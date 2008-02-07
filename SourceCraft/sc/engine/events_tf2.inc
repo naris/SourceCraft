@@ -198,7 +198,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 
     decl String:weapon[64] = "";
     GetEventString(event, "weapon", weapon, sizeof(weapon));
-    LogMessage("%N+%N destroyed %N's %d with %s", attacker, assister, userid,
+    LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, userid,
                GetEventInt(event,"objecttype"), weapon);
 }
 
