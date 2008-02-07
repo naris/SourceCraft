@@ -197,6 +197,19 @@ public Native_HealPlayer(Handle:plugin,numParams)
         return -1;
 }
 
+/**
+ * Get a Player's TF2 class
+ * @param client: The client's index you want.
+ * @return The player's class
+ */
+public Native_GetClass(Handle:plugin,numParams)
+{
+    if(numParams==1 && GameType == tf2)
+        return GetClass(GetNativeCell(1));
+    else
+        return -1;
+}
+
 public Native_GetPlayer(Handle:plugin,numParams)
 {
     if(numParams==1)
@@ -654,6 +667,7 @@ public bool:InitNatives()
     CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("HurtPlayer",Native_HurtPlayer);
     CreateNative("HealPlayer",Native_HealPlayer);
+    CreateNative("GetClass",Native_GetRace);
     CreateNative("GetPlayer",Native_GetPlayer);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);

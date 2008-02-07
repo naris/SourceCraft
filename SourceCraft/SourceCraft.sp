@@ -33,7 +33,6 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 
 // SourceCraft Includes
 #include "sc/util"
-#include "sc/engine/tf2classes"
 #include "sc/engine/help"
 #include "sc/engine/damage"
 #include "sc/engine/immunity"
@@ -48,6 +47,7 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #include "sc/engine/xp"
 #include "sc/engine/credits"
 #include "sc/engine/console"
+#include "sc/engine/tf2classes"
 #include "sc/engine/playertracking"
 #include "sc/engine/menus"
 #include "sc/engine/events"
@@ -70,15 +70,16 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
     if(!InitNatives())
     {
-        PrintToServer("[SourceCraft] There was a failure in creating the native based functions, definately halting.");
+        LogError("There was a failure in creating the native based functions.");
         return false;
     }
-    if(!InitForwards())
+    else if(!InitForwards())
     {
-        PrintToServer("[SourceCraft] There was a failure in creating the forward based functions.");
+        LogError("There was a failure in creating the forward based functions.");
         return false;
     }
-    return true;
+    else
+        return true;
 }
 
 public OnPluginStart()
@@ -89,39 +90,42 @@ public OnPluginStart()
     
     arrayPlayers=CreateArray();
     if(!InitiatearrayRaces())
-        SetFailState("[SourceCraft] There was a failure in creating the race vector.");
+        SetFailState("There was a failure in creating the race vector.");
     if(!InitiateShopVector())
-        SetFailState("[SourceCraft] There was a failure in creating the shop vector.");
+        SetFailState("There was a failure in creating the shop vector.");
     if(!InitiateHelpVector())
-        SetFailState("[SourceCraft] There was a failure in creating the help vector.");
+        SetFailState("There was a failure in creating the help vector.");
 
+    if(!InitOffset())
+        SetFailState("There was a failure in finding the offsets required.");
     if(!HookEvents())
-        SetFailState("[SourceCraft] There was a failure in initiating event hooks.");
+        SetFailState("There was a failure in initiating event hooks.");
 
     if (GameType == tf2)
     {
+        if(!InitTFOffset())
+            SetFailState("There was a failure in finding the tf2 offsets required.");
         if(!HookTFEvents())
-            SetFailState("[SourceCraft] There was a failure in initiating tf2 event hooks.");
+            SetFailState("There was a failure in initiating tf2 event hooks.");
     }
     else if(GameType == cstrike)
     {
         if(!HookCStrikeEvents())
-            SetFailState("[SourceCraft] There was a failure in initiating cstrike event hooks.");
+            SetFailState("There was a failure in initiating cstrike event hooks.");
     }
 
     if(!InitCVars())
-        SetFailState("[SourceCraft] There was a failure in initiating console variables.");
+        SetFailState("There was a failure in initiating console variables.");
     if(!InitMenus())
-        SetFailState("[SourceCraft] There was a failure in initiating menus.");
+        SetFailState("There was a failure in initiating menus.");
     if(!InitHooks())
-        SetFailState("[SourceCraft] There was a failure in initiating the hooks.");
-    if(!InitOffset())
-        SetFailState("[SourceCraft] There was a failure in finding the offsets required.");
+        SetFailState("There was a failure in initiating the hooks.");
     if(!ParseSettings())
-        SetFailState("[SourceCraft] There was a failure in parsing the configuration file.");
+        SetFailState("There was a failure in parsing the configuration file.");
 
     // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
     CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
+
     PrintToServer("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
 }
 
@@ -214,7 +218,7 @@ public OnClientPutInServer(client)
                 SetRace(vecpos, FindRace("human")); // Default race to human.
         }
         else
-            SetFailState("[SourceCraft] There was a failure processing client.");
+            SetFailState("There was a failure processing client.");
     }
 }
 

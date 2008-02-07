@@ -298,50 +298,32 @@ public Action:PlayerProperties(Handle:timer)
 
                 if (GameType == tf2)
                 {
+                    new Float:classSpeed = GetClassSpeed(client);
                     new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
                     if (m_BaseSpeed[client] == 0.0)
                         m_BaseSpeed[client] == curSpeed;
 
                     if (overridePlayerSpeed || speed != 1.0 || speedAltered[client])
                     {
-                        new Float:newSpeed;
-                        if (m_BaseSpeed[client] > 100.0 && curSpeed > 50.0 && curSpeed < 200.0)
-                        {
-                            // Speed for heavy  while firing == 80, while not firing == 230
-                            // Speed for sniper while zoomed == 80, while not zoomed == 300
-                            // ensure we don't accelerate firing heavy or zoomed sniper too much!
-                            newSpeed = 80.0 * speed;
-                        }
-                        else
-                        {
-                            newSpeed = m_BaseSpeed[client] * speed;
-                        }
-
+                        new Float:newSpeed = classSpeed * speed;
                         if (curSpeed != newSpeed)
                         {
                             SetEntDataFloat(client,m_OffsetMaxSpeed, newSpeed);
-                            /*
                             if (newSpeed == 0.0)
                                 SetEntityMoveType(client, MOVETYPE_NONE);
-                            else if (curSpeed == 0.0)
+                            else if (GetEntityMoveType(client) == MOVETYPE_NONE)
                                 SetEntityMoveType(client, MOVETYPE_WALK);
-                            */
 
-                            new Float:classSpeed = GetClassSpeed(client);
                             LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
                                        client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed, speed, speedAltered[client], overridePlayerSpeed);
                         }
 
                         speedAltered[client] = (speed != 1.0);
                     }
-                    else
+                    else if (curSpeed != classSpeed)
                     {
-                        new Float:classSpeed = GetClassSpeed(client);
-                        if (curSpeed != classSpeed)
-                        {
-                            LogMessage("[playertracking] Speed of %N is %f, base=%f, class_speed=%f",
-                                        client, curSpeed, m_BaseSpeed[client], classSpeed);
-                        }
+                        LogMessage("[playertracking] Speed of %N is %f, base=%f, class_speed=%f",
+                                    client, curSpeed, m_BaseSpeed[client], classSpeed);
                     }
                 }
                 else // not tf2
