@@ -113,6 +113,8 @@ public OnRaceSelected(client,player,oldrace,race)
         {
             m_TeleportCount[client]=0;
             ResetMaxHealth(client);
+
+            new skill_immune=GetSkillLevel(player,race,0);
             if (skill_immune)
                 DoImmunity(client, player, skill_immune,false);
         }
@@ -215,7 +217,10 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     if (client)
+    {
+        SaveMaxHealth(client);
         ResetMaxHealth(client);
+    }
 
     return Plugin_Continue;
 }
