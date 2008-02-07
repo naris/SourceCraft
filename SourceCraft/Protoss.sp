@@ -713,7 +713,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                                 }
 
                                                 new playerCond = GetEntData(client,m_OffsetPlayerCond);
-                                                SetEntData(index,playerCond & (~8), 0);
+                                                SetEntData(index,playerCond & (~24), 0);
                                             }
                                             m_Detected[client][index] = true;
                                         }

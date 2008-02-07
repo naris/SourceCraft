@@ -113,12 +113,14 @@ public OnRaceSelected(client,player,oldrace,race)
         {
             m_TeleportCount[client]=0;
             ResetMaxHealth(client);
+            if (skill_immune)
+                DoImmunity(client, player, skill_immune,false);
         }
         else if (race == raceID)
         {
             new skill_immune=GetSkillLevel(player,race,0);
             if (skill_immune)
-                DoImmunity(client, player, skill_immune);
+                DoImmunity(client, player, skill_immune,true);
 
             new skill_devo=GetSkillLevel(player,race,1);
             if (skill_devo)
@@ -201,7 +203,7 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
         if (skill == 0)
-            DoImmunity(client, player, newskilllevel);
+            DoImmunity(client, player, newskilllevel,true);
         else if (skill == 1)
             DevotionAura(client, newskilllevel);
     }
@@ -236,7 +238,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
 
                 new skill_immune=GetSkillLevel(player,race,0);
                 if (skill_immune)
-                    DoImmunity(client, player, skill_immune);
+                    DoImmunity(client, player, skill_immune,true);
 
                 new skill_devo=GetSkillLevel(player,race,1);
                 if (skill_devo)
@@ -283,29 +285,32 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return Plugin_Continue;
 }
 
-DoImmunity(client, player, skilllevel)
+DoImmunity(client, player, skilllevel, bool:value)
 {
     if (skilllevel >= 1)
     {
-        SetImmunity(player,Immunity_ShopItems,true);
+        SetImmunity(player,Immunity_ShopItems,value);
         if (skilllevel >= 2)
         {
-            SetImmunity(player,Immunity_Explosion,true);
+            SetImmunity(player,Immunity_Explosion,value);
             if (skilllevel >= 3)
             {
-                SetImmunity(player,Immunity_HealthTake,true);
+                SetImmunity(player,Immunity_HealthTake,value);
                 if (skilllevel >= 4)
-                    SetImmunity(player,Immunity_Ultimates,true);
+                    SetImmunity(player,Immunity_Ultimates,value);
             }
         }
 
-        new Float:start[3];
-        GetClientAbsOrigin(client, start);
+        if (value)
+        {
+            new Float:start[3];
+            GetClientAbsOrigin(client, start);
 
-        new color[4] = { 0, 255, 50, 128 };
-        TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                              0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
-        TE_SendToAll();
+            new color[4] = { 0, 255, 50, 128 };
+            TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
+                                  0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+            TE_SendToAll();
+        }
     }
 }
 
