@@ -11,11 +11,17 @@
 #endif
 #define _player_tracking_included
 
-#define INFO_COUNT     7 // 0)client index, 1)race, 2)pending race,
-                         // 3)pending skill reset, 4)credits,
-                         // 5)overall level, 6)tracking array
+#define INFO_CLIENT_INDEX           0
+#define INFO_RACE                   1
+#define INFO_PENDING_RACE           2
+#define INFO_PENDING_SKILL_RESET    3
+#define INFO_CREDITS                4
+#define INFO_OVERALL_LEVEL          5
+#define INFO_PROPERTY               6
 
-#define TRACKING_COUNT 11
+#define INFO_COUNT                  7
+
+#define TRACKING_COUNT             11
 
 // Global definition
 new bool:g_RoundActive = true;
@@ -31,7 +37,7 @@ public GetClientVectorPosition(client)
     for(new x=0;x<size;x++)
     {
         new Handle:ply=GetArrayCell(arrayPlayers,x);
-        new curClient=GetArrayCell(ply,0);
+        new curClient=GetArrayCell(ply,INFO_CLIENT_INDEX);
         if(client==curClient)
             return x;
     }
@@ -41,19 +47,19 @@ public GetClientVectorPosition(client)
 public GetClientIndex(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,0);
+    return GetArrayCell(vec,INFO_CLIENT_INDEX);
 }
 
 public GetRace(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,1);
+    return GetArrayCell(vec,INFO_RACE);
 }
 
 public SetRace(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new oldrace=GetArrayCell(vec,1);
+    new oldrace=GetArrayCell(vec,INFO_RACE);
     if (race != oldrace)
     {
         SetArrayCell(vec,1,race);
@@ -70,62 +76,64 @@ public SetRace(vectorpos,race)
 public GetPendingRace(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,2);
+    return GetArrayCell(vec,INFO_PENDING_RACE);
 }
 
 public SetPendingRace(vectorpos,pend)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,2,pend);
+    SetArrayCell(vec,INFO_PENDING_RACE,pend);
 }
 
 public GetPendingSkillReset(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,3);
+    return GetArrayCell(vec,INFO_PENDING_SKILL_RESET);
 }
 
 public SetPendingSkillReset(vectorpos,pend)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,3,pend);
+    SetArrayCell(vec,INFO_PENDING_SKILL_RESET,pend);
 }
 
 public GetCredits(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,4);
+    return GetArrayCell(vec,INFO_CREDITS);
 }
 
 public SetCredits(vectorpos,credits)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,4,credits);
+    SetArrayCell(vec,INFO_CREDITS,credits);
 }
 
 public GetOverallLevel(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,5);
+    return GetArrayCell(vec,INFO_OVERALL_LEVEL);
 }
 
 public SetOverallLevel(vectorpos,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,5,level);
+    SetArrayCell(vec,INFO_OVERALL_LEVEL,level);
 }
 
 public Handle:GetPropertyInfo(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,6);
+    return GetArrayCell(vec,INFO_PROPERTY);
 }
 
+/*
 public SetPropertyInfo(vectorpos,Handle:info)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,6,info);
+    SetArrayCell(vec,INFO_PROPERTY,info);
 }
+*/
 
 public GetImmunity(vectorpos,immunity)
 {

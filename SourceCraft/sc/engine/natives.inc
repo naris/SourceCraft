@@ -383,7 +383,7 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
     {
         new player=GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        if(player != -1 && speed > 0)
+        if (player != -1)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -418,7 +418,7 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(player,temp);
+            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -429,7 +429,7 @@ public Native_SetMinGravity(Handle:plugin,numParams)
     {
         new player=GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
-        if(player!=-1&&gravity>0)
+        if (player!=-1)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -464,7 +464,7 @@ public Native_SetMinGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(player,temp);
+            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -477,7 +477,7 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
         new visibility=GetNativeCell(2);
         new Float:meleeFactor = (numParams > 2) ? GetNativeCell(3) : 1.0;
         new Float:movementFactor = (numParams > 3) ? GetNativeCell(4) : 1.0;
-        if(player != -1 && visibility > -1)
+        if(player != -1)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -514,7 +514,7 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(player,temp);
+            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -561,7 +561,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(player,temp);
+            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -607,7 +607,7 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(player,temp);
+            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -653,7 +653,7 @@ public Native_SetOverrideVisible(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,visibility); // force visibility?
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            SetPropertyInfo(player,temp);
+            //SetPropertyInfo(player,temp);
         }
     }
 }
