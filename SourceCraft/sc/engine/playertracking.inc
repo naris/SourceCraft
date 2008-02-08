@@ -38,6 +38,12 @@ public GetClientVectorPosition(client)
     return -1;
 }
 
+public GetClientIndex(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,0);
+}
+
 public GetRace(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
@@ -160,30 +166,34 @@ public SetXP(vectorpos,race,xp)
 public GetLevel(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new raceCount = GetArraySize(arrayRaces);
     return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+
-                            SHOPITEM_COUNT+RACE_COUNT+race);
+                            SHOPITEM_COUNT+raceCount+race);
 }
 
 public SetLevel(vectorpos,race,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new raceCount = GetArraySize(arrayRaces);
     SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+
-                     SHOPITEM_COUNT+RACE_COUNT+race,level);
+                     SHOPITEM_COUNT+raceCount+race,level);
 }
 
 public GetSkillLevel(vectorpos,race,skill)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new raceCount = GetArraySize(arrayRaces);
     new num=INFO_COUNT+SHOPITEM_COUNT+IMMUNITY_COUNT+
-            RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
+            (raceCount*2)+(race*SKILL_COUNT)+skill;
     return GetArrayCell(vec,num);
 }
 
 public SetSkillLevel(vectorpos,race,skill,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new raceCount = GetArraySize(arrayRaces);
     new num=INFO_COUNT+SHOPITEM_COUNT+IMMUNITY_COUNT+
-            RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+skill;
+            (raceCount*2)+(race*SKILL_COUNT)+skill;
     new old=GetArrayCell(vec,num);
     SetArrayCell(vec,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
@@ -201,10 +211,10 @@ public GetSkillCount(vectorpos,race)
 {
     new ret=0;
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new raceCount = GetArraySize(arrayRaces);
     new num1=INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+
-             RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT);
-    new num2=INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+
-             RACE_COUNT+RACE_COUNT+(race*SKILL_COUNT)+SKILL_COUNT;
+             (raceCount*2)+(race*SKILL_COUNT);
+    new num2=num1+SKILL_COUNT;
     for(new x=num1;x<num2;x++)
         ret+=GetArrayCell(vec,x);
     return ret;

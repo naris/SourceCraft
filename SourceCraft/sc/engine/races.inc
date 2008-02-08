@@ -5,7 +5,6 @@
  * Author(s): Anthony Iacono  
  */
 
-#define RACE_COUNT GetArraySize(arrayRaces)
 #define SKILL_COUNT 4
 #define SKILL_ULTIMATE 3 // Yes, its the 4th, but 3th when you are talking iteriators
 

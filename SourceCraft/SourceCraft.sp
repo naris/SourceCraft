@@ -190,16 +190,16 @@ public OnClientPutInServer(client)
             PushArrayCell(newPlayer,0);
         for(new x=0;x<SHOPITEM_COUNT;x++)
             PushArrayCell(newPlayer,0); // Owns item x
-        for(new x=0;x<RACE_COUNT;x++)
-            PushArrayCell(newPlayer,0); // Race x XP
-        for(new x=0;x<RACE_COUNT;x++)
-            PushArrayCell(newPlayer,0); // Race x Level
-        for(new x=0;x<RACE_COUNT;x++)
+
+        new raceCount = GetArraySize(arrayRaces);
+        for(new x=0;x<raceCount;x++)
         {
+            PushArrayCell(newPlayer,0); // Race x XP
+            PushArrayCell(newPlayer,0); // Race x Level
             for(new y=0;y<SKILL_COUNT;y++)
                 PushArrayCell(newPlayer,0); // Skill level for race x skill y
         }
-        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+RACE_COUNT+RACE_COUNT+(RACE_COUNT*SKILL_COUNT)))
+        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+(raceCount*(SKILL_COUNT+2))))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
             Call_StartForward(g_OnPlayerAuthedHandle);

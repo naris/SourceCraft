@@ -41,10 +41,10 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
     if(StrEqual(matchstr,"@all",false))
     {
         // All?
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        new playerCount = GetArraySize(arrayPlayers);
+        for(new x=0;x<playerCount;x++)
         {
-            new Handle:playerhandle=GetArrayCell(arrayPlayers,x);
-            PushArrayCell(matchHandle,GetArrayCell(playerhandle,0));
+            PushArrayCell(matchHandle,GetClientIndex(x));
         }
     }
     else
@@ -54,10 +54,10 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
            StrEqual(matchstr,"@red",false) ||
 	       StrEqual(matchstr,"@axis",false))
         {
-            for(new x=0;x<GetArraySize(arrayPlayers);x++)
+            new playerCount = GetArraySize(arrayPlayers);
+            for(new x=0;x<playerCount;x++)
             {
-                new Handle:playerhandle=GetArrayCell(arrayPlayers,x);
-                new index=GetArrayCell(playerhandle,0);
+                new index=GetClientIndex(x);
                 if(GetClientTeam(index)==3)
                     PushArrayCell(matchHandle,index);
             }
@@ -66,10 +66,10 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
                  StrEqual(matchstr,"@blue",false) ||
                  StrEqual(matchstr,"@allies",false))
         {
-            for(new x=0;x<GetArraySize(arrayPlayers);x++)
+            new playerCount = GetArraySize(arrayPlayers);
+            for(new x=0;x<playerCount;x++)
             {
-                new Handle:playerhandle=GetArrayCell(arrayPlayers,x);
-                new index=GetArrayCell(playerhandle,0);
+                new index=GetClientIndex(x);
                 if(GetClientTeam(index)==2)
                     PushArrayCell(matchHandle,index);
             }
@@ -80,10 +80,10 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
             if(matchstr[0]=='@')
             {
                 new uid=StringToInt(matchstr[1]);
-                for(new x=0;x<GetArraySize(arrayPlayers);x++)
+                new playerCount = GetArraySize(arrayPlayers);
+                for(new x=0;x<playerCount;x++)
                 {
-                    new Handle:playerhandle=GetArrayCell(arrayPlayers,x);
-                    new index=GetArrayCell(playerhandle,0);
+                    new index=GetClientIndex(x);
                     if(GetClientUserId(index)==uid)
                         PushArrayCell(matchHandle,index);
                 }
@@ -91,10 +91,10 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
             else
             {
                 // Player name?
-                for(new x=0;x<GetArraySize(arrayPlayers);x++)
+                new playerCount = GetArraySize(arrayPlayers);
+                for(new x=0;x<playerCount;x++)
                 {
-                    new Handle:playerhandle=GetArrayCell(arrayPlayers,x);
-                    new index=GetArrayCell(playerhandle,0);
+                    new index=GetClientIndex(x);
                     new String:name[64];
                     GetClientName(index,name,63);
                     if(StrContains(name,matchstr,false)!=-1)

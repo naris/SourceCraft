@@ -164,7 +164,8 @@ public SavePlayerData(client,vectorpos)
                 }
             }
 
-            for(new raceId=0;raceId<RACE_COUNT;raceId++)
+            new raceCount = GetArraySize(arrayRaces);
+            for(new raceId=0;raceId<raceCount;raceId++)
             {
                 new Handle:race=Race(raceId);
                 GetArrayString(race,RACE_SHORT_NAME,raceName,sizeof(raceName));

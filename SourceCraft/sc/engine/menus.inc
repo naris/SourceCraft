@@ -178,7 +178,8 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
     decl String:rname[64];
     decl String:rlevel[4];
     decl String:ritem[96];
-    for(new x=0;x<RACE_COUNT;x++)
+    new raceCount = GetArraySize(arrayRaces);
+    for(new x=0;x<raceCount;x++)
     {
         race=Race(x);
         Format(rbuf,sizeof(rbuf),"%d",x);
@@ -1094,7 +1095,8 @@ public Admin_SetRace(client,target)
 
         decl String:racename[64];
         new Handle:raceHandle;
-        for(new x=0;x<RACE_COUNT;x++)
+        new raceCount = GetArraySize(arrayRaces);
+        for(new x=0;x<raceCount;x++)
         {
             raceHandle=Race(x);
             GetArrayString(raceHandle,0,racename,sizeof(racename));
