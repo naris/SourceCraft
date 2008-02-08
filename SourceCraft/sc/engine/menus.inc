@@ -244,20 +244,25 @@ public SkillMenu(client, vectorpos, Function:parentMenuFunction)
     new Handle:race=Race(race_num);
     decl String:sbuf[4];
     decl String:buf[192];
+    new style = ITEMDRAW_DEFAULT;
     for(new x=0;x<SKILL_COUNT;x++)
     {
         GetArrayString(race,4+(x*2),skillname,sizeof(skillname));
         Format(sbuf,sizeof(sbuf),"%d",x);
         curlevel=GetSkillLevel(vectorpos,race_num,x);
-        if(x!=SKILL_ULTIMATE)
-            Format(buf,191,"%s (Skill Level %d)",skillname,curlevel+1);
-        else
-        {
-            Format(buf,191,"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
-                   skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
-        }
         if(curlevel!=4)
-            AddMenuItem(sMenu,sbuf,buf);
+        {
+            if(x!=SKILL_ULTIMATE)
+                Format(buf,191,"%s (Skill Level %d)",skillname,curlevel+1);
+            else
+            {
+                Format(buf,191,"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
+                        skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
+                if (GetLevel(vectorpos,race_num) < MIN_ULTIMATE_LEVEL)
+                    style = ITEMDRAW_DISABLED;
+            }
+            AddMenuItem(sMenu,sbuf,buf,style);
+        }
     }
     gSkillMenuParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
@@ -269,9 +274,9 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     {
         ClientCommand(client,"play buttons/button14.wav");
         new vecpos=GetClientVectorPosition(client);
-        if(vecpos>-1)
+        if (vecpos > -1)
         {
-            if(selection>=0&&selection<SKILL_COUNT)
+            if (selection >= 0 && selection < SKILL_COUNT)
             {
                 // Okay, they selected a valid skill
                 decl String:SelectionInfo[4];
@@ -280,14 +285,14 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
                             SelectionDispText,sizeof(SelectionDispText));
                 new skill=StringToInt(SelectionInfo);
-                if(skill>-1&&skill<SKILL_COUNT)
+                if (skill > -1 && skill < SKILL_COUNT)
                 {
-                    if(skill==SKILL_ULTIMATE)
+                    if (skill==SKILL_ULTIMATE)
                     {
                         new race=GetRace(vecpos);
                         new Handle:raceHandle=Race(race);
-                        new level=GetLevel(vecpos,race);
-                        if(level>=MIN_ULTIMATE_LEVEL)
+                        new level = GetLevel(vecpos,race);
+                        if (level >= MIN_ULTIMATE_LEVEL)
                         {
                             if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                             {
@@ -309,14 +314,14 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                             PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
                                         COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
                         }
-                        if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+                        if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                             SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
                     }
                     else
                     {
                         new race=GetRace(vecpos);
                         new Handle:raceHandle=Race(race);
-                        if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+                        if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                         {
                             SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                             decl String:skillname[64];
@@ -331,7 +336,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                                         COLOR_GREEN,COLOR_DEFAULT);
                         }
 
-                        if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+                        if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                             SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
                     }
                 }
@@ -377,7 +382,8 @@ public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
     decl String:cost[8];
 
     new count = 0;
-    for(new x=0;x<SHOPITEM_COUNT;x++)
+    new shopItemCount = GetArraySize(shopVector);
+    for(new x=0;x<shopItemCount;x++)
     {
         if (shopmenu || GetOwnsItem(vectorpos,x))
         {
@@ -568,7 +574,8 @@ public ShowItems(client,target,vectorpos,Function:parentMenuFunction)
     decl String:itemname[64];
     new Handle:itemHandle;
     DrawPanelText(panel,"-----------------------------");
-    for(new x=0;x<SHOPITEM_COUNT;x++)
+    new shopItemCount = GetArraySize(shopVector);
+    for(new x=0;x<shopItemCount;x++)
     {
         if (GetOwnsItem(vectorpos,x))
         {
@@ -999,7 +1006,8 @@ public Admin_GiveShopItem(client,target)
 
         decl String:itemname[64];
         new Handle:itemHandle;
-        for(new x=0;x<SHOPITEM_COUNT;x++)
+        new shopItemCount = GetArraySize(shopVector);
+        for(new x=0;x<shopItemCount;x++)
         {
             itemHandle=ShopItem(x);
             GetArrayString(itemHandle,0,itemname,sizeof(itemname));
