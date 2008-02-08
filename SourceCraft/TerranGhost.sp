@@ -144,7 +144,7 @@ public OnRaceSelected(client,player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            SetMinVisibility(player, 255, 1.0, 1.0);
+            SetMinVisibility(player, -1, -1.0, -1.0);
             ResetOcularImplants(client);
             m_AllowNuclearLaunch[client]=true;
         }
@@ -208,12 +208,12 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 
     if (victim_player != -1 && victim_race == raceID)
     {
-        SetMinVisibility(victim_player, 255, 1.0, 1.0);
+        SetMinVisibility(victim_player, -1, -1.0, -1.0);
 
         if (m_NuclearLaunchInitiated[victim_index])
         {
             m_NuclearLaunchInitiated[victim_index]=false;
-            SetOverrideSpeed(victim_player, 1.0);
+            SetOverrideSpeed(victim_player, -1.0);
         }
     }
 }
@@ -438,7 +438,7 @@ public Action:NuclearLockOn(Handle:timer,any:client)
     if (m_NuclearLaunchInitiated[client])
     {
         EmitSoundToAll(launchWav,client);
-        SetOverrideSpeed(player, 1.0);
+        SetOverrideSpeed(player, -1.0);
         new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
         PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %3.1f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
         CreateTimer(lockTime,NuclearExplosion,client);

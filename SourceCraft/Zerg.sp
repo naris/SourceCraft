@@ -199,11 +199,24 @@ public Action:OnGrab(client, target)
         if (player_check>-1)
         {
             if (!GetImmunity(player_check,Immunity_Ultimates))
+            {
+                SetOverrideGravity(player_check, 0.0);
                 return Plugin_Continue;
+            }
         }
     }
     EmitSoundToClient(client,errorWav);
     return Plugin_Stop;
+}
+
+public Action:OnDrop(client, target)
+{
+    new player_check=GetPlayer(target);
+    if (player_check>-1)
+    {
+        SetOverrideGravity(player_check, -1.0);
+    }
+    return Plugin_Continue;
 }
 
 public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)

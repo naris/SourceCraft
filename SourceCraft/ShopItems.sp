@@ -224,7 +224,7 @@ public OnItemPurchase(client,player,item)
         EmitSoundToAll(bennyHillWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
-        SetMinVisibility(player, (GameType == tf2) ? 140 : 160, 0.50);
+        SetMinVisibility(player, 120, 0.50);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health
@@ -283,7 +283,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
-                SetMinVisibility(player, (GameType == tf2) ? 140 : 160, 0.80);
+                SetMinVisibility(player, 120, 0.50);
 
             if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
                 UsePeriapt(client);
@@ -327,10 +327,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                 SetOwnsItem(victim_player,shopItem[ITEM_CLAWS],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_CLOAK]))
-            {
-                SetMinVisibility(victim_player, 255, 1.0);
                 SetOwnsItem(victim_player,shopItem[ITEM_CLOAK],false);
-            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_MASK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_MASK],false);
@@ -380,11 +377,13 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
         if(GetOwnsItem(victim_player,shopItem[ITEM_PERIAPT]))
             SetOwnsItem(victim_player,shopItem[ITEM_PERIAPT],false);
 
-        SetMaxSpeed(victim_player,1.0);
-        SetMinGravity(victim_player,1.0);
+        // Reset player speed/gravity/visibility attributes when they doe
+        SetMaxSpeed(victim_player,-1.0);
+        SetMinGravity(victim_player,-1.0);
+        SetMinVisibility(victim_player, -1, -1.0);
 
         // Reset Overrides when players die
-        SetOverrideSpeed(victim_player,1.0);
+        SetOverrideSpeed(victim_player,-1.0);
 
         // Reset MaxHealth back to normal
         if (usedPeriapt[victim_index])
@@ -525,7 +524,7 @@ public Action:RestoreSpeed(Handle:timer,any:temp)
     {
         new player=GetPlayer(client);
         if(player>-1)
-            SetOverrideSpeed(player,1.0);
+            SetOverrideSpeed(player,-1.0);
     }
     ClearArray(temp);
     return Plugin_Stop;

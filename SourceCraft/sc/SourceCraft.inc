@@ -221,24 +221,24 @@ native SetImmunity(player,Immunity:immunity,imm_state=1);
 /**
  * Sets the speed for the player that is handled within the SourceCraft system,
  * good for skills and items that set speed so you don't end up making the player slower.
- * Pass 1.0 as speed when they no longer should use the speed, make sure to do this when
+ * Pass -1.0 as speed when they no longer should use the speed, make sure to do this when
  * they no longer have the skill or item, or whatever.
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native SetMaxSpeed(player,Float:speed=1.0);
+native SetMaxSpeed(player,Float:speed=-1.0);
 
 /**
  * Sets the gravity for the player that is handled within the SourceCraft system,
  * good for skills and items that set gravity so you don't end up making the player jump lower.
- * Pass 1.0 as gravity when they no longer should use the gravity, make sure to do this when
+ * Pass -1.0 as gravity when they no longer should use the gravity, make sure to do this when
  * they no longer have the skill or item, or whatever.
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native SetMinGravity(player,Float:gravity=1.0);
+native SetMinGravity(player,Float:gravity=-1.0);
 
 /**
  * Sets the (in)visibility for the player that is handled within the SourceCraft system,
@@ -248,31 +248,31 @@ native SetMinGravity(player,Float:gravity=1.0);
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param visibility: The visibility you want to pass.
  * @param melee_factor: The value to multiply the visibility by when player uses a melee weapon
- *                      (Pass 1.0 to not check for melee weapons)
- * @param melee_factor: The value to multiply the visibility by when player is not moving.
+ * @param movement_factor: The value to multiply the visibility by when player is not moving.
+ *                         (Pass -1.0 for factors to not check)
  * @noreturn
  */
-native SetMinVisibility(player,visibility=255,Float:melee_factor=1.0,Float:movement_factor=1.0);
+native SetMinVisibility(player,visibility=-1,Float:melee_factor=-1.0,Float:movement_factor=-1.0);
 
 /**
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
- * Pass 1.0 as speed when you want the SourceCraft system to take over again,
+ * Pass -1.0 as speed when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native SetOverrideSpeed(player,Float:speed=1.0);
+native SetOverrideSpeed(player,Float:speed=-1.0);
 
 /**
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
- * Pass 1.0 as gravity when you want the SourceCraft system to take over again,
+ * Pass -1.0 as gravity when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native SetOverrideGravity(player,Float:gravity=1.0);
+native SetOverrideGravity(player,Float:gravity=-1.0);
 
 /**
  * Overrides the (in)visibility for SourceCraft , useful for punishing them or whatever.

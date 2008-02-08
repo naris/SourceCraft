@@ -227,8 +227,8 @@ public Action:PlayerProperties(Handle:timer)
                 GetEntDataVector(client, m_VelocityOffset, vecVelocity);
 
                 new Handle:pinfo=GetPropertyInfo(x);
-                new visibility=255;
-                new Float:gravity=1.0,Float:speed=1.0;
+                new visibility=-1;
+                new Float:gravity=-1.0,Float:speed=-1.0;
                 new bool:overridePlayerSpeed=false;
                 new bool:overridePlayerGravity=false;
                 new bool:overridePlayerVisibility=false;
@@ -247,13 +247,13 @@ public Action:PlayerProperties(Handle:timer)
 
                     if(!overridePlayerSpeed)
                     {
-                        if(overridespeed != 1.0)
+                        if(overridespeed >= 0.0)
                         {
                             LogMessage("[playertracking] Found overridespeed of %N to %f", client, overridespeed);
                             speed=overridespeed;
                             overridePlayerSpeed=true;
                         }
-                        else if(checkSpeed>speed)
+                        else if(checkSpeed > speed)
                         {
                             speed=checkSpeed;
                         }
@@ -261,13 +261,14 @@ public Action:PlayerProperties(Handle:timer)
 
                     if(!overridePlayerGravity)
                     {
-                        if(overridegravity != 1.0)
+                        if(overridegravity >= 0.0)
                         {
                             gravity=overridegravity;
                             overridePlayerGravity=true;
                             gravityAltered[client]=true;
                         }
-                        else if(checkGravity<gravity)
+                        else if(checkGravity >= 0 &&
+                                (gravity < 0.0 || checkGravity < gravity))
                         {
                             gravity=checkGravity;
                             gravityAltered[client]=true;
@@ -276,18 +277,19 @@ public Action:PlayerProperties(Handle:timer)
 
                     if(!overridePlayerVisibility)
                     {
-                        if(overridevisibility>-1)
+                        if(overridevisibility >= 0)
                         {
                             visibility=overridevisibility;
                             overridePlayerVisibility=true;
                             visibilityAltered[client]=true;
                         }
-                        else
+                        else if (checkVisibility >= 0 || meleeFactor >= 0.0 || movementFactor >= 0.0)
                         {
                             checkVisibility = CalculateVisibility(client, wepName, vecVelocity,
                                                                   checkVisibility, meleeFactor,
                                                                   movementFactor);
-                            if (checkVisibility >= 0 && visibility > checkVisibility)
+                            if (checkVisibility >= 0 &&
+                                (visibility < 0.0 || checkVisibility < visibility))
                             {
                                 visibility=checkVisibility;
                                 visibilityAltered[client]=true;
@@ -296,15 +298,18 @@ public Action:PlayerProperties(Handle:timer)
                     }
                 }
 
-                if (GameType == tf2)
+                if (speedAltered[client] || overridePlayerSpeed || speed >= 0.0)
                 {
-                    new Float:classSpeed = GetClassSpeed(client);
-                    new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
-                    if (m_BaseSpeed[client] == 0.0)
-                        m_BaseSpeed[client] == curSpeed;
+                    if (speed < 0.0)
+                        speed = 1.0;
 
-                    if (overridePlayerSpeed || speed != 1.0 || speedAltered[client])
+                    if (GameType == tf2)
                     {
+                        new Float:classSpeed = GetClassSpeed(client);
+                        new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
+                        if (m_BaseSpeed[client] == 0.0)
+                            m_BaseSpeed[client] == curSpeed;
+
                         new Float:newSpeed = classSpeed * speed;
                         if (curSpeed != newSpeed)
                         {
@@ -315,27 +320,36 @@ public Action:PlayerProperties(Handle:timer)
                                 SetEntityMoveType(client, MOVETYPE_WALK);
 
                             LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
-                                       client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed, speed, speedAltered[client], overridePlayerSpeed);
+                                       client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed,
+                                       speed, speedAltered[client], overridePlayerSpeed);
                         }
 
                         speedAltered[client] = (speed != 1.0);
                     }
-                    else if (curSpeed != classSpeed)
+                    else // not tf2
                     {
-                        LogMessage("[playertracking] Speed of %N is %f, base=%f, class_speed=%f",
-                                    client, curSpeed, m_BaseSpeed[client], classSpeed);
+                        LogMessage("[playertracking] Set NON TF2 speed of %N to %f, altered=%d, override=%d",
+                                   client, speed, speedAltered[client], overridePlayerSpeed);
+
+                        if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                            SetEntDataFloat(client,m_OffsetSpeed,speed);
                     }
                 }
-                else // not tf2
+                else
                 {
-                    LogMessage("[playertracking] Set NON TF2 speed of %N to %f, altered=%d, override=%d",
-                        client, speed, speedAltered[client], overridePlayerSpeed);
-
-                    if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                        SetEntDataFloat(client,m_OffsetSpeed,speed);
+                    if (GameType == tf2)
+                    {
+                        new Float:classSpeed = GetClassSpeed(client);
+                        new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
+                        if (curSpeed != classSpeed)
+                        {
+                            LogMessage("[playertracking] Speed of %N is %f, base=%f, class_speed=%f",
+                                       client, curSpeed, m_BaseSpeed[client], classSpeed);
+                        }
+                    }
                 }
 
-                if (visibilityAltered[client] || overridePlayerVisibility || (visibility >= 0 && visibility < 255))
+                if (visibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                 {
                     if (visibility < 0 || visibility >= 255)
                     {
@@ -350,8 +364,11 @@ public Action:PlayerProperties(Handle:timer)
                     }
                 }
 
-                if (gravityAltered[client] || overridePlayerGravity || gravity != 1.0)
+                if (gravityAltered[client] || overridePlayerGravity || gravity >= 0.0)
                 {
+                    if (gravity < 0.0)
+                        gravity = 1.0;
+
                     if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
                         SetEntDataFloat(client,m_OffsetGravity[client], gravity);
 
@@ -370,13 +387,16 @@ public Action:PlayerProperties(Handle:timer)
 stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocity[3], visibility,
                           Float:meleeFactor, Float:movementFactor)
 {
-    if (meleeFactor != 1.0 && meleeFactor != -1.0)
+    if (visibility < 0)
+        visibility = 255;
+
+    if (meleeFactor >= 0.0 && meleeFactor != 1.0)
     {
         if (IsEquipmentMelee(wepName))
             visibility *= meleeFactor;
     }
 
-    if (movementFactor != 1.0 && movementFactor != -1.0)
+    if (movementFactor >= 0.0 && movementFactor != 1.0)
     {
         if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
                                           IN_MOVERIGHT|IN_SPEED|IN_JUMP|
@@ -386,7 +406,6 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
                 visibility *= movementFactor;
         }
     }
-
     return visibility;
 }
 
@@ -432,8 +451,16 @@ stock MakeInvisible(client, visibility)
                         !StrEqual(name, "CCaptureFlag"))
                     {
                         SetEntityRenderColor(obj,255,255,255,visibility);
-                        SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
-                        SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+                        if (visibility> 0)
+                        {
+                            SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+                            SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+                        }
+                        else
+                        {
+                            SetEntityRenderMode(client,RENDER_GLOW);
+                            SetEntityRenderFx(client,RENDERFX_FADE_FAST);
+                        }
                     }
                 }
             }
