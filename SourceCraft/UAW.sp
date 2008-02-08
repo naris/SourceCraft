@@ -195,8 +195,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         m_JobsBank[client]=false;
                         TE_SetupGlowSprite(m_SpawnLoc[client],g_purpleGlow,1.0,3.5,150);
                         TE_SendToAll();
-                        PrintToChat(client,"%c[SourceCraft]%c You have joined the %cJobs Bank%c",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                        PrintToChat(client,"%c[SourceCraft]%c Due to %cSeniority%c, you have joined the %cJobs Bank%c",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                     }
                 }
             }
@@ -279,8 +279,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                 decl String:currencies[64];
                 GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                 SetCredits(victim_player, GetCredits(victim_player)+amount);
-                PrintToChat(victim_index,"%c[SourceCraft]%c You have recieved %d %s from a %cBuyout%c offer!",
-                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(victim_index,"%c[SourceCraft]%c Due to %cSeniority%c, you have recieved %d %s from a %cBuyout%c offer!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
             }
         }
     }
