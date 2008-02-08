@@ -218,8 +218,12 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SaveMaxHealth(client);
-        ResetMaxHealth(client);
+        new player = GetPlayer(client);
+        if (GetRace(player) == raceID && IsPlayerAlive(client))
+        {
+            SaveMaxHealth(client);
+            ResetMaxHealth(client);
+        }
     }
 
     return Plugin_Continue;

@@ -37,6 +37,7 @@ new String:explodeWav[] = "weapons/explode5.wav";
 // Reincarnation variables
 new bool:m_Suicided[MAXPLAYERS+1];
 new bool:m_IsRespawning[MAXPLAYERS+1];
+new bool:m_IsChangingClass[MAXPLAYERS+1];
 new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
 public Plugin:myinfo = 
@@ -60,6 +61,12 @@ public OnPluginStart()
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
+
+    if (GameType == tf2)
+    {
+        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
+            SetFailState("Couldn't hook the player_changeclass event.");
+    }
 
     CreateTimer(3.0,FlamingWrath,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -137,16 +144,36 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
+public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        new player = GetPlayer(client);
+        if (GetRace(player) == raceID && IsPlayerAlive(client))
+        {
+            m_IsChangingClass[client] = true;
+        }
+    }
+    return Plugin_Continue;
+}
+
 public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    if (client && m_IsRespawning[client])
+    if (client)
     {
-        m_IsRespawning[client]=false;
-        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
-        TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
-        TE_SendToAll();
+        if (m_IsChangingClass[client])
+            m_IsChangingClass[client] = false;
+        else if (m_IsRespawning[client])
+        {
+            m_IsRespawning[client]=false;
+            TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+            TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
+            TE_SendToAll();
+        }
     }
     return Plugin_Continue;
 }
@@ -159,7 +186,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 {
     LogEventDamage(event,damage,"Al-Qaeda::PlayerDeathEvent",raceID);
 
-    if (victim_race == raceID)
+    if (victim_race == raceID && !m_IsRespawning[client])
     {
         if (m_Suicided[victim_index])
             m_Suicided[victim_index]=false;

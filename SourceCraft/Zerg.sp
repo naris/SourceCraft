@@ -156,7 +156,7 @@ public Action:Regeneration(Handle:timer)
                                         {
                                             new color[4] = { 0, 0, 255, 255 };
                                             TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                    0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                                              0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                             TE_SendToAll();
 
                                             new newhp=GetClientHealth(index)+skill_healing_aura;
@@ -296,13 +296,13 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, playe
             switch(skill_adrenal_glands)
             {
                 case 1:
-                    percent=0.20;
+                    percent=0.15;
                 case 2:
-                    percent=0.55;
+                    percent=0.35;
                 case 3:
-                    percent=0.75;
+                    percent=0.55;
                 case 4:
-                    percent=1.00;
+                    percent=0.75;
             }
 
             new amount=RoundFloat(float(damage)*percent);

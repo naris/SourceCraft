@@ -26,6 +26,7 @@ new raceID; // The ID we are assigned to
 
 new bool:m_HasRespawned[MAXPLAYERS+1];
 new bool:m_IsRespawning[MAXPLAYERS+1];
+new bool:m_IsChangingClass[MAXPLAYERS+1];
 new bool:m_AllowChainLightning[MAXPLAYERS+1];
 new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
@@ -74,6 +75,9 @@ public OnPluginStart()
     }
     else if (GameType == tf2)
     {
+        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
+            SetFailState("Couldn't hook the player_changeclass event.");
+
         if (!HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
             SetFailState("Couldn't hook the teamplay_round_start event.");
 
@@ -148,6 +152,21 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 }
 
 // Events
+public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid=GetEventInt(event,"userid");
+    new client=GetClientOfUserId(userid);
+    if (client)
+    {
+        new player = GetPlayer(client);
+        if (GetRace(player) == raceID && IsPlayerAlive(client))
+        {
+            m_IsChangingClass[client] = true;
+        }
+    }
+    return Plugin_Continue;
+}
+
 public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -160,7 +179,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             new race=GetRace(player);
             if (race==raceID)
             {
-                if (m_IsRespawning[client])
+                if (m_IsChangingClass[client])
+                    m_IsChangingClass[client] = false;
+                else if (m_IsRespawning[client])
                 {
                     m_IsRespawning[client]=false;
 
