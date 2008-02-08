@@ -186,7 +186,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 {
     LogEventDamage(event,damage,"Al-Qaeda::PlayerDeathEvent",raceID);
 
-    if (victim_race == raceID && !m_IsRespawning[client])
+    if (victim_race == raceID && !m_IsRespawning[victim_index])
     {
         if (m_Suicided[victim_index])
             m_Suicided[victim_index]=false;

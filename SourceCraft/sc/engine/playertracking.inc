@@ -11,16 +11,16 @@
 #endif
 #define _player_tracking_included
 
-#define INFO_CLIENT_INDEX           0
-#define INFO_RACE                   1
-#define INFO_PENDING_RACE           2
-#define INFO_PENDING_SKILL_RESET    3
-#define INFO_CREDITS                4
-#define INFO_OVERALL_LEVEL          5
-#define INFO_PROPERTY               6
-#define INFO_SHOPITEMS              7
+#define INFO_CLIENT_INDEX               0
+#define INFO_RACE                       1
+#define INFO_PENDING_RACE               2
+#define INFO_PENDING_SKILL_RESET        3
+#define INFO_CREDITS                    4
+#define INFO_OVERALL_LEVEL              5
+#define INFO_PROPERTY                   6
+#define INFO_SHOPITEMS                  7
 
-#define INFO_COUNT                  8
+#define INFO_COUNT                      8
 
 #define TRACKING_PLUGIN_HANDLE          0
 #define TRACKING_SPEED                  1
