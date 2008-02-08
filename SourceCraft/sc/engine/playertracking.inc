@@ -18,13 +18,27 @@
 #define INFO_CREDITS                4
 #define INFO_OVERALL_LEVEL          5
 #define INFO_PROPERTY               6
+#define INFO_SHOPITEMS              7
 
-#define INFO_COUNT                  7
+#define INFO_COUNT                  8
 
-#define TRACKING_COUNT             11
+#define TRACKING_PLUGIN_HANDLE          0
+#define TRACKING_SPEED                  1
+#define TRACKING_GRAVITY                2
+#define TRACKING_VISIBILITY             3
+#define TRACKING_MELEE_FACTOR           4
+#define TRACKING_MOVEMENT_FACTOR        5
+#define TRACKING_OVERRIDE_SPEED         6
+#define TRACKING_OVERRIDE_GRAVITY       7
+#define TRACKING_OVERRIDE_VISIBILITY    8
+
+#define TRACKING_COUNT                  9
 
 // Global definition
 new bool:g_RoundActive = true;
+
+new Handle:g_OnSkillLevelChangedHandle = INVALID_HANDLE;
+new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
 
 new Float:m_BaseSpeed[MAXPLAYERS+1];
 new bool:speedAltered[MAXPLAYERS+1];
@@ -135,6 +149,24 @@ public SetPropertyInfo(vectorpos,Handle:info)
 }
 */
 
+public Handle:GetShopItemInfo(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,INFO_SHOPITEMS);
+}
+
+public GetOwnsItem(vectorpos,item)
+{
+    new Handle:shopitems=GetShopItemInfo(vectorpos);
+    return GetArrayCell(shopitems,item);
+}
+
+public SetOwnsItem(vectorpos,item,owns)
+{
+    new Handle:shopitems=GetShopItemInfo(vectorpos);
+    SetArrayCell(shopitems,item,owns);
+}
+
 public GetImmunity(vectorpos,immunity)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
@@ -147,52 +179,37 @@ public SetImmunity(vectorpos,immunity,imm_state)
     SetArrayCell(vec,INFO_COUNT+immunity,imm_state);
 }
 
-public GetOwnsItem(vectorpos,item)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+item);
-}
-
-public SetOwnsItem(vectorpos,item,owns)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+item,owns);
-}
-
 public GetXP(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+race);
+    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+race);
 }
 
 public SetXP(vectorpos,race,xp)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+race,xp);
+    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+race,xp);
 }
 
 public GetLevel(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+
-                            SHOPITEM_COUNT+raceCount+race);
+    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+raceCount+race);
 }
 
 public SetLevel(vectorpos,race,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+
-                     SHOPITEM_COUNT+raceCount+race,level);
+    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+raceCount+race,level);
 }
 
 public GetSkillLevel(vectorpos,race,skill)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    new num=INFO_COUNT+SHOPITEM_COUNT+IMMUNITY_COUNT+
-            (raceCount*2)+(race*SKILL_COUNT)+skill;
+    new num=INFO_COUNT+IMMUNITY_COUNT+(raceCount*2)+(race*SKILL_COUNT)+skill;
     return GetArrayCell(vec,num);
 }
 
@@ -200,8 +217,7 @@ public SetSkillLevel(vectorpos,race,skill,level)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    new num=INFO_COUNT+SHOPITEM_COUNT+IMMUNITY_COUNT+
-            (raceCount*2)+(race*SKILL_COUNT)+skill;
+    new num=INFO_COUNT+IMMUNITY_COUNT+(raceCount*2)+(race*SKILL_COUNT)+skill;
     new old=GetArrayCell(vec,num);
     SetArrayCell(vec,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
@@ -220,8 +236,7 @@ public GetSkillCount(vectorpos,race)
     new ret=0;
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    new num1=INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+
-             (raceCount*2)+(race*SKILL_COUNT);
+    new num1=INFO_COUNT+IMMUNITY_COUNT+(raceCount*2)+(race*SKILL_COUNT);
     new num2=num1+SKILL_COUNT;
     for(new x=num1;x<num2;x++)
         ret+=GetArrayCell(vec,x);
@@ -254,14 +269,14 @@ public Action:PlayerProperties(Handle:timer)
                 {
                     // check which plugin is the highest/lowest bidder, but first, override?
                     new Handle:temp             = GetArrayCell(pinfo,y);
-                    new Float:checkSpeed        = GetArrayCell(temp,1);
-                    new Float:checkGravity      = GetArrayCell(temp,2);
-                    new checkVisibility         = GetArrayCell(temp,3);
-                    new Float:meleeFactor       = GetArrayCell(temp,4);
-                    new Float:movementFactor    = GetArrayCell(temp,5);
-                    new Float:overridespeed     = GetArrayCell(temp,6);
-                    new Float:overridegravity   = GetArrayCell(temp,7);
-                    new overridevisibility      = GetArrayCell(temp,8);
+                    new Float:checkSpeed        = GetArrayCell(temp,TRACKING_SPEED);
+                    new Float:checkGravity      = GetArrayCell(temp,TRACKING_GRAVITY);
+                    new checkVisibility         = GetArrayCell(temp,TRACKING_VISIBILITY);
+                    new Float:meleeFactor       = GetArrayCell(temp,TRACKING_MELEE_FACTOR);
+                    new Float:movementFactor    = GetArrayCell(temp,TRACKING_MOVEMENT_FACTOR);
+                    new Float:overridespeed     = GetArrayCell(temp,TRACKING_OVERRIDE_SPEED);
+                    new Float:overridegravity   = GetArrayCell(temp,TRACKING_OVERRIDE_GRAVITY);
+                    new overridevisibility      = GetArrayCell(temp,TRACKING_OVERRIDE_VISIBILITY);
 
                     if(!overridePlayerSpeed)
                     {

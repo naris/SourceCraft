@@ -41,6 +41,7 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #include "sc/engine/shopmenu"
 #include "sc/weapons"
 #include "sc/engine/db"
+#include "sc/engine/playertracking"
 #include "sc/engine/natives"
 #include "sc/engine/hooks"
 #include "sc/log"
@@ -48,7 +49,6 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #include "sc/engine/credits"
 #include "sc/engine/console"
 #include "sc/engine/tf2classes"
-#include "sc/engine/playertracking"
 #include "sc/engine/menus"
 #include "sc/engine/events"
 #include "sc/engine/events_tf2"
@@ -188,16 +188,15 @@ public OnClientPutInServer(client)
         new Handle:properties=CreateArray(); // Player's properties
         PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
 
+        new Handle:shopitems=CreateArray(); // Player's shop items
+        for(new x=0;x<SHOPITEM_COUNT;x++)
+            PushArrayCell(shopitems,0);     // Owns item x
+        PushArrayCell(newPlayer,shopitems);
+
         for(new x=0;x<IMMUNITY_COUNT;x++)   // Player's immunities
             PushArrayCell(newPlayer,0);
 
-        //new Handle:shopitems=CreateArray(); // Player's shop items
-        //PushArrayCell(newPlayer,shopitems);
-        for(new x=0;x<SHOPITEM_COUNT;x++)
-            PushArrayCell(newPlayer,0); // Owns item x
-
         //new Handle:raceinfo=CreateArray(); // Player's races
-        //PushArrayCell(newPlayer,raceinfo);
         new raceCount = GetArraySize(arrayRaces);
         for(new x=0;x<raceCount;x++)
         {
@@ -206,8 +205,9 @@ public OnClientPutInServer(client)
             for(new y=0;y<SKILL_COUNT;y++)
                 PushArrayCell(newPlayer,0); // Skill level for race x skill y
         }
+        //PushArrayCell(newPlayer,raceinfo);
 
-        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+SHOPITEM_COUNT+(raceCount*(SKILL_COUNT+2))))
+        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+(raceCount*(SKILL_COUNT+2))))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
             Call_StartForward(g_OnPlayerAuthedHandle);

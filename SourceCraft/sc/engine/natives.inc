@@ -10,8 +10,6 @@
 new Handle:g_OnPluginReadyHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerAuthedHandle = INVALID_HANDLE;
 new Handle:g_OnUltimateCommandHandle = INVALID_HANDLE;
-new Handle:g_OnSkillLevelChangedHandle = INVALID_HANDLE;
-new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
 new Handle:g_OnItemPurchaseHandle = INVALID_HANDLE;
 new Handle:g_OnCreditsGivenHandle = INVALID_HANDLE;
 new Handle:g_OnXPGivenHandle = INVALID_HANDLE;
@@ -298,14 +296,14 @@ public Native_SetXP(Handle:plugin,numParams)
         new player=GetNativeCell(1);
         new race=GetNativeCell(2);
         new newxp=GetNativeCell(3);
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,player);
         if(player!=-1&&race!=-1&&newxp!=-1)
         {
             SetXP(player,race,newxp);
-            DoLevelCheck(GetArrayCell(playerHandle,0),player);
+            DoLevelCheck(GetClientIndex(player),player);
         }
     }
 }
+
 public Native_GetCredits(Handle:plugin,numParams)
 {
     if(numParams==1)
@@ -327,7 +325,6 @@ public Native_SetCredits(Handle:plugin,numParams)
             SetCredits(player,newcredits);
     }
 }
-
 
 public Native_GetOwnsItem(Handle:plugin,numParams)
 {
@@ -400,8 +397,8 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,1,speed);
-                SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_SPEED,speed);
+                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
@@ -446,8 +443,8 @@ public Native_SetMinGravity(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,2,gravity);
-                SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_GRAVITY,gravity);
+                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
@@ -494,10 +491,10 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,3,visibility);
-                SetArrayCell(indiceHandle,4,meleeFactor);
-                SetArrayCell(indiceHandle,5,movementFactor);
-                SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY,visibility);
+                SetArrayCell(indiceHandle,TRACKING_MELEE_FACTOR,meleeFactor);
+                SetArrayCell(indiceHandle,TRACKING_MOVEMENT_FACTOR,movementFactor);
+                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
@@ -543,8 +540,8 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,6,speed);
-                SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_OVERRIDE_SPEED,speed);
+                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
@@ -589,8 +586,8 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,7,gravity);
-                SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_OVERRIDE_GRAVITY,gravity);
+                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
@@ -635,8 +632,8 @@ public Native_SetOverrideVisible(Handle:plugin,numParams)
             if(indice>-1)
             {
                 // update existing entry
-                SetArrayCell(indiceHandle,8,visibility);
-                SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_OVERRIDE_VISIBILITY,visibility);
+                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
