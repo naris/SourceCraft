@@ -194,21 +194,21 @@ public OnClientPutInServer(client)
             PushArrayCell(shopitems,0);     // Owns item x
         PushArrayCell(newPlayer,shopitems);
 
-        new Handle:raceinfo=CreateArray(); // Player's races
         new raceCount = GetArraySize(arrayRaces);
         for(new x=0;x<raceCount;x++)
         {
+            new Handle:raceinfo=CreateArray(); // Player's races
+            PushArrayCell(newPlayer,raceinfo);
             PushArrayCell(raceinfo,0); // Race x XP
             PushArrayCell(raceinfo,0); // Race x Level
             for(new y=0;y<SKILL_COUNT;y++)
                 PushArrayCell(raceinfo,0); // Skill level for race x skill y
         }
-        PushArrayCell(newPlayer,raceinfo);
 
         for(new x=0;x<IMMUNITY_COUNT;x++)   // Player's immunities
             PushArrayCell(newPlayer,0);
 
-        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+(raceCount*(SKILL_COUNT+2))))
+        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+raceCount))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
             Call_StartForward(g_OnPlayerAuthedHandle);

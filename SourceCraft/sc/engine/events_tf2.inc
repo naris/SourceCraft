@@ -139,10 +139,12 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
             new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
             m_BaseSpeed[client]=maxSpeed;
 
-            new class=GetEventInt(event,"class");
+            new newClass=GetEventInt(event,"class");
+            new Float:newClassSpeed=GetClassSpeed(newClass);
+            new oldClass=GetClass(newClass);
+            new Float:oldClassSpeed=GetClassSpeed(oldClass);
             LogMessage("[ChangeClass] Set BaseSpeed of %N(%d) to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d",
-                       client, client, m_BaseSpeed[client], maxSpeed, GetClassSpeed(client),
-                       GetClassSpeed(class), GetClass(client) ,class);
+                       client, client, m_BaseSpeed[client], maxSpeed, oldClassSpeed, newClassSpeed, oldClass ,newClass);
         }
     }
 }
