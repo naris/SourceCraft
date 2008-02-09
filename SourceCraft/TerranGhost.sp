@@ -511,7 +511,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                         {
                             if (TraceTarget(client, index, client_location, check_location))
                             {
-                                new newhealth = GetClientHealth(index)-hp;
+                                new newhealth = GetHealth(index)-hp;
                                 if (newhealth <= 0)
                                 {
                                     newhealth=0;

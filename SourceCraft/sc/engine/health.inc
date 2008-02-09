@@ -46,7 +46,7 @@ stock GetHealth(entity)
         }
     }
     else
-        return GetEntityHealth(entity);
+        return GetClientHealth(entity);
 }
 
 stock SetHealth(entity,amount)

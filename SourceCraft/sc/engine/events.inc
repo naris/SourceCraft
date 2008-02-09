@@ -62,6 +62,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new index=GetClientOfUserId(userid);
         if (index > 0)
         {
+            SaveMaxHealth(index);
             SaveHealth(index);
 
             if (g_RoundActive)

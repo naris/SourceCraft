@@ -322,12 +322,12 @@ bool:VampiricAura(damage, victim_index, victim_player, index, player)
         new leechhealth=RoundFloat(float(damage)*percent_health);
         if(leechhealth)
         {
-            new victim_health=GetClientHealth(victim_index);
+            new victim_health=GetHealth(victim_index);
             if (victim_health < leechhealth)
                 leechhealth = victim_health;
 
-            new health=GetClientHealth(index)+leechhealth;
-            SetEntityHealth(index,health);
+            new health=GetHealth(index)+leechhealth;
+            SetHealth(index,health);
 
             victim_health -= leechhealth;
             if (victim_health <= 0)
@@ -346,7 +346,7 @@ bool:VampiricAura(damage, victim_index, victim_player, index, player)
                 LogToGame("[SourceCraft] %N leeched %d health from %N\n", index, leechhealth, victim_index);
             }
 
-            SetEntityHealth(victim_index, victim_health);
+            SetHealth(victim_index, victim_health);
 
             new Float:start[3];
             GetClientAbsOrigin(index, start);
@@ -428,7 +428,7 @@ SuicideBomber(client,player,ult_level,bool:ondeath)
                     {
                         if (TraceTarget(client, index, client_location, check_location))
                         {
-                            new newhealth = GetClientHealth(index)-hp;
+                            new newhealth = GetHealth(index)-hp;
                             if (newhealth <= 0)
                             {
                                 newhealth=0;

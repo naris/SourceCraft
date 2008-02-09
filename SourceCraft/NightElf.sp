@@ -19,7 +19,6 @@
 #include "sc/trace"
 #include "sc/freeze"
 #include "sc/authtimer"
-#include "sc/health"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
@@ -79,7 +78,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    FindHealthOffsets(client);
     m_AllowEntangle[client]=true;
 }
 
@@ -170,12 +168,12 @@ public bool:Evasion(damage, victim_index, victim_player, attacker_index, assiste
         }
         if (GetRandomInt(1,100) <= chance)
         {
-            new newhp=GetClientHealth(victim_index)+damage;
+            new newhp=GetHealth(victim_index)+damage;
             new maxhp=GetMaxHealth(victim_index);
             if (newhp > maxhp)
                 newhp = maxhp;
 
-            SetEntityHealth(victim_index,newhp);
+            SetHealth(victim_index,newhp);
 
             LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victim_index, attacker_index);
             PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
@@ -216,7 +214,7 @@ public ThornsAura(damage, victim_index, victim_player, index, player)
             if(GetRandomInt(1,100) <= chance)
             {
                 new amount=RoundToNearest(damage * 0.30);
-                new newhp=GetClientHealth(index)-amount;
+                new newhp=GetHealth(index)-amount;
                 if (newhp <= 0)
                 {
                     newhp=0;
@@ -225,7 +223,7 @@ public ThornsAura(damage, victim_index, victim_player, index, player)
                 else
                     LogDamage(victim_index, index, "thorns_aura", "Thorns Aura", amount);
 
-                SetEntityHealth(index,newhp);
+                SetHealth(index,newhp);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victim_index, Origin);
@@ -262,7 +260,7 @@ public TrueshotAura(damage, victim_index, index, player)
             }
 
             new amount=RoundFloat(float(damage)*percent);
-            new newhp=GetClientHealth(victim_index)-amount;
+            new newhp=GetHealth(victim_index)-amount;
             if (newhp <= 0)
             {
                 newhp=0;
@@ -271,7 +269,7 @@ public TrueshotAura(damage, victim_index, index, player)
             else
                 LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
 
-            SetEntityHealth(victim_index,newhp);
+            SetHealth(victim_index,newhp);
 
             new Float:Origin[3];
             GetClientAbsOrigin(victim_index, Origin);

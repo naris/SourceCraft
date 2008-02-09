@@ -16,7 +16,6 @@
 
 #include "sc/util"
 #include "sc/uber"
-#include "sc/health"
 
 #include "sc/log" // for debugging
 
@@ -104,11 +103,6 @@ public OnRaceSelected(client,player,oldrace,race)
                 Jetpack(client, skill_jetpack);
         }
     }
-}
-
-public OnPlayerAuthed(client,player)
-{
-    FindHealthOffsets(client);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)
@@ -264,12 +258,12 @@ bool:Armor(damage, victim_index, victim_player)
             amount = armor;
         if (amount > 0)
         {
-            new newhp=GetClientHealth(victim_index)+amount;
+            new newhp=GetHealth(victim_index)+amount;
             new maxhp=GetMaxHealth(victim_index);
             if (newhp > maxhp)
                 newhp = maxhp;
 
-            SetEntityHealth(victim_index,newhp);
+            SetHealth(victim_index,newhp);
 
             m_Armor[victim_index] = armor - amount;
 
@@ -307,7 +301,7 @@ bool:U238Shells(damage, victim_index, index, player)
                 }
 
                 new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetClientHealth(victim_index)-health_take;
+                new new_health=GetHealth(victim_index)-health_take;
                 if (new_health <= 0)
                 {
                     new_health=0;
@@ -316,7 +310,7 @@ bool:U238Shells(damage, victim_index, index, player)
                 else
                     LogDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
 
-                SetEntityHealth(victim_index,new_health);
+                SetHealth(victim_index,new_health);
 
                 new color[4] = { 100, 255, 55, 255 };
                 TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,

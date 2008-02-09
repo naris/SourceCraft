@@ -16,7 +16,6 @@
 #include "sc/util"
 #include "sc/freeze"
 #include "sc/authtimer"
-#include "sc/health"
 
 #include "sc/log" // for debugging
 
@@ -98,10 +97,8 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 }
 
-
 public OnPlayerAuthed(client,player)
 {
-    FindHealthOffsets(client);
     m_TeleportCount[client]=0;
 }
 
@@ -221,7 +218,6 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
         new player = GetPlayer(client);
         if (GetRace(player) == raceID && IsPlayerAlive(client))
         {
-            SaveMaxHealth(client);
             ResetMaxHealth(client);
         }
     }
@@ -235,7 +231,6 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        SaveMaxHealth(client);
         new player=GetPlayer(client);
         if (player>-1)
         {

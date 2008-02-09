@@ -198,7 +198,7 @@ public bool:FesteringAbomination(damage, victim_index, index, player)
                 }
 
                 new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetClientHealth(victim_index)-health_take;
+                new new_health=GetHealth(victim_index)-health_take;
                 if (new_health <= 0)
                 {
                     new_health=0;
@@ -207,7 +207,7 @@ public bool:FesteringAbomination(damage, victim_index, index, player)
                 else
                     LogDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
 
-                SetEntityHealth(victim_index,new_health);
+                SetHealth(victim_index,new_health);
 
                 new color[4] = { 100, 255, 55, 255 };
                 TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
@@ -335,7 +335,7 @@ public Fart(player,client,ultlevel)
                         GetClientAbsOrigin(client, indexLoc);
                         if (TraceTarget(client, index, clientLoc, indexLoc))
                         {
-                            new new_health=GetClientHealth(index)-40;
+                            new new_health=GetHealth(index)-40;
                             if (new_health <= 0)
                             {
                                 new_health=0;

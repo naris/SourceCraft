@@ -136,6 +136,7 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
     {
         if (g_RoundActive)
         {
+            SaveMaxHealth(client);
             new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
             m_BaseSpeed[client]=maxSpeed;
             new Float:classSpeed=GetClassSpeed(client);

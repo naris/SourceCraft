@@ -34,6 +34,7 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 // SourceCraft Includes
 #include "sc/util"
 #include "sc/engine/help"
+#include "sc/engine/health"
 #include "sc/engine/damage"
 #include "sc/engine/immunity"
 #include "sc/engine/offsets"
@@ -177,6 +178,8 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
+        FindHealthOffsets(client);
+
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,0); // Player race
