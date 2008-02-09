@@ -339,6 +339,9 @@ DevotionAura(client, skill_devo)
     }
     IncreaseHealth(client,hpadd);
 
+    PrintToChat(client,"%c[SourceCraft]%c You have received %d extra hp from %cDevotion Aura%c.",
+                COLOR_GREEN,COLOR_DEFAULT,hpadd,COLOR_TEAM,COLOR_DEFAULT);
+
     new Float:start[3];
     GetClientAbsOrigin(client, start);
 
@@ -406,11 +409,11 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
         switch(ult_level)
         {
             case 1:
-                range=(float(time_pressed) / 3000.0) * 100.0;
+                range=(float(time_pressed) / 3000.0) * 50.0;
             case 2:
-                range=(float(time_pressed) / 3000.0) * 250.0;
+                range=(float(time_pressed) / 3000.0) * 100.0;
             case 3:
-                range=(float(time_pressed) / 3000.0) * 450.0;
+                range=(float(time_pressed) / 3000.0) * 350.0;
             case 4:
                 range=(float(time_pressed) / 3000.0) * 600.0;
         }
