@@ -79,7 +79,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    FindMaxHealthOffset(client);
+    FindHealthOffsets(client);
     m_AllowEntangle[client]=true;
 }
 

@@ -203,7 +203,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    FindMaxHealthOffset(client);
+    FindHealthOffsets(client);
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }

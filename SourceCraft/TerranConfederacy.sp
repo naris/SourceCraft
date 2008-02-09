@@ -108,7 +108,7 @@ public OnRaceSelected(client,player,oldrace,race)
 
 public OnPlayerAuthed(client,player)
 {
-    FindMaxHealthOffset(client);
+    FindHealthOffsets(client);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)

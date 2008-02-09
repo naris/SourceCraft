@@ -101,7 +101,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    FindMaxHealthOffset(client);
+    FindHealthOffsets(client);
     m_TeleportCount[client]=0;
 }
 

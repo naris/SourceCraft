@@ -81,7 +81,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
-    FindMaxHealthOffset(client);
+    FindHealthOffsets(client);
 }
 
 public OnRaceSelected(client,player,oldrace,race)
