@@ -11,7 +11,6 @@
 #include <sdktools>
 
 #include "SourceCraft/sc/util"
-#include "SourceCraft/sc/health"
 #include "SourceCraft/sc/engine/damage"
 
 public Plugin:myinfo = 
@@ -30,11 +29,6 @@ public OnPluginStart()
 
     HookEvent("player_hurt",PlayerHurtEvent);
     HookEvent("player_spawn",PlayerSpawnEvent);
-}
-
-public OnClientPutInServer(client)
-{
-    SetupHealth(client);
 }
 
 public OnGameFrame()
