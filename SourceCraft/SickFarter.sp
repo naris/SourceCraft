@@ -77,7 +77,7 @@ public OnPluginReady()
                       "Steals crystals from enemies.", // Skill 2 Description
                       "Revulsion", // Skill 3 Name
                       "Your level of Revulsion is so high, all enemies quake as you approach.", // Skill 3 Description
-                      "Fart", // Ultimate Name
+                      "Flatulence", // Ultimate Name
                       "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.");
 
     FindUberOffsets();
