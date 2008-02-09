@@ -8,6 +8,7 @@
 #define KILL_CREDITS_LONGTERM   2
 #define KILL_CREDITS_SHORTTERM  3
 
+#define TOUCH_CREDITS           2
 #define FLAG_CREDITS            5
 #define POINT_CREDITS           5
 #define CHARGE_CREDITS         15
@@ -33,12 +34,17 @@ public GiveKillCredits(client,vectorpos)
 
 public GivePickedUpFlagCredits(client,vectorpos)
 {
-    GiveCredits(client,vectorpos,FLAG_CREDITS,"picking up the flag");
+    GiveCredits(client,vectorpos,FLAG_CREDITS,"picking up the intelligence");
 }
 
 public GivePointCapturedCredits(client,vectorpos)
 {
-    GiveCredits(client,vectorpos,FLAG_CREDITS,"capturing a point");
+    GiveCredits(client,vectorpos,POINT_CREDITS,"capturing a point");
+}
+
+public GivePointTouchedCredits(client,vectorpos)
+{
+    GiveCredits(client,vectorpos,TOUCH_CREDITS,"touching a point");
 }
 
 public GiveChargeDeployedCredits(client,vectorpos)

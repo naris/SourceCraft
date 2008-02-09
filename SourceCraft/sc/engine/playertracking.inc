@@ -141,14 +141,6 @@ public Handle:GetPropertyInfo(vectorpos)
     return GetArrayCell(vec,INFO_PROPERTY);
 }
 
-/*
-public SetPropertyInfo(vectorpos,Handle:info)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_PROPERTY,info);
-}
-*/
-
 public Handle:GetShopItemInfo(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);

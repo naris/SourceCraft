@@ -7,43 +7,49 @@
 
 public bool:HookTFEvents()
 {
-    if(!HookEventEx("player_changeclass",PlayerChangeClass,EventHookMode_Post))
+    if(!HookEventEx("player_changeclass",PlayerChangeClass))
     {
         LogError("Could not hook the player_changeclass event.");
         return false;
     }
 
-    if(!HookEvent("player_chargedeployed", PlayerChargeDeployed,EventHookMode_Post))
+    if(!HookEvent("player_chargedeployed", PlayerChargeDeployed))
     {
         LogError("Could not hook the player_chargedeployed event.");
         return false;
     }
 
-    if(!HookEvent("player_builtobject", PlayerBuiltObject,EventHookMode_Post))
+    if(!HookEvent("player_builtobject", PlayerBuiltObject))
     {
         LogError("Could not hook the player_builtobject event.");
         return false;
     }
 
-    if(!HookEvent("object_destroyed", EventObjectDestroyed,EventHookMode_Post))
+    if(!HookEvent("object_destroyed", EventObjectDestroyed))
     {
         LogError("Could not hook the object_destroyed event.");
         return false;
     }
 
-    if(!HookEvent("teamplay_flag_event", EventFlagEvent,EventHookMode_Post))
+    if(!HookEvent("teamplay_flag_event", EventFlagEvent))
     {
         LogError("Could not hook the teamplay_flag_event.");
         return false;
     }
 
-    if(!HookEvent("teamplay_point_captured", EventPointCaptured,EventHookMode_Post))
+    if(!HookEvent("teamplay_point_captured", EventPointCapture))
     {
         LogError("Could not hook the teampoint_point_captured event.");
         return false;
     }
 
-    if(!HookEvent("teamplay_capture_blocked", EventCaptureBlocked,EventHookMode_Post))
+    if(!HookEvent("teamplay_point_startcapture", EventPointCapture))
+    {
+        LogError("Could not hook the teampoint_point_captured event.");
+        return false;
+    }
+
+    if(!HookEvent("teamplay_capture_blocked", EventCaptureBlocked))
     {
         LogError("Could not hook the teadmplay_capture_blocked event.");
         return false;
@@ -61,7 +67,7 @@ public bool:HookTFEvents()
         return false;
     }
 
-    if(!HookEventEx("teamplay_round_win",RoundWin,EventHookMode_Post))
+    if(!HookEventEx("teamplay_round_win",RoundWin))
     {
         LogError("Could not hook the teamplay_round_win event.");
         return false;
@@ -73,18 +79,18 @@ public bool:HookTFEvents()
         return false;
     }
 
-    if(!HookEventEx("teamplay_win_panel",GameWin,EventHookMode_Post))
+    if(!HookEventEx("teamplay_win_panel",GameWin))
     {
         LogError("Could not hook the teamplay_win_panel event.");
         return false;
     }
    
-    if(!HookEvent("controlpoint_starttouch", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_starttouch", DumpEvent))
     {
         LogError("Could not hook the controlpoint_starttouch event.");
     }
 
-    if(!HookEvent("controlpoint_endtouch", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_endtouch", DumpEvent))
     {
         LogError("Could not hook the controlpoint_endtouch event.");
     }
@@ -94,27 +100,27 @@ public bool:HookTFEvents()
         LogError("Could not hook the controlpoint_initialized event.");
     }
 
-    if(!HookEvent("controlpoint_updateimages", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_updateimages", DumpEvent))
     {
         LogError("Could not hook the controlpoint_updateimages event.");
     }
 
-    if(!HookEvent("controlpoint_updatelayout", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_updatelayout", DumpEvent))
     {
         LogError("Could not hook the controlpoint_updatelayout event.");
     }
 
-    if(!HookEvent("controlpoint_updatecapping", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_updatecapping", DumpEvent))
     {
         LogError("Could not hook the controlpoint_updatecapping event.");
     }
 
-    if(!HookEvent("controlpoint_updateowner", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_updateowner", DumpEvent))
     {
         LogError("Could not hook the controlpoint_updateowner event.");
     }
 
-    if(!HookEvent("controlpoint_pulse_element", DumpEvent,EventHookMode_Post))
+    if(!HookEvent("controlpoint_pulse_element", DumpEvent))
     {
         LogError("Could not hook the controlpoint_pulse_element event.");
     }
@@ -126,7 +132,7 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
-    if (client > 0)
+    if (client > 0 && IsClientInGame(client))
     {
         if (g_RoundActive)
         {
@@ -134,9 +140,9 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
             m_BaseSpeed[client]=maxSpeed;
 
             new class=GetEventInt(event,"class");
-            LogMessage("[ChangeClass] Set BaseSpeed of %d to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d",
-                       client, m_BaseSpeed[client], maxSpeed, GetClassSpeed(client),
-                       GetClassSpeed(class), TF_GetClass(client) ,class);
+            LogMessage("[ChangeClass] Set BaseSpeed of %N(%d) to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d",
+                       client, client, m_BaseSpeed[client], maxSpeed, GetClassSpeed(client),
+                       GetClassSpeed(class), GetClass(client) ,class);
         }
     }
 }
@@ -223,11 +229,13 @@ public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
+public EventPointCapture(Handle:event,const String:name[],bool:dontBroadcast)
 {
     decl String:cappers[MAXPLAYERS+1] = "";
     if (GetEventString(event,"cappers", cappers, MAXPLAYERS)>0)
     {
+        new bool:captured = StrEqual(name, "teamplay_point_captured");
+        //new bool:startcap = StrEqual(name, "teamplay_point_startcapture");
         new len = strlen(cappers);
         for(new i=0;i<len;i++)
         {
@@ -235,8 +243,15 @@ public EventPointCaptured(Handle:event,const String:name[],bool:dontBroadcast)
             new vecpos = GetClientVectorPosition(index);
             if (vecpos != -1)
             {
-                GivePointCapturedXP(index,vecpos);
-                GivePointCapturedCredits(index,vecpos);
+                if (captured)
+                {
+                    GivePointCapturedXP(index,vecpos);
+                    GivePointCapturedCredits(index,vecpos);
+                }
+                else // if (startcap)
+                {
+                    GivePointTouchedCredits(index,vecpos);
+                }
             }
         }
     }
