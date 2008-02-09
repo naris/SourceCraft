@@ -147,18 +147,6 @@ public Handle:GetShopItemInfo(vectorpos)
     return GetArrayCell(vec,INFO_SHOPITEMS);
 }
 
-public GetOwnsItem(vectorpos,item)
-{
-    new Handle:shopitems=GetShopItemInfo(vectorpos);
-    return GetArrayCell(shopitems,item);
-}
-
-public SetOwnsItem(vectorpos,item,owns)
-{
-    new Handle:shopitems=GetShopItemInfo(vectorpos);
-    SetArrayCell(shopitems,item,owns);
-}
-
 public GetImmunity(vectorpos,immunity)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
@@ -169,6 +157,18 @@ public SetImmunity(vectorpos,immunity,imm_state)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     SetArrayCell(vec,INFO_COUNT+immunity,imm_state);
+}
+
+public GetOwnsItem(vectorpos,item)
+{
+    new Handle:shopitems=GetShopItemInfo(vectorpos);
+    return GetArrayCell(shopitems,item);
+}
+
+public SetOwnsItem(vectorpos,item,owns)
+{
+    new Handle:shopitems=GetShopItemInfo(vectorpos);
+    SetArrayCell(shopitems,item,owns);
 }
 
 public GetXP(vectorpos,race)

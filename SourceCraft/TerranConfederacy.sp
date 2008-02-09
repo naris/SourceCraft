@@ -314,7 +314,7 @@ bool:U238Shells(damage, victim_index, index, player)
                     LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
                 }
                 else
-                    LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
+                    LogDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
 
                 SetEntityHealth(victim_index,new_health);
 
