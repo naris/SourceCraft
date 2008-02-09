@@ -134,7 +134,7 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
             m_BaseSpeed[client]=maxSpeed;
 
             new class=GetEventInt(event,"class");
-            LogMessage("[ChangeClass] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d",
+            LogMessage("[ChangeClass] Set BaseSpeed of %d to %f, maxSpeed=%f, classSpeed=%f, newClassSpeed=%f, class=%d, newClass=%d",
                        client, m_BaseSpeed[client], maxSpeed, GetClassSpeed(client),
                        GetClassSpeed(class), TF_GetClass(client) ,class);
         }
@@ -276,8 +276,8 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             if(IsClientInGame(client))
             {
                 m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed);
-                LogMessage("[RoundActive] Set BaseSpeed of %N to %f, classSpeed=%f",
-                           client, m_BaseSpeed[client],GetClassSpeed(client));
+                LogMessage("[RoundActive] Set BaseSpeed of %n(%d) to %f, classSpeed=%f",
+                           client, client, m_BaseSpeed[client],GetClassSpeed(client));
             }
         }
     }
