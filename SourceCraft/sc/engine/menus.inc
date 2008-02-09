@@ -426,7 +426,7 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
             GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
                         SelectionDispText,sizeof(SelectionDispText));
             new item=StringToInt(SelectionInfo);
-            if(item>-1 && item<SHOPITEM_COUNT)
+            if(item>-1 && item<GetArraySize(shopVector))
                 ShopMenu_Item(client,vecpos,item);
         }
     }

@@ -5,8 +5,6 @@
  * Author(s): Anthony Iacono  
  */
 
-#define SHOPITEM_COUNT GetArraySize(shopVector)
-
 #define SHOPITEM_NAME   0
 #define SHOPITEM_DESC   1
 #define SHOPITEM_COST   2

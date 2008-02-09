@@ -19,8 +19,9 @@
 #define INFO_OVERALL_LEVEL              5
 #define INFO_PROPERTY                   6
 #define INFO_SHOPITEMS                  7
+#define INFO_RACEINFO                   8
 
-#define INFO_COUNT                      8
+#define INFO_COUNT                      9
 
 #define TRACKING_PLUGIN_HANDLE          0
 #define TRACKING_SPEED                  1
@@ -33,6 +34,9 @@
 #define TRACKING_OVERRIDE_VISIBILITY    8
 
 #define TRACKING_COUNT                  9
+
+#define RACEINFO_XP                     0
+#define RACEINFO_LEVEL                  1
 
 // Global definition
 new bool:g_RoundActive = true;
@@ -171,49 +175,55 @@ public SetOwnsItem(vectorpos,item,owns)
     SetArrayCell(shopitems,item,owns);
 }
 
-public GetXP(vectorpos,race)
+public Handle:GetRaceInfo(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+race);
+    return GetArrayCell(vec,INFO_RACEINFO);
+}
+
+public GetXP(vectorpos,race)
+{
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
+    return GetArrayCell(raceinfo,race);
 }
 
 public SetXP(vectorpos,race,xp)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+race,xp);
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
+    SetArrayCell(raceinfo,race,xp);
 }
 
 public GetLevel(vectorpos,race)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    return GetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+raceCount+race);
+    return GetArrayCell(raceinfo,raceCount+race);
 }
 
 public SetLevel(vectorpos,race,level)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    SetArrayCell(vec,INFO_COUNT+IMMUNITY_COUNT+raceCount+race,level);
+    SetArrayCell(raceinfo,raceCount+race,level);
 }
 
 public GetSkillLevel(vectorpos,race,skill)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    new num=INFO_COUNT+IMMUNITY_COUNT+(raceCount*2)+(race*SKILL_COUNT)+skill;
-    return GetArrayCell(vec,num);
+    new num=(raceCount*2)+(race*SKILL_COUNT)+skill;
+    return GetArrayCell(raceinfo,num);
 }
 
 public SetSkillLevel(vectorpos,race,skill,level)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    new num=INFO_COUNT+IMMUNITY_COUNT+(raceCount*2)+(race*SKILL_COUNT)+skill;
-    new old=GetArrayCell(vec,num);
-    SetArrayCell(vec,num,level);
+    new num=(raceCount*2)+(race*SKILL_COUNT)+skill;
+    new old=GetArrayCell(raceinfo,num);
+    SetArrayCell(raceinfo,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
-    Call_PushCell(GetArrayCell(vec,0));
+    Call_PushCell(GetArrayCell(raceinfo,0));
     Call_PushCell(vectorpos);
     Call_PushCell(race);
     Call_PushCell(skill);
@@ -226,12 +236,12 @@ public SetSkillLevel(vectorpos,race,skill,level)
 public GetSkillCount(vectorpos,race)
 {
     new ret=0;
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    new Handle:raceinfo=GetRaceInfo(vectorpos);
     new raceCount = GetArraySize(arrayRaces);
-    new num1=INFO_COUNT+IMMUNITY_COUNT+(raceCount*2)+(race*SKILL_COUNT);
+    new num1=(raceCount*2)+(race*SKILL_COUNT);
     new num2=num1+SKILL_COUNT;
     for(new x=num1;x<num2;x++)
-        ret+=GetArrayCell(vec,x);
+        ret+=GetArrayCell(raceinfo,x);
     return ret;
 }
 
