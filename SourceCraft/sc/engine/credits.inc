@@ -8,7 +8,7 @@
 #define KILL_CREDITS_LONGTERM   2
 #define KILL_CREDITS_SHORTTERM  3
 
-#define TOUCH_CREDITS           2
+#define TOUCH_CREDITS           1
 #define FLAG_CREDITS            5
 #define POINT_CREDITS           5
 #define CHARGE_CREDITS         15
