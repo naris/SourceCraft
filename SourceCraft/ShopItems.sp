@@ -16,7 +16,7 @@
 
 #include "sc/util"
 #include "sc/uber"
-#include "sc/maxhealth"
+#include "sc/health"
 #include "sc/authtimer"
 #include "sc/respawn"
 #include "sc/log"

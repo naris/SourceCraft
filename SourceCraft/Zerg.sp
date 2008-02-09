@@ -18,7 +18,7 @@
 #include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/maxhealth"
+#include "sc/health"
 #include "sc/weapons"
 #include "sc/log"
 

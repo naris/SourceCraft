@@ -16,7 +16,7 @@
 #include "sc/util"
 #include "sc/freeze"
 #include "sc/authtimer"
-#include "sc/maxhealth"
+#include "sc/health"
 
 #include "sc/log" // for debugging
 

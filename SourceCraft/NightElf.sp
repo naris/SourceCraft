@@ -19,7 +19,7 @@
 #include "sc/trace"
 #include "sc/freeze"
 #include "sc/authtimer"
-#include "sc/maxhealth"
+#include "sc/health"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
