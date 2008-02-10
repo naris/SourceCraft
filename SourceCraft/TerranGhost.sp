@@ -43,6 +43,8 @@ new bool:m_NuclearLaunchInitiated[MAXPLAYERS+1];
 
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
+new Float:gLockdownTime[MAXPLAYERS+1];
+
 new String:readyWav[] = "sourcecraft/taupd07.wav";
 new String:launchWav[] = "sourcecraft/tnsfir00.wav";
 new String:detectedWav[] = "sourcecraft/taupd04.wav";
@@ -228,16 +230,16 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     if (attacker_index && attacker_index != victim_index)
     {
         if (victim_race == raceID)
-            LockDown(attacker_index, victim_player);
+            Lockdown(attacker_index, victim_player);
 
         if (attacker_race == raceID)
-            LockDown(victim_index, attacker_player);
+            Lockdown(victim_index, attacker_player);
     }
 
     if (assister_index && assister_index != victim_index)
     {
         if (assister_race == raceID)
-            LockDown(victim_index, assister_player);
+            Lockdown(victim_index, assister_player);
     }
     return Plugin_Continue;
 }
@@ -277,7 +279,7 @@ bool:Cloak(client, player, skilllevel)
     SetMinVisibility(player,alpha, 0.80, 0.0);
 }
 
-LockDown(victim_index, player)
+Lockdown(victim_index, player)
 {
     new skill_lockdown=GetSkillLevel(player,raceID,1);
     if (skill_lockdown)
@@ -294,12 +296,14 @@ LockDown(victim_index, player)
             case 4:
                 percent=52;
         }
-        if (GetRandomInt(1,100)<=percent)
+        if (GetRandomInt(1,100)<=percent && (!gLockdownTime[victim_index] ||
+             GetGameTime() - gLockdownTime[victim_index] > 2.0))
         {
             new Float:Origin[3];
             GetClientAbsOrigin(victim_index, Origin);
             TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
 
+            gLockdownTime[victim_index] = GetGameTime();
             FreezeEntity(victim_index);
             AuthTimer(1.0,victim_index,UnfreezePlayer);
         }
@@ -366,6 +370,10 @@ public Action:OcularImplants(Handle:timer)
                                             SetOverrideVisible(player_check, 255);
                                             if (TF_GetClass(player_check) == TF2_SPY)
                                             {
+                                                // Set the disguise(8) and cloak(16) bits to 0.
+                                                new playerCond = GetEntData(index,m_OffsetPlayerCond);
+                                                SetEntData(index,m_OffsetPlayerCond,playerCond & (~24));
+
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
                                                 {
@@ -379,10 +387,6 @@ public Action:OcularImplants(Handle:timer)
                                                     SetEntData(index,m_OffsetDisguiseClass, 0);
                                                     SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
-
-                                                // Set the disguise(8) and cloak(16) bits to 0.
-                                                new playerCond = GetEntData(client,m_OffsetPlayerCond);
-                                                SetEntData(index,playerCond & (~24), 0);
                                             }
                                             m_Detected[client][index] = true;
                                         }
@@ -458,29 +462,33 @@ public Action:NuclearExplosion(Handle:timer,any:client)
     if (m_NuclearLaunchInitiated[client] && player != -1)
     {
         new Float:radius;
-        new r_int;
+        new r_int, damage;
         new ult_level=GetSkillLevel(player,raceID,3);
         switch(ult_level)
         {
             case 1:
                 {
-                    radius = 300.0;
-                    r_int  = 300;
+                    damage = 600;
+                    radius = 400.0;
+                    r_int  = 400;
                 }
             case 2:
                 {
-                    radius = 450.0;
-                    r_int  = 450;
+                    damage = 700;
+                    radius = 650.0;
+                    r_int  = 650;
                 }
             case 3:
                 {
-                    radius = 600.0;
-                    r_int  = 600;
+                    damage = 800;
+                    radius = 900.0;
+                    r_int  = 800;
                 }
             case 4:
                 {
-                    radius = 850.0;
-                    r_int  = 850;
+                    damage = 1000;
+                    radius = 1500.0;
+                    r_int  = 800;
                 }
         }
 
@@ -506,7 +514,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                         new Float:check_location[3];
                         GetClientAbsOrigin(index,check_location);
 
-                        new hp=PowerOfRange(client_location,radius,check_location,600);
+                        new hp=PowerOfRange(client_location,radius,check_location,damage);
                         if (hp)
                         {
                             if (TraceTarget(client, index, client_location, check_location))

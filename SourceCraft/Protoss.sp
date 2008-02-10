@@ -313,7 +313,7 @@ bool:ReaverScarab(damage, victim_index, victim_player, index, player)
         if (!GetImmunity(victim_player,Immunity_Explosion) && !IsUber(victim_index) &&
             GetRandomInt(1,100) <= chance &&
             (!gReaverScarabTime[index] ||
-             GetGameTime() - gReaverScarabTime[index] > 1.000))
+             GetGameTime() - gReaverScarabTime[index] > 1.0))
         {
             new health_take= RoundToFloor(float(damage)*percent);
             if (health_take > 0)
@@ -701,6 +701,10 @@ public Action:CloakingAndDetector(Handle:timer)
                                             SetOverrideVisible(player_check, 255);
                                             if (TF_GetClass(index) == TF2_SPY)
                                             {
+                                                // Set the disguise(8) and cloak(16) bits to 0.
+                                                new playerCond = GetEntData(index,m_OffsetPlayerCond);
+                                                SetEntData(index,m_OffsetPlayerCond,playerCond & (~24));
+
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
                                                 {
@@ -714,10 +718,6 @@ public Action:CloakingAndDetector(Handle:timer)
                                                     SetEntData(index,m_OffsetDisguiseClass, 0);
                                                     SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
-
-                                                // Set the disguise(8) and cloak(16) bits to 0.
-                                                new playerCond = GetEntData(client,m_OffsetPlayerCond);
-                                                SetEntData(index,playerCond & (~24), 0);
                                             }
                                             m_Detected[client][index] = true;
                                         }

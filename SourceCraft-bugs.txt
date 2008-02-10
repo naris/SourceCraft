@@ -1,3 +1,53 @@
+"Terran Ghost
+
+Personal Cloaking Device – Seems to randomly give you level 1 cloak.
+
+Lockdown – Very powerful if used by an engineer, no one can get to the sentry.
+
+Ocular Implant – Doesn’t work on Spy Cloak
+
+Nuclear Strike – Doesn’t lock on to anything but yourself. Has no range. Needs a bigger range if it has a 5 min reuse.
+
+
+UAW
+
+Inflated Wages – Good
+
+Seniority – Good
+
+Negotiations – Seems very very random.
+
+Work Rules – Hook – Love it, but its full level at level 1"
+
+General Bugs
+
+Races with Reincarnation can’t change classes until there reincarnation fails to work.
+
+Human
+
+Immunity  – Need Suicides fixed to test this, Claws of attack seemed broken, Mask of Death seemed Broken.
+
+Devotion Aura – Doesn’t survive a respawn.
+
+Bash – Seems ok, but doesn’t last 1 sec
+
+Teleport – Seems fully functional at level 1
+
+
+Zerg
+
+Adrenal Glands – WAY TOO STRONG Every Class is instant kill at level 4. Max the HP at 50 if you can or 40, 10 per level. This is also increasing Sentry Damage.
+
+Self Regen is good Any chance we can make it 5 points at level 4?
+
+Team Healing is good. Seems a bit high, was this intended? Team healing 20 or 30 points a tick is very cool though.
+
+Tentacle is broken. It does nothing like Jiggly did to me, picking me up and dropping me in the water. I need to pull people close to me.
+Right now its a gimmick, needs some change."
+
+
+----------------------------------------------------------------------------------------
+
 "REQUIRED!!!
 
 We require the implementation of 2 additional items.

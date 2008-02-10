@@ -39,6 +39,8 @@ new m_UltimatePressed[MAXPLAYERS+1];
 new Float:spawnLoc[MAXPLAYERS+1][3];
 new Float:teleportLoc[MAXPLAYERS+1][3];
 
+new Float:gBashTime[MAXPLAYERS+1];
+
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Human Alliance",
@@ -371,12 +373,15 @@ Bash(victim_index, player)
             case 4:
                 percent=32;
         }
-        if (GetRandomInt(1,100)<=percent)
+        if (GetRandomInt(1,100)<=percent &&
+            (!gBashTime[victim_index] ||
+             GetGameTime() - gBashTime[victim_index] > 2.0))
         {
             new Float:Origin[3];
             GetClientAbsOrigin(victim_index, Origin);
             TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
 
+            gBashTime[victim_index] = GetGameTime();
             FreezeEntity(victim_index);
             AuthTimer(1.0,victim_index,UnfreezePlayer);
         }
