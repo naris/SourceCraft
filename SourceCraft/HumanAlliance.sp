@@ -16,6 +16,7 @@
 #include "sc/util"
 #include "sc/freeze"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 
 #include "sc/log" // for debugging
 
@@ -99,6 +100,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     m_TeleportCount[client]=0;
 }
 
@@ -218,6 +220,7 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
         new player = GetPlayer(client);
         if (GetRace(player) == raceID && IsPlayerAlive(client))
         {
+            SaveMaxHealth(client);
             ResetMaxHealth(client);
         }
     }
@@ -260,6 +263,7 @@ public Action:DoDevotionAura(Handle:timer,Handle:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
+        SaveMaxHealth(client);
         DevotionAura(client, GetSkillLevel(GetPlayer(client),raceID,1));
     }
     ClearArray(temp);

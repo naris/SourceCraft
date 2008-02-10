@@ -67,44 +67,6 @@ native CreateHelpCommand(String:name[],String:desc[]);
 native GetShopItem(String:name[]);
 
 /**
- * Returns the entity's max health.
- *
- * @param entity		Entity index.
- * @return				Health value.
- * @error				Invalid client index, client not in game, or no mod support.
- */
-native GetMaxHealth(entity);
-
-/**
- * Sets an entity's max health
- *
- * @param entity	Entity index.
- * @param amount	Max health amount.
- * @noreturn
- * @error			Invalid entity index, or lack of mod compliance.
- */
-native SetMaxHealth(entity,amount);
-
-/**
- * Increases an entity's health.  Also increases Max Health, if necessary.
- *
- * @param entity	Entity index.
- * @param amount	Health amount.
- * @noreturn
- * @error			Invalid entity index, or lack of mod compliance.
- */
-native IncreaseHealth(client, amount);
-
-/**
- * Resets an entity's max health to the original value before it was increased.
- *
- * @param entity	Entity index.
- * @noreturn
- * @error			Invalid entity index, or lack of mod compliance.
- */
-native ResetMaxHealth(client);
-
-/**
  * Kill a player.
  * @param client: The client's index you want.
  * @param weapon: The weapon used to deal the damage to the client.
