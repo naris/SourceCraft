@@ -9,8 +9,10 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2>
 
 #include "SourceCraft/sc/util"
+#include "SourceCraft/sc/engine/health"
 #include "SourceCraft/sc/engine/damage"
 
 public Plugin:myinfo = 
@@ -41,7 +43,29 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new userid = GetEventInt(event,"userid");
     new index = GetClientOfUserId(userid);
     if (index && IsClientConnected(index) && IsPlayerAlive(index))
+    {
         SaveHealth(index);
+
+        new health = GetClientHealth(index);
+
+        new offset2 = FindDataMapOffs(index,"m_iHealth");
+        new health2 = offset2 != -1 ? GetEntData(index,offset2) : -1;
+
+        new offset3 = FindSendPropInfo("CTFPlayer","m_iHealth");
+        new health3 = offset3 != -1 ? GetEntData(index,offset3) : -1;
+
+        new maxhealth  = TF_GetMaxHealth(index);
+
+        new maxoffset2 = FindDataMapOffs(index,"m_iMaxHealth");
+        new maxhealth2 = maxoffset2 != -1 ? GetEntData(index,maxoffset2) : -1; 
+
+        LogMessage("[Spawn] %d - health=%d,%d,%d, maxHealth=%d,%d",
+                   index, health, health2, health3, maxhealth, maxhealth2);
+
+        if (index &&  IsClientInGame(index))
+            PrintToChat(index, "health=%d,%d,%d, maxHealth=%d,%d",
+                        health, health2, health3, maxhealth, maxhealth2);
+    }
 }
 
 public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -83,4 +107,24 @@ public PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
     if (victimIndex)
         SaveHealth(victimIndex);
+
+    new health1 = GetClientHealth(victimIndex);
+
+    new offset2 = FindDataMapOffs(victimIndex,"m_iHealth");
+    new health2 = offset2 != -1 ? GetEntData(victimIndex,offset2) : -1;
+
+    new offset3 = FindSendPropInfo("CTFPlayer","m_iHealth");
+    new health3 = offset3 != -1 ? GetEntData(victimIndex,offset3) : -1;
+
+    new maxhealth  = TF_GetMaxHealth(victimIndex);
+
+    new maxoffset2 = FindDataMapOffs(victimIndex,"m_iMaxHealth");
+    new maxhealth2 = maxoffset2 != -1 ? GetEntData(victimIndex,maxoffset2) : -1; 
+
+    LogMessage("[Hurt] %d - health=%d,%d,%d, maxHealth=%d,%d",
+               victimIndex, health1, health2, health3, maxhealth, maxhealth2);
+
+    if (victimIndex &&  IsClientInGame(victimIndex))
+        PrintToChat(victimIndex, "health=%d,%d,%d, maxHealth=%d,%d",
+                    health1, health2, health3, maxhealth, maxhealth2);
 }

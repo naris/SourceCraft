@@ -206,7 +206,7 @@ public SetSkillLevel(vectorpos,race,skill,level)
     new old=GetArrayCell(raceinfo,num);
     SetArrayCell(raceinfo,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
-    Call_PushCell(GetArrayCell(raceinfo,0));
+    Call_PushCell(GetArrayCell(raceinfo,INFO_CLIENT_INDEX));
     Call_PushCell(vectorpos);
     Call_PushCell(race);
     Call_PushCell(skill);

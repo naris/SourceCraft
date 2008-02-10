@@ -246,11 +246,24 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
 
                 new skill_devo=GetSkillLevel(player,race,1);
                 if (skill_devo)
-                    DevotionAura(client, skill_devo);
+                    AuthTimer(0.1,client,DoDevotionAura);
             }
         }
     }
     return Plugin_Continue;
+}
+
+public Action:DoDevotionAura(Handle:timer,Handle:temp)
+{
+    decl String:auth[64];
+    GetArrayString(temp,0,auth,63);
+    new client=PlayerOfAuth(auth);
+    if(client)
+    {
+        DevotionAura(client, GetSkillLevel(GetPlayer(client),raceID,1));
+    }
+    ClearArray(temp);
+    return Plugin_Stop;
 }
 
 public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
@@ -320,35 +333,38 @@ DoImmunity(client, player, skilllevel, bool:value)
 
 DevotionAura(client, skill_devo)
 {
-    new hpadd;
-    switch(skill_devo)
+    if (client &&  IsClientInGame(client))
     {
-        case 1:
-            hpadd=15;
-        case 2:
-            hpadd=26;
-        case 3:
-            hpadd=38;
-        case 4:
-            hpadd=50;
+        new hpadd;
+        switch(skill_devo)
+        {
+            case 1:
+                hpadd=15;
+            case 2:
+                hpadd=26;
+            case 3:
+                hpadd=38;
+            case 4:
+                hpadd=50;
+        }
+        IncreaseHealth(client,hpadd);
+
+        PrintToChat(client,"%c[SourceCraft]%c You have received %d extra hp from %cDevotion Aura%c.",
+                   COLOR_GREEN,COLOR_DEFAULT,hpadd,COLOR_TEAM,COLOR_DEFAULT);
+
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
+
+        new Float:end[3];
+        end[0] = start[0];
+        end[1] = start[1];
+        end[2] = start[2] + 150;
+
+        new color[4] = { 200, 255, 205, 255 };
+        TE_SetupBeamPoints(start,end,g_lightningSprite,g_haloSprite,
+                0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
+        TE_SendToAll();
     }
-    IncreaseHealth(client,hpadd);
-
-    PrintToChat(client,"%c[SourceCraft]%c You have received %d extra hp from %cDevotion Aura%c.",
-                COLOR_GREEN,COLOR_DEFAULT,hpadd,COLOR_TEAM,COLOR_DEFAULT);
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new Float:end[3];
-    end[0] = start[0];
-    end[1] = start[1];
-    end[2] = start[2] + 150;
-
-    new color[4] = { 200, 255, 205, 255 };
-    TE_SetupBeamPoints(start,end,g_lightningSprite,g_haloSprite,
-                       0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
-    TE_SendToAll();
 }
 
 Bash(victim_index, player)

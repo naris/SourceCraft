@@ -34,10 +34,10 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 // SourceCraft Includes
 #include "sc/util"
 #include "sc/engine/help"
+#include "sc/engine/offsets"
 #include "sc/engine/health"
 #include "sc/engine/damage"
 #include "sc/engine/immunity"
-#include "sc/engine/offsets"
 #include "sc/engine/races"
 #include "sc/engine/shopmenu"
 #include "sc/weapons"

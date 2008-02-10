@@ -10,7 +10,7 @@
 #endif
 #define _maxhealth_included
 
-stock m_OffsetHealth[MAXPLAYERS+1];
+stock g_OffsetHealth[MAXPLAYERS+1];
 stock m_OffsetMaxHealth[MAXPLAYERS+1];
 
 stock maxHealth[MAXPLAYERS+1];
@@ -20,8 +20,8 @@ stock FindHealthOffsets(client)
 {
     if (GameType == tf2)
     {
-        m_OffsetHealth[client]=FindDataMapOffs(client,"m_iHealth");
-        if(m_OffsetHealth[client] == -1)
+        g_OffsetHealth[client]=FindDataMapOffs(client,"m_iHealth");
+        if(g_OffsetHealth[client] == -1)
             LogError("Error finding Health offset for %d.", client);
 
         m_OffsetMaxHealth[client]=FindDataMapOffs(client,"m_iMaxHealth");
@@ -34,8 +34,8 @@ stock GetHealth(entity)
 {
     if (GameType == tf2)
     {
-        if (entity <= MAXPLAYERS && m_OffsetHealth[entity])
-            return GetEntData(entity,m_OffsetHealth[entity]);
+        if (entity <= MAXPLAYERS && g_OffsetHealth[entity])
+            return GetEntData(entity,g_OffsetHealth[entity]);
         else
         {
             new offset = FindDataMapOffs(entity,"m_iHealth");
@@ -53,8 +53,8 @@ stock SetHealth(entity,amount)
 {
     if (GameType == tf2)
     {
-        if (entity <= MAXPLAYERS && m_OffsetHealth[entity])
-            SetEntData(entity,m_OffsetHealth[entity],amount);
+        if (entity <= MAXPLAYERS && g_OffsetHealth[entity])
+            SetEntData(entity,g_OffsetHealth[entity],amount);
         else
         {
             new offset = FindDataMapOffs(entity,"m_iHealth");
@@ -107,24 +107,31 @@ stock SaveMaxHealth(client)
     if (GameType == tf2)
         maxHealth[client] = GetMaxHealth(client);
     else
-        maxHealth[client] = GetClientHealth(client);
+        maxHealth[client] = GetHealth(client);
 }
 
 stock IncreaseHealth(client, amount)
 {
-    new health = GetClientHealth(client);
+    new health = GetHealth(client);
     if (GameType == tf2)
     {
+        new health2 = GetEntData(client,m_OffsetHealth);
         new max_health = GetMaxHealth(client);
-        PrintToChat(client,"[IncreaseHealth] health=%d, maxHealth=%d", health, max_health);
-        LogMessage("[IncreaseHealth] %n - health=%d, maxHealth=%d", client, health, max_health);
+        new max_health2 = TF_GetMaxHealth(client);
+
+        LogMessage("[IncreaseHealth] %d - health=%d(%d), maxHealth=%d(%d)", client, health, health2, max_health, max_health2);
+        if (client &&  IsClientInGame(client))
+            PrintToChat(client,"[IncreaseHealth] health=%d(%d), maxHealth=%d(%d)", health, health2, max_health, max_health2);
+
         health += amount;
         if (health > max_health)
         {
             SetMaxHealth(client, health);
             healthIncreased[client] = true;
-            PrintToChat(client,"[IncreaseHealth] set maxHealth=%d", health);
-            LogMessage("[IncreaseHealth] %n - set maxHealth=%d", client, health);
+
+            LogMessage("[IncreaseHealth] %d - set maxHealth=%d", client, health);
+            if (client &&  IsClientInGame(client))
+                PrintToChat(client,"[IncreaseHealth] set maxHealth=%d", health);
         }
         SetHealth(client, health);
     }
