@@ -283,7 +283,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 SetMinVisibility(player, 120, 0.50);
 
             if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
-                UsePeriapt(client);
+                AuthTimer(0.1,client,DoPeriapt);
 
             if(GetOwnsItem(player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
                 SetMinGravity(player,0.5);
@@ -748,7 +748,20 @@ public Action:DoMole(Handle:timer,Handle:temp)
     return Plugin_Stop;
 }
 
-stock UsePeriapt(client)
+public Action:DoPeriapt(Handle:timer,Handle:temp)
+{
+    decl String:auth[64];
+    GetArrayString(temp,0,auth,63);
+    new client=PlayerOfAuth(auth);
+    if(client)
+    {
+        UsePeriapt(client);
+    }
+    ClearArray(temp);
+    return Plugin_Stop;
+}
+
+UsePeriapt(client)
 {
     IncreaseHealth(client, 50);
     usedPeriapt[client]=true;
