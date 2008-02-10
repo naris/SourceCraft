@@ -11,7 +11,6 @@ new m_VelocityOffset=-1;
 new m_OffsetGravity[MAXPLAYERS+1]={-1,...};
 
 new m_OffsetClass=-1;
-new m_OffsetHealth=-1;
 new m_OffsetMaxSpeed=-1;
 new m_OffsetNumHealers=-1;
 new m_OffsetPlayerCond=-1;
@@ -52,13 +51,6 @@ public bool:InitTFOffset()
     if(m_OffsetClass == -1)
     {
         LogError("Error finding Class offset.");
-        ret=false;
-    }
-
-    m_OffsetHealth=FindSendPropInfo("CTFPlayer","m_iHealth");
-    if(m_OffsetClass == -1)
-    {
-        LogError("Error finding Health offset.");
         ret=false;
     }
 

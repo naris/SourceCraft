@@ -178,7 +178,7 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        FindHealthOffsets(client);
+        FindMaxHealthOffset(client);
 
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
