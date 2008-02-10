@@ -14,6 +14,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/range"
 #include "sc/freeze"
 #include "sc/authtimer"
 #include "sc/maxhealth"
@@ -398,7 +399,7 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
     }
     else
     {
-        if (time_pressed > 3000)
+        if (time_pressed > 3000 || time_pressed <= 0)
             time_pressed = 3000;
 
         new Float:range=1.0;
@@ -454,66 +455,70 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
                 destloc[2] += size[2] + 5.0;
         }
 
-        new Float:distance[3];
-        distance[0] = destloc[0]-clientloc[0];
-        distance[1] = destloc[1]-clientloc[1];
-        distance[2] = destloc[2]-clientloc[2];
-        if (distance[0] < 0)
-            distance[0] *= -1;
-        if (distance[1] < 0)
-            distance[1] *= -1;
-        if (distance[2] < 0)
-            distance[2] *= -1;
-
-        LogMessage("Teleport %N, dist=%f,%f,%f",
-                   client, distance[0], distance[1], distance[2]);
-
-        PrintToChat(client, "Teleport dist=%f,%f,%f",
-                    distance[0], distance[1], distance[2]);
-
-        // Limit the teleport location to remain within the range
-        for (new i = 0; i<=2; i++)
+        if (DistanceBetween(clientloc,destloc) > range)
         {
-            if (distance[i] > range)
+            new Float:distance[3];
+            distance[0] = destloc[0]-clientloc[0];
+            distance[1] = destloc[1]-clientloc[1];
+            distance[2] = destloc[2]-clientloc[2];
+            if (distance[0] < 0)
+                distance[0] *= -1;
+            if (distance[1] < 0)
+                distance[1] *= -1;
+            if (distance[2] < 0)
+                distance[2] *= -1;
+
+            LogMessage("Teleport %N, dist=%f,%f,%f",
+                       client, distance[0], distance[1], distance[2]);
+
+            PrintToChat(client, "Teleport dist=%f,%f,%f",
+                        distance[0], distance[1], distance[2]);
+
+            // Limit the teleport location to remain within the range
+            for (new i = 0; i<=2; i++)
             {
-                if (clientloc[i] >= 0)
+                if (distance[i] > range)
                 {
-                    if (destloc[i] >= 0)
+                    if (clientloc[i] >= 0)
                     {
-                        if (clientloc[i] <= destloc[i])
-                            destloc[i] = clientloc[i] + range;
-                        if (clientloc[i] > destloc[i])
+                        if (destloc[i] >= 0)
+                        {
+                            if (clientloc[i] <= destloc[i])
+                                destloc[i] = clientloc[i] + range;
+                            if (clientloc[i] > destloc[i])
+                                destloc[i] = clientloc[i] - range;
+                        }
+                        else
                             destloc[i] = clientloc[i] - range;
                     }
                     else
-                        destloc[i] = clientloc[i] - range;
-                }
-                else
-                {
-                    if (destloc[i] < 0)
                     {
-                        if (clientloc[i] <= destloc[i])
+                        if (destloc[i] < 0)
+                        {
+                            if (clientloc[i] <= destloc[i])
+                                destloc[i] = clientloc[i] + range;
+                            if (clientloc[i] > destloc[i])
+                                destloc[i] = clientloc[i] - range;
+                        }
+                        else
                             destloc[i] = clientloc[i] + range;
-                        if (clientloc[i] > destloc[i])
-                            destloc[i] = clientloc[i] - range;
                     }
-                    else
-                        destloc[i] = clientloc[i] + range;
                 }
             }
         }
+
+        new Float:dist = DistanceBetween(clientloc,destloc);
+        LogMessage("Teleport %N %f units To %f,%f,%f",
+                   client, dist, destloc[0], destloc[1], destloc[2]);
+
+        PrintToChat(client, "Teleport %f units To %f,%f,%f",
+                    dist, destloc[0], destloc[1], destloc[2]);
+
+        // Save teleport location for stuck comparison later
+        teleportLoc[client][0] = destloc[0];
+        teleportLoc[client][1] = destloc[1];
+        teleportLoc[client][2] = destloc[2];
     }
-
-    LogMessage("Teleport %N To %f,%f,%f",
-               client, destloc[0], destloc[1], destloc[2]);
-
-    PrintToChat(client, "Teleport To %f,%f,%f",
-                destloc[0], destloc[1], destloc[2]);
-
-    // Save teleport location for stuck comparison later
-    teleportLoc[client][0] = destloc[0];
-    teleportLoc[client][1] = destloc[1];
-    teleportLoc[client][2] = destloc[2];
 
     TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
     EmitSoundToAll(teleportWav,client);
