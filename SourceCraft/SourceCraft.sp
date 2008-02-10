@@ -35,7 +35,6 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #include "sc/util"
 #include "sc/engine/help"
 #include "sc/engine/offsets"
-#include "sc/engine/health"
 #include "sc/engine/damage"
 #include "sc/engine/immunity"
 #include "sc/engine/races"
@@ -178,8 +177,6 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        FindMaxHealthOffset(client);
-
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,0); // Player race
