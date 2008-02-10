@@ -177,16 +177,22 @@ public Native_HurtPlayer(Handle:plugin,numParams)
  * Give health to (heal) a player
  * @param client: The client's index you want.
  * @param amount: The amount of health to give to the client.
+ * @param health: The health of the client.
+ * @param max:    The max health of the client.
  * @noreturn
- * native HealPlayer(client, amount);
+ * native HealPlayer(client, amount,health=0,max=0);
  */
 public Native_HealPlayer(Handle:plugin,numParams)
 {
-    if (numParams == 2)
+    if (numParams <= 2 && numParams <= 4)
     {
         new client = GetNativeCell(1);
         new amount = GetNativeCell(2);
-        new health = GetClientHealth(client) + amount;
+        new health = (numParams >= 3) ? GetNativeCell(3) : GetClientHealth(client);
+        new max    = (numParams >= 4) ? GetNativeCell(4) : GetMaxHealth(client);
+        health    += amount;
+        if (health > max)
+            health = max;
         SetEntityHealth(client,health);
         SaveHealth(client);
         return health;

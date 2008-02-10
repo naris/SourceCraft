@@ -42,6 +42,7 @@ new Handle:m_Currencies           = INVALID_HANDLE;
 #include "sc/weapons"
 #include "sc/engine/db"
 #include "sc/engine/playertracking"
+#include "sc/maxhealth"
 #include "sc/engine/natives"
 #include "sc/engine/hooks"
 #include "sc/log"

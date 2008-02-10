@@ -401,17 +401,20 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
         switch(ult_level)
         {
             case 1:
-                range=(float(time_pressed) / 3000.0) * 50.0;
+                range=(float(time_pressed) / 3000.0) * 300.0;
             case 2:
-                range=(float(time_pressed) / 3000.0) * 100.0;
+                range=(float(time_pressed) / 3000.0) * 400.0;
             case 3:
-                range=(float(time_pressed) / 3000.0) * 350.0;
+                range=(float(time_pressed) / 3000.0) * 550.0;
             case 4:
-                range=(float(time_pressed) / 3000.0) * 600.0;
+                range=(float(time_pressed) / 3000.0) * 800.0;
         }
 
         LogMessage("Teleport %N Time=%d, Level=%d, Rage=%f",
                    client, time_pressed, ult_level, range);
+
+        PrintToChat(client,"Teleport Time=%d, Level=%d, Range=%f",
+                    time_pressed, ult_level, range);
 
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
@@ -427,6 +430,9 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
             LogMessage("Teleport %N, DidHit, end=%f,%f,%f; size=%f,%f,%f",
                        client, destloc[0], destloc[1], destloc[2],
                                size[0], size[1], size[2]);
+
+            PrintToChat(client, "Teleport DidHit, end=%f,%f,%f; size=%f,%f,%f",
+                        destloc[0], destloc[1], destloc[2], size[0], size[1], size[2]);
 
             if (destloc[0] > clientloc[0])
                 destloc[0] -= size[0] + 5.0;
@@ -458,6 +464,9 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
 
             LogMessage("Teleport %N, DidNotHit, dist=%f,%f,%f",
                        client, distance[0], distance[1], distance[2]);
+
+            PrintToChat(client, "Teleport DidNotHit, dist=%f,%f,%f",
+                        distance[0], distance[1], distance[2]);
 
             // Limit the teleport location to remain within the range
             for (new i = 0; i<=2; i++)
@@ -495,6 +504,9 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
 
     LogMessage("Teleport %N To %f,%f,%f",
                client, destloc[0], destloc[1], destloc[2]);
+
+    PrintToChat(client, "Teleport To %f,%f,%f",
+                destloc[0], destloc[1], destloc[2]);
 
     TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
     EmitSoundToAll(teleportWav,client);

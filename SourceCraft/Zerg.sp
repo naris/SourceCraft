@@ -153,18 +153,20 @@ public Action:Regeneration(Handle:timer)
                                         GetClientAbsOrigin(index, indexLoc);
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
-                                            new color[4] = { 0, 0, 255, 255 };
-                                            TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                              0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                            TE_SendToAll();
+                                            new health=GetClientHealth(index);
+                                            new max=GetMaxHealth(index);
+                                            if (health < max)
+                                            {
+                                                HealPlayer(index,skill_healing_aura,health,max);
 
-                                            new newhp=GetClientHealth(index)+skill_healing_aura;
-                                            new maxhp=GetMaxHealth(index);
-                                            if(newhp<=maxhp)
-                                                HealPlayer(index,newhp);
+                                                new color[4] = { 0, 0, 255, 255 };
+                                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                                TE_SendToAll();
 
-                                            if (++count > num)
-                                                break;
+                                                if (++count > num)
+                                                    break;
+                                            }
                                         }
                                     }
                                 }
@@ -220,10 +222,13 @@ public Action:OnDrop(client, target)
 
 public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 {
-    if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
+    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
-        if (skill==3)
-            Zerg_Tentacles(client, player, newskilllevel);
+        if (IsPlayerAlive(client))
+        {
+            if (skill==3)
+                Zerg_Tentacles(client, player, newskilllevel);
+        }
     }
 }
 
@@ -285,11 +290,20 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
 public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, player)
 {
+    new Float:start[3];
+    new Float:end[3];
+    GetClientAbsOrigin(index,start);
+    GetClientAbsOrigin(victim_index,end);
+    new Float:distance = DistanceBetween(start,end);
+    LogMessage("Distance between %N and %N is %f", index, victim_index, distance);
+    PrintToChat(index,"Distance between %N and %N is %f", index, victim_index, distance);
+    PrintToChat(victim_index,"Distance between %N and %N is %f", index, victim_index, distance);
+	
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) &&
-            !IsUber(victim_index))
+            !IsUber(victim_index) && IsInRange(index,victim_index,100.0))
         {
             new Float:percent;
             switch(skill_adrenal_glands)
@@ -338,22 +352,22 @@ public Zerg_Tentacles(client, player, skilllevel)
         {
             case 1:
             {
-                duration=5;
-                range=150.0;
+                duration=20;
+                range=350.0;
             }
             case 2:
             {
-                duration=15;
-                range=300.0;
+                duration=40;
+                range=500.0;
             }
             case 3:
             {
-                duration=30;
-                range=450.0;
+                duration=50;
+                range=750.0;
             }
             case 4:
             {
-                duration=45;
+                duration=0;
                 range=0.0;
             }
         }

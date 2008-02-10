@@ -91,9 +91,12 @@ native HurtPlayer(client, damage, attacker=0, const String:weapon[]="", assister
  * Give health to (heal) a player
  * @param client: The client's index you want.
  * @param amount: The amount of health to give to the client.
+ * @param health: The health of the client (looks up if not provided).
+ * @param max:    The max health of the client (looks up if not provided).
  * @noreturn
+ * native HealPlayer(client, amount,health=-1,max=-1);
  */
-native HealPlayer(client, amount);
+native HealPlayer(client, amount,health=-1,max=-1);
 
 /**
  * Get a Player's TF2 class

@@ -397,7 +397,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                 if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
                 {
                     if (GetOwnsItem(attacker_player,shopItem[ITEM_CLAWS]) &&
-                        GetGameTime() - gClawTime[attacker_index] > 1.000)
+                        (!gClawTime[attacker_index] ||
+                         GetGameTime() - gClawTime[attacker_index] > 1.000))
                     {
                         new amount=RoundToCeil(float(damage)*0.10);
                         if (amount > 8)
@@ -420,7 +421,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                     }
 
                     if (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_CLAWS]) &&
-                        GetGameTime() - gClawTime[assister_index] > 0.200)
+                        (!gClawTime[assister_index] ||
+                         GetGameTime() - gClawTime[assister_index] > 1.000))
                     {
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
