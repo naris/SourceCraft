@@ -19,6 +19,7 @@
 #include "sc/trace"
 #include "sc/freeze"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
@@ -78,6 +79,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     m_AllowEntangle[client]=true;
 }
 

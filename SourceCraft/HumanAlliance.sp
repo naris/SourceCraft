@@ -54,12 +54,6 @@ public OnPluginStart()
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
-
-    if (GameType == tf2)
-    {
-        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
-            SetFailState("Couldn't hook the player_changeclass event.");
-    }
 }
 
 public OnPluginReady()
@@ -211,23 +205,6 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
 }
 
 // Events
-public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-    {
-        new player = GetPlayer(client);
-        if (GetRace(player) == raceID && IsPlayerAlive(client))
-        {
-            SaveMaxHealth(client);
-            ResetMaxHealth(client);
-        }
-    }
-
-    return Plugin_Continue;
-}
-
 public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");

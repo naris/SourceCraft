@@ -16,6 +16,7 @@
 
 #include "sc/util"
 #include "sc/uber"
+#include "sc/maxhealth"
 
 #include "sc/log" // for debugging
 
@@ -141,6 +142,11 @@ public OnItemPurchase(client,player,item)
             Stimpacks(client, player, skill);
         }
     }
+}
+
+public OnPlayerAuthed(client,player)
+{
+    FindMaxHealthOffset(client);
 }
 
 // Events

@@ -17,6 +17,7 @@
 #include "sc/util"
 #include "sc/uber"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 #include "sc/respawn"
 #include "sc/log"
 
@@ -90,12 +91,6 @@ public OnPluginStart()
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
-
-    if (GameType == tf2)
-    {
-        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
-            SetFailState("Couldn't hook the player_changeclass event.");
-    }
 
     CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
@@ -202,16 +197,9 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
-}
-
-public PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-        ResetMaxHealth(client);
 }
 
 public OnItemPurchase(client,player,item)
@@ -755,6 +743,7 @@ public Action:DoPeriapt(Handle:timer,Handle:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
+        SaveMaxHealth(client);
         UsePeriapt(client);
     }
     ClearArray(temp);

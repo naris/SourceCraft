@@ -19,6 +19,7 @@
 #include "sc/range"
 #include "sc/trace"
 #include "sc/weapons"
+#include "sc/maxhealth"
 #include "sc/log"
 
 new raceID; // The ID we are assigned to
@@ -93,6 +94,10 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
+public OnPlayerAuthed(client,player)
+{
+    FindMaxHealthOffset(client);
+}
 
 public Action:Regeneration(Handle:timer)
 {
