@@ -36,6 +36,7 @@ new m_TeleportCount[MAXPLAYERS+1];
 new m_UltimatePressed[MAXPLAYERS+1];
 
 new Float:spawnLoc[MAXPLAYERS+1][3];
+new Float:teleportLoc[MAXPLAYERS+1][3];
 
 public Plugin:myinfo = 
 {
@@ -141,12 +142,15 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                     if (m_TeleportCount[client] >= 1)
                     {
                         // Check to see if player got stuck with 1st teleport
-                        new Float:vecVelocity[3];
-                        GetEntDataVector(client, m_VelocityOffset, vecVelocity);
-                        if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 &&
-                            (vecVelocity[2] >= -10.0 && vecVelocity[2] <= 10.0))
+                        new Float:origin[3];
+                        GetClientAbsOrigin(client, origin);
+                        if (origin[0] == teleportLoc[client][0] &&
+                            origin[1] == teleportLoc[client][1] &&
+                            origin[2] == teleportLoc[client][2])
                         {
                             toSpawn = true; // If player is stuck, allow teleport to spawn.
+                            PrintToChat(client,"%c[SourceCraft]%c You appear to be stuck, teleporting back to spawn.",
+                                        COLOR_GREEN,COLOR_DEFAULT);
                         }
                         else
                         {
@@ -449,54 +453,52 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
             else
                 destloc[2] += size[2] + 5.0;
         }
-        else
+
+        new Float:distance[3];
+        distance[0] = destloc[0]-clientloc[0];
+        distance[1] = destloc[1]-clientloc[1];
+        distance[2] = destloc[2]-clientloc[2];
+        if (distance[0] < 0)
+            distance[0] *= -1;
+        if (distance[1] < 0)
+            distance[1] *= -1;
+        if (distance[2] < 0)
+            distance[2] *= -1;
+
+        LogMessage("Teleport %N, dist=%f,%f,%f",
+                   client, distance[0], distance[1], distance[2]);
+
+        PrintToChat(client, "Teleport dist=%f,%f,%f",
+                    distance[0], distance[1], distance[2]);
+
+        // Limit the teleport location to remain within the range
+        for (new i = 0; i<=2; i++)
         {
-            new Float:distance[3];
-            distance[0] = destloc[0]-clientloc[0];
-            distance[1] = destloc[1]-clientloc[1];
-            distance[2] = destloc[2]-clientloc[2];
-            if (distance[0] < 0)
-                distance[0] *= -1;
-            if (distance[1] < 0)
-                distance[1] *= -1;
-            if (distance[2] < 0)
-                distance[2] *= -1;
-
-            LogMessage("Teleport %N, DidNotHit, dist=%f,%f,%f",
-                       client, distance[0], distance[1], distance[2]);
-
-            PrintToChat(client, "Teleport DidNotHit, dist=%f,%f,%f",
-                        distance[0], distance[1], distance[2]);
-
-            // Limit the teleport location to remain within the range
-            for (new i = 0; i<=2; i++)
+            if (distance[i] > range)
             {
-                if (distance[i] > range)
+                if (clientloc[i] >= 0)
                 {
-                    if (clientloc[i] >= 0)
+                    if (destloc[i] >= 0)
                     {
-                        if (destloc[i] >= 0)
-                        {
-                            if (clientloc[i] <= destloc[i])
-                                destloc[i] = clientloc[i] + range;
-                            if (clientloc[i] > destloc[i])
-                                destloc[i] = clientloc[i] - range;
-                        }
-                        else
+                        if (clientloc[i] <= destloc[i])
+                            destloc[i] = clientloc[i] + range;
+                        if (clientloc[i] > destloc[i])
                             destloc[i] = clientloc[i] - range;
                     }
                     else
+                        destloc[i] = clientloc[i] - range;
+                }
+                else
+                {
+                    if (destloc[i] < 0)
                     {
-                        if (destloc[i] < 0)
-                        {
-                            if (clientloc[i] <= destloc[i])
-                                destloc[i] = clientloc[i] + range;
-                            if (clientloc[i] > destloc[i])
-                                destloc[i] = clientloc[i] - range;
-                        }
-                        else
+                        if (clientloc[i] <= destloc[i])
                             destloc[i] = clientloc[i] + range;
+                        if (clientloc[i] > destloc[i])
+                            destloc[i] = clientloc[i] - range;
                     }
+                    else
+                        destloc[i] = clientloc[i] + range;
                 }
             }
         }
@@ -507,6 +509,11 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
 
     PrintToChat(client, "Teleport To %f,%f,%f",
                 destloc[0], destloc[1], destloc[2]);
+
+    // Save teleport location for stuck comparison later
+    teleportLoc[client][0] = destloc[0];
+    teleportLoc[client][1] = destloc[1];
+    teleportLoc[client][2] = destloc[2];
 
     TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
     EmitSoundToAll(teleportWav,client);
