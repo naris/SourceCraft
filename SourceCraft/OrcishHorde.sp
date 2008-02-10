@@ -318,7 +318,7 @@ bool:AcuteStrike(damage, victim_index, victim_player, index, player)
             }
 
             new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetHealth(victim_index)-health_take;
+            new new_health=GetClientHealth(victim_index)-health_take;
             if (new_health <= 0)
             {
                 new_health=0;
@@ -327,7 +327,7 @@ bool:AcuteStrike(damage, victim_index, victim_player, index, player)
             else
                 LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
 
-            SetHealth(victim_index,new_health);
+            SetEntityHealth(victim_index,new_health);
 
             new color[4] = { 100, 255, 55, 255 };
             TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
@@ -370,7 +370,7 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
                 }
 
                 new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetHealth(victim_index)-health_take;
+                new new_health=GetClientHealth(victim_index)-health_take;
                 if (new_health <= 0)
                 {
                     new_health=0;
@@ -379,7 +379,7 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
                 else
                     LogDamage(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
 
-                SetHealth(victim_index,new_health);
+                SetEntityHealth(victim_index,new_health);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victim_index, Origin);
@@ -449,7 +449,7 @@ ChainLightning(player,client,ultlevel)
                                               0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                             TE_SendToAll();
 
-                            new new_health=GetHealth(index)-dmg;
+                            new new_health=GetClientHealth(index)-dmg;
                             if (new_health <= 0)
                             {
                                 new_health=0;

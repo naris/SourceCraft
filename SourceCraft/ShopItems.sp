@@ -417,7 +417,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                         else if (amount < 1)
                             amount = 1;
 
-                        new newhealth=GetHealth(victim_index)-amount;
+                        new newhealth=GetClientHealth(victim_index)-amount;
                         if (newhealth <= 0)
                         {
                             newhealth=0;
@@ -426,7 +426,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                         else
                             LogDamage(attacker_index, victim_index, "item_claws", "Claws of Attack", amount);
 
-                        SetHealth(victim_index,newhealth);
+                        SetEntityHealth(victim_index,newhealth);
                         gClawTime[attacker_index] = GetGameTime();
                         changed = true;
                     }
@@ -437,7 +437,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                         new amount=RoundToFloor(float(damage)*0.10);
                         if (amount > 8)
                             amount = 8;
-                        new newhealth=GetHealth(victim_index)-amount;
+                        new newhealth=GetClientHealth(victim_index)-amount;
                         if (newhealth <= 0)
                         {
                             newhealth=0;
@@ -446,7 +446,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                         else
                             LogDamage(assister_index, victim_index, "item_claws", "Claws of Attack", amount);
 
-                        SetHealth(victim_index,newhealth);
+                        SetEntityHealth(victim_index,newhealth);
                         gClawTime[assister_index] = GetGameTime();
                         changed = true;
                     }
@@ -454,8 +454,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
                 if (GetOwnsItem(attacker_player,shopItem[ITEM_MASK]))
                 {
-                    new newhealth=GetHealth(attacker_index)+2;
-                    SetHealth(attacker_index,newhealth);
+                    new newhealth=GetClientHealth(attacker_index)+2;
+                    SetEntityHealth(attacker_index,newhealth);
                     changed = true;
 
                     PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
@@ -464,8 +464,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
                 if (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_MASK]))
                 {
-                    new newhealth=GetHealth(assister_index)+2;
-                    SetHealth(assister_index,newhealth);
+                    new newhealth=GetClientHealth(assister_index)+2;
+                    SetEntityHealth(assister_index,newhealth);
                     changed = true;
 
                     PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
@@ -496,11 +496,11 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                     if(isMole[attacker_index])
                     {
                         new h1=GetEventInt(event,"health")+damage;
-                        new h2=GetHealth(victim_index);
+                        new h2=GetClientHealth(victim_index);
                         if(!h2)
-                            SetHealth(victim_index,0); // They should really be dead.
+                            SetEntityHealth(victim_index,0); // They should really be dead.
                         else if(h2<h1)
-                            SetHealth(victim_index,(h1+h2)/2);
+                            SetEntityHealth(victim_index,(h1+h2)/2);
 
                         changed = true;
                     }
@@ -537,10 +537,10 @@ public Action:Regeneration(Handle:timer)
             new player=GetPlayer(x);
             if(player>=0 && GetOwnsItem(player,shopItem[ITEM_RING]))
             {
-                new newhp=GetHealth(x)+1;
+                new newhp=GetClientHealth(x)+1;
                 new maxhp=GetMaxHealth(x);
                 if(newhp<=maxhp)
-                    SetHealth(x,newhp);
+                    SetEntityHealth(x,newhp);
             }
         }
     }

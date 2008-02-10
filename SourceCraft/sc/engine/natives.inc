@@ -91,39 +91,6 @@ public Native_GetShopItem(Handle:plugin,numParams)
 }
 
 /**
- * Returns the entity's health.
- *
- * @param entity		Entity index.
- * @return				Health value.
- * @error				Invalid client index, client not in game, or no mod support.
- */
-public Native_GetHealth(Handle:plugin,numParams)
-{
-    if (numParams == 1)
-    {
-        return GetHealth(GetNativeCell(1));
-    }
-    else
-        return -1;
-}
-
-/**
- * Sets an entity's health
- *
- * @param entity	Entity index.
- * @param amount	Health amount.
- * @noreturn
- * @error			Invalid entity index, or lack of mod compliance.
- */
-public Native_SetHealth(Handle:plugin,numParams)
-{
-    if (numParams == 2)
-    {
-        SetHealth(GetNativeCell(1), GetNativeCell(2));
-    }
-}
-
-/**
  * Returns the entity's max health.
  *
  * @param entity		Entity index.
@@ -283,8 +250,8 @@ public Native_HealPlayer(Handle:plugin,numParams)
     {
         new client = GetNativeCell(1);
         new amount = GetNativeCell(2);
-        new health = GetHealth(client) + amount;
-        SetHealth(client,health);
+        new health = GetClientHealth(client) + amount;
+        SetEntityHealth(client,health);
         SaveHealth(client);
         return health;
     }
@@ -758,8 +725,6 @@ public bool:InitNatives()
     CreateNative("CreateShopItem",Native_CreateShopItem);
     CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
     CreateNative("GetShopItem",Native_GetShopItem);
-    CreateNative("GetHealth",Native_GetHealth);
-    CreateNative("SetHealth",Native_SetHealth);
     CreateNative("GetMaxHealth",Native_GetMaxHealth);
     CreateNative("SetMaxHealth",Native_SetMaxHealth);
     CreateNative("IncreaseHealth",Native_IncreaseHealth);

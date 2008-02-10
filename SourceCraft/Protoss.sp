@@ -316,7 +316,7 @@ bool:ReaverScarab(damage, victim_index, victim_player, index, player)
             new health_take= RoundToFloor(float(damage)*percent);
             if (health_take > 0)
             {
-                new new_health=GetHealth(victim_index)-health_take;
+                new new_health=GetClientHealth(victim_index)-health_take;
                 if (new_health <= 0)
                 {
                     new_health=0;
@@ -325,7 +325,7 @@ bool:ReaverScarab(damage, victim_index, victim_player, index, player)
                 else
                     LogDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
 
-                SetHealth(victim_index,new_health);
+                SetEntityHealth(victim_index,new_health);
 
                 if (GetGameTime() - gReaverScarabTime[index] >= 10.0)
                 {
@@ -549,7 +549,7 @@ ResetMindControledObjects(client)
                             else
                             {
                                 // Zap it.
-                                //SetHealth(target, 0); // Kill the object.
+                                //SetEntityHealth(target, 0); // Kill the object.
                                 RemoveEdict(target); // Remove the object.
                             }
                         }

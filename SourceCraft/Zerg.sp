@@ -109,10 +109,10 @@ public Action:Regeneration(Handle:timer)
                     new skill_regeneration=GetSkillLevel(player,raceID,1);
                     if (skill_regeneration)
                     {
-                        new newhp=GetHealth(client)+skill_regeneration;
+                        new newhp=GetClientHealth(client)+skill_regeneration;
                         new maxhp=GetMaxHealth(client);
                         if(newhp<=maxhp)
-                            SetHealth(client,newhp);
+                            SetEntityHealth(client,newhp);
                     }
 
                     new skill_healing_aura=GetSkillLevel(player,raceID,2);
@@ -153,7 +153,7 @@ public Action:Regeneration(Handle:timer)
                                                               0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                             TE_SendToAll();
 
-                                            new newhp=GetHealth(index)+skill_healing_aura;
+                                            new newhp=GetClientHealth(index)+skill_healing_aura;
                                             new maxhp=GetMaxHealth(index);
                                             if(newhp<=maxhp)
                                                 HealPlayer(index,newhp);
@@ -300,7 +300,7 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, playe
             }
 
             new amount=RoundFloat(float(damage)*percent);
-            new newhp=GetHealth(victim_index)-amount;
+            new newhp=GetClientHealth(victim_index)-amount;
             LogMessage("Zerg AdrenalGlands for %N, damage=%d,amount=%d", index, damage, amount);
             if (newhp <= 0)
             {
@@ -310,7 +310,7 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, playe
             else
                 LogDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
 
-            SetHealth(victim_index,newhp);
+            SetEntityHealth(victim_index,newhp);
 
             new Float:Origin[3];
             GetClientAbsOrigin(victim_index, Origin);

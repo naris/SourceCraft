@@ -356,7 +356,7 @@ public Bomber(client,player,level,bool:ondeath)
                     {
                         if (TraceTarget(client, index, client_location, check_location))
                         {
-                            new newhealth = GetHealth(index)-hp;
+                            new newhealth = GetClientHealth(index)-hp;
                             if (newhealth <= 0)
                             {
                                 newhealth=0;
@@ -367,7 +367,7 @@ public Bomber(client,player,level,bool:ondeath)
                                 if (ondeath)
                                 {
                                     LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                    SetHealth(index,newhealth);
+                                    SetEntityHealth(index,newhealth);
                                 }
                                 else
                                 {
@@ -382,7 +382,7 @@ public Bomber(client,player,level,bool:ondeath)
                                 else
                                     LogDamage(client, index, "mad_bomber", "Mad Bomber", hp);
 
-                                SetHealth(index,newhealth);
+                                SetEntityHealth(index,newhealth);
                             }
                         }
                     }
@@ -446,7 +446,7 @@ public Action:FlamingWrath(Handle:timer)
                                                                   0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                                 TE_SendToAll();
 
-                                                new newhp=GetHealth(index)-skill_flaming_wrath;
+                                                new newhp=GetClientHealth(index)-skill_flaming_wrath;
                                                 if (newhp <= 0)
                                                 {
                                                     newhp=0;

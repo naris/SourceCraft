@@ -67,25 +67,6 @@ native CreateHelpCommand(String:name[],String:desc[]);
 native GetShopItem(String:name[]);
 
 /**
- * Returns the entity's health.
- *
- * @param entity		Entity index.
- * @return				Health value.
- * @error				Invalid client index, client not in game, or no mod support.
- */
-native GetHealth(entity);
-
-/**
- * Sets an entity's health
- *
- * @param entity	Entity index.
- * @param amount	Health amount.
- * @noreturn
- * @error			Invalid entity index, or lack of mod compliance.
- */
-native SetHealth(entity,amount);
-
-/**
  * Returns the entity's max health.
  *
  * @param entity		Entity index.
