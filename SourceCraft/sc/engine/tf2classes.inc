@@ -15,6 +15,11 @@ stock GetClass(client)
     return GetEntData(client,m_OffsetClass);
 }
 
+stock GetPlayerCond(client)
+{
+    return GetEntData(client,m_OffsetPlayerCond);
+}
+
 stock Float:GetClassSpeed(client)
 {
     if (GameType == tf2)
@@ -28,8 +33,8 @@ stock Float:GetClassSpeed(client)
             case TF2_PYRO:      return 300.0;
             case TF2_SPY:       return 300.0;
             case TF2_ENG:       return 300.0;
-            case TF2_SNIPER:    return (GetClientButtons(client) & (IN_ZOOM|IN_ATTACK2)) ? 80.0 : 300.0;
-            case TF2_HEAVY:     return (GetClientButtons(client) & (IN_ATTACK|IN_ATTACK2)) ? 80.0 : 230.0;
+            case TF2_SNIPER:    return (GetPlayerCond(client) & 1) ? 80.0 : 300.0;
+            case TF2_HEAVY:     return (GetPlayerCond(client) & 1) ? 80.0 : 230.0;
         }
     }
     return 0.0;
