@@ -177,17 +177,18 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
 public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
+    new indexi = GetClientOfUserId(userid);
+
     new attacker = GetEventInt(event,"attacker");
     if (attacker > 0 && attacker != userid)
     {
-        new index=GetClientOfUserId(attacker);
-        new vecpos=GetClientVectorPosition(index);
+        new attacker_index=GetClientOfUserId(attacker);
+        new vecpos=GetClientVectorPosition(attacker_index);
         if(vecpos!=-1)
             GiveObjectDestroyedXP(index,vecpos);
     }
     else
     {
-        new index=GetClientOfUserId(userid);
         new vecpos=GetClientVectorPosition(index);
         if(vecpos!=-1)
             TakeObjectBuiltXP(index,vecpos);
@@ -204,7 +205,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 
     decl String:weapon[64] = "";
     GetEventString(event, "weapon", weapon, sizeof(weapon));
-    LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, userid,
+    LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, index,
                GetEventInt(event,"objecttype"), weapon);
 }
 

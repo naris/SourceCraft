@@ -612,7 +612,7 @@ public Action:GiveHook(client,argc)
         if(!g_bNativeOverride && IsFeatureEnabled(Hook) && IsFeatureAdminOnly(Hook))
         {
             decl String:target[64];
-            GetCmdArg(1,target,64);
+            GetCmdArg(1,target,sizeof(target));
             new count=Access(target,Give,Hook);
             if(!count)
                 ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
@@ -631,7 +631,7 @@ public Action:TakeHook(client,argc)
         if(!g_bNativeOverride && IsFeatureEnabled(Hook) && IsFeatureAdminOnly(Hook))
         {
             decl String:target[64];
-            GetCmdArg(1,target,64);
+            GetCmdArg(1,target,sizeof(target));
             new count=Access(target,Take,Hook);
             if(!count)
                 ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
@@ -650,7 +650,7 @@ public Action:GiveGrab(client,argc)
         if(!g_bNativeOverride && IsFeatureEnabled(Grab) && IsFeatureAdminOnly(Grab))
         {
             decl String:target[64];
-            GetCmdArg(1,target,64);
+            GetCmdArg(1,target,sizeof(target));
             new count=Access(target,Give,Grab);
             if(!count)
                 ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
@@ -669,7 +669,7 @@ public Action:TakeGrab(client,argc)
         if(!g_bNativeOverride && IsFeatureEnabled(Grab) && IsFeatureAdminOnly(Grab))
         {
             decl String:target[64];
-            GetCmdArg(1,target,64);
+            GetCmdArg(1,target,sizeof(target));
             new count=Access(target,Take,Grab);
             if(!count)
                 ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
@@ -688,7 +688,7 @@ public Action:GiveRope(client,argc)
         if(!g_bNativeOverride && IsFeatureEnabled(Rope) && IsFeatureAdminOnly(Rope))
         {
             decl String:target[64];
-            GetCmdArg(1,target,64);
+            GetCmdArg(1,target,sizeof(target));
             new count=Access(target,Give,Rope);
             if(!count)
                 ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
@@ -707,7 +707,7 @@ public Action:TakeRope(client,argc)
         if(!g_bNativeOverride && IsFeatureEnabled(Rope) && IsFeatureAdminOnly(Rope))
         {
             decl String:target[64];
-            GetCmdArg(1,target,64);
+            GetCmdArg(1,target,sizeof(target));
             new count=Access(target,Take,Rope);
             if(!count)
                 ReplyToCommand(client,"%c[HGR:Source] %cNo players on the server matched %c%s%c",
@@ -1065,7 +1065,7 @@ public Action:GrabSearch(Handle:timer,any:index)
         GetClientEyeAngles(index,clientang); // Get angle of where the player is looking
         TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayGrabEnt); // Create a ray that tells where the player is looking
         new target = TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
-        if (target>0 && target<=64 && IsClientInGame(target))
+        if (target>0 && target<=MAXPLAYERS && IsValidEntity(target) && IsClientInGame(target))
         {
             // Found something
             decl String:name[32] = "";
@@ -1138,7 +1138,7 @@ public Action:Grabbing(Handle:timer,any:index)
     if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
     {
         new target = gTargetIndex[index];
-        if(target>64||IsClientInGame(target)&&IsPlayerAlive(target))
+        if (target > 0 && IsClientInGame(target) && IsPlayerAlive(target))
         {
             if (gRemainingDuration[index] > 0)
             {
@@ -1189,7 +1189,7 @@ public Action:Grabbing(Handle:timer,any:index)
             TeleportEntity(gTargetIndex[index],NULL_VECTOR,NULL_VECTOR,velocity);
             // Make a beam from grabber to grabbed
             new color[4];
-            if(target<=64)
+            if(target<=MAXPLAYERS)
                 targetloc[2]+=45;
             GetBeamColor(index,Grab,color);
             BeamEffect("@all",clientloc,targetloc,0.2,1.0,10.0,color,0.0,0);
@@ -1221,12 +1221,15 @@ public Action_Drop(client)
     if(target>0)
     {
         PrintCenterText(client,"Target has been dropped");
-        SetEntPropFloat(target,Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
+        if (ClientIsInGame(target))
+        {
+            SetEntPropFloat(target,Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
 
-        if (gFlags[client][ACTION_GRAB] != 0) // Grabber is a Puller
-            SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",gMaxSpeed[target]);
+            if (gFlags[client][ACTION_GRAB] != 0) // Grabber is a Puller
+                SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",gMaxSpeed[target]);
+        }
 
-        if(target>0&&target<=64&&IsClientInGame(target))
+        if(target>0&&target<=MAXPLAYERS)
             gGrabbed[target]=false; // Tell plugin the target is no longer being grabbed
 
         gTargetIndex[client]=-1;
@@ -1365,7 +1368,7 @@ public Action_Detach(client)
 
 public bool:TraceRayTryToHit(entity,mask)
 {
-    if(entity>0&&entity<=64) // Check if the beam hit a player and tell it to keep tracing if it did
+    if(entity>0&&entity<=MAXPLAYERS) // Check if the beam hit a player and tell it to keep tracing if it did
         return false;
     return true;
 }
@@ -1374,7 +1377,7 @@ public bool:TraceRayGrabEnt(entity,mask)
 {
     if(entity>0) // Check if the beam hit an entity other than the grabber, and stop if it does
     {
-        if(entity<=64&&!gStatus[entity][ACTION_GRAB]&&!gGrabbed[entity])
+        if(entity<=MAXPLAYERS&&!gStatus[entity][ACTION_GRAB]&&!gGrabbed[entity])
             return true;
         if(entity>64) 
             return true;
@@ -1518,7 +1521,7 @@ public FindMatchingPlayers(const String:matchstr[],clients[])
             if(IsClientInGame(x))
             {
                 decl String:name[64];
-                GetClientName(x,name,64);
+                GetClientName(x,name,sizeof(name));
                 if(StrContains(name,matchstr,false)!=-1)
                 {
                     clients[count]=x;
