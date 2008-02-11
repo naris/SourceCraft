@@ -391,11 +391,8 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
             case 3:
                 range=(time_pressed / 2.0) * 800.0;
             case 4:
-                range=(time_pressed / 2.0) * 1000.0;
+                range=(time_pressed / 2.0) * 1500.0;
         }
-
-        if (range >= 1000.0)
-            range = 0.0;
 
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
