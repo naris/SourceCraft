@@ -68,7 +68,7 @@ new Handle:hSetModel      = INVALID_HANDLE;
 
 new shopItem[MAXITEMS+1];
 
-new String:bennyHillWav[] = "sourcecraft/yaketysax.mp3";
+new String:bootsWav[] = "sourcecraft/bootospeed.mp3";
 
 public Plugin:myinfo = 
 {
@@ -192,7 +192,7 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
-    SetupSound(bennyHillWav);
+    SetupSound(bootsWav);
 }
 
 public OnPlayerAuthed(client,player)
@@ -207,7 +207,7 @@ public OnItemPurchase(client,player,item)
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
     {
         SetMaxSpeed(player,1.2);
-        EmitSoundToAll(bennyHillWav,client);
+        EmitSoundToAll(bootsWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
         SetMinVisibility(player, 120, 0.50);
@@ -264,7 +264,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
             {
                 SetMaxSpeed(player,1.2);
-                EmitSoundToAll(bennyHillWav,client);
+                EmitSoundToAll(bootsWav,client);
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
@@ -306,7 +306,10 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
             !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
         {
             if(GetOwnsItem(victim_player,shopItem[ITEM_BOOTS]))
+            {
                 SetOwnsItem(victim_player,shopItem[ITEM_BOOTS],false);
+                StopSound(victim_index,SNDCHAN_AUTO,bootsWav);
+            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_CLAWS]))
                 SetOwnsItem(victim_player,shopItem[ITEM_CLAWS],false);

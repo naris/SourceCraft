@@ -105,8 +105,8 @@ new g_iNativeGrabs;
 new g_iNativeRopes;
 
 // Sounds
-new String:grabberHitWav[PLATFORM_MAX_PATH] = "sourcecraft/zluhit00.wav"; // "weapons/crossbow/bolt_skewer1.wav";
-new String:pullerWav[PLATFORM_MAX_PATH] = "sourcecraft/intonydus.wav"; // "weapons/crowwbow/hitbod2.wav";
+new String:grabberHitWav[PLATFORM_MAX_PATH] = "sourcecraft/zluhit00.mp3"; // "weapons/crossbow/bolt_skewer1.wav";
+new String:pullerWav[PLATFORM_MAX_PATH] = "sourcecraft/intonydus.mp3"; // "weapons/crowwbow/hitbod2.wav";
 new String:deniedWav[PLATFORM_MAX_PATH] = "sourcecraft/buzz.wav"; // "buttons/combine_button_locked.wav";
 new String:errorWav[PLATFORM_MAX_PATH] = "sourcecraft/perror.wav"; // "player/suit_denydevice.wav";
 new String:seekingWav[PLATFORM_MAX_PATH] = "sourcecraft/ropeshoot2.wav"; // "weapons/crossbow/bolt_fly4.wav"; // "weapons/tripwire/ropeshoot.wav";
