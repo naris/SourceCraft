@@ -27,7 +27,7 @@ new raceID; // The ID we are assigned to
 new g_haloSprite;
 new g_lightningSprite;
 
-new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/buzz.wav"; // "player/suit_denydevice.wav";
+new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/perror.wav"; // "player/suit_denydevice.wav";
 
 public Plugin:myinfo = 
 {
