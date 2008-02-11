@@ -97,8 +97,8 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    SetupSound(blowerWav);
-    SetupSound(anxiousWav);
+    SetupSound(blowerWav, true);
+    SetupSound(anxiousWav, true);
 }
 
 public OnPlayerAuthed(client,player)

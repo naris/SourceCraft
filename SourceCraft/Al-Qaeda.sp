@@ -123,9 +123,9 @@ public OnMapStart()
     else
         bigExplosionModel = explosionModel;
 
-    SetupSound(allahWav);
-    SetupSound(kaboomWav);
-    SetupSound(explodeWav);
+    SetupSound(allahWav, true);
+    SetupSound(kaboomWav, true);
+    SetupSound(explodeWav, true);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)

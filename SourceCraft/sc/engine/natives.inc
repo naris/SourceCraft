@@ -190,7 +190,6 @@ public Native_HealPlayer(Handle:plugin,numParams)
         new amount = GetNativeCell(2);
         new health = (numParams >= 3) ? GetNativeCell(3) : GetClientHealth(client);
         new max    = (numParams >= 4) ? GetNativeCell(4) : GetMaxHealth(client);
-        new old_health=health;
         health    += amount;
         if (health > max)
             health = max;

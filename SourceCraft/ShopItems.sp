@@ -192,7 +192,7 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
-    SetupSound(bootsWav);
+    SetupSound(bootsWav, true);
 }
 
 public OnPlayerAuthed(client,player)

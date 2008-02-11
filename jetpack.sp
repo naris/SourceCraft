@@ -156,18 +156,20 @@ public OnPluginStart()
 	}
 }
 
-stock SetupSound(const String:wav[], bool:preload=false)
+stock bool:SetupSound(const String:wav[], bool:preload=false)
 {
     if (wav[0])
     {
-        PrecacheSound(wav,preload);
-
         decl String:file[PLATFORM_MAX_PATH+1];
         Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
 
         if(FileExists(file))
             AddFileToDownloadsTable(file);
+
+        return PrecacheSound(wav,preload);
     }
+    else
+        return false;
 }
 
 public OnMapStart()

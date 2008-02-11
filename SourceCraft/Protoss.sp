@@ -174,10 +174,10 @@ public OnMapStart()
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
-    SetupSound(explodeWav);
-    SetupSound(controlWav);
-    SetupSound(unCloakWav);
-    SetupSound(cloakWav);
+    SetupSound(explodeWav, true);
+    SetupSound(controlWav, true);
+    SetupSound(unCloakWav, true);
+    SetupSound(cloakWav, true);
 }
 
 public OnPlayerAuthed(client,player)

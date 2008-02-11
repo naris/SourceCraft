@@ -242,54 +242,37 @@ public OnPluginStart()
 
 public OnConfigsExecuted()
 {
-    // Precache models
-    precache_laser=PrecacheModel("materials/sprites/laserbeam.vmt");
-
     GetConVarString(cvarGrabHitSound, grabberHitWav, sizeof(grabberHitWav));
-    if (strlen(grabberHitWav))
-        PrecacheSound(grabberHitWav, true);
-
     GetConVarString(cvarSeekingSound, seekingWav, sizeof(seekingWav));
-    if (strlen(seekingWav))
-        PrecacheSound(seekingWav, true);
-
     GetConVarString(cvarDeniedSound, deniedWav, sizeof(deniedWav));
-    if (strlen(deniedWav))
-        PrecacheSound(deniedWav, true);
-
     GetConVarString(cvarErrorSound, errorWav, sizeof(errorWav));
-    if (strlen(errorWav))
-        PrecacheSound(errorWav, true);
-
     GetConVarString(cvarPullSound, pullerWav, sizeof(pullerWav));
-    if (strlen(pullerWav))
-        PrecacheSound(pullerWav, true);
-
     GetConVarString(cvarFireSound, fireWav, sizeof(fireWav));
-    if (strlen(fireWav))
-        PrecacheSound(fireWav, true);
-
     GetConVarString(cvarHitSound, hitWav, sizeof(hitWav));
-    if (strlen(hitWav))
-        PrecacheSound(hitWav, true);
 }
 
-stock SetupSound(const String:wav[], bool:preload=false)
+stock bool:SetupSound(const String:wav[], bool:preload=false)
 {
     if (strlen(wav))
     {
-        PrecacheSound(wav,preload);
-
         decl String:file[PLATFORM_MAX_PATH+1];
         Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
 
         if(FileExists(file))
             AddFileToDownloadsTable(file);
+
+        return PrecacheSound(wav,preload);
     }
+    else
+        return false;
 }
 
 public OnMapStart()
 {
+    // Precache models
+    precache_laser=PrecacheModel("materials/sprites/laserbeam.vmt");
+
+    // Precache & download sounds
     SetupSound(grabberHitWav,true);
     SetupSound(seekingWav,true);
     SetupSound(deniedWav,true);

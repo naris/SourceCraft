@@ -12,7 +12,7 @@
 #include <tf2>
 
 #include "SourceCraft/sc/util"
-#include "SourceCraft/sc/engine/health"
+#include "SourceCraft/sc/maxhealth"
 #include "SourceCraft/sc/engine/damage"
 
 public Plugin:myinfo = 
