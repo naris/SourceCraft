@@ -511,7 +511,7 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
     m_TeleportCount[client]++;
 
     new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
-    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %3.1 seconds before teleporting again!",
+    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %3.1f seconds before teleporting again!",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
 
     if (!to_spawn)
