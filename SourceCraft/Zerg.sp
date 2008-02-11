@@ -290,15 +290,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
 public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, player)
 {
-    new Float:start[3];
-    new Float:end[3];
-    GetClientAbsOrigin(index,start);
-    GetClientAbsOrigin(victim_index,end);
-    new Float:distance = DistanceBetween(start,end);
-    LogMessage("Distance between %N and %N is %f", index, victim_index, distance);
-    PrintToChat(index,"Distance between %N and %N is %f", index, victim_index, distance);
-    PrintToChat(victim_index,"Distance between %N and %N is %f", index, victim_index, distance);
-	
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
     {

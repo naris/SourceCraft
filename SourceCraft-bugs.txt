@@ -1,3 +1,23 @@
+"Sicko
+
+Festering Abomination – 40% - 250% - Didn’t do 250% damage ever.
+
+Pickpocket – Never steals anything
+
+Revulsion – If your target moves out of range, you wont start attacking another enemy near you. Seems to only attack 1 person at a time.
+
+Fart – Level 1 – Nothing – Level 2 – Nothing – Level 3 – Nothing – Level 4 – Nothing
+
+Terran
+
+*Fixed!Depleted Shells says ACUTE STIRKE when I hit my target.
+
+*Heavy Armor – Working
+
+*Stimpack – Working – Resetting Skills doesn’t seem to reset this. Using Heavy Punches  slows you down as if your spinning your barrel. Scouts can use Stimpacks becoming Speedy  Gonzales.
+
+*Jetpack – Working, Needs Timer to show a countdown if possible, or just report back how  many seconds are left for recharge if you press +ultimate again. Or just slowly refill  the ammo."
+
 "Terran Ghost
 
 Personal Cloaking Device – Seems to randomly give you level 1 cloak.
@@ -21,7 +41,7 @@ Work Rules – Hook – Love it, but its full level at level 1"
 
 General Bugs
 
-Races with Reincarnation can’t change classes until there reincarnation fails to work.
+*Fixed!Races with Reincarnation can’t change classes until there reincarnation fails to work.
 
 Human
 
