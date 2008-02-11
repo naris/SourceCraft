@@ -27,7 +27,7 @@ new raceID; // The ID we are assigned to
 new g_haloSprite;
 new g_lightningSprite;
 
-new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/PError.wav"; // "player/suit_denydevice.wav";
+new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/buzz.wav"; // "player/suit_denydevice.wav";
 
 public Plugin:myinfo = 
 {
@@ -148,28 +148,16 @@ public Action:Regeneration(Handle:timer)
                                 new player_check=GetPlayer(index);
                                 if (player_check>-1)
                                 {
-                                    LogMessage("[ZergRegeneration] Check player %N", index);
-                                    PrintToChat(client,"[ZergRegeneration] Check player %N", index);
-                                    PrintToChat(index,"[ZergRegeneration] Check player %N", index);
                                     if (IsInRange(client,index,range))
                                     {
-                                        LogMessage("[ZergRegeneration] Check player %N is in Range", index);
-                                        PrintToChat(client,"[ZergRegeneration] Check player %N is in Range", index);
-                                        PrintToChat(index,"[ZergRegeneration] Check player %N is in Range", index);
                                         new Float:indexLoc[3];
                                         GetClientAbsOrigin(index, indexLoc);
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
-                                            LogMessage("[ZergRegeneration] Check player %N is Traceable", index);
-                                            PrintToChat(client, "[ZergRegeneration] Check player %N is Traceable", index);
-                                            PrintToChat(index, "[ZergRegeneration] Check player %N is Traceable", index);
                                             new health=GetClientHealth(index);
                                             new max=GetMaxHealth(index);
                                             if (health < max)
                                             {
-                                                LogMessage("[ZergRegeneration] Healing player %N for %d", index, skill_healing_aura);
-                                                PrintToChat(client, "[ZergRegeneration] Healing player %N for %d", index, skill_healing_aura);
-                                                PrintToChat(index, "[ZergRegeneration] Healing player %N for %d", index, skill_healing_aura);
                                                 HealPlayer(index,skill_healing_aura,health,max);
 
                                                 new color[4] = { 0, 0, 255, 255 };

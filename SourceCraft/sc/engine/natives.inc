@@ -195,9 +195,6 @@ public Native_HealPlayer(Handle:plugin,numParams)
         if (health > max)
             health = max;
         SetEntityHealth(client,health);
-        LogMessage("Heal %N for %d, old_health=%d, max=%d", client, amount, old_health, max, health);
-        PrintToChat(client, "Healed for %d, old_health=%d, max=%d", client, amount, old_health, max, health);
-        PrintToChat(client, "Healed for %d, old_health=%d, max=%d", client, amount, old_health, max, health);
         SaveHealth(client);
         return health;
     }

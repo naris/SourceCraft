@@ -920,7 +920,7 @@ public Action_Hook(client)
                     }
                     else
                     {
-                        EmitSoundToClient(client,errorWav);
+                        EmitSoundToClient(client,deniedWav);
                         PrintToChat(client,"%c[HGR:Source] %cTarget is too far away!",
                                     COLOR_GREEN,COLOR_DEFAULT);
                     }
