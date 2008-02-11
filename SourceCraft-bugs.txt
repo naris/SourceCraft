@@ -1,3 +1,19 @@
+Protoss
+
+Arbitor Field – Unless it provided 100% invis to the team around you I can’t see why its useful.
+                Same rules should apply, only 100% invis if not moving and holding Melee weapon.
+
+                Arbitor ability sometimes does not work on players 2-3 feet from me and I have level 4 arbitor.
+
+Observer – Should remove the cloak of anyone using and invis.
+
+
+
+Night Elf
+
+Entangled Roots – No timer to check if used or if it failed or if it was resisted. Accidentally hitting the button will use the ability even if no one was hit. No report as too how many people it effected. This report was standard in the old Warcraft mod.
+
+
 "Sicko
 
 Festering Abomination – 40% - 250% - Didn’t do 250% damage ever.
@@ -31,11 +47,11 @@ Nuclear Strike – Doesn’t lock on to anything but yourself. Has no range. Needs a
 
 UAW
 
-Inflated Wages – Good
+*Inflated Wages – Good
 
-Seniority – Good
+*Seniority – Good
 
-Negotiations – Seems very very random.
+*Negotiations – Seems very very random.
 
 Work Rules – Hook – Love it, but its full level at level 1"
 
@@ -47,89 +63,80 @@ Human
 
 Immunity  – Need Suicides fixed to test this, Claws of attack seemed broken, Mask of Death seemed Broken.
 
-Devotion Aura – Doesn’t survive a respawn.
+*Fixed!Devotion Aura – Doesn’t survive a respawn.
 
 Bash – Seems ok, but doesn’t last 1 sec
 
-Teleport – Seems fully functional at level 1
+*Fixed!Teleport – Seems fully functional at level 1
 
 
 Zerg
 
-Adrenal Glands – WAY TOO STRONG Every Class is instant kill at level 4. Max the HP at 50 if you can or 40, 10 per level. This is also increasing Sentry Damage.
+*Fixed!Adrenal Glands – WAY TOO STRONG Every Class is instant kill at level 4. Max the HP at 50 if you can or 40, 10 per  level. This is also increasing Sentry Damage.
 
 Self Regen is good Any chance we can make it 5 points at level 4?
 
-Team Healing is good. Seems a bit high, was this intended? Team healing 20 or 30 points a tick is very cool though.
+*Fixed!Team Healing is good. Seems a bit high, was this intended? Team healing 20 or 30 points a tick is very cool though.
 
-Tentacle is broken. It does nothing like Jiggly did to me, picking me up and dropping me in the water. I need to pull people close to me.
-Right now its a gimmick, needs some change."
-
+*Fixed!Tentacle is broken. It does nothing like Jiggly did to me, picking me up and dropping me in the water. I need to  pull people close to me.
+ Right now its a gimmick, needs some change."
 
 ----------------------------------------------------------------------------------------
 
-"REQUIRED!!!
-
-We require the implementation of 2 additional items.
-
-Helm of Excellence that prevents Sniperhead shots. Shots do 100 damage but no longer Crit causing instant death.
-
-Superman’s Cape – Hangs down your back and stops BackStabs- Stabs become normal knife attacks.
-
-
-
 Human Alliance
 
-Removed:Invis – Useless at lower levels. Needs an Evade component to compensate. Switching to Melee makes you COMPLETE VISABLE. Level 4 should be complete invisibility when not moving. Totally visible when moving.
+*Removed!Invis – Useless at lower levels. Needs an Evade component to compensate. Switching to Melee makes you COMPLETE  VISABLE. Level 4 should be complete invisibility when not moving. Totally visible when moving.
 
-Fixed:Devotion Aura gives no health ever.
+*Fixed!Devotion Aura gives no health ever.
 
-Bash is too often for rapid fire weapons. The rate of fire needs to be per clip not per bullet, perhaps 25%.
+*Fixed!Bash is too often for rapid fire weapons. The rate of fire needs to be per clip not per bullet, perhaps 25%.
 
-Teleport – Possible to teleport into walls. Needs to be fixed.
+*Fixed -- more or less!Teleport – Possible to teleport into walls. Needs to be fixed.
 
 
 
 Zerg
 
-Fixed:Adrenal Glands - Melee Attacks don’t seem effected by this skill at all.
+*Fixed!Adrenal Glands - Melee Attacks don’t seem effected by this skill at all.
 
-Regeneration is solid – 1 point each 3 second at level 1, 2 at 2, 3 at 3, 4 at 4. Would be nicer if it was every 2 seconds then it would act as pyro flame protection. Purhaps there is a setting that would put the fire out?
+*Regeneration is solid – 1 point each 3 second at level 1, 2 at 2, 3 at 3, 4 at 4.
+ Would be nicer if it was every 2 seconds then it would act as pyro flame protection.
+ Purhaps there is a setting that would put the fire out?
 
-Group Regen is a solid 1 at 1, 2 at 2, 3 at 3, 4 at 4. – This would be better if it was faster to act as pyro protection. – Each person with this Group heal would become an anti Pyro. Perhaps there is a setting that would put the fire out?
+*Group Regen is a solid 1 at 1, 2 at 2, 3 at 3, 4 at 4. – This would be better if it was faster to act as pyro protection.  – Each person with this Group heal would become an anti Pyro. Perhaps there is a setting that would put the fire out?
 
-Tentacles – Need to pull harder and get them closer or its no better then a Night Elf Root.
-Your target has freedom of mobility.
+*Fixed!Tentacles – Need to pull harder and get them closer or its no better then a Night Elf Root.
+ Your target has freedom of mobility.
 
- When playing as medic/zerg with healing aura level 3 even....didn't seem to work (aka wasn't healing people around me)
+*Fixed!When playing as medic/zerg with healing aura level 3 even....didn't seem to work (aka wasn't healing people around me)
 
 
 UAW
 
-Inflated Wages – Works very well, fast.
+*Inflated Wages – Works very well, fast.
 
-Fixed:Seniority – As long as there is code to prevent the increased chance of killing a teammate when the chance to respawn increases, I see nothing wrong with this.
+*Fixed!Seniority – As long as there is code to prevent the increased chance of killing a teammate when the chance to  respawn increases, I see nothing wrong with this.
 
-Negations happen all the time without ever buying any levels of this skill.
+*Fixed!Negations happen all the time without ever buying any levels of this skill.
 
-Hook works great on level 1, why would I buy more?
+*Fixed!Hook works great on level 1, why would I buy more?
 
-Fixed:When I buy levels in inflated wages I get the other 2 abilities as well. Also Please make it harder for the negotiation random of "employer goes bankrupt" to happen. It hit me twice in a 90 minute span. 
+*Fixed!When I buy levels in inflated wages I get the other 2 abilities as well. Also Please make it harder for the  negotiation random of "employer goes bankrupt" to happen. It hit me twice in a 90 minute span. 
 
-Fixed:UAW cannot get ultimate because of bankruptcy occurring very frequently. 
+*Fixed!UAW cannot get ultimate because of bankruptcy occurring very frequently. 
 
 
 Sicko
 
-Fixed:Festering Abomination – Always seems to kill you by your own ability if the ability is what causes the enemy death blow.
+*Fixed!Festering Abomination – Always seems to kill you by your own ability if the ability is what causes the enemy death blow.
 
 Pickpocket doesn’t steal anything.
 
-Revulsion works – Spys will hate us.
+*Revulsion works – Spys will hate us.
 
 Fart does nothing, but if it does do 300 dmamage to anyone near you it will be better then sucide bomber I think.
 
-Sicko Scouts run slow, don’t know why
+*Fixed!Sicko Scouts run slow, don’t know why
 
 Sick fucker ultimate does nothing. 
 
@@ -137,68 +144,67 @@ Sick fucker ultimate does nothing.
 
 Terran Confederacy
 
-Cloaking Device – Doesn’t make you Invis.
+*Removed!Cloaking Device – Doesn’t make you Invis.
 
 Heavy Armor seems a bit lite weight. Too random. Be nice if at level 4 it was a fixed value.
 
-Stimpacks work, but require respawn for full effect. Respawn is not meantioned.
+*Fixed!Stimpacks work, but require respawn for full effect. Respawn is not meantioned.
 
-Jetpack is awesome.
+*Jetpack is awesome.
 
 Once again I have too many stats. I'm a lvl 7 Terran with 8 skill points. For some reason it just gives me the invisibility skill~
 
 Heavy Armour
-Sometimes it absorbs more damage than was done [normally with smaller weapons] and gives me back health. Which is awesome so don't fix it.
+*Fixed!Sometimes it absorbs more damage than was done [normally with smaller weapons] and gives me back health. Which is awesome so don't fix it.
 
 
 
 Undead
 
-Vampiric Aura – Seems to work
+*Vampiric Aura – Seems to work
 
-Fixed:Unholy Aura – Don’t seem to speed me up
+*Fixed!Fixed:Unholy Aura – Don’t seem to speed me up
 
-Levation – Works
+*Levation – Works
 
-Fixed:Suicide Bomber – Works but you stick your targets in the ground.
+*Fixed!Suicide Bomber – Works but you stick your targets in the ground.
 
-I built a sentry once, which almost killed someone but earned me some health. When I respawned I noticed an increased speed in all of my classes, and that as soon as I killed someone I would suicide. I was still level two.
+*Fixed!I built a sentry once, which almost killed someone but earned me some health.
+ When I respawned I noticed an increased speed in all of my classes,
+ and that as soon as I killed someone I would suicide. I was still level two.
 
-After I changed races, I still retained the super speed.
+*Fixed!After I changed races, I still retained the super speed.
 
 
 
 Night Elf
 
-Evasion – Working for standard weapons, Back stabs still instant kill even when evaded. Headshots are still instant kills even when evaded.
-Thorns Working – Damage is scaled to proper Levels. Damage is scaled to damage done. High-powered weapons will result in shooter receiving high-level damage in return.
-True Shot – Damage is scale to proper Levels. Damage is scale to Weapon used. Snipers will be extra powerful body shots.
-Entangled Roots – No timer to check if used or if it failed or if it was resisted. Accidentally hitting the button will use the ability even if no one was hit. No report as too how many people it effected. This report was standard in the old Warcraft mod.
+*Evasion – Working for standard weapons,
+ Back stabs still instant kill even when evaded.
+ Headshots are still instant kills even when evaded.
 
+*Thorns Working – Damage is scaled to proper Levels. Damage is scaled to damage done.
+ High-powered weapons will result in shooter receiving high-level damage in return.
 
+*True Shot – Damage is scale to proper Levels. Damage is scale to Weapon used. Snipers will be extra powerful body shots.
 
 
 Protoss
 
-Reaver Scarabs – Work
+*Reaver Scarabs – Work
 
-Arbitor Field – Unless it provided 100% invis to the team around you I can’t see why its useful. Same rules should apply, only 100% invis if not moving and holding Melee weapon.
+*Dark archon Mind Controll – HAHAHAHAHAHA I love it."
 
-Observer – Should remove the cloak of anyone using and invis.
+*Fixed!one thing i hae noticed with the protos race
+ if you upgrade the reaver scarabs skill it doesnt add the scarabs to  your attack, but if you get the arbiter field thing one it adds it on
+ the same level, and gives you the arbiter ability
 
-Dark archon Mind Controll – HAHAHAHAHAHA I love it."
+*Fixed!Reavers and Pyro kill framerates and are OP.
 
- one thing i hae noticed with the protos race the if you upgrade the reaver scarabs skill it doesnt add the scarabs to your attack, but if you get the arbiter field thing one it adds it on the same level, and gives you the arbiter ability
+*Fixed!Revers.HW and Pyros using Revers kill fram rate [and you, instantly]
+ It wouldn't be so bad if they didn't kill fram rate. 
 
-Arbitor ability sometimes does not work on players 2-3 feet from me and I have level 4 arbitor.
-
-Reavers and Pyro kill framerates and are OP.
-
-Revers.
-HW and Pyros using Revers kill fram rate [and you, instantly]
-It wouldn't be so bad if they didn't kill fram rate. 
-
-People with arbitor ability should not be able to be cloaked by other arbitors. 
+*Fixed!People with arbitor ability should not be able to be cloaked by other arbitors. 
 
 
 Orc
@@ -218,9 +224,11 @@ Chain lightning ultimate is not working.
 
 "Al-Qaeda
 
-Reincarnation – Works fine but might want to check that it works often enough at lower levels.
+*Reincarnation – Works fine but might want to check that it works often enough at lower levels.
 
-Flaming Wraith – Seems to work well at 1 point per level, but I seemed to be able to trigger the suicide boomer of other classes by slowly hurting them. It also triggers the NACASIUS KILLED BLAZE message, but never actually kills him.
+*Fixed!Flaming Wraith – Seems to work well at 1 point per level, but I seemed to be able to
+ trigger the suicide boomer of other classes by slowly hurting them.
+ It also triggers the NACASIUS KILLED BLAZE message, but never actually kills him.
 
 Suicide Bomber – Doesn’t kill anyone or anything.
 
@@ -244,39 +252,10 @@ Also, suicide bomb tends to go off a lot when you kill someone, not when you die
 also the suicide bombs put you into the ground - literally 
 
 
-Speed problem.
-There's a problem with it.
-Mostly getting stuck at one classes speed.
-Its awesome being a HW running around as fast as a scout but it sucks balls to be a scout running around as fast as a HW.
-I think it might be imprinting off the first class you choose. 
-
-Boots of speed seem to not work at all. 
-
-Heavies can run around at scout speed if the player first chooses a scout then switches back to heavy.
-
-
 Health problem:
 In a rare case soldiers will have 43000+ hp and can only die from backstabs in which the spy will have then dealt 43000 damage in one round. 
 
 The peripate of health causes heavies to sometimes show up as having 13 hp while in reality they have 513hp if a medic overcharges a heavy after the peripate of health is purchased. 
 
 
-L 01/28/2008 - 03:13:03: [SM] Native "GetArrayCell" reported: Invalid index 16 (count: 15)
-L 01/28/2008 - 03:13:03: [SM] Displaying call stack trace for plugin "sourcecraft/SourceCraft.smx":
-L 01/28/2008 - 03:13:03: [SM]   [0]  Line 84, SourceCraft/playertracking.inc::SetPendingSkillReset()
-L 01/28/2008 - 03:13:03: [SM]   [1]  Line 241, SourceCraft/races.inc::ResetSkills()
-L 01/28/2008 - 03:13:03: [SM]   [2]  Line 134, SourceCraft/menus.inc::Menu_Select()
-L 01/28/2008 - 04:36:29: [SM] Native "ClientCommand" reported: Client 9 is not connected
-L 01/28/2008 - 04:36:29: [SM] Displaying call stack trace for plugin "sourcecraft/SourceCraft.smx":
-L 01/28/2008 - 04:36:29: [SM]   [0]  Line 287, SourceCraft/races.inc::ShowSkills_Selected()
-L 01/28/2008 - 04:43:31: [SM] Native "GetArrayCell" reported: Invalid index 17 (count: 15)
-L 01/28/2008 - 04:43:31: [SM] Displaying call stack trace for plugin "sourcecraft/SourceCraft.smx":
-L 01/28/2008 - 04:43:31: [SM]   [0]  Line 43, SourceCraft/playertracking.inc::GetRace()
-L 01/28/2008 - 04:43:31: [SM]   [1]  Line 139, SourceCraft/menus.inc::Menu_Select()
-L 01/28/2008 - 15:12:36: SourceMod error session started
-L 01/28/2008 - 15:12:36: Info (map "cp_warpath") (file "errors_20080128.log")
-L 01/28/2008 - 15:12:36: [SM] Native "GetArrayCell" reported: Invalid index 23 (count: 23)
-L 01/28/2008 - 15:12:36: [SM] Displaying call stack trace for plugin "sourcecraft/SourceCraft.smx":
-L 01/28/2008 - 15:12:36: [SM]   [0]  Line 43, SourceCraft/playertracking.inc::GetRace()
-L 01/28/2008 - 15:12:36: [SM]   [1]  Line 131, SourceCraft/menus.inc::Menu_Select()
-L 01/28/2008 - 15:31:20: Error log file session closed.
+
