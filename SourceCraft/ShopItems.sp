@@ -264,6 +264,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
             {
                 SetMaxSpeed(player,1.2);
+                StopSound(client,SNDCHAN_AUTO,bootsWav);
                 EmitSoundToAll(bootsWav,client);
             }
 

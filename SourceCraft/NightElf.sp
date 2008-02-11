@@ -178,10 +178,19 @@ public bool:Evasion(damage, victim_index, victim_player, attacker_index, assiste
             SetEntityHealth(victim_index,newhp);
 
             LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victim_index, attacker_index);
-            PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
-            PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                        COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+
+            if (attacker_index && attacker_index != victim_index)
+            {
+                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
+                           COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
+                PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+            }
+            else
+            {
+                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
+                           COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+            }
 
             if (assister_index)
             {
@@ -262,24 +271,27 @@ public TrueshotAura(damage, victim_index, index, player)
             }
 
             new amount=RoundFloat(float(damage)*percent);
-            new newhp=GetClientHealth(victim_index)-amount;
-            if (newhp <= 0)
+            if (amount > 0)
             {
-                newhp=0;
-                LogKill(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+                new newhp=GetClientHealth(victim_index)-amount;
+                if (newhp <= 0)
+                {
+                    newhp=0;
+                    LogKill(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+                }
+                else
+                    LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+
+                SetEntityHealth(victim_index,newhp);
+
+                new Float:Origin[3];
+                GetClientAbsOrigin(victim_index, Origin);
+                Origin[2] += 5;
+
+                TE_SetupSparks(Origin,Origin,255,1);
+                TE_SendToAll();
+                return amount;
             }
-            else
-                LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
-
-            SetEntityHealth(victim_index,newhp);
-
-            new Float:Origin[3];
-            GetClientAbsOrigin(victim_index, Origin);
-            Origin[2] += 5;
-
-            TE_SetupSparks(Origin,Origin,255,1);
-            TE_SendToAll();
-            return amount;
         }
     }
     return 0;

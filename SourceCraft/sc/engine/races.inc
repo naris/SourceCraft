@@ -251,14 +251,16 @@ public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
     new Handle:raceHandle=Race(race);
     new Handle:panel=CreatePanel();
 
+    decl String:name[64];
+    GetRaceName(raceHandle,name,sizeof(name));
+
+    decl String:buffer[256];
     if (client == target)
-        SetPanelTitle(panel,"[SourceCraft] Here are your skill levels.");
+        Format(buffer,sizeof(buffer),"[SourceCraft] Here are your %s skill levels.", name);
     else
-    {
-        decl String:buffer[256];
-        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's skill levels.", target);
-        SetPanelTitle(panel,buffer);
-    }
+        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's %s skill levels.", target, name);
+
+    SetPanelTitle(panel,buffer);
 
     decl String:buf[64];
     decl String:bufout[256];

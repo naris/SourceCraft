@@ -614,12 +614,12 @@ public Action:AdminMenu(client,args)
     SetMenuTitle(adminMenu,"[SourceCraft] Select a player to administrate.");
     decl String:playername[64];
     decl String:playerbuf[4];
-    new Handle:playerHandle;
+    new index;
     for(new x=0;x<GetArraySize(arrayPlayers);x++)
     {
-        playerHandle=GetArrayCell(arrayPlayers,x);
-        Format(playerbuf,sizeof(playerbuf),"%d",GetArrayCell(playerHandle,0));
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
+        index = GetClientIndex(x);
+        Format(playerbuf,sizeof(playerbuf),"%d",index);
+        GetClientName(index,playername,sizeof(playername));
         AddMenuItem(adminMenu,playerbuf,playername);
     }
     DisplayMenu(adminMenu,client,MENU_TIME_FOREVER);
@@ -655,12 +655,11 @@ public Admin_Player(client,targetvecpos)
     new Handle:adminMenu_Player=CreateMenu(Admin_Player_Select);
     SetMenuExitButton(adminMenu_Player,true);
     SetMenuExitBackButton(adminMenu_Player,true);
-    decl String:playername[64];
-    new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-    GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-    SetMenuTitle(adminMenu_Player,"[SourceCraft] Administration options for %s.",playername);
+
+    new index = GetClientIndex(targetvecpos);
+    SetMenuTitle(adminMenu_Player,"[SourceCraft] Administration options for %N.", index);
     decl String:buf[4];
-    Format(buf,3,"%d",GetArrayCell(playerHandle,0));
+    Format(buf,sizeof(buf),"%d",index);
     decl String:currencies[64];
     GetConVarString(m_Currencies, currencies, sizeof(currencies));
     decl String:changeCredits[128];
@@ -777,10 +776,6 @@ public Admin_PlayerInfo(client,target)
         SetMenuExitButton(playerInfo,true);
         SetMenuExitBackButton(playerInfo,true);
 
-        decl String:playername[64];
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-
         new race=GetRace(targetvecpos);
         new Handle:rhand=Race(race);
         decl String:race_name[64];
@@ -790,8 +785,8 @@ public Admin_PlayerInfo(client,target)
         new xp=GetXP(targetvecpos,race);
         new level=GetLevel(targetvecpos,race);
 
-        SetMenuTitle(playerInfo,"[SourceCraft] Info for %s.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
-                     playername,race_name,currency,credits,xp,level);
+        SetMenuTitle(playerInfo,"[SourceCraft] Info for %N.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
+                     target,race_name,currency,credits,xp,level);
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -876,11 +871,7 @@ public Admin_XP(client,target)
         new Handle:menu=CreateMenu(Admin_XP_Select);
         SetMenuExitButton(menu,true);
         SetMenuExitBackButton(menu,true);
-
-        decl String:playername[64];
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an option for %N.",target);
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -996,10 +987,8 @@ public Admin_GiveShopItem(client,target)
         SetMenuExitButton(menu,true);
         SetMenuExitBackButton(menu,true);
 
-        decl String:playername[64];
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[SourceCraft] Select an item to give to %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an item to give to %N.",
+                     GetClientIndex(targetvecpos));
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -1093,10 +1082,8 @@ public Admin_SetRace(client,target)
         SetMenuExitButton(menu,true);
         SetMenuExitBackButton(menu,true);
 
-        decl String:playername[64];
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[SourceCraft] Select a race for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select a race for %N.",
+                     GetClientIndex(targetvecpos));
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -1174,10 +1161,8 @@ public Admin_Level(client,target)
         SetMenuExitButton(menu,true);
         SetMenuExitBackButton(menu,true);
 
-        decl String:playername[64];
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an option for %N.",
+                     GetClientIndex(targetvecpos));
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
@@ -1288,10 +1273,8 @@ public Admin_Credits(client,target)
         SetMenuExitButton(menu,true);
         SetMenuExitBackButton(menu,true);
 
-        decl String:playername[64];
-        new Handle:playerHandle=GetArrayCell(arrayPlayers,targetvecpos);
-        GetClientName(GetArrayCell(playerHandle,0),playername,sizeof(playername));
-        SetMenuTitle(menu,"[SourceCraft] Select an option for %s.",playername);
+        SetMenuTitle(menu,"[SourceCraft] Select an option for %N.",
+                     GetClientIndex(targetvecpos));
 
         decl String:buf[4];
         Format(buf,sizeof(buf),"%d",target);
