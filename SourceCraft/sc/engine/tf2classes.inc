@@ -19,8 +19,7 @@ stock Float:GetClassSpeed(client)
 {
     if (GameType == tf2)
     {
-        new class;
-        switch (class = GetClass(client))
+        switch (GetClass(client))
         {
             case TF2_SCOUT:     return 400.0;
             case TF2_SOLDIER:   return 240.0;
@@ -29,9 +28,8 @@ stock Float:GetClassSpeed(client)
             case TF2_PYRO:      return 300.0;
             case TF2_SPY:       return 300.0;
             case TF2_ENG:       return 300.0;
-            case TF2_SNIPER:    return (GetClientButtons(client) & IN_ZOOM) ? 80.0 : 300.0;
+            case TF2_SNIPER:    return (GetClientButtons(client) & (IN_ZOOM|IN_ATTACK2)) ? 80.0 : 300.0;
             case TF2_HEAVY:     return (GetClientButtons(client) & (IN_ATTACK|IN_ATTACK2)) ? 80.0 : 230.0;
-            default:            LogMessage("Unknown TF2 class %d", class);
         }
     }
     return 0.0;
