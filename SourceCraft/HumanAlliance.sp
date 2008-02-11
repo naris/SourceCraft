@@ -54,7 +54,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","30");
+    cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","8");
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
@@ -139,7 +139,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                 m_UltimatePressed[client] = GetGameTime();
             else
             {
-                if (m_TeleportCount[client] < 2 || true) // Always allow teleport for now!
+                if (m_TeleportCount[client] < 2)
                 {
                     new bool:toSpawn = false;
                     if (m_TeleportCount[client] >= 1)
@@ -155,30 +155,14 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                             PrintToChat(client,"%c[SourceCraft]%c You appear to be stuck, teleporting back to spawn.",
                                         COLOR_GREEN,COLOR_DEFAULT);
                         }
-                        else if (false) // Always allow teleport for now!
+                        else
                         {
                             PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet.",
                                         COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             return;
                         }
                     }
-
-                    m_TeleportCount[client] = 0; // Always allow teleport for now!
-
-                    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-
-                    LogMessage("Teleport %N now=%f, then=%f, Time=%f",
-                                client, m_UltimatePressed[client], GetGameTime(), GetGameTime() - m_UltimatePressed[client]);
-
-                    Teleport(client,ult_level, toSpawn,
-                             GetGameTime() - m_UltimatePressed[client]);
-                    if (!toSpawn && false) // Always allow teleport for now!
-                    {
-                        new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
-                        if (cooldown > 0.0)
-                            CreateTimer(cooldown,AllowTeleport,client);
-                    }
+                    Teleport(client,ult_level, toSpawn, GetGameTime() - m_UltimatePressed[client]);
                 }
                 else
                 {
@@ -188,21 +172,6 @@ public OnUltimateCommand(client,player,race,bool:pressed)
             }
         }
     }
-}
-
-public Action:AllowTeleport(Handle:timer,any:index)
-{
-    m_TeleportCount[index]=0;
-    if(IsClientInGame(index))
-    {
-        new player = GetPlayer(index);
-        if (GetRace(player) == raceID && IsPlayerAlive(index))
-        {
-            PrintToChat(index,"%c[SourceCraft]%c Your %cTeleport%c has recharged and can be used again.",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-        }
-    }
-    return Plugin_Stop;
 }
 
 public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
@@ -416,20 +385,17 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         switch(ult_level)
         {
             case 1:
-                range=/*(time_pressed / 3.0) */ 300.0;
+                range=(time_pressed / 3.0) * 300.0;
             case 2:
-                range=/*(time_pressed / 3.0) */ 500.0;
+                range=(time_pressed / 3.0) * 500.0;
             case 3:
-                range=/*(time_pressed / 3.0) */ 800.0;
+                range=(time_pressed / 3.0) * 800.0;
             case 4:
                 range=(time_pressed / 3.0) * 1000.0;
         }
 
         if (range >= 1000.0)
             range = 0.0;
-
-        LogMessage("Teleport %N Time=%f, Level=%d, Rage=%f",
-                   client, time_pressed, ult_level, range);
 
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
@@ -441,10 +407,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         {
             new Float:size[3];
             GetClientMaxs(client, size);
-
-            LogMessage("Teleport %N, DidHit, end=%f,%f,%f; size=%f,%f,%f",
-                       client, destloc[0], destloc[1], destloc[2],
-                               size[0], size[1], size[2]);
 
             if (destloc[0] > clientloc[0])
                 destloc[0] -= size[0] + 5.0;
@@ -474,9 +436,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                 distance[1] *= -1;
             if (distance[2] < 0)
                 distance[2] *= -1;
-
-            LogMessage("Teleport %N, dist=%f,%f,%f",
-                       client, distance[0], distance[1], distance[2]);
 
             // Limit the teleport location to remain within the range
             for (new i = 0; i<=2; i++)
@@ -519,10 +478,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                 new Float:size[3];
                 GetClientMaxs(client, size);
 
-                LogMessage("Teleport %N, DidHitAgain, end=%f,%f,%f; size=%f,%f,%f",
-                        client, destloc[0], destloc[1], destloc[2],
-                        size[0], size[1], size[2]);
-
                 if (destloc[0] > clientloc[0])
                     destloc[0] -= size[0] + 5.0;
                 else
@@ -541,13 +496,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
 
         }
 
-        new Float:dist = DistanceBetween(clientloc,destloc);
-        LogMessage("Teleport %N %f units To %f,%f,%f",
-                   client, dist, destloc[0], destloc[1], destloc[2]);
-
-        PrintToChat(client, "Teleport %c%f%c units (range=%f,level=%d)",
-                    COLOR_GREEN,dist,COLOR_DEFAULT,range,ult_level);
-
         // Save teleport location for stuck comparison later
         teleportLoc[client][0] = destloc[0];
         teleportLoc[client][1] = destloc[1];
@@ -561,6 +509,31 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
     TE_SendToAll();
 
     m_TeleportCount[client]++;
+
+    new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
+    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %3.1 seconds before teleporting again!",
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+
+    if (!to_spawn)
+    {
+        if (cooldown > 0.0)
+            CreateTimer(cooldown,AllowTeleport,client);
+    }
+}
+
+public Action:AllowTeleport(Handle:timer,any:index)
+{
+    m_TeleportCount[index]=0;
+    if(IsClientInGame(index))
+    {
+        new player = GetPlayer(index);
+        if (GetRace(player) == raceID && IsPlayerAlive(index))
+        {
+            PrintToChat(index,"%c[SourceCraft]%c Your %cTeleport%c has recharged and can be used again.",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+        }
+    }
+    return Plugin_Stop;
 }
 
 /***************
