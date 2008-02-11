@@ -76,7 +76,7 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    SetupSound(errorWav,true);
+    SetupSound(errorWav,true,true);
 }
 
 public OnRaceSelected(client,player,oldrace,race)

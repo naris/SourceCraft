@@ -122,7 +122,7 @@ public OnMapStart()
     if (g_purpleGlow == -1)
         SetFailState("Couldn't find purpleglow Model");
 
-    SetupSound(thunderWav);
+    SetupSound(thunderWav,true,true);
 }
 
 public OnPlayerAuthed(client,player)

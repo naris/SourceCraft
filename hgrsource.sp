@@ -253,7 +253,7 @@ public OnConfigsExecuted()
 
 stock bool:SetupSound(const String:wav[], bool:preload=false)
 {
-    if (strlen(wav))
+    if (wav[0])
     {
         decl String:file[PLATFORM_MAX_PATH+1];
         Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
