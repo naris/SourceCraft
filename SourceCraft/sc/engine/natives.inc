@@ -184,16 +184,20 @@ public Native_HurtPlayer(Handle:plugin,numParams)
  */
 public Native_HealPlayer(Handle:plugin,numParams)
 {
-    if (numParams <= 2 && numParams <= 4)
+    if (numParams >= 2 && numParams <= 4)
     {
         new client = GetNativeCell(1);
         new amount = GetNativeCell(2);
         new health = (numParams >= 3) ? GetNativeCell(3) : GetClientHealth(client);
         new max    = (numParams >= 4) ? GetNativeCell(4) : GetMaxHealth(client);
+        new old_health=health;
         health    += amount;
         if (health > max)
             health = max;
         SetEntityHealth(client,health);
+        LogMessage("Heal %N for %d, old_health=%d, max=%d", client, amount, old_health, max, health);
+        PrintToChat(client, "Healed for %d, old_health=%d, max=%d", client, amount, old_health, max, health);
+        PrintToChat(client, "Healed for %d, old_health=%d, max=%d", client, amount, old_health, max, health);
         SaveHealth(client);
         return health;
     }

@@ -139,24 +139,37 @@ public Action:Regeneration(Handle:timer)
                         new count=0;
                         new Float:clientLoc[3];
                         GetClientAbsOrigin(client, clientLoc);
+                        new team = GetClientTeam(client);
                         for (new index=1;index<=maxplayers;index++)
                         {
-                            if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
-                                GetClientTeam(index) == GetClientTeam(client))
+                            if (index != client && IsClientInGame(index) &&
+                                IsPlayerAlive(index) && GetClientTeam(index) == team)
                             {
                                 new player_check=GetPlayer(index);
                                 if (player_check>-1)
                                 {
+                                    LogMessage("[ZergRegeneration] Check player %N", index);
+                                    PrintToChat(client,"[ZergRegeneration] Check player %N", index);
+                                    PrintToChat(index,"[ZergRegeneration] Check player %N", index);
                                     if (IsInRange(client,index,range))
                                     {
+                                        LogMessage("[ZergRegeneration] Check player %N is in Range", index);
+                                        PrintToChat(client,"[ZergRegeneration] Check player %N is in Range", index);
+                                        PrintToChat(index,"[ZergRegeneration] Check player %N is in Range", index);
                                         new Float:indexLoc[3];
                                         GetClientAbsOrigin(index, indexLoc);
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
+                                            LogMessage("[ZergRegeneration] Check player %N is Traceable", index);
+                                            PrintToChat(client, "[ZergRegeneration] Check player %N is Traceable", index);
+                                            PrintToChat(index, "[ZergRegeneration] Check player %N is Traceable", index);
                                             new health=GetClientHealth(index);
                                             new max=GetMaxHealth(index);
                                             if (health < max)
                                             {
+                                                LogMessage("[ZergRegeneration] Healing player %N for %d", index, skill_healing_aura);
+                                                PrintToChat(client, "[ZergRegeneration] Healing player %N for %d", index, skill_healing_aura);
+                                                PrintToChat(index, "[ZergRegeneration] Healing player %N for %d", index, skill_healing_aura);
                                                 HealPlayer(index,skill_healing_aura,health,max);
 
                                                 new color[4] = { 0, 0, 255, 255 };
