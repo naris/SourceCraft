@@ -34,7 +34,7 @@ new m_VelocityOffset;
 new Handle:cvarTeleportCooldown = INVALID_HANDLE;
 
 new m_TeleportCount[MAXPLAYERS+1];
-new m_UltimatePressed[MAXPLAYERS+1];
+new Float:m_UltimatePressed[MAXPLAYERS+1];
 
 new Float:spawnLoc[MAXPLAYERS+1][3];
 new Float:teleportLoc[MAXPLAYERS+1][3];
@@ -136,10 +136,10 @@ public OnUltimateCommand(client,player,race,bool:pressed)
         if(ult_level)
         {
             if (pressed)
-                m_UltimatePressed[client] = GetSysTickCount();
+                m_UltimatePressed[client] = GetGameTime();
             else
             {
-                if (m_TeleportCount[client] < 2)
+                if (m_TeleportCount[client] < 2 || true) // Always allow teleport for now!
                 {
                     new bool:toSpawn = false;
                     if (m_TeleportCount[client] >= 1)
@@ -155,7 +155,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                             PrintToChat(client,"%c[SourceCraft]%c You appear to be stuck, teleporting back to spawn.",
                                         COLOR_GREEN,COLOR_DEFAULT);
                         }
-                        else
+                        else if (false) // Always allow teleport for now!
                         {
                             PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet.",
                                         COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
@@ -163,12 +163,17 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                         }
                     }
 
+                    m_TeleportCount[client] = 0; // Always allow teleport for now!
+
                     PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing!",
                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
+                    LogMessage("Teleport %N now=%f, then=%f, Time=%f",
+                                client, m_UltimatePressed[client], GetGameTime(), GetGameTime() - m_UltimatePressed[client]);
+
                     Teleport(client,ult_level, toSpawn,
-                             GetSysTickCount() - m_UltimatePressed[client]);
-                    if (!toSpawn)
+                             GetGameTime() - m_UltimatePressed[client]);
+                    if (!toSpawn && false) // Always allow teleport for now!
                     {
                         new Float:cooldown = GetConVarFloat(cvarTeleportCooldown);
                         if (cooldown > 0.0)
@@ -388,7 +393,7 @@ Bash(victim_index, player)
     }
 }
 
-Teleport(client,ult_level, bool:to_spawn, time_pressed)
+Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
 {
     new Float:origin[3];
     GetClientAbsOrigin(client, origin);
@@ -404,27 +409,27 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
     }
     else
     {
-        if (time_pressed > 3000 || time_pressed <= 0)
-            time_pressed = 3000;
+        if (time_pressed > 3.0 || time_pressed <= 0.0)
+            time_pressed = 3.0;
 
         new Float:range=1.0;
         switch(ult_level)
         {
             case 1:
-                range=(float(time_pressed) / 3000.0) * 300.0;
+                range=/*(time_pressed / 3.0) */ 300.0;
             case 2:
-                range=(float(time_pressed) / 3000.0) * 400.0;
+                range=/*(time_pressed / 3.0) */ 500.0;
             case 3:
-                range=(float(time_pressed) / 3000.0) * 550.0;
+                range=/*(time_pressed / 3.0) */ 800.0;
             case 4:
-                range=(float(time_pressed) / 3000.0) * 800.0;
+                range=(time_pressed / 3.0) * 1000.0;
         }
 
-        LogMessage("Teleport %N Time=%d, Level=%d, Rage=%f",
-                   client, time_pressed, ult_level, range);
+        if (range >= 1000.0)
+            range = 0.0;
 
-        PrintToChat(client,"Teleport Time=%d, Level=%d, Range=%f",
-                    time_pressed, ult_level, range);
+        LogMessage("Teleport %N Time=%f, Level=%d, Rage=%f",
+                   client, time_pressed, ult_level, range);
 
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
@@ -440,9 +445,6 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
             LogMessage("Teleport %N, DidHit, end=%f,%f,%f; size=%f,%f,%f",
                        client, destloc[0], destloc[1], destloc[2],
                                size[0], size[1], size[2]);
-
-            PrintToChat(client, "Teleport DidHit, end=%f,%f,%f; size=%f,%f,%f",
-                        destloc[0], destloc[1], destloc[2], size[0], size[1], size[2]);
 
             if (destloc[0] > clientloc[0])
                 destloc[0] -= size[0] + 5.0;
@@ -460,7 +462,7 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
                 destloc[2] += size[2] + 5.0;
         }
 
-        if (DistanceBetween(clientloc,destloc) > range)
+        if (range > 0.0 && DistanceBetween(clientloc,destloc) > range)
         {
             new Float:distance[3];
             distance[0] = destloc[0]-clientloc[0];
@@ -475,9 +477,6 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
 
             LogMessage("Teleport %N, dist=%f,%f,%f",
                        client, distance[0], distance[1], distance[2]);
-
-            PrintToChat(client, "Teleport dist=%f,%f,%f",
-                        distance[0], distance[1], distance[2]);
 
             // Limit the teleport location to remain within the range
             for (new i = 0; i<=2; i++)
@@ -510,14 +509,44 @@ Teleport(client,ult_level, bool:to_spawn, time_pressed)
                     }
                 }
             }
+
+            // Check if new coordinates get you stuck!
+            TR_TraceRayFilter(clientloc,destloc,MASK_SOLID,RayType_EndPoint,TraceRayTryToHit);
+            if (TR_DidHit())
+            {
+                TR_GetEndPosition(destloc);
+
+                new Float:size[3];
+                GetClientMaxs(client, size);
+
+                LogMessage("Teleport %N, DidHitAgain, end=%f,%f,%f; size=%f,%f,%f",
+                        client, destloc[0], destloc[1], destloc[2],
+                        size[0], size[1], size[2]);
+
+                if (destloc[0] > clientloc[0])
+                    destloc[0] -= size[0] + 5.0;
+                else
+                    destloc[0] += size[0] + 5.0;
+
+                if (destloc[1] > clientloc[1])
+                    destloc[1] -= size[1] + 5.0;
+                else
+                    destloc[1] += size[1] + 5.0;
+
+                if (destloc[2] > clientloc[2])
+                    destloc[2] -= size[2] + 5.0;
+                else
+                    destloc[2] += size[2] + 5.0;
+            }
+
         }
 
         new Float:dist = DistanceBetween(clientloc,destloc);
         LogMessage("Teleport %N %f units To %f,%f,%f",
                    client, dist, destloc[0], destloc[1], destloc[2]);
 
-        PrintToChat(client, "Teleport %f units To %f,%f,%f",
-                    dist, destloc[0], destloc[1], destloc[2]);
+        PrintToChat(client, "Teleport %c%f%c units (range=%f,level=%d)",
+                    COLOR_GREEN,dist,COLOR_DEFAULT,range,ult_level);
 
         // Save teleport location for stuck comparison later
         teleportLoc[client][0] = destloc[0];
