@@ -1221,7 +1221,7 @@ public Action_Drop(client)
     if(target>0)
     {
         PrintCenterText(client,"Target has been dropped");
-        if (ClientIsInGame(target))
+        if (IsClientInGame(target))
         {
             SetEntPropFloat(target,Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
 

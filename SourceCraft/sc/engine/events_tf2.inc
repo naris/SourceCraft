@@ -177,7 +177,7 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
 public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
-    new indexi = GetClientOfUserId(userid);
+    new index  = GetClientOfUserId(userid);
 
     new attacker = GetEventInt(event,"attacker");
     if (attacker > 0 && attacker != userid)
@@ -185,7 +185,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
         new attacker_index=GetClientOfUserId(attacker);
         new vecpos=GetClientVectorPosition(attacker_index);
         if(vecpos!=-1)
-            GiveObjectDestroyedXP(index,vecpos);
+            GiveObjectDestroyedXP(attacker_index,vecpos);
     }
     else
     {
@@ -197,10 +197,10 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
     new assister = GetEventInt(event,"assister");
     if (assister> 0 && assister != userid)
     {
-        new index=GetClientOfUserId(assister);
-        new vecpos=GetClientVectorPosition(index);
+        new assister_index=GetClientOfUserId(assister);
+        new vecpos=GetClientVectorPosition(assister_index);
         if(vecpos!=-1)
-            GiveObjectDestroyedXP(index,vecpos);
+            GiveObjectDestroyedXP(assister_index,vecpos);
     }
 
     decl String:weapon[64] = "";
