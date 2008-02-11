@@ -40,20 +40,24 @@ stock Mod:GetGameType()
     return GameType;
 }
 
-stock bool:SetupSound(const String:wav[], bool:preload=false)
+stock bool:SetupSound(const String:wav[], bool:preload=false, bool:download=false)
 {
-    decl String:file[PLATFORM_MAX_PATH+1];
-    Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+    if (download)
+    {
+        decl String:file[PLATFORM_MAX_PATH+1];
+        Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
 
-    if(FileExists(file))
-        AddFileToDownloadsTable(file);
-
+        if(FileExists(file))
+            AddFileToDownloadsTable(file);
+    }
     return PrecacheSound(wav,preload);
 }
 
-stock SetupModel(const String:model[])
+stock SetupModel(const String:model[], bool:preload=false, bool:download=false)
 {
-    //AddFileToDownloadsTable(model);
-    return PrecacheModel(model);
+    if (download && FileExists(model))
+        AddFileToDownloadsTable(model);
+
+    return PrecacheModel(model,preload);
 }
 

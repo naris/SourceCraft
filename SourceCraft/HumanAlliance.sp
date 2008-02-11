@@ -81,19 +81,19 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    SetupSound(teleportWav);
-
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
+
+    SetupSound(teleportWav, true, true);
 }
 
 public OnPlayerAuthed(client,player)

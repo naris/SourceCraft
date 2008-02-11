@@ -85,20 +85,20 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_smokeSprite = PrecacheModel("materials/sprites/smoke.vmt");
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_lightningSprite = PrecacheModel("materials/sprites/lgtning.vmt");
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
-    g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    SetupSound(blowerWav, true);
-    SetupSound(anxiousWav, true);
+    SetupSound(blowerWav, true, true);
+    SetupSound(anxiousWav, true, true);
 }
 
 public OnPlayerAuthed(client,player)

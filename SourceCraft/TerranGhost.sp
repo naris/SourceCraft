@@ -111,18 +111,18 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
     if (GameType == tf2)
-        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
+        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt", true);
     else
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
+        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt", true);
 
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");

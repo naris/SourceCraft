@@ -88,24 +88,24 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
+    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt", true);
     if (g_purpleGlow == -1)
         SetFailState("Couldn't find purpleglow Model");
 
     if (GameType == tf2)
     {
-        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
+        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt", true);
         if (explosionModel == -1)
             SetFailState("Couldn't find Explosion Model");
     }
     else
     {
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
+        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt", true);
         if (explosionModel == -1)
             SetFailState("Couldn't find Explosion Model");
     }
 
-    SetupSound(explodeWav, true);
+    SetupSound(explodeWav, true, true);
 }
 
 public OnXPGiven(client,player,&amount)

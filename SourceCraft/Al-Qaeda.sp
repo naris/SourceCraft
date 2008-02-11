@@ -90,42 +90,42 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_beamSprite = SetupModel("materials/models/props_lab/airlock_laser.vmt");
+    g_beamSprite = SetupModel("materials/models/props_lab/airlock_laser.vmt", true);
     if (g_beamSprite == -1)
         SetFailState("Couldn't find laser Model");
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
+    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
+    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
-    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
+    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt", true);
     if (g_purpleGlow == -1)
         SetFailState("Couldn't find purpleglow Model");
 
-    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
+    explosionModel=SetupModel("materials/sprites/zerogxplode.vmt", true);
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
     if (GameType == tf2)
     {
-        bigExplosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt");
+        bigExplosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt", true);
         if (bigExplosionModel == -1)
             SetFailState("Couldn't find Explosion Model");
     }
     else
         bigExplosionModel = explosionModel;
 
-    SetupSound(allahWav, true);
-    SetupSound(kaboomWav, true);
-    SetupSound(explodeWav, true);
+    SetupSound(allahWav, true, true);
+    SetupSound(kaboomWav, true, true);
+    SetupSound(explodeWav, true, true);
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)
