@@ -378,20 +378,20 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
     }
     else
     {
-        if (time_pressed > 3.0 || time_pressed <= 0.0)
-            time_pressed = 3.0;
+        if (time_pressed > 2.0 || time_pressed <= 0.0)
+            time_pressed = 2.0;
 
         new Float:range=1.0;
         switch(ult_level)
         {
             case 1:
-                range=(time_pressed / 3.0) * 300.0;
+                range=(time_pressed / 2.0) * 300.0;
             case 2:
-                range=(time_pressed / 3.0) * 500.0;
+                range=(time_pressed / 2.0) * 500.0;
             case 3:
-                range=(time_pressed / 3.0) * 800.0;
+                range=(time_pressed / 2.0) * 800.0;
             case 4:
-                range=(time_pressed / 3.0) * 1000.0;
+                range=(time_pressed / 2.0) * 1000.0;
         }
 
         if (range >= 1000.0)
