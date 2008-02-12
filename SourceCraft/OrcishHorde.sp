@@ -37,7 +37,8 @@ new g_purpleGlow;
 new g_crystalSprite;
 new g_lightningSprite;
 
-new String:thunderWav[] = "sourcecraft/thunder1Long.mp3"; // "ambient/weather/thunder1.wav";
+new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
+new String:rechargeWav[] = "sourcecraft/thunder1Long.mp3";
 
 public Plugin:myinfo = 
 {
