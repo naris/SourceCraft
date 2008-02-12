@@ -1048,7 +1048,7 @@ public Action:GrabSearch(Handle:timer,any:index)
         GetClientEyeAngles(index,clientang); // Get angle of where the player is looking
         TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayGrabEnt); // Create a ray that tells where the player is looking
         new target = TR_GetEntityIndex(); // Set the seekers targetindex to the person he picked up
-        if (target>0 && target<=MAXPLAYERS && IsValidEntity(target) && IsClientInGame(target))
+        if (target>0 && target<=GetMaxClients() && IsValidEntity(target) && IsClientInGame(target))
         {
             // Found something
             decl String:name[32] = "";
@@ -1175,7 +1175,7 @@ public Action:Grabbing(Handle:timer,any:index)
                 TeleportEntity(gTargetIndex[index],NULL_VECTOR,NULL_VECTOR,velocity);
                 // Make a beam from grabber to grabbed
                 new color[4];
-                if(target<=MAXPLAYERS)
+                if(target<=GetMaxClients())
                     targetloc[2]+=45;
                 GetBeamColor(index,Grab,color);
                 BeamEffect("@all",clientloc,targetloc,0.2,1.0,10.0,color,0.0,0);
@@ -1227,7 +1227,7 @@ public Action_Drop(client)
                 SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",gMaxSpeed[target]);
         }
 
-        if(target>0&&target<=MAXPLAYERS)
+        if(target>0&&target<=GetMaxClients())
             gGrabbed[target]=false; // Tell plugin the target is no longer being grabbed
 
         gTargetIndex[client]=-1;
@@ -1366,7 +1366,7 @@ public Action_Detach(client)
 
 public bool:TraceRayTryToHit(entity,mask)
 {
-    if(entity>0&&entity<=MAXPLAYERS) // Check if the beam hit a player and tell it to keep tracing if it did
+    if(entity>0&&entity<=GetMaxClients()) // Check if the beam hit a player and tell it to keep tracing if it did
         return false;
     return true;
 }
@@ -1375,7 +1375,7 @@ public bool:TraceRayGrabEnt(entity,mask)
 {
     if(entity>0) // Check if the beam hit an entity other than the grabber, and stop if it does
     {
-        if(entity<=MAXPLAYERS&&!gStatus[entity][ACTION_GRAB]&&!gGrabbed[entity])
+        if(entity<=GetMaxClients()&&!gStatus[entity][ACTION_GRAB]&&!gGrabbed[entity])
             return true;
         if(entity>64) 
             return true;
