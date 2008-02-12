@@ -313,7 +313,7 @@ bool:ReaverScarab(damage, victim_index, victim_player, index, player)
         if (!GetImmunity(victim_player,Immunity_Explosion) && !IsUber(victim_index) &&
             GetRandomInt(1,100) <= chance &&
             (!gReaverScarabTime[index] ||
-             GetGameTime() - gReaverScarabTime[index] > 1.0))
+             GetGameTime() - gReaverScarabTime[index] > 0.5))
         {
             new health_take= RoundToFloor(float(damage)*percent);
             if (health_take > 0)
@@ -330,7 +330,7 @@ bool:ReaverScarab(damage, victim_index, victim_player, index, player)
                 SetEntityHealth(victim_index,new_health);
 
                 if (!gReaverScarabTime[index] ||
-                    GetGameTime() - gReaverScarabTime[index] >= 10.0)
+                    GetGameTime() - gReaverScarabTime[index] >= 2.0)
                 {
                     new Float:Origin[3];
                     GetClientAbsOrigin(victim_index, Origin);
