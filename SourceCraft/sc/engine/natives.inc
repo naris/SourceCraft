@@ -136,11 +136,11 @@ public Native_KillPlayer(Handle:plugin,numParams)
  * Take health from (damage) a player
  * @param client: The client's index you want.
  * @param damage: The amount to damage to deal to the client.
- * @param weapon: The weapon used to deal the damage to the client.
  * @param attacker: The index of the attacker.
- * @param attacker: The index of the assister.
+ * @param weapon: The weapon used to deal the damage to the client.
+ * @param assister: The index of the assister.
  * @noreturn
- * native HurtPlayer(client, damage, const String:weapon[]="", attacker=0, assister=0);
+ * native HurtPlayer(client, damage, attacker=0, const String:weapon[]="", assister=0);
  */
 public Native_HurtPlayer(Handle:plugin,numParams)
 {
@@ -153,16 +153,26 @@ public Native_HurtPlayer(Handle:plugin,numParams)
         new Handle:event = CreateEvent("player_hurt");
         if (event != INVALID_HANDLE)
         {
+            new attacker = 0;
+            new assister = 0;
             decl String:weapon[64] = "";
-            if (numParams >= 4)
-                GetNativeString(4,weapon,sizeof(weapon));
+            if (numParams >= 3)
+            {
+                attacker = GetNativeCell(3);
+                if (numParams >= 4)
+                {
+                    GetNativeString(4,weapon,sizeof(weapon));
+                    if (numParams >= 5)
+                        assister = GetNativeCell(5);
+                }
+            }
 
             SetEventInt(event, "userid", GetClientUserId(victim));
-            SetEventInt(event, "attacker", (numParams >= 3) ? GetClientUserId(GetNativeCell(3)) : 0);
+            SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
             SetEventInt(event, "health", health);
             SetEventInt(event, "damage", damage);
             SetEventString(event, "weapon", weapon);
-            SetEventInt(event, "assister", (numParams >= 5) ? GetClientUserId(GetNativeCell(5)) : 0);
+            SetEventInt(event, "assister", (assister) ? GetClientUserId(assister) : 0);
             SetEventBool(event, "from_sourcecraft", true);
             FireEvent(event);
         }
