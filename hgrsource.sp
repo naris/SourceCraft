@@ -1117,65 +1117,75 @@ public Action:GrabSearch(Handle:timer,any:index)
 
 public Action:Grabbing(Handle:timer,any:index)
 {
-    PrintCenterText(index,"Target found, release key/toggle off to drop");
-    if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
+    if (IsClientInGame(index) && IsPlayerAlive(index))
     {
-        new target = gTargetIndex[index];
-        if (target > 0 && IsClientInGame(target) && IsPlayerAlive(target))
+        PrintCenterText(index,"Target found, release key/toggle off to drop");
+        if (gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
         {
-            if (gRemainingDuration[index] > 0)
+            new target = gTargetIndex[index];
+            if (target > 0 && IsClientInGame(target) && IsPlayerAlive(target))
             {
-                gRemainingDuration[index]--;
-                if (gRemainingDuration[index] <= 0)
+                if (gRemainingDuration[index] > 0)
                 {
-                    Action_Drop(index);
-                    //CloseHandle(timer); // Stop the timer
-                    return Plugin_Stop;
+                    gRemainingDuration[index]--;
+                    if (gRemainingDuration[index] <= 0)
+                    {
+                        Action_Drop(index);
+                        //CloseHandle(timer); // Stop the timer
+                        return Plugin_Stop;
+                    }
                 }
+
+                // Find where to push the target
+                new Float:clientloc[3],Float:clientang[3],Float:targetloc[3],Float:endvec[3],Float:distance[3];
+                GetClientAbsOrigin(index,clientloc);
+                GetClientEyeAngles(index,clientang);
+                GetClientAbsOrigin(target,targetloc);
+
+                if (gFlags[index][ACTION_GRAB] != 0) // Grabber is a Puller
+                {
+                    // Adjust the distance if the target is closer, or drag the victim in.
+                    new Float:targetDistance=GetDistanceBetween(clientloc,targetloc);
+                    if (gGrabDist[index] > targetDistance)
+                        gGrabDist[index] = targetDistance;
+                    else if (gGrabDist[index] > 1)
+                        gGrabDist[index]--;
+
+                    if (!gGrabCounter[index] || ++gGrabCounter[index] >= 20)
+                    {
+                        StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
+                        EmitSoundFromOrigin(pullerWav,targetloc); // Emit sound from the entity being pulled
+                        gGrabCounter[index]=1;
+                    }
+                }
+
+                TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Find where the player is aiming
+                TR_GetEndPosition(endvec); // Get the end position of the trace ray
+                distance[0]=endvec[0]-clientloc[0];
+                distance[1]=endvec[1]-clientloc[1];
+                distance[2]=endvec[2]-clientloc[2];
+                new Float:que=gGrabDist[index]/(SquareRoot(distance[0]*distance[0]+
+                                                           distance[1]*distance[1]+
+                                                           distance[2]*distance[2]));
+
+                new Float:velocity[3];
+                velocity[0]=(((distance[0]*que)+clientloc[0])-targetloc[0])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
+                velocity[1]=(((distance[1]*que)+clientloc[1])-targetloc[1])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
+                velocity[2]=(((distance[2]*que)+clientloc[2])-targetloc[2])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
+                TeleportEntity(gTargetIndex[index],NULL_VECTOR,NULL_VECTOR,velocity);
+                // Make a beam from grabber to grabbed
+                new color[4];
+                if(target<=MAXPLAYERS)
+                    targetloc[2]+=45;
+                GetBeamColor(index,Grab,color);
+                BeamEffect("@all",clientloc,targetloc,0.2,1.0,10.0,color,0.0,0);
             }
-
-            // Find where to push the target
-            new Float:clientloc[3],Float:clientang[3],Float:targetloc[3],Float:endvec[3],Float:distance[3];
-            GetClientAbsOrigin(index,clientloc);
-            GetClientEyeAngles(index,clientang);
-            GetClientAbsOrigin(target,targetloc);
-
-            if (gFlags[index][ACTION_GRAB] != 0) // Grabber is a Puller
+            else
             {
-                // Adjust the distance if the target is closer, or drag the victim in.
-                new Float:targetDistance=GetDistanceBetween(clientloc,targetloc);
-                if (gGrabDist[index] > targetDistance)
-                    gGrabDist[index] = targetDistance;
-                else if (gGrabDist[index] > 1)
-                    gGrabDist[index]--;
-
-                if (!gGrabCounter[index] || ++gGrabCounter[index] >= 20)
-                {
-                    StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
-                    EmitSoundFromOrigin(pullerWav,targetloc); // Emit sound from the entity being pulled
-                    gGrabCounter[index]=1;
-                }
+                Action_Drop(index);
+                //CloseHandle(timer); // Stop the timer
+                return Plugin_Stop;
             }
-
-            TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Find where the player is aiming
-            TR_GetEndPosition(endvec); // Get the end position of the trace ray
-            distance[0]=endvec[0]-clientloc[0];
-            distance[1]=endvec[1]-clientloc[1];
-            distance[2]=endvec[2]-clientloc[2];
-            new Float:que=gGrabDist[index]/(SquareRoot(distance[0]*distance[0]+
-                                                       distance[1]*distance[1]+
-                                                       distance[2]*distance[2]));
-            new Float:velocity[3];
-            velocity[0]=(((distance[0]*que)+clientloc[0])-targetloc[0])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
-            velocity[1]=(((distance[1]*que)+clientloc[1])-targetloc[1])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
-            velocity[2]=(((distance[2]*que)+clientloc[2])-targetloc[2])*(GetConVarFloat(cvarGrabSpeed)/1.666667);
-            TeleportEntity(gTargetIndex[index],NULL_VECTOR,NULL_VECTOR,velocity);
-            // Make a beam from grabber to grabbed
-            new color[4];
-            if(target<=MAXPLAYERS)
-                targetloc[2]+=45;
-            GetBeamColor(index,Grab,color);
-            BeamEffect("@all",clientloc,targetloc,0.2,1.0,10.0,color,0.0,0);
         }
         else
         {
@@ -1187,7 +1197,6 @@ public Action:Grabbing(Handle:timer,any:index)
     else
     {
         Action_Drop(index);
-        //CloseHandle(timer); // Stop the timer
         return Plugin_Stop;
     }
     return Plugin_Handled;
@@ -1195,15 +1204,21 @@ public Action:Grabbing(Handle:timer,any:index)
 
 public Action_Drop(client)
 {
-    StopSound(client,SNDCHAN_AUTO,seekingWav);
-    StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
     gGrabCounter[client]=0;
-
     gStatus[client][ACTION_GRAB]=false; // Tell plugin the grabber has dropped his target
+
+    if (IsClientInGame(client))
+    {
+        StopSound(client,SNDCHAN_AUTO,seekingWav);
+        StopSound(SOUND_FROM_WORLD,SNDCHAN_AUTO,pullerWav);
+    }
+
     new target = gTargetIndex[client];
     if(target>0)
     {
-        PrintCenterText(client,"Target has been dropped");
+        if (IsClientInGame(client))
+            PrintCenterText(client,"Target has been dropped");
+
         if (IsClientInGame(target))
         {
             SetEntPropFloat(target,Prop_Data,"m_flGravity",1.0); // Set gravity back to normal
@@ -1223,7 +1238,7 @@ public Action_Drop(client)
         Call_PushCell(target);
         Call_Finish(res);
     }
-    else if(HasAccess(client,Grab))
+    else if(HasAccess(client,Grab) && IsClientInGame(client))
         PrintCenterText(client,"No target found");
 }
 

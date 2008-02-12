@@ -398,7 +398,7 @@ ChainLightning(player,client,ultlevel)
 {
     new dmg;
     new num=ultlevel*2;
-    new Float:range=1.0;
+    new Float:range;
     switch(ultlevel)
     {
         case 1:
