@@ -1,3 +1,59 @@
+"Orc
+
+Acute Strike – Working as Intended.
+
+Acute Grenade – Still VERY powerful for Solder. Kills in 1 hit. Can this be fixed at a pure 40% power level? If not, then making Solders stronger is just not a good idea as any increase could break the game.
+
+Reincarnation – Working as Intended
+
+Chain Lightning – Can be Cast 5 times in a row. Only attacks 2 people even at level 4.
+
+
+AL-Qaeda
+
+Reincarnation – Working as Intended
+
+Flaming Wrath – Only attacks 1 person. If that person moves out of range it won’t always switch to someone else.
+                                                           
+Suicide Bomber – Working as intended.
+
+Mad Bomber – Works but at level 1 and 2 your more likely to just commit suicide so many times in a row you’d never use it."
+
+
+"Undead
+
+Vampiric Aura – Seems to work as intended.
+
+Unholy Aura - Seems to work as intended.
+
+Levitation - Seems to work as intended.
+
+Suicide Bomber - Seems to work as intended. Might be working at full level at level 1.
+
+
+
+Night Elf
+
+Evasion – Working as intended
+
+Thorns Aura – Working as Intended
+
+Trueshot Aura – Working as Intented
+
+Entangled Roots – Doesn’t always report that it Worked or Failed. Doesn’t show how many seconds are left for next use. Doesn’t report how many people it has rooted. Consumes itself even if it hits nothing.
+
+
+Protoss
+
+Reaver Scarabs – Working as Intended
+
+Arbiter – Weapons are visible, Model still a bit see through.
+
+Observer Sensors – Doesn’t seem to make other visible at all, at any range.
+
+Dark Archon – Still seems to crash the server if you take over a dispenser. Needs 300 second recharge."
+
+
 Protoss
 
 Arbitor Field – Unless it provided 100% invis to the team around you I can’t see why its useful.
