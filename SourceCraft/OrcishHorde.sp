@@ -493,7 +493,7 @@ public Action:AllowChainLightning(Handle:timer,any:index)
     m_AllowChainLightning[index]=true;
     EmitSoundToClient(index, rechargeWav);
     PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cChained Lightning%c is now available again!",
-                COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     return Plugin_Stop;
 }
 

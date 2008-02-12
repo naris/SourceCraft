@@ -574,7 +574,7 @@ public Action:AllowMindControl(Handle:timer,any:index)
     m_AllowMindControl[index]=true;
     EmitSoundToClient(index, rechargeWav);
     PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cMind Control%c is now available again!",
-                COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     return Plugin_Stop;
 }
 
