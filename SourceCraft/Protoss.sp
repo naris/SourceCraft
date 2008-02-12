@@ -51,6 +51,7 @@ new g_lightningSprite;
 
 new explosionModel;
 
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
 new String:controlWav[] = "sourcecraft/pteSum00.wav";
 new String:unCloakWav[] = "sourcecraft/PabCag00.wav";
@@ -174,6 +175,7 @@ public OnMapStart()
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
+    SetupSound(rechargeWav, true);
     SetupSound(explodeWav, true);
     SetupSound(controlWav, true);
     SetupSound(unCloakWav, true);
@@ -570,6 +572,9 @@ ResetMindControledObjects(client)
 public Action:AllowMindControl(Handle:timer,any:index)
 {
     m_AllowMindControl[index]=true;
+    EmitSoundToClient(index, rechargeWav);
+    PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cMind Control%c is now available again!",
+                COLOR_GREEN,COLOR_DEFAULT);
     return Plugin_Stop;
 }
 

@@ -38,7 +38,7 @@ new g_crystalSprite;
 new g_lightningSprite;
 
 new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
-new String:rechargeWav[] = "sourcecraft/thunder1Long.mp3";
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
 public Plugin:myinfo = 
 {
@@ -124,6 +124,7 @@ public OnMapStart()
         SetFailState("Couldn't find purpleglow Model");
 
     SetupSound(thunderWav,true,true);
+    SetupSound(rechargeWav,true,true);
 }
 
 public OnPlayerAuthed(client,player)
@@ -490,6 +491,9 @@ ChainLightning(player,client,ultlevel)
 public Action:AllowChainLightning(Handle:timer,any:index)
 {
     m_AllowChainLightning[index]=true;
+    EmitSoundToClient(index, rechargeWav);
+    PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cChained Lightning%c is now available again!",
+                COLOR_GREEN,COLOR_DEFAULT);
     return Plugin_Stop;
 }
 
