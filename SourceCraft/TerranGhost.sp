@@ -49,9 +49,11 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new Float:gLockdownTime[MAXPLAYERS+1];
 
 new String:readyWav[] = "sourcecraft/taupd07.wav";
+new String:targetWav[] = "sourcecraft/tghlas00.wav";
 new String:launchWav[] = "sourcecraft/tnsfir00.wav";
 new String:detectedWav[] = "sourcecraft/taupd04.wav";
 new String:explodeWav[] = "sourcecraft/tnshit00.wav";
+new String:lockdownWav[] = "sourcecraft/tghlkd00.wav";
 
 public Plugin:myinfo = 
 {
@@ -316,6 +318,7 @@ Lockdown(victim_index, player)
 
             gLockdownTime[victim_index] = GetGameTime();
             FreezeEntity(victim_index);
+            EmitSoundToAll(lockdownWav,victim_index);
             AuthTimer(1.0,victim_index,UnfreezePlayer);
         }
     }
@@ -437,6 +440,7 @@ ResetOcularImplants(client)
 
 TargetNuclearDevice(client)
 {
+    EmitSoundToAll(targetWav,client);
     TraceAimPosition(client, m_nuclearAimPos[client], true);
 
     m_nuclearAimDot[client] = CreateEntityByName("env_sniperdot");
