@@ -160,13 +160,18 @@ stock bool:SetupSound(const String:wav[], bool:preload=false)
 {
     if (wav[0])
     {
-        decl String:file[PLATFORM_MAX_PATH+1];
-        Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+        if (IsSoundPrecached(wav))
+            return true;
+        else
+        {
+            decl String:file[PLATFORM_MAX_PATH+1];
+            Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
 
-        if(FileExists(file))
-            AddFileToDownloadsTable(file);
+            if(FileExists(file))
+                AddFileToDownloadsTable(file);
 
-        return PrecacheSound(wav,preload);
+            return PrecacheSound(wav,preload);
+        }
     }
     else
         return false;
@@ -212,16 +217,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public OnConfigsExecuted()
 {
 	GetConVarString(sm_jetpack_sound, g_sSound, sizeof(g_sSound));
-	if (g_sSound[0])
-		PrecacheSound(g_sSound, true);
-
 	GetConVarString(sm_jetpack_fuel_sound, g_fSound, sizeof(g_fSound));
-	if (g_fSound[0])
-		PrecacheSound(g_fSound, true);
-
 	GetConVarString(sm_jetpack_refuel_sound, g_rSound, sizeof(g_rSound));
-	if (g_rSound[0])
-		PrecacheSound(g_rSound, true);
 }
 
 public OnGameFrame()

@@ -255,13 +255,18 @@ stock bool:SetupSound(const String:wav[], bool:preload=false)
 {
     if (wav[0])
     {
-        decl String:file[PLATFORM_MAX_PATH+1];
-        Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+        if (IsSoundPrecached(wav))
+            return true;
+        else
+        {
+            decl String:file[PLATFORM_MAX_PATH+1];
+            Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
 
-        if(FileExists(file))
-            AddFileToDownloadsTable(file);
+            if(FileExists(file))
+                AddFileToDownloadsTable(file);
 
-        return PrecacheSound(wav,preload);
+            return PrecacheSound(wav,preload);
+        }
     }
     else
         return false;

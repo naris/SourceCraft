@@ -42,15 +42,20 @@ stock Mod:GetGameType()
 
 stock bool:SetupSound(const String:wav[], bool:preload=false, bool:download=false)
 {
-    if (download)
+    if (IsSoundPrecached(wav))
+        return true;
+    else
     {
-        decl String:file[PLATFORM_MAX_PATH+1];
-        Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
+        if (download)
+        {
+            decl String:file[PLATFORM_MAX_PATH+1];
+            Format(file, PLATFORM_MAX_PATH, "sound/%s", wav);
 
-        if(FileExists(file))
-            AddFileToDownloadsTable(file);
+            if(FileExists(file))
+                AddFileToDownloadsTable(file);
+        }
+        return PrecacheSound(wav,preload);
     }
-    return PrecacheSound(wav,preload);
 }
 
 stock SetupModel(const String:model[], bool:preload=false, bool:download=false)

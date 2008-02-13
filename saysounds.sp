@@ -295,10 +295,12 @@ public Action:Load_Sounds(Handle:timer){
 					}
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
 					if (strlen(filelocation)){
-						Format(dl, sizeof(dl), "sound/%s", filelocation);
-						PrecacheSound(filelocation, true);
-						if(download && FileExists(dl)){
-							AddFileToDownloadsTable(dl);
+						if (!IsSoundPrecached(filelocation)){
+							Format(dl, sizeof(dl), "sound/%s", filelocation);
+							PrecacheSound(filelocation, true);
+							if(download && FileExists(dl)){
+								AddFileToDownloadsTable(dl);
+							}
 						}
 					}
 				}
