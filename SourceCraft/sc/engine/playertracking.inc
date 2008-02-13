@@ -428,12 +428,15 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
 
     if (movementFactor >= 0.0 && movementFactor != 1.0)
     {
-        if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
-                                          IN_MOVERIGHT|IN_SPEED|IN_JUMP|
-                                          IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
+        if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
         {
-            if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
-                visibility *= movementFactor;
+            if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
+                                              IN_MOVERIGHT|IN_SPEED|IN_JUMP|
+                                              IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
+            {
+                if (!(GetPlayerCond(client) & 1))
+                    visibility *= movementFactor;
+            }
         }
     }
     return visibility;
@@ -482,15 +485,15 @@ stock MakeInvisible(client, visibility)
                          !StrEqual(name, "CSniperDot")))
                     {
                         SetEntityRenderColor(obj,255,255,255,visibility);
-                        if (visibility> 0)
+                        if (visibility > 0)
                         {
-                            SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
-                            SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+                            SetEntityRenderMode(obj,RENDER_TRANSTEXTURE);
+                            SetEntityRenderFx(obj,RENDERFX_HOLOGRAM);
                         }
                         else
                         {
-                            SetEntityRenderMode(client,RENDER_GLOW);
-                            SetEntityRenderFx(client,RENDERFX_FADE_FAST);
+                            SetEntityRenderMode(obj,RENDER_GLOW);
+                            SetEntityRenderFx(obj,RENDERFX_FADE_FAST);
                         }
                     }
                     /*
@@ -507,6 +510,14 @@ stock MakeInvisible(client, visibility)
         }
     }
     SetEntityRenderColor(client,255,255,255,visibility);
-    SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
-    SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+    if (visibility > 0)
+    {
+        SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+        SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+    }
+    else
+    {
+        SetEntityRenderMode(client,RENDER_GLOW);
+        SetEntityRenderFx(client,RENDERFX_FADE_FAST);
+    }
 }

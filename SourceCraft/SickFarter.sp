@@ -20,6 +20,10 @@
 #include "sc/respawn"
 #include "sc/log"
 
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
+new String:anxiousWav[] = "misc/anxious.wav";
+new String:blowerWav[] = "misc/blower.wav";
+
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowFart[MAXPLAYERS+1];
@@ -33,9 +37,6 @@ new g_haloSprite;
 new g_smokeSprite;
 new g_bubbleModel;
 new g_lightningSprite;
-
-new String:anxiousWav[] = "misc/anxious.wav";
-new String:blowerWav[] = "misc/blower.wav";
 
 public Plugin:myinfo = 
 {
@@ -104,6 +105,7 @@ public OnMapStart()
 
     SetupSound(blowerWav, true, true);
     SetupSound(anxiousWav, true, true);
+    SetupSound(rechargeWav, true, true);
 }
 
 public OnPlayerAuthed(client,player)
@@ -137,8 +139,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 damage)
 {
     new bool:changed=false;
-
-    LogEventDamage(event, damage, "SickFarter::PlayerHurtEvent", raceID);
 
     if (attacker_race == raceID && attacker_index != victim_index)
     {
@@ -391,7 +391,14 @@ public Fart(player,client,ultlevel)
     }
     new Float:cooldown = GetConVarFloat(cvarFartCooldown) * 0.0; // Disable cooldown for now
 
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    if (count)
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    }
+    else
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    }
 
     if (cooldown > 0.0)
     {
@@ -402,6 +409,9 @@ public Fart(player,client,ultlevel)
 
 public Action:AllowFart(Handle:timer,any:index)
 {
+    EmitSoundToClient(index, rechargeWav);
+    PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     m_AllowFart[index]=true;
     return Plugin_Stop;
 }

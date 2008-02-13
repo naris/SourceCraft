@@ -267,11 +267,11 @@ bool:Cloak(client, player, skilllevel)
         case 1:
             alpha=210;
         case 2:
-            alpha=190;
+            alpha=195;
         case 3:
-            alpha=170;
+            alpha=185;
         case 4:
-            alpha=150;
+            alpha=170;
     }
 
     /* If the Player also has the Cloak of Shadows,
@@ -291,7 +291,7 @@ bool:Cloak(client, player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    SetMinVisibility(player,alpha, 0.80, 0.0);
+    SetMinVisibility(player,alpha, 0.90, 0.90);
 }
 
 Lockdown(victim_index, player)
@@ -479,11 +479,12 @@ public Action:TrackNuclearTarget(Handle:timer,any:index)
 
 LaunchNuclearDevice(client,player)
 {
-    EmitSoundToAll(detectedWav,client);
+    EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
+    SetMinVisibility(player, 100, 0.50, 0.50);
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %2.0f seconds for the missle to lock on.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
     m_AllowNuclearLaunch[client]=false;
     m_NuclearLaunchInitiated[client]=true;
     CreateTimer(launchTime,NuclearLockOn,client);
@@ -491,21 +492,28 @@ LaunchNuclearDevice(client,player)
 
 public Action:NuclearLockOn(Handle:timer,any:client)
 {
-    new player = GetPlayer(client);
     if (m_NuclearLaunchInitiated[client])
     {
         m_NuclearLaunchInitiated[client]=false;
         m_NuclearLaunchLockedOn[client]=true;
-        EmitSoundToAll(launchWav,client);
-        SetOverrideSpeed(player, -1.0);
+        EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
+
         new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
-        PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %3.1f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
+        PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %2.0f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
+
+        new player = GetPlayer(client);
+        if (player != -1)
+        {
+            SetMinVisibility(player, -1, -1.0, -1.0);
+            SetOverrideSpeed(player, -1.0);
+        }
+
         CreateTimer(lockTime,NuclearExplosion,client);
     }
     else
     {
         new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
         CreateTimer(cooldown,AllowNuclearLaunch,client);
     }
 }
@@ -547,7 +555,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                 }
         }
 
-        TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,10.0,30,0,r_int,20);
+        TE_SetupTFExplosion(m_nuclearAimPos[client],explosionModel,100.0,50,0,r_int,200);
         TE_SendToAll();
 
         EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
@@ -600,7 +608,16 @@ public Action:NuclearExplosion(Handle:timer,any:client)
         }
     }
     new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, num, cooldown);
+
+    if (num)
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, num, cooldown);
+    }
+    else
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+    }
+
     CreateTimer(cooldown,AllowNuclearLaunch,client);
     m_NuclearLaunchLockedOn[client]=false;
 }
@@ -616,5 +633,33 @@ public Action:AllowNuclearLaunch(Handle:timer,any:index)
         }
     }
     return Plugin_Stop;
+}
+
+/**
+ * Sets up a TF2 explosion effect.
+ *
+ * @param pos			Explosion position.
+ * @param Model			Precached model index.
+ * @param Scale			Explosion scale.
+ * @param Framerate		Explosion frame rate.
+ * @param Flags			Explosion flags.
+ * @param Radius		Explosion radius.
+ * @param Magnitude		Explosion size.
+ * @param normal		Normal vector to the explosion.
+ * @param MaterialType		Exploded material type.
+ * @noreturn
+ */
+stock TE_SetupTFExplosion(const Float:pos[3], Model, Float:Scale, Framerate, Flags, Radius, Magnitude, const Float:normal[3]={0.0, 0.0, 1.0}, MaterialType='C')
+{
+	TE_Start("TFExplosion");
+	TE_WriteVector("m_vecOrigin[0]", pos);
+	TE_WriteVector("m_vecNormal", normal);
+	TE_WriteNum("m_nModelIndex", Model);
+	TE_WriteFloat("m_fScale", Scale);
+	TE_WriteNum("m_nFrameRate", Framerate);
+	TE_WriteNum("m_nFlags", Flags);
+	TE_WriteNum("m_nRadius", Radius);
+	TE_WriteNum("m_nMagnitude", Magnitude);
+	TE_WriteNum("m_chMaterialType", MaterialType);
 }
 
