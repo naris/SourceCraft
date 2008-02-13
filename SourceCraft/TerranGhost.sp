@@ -384,7 +384,7 @@ public Action:OcularImplants(Handle:timer)
                                         if (detect)
                                         {
                                             SetOverrideVisible(player_check, 255);
-                                            if (TF_GetClass(player_check) == TF2_SPY)
+                                            if (TF_GetClass(index) == TF2_SPY)
                                             {
                                                 // Set the disguise(8) and cloak(16) bits to 0.
                                                 new playerCond = GetEntData(index,m_OffsetPlayerCond);
