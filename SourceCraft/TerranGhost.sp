@@ -131,6 +131,9 @@ public OnMapStart()
         SetFailState("Couldn't find Explosion Model");
 
     SetupSound(explodeWav, true,true);
+    SetupSound(launchWav, true,true);
+    SetupSound(detectedWav, true,true);
+    SetupSound(readyWav, true,true);
 }
 
 public OnPlayerAuthed(client,player)
