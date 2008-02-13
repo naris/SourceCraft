@@ -92,6 +92,7 @@ Cvarlist (default value):
 	sm_sound_admin_warn 0		 Number of sounds to warn admin at
 	sm_sound_announce 0		 Turns on announcements when a sound is played
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
+	sm_join_spawn 1 		 Wait until the player spawns before playing the join sound
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	 Time between each sound trigger, 0.0 to disable checking
 	sm_time_between_admin_sounds 4.5 Time between each sound trigger (for admins), 0.0 to disable checking
