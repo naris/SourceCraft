@@ -184,8 +184,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event,damage,"Al-Qaeda::PlayerDeathEvent",raceID);
-
     if (victim_race == raceID && !m_IsRespawning[victim_index])
     {
         if (m_Suicided[victim_index])
