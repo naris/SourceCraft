@@ -240,15 +240,36 @@ public OnPluginStart()
     PrintToServer("----------------|         HGR:Source Loaded         |---------------");
 }
 
+public OnMapStart()
+{
+    // Precache models
+    precache_laser=PrecacheModel("materials/sprites/laserbeam.vmt");
+}
+
 public OnConfigsExecuted()
 {
+    // Precache & download sounds
+
     GetConVarString(cvarGrabHitSound, grabberHitWav, sizeof(grabberHitWav));
+    SetupSound(grabberHitWav,true);
+
     GetConVarString(cvarSeekingSound, seekingWav, sizeof(seekingWav));
+    SetupSound(seekingWav,true);
+
     GetConVarString(cvarDeniedSound, deniedWav, sizeof(deniedWav));
+    SetupSound(deniedWav,true);
+
     GetConVarString(cvarErrorSound, errorWav, sizeof(errorWav));
+    SetupSound(errorWav,true);
+
     GetConVarString(cvarPullSound, pullerWav, sizeof(pullerWav));
+    SetupSound(pullerWav,true);
+
     GetConVarString(cvarFireSound, fireWav, sizeof(fireWav));
+    SetupSound(fireWav,true);
+
     GetConVarString(cvarHitSound, hitWav, sizeof(hitWav));
+    SetupSound(hitWav,true);
 }
 
 stock bool:SetupSound(const String:wav[], bool:preload=false)
@@ -270,21 +291,6 @@ stock bool:SetupSound(const String:wav[], bool:preload=false)
     }
     else
         return false;
-}
-
-public OnMapStart()
-{
-    // Precache models
-    precache_laser=PrecacheModel("materials/sprites/laserbeam.vmt");
-
-    // Precache & download sounds
-    SetupSound(grabberHitWav,true);
-    SetupSound(seekingWav,true);
-    SetupSound(deniedWav,true);
-    SetupSound(errorWav,true);
-    SetupSound(pullerWav,true);
-    SetupSound(fireWav,true);
-    SetupSound(hitWav,true);
 }
 
 /********

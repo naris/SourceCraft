@@ -114,22 +114,6 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-	// Create ConVars
-	CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
-	sm_jetpack = CreateConVar("sm_jetpack", "1", "enable jetpacks on the server", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
-	sm_jetpack_sound = CreateConVar("sm_jetpack_sound", g_sSound, "enable the jetpack sound", FCVAR_PLUGIN);
-	sm_jetpack_fuel_sound = CreateConVar("sm_jetpack_out_of_fuel_sound", g_fSound, "enable the jetpack out of fuel sound", FCVAR_PLUGIN);
-	sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", g_rSound, "enable the jetpack refuel sound", FCVAR_PLUGIN);
-	sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_PLUGIN);
-	sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_PLUGIN);
-	sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_PLUGIN);
-	sm_jetpack_refueling_time = CreateConVar("sm_jetpack_refueling_time", "30.0", "amount of time to wait before refueling", FCVAR_PLUGIN);
-	sm_jetpack_onspawn = CreateConVar("sm_jetpack_onspawn", "1", "enable giving players a jetpack when they spawn", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
-  	sm_jetpack_announce = CreateConVar("sm_jetpack_announce","1","This will enable announcements that jetpacks are available");
-	sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN);
-
-	AutoExecConfig();
-	
 	// Create ConCommands
 	RegConsoleCmd("+sm_jetpack", JetpackPressed, "use jetpack (keydown)", FCVAR_GAMEDLL);
 	RegConsoleCmd("-sm_jetpack", JetpackReleased, "use jetpack (keyup)", FCVAR_GAMEDLL);
@@ -148,6 +132,23 @@ public OnPluginStart()
 	if((g_iVelocity = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]")) == -1)
 		LogError("Could not find offset for CBasePlayer::m_vecVelocity[0]");
 
+	// Create ConVars
+	sm_jetpack = CreateConVar("sm_jetpack", "1", "enable jetpacks on the server", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
+	sm_jetpack_sound = CreateConVar("sm_jetpack_sound", g_sSound, "enable the jetpack sound", FCVAR_PLUGIN);
+	sm_jetpack_fuel_sound = CreateConVar("sm_jetpack_out_of_fuel_sound", g_fSound, "enable the jetpack out of fuel sound", FCVAR_PLUGIN);
+	sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", g_rSound, "enable the jetpack refuel sound", FCVAR_PLUGIN);
+	sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_PLUGIN);
+	sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_PLUGIN);
+	sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_PLUGIN);
+	sm_jetpack_refueling_time = CreateConVar("sm_jetpack_refueling_time", "30.0", "amount of time to wait before refueling", FCVAR_PLUGIN);
+	sm_jetpack_onspawn = CreateConVar("sm_jetpack_onspawn", "1", "enable giving players a jetpack when they spawn", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
+  	sm_jetpack_announce = CreateConVar("sm_jetpack_announce","1","This will enable announcements that jetpacks are available");
+	sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN);
+
+	AutoExecConfig();
+
+	CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
+	
 	/* Account for late loading */
 	new Handle:topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
@@ -181,9 +182,17 @@ public OnMapStart()
 {
 	g_fTimer = 0.0;
 	g_iMaxClients = GetMaxClients();
+}
 
+public OnConfigsExecuted()
+{
+	GetConVarString(sm_jetpack_sound, g_sSound, sizeof(g_sSound));
 	SetupSound(g_sSound,true);
+
+	GetConVarString(sm_jetpack_fuel_sound, g_fSound, sizeof(g_fSound));
 	SetupSound(g_fSound,true);
+
+	GetConVarString(sm_jetpack_refuel_sound, g_rSound, sizeof(g_rSound));
 	SetupSound(g_rSound,true);
 }
 
@@ -212,13 +221,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 					COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
 		}
 	}
-}
-
-public OnConfigsExecuted()
-{
-	GetConVarString(sm_jetpack_sound, g_sSound, sizeof(g_sSound));
-	GetConVarString(sm_jetpack_fuel_sound, g_fSound, sizeof(g_fSound));
-	GetConVarString(sm_jetpack_refuel_sound, g_rSound, sizeof(g_rSound));
 }
 
 public OnGameFrame()
