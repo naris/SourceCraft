@@ -446,7 +446,7 @@ stock MakeVisible(client)
         if(client>-1)
         {
             new count=GetEntityCount();
-            for(new y=64;y<count;y++)
+            for(new y=GetMaxClients();y<count;y++)
             {
                 if(IsValidEdict(y))
                 {
@@ -470,7 +470,7 @@ stock MakeInvisible(client, visibility)
     if (m_OwnerOffset != -1)
     {
         new count=GetEntityCount();
-        for (new obj = 64; obj < count; obj++)
+        for (new obj=GetMaxClients(); obj < count; obj++)
         {
             if (IsValidEdict(obj))
             {
@@ -478,7 +478,8 @@ stock MakeInvisible(client, visibility)
                 {
                     decl String:name[32] = "";
                     if (!GetEntityNetClass(obj,name,sizeof(name)) ||
-                        !StrEqual(name, "CCaptureFlag"))
+                        (!StrEqual(name, "CCaptureFlag") &&
+                         !StrEqual(name, "CSniperDot")))
                     {
                         SetEntityRenderColor(obj,255,255,255,visibility);
                         if (visibility> 0)
@@ -492,6 +493,11 @@ stock MakeInvisible(client, visibility)
                             SetEntityRenderFx(client,RENDERFX_FADE_FAST);
                         }
                     }
+                    decl String:clsname[128] = "";
+                    GetEdictClassname(obj, clsname, sizeof(clsname));
+                    LogMessage("%N has %s(%s)", client, name, clsname);
+                    PrintToChat(client,"%c[DEBUG]%c %c%s%c(%s)",
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,name,COLOR_DEFAULT,clsname);
                 }
             }
         }

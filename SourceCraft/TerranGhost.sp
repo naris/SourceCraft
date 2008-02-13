@@ -512,26 +512,26 @@ public Action:NuclearExplosion(Handle:timer,any:client)
             case 1:
                 {
                     damage = 600;
-                    radius = 400.0;
-                    r_int  = 400;
+                    radius = 600.0;
+                    r_int  = 600;
                 }
             case 2:
                 {
                     damage = 700;
-                    radius = 650.0;
-                    r_int  = 650;
+                    radius = 1000.0;
+                    r_int  = 1000;
                 }
             case 3:
                 {
                     damage = 800;
-                    radius = 900.0;
-                    r_int  = 800;
+                    radius = 2000.0;
+                    r_int  = 2000;
                 }
             case 4:
                 {
                     damage = 1000;
-                    radius = 1500.0;
-                    r_int  = 800;
+                    radius = 3000.0;
+                    r_int  = 3000;
                 }
         }
 

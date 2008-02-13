@@ -389,7 +389,7 @@ public Fart(player,client,ultlevel)
             }
         }
     }
-    new Float:cooldown = GetConVarFloat(cvarFartCooldown);
+    new Float:cooldown = GetConVarFloat(cvarFartCooldown) * 0.0; // Disable cooldown for now
 
     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
 
