@@ -114,8 +114,6 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-	AutoExecConfig();
-	
 	// Create ConVars
 	CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
 	sm_jetpack = CreateConVar("sm_jetpack", "1", "enable jetpacks on the server", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
@@ -130,6 +128,8 @@ public OnPluginStart()
   	sm_jetpack_announce = CreateConVar("sm_jetpack_announce","1","This will enable announcements that jetpacks are available");
 	sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN);
 
+	AutoExecConfig();
+	
 	// Create ConCommands
 	RegConsoleCmd("+sm_jetpack", JetpackPressed, "use jetpack (keydown)", FCVAR_GAMEDLL);
 	RegConsoleCmd("-sm_jetpack", JetpackReleased, "use jetpack (keyup)", FCVAR_GAMEDLL);
