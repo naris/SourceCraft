@@ -307,15 +307,28 @@ public Fart(player,client,ultlevel)
     //gFartLoc[client][0] = clientLoc[0];
     //gFartLoc[client][1] = clientLoc[1];
     //gFartLoc[client][2] = clientLoc[2];
-    
+
+    new Float:maxLoc[3];
+    maxLoc[0] = clientLoc[0] + 256.0;
+    maxLoc[1] = clientLoc[1] + 256.0;
+    maxLoc[2] = clientLoc[2] + 256.0;
+
     TE_Start("Bubbles");
-    TE_WriteVector("m_vecOrigin", clientLoc);
+    TE_WriteVector("m_vecMins", clientLoc);
+    TE_WriteVector("m_vecMaxs", maxLoc);
     TE_WriteNum("m_nModelIndex", g_bubbleModel);
+    TE_WriteFloat("m_fHeight", 256.0);
+    TE_WriteNum("m_nCount", 50);
+    TE_WriteFloat("m_fSpeed", 2.0);
     TE_SendToAll();
 
     TE_Start("Bubble Trail");
-    TE_WriteVector("m_vecOrigin", clientLoc);
+    TE_WriteVector("m_vecMins", clientLoc);
+    TE_WriteVector("m_vecMaxs", maxLoc);
     TE_WriteNum("m_nModelIndex", g_bubbleModel);
+    TE_WriteFloat("m_flWaterZ", 0.0);
+    TE_WriteNum("m_nCount", 20);
+    TE_WriteFloat("m_fSpeed", 8.0);
     TE_SendToAll();
 
     TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,50);
