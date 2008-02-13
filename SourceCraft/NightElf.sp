@@ -22,6 +22,8 @@
 #include "sc/maxhealth"
 #include "sc/log"
 
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
+
 new raceID; // The ID we are assigned to
 
 new bool:m_AllowEntangle[MAXPLAYERS+1];
@@ -75,6 +77,8 @@ public OnMapStart()
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
+
+    SetupSound(rechargeWav,true,true);
 }
 
 public OnPlayerAuthed(client,player)
@@ -98,8 +102,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
-    LogEventDamage(event, damage, "NightElf::PlayerHurtEvent", raceID);
-
     new bool:changed=false;
     if (victim_race == raceID)
     {
@@ -317,6 +319,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                 case 4:
                     range=800.0;
             }
+            new count=0;
             new Float:clientLoc[3];
             GetClientAbsOrigin(client, clientLoc);
             new maxplayers=GetMaxClients();
@@ -346,6 +349,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
                                     FreezeEntity(index);
                                     AuthTimer(10.0,index,UnfreezePlayer);
+                                    count++;
                                 }
                             }
                         }
@@ -353,10 +357,16 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                 }
             }
 
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c, you now need to wait 45 seconds before using it again.",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-
             new Float:cooldown = GetConVarFloat(cvarEntangleCooldown);
+            if (count)
+            {
+                PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+            }
+            else
+            {
+                PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+            }
+
             if (cooldown > 0.0)
             {
                 m_AllowEntangle[client]=false;
@@ -368,6 +378,9 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public Action:AllowEntangle(Handle:timer,any:index)
 {
+    EmitSoundToClient(index, rechargeWav);
+    PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cEntangled Roots%c is now available again!",
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     m_AllowEntangle[index]=true;
     return Plugin_Stop;
 }

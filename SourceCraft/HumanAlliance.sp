@@ -20,11 +20,10 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 
-#include "sc/log" // for debugging
+new String:teleportWav[] = "beams/beamstart5.wav";
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
 new raceID; // The ID we are assigned to
-
-new String:teleportWav[] = "beams/beamstart5.wav";
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -95,6 +94,7 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 
     SetupSound(teleportWav, true, true);
+    SetupSound(rechargeWav, true, true);
 }
 
 public OnPlayerAuthed(client,player)
@@ -235,8 +235,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event,damage,"HumanAlliance::PlayerDeathEvent", raceID);
-
     // Reset MaxHealth back to normal
     if (victim_race == raceID)
         ResetMaxHealth(victim_index);
@@ -249,8 +247,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
-    LogEventDamage(event,damage,"HumanAlliance::PlayerHurtEvent", raceID);
-
     if (attacker_index && attacker_index != victim_index)
     {
         if (attacker_race == raceID)
@@ -509,7 +505,7 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
     m_TeleportCount[client]++;
 
     new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
-    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %3.1f seconds before teleporting again!",
+    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
 
     if (!to_spawn)
@@ -527,6 +523,7 @@ public Action:AllowTeleport(Handle:timer,any:index)
         new player = GetPlayer(index);
         if (GetRace(player) == raceID && IsPlayerAlive(index))
         {
+            EmitSoundToClient(index, rechargeWav);
             PrintToChat(index,"%c[SourceCraft]%c Your %cTeleport%c has recharged and can be used again.",
                         COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
         }

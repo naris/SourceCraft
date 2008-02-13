@@ -22,6 +22,9 @@
 #include "sc/weapons"
 #include "sc/log"
 
+new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
+
 new raceID; // The ID we are assigned to
 
 new bool:m_HasRespawned[MAXPLAYERS+1];
@@ -36,9 +39,6 @@ new g_haloSprite;
 new g_purpleGlow;
 new g_crystalSprite;
 new g_lightningSprite;
-
-new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
 public Plugin:myinfo = 
 {
@@ -204,8 +204,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
-    LogEventDamage(event, damage, "OrcishHorde::PlayerHurtEvent", raceID);
-
     new bool:changed=false;
 
     decl String:weapon[64] = "";
@@ -248,8 +246,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, damage, "OrcishHorde::PlayerDeathEvent", raceID);
-
     if (victim_race==raceID && (!m_HasRespawned[victim_index] || GameType != cstrike))
     {
         new skill=GetSkillLevel(victim_player,victim_race,2);
@@ -478,9 +474,16 @@ ChainLightning(player,client,ultlevel)
             }
         }
     }
-    EmitSoundToAll(thunderWav,client);
     new Float:cooldown = GetConVarFloat(cvarChainCooldown);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    if (count)
+    {
+        EmitSoundToAll(thunderWav,client);
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    }
+    else
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+    }
     if (cooldown > 0.0)
     {
         m_AllowChainLightning[client]=false;

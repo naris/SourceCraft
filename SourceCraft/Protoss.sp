@@ -51,6 +51,8 @@ new g_lightningSprite;
 
 new explosionModel;
 
+new String:errorWav[] = "soundcraft/perror.mp3";
+new String:deniedWav[] = "sourcecraft/buzz.wav";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
 new String:controlWav[] = "sourcecraft/pteSum00.wav";
@@ -175,11 +177,13 @@ public OnMapStart()
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
-    SetupSound(rechargeWav, true);
-    SetupSound(explodeWav, true);
-    SetupSound(controlWav, true);
-    SetupSound(unCloakWav, true);
-    SetupSound(cloakWav, true);
+    SetupSound(errorWav, true, true);
+    SetupSound(deniedWav, true, true);
+    SetupSound(rechargeWav, true, true);
+    SetupSound(explodeWav, true, true);
+    SetupSound(controlWav, true, true);
+    SetupSound(unCloakWav, true, true);
+    SetupSound(cloakWav, true, true);
 }
 
 public OnPlayerAuthed(client,player)
@@ -234,8 +238,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 {
     new bool:changed=false;
 
-    LogEventDamage(event, damage, "Protoss::PlayerHurtEvent", raceID);
-
     if (attacker_race == raceID && victim_index != attacker_index)
     {
         if (ReaverScarab(damage, victim_index, victim_player,
@@ -263,8 +265,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, damage, "Protoss::PlayerDeathEvent", raceID);
-
     if (victim_index && victim_race == raceID)
     {
         ResetCloakingAndDetector(victim_index);
@@ -482,29 +482,72 @@ MindControl(client,player)
                                             decl String:object[32] = "";
                                             strcopy(object, sizeof(object), class[7]);
 
+                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
                                             LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
                                                       client,builder,object);
-                                            PrintToChat(client,"%c[SourceCraft] %c you have stolen %N's %s!",
-                                                        COLOR_GREEN,COLOR_DEFAULT,builder,object);
                                             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
                                                         COLOR_GREEN,COLOR_DEFAULT,client,object);
+                                            PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,object, cooldown);
 
-                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
                                             if (cooldown > 0.0)
                                             {
                                                 m_AllowMindControl[client]=false;
                                                 CreateTimer(cooldown,AllowMindControl,client);
                                             }
                                         }
+                                        else
+                                        {
+                                            EmitSoundToClient(client,errorWav);
+                                            PrintToChat(client,"%c[SourceCraft] %cTarget belong to a teammate!",
+                                                        COLOR_GREEN,COLOR_DEFAULT);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        EmitSoundToClient(client,errorWav);
+                                        PrintToChat(client,"%c[SourceCraft] %cTarget is %cimmune%c to ultimates!",
+                                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                     }
                                 }
+                                else
+                                    EmitSoundToClient(client,deniedWav);
+                            }
+                            else
+                            {
+                                EmitSoundToClient(client,errorWav);
+                                PrintToChat(client,"%c[SourceCraft] %cTarget is still %cbuilding%c!",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                             }
                         }
+                        else
+                        {
+                            EmitSoundToClient(client,deniedWav);
+                            PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
+                                        COLOR_GREEN,COLOR_DEFAULT);
+                        }
+                    }
+                    else
+                    {
+                        EmitSoundToClient(client,deniedWav);
+                        PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
+                                    COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
+                else
+                    EmitSoundToClient(client,errorWav); // Chance check failed.
+            }
+            else
+            {
+                EmitSoundToClient(client,errorWav);
+                PrintToChat(client,"%c[SourceCraft] %cTarget is too far away!",
+                            COLOR_GREEN,COLOR_DEFAULT);
             }
         }
+        else
+            EmitSoundToClient(client,deniedWav);
     }
+    else
+        EmitSoundToClient(client,deniedWav);
 }
 
 ResetMindControledObjects(client)

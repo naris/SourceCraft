@@ -22,12 +22,12 @@
 #include "sc/maxhealth"
 #include "sc/log"
 
+new String:errorWav[] = "soundcraft/perror.mp3";
+
 new raceID; // The ID we are assigned to
 
 new g_haloSprite;
 new g_lightningSprite;
-
-new String:errorWav[PLATFORM_MAX_PATH] = "soundcraft/perror.mp3"; // "player/suit_denydevice.wav";
 
 public Plugin:myinfo = 
 {
@@ -76,7 +76,7 @@ public OnMapStart()
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
 
-    SetupSound(errorWav,true,true);
+    SetupSound(errorWav, true, true);
 }
 
 public OnRaceSelected(client,player,oldrace,race)
@@ -194,20 +194,34 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public Action:OnGrab(client, target)
 {
-    if (target != client && IsClientInGame(target) && IsPlayerAlive(target) &&
-        GetClientTeam(client) != GetClientTeam(target))
+    if (target != client && IsClientInGame(target) && IsPlayerAlive(target))
     {
-        new player_check=GetPlayer(target);
-        if (player_check>-1)
+        if ( GetClientTeam(client) != GetClientTeam(target))
         {
-            if (!GetImmunity(player_check,Immunity_Ultimates))
+            new player_check=GetPlayer(target);
+            if (player_check>-1)
             {
-                SetOverrideGravity(player_check, 0.0);
-                return Plugin_Continue;
+                if (!GetImmunity(player_check,Immunity_Ultimates))
+                {
+                    SetOverrideGravity(player_check, 0.0);
+                    return Plugin_Continue;
+                }
+                else
+                {
+                    EmitSoundToClient(client,errorWav);
+                    PrintToChat(client,"%c[SourceCraft] %cTarget is %cimmune%c to ultimates!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                }
             }
+            else
+                EmitSoundToClient(client,deniedWav);
         }
+        else
+            EmitSoundToClient(client,errorWav);
     }
-    EmitSoundToClient(client,errorWav);
+    else
+        EmitSoundToClient(client,deniedWav);
+
     return Plugin_Stop;
 }
 
@@ -260,8 +274,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 damage)
 {
     new bool:changed=false;
-
-    LogEventDamage(event, damage, "Zerg::PlayerHurtEvent", raceID);
 
     decl String:weapon[64] = "";
     new bool:is_equipment=GetWeapon(event,attacker_index,weapon,sizeof(weapon));
