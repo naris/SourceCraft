@@ -28,6 +28,8 @@ new Handle:m_MaxCredits           = INVALID_HANDLE;
 new Handle:m_Currency             = INVALID_HANDLE; 
 new Handle:m_Currencies           = INVALID_HANDLE; 
 
+new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
+
 #define SAVE_ENABLED       GetConVarInt(m_SaveXPConVar)==1
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
 
@@ -172,6 +174,8 @@ public OnMapStart()
         ClearArray(vec);
     }
     ClearArray(arrayPlayers); // Clear our temporary players vector.
+
+    SetupSound(notEnoughWav,true,true);
 }
 
 public OnClientPutInServer(client)

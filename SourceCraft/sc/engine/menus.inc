@@ -19,9 +19,6 @@ new gShowItemsTarget[MAXPLAYERS+1];
 
 new Handle:hTopAdminMenu = INVALID_HANDLE;
 
-new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
-
-
 public InitMenus()
 {
     /* Account for late loading */
