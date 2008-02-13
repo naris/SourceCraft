@@ -437,11 +437,14 @@ TargetNuclearDevice(client)
     TraceAimPosition(client, m_nuclearAimPos[client], true);
 
     m_nuclearAimDot[client] = CreateEntityByName("env_sniperdot");
-    DispatchSpawn(m_nuclearAimDot[client]);
-    TeleportEntity(m_nuclearAimDot[client], m_nuclearAimPos[client],
-                   NULL_VECTOR, NULL_VECTOR);
+    if (m_nuclearAimDot[client])
+    {
+        DispatchSpawn(m_nuclearAimDot[client]);
+        TeleportEntity(m_nuclearAimDot[client], m_nuclearAimPos[client],
+                       NULL_VECTOR, NULL_VECTOR);
 
-    CreateTimer(0.1,TrackNuclearTarget,client,TIMER_REPEAT); // Create aiming loop
+        CreateTimer(0.1,TrackNuclearTarget,client,TIMER_REPEAT); // Create aiming loop
+    }
 }
 
 public Action:TrackNuclearTarget(Handle:timer,any:index)
