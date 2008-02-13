@@ -19,6 +19,8 @@
 #include "sc/trace"
 #include "sc/log"
 
+new String:explodeWav[] = "weapons/explode5.wav";
+
 new raceID; // The ID we are assigned to
 
 new explosionModel;
@@ -26,8 +28,6 @@ new g_beamSprite;
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
-
-new String:explodeWav[] = "weapons/explode5.wav";
 
 // Suicide bomber check
 new bool:m_Suicided[MAXPLAYERS+1];

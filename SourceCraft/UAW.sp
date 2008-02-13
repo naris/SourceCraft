@@ -21,12 +21,12 @@
 #include "sc/respawn"
 #include "sc/log"
 
+new String:explodeWav[] = "weapons/explode5.wav";
+
 new raceID; // The ID we are assigned to
 
 new explosionModel;
 new g_purpleGlow;
-
-new String:explodeWav[] = "weapons/explode5.wav";
 
 // Reincarnation variables
 new bool:m_JobsBank[MAXPLAYERS+1];
