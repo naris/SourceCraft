@@ -23,6 +23,7 @@
 #include "sc/log"
 
 new String:errorWav[] = "soundcraft/perror.mp3";
+new String:deniedWav[] = "sourcecraft/buzz.wav";
 
 new raceID; // The ID we are assigned to
 
@@ -77,6 +78,7 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 
     SetupSound(errorWav, true, true);
+    SetupSound(deniedWav, true, true);
 }
 
 public OnRaceSelected(client,player,oldrace,race)
@@ -217,7 +219,11 @@ public Action:OnGrab(client, target)
                 EmitSoundToClient(client,deniedWav);
         }
         else
+        {
             EmitSoundToClient(client,errorWav);
+            PrintToChat(client,"%c[SourceCraft] %cTarget is a teammate!",
+                        COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
     else
         EmitSoundToClient(client,deniedWav);

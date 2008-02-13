@@ -19,6 +19,14 @@
 #include "sc/trace"
 #include "sc/log"
 
+new String:errorWav[] = "soundcraft/perror.mp3";
+new String:deniedWav[] = "sourcecraft/buzz.wav";
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
+new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
+new String:controlWav[] = "sourcecraft/pteSum00.wav";
+new String:unCloakWav[] = "sourcecraft/PabCag00.wav";
+new String:cloakWav[] = "sourcecraft/pabRdy00.wav";
+
 new raceID; // The ID we are assigned to
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
@@ -50,14 +58,6 @@ new g_smokeSprite;
 new g_lightningSprite;
 
 new explosionModel;
-
-new String:errorWav[] = "soundcraft/perror.mp3";
-new String:deniedWav[] = "sourcecraft/buzz.wav";
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
-new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
-new String:controlWav[] = "sourcecraft/pteSum00.wav";
-new String:unCloakWav[] = "sourcecraft/PabCag00.wav";
-new String:cloakWav[] = "sourcecraft/pabRdy00.wav";
 
 public Plugin:myinfo = 
 {
@@ -498,7 +498,7 @@ MindControl(client,player)
                                         else
                                         {
                                             EmitSoundToClient(client,errorWav);
-                                            PrintToChat(client,"%c[SourceCraft] %cTarget belong to a teammate!",
+                                            PrintToChat(client,"%c[SourceCraft] %cTarget belongs to a teammate!",
                                                         COLOR_GREEN,COLOR_DEFAULT);
                                         }
                                     }
