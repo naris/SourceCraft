@@ -436,7 +436,7 @@ TargetNuclearDevice(client)
 {
     TraceAimPosition(client, m_nuclearAimPos[client], true);
 
-    m_nuclearAimDot[client] = CreateEntityByName("obj_sniperdot");
+    m_nuclearAimDot[client] = CreateEntityByName("env_sniperdot");
     DispatchSpawn(m_nuclearAimDot[client]);
     TeleportEntity(m_nuclearAimDot[client], m_nuclearAimPos[client],
                    NULL_VECTOR, NULL_VECTOR);

@@ -493,11 +493,15 @@ stock MakeInvisible(client, visibility)
                             SetEntityRenderFx(client,RENDERFX_FADE_FAST);
                         }
                     }
+                    /*
                     decl String:clsname[128] = "";
                     GetEdictClassname(obj, clsname, sizeof(clsname));
                     LogMessage("%N has %s(%s)", client, name, clsname);
                     PrintToChat(client,"%c[DEBUG]%c %c%s%c(%s)",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,name,COLOR_DEFAULT,clsname);
+                                COLOR_GREEN,COLOR_DEFAULT,
+                                COLOR_TEAM,name,COLOR_DEFAULT,
+                                clsname);
+                    */
                 }
             }
         }
