@@ -48,10 +48,10 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
 new Float:gLockdownTime[MAXPLAYERS+1];
 
-new String:readyWav[] = "sourcecraft/taupd07.wav";
+new String:readyWav[] = "sourcecraft/tadupd07.wav";
 new String:targetWav[] = "sourcecraft/tghlas00.wav";
 new String:launchWav[] = "sourcecraft/tnsfir00.wav";
-new String:detectedWav[] = "sourcecraft/taupd04.wav";
+new String:detectedWav[] = "sourcecraft/tadupd04.wav";
 new String:explodeWav[] = "sourcecraft/tnshit00.wav";
 new String:lockdownWav[] = "sourcecraft/tghlkd00.wav";
 
@@ -132,10 +132,12 @@ public OnMapStart()
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
-    SetupSound(explodeWav, true,true);
-    SetupSound(launchWav, true,true);
-    SetupSound(detectedWav, true,true);
-    SetupSound(readyWav, true,true);
+    SetupSound(readyWav, true, true);
+    SetupSound(targetWav, true, true);
+    SetupSound(launchWav, true, true);
+    SetupSound(explodeWav, true, true);
+    SetupSound(detectedWav, true, true);
+    SetupSound(lockdownWav, true, true);
 }
 
 public OnPlayerAuthed(client,player)
