@@ -38,8 +38,11 @@ new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
 new Handle:cvarNuclearCooldown = INVALID_HANDLE;
 
+new m_nuclearAimDot[MAXPLAYERS+1];
+new Float:m_nuclearAimPos[MAXPLAYERS+1][3];
 new bool:m_AllowNuclearLaunch[MAXPLAYERS+1];
 new bool:m_NuclearLaunchInitiated[MAXPLAYERS+1];
+new bool:m_NuclearLaunchLockedOn[MAXPLAYERS+1];
 
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
@@ -161,12 +164,17 @@ public OnRaceSelected(client,player,oldrace,race)
 
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
-    if (race==raceID && pressed && m_AllowNuclearLaunch[client] &&
+    if (race==raceID && m_AllowNuclearLaunch[client] &&
         IsPlayerAlive(client))
     {
         new ult_level=GetSkillLevel(player,race,3);
         if(ult_level)
-            LaunchNuclearDevice(client,player);
+        {
+            if (pressed)
+                TargetNuclearDevice(client);
+            else
+                LaunchNuclearDevice(client,player);
+        }
     }
 }
 
@@ -424,6 +432,39 @@ ResetOcularImplants(client)
     }
 }
 
+TargetNuclearDevice(client)
+{
+    TraceAimPosition(client, m_nuclearAimPos[client], true);
+
+    m_nuclearAimDot[client] = CreateEntityByName("obj_sniperdot");
+    DispatchSpawn(m_nuclearAimDot[client]);
+    TeleportEntity(m_nuclearAimDot[client], m_nuclearAimPos[client],
+                   NULL_VECTOR, NULL_VECTOR);
+
+    CreateTimer(0.1,TrackNuclearTarget,client,TIMER_REPEAT); // Create aiming loop
+}
+
+public Action:TrackNuclearTarget(Handle:timer,any:index)
+{
+    if (m_nuclearAimDot[index])
+    {
+        if (IsClientInGame(index) && IsPlayerAlive(index) &&
+            !m_NuclearLaunchLockedOn[index])
+        {
+            TraceAimPosition(index, m_nuclearAimPos[index], true);
+            TeleportEntity(m_nuclearAimDot[index], m_nuclearAimPos[index],
+                           NULL_VECTOR, NULL_VECTOR);
+            return Plugin_Handled;
+        }
+        else
+        {
+            RemoveEdict(m_nuclearAimDot[index]);
+            m_nuclearAimDot[index] = 0;
+        }
+    }
+    return Plugin_Stop;
+}
+
 LaunchNuclearDevice(client,player)
 {
     EmitSoundToAll(detectedWav,client);
@@ -441,6 +482,8 @@ public Action:NuclearLockOn(Handle:timer,any:client)
     new player = GetPlayer(client);
     if (m_NuclearLaunchInitiated[client])
     {
+        m_NuclearLaunchInitiated[client]=false;
+        m_NuclearLaunchLockedOn[client]=true;
         EmitSoundToAll(launchWav,client);
         SetOverrideSpeed(player, -1.0);
         new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
@@ -459,7 +502,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
 {
     new num    = 0;
     new player = GetPlayer(client);
-    if (m_NuclearLaunchInitiated[client] && player != -1)
+    if (m_NuclearLaunchLockedOn[client] && player != -1)
     {
         new Float:radius;
         new r_int, damage;
@@ -492,12 +535,13 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                 }
         }
 
-        new Float:client_location[3];
-        GetClientAbsOrigin(client,client_location);
-
-        TE_SetupExplosion(client_location,explosionModel,10.0,30,0,r_int,20);
+        TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,10.0,30,0,r_int,20);
         TE_SendToAll();
-        EmitSoundToAll(explodeWav,client);
+
+        EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
+                       SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
+                       SNDPITCH_NORMAL,-1,m_nuclearAimPos[client],
+                       NULL_VECTOR,true,0.0);
 
         new count = GetClientCount();
         for(new index=1;index<=count;index++)
@@ -514,10 +558,10 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                         new Float:check_location[3];
                         GetClientAbsOrigin(index,check_location);
 
-                        new hp=PowerOfRange(client_location,radius,check_location,damage);
+                        new hp=PowerOfRange(m_nuclearAimPos[client],radius,check_location,damage);
                         if (hp)
                         {
-                            if (TraceTarget(client, index, client_location, check_location))
+                            if (TraceTarget(client, index, m_nuclearAimPos[client], check_location))
                             {
                                 new newhealth = GetClientHealth(index)-hp;
                                 if (newhealth <= 0)
@@ -546,7 +590,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
     new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, num, cooldown);
     CreateTimer(cooldown,AllowNuclearLaunch,client);
-
+    m_NuclearLaunchLockedOn[client]=false;
 }
 
 public Action:AllowNuclearLaunch(Handle:timer,any:index)

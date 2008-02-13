@@ -29,7 +29,37 @@ stock TraceAimTarget(client)
     return TR_GetEntityIndex();
 }
 
+stock bool:TraceAimPosition(client, Float:destLoc[3], bool:hitPlayers)
+{
+    new Float:clientloc[3],Float:clientang[3];
+    GetClientEyePosition(client,clientloc);
+    GetClientEyeAngles(client,clientang);
+    g_TraceFilterIndex = client;
+
+    if (hitPlayers)
+        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,
+                          TraceRayFilterIndex);
+    else
+        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,
+                          TraceRayTryToHit);
+
+    TR_GetEndPosition(destLoc);
+    return TR_DidHit();
+}
+
+/***************
+ *Trace Filters*
+****************/
+
 public bool:TraceRayFilterIndex(entity,mask)
 {
+  // Check if the beam hit the originating client (g_TraceFilterIndex)
+  // and tell it to keep tracing if it did
   return (entity != g_TraceFilterIndex);
+}
+
+public bool:TraceRayTryToHit(entity,mask)
+{
+  // Check if the beam hit a player and tell it to keep tracing if it did
+  return (entity <= 0 || entity > GetMaxClients());
 }

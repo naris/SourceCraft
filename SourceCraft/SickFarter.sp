@@ -31,6 +31,7 @@ new Handle:cvarFartCooldown = INVALID_HANDLE;
 
 new g_haloSprite;
 new g_smokeSprite;
+new g_bubbleModel;
 new g_lightningSprite;
 
 new String:anxiousWav[] = "misc/anxious.wav";
@@ -85,6 +86,10 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    g_bubbleModel = SetupModel("effects/bubbles/bubble.vmt", true);
+    if (g_bubbleModel == -1)
+        SetFailState("Couldn't find bubble Model");
+
     g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
@@ -302,6 +307,16 @@ public Fart(player,client,ultlevel)
     //gFartLoc[client][0] = clientLoc[0];
     //gFartLoc[client][1] = clientLoc[1];
     //gFartLoc[client][2] = clientLoc[2];
+    
+    TE_Start("Bubbles");
+    TE_WriteVector("m_vecOrigin", clientLoc);
+    TE_WriteNum("m_nModelIndex", g_bubbleModel);
+    TE_SendToAll();
+
+    TE_Start("Bubble Trail");
+    TE_WriteVector("m_vecOrigin", clientLoc);
+    TE_WriteNum("m_nModelIndex", g_bubbleModel);
+    TE_SendToAll();
 
     TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,50);
     TE_SendToAll();
@@ -344,13 +359,13 @@ public Fart(player,client,ultlevel)
                                 new newxp=GetXP(player,raceID)+addxp;
                                 SetXP(player,raceID,newxp);
 
-                                //LogKill(client, index, "fart", "Fart", 40, addxp);
+                                //LogKill(client, index, "flatulence", "Flatulence", 40, addxp);
                                 KillPlayer(index);
                             }
                             else
                             {
-                                LogDamage(client, index, "fart", "Fart", 40);
-                                HurtPlayer(index, 40, client, "fart");
+                                LogDamage(client, index, "flatulence", "Flatulence", 40);
+                                HurtPlayer(index, 40, client, "flatulence");
                             }
 
                             if (++count > num)
@@ -363,7 +378,7 @@ public Fart(player,client,ultlevel)
     }
     new Float:cooldown = GetConVarFloat(cvarFartCooldown);
 
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFart%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c to damage %d enemies, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
 
     if (cooldown > 0.0)
     {

@@ -15,6 +15,7 @@
 
 #include "sc/util"
 #include "sc/range"
+#include "sc/trace"
 #include "sc/freeze"
 #include "sc/authtimer"
 #include "sc/maxhealth"
@@ -531,14 +532,4 @@ public Action:AllowTeleport(Handle:timer,any:index)
         }
     }
     return Plugin_Stop;
-}
-
-/***************
- *Trace Filters*
-****************/
-
-public bool:TraceRayTryToHit(entity,mask)
-{
-  // Check if the beam hit a player and tell it to keep tracing if it did
-  return (entity < 0 || entity >= 64);
 }

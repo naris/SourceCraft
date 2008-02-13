@@ -267,10 +267,9 @@ public OnMapEnd()
     {
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
-            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
-            new client=GetArrayCell(playerHandle,0);
+            new client=GetClientIndex(x);
             if (IsClientInGame(client))
-                SavePlayerData(client,GetClientVectorPosition(client));
+                SavePlayerData(client,x);
         }
     }
 }
