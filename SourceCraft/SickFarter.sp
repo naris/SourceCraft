@@ -35,6 +35,7 @@ new Handle:cvarFartCooldown = INVALID_HANDLE;
 
 new g_haloSprite;
 new g_smokeSprite;
+new g_steamSprite;
 new g_bubbleModel;
 new g_lightningSprite;
 
@@ -102,6 +103,10 @@ public OnMapStart()
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
+
+    g_steamSprite = SetupModel("materials/sprites/steam1.vmt", true);
+    if (g_steamSprite == -1)
+        SetFailState("Couldn't find steam Model");
 
     SetupSound(blowerWav, true, true);
     SetupSound(anxiousWav, true, true);
@@ -308,6 +313,7 @@ public Fart(player,client,ultlevel)
     //gFartLoc[client][1] = clientLoc[1];
     //gFartLoc[client][2] = clientLoc[2];
 
+    /*
     new Float:maxLoc[3];
     maxLoc[0] = clientLoc[0] + 256.0;
     maxLoc[1] = clientLoc[1] + 256.0;
@@ -330,9 +336,7 @@ public Fart(player,client,ultlevel)
     TE_WriteNum("m_nCount", 20);
     TE_WriteFloat("m_fSpeed", 8.0);
     TE_SendToAll();
-
-    TE_SetupSmoke(clientLoc,g_smokeSprite,40.0,50);
-    TE_SendToAll();
+    */
 
     TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
     TE_SendToAll();
@@ -342,6 +346,10 @@ public Fart(player,client,ultlevel)
     dir[1] = 0.0;
     dir[2] = 2.0;
     TE_SetupDust(clientLoc,dir,range,100.0);
+    TE_SendToAll();
+
+    new color[4] = { 255, 100, 100, 200 };
+    TE_SetupBeamFollow(client, g_steamSprite, g_steamSprite, 100.8, 10.0, 5.0, 100, color);
     TE_SendToAll();
 
     new count=0;
