@@ -555,7 +555,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                 }
         }
 
-        TE_SetupTFExplosion(m_nuclearAimPos[client],explosionModel,100.0,50,0,r_int,200);
+        TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,100.0,50,0,r_int,200);
         TE_SendToAll();
 
         EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
