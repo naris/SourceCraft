@@ -524,8 +524,8 @@ public Action:NuclearExplosion(Handle:timer,any:client)
     new player = GetPlayer(client);
     if (m_NuclearLaunchLockedOn[client] && player != -1)
     {
-        new Float:radius;
-        new r_int, damage;
+        new Float:radius, Float:scale;
+        new r_int, magnitude, damage;
         new ult_level=GetSkillLevel(player,raceID,3);
         switch(ult_level)
         {
@@ -534,28 +534,36 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                     damage = 600;
                     radius = 600.0;
                     r_int  = 600;
+                    magnitude = 600;
+                    scale = 100.0;
                 }
             case 2:
                 {
                     damage = 700;
                     radius = 1000.0;
                     r_int  = 1000;
+                    magnitude = 1000;
+                    scale = 100.0;
                 }
             case 3:
                 {
                     damage = 800;
                     radius = 2000.0;
                     r_int  = 2000;
+                    magnitude = 2000;
+                    scale = 100.0;
                 }
             case 4:
                 {
                     damage = 1000;
-                    radius = 3000.0;
+                    radius = 0.0;
                     r_int  = 3000;
+                    magnitude = 3000;
+                    scale = 100.0;
                 }
         }
 
-        TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,100.0,50,0,r_int,200);
+        TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,scale,1,0,r_int,magnitude);
         TE_SendToAll();
 
         EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
@@ -578,7 +586,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                         new Float:check_location[3];
                         GetClientAbsOrigin(index,check_location);
 
-                        new hp=PowerOfRange(m_nuclearAimPos[client],radius,check_location,damage);
+                        new hp=PowerOfRange(m_nuclearAimPos[client],radius,check_location,damage,0.5,false);
                         if (hp)
                         {
                             if (TraceTarget(client, index, m_nuclearAimPos[client], check_location))

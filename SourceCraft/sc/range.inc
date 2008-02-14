@@ -36,12 +36,21 @@ stock bool:IsInRange(client,index,Float:maxdistance)
     return (DistanceBetween(start,end)<maxdistance);
 }
 
-stock PowerOfRange(Float:location[3],Float:radius,Float:check_location[3],maxhp)
+stock PowerOfRange(Float:location[3],Float:radius,Float:check_location[3],maxhp,
+                   Float:factor=0.20,bool:limit=true)
 {
-    new Float:distance=DistanceBetween(location,check_location);
-    new Float:healthtakeaway=0.0;
-    if(distance<radius)
-        healthtakeaway=1-FloatDiv(distance,radius)+0.20;
-    return RoundFloat(float(maxhp)*healthtakeaway);
+    if (radius <= 0.0)
+        return maxhp;
+    else
+    {
+        new Float:distance=DistanceBetween(location,check_location);
+        if (limit && distance > radius)
+            return 0;
+        else
+        {
+            new Float:healthtakeaway=1-FloatDiv(distance,radius)+factor;
+            return (healthtakeaway > 0.0) ? RoundFloat(float(maxhp)*healthtakeaway) : 0;
+        }
+    }
 }
 
