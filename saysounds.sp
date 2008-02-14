@@ -165,7 +165,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.11"
+#define PLUGIN_VERSION "1.14"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
