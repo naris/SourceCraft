@@ -314,7 +314,6 @@ public Action:Load_Sounds(Handle:timer){
 }
 
 public OnClientAuthorized(client, const String:auth[]){
-	LogMessage("%N (%s) authorized", client, auth);
 	firstSpawn[client]=true;
 	if(!GetConVarBool(cvarjoinspawn)){
 		CheckJoin(client, auth);
@@ -327,7 +326,6 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 		if (userid){
 			new index=GetClientOfUserId(userid);
 			if (index){
-				LogMessage("%N spawned", index);
 				if (firstSpawn[index]){
 					decl String:auth[64];
 					GetClientAuthString(index,auth,63);
@@ -345,15 +343,12 @@ public CheckJoin(client, const String:auth[]){
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
 
-		LogMessage("%N (%s) CheckJoin", client, auth);
 		if(GetConVarBool(cvarspecificjoinexit)){
-			LogMessage("%N (%s) Specific Convar Set", client, auth);
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
 				KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
 				if (strlen(filelocation)){
-					LogMessage("%N (%s) Joinsound is %s", client, auth, filelocation);
 					Send_Sound(client,filelocation, "");
 					SndCount[client] = 0;
 					return;
@@ -420,7 +415,6 @@ bool:Submit_Sound(client,const String:name[])
 	if (!strlen(filelocation) && StrEqual(file, "file1")){
 		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
 	}
-	LogMessage("%N Submit_Sound %s(%s)", client, name, filelocation);
 	if (strlen(filelocation)){
 		Send_Sound(client, filelocation,name);
 		return true;
@@ -430,7 +424,6 @@ bool:Submit_Sound(client,const String:name[])
 
 Send_Sound(client, const String:filelocation[], const String:name[])
 {
-	LogMessage("%N Send_Sound %s(%s)", client, name, filelocation);
 	new adminonly = KvGetNum(listfile, "admin",0);
 	new singleonly = KvGetNum(listfile, "single",0);
 	new Float:duration = KvGetFloat(listfile, "duration",0.0);
@@ -583,7 +576,6 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new Float:duration = ReadPackFloat(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	ReadPackString(pack, name , sizeof(name));
-	LogMessage("%d Play_Sound %s(%s)", client, name, filelocation);
 
 	new bool:isadmin = false;
 	if (IsClientInGame(client))
