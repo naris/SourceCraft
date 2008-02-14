@@ -150,6 +150,8 @@ stock LogEventDamage(Handle:event,damage,const String:source[], race_id)
         decl String:event_weapon[64];
         GetEventString(event,"weapon",event_weapon,sizeof(event_weapon));
 
+        new event_damage = GetEventInt(event, "damage");
+
         if (assister)
         {
             decl String:assisterID[64];
@@ -163,28 +165,28 @@ stock LogEventDamage(Handle:event,damage,const String:source[], race_id)
 
             new assisterHealth=GetClientHealth(assister);
 
-            LogMessage("[%s] \"%N<%d><%s><%s>[%d]\"+\"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s+%s)",
+            LogMessage("[%s] \"%N<%d><%s><%s>[%d]\"+\"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d(%d) with %s(%s+%s)",
                        source, attacker, attacker, steamID, team, health,
                        assister, assister,assisterID, assisterTeam, assisterHealth,
                        victim, victim, victimID, victimTeam, victimHealth,
-                       damage, event_weapon, attacker_weapon, assister_weapon);
+                       damage, event_damage, event_weapon, attacker_weapon, assister_weapon);
 
-            LogToGame("[%s] \"%N<%d><%s><%s>[%d]\"+\"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s+%s)",
+            LogToGame("[%s] \"%N<%d><%s><%s>[%d]\"+\"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d(%d) with %s(%s+%s)",
                       source, attacker, attacker, steamID, team, health,
                       assister, assister,assisterID, assisterTeam, assisterHealth,
                       victim, victim, victimID, victimTeam, victimHealth,
-                      damage, event_weapon, attacker_weapon, assister_weapon);
+                      damage, event_damage, event_weapon, attacker_weapon, assister_weapon);
         }
         else
         {
-            LogMessage("[%s] \"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s)",
+            LogMessage("[%s] \"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d(%d) with %s(%s)",
                        source, attacker, attacker, steamID, team, health,
                        victim, victim, victimID, victimTeam, victimHealth,
-                       damage, event_weapon, attacker_weapon);
-            LogToGame("[%s] \"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d with %s(%s)\n",
+                       damage, event_damage, event_weapon, attacker_weapon);
+            LogToGame("[%s] \"%N<%d><%s><%s>[%d]\" damaged \"%N<%d><%s><%s>[%d]\" for %d(%d) with %s(%s)\n",
                       source, attacker, attacker, steamID, team, health,
                       victim, victim, victimID, victimTeam, victimHealth,
-                      damage, event_weapon, attacker_weapon);
+                      damage, event_damage, event_weapon, attacker_weapon);
         }
     }
 }

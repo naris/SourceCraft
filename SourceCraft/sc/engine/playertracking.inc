@@ -62,6 +62,11 @@ public GetClientVectorPosition(client)
     return -1;
 }
 
+stock GetPlayer(client)
+{
+    return GetClientVectorPosition(client);
+}
+
 public GetClientIndex(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);

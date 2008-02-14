@@ -112,6 +112,8 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
 
             new damage=GetDamage(event, victim_index);
 
+            LogEventDamage(event, damage, "PlayerHurtEvent", -1);
+
             Call_StartForward(g_OnPlayerHurtEventHandle);
             Call_PushCell(event);
             Call_PushCell(victim_index);
@@ -194,6 +196,8 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
 
             new bool:melee = IsMelee(weapon, is_equipment);
             new damage     = GetDamage(event, victim_index);
+
+            LogEventDamage(event, damage, "PlayerDeathEvent", -1);
 
             Call_StartForward(g_OnPlayerDeathEventHandle);
             Call_PushCell(event);
