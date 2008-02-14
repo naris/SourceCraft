@@ -80,10 +80,14 @@ Versions:
 	1.14  Feb 13, 2008
 		* Modified by -=|JFH|=-Naris
 		* Added logging of unnamed (join/exit) sounds.
+	1.15  Feb 14, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added LAMDACORE's change to increase memory to allow lots of sounds
+		* Added LAMDACORE's change to allow keyword to be embedded in a sentence.
+		* Added sm_sound_sentence to enable the above modification.
 
 
 Todo:
-	* Multiple sound files for trigger word
 	* Optimise keyvalues usage
 	* Save user settings
  
@@ -94,6 +98,7 @@ Cvarlist (default value):
 	sm_sound_admin_limit 0 		 Maximum sounds per admin
 	sm_sound_admin_warn 0		 Number of sounds to warn admin at
 	sm_sound_announce 0		 Turns on announcements when a sound is played
+	sm_sound_sentence 0	 	 When set, will trigger sounds if keyword is embedded in a sentence
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
 	sm_join_spawn 1 		 Wait until the player spawns before playing the join sound
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
@@ -163,9 +168,14 @@ File Format:
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
+// BEIGN MOD BY LAMDACORE
+// extra memory usability for a lot of sounds.
+#pragma dynamic 65536 
+// END MOD BY LAMDACORE
+
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.14"
+#define PLUGIN_VERSION "1.15"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
@@ -178,6 +188,7 @@ new Handle:cvaradmintime = INVALID_HANDLE;
 new Handle:cvaradminwarn = INVALID_HANDLE;
 new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:cvarannounce = INVALID_HANDLE;
+new Handle:cvarsentence = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
@@ -211,6 +222,7 @@ public OnPluginStart(){
 	cvaradminwarn = CreateConVar("sm_sound_admin_warn","0","Number of sounds to warn admin at (0 for no warnings)",FCVAR_PLUGIN);
 	cvaradminlimit = CreateConVar("sm_sound_admin_limit","0","Maximum sounds per admin (0 for unlimited)",FCVAR_PLUGIN);
 	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
+	cvarsentence = CreateConVar("sm_sound_sentence","0","When set, will trigger sounds if keyword is embedded in a sentence",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -475,28 +487,30 @@ public Action:Command_Say(client,args){
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundlist",false) == 0 ||
 			strcmp(speech[startidx],"soundlist",false) == 0){
-			//List_Sounds(client);
-			//PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
-			Sound_Menu(client,false);
-			return Plugin_Handled;
+				//List_Sounds(client);
+				//PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
+				Sound_Menu(client,false);
+				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
 			strcmp(speech[startidx],"soundmenu",false) == 0){
-			Sound_Menu(client,false);
-			return Plugin_Handled;
+				Sound_Menu(client,false);
+				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
 			strcmp(speech[startidx],"adminsounds",false) == 0){
-			Sound_Menu(client,true);
-			return Plugin_Handled;
+				Sound_Menu(client,true);
+				return Plugin_Handled;
 		}
 
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
+		new bool:sentence = GetConVarBool(cvarsentence);
 		decl String:buffer[PLATFORM_MAX_PATH+1];
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
-			if (strcmp(speech[startidx],buffer,false) == 0){
-				Submit_Sound(client,buffer);
-				break;
+			if ((sentence && StrContains(speech[startidx],buffer,false) >= 0) ||
+				(strcmp(speech[startidx],buffer,false) == 0)){
+					Submit_Sound(client,buffer);
+					break;
 			}
 		} while (KvGotoNextKey(listfile));
 
@@ -553,12 +567,14 @@ public Action:Command_InsurgencySay(client,args){
 
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
+		new bool:sentence = GetConVarBool(cvarsentence);
 		decl String:buffer[PLATFORM_MAX_PATH+1];
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
-			if (strcmp(speech[startidx],buffer,false) == 0){
-				Submit_Sound(client,buffer);
-				break;
+			if ((sentence && StrContains(speech[startidx],buffer,false) >= 0) ||
+				(strcmp(speech[startidx],buffer,false) == 0)){
+					Submit_Sound(client,buffer);
+					break;
 			}
 		} while (KvGotoNextKey(listfile));
 
