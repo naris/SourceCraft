@@ -77,6 +77,9 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Fix bug in unlimited sounds.
 		* Added logging.
+	1.14  Feb 13, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added logging of unnamed (join/exit) sounds.
 
 
 Todo:
@@ -644,8 +647,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 					EmitSound(clientlist, clientcount, filelocation);
 				}
 				if (name[0] && IsClientInGame(client)){
-					LogMessage("%s%N played %s%s", isadmin ? "Admin " : "", client,
-					                               adminonly ? "admin sound " : "", name);
+					LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
+					           adminonly ? "admin sound " : "", name, filelocation);
 					if (GetConVarBool(cvarannounce)){
 						PrintToChatAll("%N played %s", client, name);
 					}
