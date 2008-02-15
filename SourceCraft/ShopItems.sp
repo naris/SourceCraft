@@ -210,7 +210,7 @@ public OnItemPurchase(client,player,item)
         EmitSoundToAll(bootsWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
-        SetMinVisibility(player, 120, 0.50);
+        SetMinVisibility(player, 160, 0.80, 0.80);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health

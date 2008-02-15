@@ -422,13 +422,20 @@ public Action:PlayerProperties(Handle:timer)
 stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocity[3], visibility,
                           Float:meleeFactor, Float:movementFactor)
 {
+    new bool:melee=false;
+    new bool:move=false;
+    new base = visibility;
+
     if (visibility < 0)
         visibility = 255;
 
     if (meleeFactor >= 0.0 && meleeFactor != 1.0)
     {
         if (IsEquipmentMelee(wepName))
+        {
             visibility *= meleeFactor;
+            melee = true;
+        }
     }
 
     if (movementFactor >= 0.0 && movementFactor != 1.0)
@@ -440,10 +447,17 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
                                               IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
             {
                 if (!(GetPlayerCond(client) & 1))
+                {
                     visibility *= movementFactor;
+                    move=true;
+                }
             }
         }
     }
+
+    LogMessage("CalcVis for %N, base=%d, melee(%d)=%3.25f, movement(%d)=%3.2f, result=%d",
+               client, base, melee, meleeFactor, move, movementFactor, visibility);
+
     return visibility;
 }
 
