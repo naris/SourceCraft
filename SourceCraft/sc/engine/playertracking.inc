@@ -501,18 +501,18 @@ stock MakeInvisible(client, visibility)
                             SetEntityRenderFx(obj,RENDERFX_FADE_FAST);
                         }
                     }
-                    if (StrEqual(name, "CSniperDot"))
-                    {
-                        decl String:clsname[128] = "";
-                        GetEdictClassname(obj, clsname, sizeof(clsname));
-                        LogMessage("%N has %s(%s)", client, name, clsname);
-                        DumpSniperDot(client, obj);
-                    }
-                    /*
+                    decl String:clsname[128] = "";
+                    GetEdictClassname(obj, clsname, sizeof(clsname));
+
+                    LogMessage("%N has %s(%s)", client, name, clsname);
                     PrintToChat(client,"%c[DEBUG]%c %c%s%c(%s)-%d",
                                 COLOR_GREEN,COLOR_DEFAULT,
                                 COLOR_TEAM,name,COLOR_DEFAULT,
                                 clsname,obj);
+
+                    if (StrEqual(name, "CSniperDot"))
+                        DumpSniperDot(client, obj);
+                    /*
                     */
                 }
             }
