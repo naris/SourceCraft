@@ -197,7 +197,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             new bool:melee = IsMelee(weapon, is_equipment);
             new damage     = GetDamage(event, victim_index);
 
-            //LogEventDamage(event, damage, "PlayerDeathEvent", -1);
+            LogEventDamage(event, damage, "PlayerDeathEvent", -1);
 
             Call_StartForward(g_OnPlayerDeathEventHandle);
             Call_PushCell(event);
@@ -225,6 +225,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 {
                     if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
                     {
+                        LogMessage("Credit attacker %N", attacker_index);
                         GiveKillCredits(attacker_index,attacker_player);
                         GiveKillXP(attacker_index,attacker_player,victim_index,
                                    headshot,backstab,melee,attacker_dominated,
@@ -240,6 +241,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 {
                     if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
                     {
+                        LogMessage("Credit assister %N", assister_index);
                         GiveKillCredits(assister_index,assister_player);
                         GiveKillXP(assister_index,assister_player,victim_index,
                                    headshot,backstab,melee,assister_dominated,

@@ -173,7 +173,7 @@ public GiveKillXP(client,vectorpos,victim,bool:headshot,bool:backstab,bool:melee
                     COLOR_GREEN,COLOR_DEFAULT,ASSIST_XP);
     }
     
-    GiveXP(client,vectorpos,amount, "getting a kill");
+    GiveXP(client,vectorpos,amount, assist ? "assisting a kill" : "getting a kill");
 }
 
 public GiveDefuseXP(client,vectorpos)
@@ -271,6 +271,7 @@ public GiveXP(client,vectorpos, amount, const String:reason[])
         new race=GetRace(vectorpos);
         new newxp=GetXP(vectorpos,race)+amount;
         SetXP(vectorpos,race,newxp);
+        LogMessage("%N gained %d experience for %s", client, amount, reason);
         PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, reason);
         if(GetLevel(vectorpos,race)!=MAX_LEVELS)
@@ -294,6 +295,7 @@ public TakeXP(client,vectorpos, amount, const String:reason[])
         new race=GetRace(vectorpos);
         new newxp=GetXP(vectorpos,race)-amount;
         SetXP(vectorpos,race,newxp);
+        LogMessage("%N lost %d experience for %s", client, amount, reason);
         PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, reason);
         if(GetLevel(vectorpos,race)!=MAX_LEVELS)

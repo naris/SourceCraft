@@ -91,6 +91,7 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
         if(newcredits <= maxCredits || maxCredits == 0)
         {
             SetCredits(vectorpos,newcredits);
+            LogMessage("%N gained %d %s for %s", client, amount, currencies, reason);
             PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, currencies, reason);
         }
@@ -100,6 +101,7 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
             if (amt > 0)
             {
                 SetCredits(vectorpos,maxCredits);
+                LogMessage("%N gained %d %s for %s", client, amt, currencies, reason);
                 PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s for %s.",
                         COLOR_GREEN,COLOR_DEFAULT,currencies,maxCredits,amt,currencies, reason);
             }
