@@ -85,6 +85,15 @@ public OnPluginStart()
 
         if(!HookEventEx("teamplay_round_stalemate",RoundOver,EventHookMode_PostNoCopy))
             SetFailState("Could not hook the teamplay_round_stalemate event.");
+
+        if(!HookEventEx("tf_game_over",RoundOver,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_win_panel event.");
+
+        if(!HookEventEx("teamplay_game_over",RoundOver,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_win_panel event.");
+
+        if(!HookEventEx("teamplay_win_panel",RoundOver,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_win_panel event.");
     }
 
     CreateTimer(1.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
@@ -284,6 +293,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 {
+    LogMessage("RoundOver Event %d occurred", name);
+
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
     {
