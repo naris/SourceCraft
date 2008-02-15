@@ -76,8 +76,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         if(vecpos!=-1)
         {
             PendingCheck(index,vecpos);
+            PrintToChat(index, "This is a Test of the SourceCraft Beta");
             ShowXP(index,vecpos);
             ShowCredits(index,vecpos);
+            PrintToChat(index, "Please report any bugs in the forums of www.jigglysfunhouse.net");
             new race=GetRace(vecpos);
             if (m_FirstSpawn[index])
                 IntroMenu(index);

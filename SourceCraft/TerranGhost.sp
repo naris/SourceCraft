@@ -445,13 +445,62 @@ TargetNuclearDevice(client)
     EmitSoundToAll(targetWav,client);
     TraceAimPosition(client, m_nuclearAimPos[client], true);
 
-    m_nuclearAimDot[client] = CreateEntityByName("env_sniperdot");
-    if (m_nuclearAimDot[client])
+    new ent = CreateEntityByName("env_sniperdot");
+    if (ent)
     {
-        DispatchSpawn(m_nuclearAimDot[client]);
-        TeleportEntity(m_nuclearAimDot[client], m_nuclearAimPos[client],
-                       NULL_VECTOR, NULL_VECTOR);
+        SetEntDataVector(ent, FindSendPropOffs("CSniperDot","m_vecOrigin") , m_nuclearAimPos[client]);
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_flSimulationTime"), GetGameTime(), 1); // (bits 8)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_nModelIndex"), -65536, 2); // (bits 11)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_nRenderFX"), 0, 1); // (bits 8)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_nRenderMode"), -16777216, 1); // (bits 8)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_fEffects"), 16, 2); // (bits 10)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_clrRender"), -1, 4); // (bits 32)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_iTeamNum"), GetClientTeam(client), 1); // (bits 6)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_CollisionGroup"), 0, 1); // (bits 5)
+        SetEntDataFloat(ent, FindSendPropInfo("CSniperDot","m_flElasticity"), 1.0);
+        SetEntDataFloat(ent, FindSendPropInfo("CSniperDot","m_flShadowCastDistance"), 0.0); // (bits 12)
+        SetEntDataEnt2(ent, FindSendPropInfo("CSniperDot","m_hOwnerEntity"), client); // (bits 21)
+        //SetEntDataEnt2(ent, FindSendPropInfo("CSniperDot","m_hEffectEntity"), -1); // (bits 21)
+        //SetEntDataEnt2(ent, FindSendPropInfo("CSniperDot","moveparent"), -1); // (bits 21)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","m_iParentAttachment"), -16777216, 1); // (bits 6)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","movetype"), -65536); // (bits 4)
+        SetEntData(ent, FindSendPropInfo("CSniperDot","movecollide"), -256); // (bits 3)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_angRotation"), 0); // (bits 13)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_iTextureFrameIndex"), 0); // (bits 8)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bSimulatedEveryTick"), 0);
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bAnimatedEveryTick"), 0);
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bAlternateSorting"), 0);
+        //SetEntDataFloat(ent, FindSendPropInfo("CSniperDot","m_flChargeStartTime"), GetGameTime());
 
+    //   Sub-Class Table (3 Deep): DT_AnimTimeMustBeFirst
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_flAnimTime"), 0); // (bits 8)
+
+    //   Sub-Class Table (3 Deep): DT_CollisionProperty
+        //new Float:m_vecMins[3];
+        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecMins"), m_vecMins);
+
+        //new Float:m_vecMaxs[3];
+        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecMaxs"), m_vecMaxs);
+
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_nSolidType"), 0); // (bits 3)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_usSolidFlags"), 119341060); // (bits 10)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_nSurroundType"), 0); // (bits 3)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_triggerBloat"), 0); // (bits 8)
+
+        //new Float:m_vecSpecifiedSurroundingMins[3] = { 0.0, 0.0, 0.0 };
+        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecSpecifiedSurroundingMins"), m_vecSpecifiedSurroundingMins);
+
+        //new Float:m_vecSpecifiedSurroundingMaxs[3] = { 0.0, 0.0, 0.0 };
+        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecSpecifiedSurroundingMaxs"), m_vecSpecifiedSurroundingMaxs);
+
+    //   Sub-Class Table (3 Deep): DT_PredictableId
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_PredictableID"), 0); // (bits 31)
+        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bIsPlayerSimulated"), 0);
+
+        DispatchSpawn(ent);
+        TeleportEntity(ent, m_nuclearAimPos[client], NULL_VECTOR, NULL_VECTOR);
+
+        m_nuclearAimDot[client] = ent;
         CreateTimer(0.1,TrackNuclearTarget,client,TIMER_REPEAT); // Create aiming loop
     }
 }

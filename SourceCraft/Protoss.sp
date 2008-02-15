@@ -38,6 +38,7 @@ new bool:m_AllowMindControl[MAXPLAYERS+1];
 new Float:gReaverScarabTime[MAXPLAYERS+1];
 
 enum objects { unknown, sentrygun, dispenser, teleporter };
+new m_SkinOffset[objects];
 new m_BuilderOffset[objects];
 new m_BuildingOffset[objects];
 
@@ -134,6 +135,10 @@ public OnPluginReady()
         if (m_OffsetDisguiseHealth == -1)
             SetFailState("Couldn't find DisguiseHealth Offset");
 
+        m_SkinOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_nSkin");
+        if(m_SkinOffset[sentrygun] == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun Skin offset.");
+
         m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
         if(m_BuilderOffset[sentrygun] == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
@@ -142,6 +147,10 @@ public OnPluginReady()
         if(m_BuildingOffset[sentrygun] == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
 
+        m_SkinOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_nSkin");
+        if(m_SkinOffset[dispenser] == -1)
+            SetFailState("[SourceCraft] Error finding Dispenser Skin offset.");
+
         m_BuilderOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_hBuilder");
         if(m_BuilderOffset[dispenser] == -1)
             SetFailState("[SourceCraft] Error finding Dispenser Builder offset.");
@@ -149,6 +158,10 @@ public OnPluginReady()
         m_BuildingOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_bBuilding");
         if(m_BuildingOffset[dispenser] == -1)
             SetFailState("[SourceCraft] Error finding Dispenser Building offset.");
+
+        m_SkinOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_nSkin");
+        if(m_SkinOffset[teleporter] == -1)
+            SetFailState("[SourceCraft] Error finding Teleporter Skin offset.");
 
         m_BuilderOffset[teleporter] = FindSendPropOffs("CObjectTeleporter","m_hBuilder");
         if(m_BuilderOffset[teleporter] == -1)
@@ -469,6 +482,8 @@ MindControl(client,player)
 
                                             SetEntDataEnt2(target, m_BuilderOffset[obj], client, true); // Change the builder to client
 
+                                            SetEntData(target, m_SkinOffset[obj], (team==3)?1:0, 1, true); //paint red or blue
+
                                             SetVariantInt(team); //Prep the value for the call below
                                             AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
 
@@ -612,6 +627,8 @@ ResetMindControledObjects(client, bool:endRound)
                                     // Give it back.
                                     new team = GetClientTeam(builder);
                                     SetEntDataEnt2(target, m_BuilderOffset[obj], builder, true); // Change the builder back
+
+                                    SetEntData(target, m_SkinOffset[obj], (team==3)?1:0, 1, true); //paint red or blue
 
                                     SetVariantInt(team); //Prep the value for the call below
                                     AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
