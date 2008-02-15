@@ -265,13 +265,13 @@ bool:Cloak(client, player, skilllevel)
     switch(skilllevel)
     {
         case 1:
-            alpha=240;
-        case 2:
             alpha=230;
-        case 3:
+        case 2:
             alpha=210;
-        case 4:
+        case 3:
             alpha=190;
+        case 4:
+            alpha=170;
     }
 
     /* If the Player also has the Cloak of Shadows,

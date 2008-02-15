@@ -186,6 +186,16 @@ public OnMapStart()
     SetupSound(cloakWav, true, true);
 }
 
+public OnMapEnd()
+{
+    new maxplayers=GetMaxClients();
+    for (new index=1;index<=maxplayers;index++)
+    {
+        ResetCloakingAndDetector(index);
+        ResetMindControledObjects(index, true);
+    }
+}
+
 public OnPlayerAuthed(client,player)
 {
     m_AllowMindControl[client]=true;
@@ -194,7 +204,7 @@ public OnPlayerAuthed(client,player)
 public OnClientDisconnect(client)
 {
     ResetCloakingAndDetector(client);
-    ResetMindControledObjects(client);
+    ResetMindControledObjects(client, false);
 }
 
 public OnRaceSelected(client,player,oldrace,race)
@@ -202,7 +212,7 @@ public OnRaceSelected(client,player,oldrace,race)
     if (race != oldrace && oldrace == raceID)
     {
         ResetCloakingAndDetector(client);
-        ResetMindControledObjects(client);
+        ResetMindControledObjects(client, false);
     }
 }
 
@@ -268,7 +278,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     if (victim_index && victim_race == raceID)
     {
         ResetCloakingAndDetector(victim_index);
-        ResetMindControledObjects(victim_index);
+        ResetMindControledObjects(victim_index, false);
     }
 }
 
@@ -278,7 +288,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     for (new index=1;index<=maxplayers;index++)
     {
         ResetCloakingAndDetector(index);
-        ResetMindControledObjects(index);
+        ResetMindControledObjects(index, true);
     }
 }
 
@@ -550,7 +560,7 @@ MindControl(client,player)
         EmitSoundToClient(client,deniedWav);
 }
 
-ResetMindControledObjects(client)
+ResetMindControledObjects(client, bool:endRound)
 {
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
@@ -580,25 +590,30 @@ ResetMindControledObjects(client)
                         // Do we still own it?
                         if (GetEntDataEnt2(target, m_BuilderOffset[obj]) == client)
                         {
-                            // Is the original builser still around?
-                            new builder = GetArrayCell(m_StolenBuilderList[client], index);
-                            if (IsClientInGame(builder) && TF_GetClass(builder) == TF2_ENG)
-                            {
-                                // Give it back.
-                                new team = GetClientTeam(builder);
-                                SetEntDataEnt2(target, m_BuilderOffset[obj], builder, true); // Change the builder back
-
-                                SetVariantInt(team); //Prep the value for the call below
-                                AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                                SetVariantInt(team); //Same thing again but we are changing SetTeam
-                                AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-                            }
+                            if (endRound)
+                                RemoveEdict(target); // Remove the object.
                             else
                             {
-                                // Zap it.
-                                //SetEntityHealth(target, 0); // Kill the object.
-                                RemoveEdict(target); // Remove the object.
+                                // Is the original builser still around?
+                                new builder = GetArrayCell(m_StolenBuilderList[client], index);
+                                if (IsClientInGame(builder) && TF_GetClass(builder) == TF2_ENG)
+                                {
+                                    // Give it back.
+                                    new team = GetClientTeam(builder);
+                                    SetEntDataEnt2(target, m_BuilderOffset[obj], builder, true); // Change the builder back
+
+                                    SetVariantInt(team); //Prep the value for the call below
+                                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                                    SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                                }
+                                else
+                                {
+                                    // Zap it.
+                                    //SetEntityHealth(target, 0); // Kill the object.
+                                    RemoveEdict(target); // Remove the object.
+                                }
                             }
                         }
                     }
