@@ -752,7 +752,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
-                                            SetMinVisibility(player_check, 255);
+                                            SetMinVisibility(player_check, -1, -1.0, -1.0);
                                             m_Cloaked[client][index] = false;
 
                                             EmitSoundToClient(client, unCloakWav);
@@ -822,7 +822,7 @@ ResetCloakingAndDetector(client)
         {
             if (m_Cloaked[client][index])
             {
-                SetMinVisibility(player, 255);
+                SetMinVisibility(player, -1, -1.0, -1.0);
                 m_Cloaked[client][index] = false;
             }
 

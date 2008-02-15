@@ -104,9 +104,9 @@ public OnPluginReady()
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","40");
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","55");
     shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","60");
-    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","2");
-    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","5");
-    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","2");
+    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you partially invisible, invisibility is increased when holding the knife, shovel or other melee weapon.","65");
+    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","10");
+    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","20");
     shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","15");
     shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","50");
     shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","50");
@@ -269,7 +269,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
-                SetMinVisibility(player, 120, 0.50);
+                SetMinVisibility(player, 200, 0.50);
 
             if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
                 AuthTimer(0.1,client,DoPeriapt);
@@ -369,7 +369,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
         // Reset player speed/gravity/visibility attributes when they doe
         SetMaxSpeed(victim_player,-1.0);
         SetMinGravity(victim_player,-1.0);
-        SetMinVisibility(victim_player, -1, -1.0);
+        SetMinVisibility(victim_player, -1, -1.0, -1.0);
 
         // Reset Overrides when players die
         SetOverrideSpeed(victim_player,-1.0);

@@ -87,7 +87,8 @@ public OnRaceSelected(client,player,oldrace,race)
         if (oldrace == raceID)
         {
             TakeJetpack(client);
-            SetMinVisibility(player, 255, 1.0, 1.0);
+            SetMaxSpeed(player,-1.0);
+            SetMinVisibility(player, -1, -1.0, -1.0);
         }
         else if (race == raceID)
         {
@@ -189,7 +190,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     // Reset invisibility
     if (victim_player != -1 && victim_race == raceID)
     {
-        SetMinVisibility(victim_player, 255, 1.0, 1.0);
+        SetMinVisibility(victim_player, -1, -1.0, -1.0);
     }
 }
 

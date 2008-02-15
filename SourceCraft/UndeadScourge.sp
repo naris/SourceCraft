@@ -149,8 +149,8 @@ public OnRaceSelected(client,player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            SetMaxSpeed(player,1.0);
-            SetMinGravity(player,1.0);
+            SetMaxSpeed(player,-1.0);
+            SetMinGravity(player,-1.0);
         }
         else if (race == raceID)
         {
