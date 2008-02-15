@@ -501,6 +501,7 @@ stock MakeInvisible(client, visibility)
                             SetEntityRenderFx(obj,RENDERFX_FADE_FAST);
                         }
                     }
+                    /*
                     decl String:clsname[128] = "";
                     GetEdictClassname(obj, clsname, sizeof(clsname));
 
@@ -512,7 +513,6 @@ stock MakeInvisible(client, visibility)
 
                     if (StrEqual(name, "CSniperDot"))
                         DumpSniperDot(client, obj);
-                    /*
                     */
                 }
             }
