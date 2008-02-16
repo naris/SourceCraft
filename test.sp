@@ -12,8 +12,6 @@
 
 #include <tf2>
 
-#include "SourceCraft/sc/SourceCraft"
-
 new m_OffsetCloakMeter;
 new m_OffsetDisguiseTeam;
 new m_OffsetDisguiseClass;
@@ -109,7 +107,7 @@ public Action:TrackVariables(Handle:timer)
                 new Float:maxSpeed= m_OffsetMaxspeed>0 ? GetEntDataFloat(client,m_OffsetMaxspeed) : -99.9;
 
                 LogMessage("client=%d(%N),tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisoned=%d,wearingSuit=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d,maxSpeed=%f",client,client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit,bonusProgress,bonusChallenge,airDash,maxSpeed);
-                PrintToChat( client,"dT=%d,dC=%d,dTrg=%d,dH=%d,dDT=%d,dDC=%d,iC=%f,sNAE=%f,sNC=%f,pS=%d,pC=%d,bP=%d,bC=%d,aD=%d",disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,stealthNoAttackExpire,stealthNextChangeTime,playerState,playerCond,bonusProgress,bonusChallenge,airDash);
+                PrintToChat( client,"plrState=%d,plrCond=%d,bP=%d,bC=%d,aD=%d",playerState,playerCond,bonusProgress,bonusChallenge,airDash);
             }
         }
     }

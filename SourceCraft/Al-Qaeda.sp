@@ -244,7 +244,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                         percent=53;
                 }
                 if (GetRandomInt(1,100)<=percent &&
-                    m_ReincarnationCount[victim_index] < 3*reincarnation_skill)
+                    m_ReincarnationCount[victim_index] < 2) //2*reincarnation_skill)
                 {
                     m_IsRespawning[victim_index]=true;
                     m_ReincarnationCount[victim_index]++;
