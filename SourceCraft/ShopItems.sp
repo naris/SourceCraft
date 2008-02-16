@@ -299,8 +299,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, damage, "ShopItem::PlayerDeathEvent", -1);
-
     if(victim_player>-1)
     {
         if (GameType == cstrike ||
@@ -389,8 +387,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 damage)
 {
     new bool:changed    = false;
-
-    LogEventDamage(event, damage, "ShopItem::PlayerHurtEvent", -1);
 
     if(victim_index && victim_index != attacker_index)
     {

@@ -433,7 +433,7 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
     {
         if (IsEquipmentMelee(wepName))
         {
-            visibility *= meleeFactor;
+            visibility = RoundToNearest(float(visibility) * meleeFactor);
             melee = true;
         }
     }
@@ -448,7 +448,7 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
             {
                 if (!(GetPlayerCond(client) & 1))
                 {
-                    visibility *= movementFactor;
+                    visibility = RoundToNearest(float(visibility) * movementFactor);
                     move=true;
                 }
             }
@@ -506,13 +506,13 @@ stock MakeInvisible(client, visibility)
                         SetEntityRenderColor(obj,255,255,255,visibility);
                         if (visibility > 0)
                         {
-                            SetEntityRenderMode(obj,RENDER_TRANSTEXTURE);
+                            SetEntityRenderMode(obj,RENDER_NORMAL);
                             SetEntityRenderFx(obj,RENDERFX_HOLOGRAM);
                         }
                         else
                         {
                             SetEntityRenderMode(obj,RENDER_GLOW);
-                            SetEntityRenderFx(obj,RENDERFX_FADE_FAST);
+                            SetEntityRenderFx(obj,RENDERFX_NONE);
                         }
                     }
                     /*
@@ -535,12 +535,12 @@ stock MakeInvisible(client, visibility)
     SetEntityRenderColor(client,255,255,255,visibility);
     if (visibility > 0)
     {
-        SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+        SetEntityRenderMode(client,RENDER_NORMAL);
         SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
     }
     else
     {
         SetEntityRenderMode(client,RENDER_GLOW);
-        SetEntityRenderFx(client,RENDERFX_FADE_FAST);
+        SetEntityRenderFx(client,RENDERFX_NONE);
     }
 }

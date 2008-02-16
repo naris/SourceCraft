@@ -166,12 +166,18 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             new bool:attacker_dominated=bool:GetEventInt(event,"dominated");
             new bool:attacker_revenge=bool:GetEventInt(event,"revenge");
 
+            LogMessage("attacker: userid=%d, index=%d, player=%d, race=%d, dom=%d, rev=%d",
+                       attacker_userid, attacker_index, attacker_player, attacker_race, attacker_dominated, attacker_revenge);
+
             new assister_userid=GetEventInt(event,"assister");
-            new assister_index=GetClientOfUserId(assister_index);
+            new assister_index=GetClientOfUserId(assister_userid);
             new assister_player=(assister_index) ? GetClientVectorPosition(assister_index) : -1;
             new assister_race=(assister_player != -1) ? GetRace(assister_player) : -1;
             new bool:assister_dominated=bool:GetEventInt(event,"assister_dominated");
             new bool:assister_revenge=bool:GetEventInt(event,"assister_revenge");
+
+            LogMessage("assister: userid=%d, index=%d, player=%d, race=%d, dom=%d, rev=%d",
+                       assister_userid, assister_index, assister_player, assister_race, assister_dominated, assister_revenge);
 
             new bool:is_equipment;
             decl String:weapon[64]  = "";
@@ -227,7 +233,6 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 {
                     if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
                     {
-                        LogMessage("Credit attacker %N", attacker_index);
                         GiveKillCredits(attacker_index,attacker_player);
                         GiveKillXP(attacker_index,attacker_player,victim_index,
                                    headshot,backstab,melee,attacker_dominated,
@@ -243,7 +248,6 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 {
                     if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
                     {
-                        LogMessage("Credit assister %N", assister_index);
                         GiveKillCredits(assister_index,assister_player);
                         GiveKillXP(assister_index,assister_player,victim_index,
                                    headshot,backstab,melee,assister_dominated,
