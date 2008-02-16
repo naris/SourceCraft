@@ -362,9 +362,9 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
                     case 2:
                         percent=1.067;
                     case 3:
-                        percent=1.33;
+                        percent=1.23;
                     case 4:
-                        percent=1.50;
+                        percent=1.40;
                 }
 
                 new health_take=RoundFloat(float(damage)*percent);
