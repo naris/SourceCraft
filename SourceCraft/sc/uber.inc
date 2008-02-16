@@ -30,7 +30,7 @@ stock FindUberOffsets()
 stock IsUber(client)
 {
     if (GameType == tf2)
-        return (GetEntData(client,m_OffsetPlayerCond) & 2080) != 0;
+        return (GetEntData(client,m_OffsetPlayerCond) & 32) != 0;
     else
         return false;
 }
@@ -39,7 +39,7 @@ stock SetUber(client)
 {
     new pcond =GetEntData(client,m_OffsetPlayerCond);
     LogMessage("Setting %N uber, adding 2080 to pcond (%d)", client, pcond);
-    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) | 2080));
+    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) | 32));
     pcond =GetEntData(client,m_OffsetPlayerCond);
     LogMessage("Pcond for %N is now %d", client, pcond);
 }
@@ -48,7 +48,7 @@ stock UnUberEntity(client)
 {
     new pcond =GetEntData(client,m_OffsetPlayerCond);
     LogMessage("Removing %N uber, unsetting 2080 from pcond (%d)",client, pcond);
-    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) & (~2080)));
+    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) & (~32)));
     pcond =GetEntData(client,m_OffsetPlayerCond);
     LogMessage("Pcond for %N is now %d", client, pcond);
 }

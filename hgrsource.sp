@@ -288,6 +288,31 @@ stock bool:SetupSound(const String:wav[], bool:preload=false)
         return false;
 }
 
+public OnClientDisconnect(client)
+{
+    if (client>0 && !IsFakeClient(client))
+    {
+        if (gStatus[client][ACTION_HOOK])
+            Action_UnHook(client);
+        else if (gStatus[client][ACTION_ROPE])
+            Action_Detach(client);
+        else if (gStatus[client][ACTION_GRAB])
+            Action_Drop(client);
+        else if (gGrabbed[client])
+        {
+            for(new x=0;x<MAXPLAYERS+1;x++)
+            {
+                if (gTargetIndex[x] == client)
+                {
+                    Action_Drop(client);
+                    break;
+                }
+            }
+        }
+
+    }
+}
+
 /********
  *Events*
  *********/
@@ -989,8 +1014,11 @@ public Action:Hooking(Handle:timer,any:index)
 public Action_UnHook(client)
 {
     gStatus[client][ACTION_HOOK]=false; // Tell plugin the client is not hooking
-    SetEntPropFloat(client,Prop_Data,"m_flGravity",1.0); // Set grav to normal
-    SetEntityMoveType(client,MOVETYPE_WALK); // Unfreeze client
+    if (IsClientInGame(client))
+    {
+        SetEntPropFloat(client,Prop_Data,"m_flGravity",1.0); // Set grav to normal
+        SetEntityMoveType(client,MOVETYPE_WALK); // Unfreeze client
+    }
 }
 
 /******

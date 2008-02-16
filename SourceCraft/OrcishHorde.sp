@@ -285,7 +285,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                 case 4:
                     percent=80;
             }
-            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2) // 2*skill)
+            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2*skill)
             {
                 GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
