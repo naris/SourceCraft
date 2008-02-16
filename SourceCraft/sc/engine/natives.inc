@@ -515,11 +515,11 @@ public Native_SetVisibility(Handle:plugin,numParams)
     {
         new player              = GetNativeCell(1);
         new visibility          = (numParams >= 2) ? GetNativeCell(2) : -1;
-        new VisibilityType:type = (numParams >= 3) ? GetNativeCell(3) : Basic_Visibility;
+        new VisibilityType:type = (numParams >= 3) ? GetNativeCell(3) : VisibilityType:-1;
         new Float:factor1       = (numParams >= 4) ? GetNativeCell(4) : -1.0;
         new Float:factor2       = (numParams >= 5) ? GetNativeCell(5) : -1.0;
-        new RenderMode:mode     = (numParams >= 6) ? GetNativeCell(6) : RENDER_NORMAL;
-        new RenderFx:fx         = (numParams >= 7) ? GetNativeCell(7) : RENDERFX_NONE; 
+        new RenderMode:mode     = (numParams >= 6) ? GetNativeCell(6) : RenderMode:-1;
+        new RenderFx:fx         = (numParams >= 7) ? GetNativeCell(7) : RenderFx:-1; 
         new r                   = (numParams >= 8) ? GetNativeCell(8) : -1;
         new g                   = (numParams >= 9) ? GetNativeCell(9) : -1;
         new b                   = (numParams >= 10) ? GetNativeCell(10) : -1;

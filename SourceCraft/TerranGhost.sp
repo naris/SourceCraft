@@ -291,7 +291,7 @@ bool:Cloak(client, player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    SetVisibility(player, alpha, Basic_Visibility, 0.5, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, alpha, BasicVisibility, 0.5, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
 }
 
 Lockdown(victim_index, player)
@@ -529,7 +529,7 @@ public Action:TrackNuclearTarget(Handle:timer,any:index)
 LaunchNuclearDevice(client,player)
 {
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
-    SetVisibility(player, 100, Basic_Visibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, 100, BasicVisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);

@@ -51,9 +51,11 @@ new Handle:g_OnSkillLevelChangedHandle = INVALID_HANDLE;
 new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
 
 new Float:m_BaseSpeed[MAXPLAYERS+1];
-new bool:speedAltered[MAXPLAYERS+1];
-new bool:gravityAltered[MAXPLAYERS+1];
-new bool:visibilityAltered[MAXPLAYERS+1];
+new Float:m_StoppedMoving[MAXPLAYERS+1];
+new Float:m_CloakTime[MAXPLAYERS+1];
+new bool:m_SpeedAltered[MAXPLAYERS+1];
+new bool:m_GravityAltered[MAXPLAYERS+1];
+new bool:m_VisibilityAltered[MAXPLAYERS+1];
 
 public GetClientVectorPosition(client)
 {
@@ -266,17 +268,15 @@ public Action:PlayerProperties(Handle:timer)
                 new bool:overridePlayerSpeed=false;
 
                 new Float:gravity=-1.0,Float:speed=-1.0;
-                new Float:factor1=-1.0,Float:factor2=-1.0;
                 new visibility=-1,r=-1,g=-1,b=-1;
-                new VisibilityType:type=VisibilityType:-1;
                 new RenderMode:mode=RenderMode:-1;
                 new RenderFx:fx=RenderFx:-1;
+                new visibilityRank=-1;
 
                 decl String:wepName[128] = "";
                 GetClientWeapon(client, wepName, 127);
 
-                new Float:vecVelocity[3];
-                GetEntDataVector(client, m_VelocityOffset, vecVelocity);
+                new bool:isMoving = IsMoving(client);
 
                 new Handle:pinfo=GetPropertyInfo(x);
                 for(new y=0;y<GetArraySize(pinfo);y++)
@@ -289,9 +289,9 @@ public Action:PlayerProperties(Handle:timer)
                     new Float:checkSpeed        = GetArrayCell(temp,TRACKING_SPEED);
                     new Float:checkGravity      = GetArrayCell(temp,TRACKING_GRAVITY);
                     new checkVisibility         = GetArrayCell(temp,TRACKING_VISIBILITY);
-                    new VisibilityType:chkType  = GetArrayCell(temp,TRACKING_VISIBILITY_TYPE);
-                    new Float:checkFactor1      = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR1);
-                    new Float:checkFactor2      = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR2);
+                    new VisibilityType:type     = GetArrayCell(temp,TRACKING_VISIBILITY_TYPE);
+                    new Float:factor1           = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR1);
+                    new Float:factor2           = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR2);
                     new RenderFx:checkFx        = GetArrayCell(temp,TRACKING_VISIBILITY_FX);
                     new RenderMode:checkMode    = GetArrayCell(temp,TRACKING_VISIBILITY_MODE);
                     new checkR                  = GetArrayCell(temp,TRACKING_VISIBILITY_R);
@@ -318,13 +318,13 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             gravity=overridegravity;
                             overridePlayerGravity=true;
-                            gravityAltered[client]=true;
+                            m_GravityAltered[client]=true;
                         }
                         else if(checkGravity >= 0 &&
                                 (gravity < 0.0 || checkGravity < gravity))
                         {
                             gravity=checkGravity;
-                            gravityAltered[client]=true;
+                            m_GravityAltered[client]=true;
                         }
                     }
 
@@ -334,22 +334,19 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             visibility=overridevisibility;
                             overridePlayerVisibility=true;
-                            visibilityAltered[client]=true;
+                            m_VisibilityAltered[client]=true;
                         }
-                        else if (checkVisibility >= 0 || factor1 >= 0.0 || factor2 >= 0.0)
+                        else if (checkVisibility >= 0 || _:type >= 0 ||
+                                 _:checkFx >= 0 || _:checkMode >= 0)
                         {
-                            checkVisibility = CalculateVisibility(client, wepName, vecVelocity,
-                                                                  checkVisibility, chkType,
-                                                                  checkFactor1, checkFactor2,
-                                                                  checkFx, checkMode);
-                            if (checkVisibility >= 0 &&
-                                (visibility < 0.0 || checkVisibility < visibility))
+                            new checkRank = CalculateVisibility(client, wepName, isMoving, checkVisibility,
+                                                                type, factor1, factor2, checkFx, checkMode);
+
+                            if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
                             {
-                                visibilityAltered[client]=true;
-                                visibility=checkVisibility;
-                                factor1=checkFactor1;
-                                factor2=checkFactor2;
-                                type=chkType;
+                                m_VisibilityAltered[client]=true;
+                                visibilityRank=checkRank;
+                                visibility=(checkVisibility < 0) ? 255 : checkVisibility;
                                 mode=(_:checkMode < 0) ? RENDER_NORMAL : checkMode;
                                 fx=(_:checkFx < 0) ? RENDERFX_NONE : checkFx;
                                 r=(_:checkR < 0) ? 255 : checkR;
@@ -360,7 +357,7 @@ public Action:PlayerProperties(Handle:timer)
                     }
                 }
 
-                if (speedAltered[client] || overridePlayerSpeed || speed >= 0.0)
+                if (m_SpeedAltered[client] || overridePlayerSpeed || speed >= 0.0)
                 {
                     if (speed < 0.0)
                         speed = 1.0;
@@ -383,15 +380,15 @@ public Action:PlayerProperties(Handle:timer)
 
                             LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
                                        client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed,
-                                       speed, speedAltered[client], overridePlayerSpeed);
+                                       speed, m_SpeedAltered[client], overridePlayerSpeed);
                         }
 
-                        speedAltered[client] = (speed != 1.0);
+                        m_SpeedAltered[client] = (speed != 1.0);
                     }
                     else // not tf2
                     {
                         LogMessage("[playertracking] Set NON TF2 speed of %N to %f, altered=%d, override=%d",
-                                   client, speed, speedAltered[client], overridePlayerSpeed);
+                                   client, speed, m_SpeedAltered[client], overridePlayerSpeed);
 
                         if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
                             SetEntDataFloat(client,m_OffsetSpeed,speed);
@@ -411,22 +408,22 @@ public Action:PlayerProperties(Handle:timer)
                     }
                 }
 
-                if (visibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
+                if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                 {
                     if (visibility < 0 || visibility >= 255)
                     {
                         ResetVisibility(client);
 
                         // Visibility is back to normal, Reset the altered flag
-                        visibilityAltered[client]=false;
+                        m_VisibilityAltered[client]=false;
                     }
                     else
                     {
-                        SetVisibility(client, visibility, type, mode, fx, r, g, b);
+                        SetVisibility(client, visibility, mode, fx, r, g, b);
                     }
                 }
 
-                if (gravityAltered[client] || overridePlayerGravity || gravity >= 0.0)
+                if (m_GravityAltered[client] || overridePlayerGravity || gravity >= 0.0)
                 {
                     if (gravity < 0.0)
                         gravity = 1.0;
@@ -437,7 +434,7 @@ public Action:PlayerProperties(Handle:timer)
                     if (gravity == 1.0)
                     {
                         // Gravity is back to normal, Reset the altered flag
-                        gravityAltered[client]=false;
+                        m_GravityAltered[client]=false;
                     }
                 }
             }
@@ -446,28 +443,71 @@ public Action:PlayerProperties(Handle:timer)
     return Plugin_Continue;
 }
 
-stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocity[3], visibility,
-                          VisibilityType:type, Float:factor1, Float:factor2, RenderFx:fx,
-                          RenderMode:mode)
+bool:IsMoving(client)
 {
-    if (type == Simple_Invisibility)
+    new Float:vecVelocity[3];
+    GetEntDataVector(client, m_VelocityOffset, vecVelocity);
+    if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
     {
-        visibility = 255;
-
-        if (IsEquipmentMelee(wepName))
+        if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
+                                          IN_MOVERIGHT|IN_SPEED|IN_JUMP|
+                                          IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
         {
-            if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
-                                              IN_MOVERIGHT|IN_SPEED|IN_JUMP|
-                                              IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
+            if (!(GetPlayerCond(client) & 1))
             {
-                if (!(GetPlayerCond(client) & 1))
-                {
-                    visibility = 0;
-                }
+                if (m_StoppedMoving[client] == 0.0)
+                    m_StoppedMoving[client] = GetGameTime();
+                return true;
             }
         }
     }
-    else //if (type == Basic_Visibility)
+    m_StoppedMoving[client] = 0.0;
+    return false;
+}
+
+CalculateVisibility(client, const String:wepName[], bool:isMoving, &visibility,
+                    VisibilityType:type, Float:factor1, Float:factor2, &RenderFx:fx,
+                    &RenderMode:mode)
+{
+    if (type == TimedInvisibility || type == TimedMeleeInvisibility)
+    {
+        if (isMoving)
+            visibility = 255;
+        else if (m_CloakTime[client] != 0.0) // Currently Cloaked
+        {
+            if (factor2 > 0.0 && GetGameTime() - m_CloakTime[client] >= factor2) // factor2 == duration
+                visibility = 255;
+            else if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
+                visibility = 0;
+            else
+                visibility = 255;
+        }
+        else // Not Cloaked
+        {
+            if (factor1 <= 0.0 || GetGameTime() - m_StoppedMoving[client] >= factor1) // factor1 == delay
+            {
+                if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
+                    visibility = 0;
+                else
+                    visibility = 255;
+            }
+            else
+                visibility = 255;
+        }
+        return visibility;
+    }
+    else if (type == GraduatedEffects)
+    {
+        new rank = visibility;
+        visibility = 255;
+        fx = RenderFx:((rank / 14) + 1);
+        if (fx == RENDERFX_EXPLODE)
+            fx = RENDERFX_PULSE_FAST_WIDER;
+        else if (fx == RENDERFX_GLOWSHELL)
+            fx = RENDERFX_MAX;
+        return rank;
+    }
+    else //if (type == BasicVisibility)
     {
         if (visibility < 0)
             visibility = 255;
@@ -475,59 +515,35 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
         if (factor1 >= 0.0 && factor1 != 1.0) // factor1 == melee factor
         {
             if (IsEquipmentMelee(wepName))
-            {
                 visibility = RoundToNearest(float(visibility) * factor1);
-            }
         }
 
         if (factor2 >= 0.0 && factor2 != 1.0) // factor2 == movement factor
         {
-            if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
-            {
-                if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
-                                                  IN_MOVERIGHT|IN_SPEED|IN_JUMP|
-                                                  IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
-                {
-                    if (!(GetPlayerCond(client) & 1))
-                    {
-                        visibility = RoundToNearest(float(visibility) * factor2);
-                    }
-                }
-            }
+            if (!isMoving)
+                visibility = RoundToNearest(float(visibility) * factor2);
         }
+
+        new rank = visibility;
+        if (mode > RENDER_NORMAL)
+            rank--;
+        if (fx > RENDERFX_NONE)
+            rank -= _:fx;
+
+        return rank;
     }
-    return visibility;
 }
 
-stock ResetVisibility(client)
+SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
 {
-    if (m_OwnerOffset != -1)
+    if (visibility == 0)
     {
-        if(client>-1)
-        {
-            new count=GetEntityCount();
-            for(new y=GetMaxClients();y<count;y++)
-            {
-                if(IsValidEdict(y))
-                {
-                    if(GetEntDataEnt2(y,m_OwnerOffset)==client)
-                    {
-                        SetEntityRenderColor(y,255,255,255,255);
-                        SetEntityRenderMode(client,RENDER_NORMAL);
-                        SetEntityRenderFx(client,RENDERFX_NONE);
-                    }
-                }
-            }
-            SetEntityRenderColor(client,255,255,255,255);
-            SetEntityRenderMode(client,RENDER_NORMAL);
-            SetEntityRenderFx(client,RENDERFX_NONE);
-        }
+        if (m_CloakTime[client] == 0.0)
+            m_CloakTime[client] = GetGameTime(); // Start cloak timer
     }
-}
+    else if (m_CloakTime[client] > 0.0) // && visibility > 0)
+        m_StoppedMoving[client] = 0.0; // Reset moving timer when cloak expires.
 
-stock SetVisibility(client, visibility, VisibilityType:type,
-                    RenderMode:mode, RenderFx:fx, r, g, b)
-{
     if (m_OwnerOffset != -1)
     {
         new count=GetEntityCount();
@@ -567,3 +583,30 @@ stock SetVisibility(client, visibility, VisibilityType:type,
     SetEntityRenderMode(client,mode);
     SetEntityRenderFx(client,fx);
 }
+
+ResetVisibility(client)
+{
+    if (m_OwnerOffset != -1)
+    {
+        if(client>-1)
+        {
+            new count=GetEntityCount();
+            for(new y=GetMaxClients();y<count;y++)
+            {
+                if(IsValidEdict(y))
+                {
+                    if(GetEntDataEnt2(y,m_OwnerOffset)==client)
+                    {
+                        SetEntityRenderColor(y,255,255,255,255);
+                        SetEntityRenderMode(client,RENDER_NORMAL);
+                        SetEntityRenderFx(client,RENDERFX_NONE);
+                    }
+                }
+            }
+            SetEntityRenderColor(client,255,255,255,255);
+            SetEntityRenderMode(client,RENDER_NORMAL);
+            SetEntityRenderFx(client,RENDERFX_NONE);
+        }
+    }
+}
+

@@ -716,8 +716,6 @@ public Action:CloakingAndDetector(Handle:timer)
                         }
                     }
 
-                    new cloaked_count      = 0;
-                    new cloaked_visibility = 0;
                     new Float:clientLoc[3];
                     GetClientAbsOrigin(client, clientLoc);
                     for (new index=1;index<=maxplayers;index++)
@@ -741,28 +739,17 @@ public Action:CloakingAndDetector(Handle:timer)
                                             }
                                         }
 
-                                        new bool:cloak = (cloaked_visibility < 255 &&
-                                                          IsInRange(client,index,cloaking_range));
+                                        new bool:cloak = IsInRange(client,index,cloaking_range);
                                         if (cloak)
                                         {
                                             new Float:indexLoc[3];
                                             GetClientAbsOrigin(index, indexLoc);
                                             cloak = TraceTarget(client, index, clientLoc, indexLoc);
-                                            if (cloak)
-                                            {
-                                                cloak = (++cloaked_count < skill_cloaking);
-                                                if (cloak)
-                                                {
-                                                    cloaked_count = 0;
-                                                    cloaked_visibility += 51;
-                                                    cloak = (cloaked_visibility < 255);
-                                                }
-                                            }
                                         }
 
                                         if (cloak)
                                         {
-                                            SetVisibility(player_check, cloaked_visibility,Basic_Visibility,0.0,0.0);
+                                            SetVisibility(player_check,0,BasicVisibility,0.0,0.0);
                                             m_Cloaked[client][index] = true;
 
                                             if (!m_Cloaked[client][index])

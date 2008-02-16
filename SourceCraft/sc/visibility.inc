@@ -8,9 +8,9 @@ Author(s): Naris
 
 enum VisibilityType
 {
-	Basic_Visibility,
-	Simple_Invisibility,
-	Timed_Invisibility,
-	Graduated_Effects
+	BasicVisibility,
+	TimedInvisibility,
+	TimedMeleeInvisibility,
+	GraduatedEffects
 };
 
