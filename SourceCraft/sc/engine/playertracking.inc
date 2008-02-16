@@ -455,8 +455,14 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
         }
     }
 
-    LogMessage("CalcVis for %N, base=%d, melee(%d)=%3.2f, movement(%d)=%3.2f, result=%d",
-               client, base, melee, meleeFactor, move, movementFactor, visibility);
+    // If melee and movement factors are both 0.0,
+    // then both MUST be true to be invisible!
+    if (meleeFactor == 0.0 && movementFactor == 0.0)
+    {
+        if (!melee || !move)
+            visibility = 255;
+    }
+
 
     return visibility;
 }
@@ -504,14 +510,19 @@ stock MakeInvisible(client, visibility)
                          !StrEqual(name, "CSniperDot")))
                     {
                         SetEntityRenderColor(obj,255,255,255,visibility);
-                        if (visibility > 0)
+                        if (visibility > 100)
                         {
                             SetEntityRenderMode(obj,RENDER_TRANSTEXTURE);
                             SetEntityRenderFx(obj,RENDERFX_DISTORT);
                         }
+                        else if (visibility > 0)
+                        {
+                            SetEntityRenderMode(obj,RENDER_TRANSTEXTURE);
+                            SetEntityRenderFx(obj,RENDERFX_HOLOGRAM);
+                        }
                         else
                         {
-                            SetEntityRenderMode(obj,RENDER_GLOW);
+                            SetEntityRenderMode(obj,RENDER_NONE);
                             SetEntityRenderFx(obj,RENDERFX_HOLOGRAM);
                         }
                     }
@@ -533,14 +544,19 @@ stock MakeInvisible(client, visibility)
         }
     }
     SetEntityRenderColor(client,255,255,255,visibility);
-    if (visibility > 0)
+    if (visibility > 100)
     {
         SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
         SetEntityRenderFx(client,RENDERFX_DISTORT);
     }
+    else if (visibility > 0)
+    {
+        SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+        SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+    }
     else
     {
-        SetEntityRenderMode(client,RENDER_GLOW);
+        SetEntityRenderMode(client,RENDER_NONE);
         SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
     }
 }
