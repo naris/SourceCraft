@@ -683,7 +683,7 @@ public Action:CloakingAndDetector(Handle:timer)
                 if(player>=0 && GetRace(player) == raceID)
                 {
                     new Float:cloaking_range;
-                    new skill_cloaking=GetSkillLevel(player,raceID,1);
+                    new skill_cloaking=GetSkillLevel(player,raceID,1)*0;// DISABLE CLOAKING TO TEST CLOAK Of SHADOWS!!!
                     if (skill_cloaking)
                     {
                         switch(skill_cloaking)

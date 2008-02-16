@@ -455,7 +455,7 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
         }
     }
 
-    LogMessage("CalcVis for %N, base=%d, melee(%d)=%3.25f, movement(%d)=%3.2f, result=%d",
+    LogMessage("CalcVis for %N, base=%d, melee(%d)=%3.2f, movement(%d)=%3.2f, result=%d",
                client, base, melee, meleeFactor, move, movementFactor, visibility);
 
     return visibility;
@@ -506,13 +506,13 @@ stock MakeInvisible(client, visibility)
                         SetEntityRenderColor(obj,255,255,255,visibility);
                         if (visibility > 0)
                         {
-                            SetEntityRenderMode(obj,RENDER_NORMAL);
-                            SetEntityRenderFx(obj,RENDERFX_HOLOGRAM);
+                            SetEntityRenderMode(obj,RENDER_TRANSTEXTURE);
+                            SetEntityRenderFx(obj,RENDERFX_DISTORT);
                         }
                         else
                         {
                             SetEntityRenderMode(obj,RENDER_GLOW);
-                            SetEntityRenderFx(obj,RENDERFX_NONE);
+                            SetEntityRenderFx(obj,RENDERFX_HOLOGRAM);
                         }
                     }
                     /*
@@ -535,12 +535,12 @@ stock MakeInvisible(client, visibility)
     SetEntityRenderColor(client,255,255,255,visibility);
     if (visibility > 0)
     {
-        SetEntityRenderMode(client,RENDER_NORMAL);
-        SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
+        SetEntityRenderMode(client,RENDER_TRANSTEXTURE);
+        SetEntityRenderFx(client,RENDERFX_DISTORT);
     }
     else
     {
         SetEntityRenderMode(client,RENDER_GLOW);
-        SetEntityRenderFx(client,RENDERFX_NONE);
+        SetEntityRenderFx(client,RENDERFX_HOLOGRAM);
     }
 }
