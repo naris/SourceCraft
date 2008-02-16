@@ -424,7 +424,6 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
 {
     new bool:melee=false;
     new bool:move=false;
-    new base = visibility;
 
     if (visibility < 0)
         visibility = 255;
@@ -458,11 +457,7 @@ stock CalculateVisibility(client, const String:wepName[], const Float:vecVelocit
     // If melee and movement factors are both 0.0,
     // then both MUST be true to be invisible!
     if (meleeFactor == 0.0 && movementFactor == 0.0)
-    {
-        if (!melee || !move)
-            visibility = 255;
-    }
-
+        visibility = (melee && move) ? 0 : 255;
 
     return visibility;
 }
