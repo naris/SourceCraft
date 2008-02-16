@@ -429,8 +429,8 @@ public Native_SetSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility type
                 PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
                 PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
-                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
@@ -479,8 +479,8 @@ public Native_SetGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility type
                 PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
                 PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
-                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
@@ -511,7 +511,8 @@ public Native_SetGravity(Handle:plugin,numParams)
 */
 public Native_SetVisibility(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 8)
+    LogMessage("[natives] SetVisibility, numParams=%d", numParams);
+    if(numParams >= 1 && numParams <= 10)
     {
         new player              = GetNativeCell(1);
         new visibility          = (numParams >= 2) ? GetNativeCell(2) : -1;
@@ -539,19 +540,23 @@ public Native_SetVisibility(Handle:plugin,numParams)
             }
             if(indice>-1)
             {
+                LogMessage("[natives] Update visibility for %d to %d, type=%d,f1=%f,f2=%f,mode=%d,fx=%d",
+                           player, visibility,type,factor1,factor2,mode,fx);
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY,visibility);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_TYPE,type);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FACTOR1,factor1);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FACTOR2,factor2);
-                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FX,fx);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_MODE,mode);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FX,fx);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_R,r);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_G,g);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_B,b);
             }
             else
             {
+                LogMessage("[natives] Set visibility for %d to %d, type=%d,f1=%f,f2=%f,mode=%d,fx=%d",
+                           player, visibility,type,factor1,factor2,mode,fx);
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
@@ -564,8 +569,8 @@ public Native_SetVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,type); // visibility type
                 PushArrayCell(indiceHandle,factor1); // visibility factor1 (melee/delay)
                 PushArrayCell(indiceHandle,factor2); // visibility factor2 (movement/duration)
-                PushArrayCell(indiceHandle,fx); // visibility render fx
                 PushArrayCell(indiceHandle,mode); // visibility render mode
+                PushArrayCell(indiceHandle,fx); // visibility render fx
                 PushArrayCell(indiceHandle,r); // visibility red component
                 PushArrayCell(indiceHandle,g); // visibility green component
                 PushArrayCell(indiceHandle,b); // visibility blue component
@@ -615,8 +620,8 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility type
                 PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
                 PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
-                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
@@ -665,8 +670,8 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility type
                 PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
                 PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
-                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
@@ -715,8 +720,8 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility type
                 PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
                 PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
-                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility render fx
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component

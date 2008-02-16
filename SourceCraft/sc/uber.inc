@@ -37,11 +37,11 @@ stock IsUber(client)
 
 stock SetUber(client)
 {
-    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) | 2000));
+    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) | 2080));
 }
 
 stock UnUberEntity(client)
 {
-    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) & (~2000)));
+    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) & (~2080)));
 }
 

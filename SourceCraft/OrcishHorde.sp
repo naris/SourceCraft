@@ -58,8 +58,11 @@ public OnPluginStart()
 
     cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
 
-    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+    if (!HookEvent("player_spawn",PlayerSpawnEvent))
         SetFailState("Couldn't hook the player_spawn event.");
+
+    if(!HookEvent("player_team",PlayerChangeClassEvent))
+        SetFailState("Could not hook the player_team event.");
 
     if (GameType == cstrike)
     {
@@ -73,7 +76,7 @@ public OnPluginStart()
     }
     else if (GameType == tf2)
     {
-        if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
+        if (!HookEvent("player_changeclass",PlayerChangeClassEvent))
             SetFailState("Couldn't hook the player_changeclass event.");
 
         if (!HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
@@ -179,9 +182,7 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
     {
         new player = GetPlayer(client);
         if (GetRace(player) == raceID && IsPlayerAlive(client))
-        {
             m_IsChangingClass[client] = true;
-        }
     }
     return Plugin_Continue;
 }
@@ -284,7 +285,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                 case 4:
                     percent=80;
             }
-            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 3*skill)
+            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2)
             {
                 GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);

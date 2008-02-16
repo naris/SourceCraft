@@ -55,8 +55,11 @@ public OnPluginStart()
 {
     GetGameType();
 
-    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+    if (!HookEvent("player_spawn",PlayerSpawnEvent))
         SetFailState("Couldn't hook the player_spawn event.");
+
+    if(!HookEvent("player_team",PlayerChangeClassEvent))
+        SetFailState("Could not hook the player_team event.");
 
     if (GameType == cstrike)
     {
