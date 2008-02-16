@@ -52,6 +52,7 @@ new metalOffset; // metal (3rd Ammo)
 
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Float:spawnLoc[MAXPLAYERS+1][3];
+new bool:spawnSet[MAXPLAYERS+1];
 new bool:usedPeriapt[MAXPLAYERS+1];
 new bool:isMole[MAXPLAYERS+1];
 new Float:gClawTime[MAXPLAYERS+1];
@@ -89,8 +90,14 @@ public OnPluginStart()
 {
     GetGameType();
 
-    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
+    if (!HookEvent("player_spawn",PlayerSpawnEvent))
         SetFailState("Couldn't hook the player_spawn event.");
+
+    if (GameType == tf2)
+    {
+        if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_round_start event.");
+    }
 
     CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
@@ -132,16 +139,16 @@ public LoadSDKToolStuff()
 
     if (GameType == tf2)
     {
-        ammo2Offset     = ammoOffset  + 4;
-        metalOffset     = ammo2Offset + 4;
+        ammo2Offset = ammoOffset  + 4;
+        metalOffset = ammo2Offset + 4;
     }
     else
     {
-        ammotypeOffset  = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
+        ammotypeOffset = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
         if(curWepOffset==-1)
             SetFailState("Couldn't find PrimaryAmmoType offset");
 
-        clipOffset      = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
+        clipOffset = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
         if(curWepOffset==-1)
             SetFailState("Couldn't find Clip offset");
 
@@ -164,7 +171,7 @@ public LoadSDKToolStuff()
 
     if (GameType == cstrike)
     {
-        myWepsOffset    = FindSendPropOffs("CAI_BaseNPC",       "m_hMyWeapons");
+        myWepsOffset = FindSendPropOffs("CAI_BaseNPC", "m_hMyWeapons");
 
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_Remove");
         PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
@@ -192,6 +199,9 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
+    for(new x=1;x<=MAXPLAYERS;x++)
+        spawnSet[x] = false;
+
     SetupSound(bootsWav, true, true);
 }
 
@@ -230,13 +240,20 @@ public OnItemPurchase(client,player,item)
         SetGravity(player,0.5);
 }
 
+public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    for(new x=1;x<=MAXPLAYERS;x++)
+        spawnSet[x] = false;
+}
+
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        GetClientAbsOrigin(client,spawnLoc[client]);
+        if (!spawnSet[client])
+            GetClientAbsOrigin(client,spawnLoc[client]);
 
         new player=GetPlayer(client);
         if(player>-1)
@@ -714,9 +731,14 @@ public Action:DoMole(Handle:timer,Handle:temp)
         new Handle:playerList=PlayersOnTeam(searchteam); // <3 SHVector.
         if (GetArraySize(playerList)>0) // are there any enemies?
         {
-            // who gets their position mooched off them?
-            new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
-            new lucky_player=GetArrayCell(playerList,lucky_player_iter);
+            new lucky_player;
+            do
+            {
+                // who gets their position mooched off them?
+                new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
+                lucky_player=GetArrayCell(playerList,lucky_player_iter);
+            } while (!spawnSet[lucky_player]);
+
             //EntityOrigin(lucky_player,teleLoc);
             teleLoc[0]=spawnLoc[lucky_player][0] + 5.0;
             teleLoc[1]=spawnLoc[lucky_player][1];

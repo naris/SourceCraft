@@ -97,3 +97,32 @@ stock DumpSniperDot(client, obj)
     LogMessage("m_PredictableID=%d",m_PredictableID);
     LogMessage("m_bIsPlayerSimulated=%d",m_bIsPlayerSimulated);
 }
+
+stock DumpEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new player = GetEventInt(event, "player");
+    new index = GetEventInt(event, "index");
+    new area = GetEventInt(event, "area");
+
+    new userid = GetEventInt(event, "userid");
+    new teamid = GetEventInt(event, "teamid");
+    new score = GetEventInt(event, "score");
+
+    LogMessage("Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+               name, player, area, index, userid, teamid, score);
+    /*
+    if (player && IsClientInGame(player))
+        PrintToChat(player, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+                    name, player, area, index, userid, teamid, score);
+
+    if (userid && IsClientInGame(userid))
+        PrintToChat(userid, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+                    name, player, area, index, userid, teamid, score);
+
+    new client=1;
+    if (client != player && IsClientInGame(client))
+        PrintToChat(client, "Event %s, player=%d, area=%d, index=%d, userid=%d, teamid=%d, score=%d",
+                    name, player, area, index, userid, teamid, score);
+    */               
+}
+

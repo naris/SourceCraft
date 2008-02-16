@@ -85,46 +85,6 @@ public bool:HookTFEvents()
         return false;
     }
    
-    if(!HookEvent("controlpoint_starttouch", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_starttouch event.");
-    }
-
-    if(!HookEvent("controlpoint_endtouch", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_endtouch event.");
-    }
-
-    if(!HookEvent("controlpoint_initialized", DumpEvent,EventHookMode_PostNoCopy))
-    {
-        LogError("Could not hook the controlpoint_initialized event.");
-    }
-
-    if(!HookEvent("controlpoint_updateimages", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_updateimages event.");
-    }
-
-    if(!HookEvent("controlpoint_updatelayout", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_updatelayout event.");
-    }
-
-    if(!HookEvent("controlpoint_updatecapping", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_updatecapping event.");
-    }
-
-    if(!HookEvent("controlpoint_updateowner", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_updateowner event.");
-    }
-
-    if(!HookEvent("controlpoint_pulse_element", DumpEvent))
-    {
-        LogError("Could not hook the controlpoint_pulse_element event.");
-    }
- 
     return true;
 }
 
