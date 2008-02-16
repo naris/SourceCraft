@@ -20,6 +20,10 @@
 #include "sc/respawn"
 #include "sc/log"
 
+new String:allahWav[] = "sourcecraft/allahuakbar.wav";
+new String:kaboomWav[] = "sourcecraft/iraqi_engaging.wav";
+new String:explodeWav[] = "weapons/explode5.wav";
+
 new raceID; // The ID we are assigned to
 
 new explosionModel;
@@ -30,15 +34,7 @@ new g_purpleGlow;
 new g_smokeSprite;
 new g_lightningSprite;
 
-new String:allahWav[] = "sourcecraft/allahuakbar.wav";
-new String:kaboomWav[] = "sourcecraft/iraqi_engaging.wav";
-new String:explodeWav[] = "weapons/explode5.wav";
-
-// Reincarnation variables
 new bool:m_Suicided[MAXPLAYERS+1];
-new bool:m_IsRespawning[MAXPLAYERS+1];
-new bool:m_IsChangingClass[MAXPLAYERS+1];
-new Float:m_DeathLoc[MAXPLAYERS+1][3];
 
 public Plugin:myinfo = 
 {
@@ -62,10 +58,26 @@ public OnPluginStart()
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
 
-    if (GameType == tf2)
+    if (GameType == cstrike)
+    {
+        if (!HookEvent("round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the round_start event.");
+    }
+    else if (GameType == dod)
+    {
+        if (!HookEvent("dod_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the dod_round_start event.");
+    }
+    else if (GameType == tf2)
     {
         if (!HookEvent("player_changeclass",PlayerChangeClassEvent,EventHookMode_Post))
             SetFailState("Couldn't hook the player_changeclass event.");
+
+        if (!HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_start event.");
+
+        if (!HookEvent("teamplay_suddendeath_begin",RoundStartEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_suddendeath_begin event.");
     }
 
     CreateTimer(3.0,FlamingWrath,INVALID_HANDLE,TIMER_REPEAT);
@@ -126,6 +138,13 @@ public OnMapStart()
     SetupSound(allahWav, true, true);
     SetupSound(kaboomWav, true, true);
     SetupSound(explodeWav, true, true);
+
+    for(new x=1;x<=MAXPLAYERS;x++)
+    {
+        m_IsRespawning[x]=false;
+        m_IsChangingClass[x]=false;
+        m_ReincarnationCount[x]=0;
+    }
 }
 
 public OnUltimateCommand(client,player,race,bool:pressed)
@@ -141,6 +160,16 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                 AuthTimer(GetSoundDuration(allahWav), client, MadBomber);
             }
         }
+    }
+}
+
+public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    for(new x=1;x<=MAXPLAYERS;x++)
+    {
+        m_IsRespawning[x]=false;
+        m_IsChangingClass[x]=false;
+        m_ReincarnationCount[x]=0;
     }
 }
 
@@ -173,6 +202,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
             TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
             TE_SendToAll();
+
+            SetUber(client);
+            AuthTimer(0.5,client,ResetUber);
         }
     }
     return Plugin_Continue;
@@ -184,10 +216,13 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    if (victim_race == raceID && !m_IsRespawning[victim_index])
+    if (victim_race == raceID && !m_IsChangingClass[victim_index])
     {
         if (m_Suicided[victim_index])
+        {
             m_Suicided[victim_index]=false;
+            m_ReincarnationCount[victim_index] = 0;
+        }
         else
         {
             new reincarnation_skill=GetSkillLevel(victim_player,victim_race,0);
@@ -205,13 +240,17 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                     case 4:
                         percent=53;
                 }
-                if (GetRandomInt(1,100)<=percent)
+                if (GetRandomInt(1,100)<=percent &&
+                    m_ReincarnationCount[victim_index] < 3*reincarnation_skill)
                 {
                     m_IsRespawning[victim_index]=true;
+                    m_ReincarnationCount[victim_index]++;
                     GetClientAbsOrigin(victim_index,m_DeathLoc[victim_index]);
                     AuthTimer(0.5,victim_index,RespawnPlayerHandle);
                     return Plugin_Continue;
                 }
+                else
+                    m_ReincarnationCount[victim_index] = 0;
             }
         }
 
@@ -229,6 +268,7 @@ public OnRaceSelected(client,player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
+        m_ReincarnationCount[client]=0;
         m_IsRespawning[client]=false;
         m_Suicided[client]=false;
     }

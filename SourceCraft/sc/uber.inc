@@ -30,8 +30,18 @@ stock FindUberOffsets()
 stock IsUber(client)
 {
     if (GameType == tf2)
-        return GetEntData(client,m_OffsetNumHealers) > 0 &&
-               (GetEntData(client,m_OffsetPlayerCond) & 2080) != 0;
+        return (GetEntData(client,m_OffsetPlayerCond) & 2080) != 0;
     else
         return false;
 }
+
+stock SetUber(client)
+{
+    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) | 2000));
+}
+
+stock UnUberEntity(client)
+{
+    SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) & (~2000)));
+}
+

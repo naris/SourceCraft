@@ -15,6 +15,7 @@
 #include "sc/SourceCraft"
 
 #include "sc/util"
+#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"

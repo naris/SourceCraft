@@ -27,11 +27,8 @@ new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
 new raceID; // The ID we are assigned to
 
-new bool:m_HasRespawned[MAXPLAYERS+1];
-new bool:m_IsRespawning[MAXPLAYERS+1];
-new bool:m_IsChangingClass[MAXPLAYERS+1];
 new bool:m_AllowChainLightning[MAXPLAYERS+1];
-new Float:m_DeathLoc[MAXPLAYERS+1][3];
+new bool:m_HasRespawned[MAXPLAYERS+1];
 
 new Handle:cvarChainCooldown = INVALID_HANDLE;
 
@@ -82,7 +79,7 @@ public OnPluginStart()
         if (!HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
             SetFailState("Couldn't hook the teamplay_round_start event.");
 
-        if (!HookEvent("teamplay_suddendeath_begin",SuddenDeathBeginEvent,EventHookMode_PostNoCopy))
+        if (!HookEvent("teamplay_suddendeath_begin",RoundStartEvent,EventHookMode_PostNoCopy))
             SetFailState("Couldn't hook the teamplay_suddendeath_begin event.");
     }
 }
@@ -125,6 +122,14 @@ public OnMapStart()
 
     SetupSound(thunderWav,true,true);
     SetupSound(rechargeWav,true,true);
+
+    for(new x=1;x<=MAXPLAYERS;x++)
+    {
+        m_HasRespawned[x]=false;
+        m_IsRespawning[x]=false;
+        m_IsChangingClass[x]=false;
+        m_ReincarnationCount[x]=0;
+    }
 }
 
 public OnPlayerAuthed(client,player)
@@ -139,6 +144,7 @@ public OnRaceSelected(client,player,oldrace,newrace)
         m_AllowChainLightning[client]=true;
         m_HasRespawned[client]=false;
         m_IsRespawning[client]=false;
+        m_IsChangingClass[client] = false;
     }
 }
 
@@ -154,6 +160,17 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 }
 
 // Events
+public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    for(new x=1;x<=MAXPLAYERS;x++)
+    {
+        m_HasRespawned[x]=false;
+        m_IsRespawning[x]=false;
+        m_IsChangingClass[x]=false;
+        m_ReincarnationCount[x]=0;
+    }
+}
+
 public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -192,6 +209,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
 
                     TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
+
+                    SetUber(client);
+                    AuthTimer(0.5,client,ResetUber);
                 }
             }
         }
@@ -246,7 +266,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    if (victim_race==raceID && (!m_HasRespawned[victim_index] || GameType != cstrike))
+    if (victim_race==raceID && !m_IsChangingClass[victim_index] &&
+        (!m_HasRespawned[victim_index] || GameType != cstrike))
     {
         new skill=GetSkillLevel(victim_player,victim_race,2);
         if (skill)
@@ -263,7 +284,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                 case 4:
                     percent=80;
             }
-            if (GetRandomInt(1,100)<=percent)
+            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 3*skill)
             {
                 GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
@@ -272,26 +293,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                 AuthTimer(0.5,victim_index,RespawnPlayerHandle);
                 m_HasRespawned[victim_index]=true;
                 m_IsRespawning[victim_index]=true;
+                m_ReincarnationCount[victim_index]++;
             }
+            else
+                m_ReincarnationCount[victim_index] = 0;
+
         }
-    }
-}
-
-public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    for(new x=1;x<=MAXPLAYERS;x++)
-    {
-        m_HasRespawned[x]=false;
-        m_IsRespawning[x]=false;
-    }
-}
-
-public SuddenDeathBeginEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    for(new x=1;x<=MAXPLAYERS;x++)
-    {
-        m_HasRespawned[x]=false;
-        m_IsRespawning[x]=false;
+        else
+            m_ReincarnationCount[victim_index] = 0;
     }
 }
 

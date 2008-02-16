@@ -14,6 +14,12 @@
 #include <cstrike>
 #define REQUIRE_EXTENSIONS
 
+// Reincarnation variables
+stock m_ReincarnationCount[MAXPLAYERS+1];
+stock bool:m_IsRespawning[MAXPLAYERS+1];
+stock bool:m_IsChangingClass[MAXPLAYERS+1];
+stock Float:m_DeathLoc[MAXPLAYERS+1][3];
+
 stock SetupRespawn()
 {
     if (GetGameType() != cstrike)
@@ -38,3 +44,15 @@ public Action:RespawnPlayerHandle(Handle:timer,any:temp)
     ClearArray(temp);
     return Plugin_Stop;
 }
+
+public Action:ResetUber(Handle:timer,Handle:temp)
+{
+    decl String:auth[64];
+    GetArrayString(temp,0,auth,63);
+    new client=PlayerOfAuth(auth);
+    if(client)
+        UnUberEntity(client);
+    ClearArray(temp);
+    return Plugin_Stop;
+}
+
