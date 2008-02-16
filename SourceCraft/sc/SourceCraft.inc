@@ -6,19 +6,13 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
+#include "sc/immunity"
+#include "sc/visibility"
+
 #if defined sourcecraft_included
  #endinput
 #endif
 #define sourcecraft_included
-
-// The types of immunities you can get/set from.
-enum Immunity
-{
-	Immunity_Ultimates = 0, // Immune from ultimates
-	Immunity_HealthTake = 1, // Immune from health taking
-	Immunity_Explosion = 2, // Immune from explosion based stuff
-	Immunity_ShopItems = 3, // Immune from shop items
-};
 
 /**
  * Registers a race with the SourceCraft plugin
@@ -230,7 +224,7 @@ native SetImmunity(player,Immunity:immunity,imm_state=1);
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native SetMaxSpeed(player,Float:speed=-1.0);
+native SetSpeed(player,Float:speed=-1.0);
 
 /**
  * Sets the gravity for the player that is handled within the SourceCraft system,
@@ -241,21 +235,31 @@ native SetMaxSpeed(player,Float:speed=-1.0);
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native SetMinGravity(player,Float:gravity=-1.0);
+native SetGravity(player,Float:gravity=-1.0);
 
 /**
- * Sets the (in)visibility for the player that is handled within the SourceCraft system,
+ * Sets the visibility for the player that is handled within the SourceCraft system,
  * good for skills and items that set (in)visibility so you don't end up making the player
  * more visibile. Pass 255 as visibility when they no longer should use the (in)visibility,
  * make sure to do this when they no longer have the skill or item, or whatever.
  * @param player: The player ID to use. Can be retrieved with GetPlayer.
  * @param visibility: The visibility you want to pass.
- * @param melee_factor: The value to multiply the visibility by when player uses a melee weapon
- * @param movement_factor: The value to multiply the visibility by when player is not moving.
- *                         (Pass -1.0 for factors to not check)
+ * @param type: The type of visibility to use.
+ * @param factor1: The 1st factor (either melee factor or activation delay)
+ * @param factor2: The 2nd factopr (either movement factor or duration)
+ * @param mode: The Render mode
+ * @param fx: The Render Fx
+ * @param r: Red Component.
+ * @param g: Green Component.
+ * @param b: Blue Component.
  * @noreturn
  */
-native SetMinVisibility(player,visibility=-1,Float:melee_factor=-1.0,Float:movement_factor=-1.0);
+native SetVisibility(player,visibility=-1,
+                     VisibilityType:type=VisibilityType:-1,
+                     Float:factor1=-1.0,Float:factor2=-1.0,
+                     RenderMode:mode=RenderMode:-1,
+                     RenderFx:fx=RenderFx:-1,
+                     r=-1,g=-1,b=-1);
 
 /**
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
@@ -285,7 +289,7 @@ native SetOverrideGravity(player,Float:gravity=-1.0);
  * @param visibility: The visibility you want to pass.
  * @noreturn
  */
-native SetOverrideVisible(player,visibility=-1);
+native SetOverrideVisiblity(player,visibility=-1);
 
 /**
  * Called when the plugin is ready.

@@ -1,16 +1,19 @@
 /*
 File: immunity.inc
 Description: All the immunity types.
-Author(s): Anthony Iacono  
+Author(s): Naris
 */
 
-#define IMMUNITY_COUNT 4
-
-/* Pulled directly from the interface:
+// The types of immunities you can get/set from.
 enum Immunity
 {
-	Immunity_Ultimates = 0, // Immune from ultimates
-	Immunity_HealthTake = 1, // Immune from health taking
-	Immunity_Explosion = 2, // Immune from explosion based stuff
-	Immunity_ShopItems = 3, // Immune from shop items
-}; */
+	Immunity_Ultimates,  // Immune from ultimates
+	Immunity_HealthTake, // Immune from health taking
+	Immunity_Explosion,  // Immune from explosion based stuff
+	Immunity_ShopItems,  // Immune from shop items
+	Immunity_Freezing,   // Immune from freezing
+	Immunity_Fire        // Immune from fire (does NOT include pyro's flames)
+};
+
+#define IMMUNITY_COUNT 6
+

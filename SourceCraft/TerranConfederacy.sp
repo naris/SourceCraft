@@ -87,8 +87,7 @@ public OnRaceSelected(client,player,oldrace,race)
         if (oldrace == raceID)
         {
             TakeJetpack(client);
-            SetMaxSpeed(player,-1.0);
-            SetMinVisibility(player, -1, -1.0, -1.0);
+            SetSpeed(player,-1.0);
         }
         else if (race == raceID)
         {
@@ -179,29 +178,12 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
-                                 damage,const String:weapon[], bool:is_equipment,
-                                 customkill,bool:headshot,bool:backstab,bool:melee)
-{
-    LogEventDamage(event, damage, "TerranConfederacy::PlayerDeathEvent", raceID);
-
-    // Reset invisibility
-    if (victim_player != -1 && victim_race == raceID)
-    {
-        SetMinVisibility(victim_player, -1, -1.0, -1.0);
-    }
-}
-
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
                                 attacker_index,attacker_player,attacker_race,
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
-
-    LogEventDamage(event, damage, "TerranConfederacy::PlayerHurtEvent", raceID);
 
     if (victim_race == raceID)
         changed = Armor(damage, victim_index, victim_player);
@@ -362,7 +344,7 @@ Stimpacks(client, player, skilllevel)
                           0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    SetMaxSpeed(player,speed);
+    SetSpeed(player,speed);
 }
 
 Jetpack(client, skilllevel)

@@ -762,7 +762,7 @@ public Action:CloakingAndDetector(Handle:timer)
 
                                         if (cloak)
                                         {
-                                            SetMinVisibility(player_check, cloaked_visibility,0.5,0.0);
+                                            SetVisibility(player_check, cloaked_visibility,Basic_Visibility,0.5,0.0);
                                             m_Cloaked[client][index] = true;
 
                                             if (!m_Cloaked[client][index])
@@ -775,7 +775,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                         }
                                         else if (m_Cloaked[client][index])
                                         {
-                                            SetMinVisibility(player_check, -1, -1.0, -1.0);
+                                            SetVisibility(player_check, -1);
                                             m_Cloaked[client][index] = false;
 
                                             EmitSoundToClient(client, unCloakWav);
@@ -795,7 +795,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                         }
                                         if (detect)
                                         {
-                                            SetOverrideVisible(player_check, 255);
+                                            SetOverrideVisiblity(player_check, 255);
                                             if (TF_GetClass(index) == TF2_SPY)
                                             {
                                                 // Set the disguise(8) and cloak(16) bits to 0.
@@ -820,7 +820,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                         }
                                         else if (m_Detected[client][index])
                                         {
-                                            SetOverrideVisible(player_check, -1);
+                                            SetOverrideVisiblity(player_check, -1);
                                             m_Detected[client][index] = false;
                                         }
                                     }
@@ -845,13 +845,13 @@ ResetCloakingAndDetector(client)
         {
             if (m_Cloaked[client][index])
             {
-                SetMinVisibility(player, -1, -1.0, -1.0);
+                SetVisibility(player, -1);
                 m_Cloaked[client][index] = false;
             }
 
             if (m_Detected[client][index])
             {
-                SetOverrideVisible(player, -1);
+                SetOverrideVisiblity(player, -1);
                 m_Detected[client][index] = false;
             }
         }

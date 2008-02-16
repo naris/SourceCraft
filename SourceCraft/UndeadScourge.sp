@@ -149,8 +149,8 @@ public OnRaceSelected(client,player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            SetMaxSpeed(player,-1.0);
-            SetMinGravity(player,-1.0);
+            SetSpeed(player,-1.0);
+            SetGravity(player,-1.0);
         }
         else if (race == raceID)
         {
@@ -262,7 +262,7 @@ UnholyAura(client, player, skilllevel)
                           0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    SetMaxSpeed(player,speed);
+    SetSpeed(player,speed);
 }
 
 Levitation(client, player, skilllevel)
@@ -297,7 +297,7 @@ Levitation(client, player, skilllevel)
                           0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
     TE_SendToAll();
 
-    SetMinGravity(player,gravity);
+    SetGravity(player,gravity);
 }
 
 bool:VampiricAura(damage, victim_index, victim_player, index, player)

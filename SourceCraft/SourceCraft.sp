@@ -37,6 +37,7 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/util"
 #include "sc/weapons"
 #include "sc/immunity"
+#include "sc/visibility"
 #include "sc/maxhealth"
 #include "sc/log"
 

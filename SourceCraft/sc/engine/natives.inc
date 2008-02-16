@@ -390,7 +390,7 @@ public Native_SetImmunity(Handle:plugin,numParams)
     }
 }
 
-public Native_SetMaxSpeed(Handle:plugin,numParams)
+public Native_SetSpeed(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -414,29 +414,33 @@ public Native_SetMaxSpeed(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_SPEED,speed);
-                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
-                PushArrayCell(indiceHandle,speed); // maxspeed speed
-                PushArrayCell(indiceHandle,-1.0); // mingravity gravity
-                PushArrayCell(indiceHandle,-1); // minvisibility 
-                PushArrayCell(indiceHandle,-1.0); // visibility melee factor
-                PushArrayCell(indiceHandle,-1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,-1.0); // force speed?
                 PushArrayCell(indiceHandle,-1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(indiceHandle,speed); // speed
+                PushArrayCell(indiceHandle,-1.0); // gravity
+                PushArrayCell(indiceHandle,-1); // visibility 
+                PushArrayCell(indiceHandle,-1); // visibility type
+                PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
+                PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
+                PushArrayCell(indiceHandle,-1); // visibility render fx
+                PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility red component
+                PushArrayCell(indiceHandle,-1); // visibility green component
+                PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            //SetPropertyInfo(player,temp);
         }
     }
 }
 
-public Native_SetMinGravity(Handle:plugin,numParams)
+public Native_SetGravity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -460,36 +464,65 @@ public Native_SetMinGravity(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_GRAVITY,gravity);
-                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
-                PushArrayCell(indiceHandle,-1.0); // maxspeed speed
-                PushArrayCell(indiceHandle,gravity); // mingravity gravity
-                PushArrayCell(indiceHandle,-1); // minvisibility 
-                PushArrayCell(indiceHandle,-1.0); // visibility melee factor
-                PushArrayCell(indiceHandle,-1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,-1.0); // force speed?
                 PushArrayCell(indiceHandle,-1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(indiceHandle,-1.0); // speed
+                PushArrayCell(indiceHandle,gravity); // gravity
+                PushArrayCell(indiceHandle,-1); // visibility 
+                PushArrayCell(indiceHandle,-1); // visibility type
+                PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
+                PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
+                PushArrayCell(indiceHandle,-1); // visibility render fx
+                PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility red component
+                PushArrayCell(indiceHandle,-1); // visibility green component
+                PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            //SetPropertyInfo(player,temp);
         }
     }
 }
 
-public Native_SetMinVisibility(Handle:plugin,numParams)
+/**
+* Sets the visibility for the player that is handled within the SourceCraft system,
+* good for skills and items that set (in)visibility so you don't end up making the player
+* more visibile. Pass 255 as visibility when they no longer should use the (in)visibility,
+* make sure to do this when they no longer have the skill or item, or whatever.
+* @param player: The player ID to use. Can be retrieved with GetPlayer.
+* @param visibility: The visibility you want to pass.
+* @param type: The type of visibility to use.
+* @param factor1: The 1st factor (either melee factor or activation delay)
+* @param factor2: The 2nd factopr (either movement factor or duration)
+* @param mode: The Render mode
+* @param fx: The Render Fx
+* @param r: Red Component.
+* @param g: Green Component.
+* @param b: Blue Component.
+* @noreturn
+* native SetVisibility(player,visibility,VisibilityType:type,Float:factor1,Float:factor2,
+*                      RenderFx:fx,RenderMode:mode,r,g,b);
+*/
+public Native_SetVisibility(Handle:plugin,numParams)
 {
-    if(numParams >= 2 && numParams <= 4)
+    if(numParams >= 1 && numParams <= 8)
     {
-        new player=GetNativeCell(1);
-        new visibility=GetNativeCell(2);
-        new Float:meleeFactor = (numParams > 2) ? GetNativeCell(3) : 1.0;
-        new Float:movementFactor = (numParams > 3) ? GetNativeCell(4) : 1.0;
+        new player              = GetNativeCell(1);
+        new visibility          = (numParams >= 2) ? GetNativeCell(2) : -1;
+        new VisibilityType:type = (numParams >= 3) ? GetNativeCell(3) : Basic_Visibility;
+        new Float:factor1       = (numParams >= 4) ? GetNativeCell(4) : -1.0;
+        new Float:factor2       = (numParams >= 5) ? GetNativeCell(5) : -1.0;
+        new RenderMode:mode     = (numParams >= 6) ? GetNativeCell(6) : RENDER_NORMAL;
+        new RenderFx:fx         = (numParams >= 7) ? GetNativeCell(7) : RENDERFX_NONE; 
+        new r                   = (numParams >= 8) ? GetNativeCell(8) : -1;
+        new g                   = (numParams >= 9) ? GetNativeCell(9) : -1;
+        new b                   = (numParams >= 10) ? GetNativeCell(10) : -1;
         if(player != -1)
         {
             new Handle:temp=GetPropertyInfo(player);
@@ -508,26 +541,36 @@ public Native_SetMinVisibility(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY,visibility);
-                SetArrayCell(indiceHandle,TRACKING_MELEE_FACTOR,meleeFactor);
-                SetArrayCell(indiceHandle,TRACKING_MOVEMENT_FACTOR,movementFactor);
-                //SetArrayCell(temp,indice,indiceHandle);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_TYPE,type);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FACTOR1,factor1);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FACTOR2,factor2);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FX,fx);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_MODE,mode);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_R,r);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_G,g);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_B,b);
             }
             else
             {
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
-                PushArrayCell(indiceHandle,-1.0); // maxspeed speed
-                PushArrayCell(indiceHandle,-1.0); // mingravity gravity
-                PushArrayCell(indiceHandle,visibility); // minvisibility 
-                PushArrayCell(indiceHandle,meleeFactor); // visibility melee factor
-                PushArrayCell(indiceHandle,movementFactor); // visibility movement factor
                 PushArrayCell(indiceHandle,-1.0); // force speed?
                 PushArrayCell(indiceHandle,-1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(indiceHandle,-1.0); // speed
+                PushArrayCell(indiceHandle,-1.0); // gravity
+                PushArrayCell(indiceHandle,visibility); // visibility 
+                PushArrayCell(indiceHandle,type); // visibility type
+                PushArrayCell(indiceHandle,factor1); // visibility factor1 (melee/delay)
+                PushArrayCell(indiceHandle,factor2); // visibility factor2 (movement/duration)
+                PushArrayCell(indiceHandle,fx); // visibility render fx
+                PushArrayCell(indiceHandle,mode); // visibility render mode
+                PushArrayCell(indiceHandle,r); // visibility red component
+                PushArrayCell(indiceHandle,g); // visibility green component
+                PushArrayCell(indiceHandle,b); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -557,24 +600,28 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_OVERRIDE_SPEED,speed);
-                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
-                PushArrayCell(indiceHandle,-1.0); // maxspeed speed
-                PushArrayCell(indiceHandle,-1.0); // mingravity gravity
-                PushArrayCell(indiceHandle,-1); // minvisibility 
-                PushArrayCell(indiceHandle,-1.0); // visibility melee factor
-                PushArrayCell(indiceHandle,-1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,speed); // force speed?
                 PushArrayCell(indiceHandle,-1.0); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(indiceHandle,-1.0); // speed
+                PushArrayCell(indiceHandle,-1.0); // gravity
+                PushArrayCell(indiceHandle,-1); // visibility 
+                PushArrayCell(indiceHandle,-1); // visibility type
+                PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
+                PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
+                PushArrayCell(indiceHandle,-1); // visibility render fx
+                PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility red component
+                PushArrayCell(indiceHandle,-1); // visibility green component
+                PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -603,29 +650,33 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_OVERRIDE_GRAVITY,gravity);
-                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
-                PushArrayCell(indiceHandle,-1.0); // maxspeed speed
-                PushArrayCell(indiceHandle,-1.0); // mingravity gravity
-                PushArrayCell(indiceHandle,-1); // minvisibility 
-                PushArrayCell(indiceHandle,-1.0); // visibility melee factor
-                PushArrayCell(indiceHandle,-1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,-1.0); // force speed?
                 PushArrayCell(indiceHandle,gravity); // force gravity?
                 PushArrayCell(indiceHandle,-1); // force visibility?
+                PushArrayCell(indiceHandle,-1.0); // speed
+                PushArrayCell(indiceHandle,-1.0); // gravity
+                PushArrayCell(indiceHandle,-1); // visibility 
+                PushArrayCell(indiceHandle,-1); // visibility type
+                PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
+                PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
+                PushArrayCell(indiceHandle,-1); // visibility render fx
+                PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility red component
+                PushArrayCell(indiceHandle,-1); // visibility green component
+                PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            //SetPropertyInfo(player,temp);
         }
     }
 }
 
-public Native_SetOverrideVisible(Handle:plugin,numParams)
+public Native_SetOverrideVisiblity(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
@@ -649,24 +700,28 @@ public Native_SetOverrideVisible(Handle:plugin,numParams)
             {
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_OVERRIDE_VISIBILITY,visibility);
-                //SetArrayCell(temp,indice,indiceHandle);
             }
             else
             {
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
-                PushArrayCell(indiceHandle,-1.0); // maxspeed speed
-                PushArrayCell(indiceHandle,-1.0); // mingravity gravity
-                PushArrayCell(indiceHandle,-1); // minvisibility 
-                PushArrayCell(indiceHandle,-1.0); // visibility melee factor
-                PushArrayCell(indiceHandle,-1.0); // visibility movement factor
                 PushArrayCell(indiceHandle,-1.0); // force speed?
                 PushArrayCell(indiceHandle,-1.0); // force gravity?
                 PushArrayCell(indiceHandle,visibility); // force visibility?
+                PushArrayCell(indiceHandle,-1.0); // speed
+                PushArrayCell(indiceHandle,-1.0); // gravity
+                PushArrayCell(indiceHandle,-1); // visibility 
+                PushArrayCell(indiceHandle,-1); // visibility type
+                PushArrayCell(indiceHandle,-1.0); // visibility factor1 (melee/delay)
+                PushArrayCell(indiceHandle,-1.0); // visibility factor2 (movement/duration)
+                PushArrayCell(indiceHandle,-1); // visibility render fx
+                PushArrayCell(indiceHandle,-1); // visibility render mode
+                PushArrayCell(indiceHandle,-1); // visibility red component
+                PushArrayCell(indiceHandle,-1); // visibility green component
+                PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            //SetPropertyInfo(player,temp);
         }
     }
 }
@@ -695,12 +750,12 @@ public bool:InitNatives()
     CreateNative("SetOwnsItem",Native_SetOwnsItem);
     CreateNative("GetImmunity",Native_GetImmunity);
     CreateNative("SetImmunity",Native_SetImmunity);
-    CreateNative("SetMaxSpeed",Native_SetMaxSpeed);
-    CreateNative("SetMinGravity",Native_SetMinGravity);
-    CreateNative("SetMinVisibility",Native_SetMinVisibility);
+    CreateNative("SetSpeed",Native_SetSpeed);
+    CreateNative("SetGravity",Native_SetGravity);
+    CreateNative("SetVisibility",Native_SetVisibility);
     CreateNative("SetOverrideSpeed",Native_SetOverrideSpeed);
     CreateNative("SetOverrideGravity",Native_SetOverrideGravity);
-    CreateNative("SetOverrideVisible",Native_SetOverrideVisible);
+    CreateNative("SetOverrideVisiblity",Native_SetOverrideVisiblity);
     return true;
 }
 

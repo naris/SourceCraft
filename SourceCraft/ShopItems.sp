@@ -206,11 +206,11 @@ public OnItemPurchase(client,player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
     {
-        SetMaxSpeed(player,1.2);
+        SetSpeed(player,1.2);
         EmitSoundToAll(bootsWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
-        SetMinVisibility(player, 255, 0.0, 0.0);
+        SetVisibility(player, 0, Simple_Invisibility);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health
@@ -227,7 +227,7 @@ public OnItemPurchase(client,player,item)
         SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
-        SetMinGravity(player,0.5);
+        SetGravity(player,0.5);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -263,19 +263,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
             {
-                SetMaxSpeed(player,1.2);
+                SetSpeed(player,1.2);
                 StopSound(client,SNDCHAN_AUTO,bootsWav);
                 EmitSoundToAll(bootsWav,client);
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_CLOAK]))                           // Cloak of Shadows
-                SetMinVisibility(player, 255, 0.0, 0.0);
+                SetVisibility(player, -1, Simple_Invisibility);
 
             if(GetOwnsItem(player,shopItem[ITEM_PERIAPT]) && !usedPeriapt[client]) // Periapt of Health
                 AuthTimer(0.1,client,DoPeriapt);
 
             if(GetOwnsItem(player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
-                SetMinGravity(player,0.5);
+                SetGravity(player,0.5);
 
             if(GetOwnsItem(player,shopItem[ITEM_MOLE]))                            // Mole
             {
@@ -365,9 +365,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
             SetOwnsItem(victim_player,shopItem[ITEM_PERIAPT],false);
 
         // Reset player speed/gravity/visibility attributes when they doe
-        SetMaxSpeed(victim_player,-1.0);
-        SetMinGravity(victim_player,-1.0);
-        SetMinVisibility(victim_player, -1, -1.0, -1.0);
+        SetSpeed(victim_player,-1.0);
+        SetGravity(victim_player,-1.0);
+        SetVisibility(victim_player, -1);
 
         // Reset Overrides when players die
         SetOverrideSpeed(victim_player,-1.0);

@@ -156,7 +156,7 @@ public OnRaceSelected(client,player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            SetMinVisibility(player, -1, -1.0, -1.0);
+            SetVisibility(player, -1);
             ResetOcularImplants(client);
             m_AllowNuclearLaunch[client]=true;
         }
@@ -225,7 +225,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 
     if (victim_player != -1 && victim_race == raceID)
     {
-        SetMinVisibility(victim_player, -1, -1.0, -1.0);
+        SetVisibility(victim_player, -1);
 
         if (m_NuclearLaunchInitiated[victim_index])
         {
@@ -291,7 +291,7 @@ bool:Cloak(client, player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
     TE_SendToAll();
 
-    SetMinVisibility(player,alpha, 0.0, 0.0);
+    SetVisibility(player, alpha, Basic_Visibility, 0.5, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
 }
 
 Lockdown(victim_index, player)
@@ -383,7 +383,7 @@ public Action:OcularImplants(Handle:timer)
                                         }
                                         if (detect)
                                         {
-                                            SetOverrideVisible(player_check, 255);
+                                            SetOverrideVisiblity(player_check, 255);
                                             if (TF_GetClass(index) == TF2_SPY)
                                             {
                                                 // Set the disguise(8) and cloak(16) bits to 0.
@@ -408,7 +408,7 @@ public Action:OcularImplants(Handle:timer)
                                         }
                                         else if (m_Detected[client][index])
                                         {
-                                            SetOverrideVisible(player_check, -1);
+                                            SetOverrideVisiblity(player_check, -1);
                                             m_Detected[client][index] = false;
                                         }
                                     }
@@ -433,7 +433,7 @@ ResetOcularImplants(client)
         {
             if (m_Detected[client][index])
             {
-                SetOverrideVisible(player, -1);
+                SetOverrideVisiblity(player, -1);
                 m_Detected[client][index] = false;
             }
         }
@@ -529,7 +529,7 @@ public Action:TrackNuclearTarget(Handle:timer,any:index)
 LaunchNuclearDevice(client,player)
 {
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
-    SetMinVisibility(player, 100, 0.0, 0.0);
+    SetVisibility(player, 100, Basic_Visibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
@@ -553,7 +553,7 @@ public Action:NuclearLockOn(Handle:timer,any:client)
         new player = GetPlayer(client);
         if (player != -1)
         {
-            SetMinVisibility(player, -1, -1.0, -1.0);
+            SetVisibility(player, -1);
             SetOverrideSpeed(player, -1.0);
         }
 
