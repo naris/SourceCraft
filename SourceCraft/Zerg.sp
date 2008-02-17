@@ -125,7 +125,7 @@ public Action:Regeneration(Handle:timer)
                     new skill_healing_aura=GetSkillLevel(player,raceID,2);
                     if (skill_healing_aura)
                     {
-                        new num=skill_healing_aura*2;
+                        new num=skill_healing_aura*5;
                         new Float:range=1.0;
                         switch(skill_healing_aura)
                         {
@@ -160,7 +160,7 @@ public Action:Regeneration(Handle:timer)
                                             new max=GetMaxHealth(index);
                                             if (health < max)
                                             {
-                                                HealPlayer(index,skill_healing_aura,health,max);
+                                                HealPlayer(index,skill_healing_aura*5,health,max);
 
                                                 new color[4] = { 0, 0, 255, 255 };
                                                 TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,

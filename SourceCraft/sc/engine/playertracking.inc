@@ -276,7 +276,7 @@ public Action:PlayerProperties(Handle:timer)
                 decl String:wepName[128] = "";
                 GetClientWeapon(client, wepName, 127);
 
-                new bool:isMoving = IsMoving(client);
+                new bool:isStill = IsStill(client);
 
                 new Handle:pinfo=GetPropertyInfo(x);
                 for(new y=0;y<GetArraySize(pinfo);y++)
@@ -342,7 +342,7 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             LogMessage("[playertracking] Found visibility for %N to %d, type=%d, f1=%f,f2=%f,mode=%d,fx=%d",
                                        client, checkVisibility,type,factor1,factor2,checkMode,checkFx);
-                            new checkRank = CalculateVisibility(client, wepName, isMoving, checkVisibility,
+                            new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
                                                                 type, factor1, factor2, checkMode, checkFx);
 
                             if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
@@ -413,8 +413,8 @@ public Action:PlayerProperties(Handle:timer)
 
                 if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                 {
-                    LogMessage("[playertracking] Visibility of %N is %f, moving=%d",
-                               client, visibility, isMoving);
+                    LogMessage("[playertracking] Visibility of %N is %d, still=%d",
+                               client, visibility, isStill);
 
                     if (visibility < 0 || visibility >= 255)
                     {
@@ -447,7 +447,7 @@ public Action:PlayerProperties(Handle:timer)
     return Plugin_Continue;
 }
 
-bool:IsMoving(client)
+bool:IsStill(client)
 {
     new Float:vecVelocity[3];
     GetEntDataVector(client, m_VelocityOffset, vecVelocity);
@@ -469,39 +469,59 @@ bool:IsMoving(client)
     return false;
 }
 
-CalculateVisibility(client, const String:wepName[], bool:isMoving, &visibility,
+CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                     VisibilityType:type, Float:factor1, Float:factor2,
                     &RenderMode:mode, &RenderFx:fx)
 {
-    LogMessage("[playertracking] CalcVisibility %N, type=%d", client, type);
+    LogMessage("[playertracking] CalcVisibility %N, type=%d, still=%d", client, type,isStill);
     if (type == TimedInvisibility || type == TimedMeleeInvisibility)
     {
-        if (isMoving)
+        if (!isStill)
             visibility = 255;
         else if (m_CloakTime[client] != 0.0) // Currently Cloaked
         {
-            if (factor2 > 0.0 && GetGameTime() - m_CloakTime[client] >= factor2) // factor2 == duration
+            if (factor2 > 0.0 && (GetGameTime() - m_CloakTime[client]) >= factor2) // factor2 == duration
+            {
                 visibility = 255;
+                mode = RENDER_NORMAL;
+            }
             else if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
+            {
                 visibility = 0;
+                mode = RENDER_TRANSTEXTURE;
+            }
             else
+            {
                 visibility = 255;
+                mode = RENDER_NORMAL;
+            }
         }
         else // Not Cloaked
         {
-            if (factor1 <= 0.0 || GetGameTime() - m_StoppedMoving[client] >= factor1) // factor1 == delay
+            if (factor1 <= 0.0 || (GetGameTime() - m_StoppedMoving[client]) >= factor1) // factor1 == delay
             {
                 if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
+                {
                     visibility = 0;
+                    mode = RENDER_TRANSTEXTURE;
+                }
                 else
+                {
                     visibility = 255;
+                    mode = RENDER_NORMAL;
+                }
             }
             else
+            {
                 visibility = 255;
+                mode = RENDER_NORMAL;
+            }
         }
-        new bool:isMelee = IsEquipmentMelee(wepName);
-        LogMessage("[playertracking] CalcVisibility(TimedInvisibility) of %N is %d, moving=%d, melee=%d, f1=%f,f2=%f",
-                   client, visibility, isMoving, isMelee,factor1,factor2);
+
+        LogMessage("[playertracking] CalcVisibility(TimedInvisibility) of %N is %d,still=%d,melee=%d,f1=%f,f2=%f",
+                   client, visibility, isStill, IsEquipmentMelee(wepName),factor1,factor2);
+
+        fx = RENDERFX_NONE;
         return visibility;
     }
     else if (type == GraduatedEffects)
@@ -528,7 +548,7 @@ CalculateVisibility(client, const String:wepName[], bool:isMoving, &visibility,
 
         if (factor2 >= 0.0 && factor2 != 1.0) // factor2 == movement factor
         {
-            if (!isMoving)
+            if (isStill)
                 visibility = RoundToNearest(float(visibility) * factor2);
         }
 

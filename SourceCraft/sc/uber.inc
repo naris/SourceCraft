@@ -38,7 +38,7 @@ stock IsUber(client)
 stock SetUber(client)
 {
     new pcond =GetEntData(client,m_OffsetPlayerCond);
-    LogMessage("Setting %N uber, adding 2080 to pcond (%d)", client, pcond);
+    LogMessage("Setting %N uber, adding 32 to pcond (%d)", client, pcond);
     SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) | 32));
     pcond =GetEntData(client,m_OffsetPlayerCond);
     LogMessage("Pcond for %N is now %d", client, pcond);
@@ -47,7 +47,7 @@ stock SetUber(client)
 stock UnUberEntity(client)
 {
     new pcond =GetEntData(client,m_OffsetPlayerCond);
-    LogMessage("Removing %N uber, unsetting 2080 from pcond (%d)",client, pcond);
+    LogMessage("Removing %N uber, unsetting 32 from pcond (%d)",client, pcond);
     SetEntData(client, m_OffsetPlayerCond, (GetEntData(client,m_OffsetPlayerCond) & (~32)));
     pcond =GetEntData(client,m_OffsetPlayerCond);
     LogMessage("Pcond for %N is now %d", client, pcond);

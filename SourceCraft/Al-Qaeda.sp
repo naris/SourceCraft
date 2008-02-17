@@ -207,7 +207,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             TE_SendToAll();
 
             SetUber(client);
-            AuthTimer(0.5,client,ResetUber);
+            AuthTimer(1.0,client,ResetUber);
         }
     }
     return Plugin_Continue;
