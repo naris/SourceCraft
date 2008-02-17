@@ -302,7 +302,6 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         if(overridespeed >= 0.0)
                         {
-                            LogMessage("[playertracking] Found overridespeed for %N to %f", client, overridespeed);
                             speed=overridespeed;
                             overridePlayerSpeed=true;
                         }
@@ -332,7 +331,6 @@ public Action:PlayerProperties(Handle:timer)
                     {
                         if(overridevisibility >= 0)
                         {
-                            LogMessage("[playertracking] Found overridevisibility for %N to %d", client, overridevisibility);
                             visibility=overridevisibility;
                             overridePlayerVisibility=true;
                             m_VisibilityAltered[client]=true;
@@ -340,8 +338,6 @@ public Action:PlayerProperties(Handle:timer)
                         else if (checkVisibility >= 0 || _:type >= 0 ||
                                  _:checkFx >= 0 || _:checkMode >= 0)
                         {
-                            LogMessage("[playertracking] Found visibility for %N to %d, type=%d, f1=%f,f2=%f,mode=%d,fx=%d",
-                                       client, checkVisibility,type,factor1,factor2,checkMode,checkFx);
                             new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
                                                                 type, factor1, factor2, checkMode, checkFx);
 
@@ -380,42 +376,19 @@ public Action:PlayerProperties(Handle:timer)
                                 SetEntityMoveType(client, MOVETYPE_NONE);
                             else if (GetEntityMoveType(client) == MOVETYPE_NONE)
                                 SetEntityMoveType(client, MOVETYPE_WALK);
-
-                            LogMessage("[playertracking] Set speed of %N to %f, cur=%f, base=%f, class_speed=%f, speed=%f, altered=%d, override=%d",
-                                       client, newSpeed, curSpeed, m_BaseSpeed[client], classSpeed,
-                                       speed, m_SpeedAltered[client], overridePlayerSpeed);
                         }
 
                         m_SpeedAltered[client] = (speed != 1.0);
                     }
                     else // not tf2
                     {
-                        LogMessage("[playertracking] Set NON TF2 speed of %N to %f, altered=%d, override=%d",
-                                   client, speed, m_SpeedAltered[client], overridePlayerSpeed);
-
                         if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
                             SetEntDataFloat(client,m_OffsetSpeed,speed);
-                    }
-                }
-                else
-                {
-                    if (GameType == tf2)
-                    {
-                        new Float:classSpeed = GetClassSpeed(client);
-                        new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
-                        if (curSpeed != classSpeed)
-                        {
-                            LogMessage("[playertracking] Speed of %N is %f, base=%f, class_speed=%f",
-                                       client, curSpeed, m_BaseSpeed[client], classSpeed);
-                        }
                     }
                 }
 
                 if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                 {
-                    LogMessage("[playertracking] Visibility of %N is %d, still=%d",
-                               client, visibility, isStill);
-
                     if (visibility < 0 || visibility >= 255)
                     {
                         ResetVisibility(client);
@@ -473,7 +446,6 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                     VisibilityType:type, Float:factor1, Float:factor2,
                     &RenderMode:mode, &RenderFx:fx)
 {
-    LogMessage("[playertracking] CalcVisibility %N, type=%d, still=%d", client, type,isStill);
     if (type == TimedInvisibility || type == TimedMeleeInvisibility)
     {
         if (!isStill)
@@ -518,9 +490,6 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             }
         }
 
-        LogMessage("[playertracking] CalcVisibility(TimedInvisibility) of %N is %d,still=%d,melee=%d,f1=%f,f2=%f",
-                   client, visibility, isStill, IsEquipmentMelee(wepName),factor1,factor2);
-
         fx = RENDERFX_NONE;
         return visibility;
     }
@@ -564,8 +533,6 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
 
 SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
 {
-    LogMessage("[playertracking] SetVisibility of %N to %d, mode=%d,fx=%d,rgb=%d,%d,%d",
-               client, visibility, mode, fx, r, g, b);
     if (visibility == 0)
     {
         if (m_CloakTime[client] == 0.0)
@@ -616,7 +583,6 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
 
 ResetVisibility(client)
 {
-    LogMessage("[playertracking] ResetVisibility of %N", client);
     if (m_OwnerOffset != -1)
     {
         if(client>-1)
