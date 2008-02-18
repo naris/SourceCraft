@@ -252,7 +252,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        if (!spawnSet[client])
+        //if (!spawnSet[client])
             GetClientAbsOrigin(client,spawnLoc[client]);
 
         new player=GetPlayer(client);
@@ -732,12 +732,12 @@ public Action:DoMole(Handle:timer,Handle:temp)
         if (GetArraySize(playerList)>0) // are there any enemies?
         {
             new lucky_player;
-            do
-            {
+            //do
+            //{
                 // who gets their position mooched off them?
                 new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
                 lucky_player=GetArrayCell(playerList,lucky_player_iter);
-            } while (!spawnSet[lucky_player]);
+            //} while (!spawnSet[lucky_player]);
 
             //EntityOrigin(lucky_player,teleLoc);
             teleLoc[0]=spawnLoc[lucky_player][0] + 5.0;
