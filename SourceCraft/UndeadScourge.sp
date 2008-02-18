@@ -436,7 +436,7 @@ SuicideBomber(client,player,ult_level,bool:ondeath)
                                 new newxp=GetXP(player,raceID)+addxp;
                                 SetXP(player,raceID,newxp);
 
-                                //LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
                                 KillPlayer(index,client,"suicide_bomb");
                             }
                             else
