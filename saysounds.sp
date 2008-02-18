@@ -170,7 +170,7 @@ File Format:
 
 // BEIGN MOD BY LAMDACORE
 // extra memory usability for a lot of sounds.
-//#pragma dynamic 65536 
+#pragma dynamic 65536 
 // END MOD BY LAMDACORE
 
 #pragma semicolon 1
@@ -595,7 +595,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	ReadPackString(pack, name , sizeof(name));
 
 	new bool:isadmin = false;
-	if (IsClientInGame(client))
+	if (IsClientInGame(client) && !IsFakeClient(client))
 	{
 		new AdminId:aid = GetUserAdmin(client);
 		isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
@@ -607,7 +607,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 
 	new Float:thetime = GetGameTime();
 	if (LastSound[client] >= thetime){
-		if(IsClientInGame(client)){
+		if(IsClientInGame(client) && !IsFakeClient(client)){
 			PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
 		}
 		return Plugin_Handled;
@@ -625,7 +625,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	if (adminonly)
 	{
 		if (globalLastAdminSound >= thetime){
-			if(IsClientInGame(client)){
+			if(IsClientInGame(client) && !IsFakeClient(client)){
 				PrintToChat(client,"[Say Sounds] Please don't spam the admin sounds!");
 			}
 			return Plugin_Handled;
@@ -647,7 +647,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 				globalLastAdminSound = thetime + adminTime;
 
 			if (singleonly){
-				if(SndOn[client] && IsClientInGame(client)){
+				if(SndOn[client] && IsClientInGame(client) && !IsFakeClient(client)){
 					EmitSoundToClient(client, filelocation);
 				}
 			}else{
@@ -655,14 +655,14 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 				new clientcount = 0;
 				new playersconnected = GetMaxClients();
 				for (new i = 1; i <= playersconnected; i++){
-					if(SndOn[i] && IsClientInGame(i)){
+					if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(client)){
 						clientlist[clientcount++] = i;
 					}
 				}
 				if (clientcount){
 					EmitSound(clientlist, clientcount, filelocation);
 				}
-				if (name[0] && IsClientInGame(client)){
+				if (name[0] && IsClientInGame(client) && !IsFakeClient(client)){
 					LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
 					           adminonly ? "admin sound " : "", name, filelocation);
 					if (GetConVarBool(cvarannounce)){
@@ -673,13 +673,13 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 				}
 			}
 		}
-		else if(IsClientInGame(client)){
+		else if(IsClientInGame(client) && !IsFakeClient(client)){
 			PrintToChat(client,"[Say Sounds] Please don't spam the sounds!");
 			return Plugin_Handled;
 		}
 	}
 
-	if(soundLimit > 0 && IsClientInGame(client)){
+	if(soundLimit > 0 && IsClientInGame(client) && !IsFakeClient(client)){
 		if (SndCount[client] > soundLimit){
 			PrintToChat(client,"[Say Sounds] Sorry, you have reached your sound quota!");
 		}else if (SndCount[client] == soundLimit){
