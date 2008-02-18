@@ -85,6 +85,9 @@ Versions:
 		* Added LAMDACORE's change to increase memory to allow lots of sounds
 		* Added LAMDACORE's change to allow keyword to be embedded in a sentence.
 		* Added sm_sound_sentence to enable the above modification.
+	1.16  Feb 18, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added check for Fake clients (bots) before Emitting Sounds to send Chat messages.
 
 
 Todo:
@@ -175,7 +178,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.15"
+#define PLUGIN_VERSION "1.16"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
