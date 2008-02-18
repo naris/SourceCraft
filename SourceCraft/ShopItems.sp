@@ -114,7 +114,7 @@ public OnPluginReady()
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you  invisible when standing still AND holding the knife, shovel or other melee weapon.","45");
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","10");
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","20");
-    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","15");
+    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","35");
     shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","50");
     shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","50");
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
