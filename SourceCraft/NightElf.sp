@@ -59,9 +59,9 @@ public OnPluginReady()
                       "Evasion",
                       "Gives you 5-30% chance of evading a shot.",
                       "Thorns Aura",
-                      "Does 30% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
+                      "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
                       "Trueshot Aura",
-                      "Does 10-60% extra damage to the \nenemy, chance is 30%.",
+                      "Does 20-80% extra damage to the \nenemy, chance is 30-60%.",
                       "Entangled Roots",
                       "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
@@ -226,7 +226,7 @@ public ThornsAura(damage, victim_index, victim_player, index, player)
             }
             if(GetRandomInt(1,100) <= chance)
             {
-                new amount=RoundToNearest(damage * 0.30);
+                new amount=RoundToNearest(damage * GetRandomFloat(0.30,0.90));
                 new newhp=GetClientHealth(index)-amount;
                 if (newhp <= 0)
                 {
@@ -257,19 +257,19 @@ public TrueshotAura(damage, victim_index, index, player)
     new skill_level_trueshot=GetSkillLevel(player,raceID,2);
     if (skill_level_trueshot && !IsUber(victim_index))
     {
-        if (GetRandomInt(1,100) <= 30)
+        if (GetRandomInt(1,100) <= GetRandomInt(30,60))
         {
             new Float:percent;
             switch(skill_level_trueshot)
             {
                 case 1:
-                    percent=0.10;
+                    percent=0.20;
                 case 2:
-                    percent=0.25;
+                    percent=0.35;
                 case 3:
-                    percent=0.40;
-                case 4:
                     percent=0.60;
+                case 4:
+                    percent=0.80;
             }
 
             new amount=RoundFloat(float(damage)*percent);
