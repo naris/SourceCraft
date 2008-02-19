@@ -44,10 +44,12 @@ Versions:
 		* Added adminsounds (Menu of admin-only sounds for admins to play)
 		* Added adminsounds menu to SourceMod's admin menu
 		* Added sm_specific_join_exit (Join/Exit for specific STEAM IDs)
-		* Fixed join/exit sounds not playing by adding call to KvRewind() before KvJumpToKey().
+		* Fixed join/exit sounds not playing by adding call to KvRewind()
+		  before KvJumpToKey().
 		* Fixed non-admins playing admin sounds by checking for generic admin bits.
 		* Used SourceMod's MANPLAYERS instread of recreating another MAX_PLAYERS constant.
-		* Added globalLastSound which is set to duration of last sound played to reduce possibility of overlapping sounds.
+		* Added globalLastSound which is set to duration of last sound played
+		  to reduce possibility of overlapping sounds.
 		* Fix the sounds go away bug
 		* Moved close of listfile from mapchange to Load_Sounds (if handle is valid)
 	1.7   Jan 10, 2008
@@ -87,7 +89,8 @@ Versions:
 		* Added sm_sound_sentence to enable the above modification.
 	1.16  Feb 18, 2008
 		* Modified by -=|JFH|=-Naris
-		* Added check for Fake clients (bots) before Emitting Sounds to send Chat messages.
+		* Added check for Fake clients (bots) before Emitting Sounds
+		  or sending Chat messages.
 
 
 Todo:
@@ -173,7 +176,7 @@ File Format:
 
 // BEIGN MOD BY LAMDACORE
 // extra memory usability for a lot of sounds.
-// Uncomment the next lines (w/#pragma) to add additional memory
+// Uncomment the next line (w/#pragma) to add additional memory
 //#pragma dynamic 65536 
 // END MOD BY LAMDACORE
 
@@ -902,6 +905,13 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 	}else if (action == MenuAction_End){
 		CloseHandle(menu);
 	}
+}
+
+public OnMapEnd(){
+	if (listfile != INVALID_HANDLE){
+		CloseHandle(listfile);
+		listfile = INVALID_HANDLE;
+	}	
 }
 
 public OnPluginEnd()
