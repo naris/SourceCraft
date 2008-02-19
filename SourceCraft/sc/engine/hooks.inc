@@ -10,6 +10,8 @@ public bool:InitHooks()
 {
     RegConsoleCmd("say",SayCommand);
     RegConsoleCmd("say_team",SayCommand);
+    RegConsoleCmd("shopmenu",ShopMenuCommand);
+    RegConsoleCmd("sc_menu",SCMenuCommand);
     RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
     return true;
@@ -135,3 +137,24 @@ public Action:UltimateCommand(client,args)
     }
     return Plugin_Handled;
 }
+ 
+public Action:ShopMenuCommand(client,args)
+{
+    new vecpos=GetClientVectorPosition(client);
+    if(vecpos>-1)
+    {
+        ShopMenu(client,vecpos,true,INVALID_FUNCTION);
+    }
+    return Plugin_Handled;
+}
+ 
+public Action:SCMenuCommand(client,args)
+{
+    new vecpos=GetClientVectorPosition(client);
+    if(vecpos>-1)
+    {
+        MainMenu(client,vecpos,INVALID_FUNCTION);
+    }
+    return Plugin_Handled;
+}
+
