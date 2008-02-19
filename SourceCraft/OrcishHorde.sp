@@ -94,9 +94,9 @@ public OnPluginReady()
                       "You are now an Orcish Horde.", // Selected Race message
                       "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
                       "Acute Strike", //Skill 1 Name
-                      "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
+                      "Gives you a 15% chance of doing\n40-120% more damage.", // Skill 1 Description
                       "Acute Grenade", // Skill 2 Name
-                      "Grenades and Rockets will always do a 40-240%\nmore damage.", // Skill 2 Description
+                      "Grenades and Rockets will always do a 35-100%\nmore damage.", // Skill 2 Description
                       "Reincarnation", // Skill 3 Name
                       "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
                       "Chain Lightning", // Ultimate Name
@@ -316,7 +316,7 @@ bool:AcuteStrike(damage, victim_index, victim_player, index, player)
             switch(skill_cs)
             {
                 case 1:
-                    percent=0.30;
+                    percent=0.40;
                 case 2:
                     percent=0.60;
                 case 3:
@@ -372,9 +372,9 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
                     case 2:
                         percent=0.60;
                     case 3:
-                        percent=0.85;
+                        percent=0.80;
                     case 4:
-                        percent=1.25;
+                        percent=1.00;
                 }
 
                 new health_take=RoundFloat(float(damage)*percent);

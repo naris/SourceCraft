@@ -29,7 +29,7 @@ stock FindUberOffsets()
 
 stock IsUber(client)
 {
-    if (GameType == tf2)
+    if (GameType == tf2 && m_OffsetPlayerCond)
         return (GetEntData(client,m_OffsetPlayerCond) & 32) != 0;
     else
         return false;

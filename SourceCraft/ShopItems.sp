@@ -52,7 +52,6 @@ new metalOffset; // metal (3rd Ammo)
 
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Float:spawnLoc[MAXPLAYERS+1][3];
-new bool:spawnSet[MAXPLAYERS+1];
 new bool:usedPeriapt[MAXPLAYERS+1];
 new bool:isMole[MAXPLAYERS+1];
 new Float:gClawTime[MAXPLAYERS+1];
@@ -92,12 +91,6 @@ public OnPluginStart()
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent))
         SetFailState("Couldn't hook the player_spawn event.");
-
-    if (GameType == tf2)
-    {
-        if(!HookEventEx("teamplay_round_start",RoundStart,EventHookMode_PostNoCopy))
-            SetFailState("Could not hook the teamplay_round_start event.");
-    }
 
     CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
@@ -199,9 +192,6 @@ public LoadSDKToolStuff()
 
 public OnMapStart()
 {
-    for(new x=1;x<=MAXPLAYERS;x++)
-        spawnSet[x] = false;
-
     SetupSound(bootsWav, true, true);
 }
 
@@ -220,7 +210,7 @@ public OnItemPurchase(client,player,item)
         EmitSoundToAll(bootsWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
-        SetVisibility(player, 0, TimedMeleeInvisibility, 0.0, 0.0);
+        SetVisibility(player, 0, TimedMeleeInvisibility, 1.0, 10.0);
     else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health
@@ -240,20 +230,13 @@ public OnItemPurchase(client,player,item)
         SetGravity(player,0.5);
 }
 
-public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    for(new x=1;x<=MAXPLAYERS;x++)
-        spawnSet[x] = false;
-}
-
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        //if (!spawnSet[client])
-            GetClientAbsOrigin(client,spawnLoc[client]);
+        GetClientAbsOrigin(client,spawnLoc[client]);
 
         new player=GetPlayer(client);
         if(player>-1)
@@ -731,15 +714,10 @@ public Action:DoMole(Handle:timer,Handle:temp)
         new Handle:playerList=PlayersOnTeam(searchteam); // <3 SHVector.
         if (GetArraySize(playerList)>0) // are there any enemies?
         {
-            new lucky_player;
-            //do
-            //{
-                // who gets their position mooched off them?
-                new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
-                lucky_player=GetArrayCell(playerList,lucky_player_iter);
-            //} while (!spawnSet[lucky_player]);
+            // who gets their position mooched off them?
+            new lucky_player_iter=GetRandomInt(0,GetArraySize(playerList)-1);
+            new lucky_player=GetArrayCell(playerList,lucky_player_iter);
 
-            //EntityOrigin(lucky_player,teleLoc);
             teleLoc[0]=spawnLoc[lucky_player][0] + 5.0;
             teleLoc[1]=spawnLoc[lucky_player][1];
             teleLoc[2]=spawnLoc[lucky_player][2];

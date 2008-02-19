@@ -446,8 +446,10 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                     VisibilityType:type, Float:factor1, Float:factor2,
                     &RenderMode:mode, &RenderFx:fx)
 {
-    if (type == TimedInvisibility || type == TimedMeleeInvisibility)
+    if (type == TimedInvisibility || type == TimedMeleeInvisibility || type == GraduatedEffects)
     {
+        new rank = visibility;
+
         if (!isStill)
             visibility = 255;
         else if (m_CloakTime[client] != 0.0) // Currently Cloaked
@@ -490,19 +492,20 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             }
         }
 
-        fx = RENDERFX_NONE;
-        return visibility;
-    }
-    else if (type == GraduatedEffects)
-    {
-        new rank = visibility;
-        visibility = 255;
-        fx = RenderFx:((rank / 14) + 1);
-        if (fx == RENDERFX_EXPLODE)
-            fx = RENDERFX_PULSE_FAST_WIDER;
-        else if (fx == RENDERFX_GLOWSHELL)
-            fx = RENDERFX_MAX;
-        return rank;
+        if (type == GraduatedEffects && visibility == 255)
+        {
+            fx = RenderFx:((rank / 14) + 1);
+            if (fx == RENDERFX_EXPLODE)
+                fx = RENDERFX_PULSE_FAST_WIDER;
+            else if (fx == RENDERFX_GLOWSHELL)
+                fx = RENDERFX_MAX;
+            return rank;
+        }
+        else
+        {
+            fx = RENDERFX_NONE;
+            return visibility;
+        }
     }
     else //if (type == BasicVisibility)
     {
@@ -588,7 +591,7 @@ ResetVisibility(client)
         if(client>-1)
         {
             new count=GetEntityCount();
-            for(new y=GetMaxClients();y<count;y++)
+            for(new y=GetMaxClients()+1;y<count;y++)
             {
                 if(IsValidEdict(y))
                 {
