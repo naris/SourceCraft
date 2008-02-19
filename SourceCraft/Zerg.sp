@@ -364,22 +364,22 @@ public Zerg_Tentacles(client, player, skilllevel)
             case 1:
             {
                 duration=20;
-                range=350.0;
+                range=500.0; //350.0;
             }
             case 2:
             {
                 duration=40;
-                range=500.0;
+                range=1500.0; //500.0;
             }
             case 3:
             {
                 duration=50;
-                range=750.0;
+                range=2500.0; //750.0;
             }
             case 4:
             {
                 duration=0;
-                range=1500.0;
+                range=3500.0; //1500.0;
             }
         }
         GiveGrab(client,duration,range,1);
