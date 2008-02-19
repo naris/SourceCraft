@@ -405,7 +405,6 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
 ChainLightning(player,client,ultlevel)
 {
     new dmg;
-    new num=ultlevel*2;
     new Float:range;
     switch(ultlevel)
     {
@@ -476,8 +475,6 @@ ChainLightning(player,client,ultlevel)
                             }
 
                             last=index;
-                            if (++count > num)
-                                break;
                         }
                     }
                 }
