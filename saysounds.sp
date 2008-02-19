@@ -173,7 +173,8 @@ File Format:
 
 // BEIGN MOD BY LAMDACORE
 // extra memory usability for a lot of sounds.
-#pragma dynamic 65536 
+// Uncomment the next lines (w/#pragma) to add additional memory
+//#pragma dynamic 65536 
 // END MOD BY LAMDACORE
 
 #pragma semicolon 1
