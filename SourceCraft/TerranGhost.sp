@@ -261,17 +261,33 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
 bool:Cloak(client, player, skilllevel)
 {
-    new alpha;
+    new alpha, Float:delay, Float:duration;
     switch(skilllevel)
     {
         case 1:
-            alpha=230;
+        {
+            alpha=200;
+            delay = 2.0;
+            duration = 5.0;
+        }
         case 2:
-            alpha=210;
+        {
+            alpha=150;
+            delay = 1.5;
+            duration = 10.0;
+        }
         case 3:
-            alpha=190;
+        {
+            alpha=100;
+            delay = 1.0;
+            duration = 15.0;
+        }
         case 4:
-            alpha=170;
+        {
+            alpha=50;
+            delay = 0.5;
+            duration = 20.0;
+        }
     }
 
     /* If the Player also has the Cloak of Shadows,
@@ -288,10 +304,11 @@ bool:Cloak(client, player, skilllevel)
 
     new color[4] = { 0, 255, 50, 128 };
     TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                          0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+                          0, 1, 2.0, 10.0, 0.0, color, 10, 0);
     TE_SendToAll();
 
-    SetVisibility(player, alpha, BasicVisibility, 0.5, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, alpha, GraduatedEffects, delay, duration,
+                  RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
 }
 
 Lockdown(victim_index, player)
@@ -529,7 +546,7 @@ public Action:TrackNuclearTarget(Handle:timer,any:index)
 LaunchNuclearDevice(client,player)
 {
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
-    SetVisibility(player, 100, BasicVisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, 100, TimedInvisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);

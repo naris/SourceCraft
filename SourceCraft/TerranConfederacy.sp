@@ -56,7 +56,8 @@ public OnPluginReady()
                       "Stimpacks",
                       "Gives you a speed boost, 8-36% faster.",
                       "Jetpack",
-                      "Allows you to fly until you run out of fuel.","16");
+                      "Allows you to fly until you run out of fuel.",
+                      "32");
 
     FindUberOffsets();
 
