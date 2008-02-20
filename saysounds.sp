@@ -287,7 +287,7 @@ public OnMapStart(){
 		SndCount[i] = 0;
 		LastSound[i] = 0.0;
 	}
-	CreateTimer(0.1, Load_Sounds);
+	CreateTimer(0.2, Load_Sounds);
 }
 
 public Action:Load_Sounds(Handle:timer){
@@ -333,65 +333,67 @@ public Action:Load_Sounds(Handle:timer){
 	return Plugin_Handled;
 }
 
-public OnClientAuthorized(client, const String:auth[]){
-	firstSpawn[client]=true;
-	if(!GetConVarBool(cvarjoinspawn)){
-		CheckJoin(client, auth);
-	}
-}
-
 public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 	if(GetConVarBool(cvarjoinspawn)){
 		new userid = GetEventInt(event,"userid");
 		if (userid){
 			new index=GetClientOfUserId(userid);
 			if (index){
-				if (firstSpawn[index]){
-					decl String:auth[64];
-					GetClientAuthString(index,auth,63);
-					CheckJoin(index, auth);
-					firstSpawn[index] = false;
+				if(!IsFakeClient(index)){
+					if (firstSpawn[index]){
+						decl String:auth[64];
+						GetClientAuthString(index,auth,63);
+						CheckJoin(index, auth);
+						firstSpawn[index] = false;
+					}
 				}
+			}
+		}
+	}
+}
+
+public OnClientAuthorized(client, const String:auth[]){
+	if(!IsFakeClient(client)){
+		if(client != 0){
+			SndOn[client] = 1;
+			SndCount[client] = 0;
+			LastSound[client] = 0.0;
+			firstSpawn[client]=true;
+			if(!GetConVarBool(cvarjoinspawn)){
+				CheckJoin(client, auth);
 			}
 		}
 	}
 }
 
 public CheckJoin(client, const String:auth[]){
-	if(client && !IsFakeClient(client)){
-		SndOn[client] = 1;
-		SndCount[client] = 0;
-		LastSound[client] = 0.0;
-
-		if(GetConVarBool(cvarspecificjoinexit)){
-			decl String:filelocation[PLATFORM_MAX_PATH+1];
-			KvRewind(listfile);
-			if (KvJumpToKey(listfile, auth)){
-				KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
-				if (strlen(filelocation)){
-					Send_Sound(client,filelocation, "");
-					SndCount[client] = 0;
-					return;
-				}else if (Submit_Sound(client,"")){
-					SndCount[client] = 0;
-					return;
-				}
+	if(GetConVarBool(cvarspecificjoinexit)){
+		decl String:filelocation[PLATFORM_MAX_PATH+1];
+		KvRewind(listfile);
+		if (KvJumpToKey(listfile, auth)){
+			KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
+			if (strlen(filelocation)){
+				Send_Sound(client,filelocation, "");
+				SndCount[client] = 0;
+				return;
+			}else if (Submit_Sound(client,"")){
+				SndCount[client] = 0;
+				return;
 			}
 		}
+	}
 
-		if(GetConVarBool(cvarjoinexit)){
-			KvRewind(listfile);
-			if (KvJumpToKey(listfile, "JoinSound")){
-				Submit_Sound(client,"");
-				SndCount[client] = 0;
-			}
+	if(GetConVarBool(cvarjoinexit)){
+		KvRewind(listfile);
+		if (KvJumpToKey(listfile, "JoinSound")){
+			Submit_Sound(client,"");
+			SndCount[client] = 0;
 		}
 	}
 }
 
 public OnClientDisconnect(client){
 	if(GetConVarBool(cvarjoinexit)){
-		SndOn[client] = 1;
 		SndCount[client] = 0;
 		LastSound[client] = 0.0;
 		firstSpawn[client] = true;
@@ -448,7 +450,7 @@ Send_Sound(client, const String:filelocation[], const String:name[])
 	new singleonly = KvGetNum(listfile, "single",0);
 	new Float:duration = KvGetFloat(listfile, "duration",0.0);
 	new Handle:pack;
-	CreateDataTimer(0.1,Command_Play_Sound,pack);
+	CreateDataTimer(0.2,Command_Play_Sound,pack);
 	WritePackCell(pack, client);
 	WritePackCell(pack, adminonly);
 	WritePackCell(pack, singleonly);
@@ -468,8 +470,6 @@ public Action:Command_Say(client,args){
 			return Plugin_Continue;
 			
 		decl String:speech[128];
-		decl String:clientName[64];
-		GetClientName(client,clientName,64);
 		GetCmdArgString(speech,sizeof(speech));
 		
 		new startidx = 0;
@@ -511,7 +511,7 @@ public Action:Command_Say(client,args){
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		new bool:sentence = GetConVarBool(cvarsentence);
-		decl String:buffer[PLATFORM_MAX_PATH+1];
+		decl String:buffer[255];
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if ((sentence && StrContains(speech[startidx],buffer,false) >= 0) ||
@@ -537,8 +537,6 @@ public Action:Command_InsurgencySay(client,args){
 			return Plugin_Continue;
 			
 		decl String:speech[128];
-		decl String:clientName[64];
-		GetClientName(client,clientName,64);
 		GetCmdArgString(speech,sizeof(speech));
 
 		new startidx = 4;
@@ -575,7 +573,7 @@ public Action:Command_InsurgencySay(client,args){
 		KvRewind(listfile);
 		KvGotoFirstSubKey(listfile);
 		new bool:sentence = GetConVarBool(cvarsentence);
-		decl String:buffer[PLATFORM_MAX_PATH+1];
+		decl String:buffer[255];
 		do{
 			KvGetSectionName(listfile, buffer, sizeof(buffer));
 			if ((sentence && StrContains(speech[startidx],buffer,false) >= 0) ||
@@ -658,17 +656,18 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 					EmitSoundToClient(client, filelocation);
 				}
 			}else{
-				new clientlist[MAXPLAYERS+1];
-				new clientcount = 0;
+				//new clientlist[MAXPLAYERS+1];
+				//new clientcount = 0;
 				new playersconnected = GetMaxClients();
 				for (new i = 1; i <= playersconnected; i++){
 					if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(client)){
-						clientlist[clientcount++] = i;
+						//clientlist[clientcount++] = i;
+						EmitSoundToClient(i, filelocation);
 					}
 				}
-				if (clientcount){
-					EmitSound(clientlist, clientcount, filelocation);
-				}
+				//if (clientcount){
+				//	EmitSound(clientlist, clientcount, filelocation);
+				//}
 				if (name[0] && IsClientInGame(client) && !IsFakeClient(client)){
 					LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
 					           adminonly ? "admin sound " : "", name, filelocation);
