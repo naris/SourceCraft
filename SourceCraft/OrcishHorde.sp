@@ -94,9 +94,9 @@ public OnPluginReady()
                       "You are now an Orcish Horde.", // Selected Race message
                       "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
                       "Acute Strike", //Skill 1 Name
-                      "Gives you a 15% chance of doing\n40-120% more damage.", // Skill 1 Description
+                      "Gives you a 25% chance of doing\n40-120% more damage.", // Skill 1 Description
                       "Acute Grenade", // Skill 2 Name
-                      "Grenades and Rockets will always do a 35-100%\nmore damage.", // Skill 2 Description
+                      "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.", // Skill 2 Description
                       "Reincarnation", // Skill 3 Name
                       "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
                       "Chain Lightning", // Ultimate Name
@@ -310,7 +310,7 @@ bool:AcuteStrike(damage, victim_index, victim_player, index, player)
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
     {
-        if(GetRandomInt(1,100)<=15)
+        if(GetRandomInt(1,100)<=25)
         {
             new Float:percent;
             switch(skill_cs)
@@ -352,7 +352,7 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
     new skill_cg = GetSkillLevel(player,raceID,1);
     if (skill_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
     {
-        if(GetRandomInt(1,100)<=50)
+        if(GetRandomInt(1,100)<=15)
         {
             if (StrEqual(weapon,"hegrenade",false) ||
                 StrEqual(weapon,"tf_projectile_pipe",false) ||
