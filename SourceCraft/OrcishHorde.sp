@@ -308,7 +308,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 bool:AcuteStrike(damage, victim_index, victim_player, index, player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
-    if (skill_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
+    if (skill_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+                     && !IsUber(victim_index))
     {
         if(GetRandomInt(1,100)<=25)
         {
@@ -349,20 +350,21 @@ bool:AcuteStrike(damage, victim_index, victim_player, index, player)
 
 bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const String:weapon[])
 {
-    new skill_cg = GetSkillLevel(player,raceID,1);
-    if (skill_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
+    if (StrEqual(weapon,"hegrenade",false) ||
+        StrEqual(weapon,"tf_projectile_pipe",false) ||
+        StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
+        StrEqual(weapon,"tf_weapon_rocketlauncher",false) ||
+        StrEqual(weapon,"tf_projectile_rocket",false) ||
+        StrEqual(weapon,"weapon_frag_us",false) ||
+        StrEqual(weapon,"weapon_frag_ger",false) ||
+        StrEqual(weapon,"weapon_bazooka",false) ||
+        StrEqual(weapon,"weapon_pschreck",false))
     {
-        if(GetRandomInt(1,100)<=15)
+        new skill_cg = GetSkillLevel(player,raceID,1);
+        if (skill_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+                         && !IsUber(victim_index))
         {
-            if (StrEqual(weapon,"hegrenade",false) ||
-                StrEqual(weapon,"tf_projectile_pipe",false) ||
-                StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
-                StrEqual(weapon,"tf_weapon_rocketlauncher",false) ||
-                StrEqual(weapon,"tf_projectile_rocket",false) ||
-                StrEqual(weapon,"weapon_frag_us",false) ||
-                StrEqual(weapon,"weapon_frag_ger",false) ||
-                StrEqual(weapon,"weapon_bazooka",false) ||
-                StrEqual(weapon,"weapon_pschreck",false))
+            if(GetRandomInt(1,100)<=15)
             {
                 new Float:percent;
                 switch(skill_cg)
@@ -395,9 +397,9 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
 
                 TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
                 TE_SendToAll();
-                return true;
             }
         }
+        return true;
     }
     return false;
 }
@@ -443,7 +445,8 @@ ChainLightning(player,client,ultlevel)
             if (player_check>-1)
             {
                 if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                    !GetImmunity(player_check,Immunity_HealthTake) && !IsUber(index))
+                    !GetImmunity(player_check,Immunity_HealthTake) &&
+                    !IsUber(index))
                 {
                     if (IsInRange(client,index,range))
                     {
