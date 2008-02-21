@@ -547,7 +547,7 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
     if (m_OwnerOffset != -1)
     {
         new count=GetEntityCount();
-        for (new obj=GetMaxClients(); obj < count; obj++)
+        for (new obj=GetMaxClients()+1; obj < count; obj++)
         {
             if (IsValidEdict(obj))
             {
