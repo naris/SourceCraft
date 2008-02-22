@@ -19,7 +19,7 @@
 #define COLOR_DEFAULT 0x01
 #define COLOR_GREEN 0x04
 
-#define VERSION "1.1.3d"
+#define VERSION "2.1.3d"
 
 public Plugin:myinfo = 
 {
@@ -88,6 +88,8 @@ new Float:gRopeDist[MAXPLAYERS+1];
 // Clients that have access to hook, grab or rope
 new bool:gAllowedClients[MAXPLAYERS+1][3];
 new Float:gAllowedRange[MAXPLAYERS+1][3];
+new Float:gCooldown[MAXPLAYERS+1][3];
+new Float:gLastUsed[MAXPLAYERS+1][3];
 new gAllowedDuration[MAXPLAYERS+1][3];
 new gRemainingDuration[MAXPLAYERS+1];
 new gFlags[MAXPLAYERS+1][3];
@@ -453,14 +455,16 @@ public Native_GiveHook(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            new duration=0,Float:range=0.0,flags=0;
+            new duration=0,Float:range=0.0,Float:cooldown=0.0,flags=0;
             if (numParams >= 2)
                 duration = GetNativeCell(2);
             if (numParams >= 3)
                 range = Float:GetNativeCell(3);
             if (numParams >= 4)
                 flags = GetNativeCell(4);
-            ClientAccess(client,Give,Hook,duration,range,flags);
+            if (numParams >= 5)
+                cooldown = Float:GetNativeCell(5);
+            ClientAccess(client,Give,Hook,duration,range,cooldown,flags);
             g_iNativeHooks++;
         }
     }
@@ -473,7 +477,7 @@ public Native_TakeHook(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            ClientAccess(client,Take,Hook,0,0.0,0);
+            ClientAccess(client,Take,Hook,0,0.0,0.0,0);
             g_iNativeHooks--;
         }
     }
@@ -486,14 +490,16 @@ public Native_GiveGrab(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            new duration=0,Float:range=0.0,flags=0;
+            new duration=0,Float:range=0.0,Float:cooldown=0.0,flags=0;
             if (numParams >= 2)
                 duration = GetNativeCell(2);
             if (numParams >= 3)
                 range = Float:GetNativeCell(3);
             if (numParams >= 4)
                 flags = GetNativeCell(4);
-            ClientAccess(client,Give,Grab,duration,range,flags);
+            if (numParams >= 5)
+                cooldown = Float:GetNativeCell(5);
+            ClientAccess(client,Give,Grab,duration,range,cooldown,flags);
             g_iNativeGrabs++;
         }
     }
@@ -506,7 +512,7 @@ public Native_TakeGrab(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            ClientAccess(client,Take,Grab,0,0.0,0);
+            ClientAccess(client,Take,Grab,0,0.0,0.0,0);
             g_iNativeGrabs--;
         }
     }
@@ -519,14 +525,16 @@ public Native_GiveRope(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            new duration=0,Float:range=0.0,flags=0;
+            new duration=0,Float:range=0.0,Float:cooldown=0.0,flags=0;
             if (numParams >= 2)
                 duration = GetNativeCell(2);
             if (numParams >= 3)
                 range = Float:GetNativeCell(3);
             if (numParams >= 4)
                 flags = GetNativeCell(4);
-            ClientAccess(client,Give,Rope,duration,range,flags);
+            if (numParams >= 5)
+                cooldown = Float:GetNativeCell(5);
+            ClientAccess(client,Give,Rope,duration,range,cooldown,flags);
             g_iNativeRopes++;
         }
     }
@@ -539,7 +547,7 @@ public Native_TakeRope(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            ClientAccess(client,Take,Rope,0,0.0,0);
+            ClientAccess(client,Take,Rope,0,0.0,0.0,0);
             g_iNativeRopes--;
         }
     }
@@ -744,11 +752,11 @@ public Access(const String:target[],HGRSourceAccess:access,HGRSourceAction:actio
     if(count==0)
         return 0;
     for(new x=0;x<count;x++)
-        ClientAccess(clients[x],access,action,0,0.0,0);
+        ClientAccess(clients[x],access,action,0,0.0,0.0,0);
     return count;
 }
 
-public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duration,Float:range,flags)
+public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duration,Float:range,Float:cooldown,flags)
 {
     if(access==Give)
     {
@@ -757,6 +765,7 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duratio
             gAllowedClients[client][ACTION_HOOK]=true;
             gAllowedDuration[client][ACTION_HOOK]=duration;
             gAllowedRange[client][ACTION_HOOK]=range;
+            gCooldown[client][ACTION_HOOK]=cooldown;
             gFlags[client][ACTION_HOOK]=flags;
         }
         else if(action==Grab)
@@ -764,6 +773,7 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duratio
             gAllowedClients[client][ACTION_GRAB]=true;
             gAllowedDuration[client][ACTION_GRAB]=duration;
             gAllowedRange[client][ACTION_GRAB]=range;
+            gCooldown[client][ACTION_GRAB]=cooldown;
             gFlags[client][ACTION_GRAB]=flags;
         }
         else if(action==Rope)
@@ -771,6 +781,7 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duratio
             gAllowedClients[client][ACTION_ROPE]=true;
             gAllowedDuration[client][ACTION_ROPE]=duration;
             gAllowedRange[client][ACTION_ROPE]=range;
+            gCooldown[client][ACTION_ROPE]=cooldown;
             gFlags[client][ACTION_ROPE]=flags;
         }
     }
@@ -905,38 +916,50 @@ public Action_Hook(client)
 {
     if(g_bNativeOverride || GetConVarBool(cvarHookEnable))
     {
-        if(client>0)
+        if (client>0)
         {
-            if(IsPlayerAlive(client)&&!gStatus[client][ACTION_HOOK]&&!gStatus[client][ACTION_ROPE]&&!gGrabbed[client])
+            if (IsPlayerAlive(client)&&!gStatus[client][ACTION_HOOK]&&!gStatus[client][ACTION_ROPE]&&!gGrabbed[client])
             {
-                if(HasAccess(client,Hook))
+                if (HasAccess(client,Hook))
                 {
-                    EmitSoundToAll(fireWav, client); // Emit fire sound
-
-                    new Float:clientloc[3],Float:clientang[3];
-                    GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
-                    GetClientEyeAngles(client,clientang); // Get the angle the player is looking
-
-                    TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
-                    TR_GetEndPosition(gHookEndloc[client]); // Get the end xyz coordinate of where a player is looking
-
-                    new Float:limit=gAllowedRange[client][ACTION_GRAB];
-                    new Float:distance=GetDistanceBetween(clientloc,gHookEndloc[client]);
-                    LogMessage("Hook Distance=%f, Max=%f, Client=%N\n", distance, limit, client);
-                    if (limit == 0.0 || distance <= limit)
+                    new Float:cooldown = gCooldown[client][ACTION_HOOK];
+                    if (cooldown <= 0.0 || ((GetGameTime() - gLastUsed[client][ACTION_HOOK]) >= cooldown))
                     {
-                        SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
-                        gStatus[client][ACTION_HOOK]=true; // Tell plugin the player is hooking
-                        gRemainingDuration[client] = gAllowedDuration[client][ACTION_HOOK];
-                        Hook_Push(client);
-                        CreateTimer(0.1,Hooking,client,TIMER_REPEAT); // Create hooking loop
-                        EmitSoundFromOrigin(hitWav,gHookEndloc[client]); // Emit sound from where the hook landed
+                        EmitSoundToAll(fireWav, client); // Emit fire sound
+
+                        new Float:clientloc[3],Float:clientang[3];
+                        GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
+                        GetClientEyeAngles(client,clientang); // Get the angle the player is looking
+
+                        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
+                        TR_GetEndPosition(gHookEndloc[client]); // Get the end xyz coordinate of where a player is looking
+
+                        new Float:limit=gAllowedRange[client][ACTION_GRAB];
+                        new Float:distance=GetDistanceBetween(clientloc,gHookEndloc[client]);
+                        LogMessage("Hook Distance=%f, Max=%f, Client=%N\n", distance, limit, client);
+                        if (limit == 0.0 || distance <= limit)
+                        {
+                            if (gRemainingDuration[client] <= 0)
+                                gRemainingDuration[client] = gAllowedDuration[client][ACTION_HOOK];
+
+                            gStatus[client][ACTION_HOOK]=true; // Tell plugin the player is hooking
+                            SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
+                            Hook_Push(client);
+                            CreateTimer(0.1,Hooking,client,TIMER_REPEAT); // Create hooking loop
+                            EmitSoundFromOrigin(hitWav,gHookEndloc[client]); // Emit sound from where the hook landed
+                        }
+                        else
+                        {
+                            EmitSoundToClient(client,errorWav);
+                            PrintToChat(client,"%c[HGR:Source] %cTarget is too far away!",
+                                        COLOR_GREEN,COLOR_DEFAULT);
+                        }
                     }
                     else
                     {
                         EmitSoundToClient(client,errorWav);
-                        PrintToChat(client,"%c[HGR:Source] %cTarget is too far away!",
-                                    COLOR_GREEN,COLOR_DEFAULT);
+                        PrintToChat(client,"%c[HGR:Source] %cYou have used the %chook%c too recently!",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
                 else if (g_bNativeOverride)
@@ -948,7 +971,7 @@ public Action_Hook(client)
                 else
                 {
                     EmitSoundToClient(client,deniedWav);
-                    PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %chook%c",
+                    PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use the %chook%c",
                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
             }
@@ -1014,6 +1037,7 @@ public Action:Hooking(Handle:timer,any:index)
 public Action_UnHook(client)
 {
     gStatus[client][ACTION_HOOK]=false; // Tell plugin the client is not hooking
+    gLastUsed[client][ACTION_HOOK]=GetGameTime(); // Tell plugin when client stopped hooking
     if (IsClientInGame(client))
     {
         SetEntPropFloat(client,Prop_Data,"m_flGravity",1.0); // Set grav to normal
@@ -1035,21 +1059,31 @@ public Action_Grab(client)
             {
                 if(HasAccess(client,Grab))
                 {
-                    gStatus[client][ACTION_GRAB]=true; // Tell plugin the seeker is grabbing a player
-                    EmitSoundToAll(fireWav, client); // Emit fire sound
-                    CreateTimer(0.05,GrabSearch,client,TIMER_REPEAT); // Start a timer that searches for a client to grab
+                    new Float:cooldown = gCooldown[client][ACTION_GRAB];
+                    if (cooldown <= 0.0 || ((GetGameTime() - gLastUsed[client][ACTION_GRAB]) >= cooldown))
+                    {
+                        gStatus[client][ACTION_GRAB]=true; // Tell plugin the seeker is grabbing a player
+                        EmitSoundToAll(fireWav, client); // Emit fire sound
+                        CreateTimer(0.05,GrabSearch,client,TIMER_REPEAT); // Start a timer that searches for a client to grab
+                    }
+                    else
+                    {
+                        EmitSoundToClient(client,errorWav);
+                        PrintToChat(client,"%c[HGR:Source] %cYou have used the %cgrabber%c too recently!",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                    }
                 }
                 else if (g_bNativeOverride)
                 {
                     EmitSoundToClient(client,deniedWav);
                     PrintToChat(client,"%c[HGR:Source] %cYou don't have a %cgrabber%c",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
                 else
                 {
                     EmitSoundToClient(client,deniedWav);
-                    PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %cgrab%c",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                    PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use the %cgrab%c",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
             }
             else
@@ -1061,14 +1095,14 @@ public Action_Grab(client)
         {
             EmitSoundToClient(client,deniedWav);
             PrintToChat(client,"%c[HGR:Source] %cERROR: Please notify server administrator",
-                        COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     else
     {
         EmitSoundToClient(client,deniedWav);
         PrintToChat(client,"%c[HGR:Source] Grab %cis currently disabled",
-                    COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
@@ -1115,9 +1149,11 @@ public Action:GrabSearch(Handle:timer,any:index)
                             //SetEntPropFloat(target,Prop_Data,"m_flMaxspeed",100.0); // Slow the target down.
                         }
 
+                        if (gRemainingDuration[index] <= 0)
+                            gRemainingDuration[index] = gAllowedDuration[index][ACTION_GRAB];
+
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
                         gTargetIndex[index]=target;
-                        gRemainingDuration[index] = gAllowedDuration[index][ACTION_GRAB];
                         CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
                         return Plugin_Stop;
                     }
@@ -1240,6 +1276,7 @@ public Action_Drop(client)
 {
     gGrabCounter[client]=0;
     gStatus[client][ACTION_GRAB]=false; // Tell plugin the grabber has dropped his target
+    gLastUsed[client][ACTION_GRAB]=GetGameTime(); // Tell plugin when grabber dropped his target
 
     if (IsClientInGame(client))
     {
@@ -1290,42 +1327,55 @@ public Action_Rope(client)
             {
                 if(HasAccess(client,Rope))
                 {
-                    EmitSoundToAll(fireWav, client); // Emit fire sound
-
-                    new Float:clientloc[3],Float:clientang[3];
-                    GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
-                    GetClientEyeAngles(client,clientang); // Get the angle the player is looking
-
-                    TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
-                    TR_GetEndPosition(gRopeEndloc[client]); // Get the end xyz coordinate of where a player is looking
-
-                    new Float:limit=gAllowedRange[client][ACTION_ROPE];
-                    if (limit <= 0.0 || limit >= GetDistanceBetween(clientloc,gRopeEndloc[client]))
+                    new Float:cooldown = gCooldown[client][ACTION_ROPE];
+                    if (cooldown <= 0.0 || ((GetGameTime() - gLastUsed[client][ACTION_ROPE]) >= cooldown))
                     {
-                        gRopeDist[client]=GetDistanceBetween(clientloc,gRopeEndloc[client]);
-                        gStatus[client][ACTION_ROPE]=true; // Tell plugin the player is roping
-                        gRemainingDuration[client] = gAllowedDuration[client][ACTION_ROPE];
-                        CreateTimer(0.1,Roping,client,TIMER_REPEAT); // Create roping loop
-                        EmitSoundFromOrigin(hitWav,gRopeEndloc[client]); // Emit sound from the end of the rope
+                        EmitSoundToAll(fireWav, client); // Emit fire sound
+
+                        new Float:clientloc[3],Float:clientang[3];
+                        GetClientEyePosition(client,clientloc); // Get the position of the player's eyes
+                        GetClientEyeAngles(client,clientang); // Get the angle the player is looking
+
+                        TR_TraceRayFilter(clientloc,clientang,MASK_ALL,RayType_Infinite,TraceRayTryToHit); // Create a ray that tells where the player is looking
+                        TR_GetEndPosition(gRopeEndloc[client]); // Get the end xyz coordinate of where a player is looking
+
+                        new Float:limit=gAllowedRange[client][ACTION_ROPE];
+                        new Float:dist=GetDistanceBetween(clientloc,gRopeEndloc[client]);
+                        if (limit <= 0.0 || limit >= dist)
+                        {
+                            if (gRemainingDuration[client] == 0)
+                                gRemainingDuration[client] = gAllowedDuration[client][ACTION_ROPE];
+
+                            gRopeDist[client]=dist;
+                            gStatus[client][ACTION_ROPE]=true; // Tell plugin the player is roping
+                            CreateTimer(0.1,Roping,client,TIMER_REPEAT); // Create roping loop
+                            EmitSoundFromOrigin(hitWav,gRopeEndloc[client]); // Emit sound from the end of the rope
+                        }
+                        else
+                        {
+                            EmitSoundToClient(client,errorWav);
+                            PrintToChat(client,"%c[HGR:Source] %cTarget is too far away!",
+                                        COLOR_GREEN,COLOR_DEFAULT);
+                        }
                     }
                     else
                     {
                         EmitSoundToClient(client,errorWav);
-                        PrintToChat(client,"%c[HGR:Source] %cTarget is too far away!",
-                                    COLOR_GREEN,COLOR_DEFAULT);
+                        PrintToChat(client,"%c[HGR:Source] %cYou have used the %crope%c too recently!",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
                 else if (g_bNativeOverride)
                 {
                     EmitSoundToClient(client,deniedWav);
                     PrintToChat(client,"%c[HGR:Source] %cYou don't have a %crope%c",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
                 else
                 {
                     EmitSoundToClient(client,deniedWav);
-                    PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use %crope%c",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                    PrintToChat(client,"%c[HGR:Source] %cYou don't have permission to use the %crope%c",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
             }
             else
@@ -1335,14 +1385,14 @@ public Action_Rope(client)
         {
             EmitSoundToClient(client,deniedWav);
             PrintToChat(client,"%c[HGR:Source] %cERROR: Please notify server administrator",
-                        COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     else
     {
         EmitSoundToClient(client,deniedWav);
         PrintToChat(client,"%c[HGR:Source] Rope %cis currently disabled",
-                    COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT);
     }
 }
 
@@ -1391,7 +1441,8 @@ public Action:Roping(Handle:timer,any:index)
 
 public Action_Detach(client)
 {
-    gStatus[client][ACTION_ROPE]=false; // Tell plugin the client is not hooking
+    gStatus[client][ACTION_ROPE]=false; // Tell plugin the client is not roping
+    gLastUsed[client][ACTION_ROPE]=GetGameTime(); // Tell plugin when client stopped roping
 }
 
 /***************

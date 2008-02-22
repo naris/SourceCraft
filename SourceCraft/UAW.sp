@@ -328,31 +328,35 @@ public WorkRules(client, player, skilllevel)
 {
     if (skilllevel)
     {
-        new duration, Float:range;
+        new duration, Float:range, Float:cooldown;
         switch(skilllevel)
         {
             case 1:
             {
                 duration=5;
                 range=150.0;
+                cooldown=20.0;
             }
             case 2:
             {
                 duration=10;
                 range=300.0;
+                cooldown=15.0;
             }
             case 3:
             {
                 duration=20;
                 range=450.0;
+                cooldown=10.0;
             }
             case 4:
             {
                 duration=30;
                 range=0.0;
+                cooldown=5.0;
             }
         }
-        GiveHook(client,duration,range);
+        GiveHook(client,duration,range,cooldown);
     }
 }
 
