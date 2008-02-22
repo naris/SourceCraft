@@ -382,6 +382,6 @@ public Zerg_Tentacles(client, player, skilllevel)
                 range=3500.0; //1500.0;
             }
         }
-        GiveGrab(client,duration,range,1);
+        GiveGrab(client,duration,range,0.0,1);
     }
 }

@@ -65,7 +65,7 @@ new bool:m_CalledReady=false;
 public Plugin:myinfo= 
 {
     name="SourceCraft",
-    author="Naris (with some PimpinJuice code)",
+    author="Naris",
     description="StarCraft/WarCraft for the Source engine.",
     version=VERSION,
     url="http://www.jigglysfunhouse.net/"
@@ -201,6 +201,11 @@ public OnClientPutInServer(client)
             PushArrayCell(shopitems,0);     // Owns item x
         PushArrayCell(newPlayer,shopitems);
 
+        new Handle:immunities=CreateArray(); // Player's immunities
+        for(new x=0;x<IMMUNITY_COUNT;x++)
+            PushArrayCell(immunities,0);     // Has immunity x
+        PushArrayCell(newPlayer,immunities);
+
         new raceCount = GetArraySize(arrayRaces);
         for(new x=0;x<raceCount;x++)
         {
@@ -212,10 +217,7 @@ public OnClientPutInServer(client)
                 PushArrayCell(raceinfo,0); // Skill level for race x skill y
         }
 
-        for(new x=0;x<IMMUNITY_COUNT;x++)   // Player's immunities
-            PushArrayCell(newPlayer,0);
-
-        if (GetArraySize(newPlayer)==(INFO_COUNT+IMMUNITY_COUNT+raceCount))
+        if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
         {
             PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
             Call_StartForward(g_OnPlayerAuthedHandle);
@@ -234,7 +236,7 @@ public OnClientPutInServer(client)
                 SetRace(vecpos, FindRace("human")); // Default race to human.
         }
         else
-            SetFailState("There was a failure processing client.");
+            SetFailState("There was a failure processing client %d-%N.", client, client);
     }
 }
 

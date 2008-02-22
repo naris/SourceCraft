@@ -19,8 +19,9 @@
 #define INFO_OVERALL_LEVEL              5
 #define INFO_PROPERTIES                 6
 #define INFO_SHOPITEMS                  7
+#define INFO_IMMUNITIES                 8
 
-#define INFO_COUNT                      8
+#define INFO_COUNT                      9
 
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
@@ -176,6 +177,24 @@ public SetOwnsItem(vectorpos,item,owns)
     SetArrayCell(shopitems,item,owns);
 }
 
+public Handle:GetImmunityInfo(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,INFO_IMMUNITIES);
+}
+
+public GetImmunity(vectorpos,immunity)
+{
+    new Handle:immunities=GetImmunityInfo(vectorpos);
+    return GetArrayCell(immunities,immunity);
+}
+
+public SetImmunity(vectorpos,immunity,imm_state)
+{
+    new Handle:immunities=GetImmunityInfo(vectorpos);
+    SetArrayCell(immunities,immunity,imm_state);
+}
+
 public Handle:GetRaceInfo(vectorpos,race)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
@@ -237,20 +256,6 @@ public GetSkillCount(vectorpos,race)
     for(new x=RACEINFO_SKILLS;x<num;x++)
         ret+=GetArrayCell(raceinfo,x);
     return ret;
-}
-
-public GetImmunity(vectorpos,immunity)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new raceCount = GetArraySize(arrayRaces);
-    return GetArrayCell(vec,INFO_COUNT+raceCount+immunity);
-}
-
-public SetImmunity(vectorpos,immunity,imm_state)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new raceCount = GetArraySize(arrayRaces);
-    SetArrayCell(vec,INFO_COUNT+raceCount+immunity,imm_state);
 }
 
 public Action:PlayerProperties(Handle:timer)
