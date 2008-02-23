@@ -1,3 +1,75 @@
+ okies issues that i've found while playing:
+
+Adrenal glands (zurg) vs U238 rounds (terran): the adrenal glands are doing less damage then the U238 rounds with melee is there a way to make it so the u238 rounds don't work on melee?
+
+Reaver Scarbs: Still causing massive explosion lag on my system when i've encountered them with a rapid fire (read flamethrower) weapon.
+
+Mole: sometime i've bought a mole and i've lost the crystals. Can you put a limit in on moles? say only 2 in a respawn at once? getting gang raped by 2 heavies a pyro and medic really sucked.
+
+Hook: Speed is faster then scout run speed, thus allowing heavies to zoom around the map while shooing at incredible speeds. The hook is usable to move even when the person is supposed to be frozen (i'm not talking about another ability i'm talking about when we're all in respawn and both sides can't move). On some maps the hook can be used to get to a capture point during setup when nobody else can.
+
+Pickpocket: is it working?
+
+Store: can we have the limit of crystals upped to 150? sometimes is too easy to get to 100? maybe make it a racial?
+
+Senority/Reincarnation/Ressurection(uaw/orc/al-quada): you allways respawn in the same direction as when you initial spawn in the respawn is there any way for you to make the facing random. This could help someone from becomming a farmed (hey dog and a man) xp node.
+
+Feiry aura: BLOWS GOATS does 1 pt of damage on the timer the medic uses. Extra levels decrese time between "ticks" any way to make it do more damage.
+
+Suicide bomb: either kills the person or does no dammage.
+
+Mask of death/vampiric aura: on an engineer the sg doesn't get the healing effects was this intentional?
+
+ Additional, the orb or evasion doesn't work on al-quada ultimates...
+
+and from time to time i get u238 bullets when i haven't chosen em (usually at the same level as my stimpacks)
+
+
+Once again thanks nariss for making a mod that I wanna play so mutch that my wife wants to divorce me... keep up the good work
+ Since this post seems to be about issues...I'll post a couple of mine.
+
+1.  As stated by clueless noob, it would be nice if after reincarnation you can face a random direction.  It almost seems that you're facing the opposite direction from where your opponent is and thus getting raped through the reincarnation over and over again.  Or is it even possible that the reincarnation spawns you in a random spot within a 10ft radius of your death rather than on the spot (or make it a higher level ability or something by doing so)?
+
+2.  Need something that appeals to medics.
+
+3.  Hook:  I have a lot of issues with this ability.  It is being abused heavily because of it's speed and the ability to just blast around the map on top of obstacles.  I would suggest nerfing the speed at which the user travels on it.  A heavy that can outrun a rocket or scout is far too powerful as proven by I Ate God many times on the server.  Next, would be the distance that the hook can be used, it goes too far (or make it that each level increases the length of it, but traversing the whole map in one go is just ridiculous).  
+
+So several things that can be done to make it more reasonable (not all of these need to be done it's more of an either/or):
+a.  Nerf the speed at which you travel on the hook
+b.  Decrease the length of the hook
+c.  Can't fire a weapon while in midair
+d.  If you hook onto something, you need to cross over the whole length of the hook before being able to choose a new direction.  (Heavily abused by popping onto a point and then simply popping back out of safety too fast for even a sentry to take care of).
+
+4.  Orb of frost - the percentage on that needs to decrease a tadbit.  Again, it's being abused with the heavy or pyro combined with this since they have so many shots that it's bound to freeze someone.
+
+5.  Mole - limit this to a maximum of 2 moles at a time if you can.
+
+I hope that helps with the mechanics of the mod.
+
+Devotion Aura - this was acting funny tonite. i had it at lvl 4,  it was a 50 health boost. sometimes when a medic would boost me after it that it would go away, sometimes it would go back to the +50. if i was hurt a dispenser would charge my health back to the +50. when a medic would boost to the 150% it would go off from the +50, so i had a soldier with 375 at times other times it would only go to 300.
+
+UAW negotiations randomly does this "you have been foced to accept a buyout of 500 crystals" and kills you. You don't get any crystals, and if oyu did, the limit is 100 so its pointless, and I have died randomly for no reason.
+
+ Mind control seems to be crashing the server agian so please dont use it. It may be caused by taking over a dispencer but im not posotive.
+i didnt have any problems with sentyguns using mind controll
+but when i used it on dispencer it crashed the game  
+tested it and seems to do it on dispencers
+dont know how about teleporters dont want 2 crash the game 2 many times
+
+ A few interesting bugs with UAW: When you recieve a buyout, you do not get the crystals however you do die from it. Seniority seems to work on its own even if I have 0 levels in it, however it does work better when I DO have some levels in it.
+
+Acute strike works 100% of the time instead of the stated 15% in the description. Chain lightning does not always work on nearby targets, i.e right next to me.
+
+It seems that there is a way to acquire more levels than one actually has skill points in simply by reseting skills, investing their skill points in any 2 skills of their race and then reseting their skills again and investing in the other 2 skills. For example, I have a level 8 terran, it has level 4 armor, level 4 u238 shells, and level 4 jetpack and I cant get rid of the extra levels no matter what I try. U238 shells do not work consistently with melee weapons.
+
+Reaver scarabs sometimes stop working during maps.
+
+Moles occasionly take me to where someone just reincarnated instead of  the enemy respawn.
+
+The Scroll of Respawning causes people only to be able to move while jumping. Also they seem to take less/no damage from enemy weapons.
+
+
+
 "Orc
 
 Acute Strike – Working as Intended.
