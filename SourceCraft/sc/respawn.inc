@@ -31,7 +31,10 @@ stock RespawnPlayer(client)
     if (GameType == cstrike)
         CS_RespawnPlayer(client);
     else
+    {
+        SetEntityHealth(client, GetMaxHealth(client));
         DispatchSpawn(client);
+    }
 }
 
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)

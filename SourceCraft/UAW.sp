@@ -19,6 +19,7 @@
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 #include "sc/respawn"
 #include "sc/log"
 
@@ -108,6 +109,11 @@ public OnMapStart()
     }
 
     SetupSound(explodeWav, true, true);
+}
+
+public OnPlayerAuthed(client,player)
+{
+    FindMaxHealthOffset(client);
 }
 
 public OnXPGiven(client,player,&amount)

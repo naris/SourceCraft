@@ -18,6 +18,7 @@
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 #include "sc/respawn"
 #include "sc/weapons"
 #include "sc/log"
@@ -137,6 +138,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     m_AllowChainLightning[client]=true;
 }
 

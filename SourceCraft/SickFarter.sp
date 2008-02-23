@@ -17,6 +17,7 @@
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
+#include "sc/maxhealth"
 #include "sc/respawn"
 #include "sc/log"
 
@@ -116,6 +117,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,player)
 {
+    FindMaxHealthOffset(client);
     m_AllowFart[client]=true;
 }
 
