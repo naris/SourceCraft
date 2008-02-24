@@ -461,9 +461,9 @@ public Native_GiveHook(Handle:plugin,numParams)
             if (numParams >= 3)
                 range = Float:GetNativeCell(3);
             if (numParams >= 4)
-                flags = GetNativeCell(4);
+                cooldown = Float:GetNativeCell(4);
             if (numParams >= 5)
-                cooldown = Float:GetNativeCell(5);
+                flags = GetNativeCell(5);
             ClientAccess(client,Give,Hook,duration,range,cooldown,flags);
             g_iNativeHooks++;
         }
@@ -496,9 +496,9 @@ public Native_GiveGrab(Handle:plugin,numParams)
             if (numParams >= 3)
                 range = Float:GetNativeCell(3);
             if (numParams >= 4)
-                flags = GetNativeCell(4);
+                cooldown = Float:GetNativeCell(4);
             if (numParams >= 5)
-                cooldown = Float:GetNativeCell(5);
+                flags = GetNativeCell(5);
             ClientAccess(client,Give,Grab,duration,range,cooldown,flags);
             g_iNativeGrabs++;
         }
@@ -531,9 +531,9 @@ public Native_GiveRope(Handle:plugin,numParams)
             if (numParams >= 3)
                 range = Float:GetNativeCell(3);
             if (numParams >= 4)
-                flags = GetNativeCell(4);
+                cooldown = Float:GetNativeCell(4);
             if (numParams >= 5)
-                cooldown = Float:GetNativeCell(5);
+                flags = GetNativeCell(5);
             ClientAccess(client,Give,Rope,duration,range,cooldown,flags);
             g_iNativeRopes++;
         }
