@@ -455,7 +455,7 @@ public Action:FlamingWrath(Handle:timer)
                     new skill_flaming_wrath=GetSkillLevel(player,raceID,1);
                     if (skill_flaming_wrath)
                     {
-                        new num=skill_flaming_wrath*2;
+                        new num=skill_flaming_wrath*5;
                         new Float:range=1.0;
                         switch(skill_flaming_wrath)
                         {

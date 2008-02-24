@@ -1,5 +1,3 @@
- okies issues that i've found while playing:
-
 Adrenal glands (zurg) vs U238 rounds (terran): the adrenal glands are doing less damage then the U238 rounds with melee is there a way to make it so the u238 rounds don't work on melee?
 
 Reaver Scarbs: Still causing massive explosion lag on my system when i've encountered them with a rapid fire (read flamethrower) weapon.
@@ -14,7 +12,7 @@ Store: can we have the limit of crystals upped to 150? sometimes is too easy to 
 
 Senority/Reincarnation/Ressurection(uaw/orc/al-quada): you allways respawn in the same direction as when you initial spawn in the respawn is there any way for you to make the facing random. This could help someone from becomming a farmed (hey dog and a man) xp node.
 
-Feiry aura: BLOWS GOATS does 1 pt of damage on the timer the medic uses. Extra levels decrese time between "ticks" any way to make it do more damage.
+*Increased*Feiry aura(Flaming Wrath): BLOWS GOATS does 1 pt of damage on the timer the medic uses. Extra levels decrese time between "ticks" any way to make it do more damage.
 
 Suicide bomb: either kills the person or does no dammage.
 
@@ -24,15 +22,11 @@ Mask of death/vampiric aura: on an engineer the sg doesn't get the healing effec
 
 and from time to time i get u238 bullets when i haven't chosen em (usually at the same level as my stimpacks)
 
-
-Once again thanks nariss for making a mod that I wanna play so mutch that my wife wants to divorce me... keep up the good work
- Since this post seems to be about issues...I'll post a couple of mine.
-
 1.  As stated by clueless noob, it would be nice if after reincarnation you can face a random direction.  It almost seems that you're facing the opposite direction from where your opponent is and thus getting raped through the reincarnation over and over again.  Or is it even possible that the reincarnation spawns you in a random spot within a 10ft radius of your death rather than on the spot (or make it a higher level ability or something by doing so)?
 
 2.  Need something that appeals to medics.
 
-3.  Hook:  I have a lot of issues with this ability.  It is being abused heavily because of it's speed and the ability to just blast around the map on top of obstacles.  I would suggest nerfing the speed at which the user travels on it.  A heavy that can outrun a rocket or scout is far too powerful as proven by I Ate God many times on the server.  Next, would be the distance that the hook can be used, it goes too far (or make it that each level increases the length of it, but traversing the whole map in one go is just ridiculous).  
+*Fixed*3.  Hook:  I have a lot of issues with this ability.  It is being abused heavily because of it's speed and the ability to just blast around the map on top of obstacles.  I would suggest nerfing the speed at which the user travels on it.  A heavy that can outrun a rocket or scout is far too powerful as proven by I Ate God many times on the server.  Next, would be the distance that the hook can be used, it goes too far (or make it that each level increases the length of it, but traversing the whole map in one go is just ridiculous).  
 
 So several things that can be done to make it more reasonable (not all of these need to be done it's more of an either/or):
 a.  Nerf the speed at which you travel on the hook
