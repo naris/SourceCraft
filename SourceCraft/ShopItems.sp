@@ -223,11 +223,11 @@ public OnItemPurchase(client,player,item)
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
-        if (GameType == cstrike)
-        {
+        SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
+        if (GameType == tf2)
+            SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0);
+        else
             RespawnPlayer(client);
-            SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
-        }
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
         SetGravity(player,0.5);
