@@ -923,6 +923,8 @@ public Action_Hook(client)
                 if (HasAccess(client,Hook))
                 {
                     new Float:cooldown = gCooldown[client][ACTION_HOOK];
+                    new Float:time     = GetGameTime() - gLastUsed[client][ACTION_HOOK];
+                    LogMessage("Hook Client=%N, Cooldown=%f, Time=%f\n", client, cooldown, time);
                     if (cooldown <= 0.0 || ((GetGameTime() - gLastUsed[client][ACTION_HOOK]) >= cooldown))
                     {
                         EmitSoundToAll(fireWav, client); // Emit fire sound
@@ -936,7 +938,7 @@ public Action_Hook(client)
 
                         new Float:limit=gAllowedRange[client][ACTION_GRAB];
                         new Float:distance=GetDistanceBetween(clientloc,gHookEndloc[client]);
-                        LogMessage("Hook Distance=%f, Max=%f, Client=%N\n", distance, limit, client);
+                        LogMessage("Hook Client=%N, Distance=%f, Max=%f\n", client, distance, limit);
                         if (limit == 0.0 || distance <= limit)
                         {
                             if (gRemainingDuration[client] <= 0)

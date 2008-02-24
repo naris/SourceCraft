@@ -223,8 +223,11 @@ public OnItemPurchase(client,player,item)
     }
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
     {
-        RespawnPlayer(client);
-        SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
+        if (GameType == cstrike)
+        {
+            RespawnPlayer(client);
+            SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
+        }
     }
     else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
         SetGravity(player,0.5);
@@ -237,11 +240,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (client)
     {
         GetClientAbsOrigin(client,spawnLoc[client]);
-
-        // Make sure newly spawned client actually has some health
-        // to ensure Scroll of Respawning doesn't leave them unable to move!
-        if (GetClientHealth(client) <= 1)
-            SetEntityHealth(client, GetMaxHealth(client));
 
         new player=GetPlayer(client);
         if(player>-1)
