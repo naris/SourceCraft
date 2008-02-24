@@ -240,7 +240,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
         // Make sure newly spawned client actually has some health
         // to ensure Scroll of Respawning doesn't leave them unable to move!
-        if (GetClientHealth(client) <= 0)
+        if (GetClientHealth(client) <= 1)
             SetEntityHealth(client, GetMaxHealth(client));
 
         new player=GetPlayer(client);

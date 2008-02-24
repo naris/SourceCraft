@@ -362,6 +362,8 @@ public WorkRules(client, player, skilllevel)
                 cooldown=5.0;
             }
         }
+        LogMessage("Give a a hook to %N, level=%d, duration=%d, range=%f, cooldown=%f",
+                   client, skilllevel, duration, range, cooldown);
         GiveHook(client,duration,range,cooldown,0);
     }
 }

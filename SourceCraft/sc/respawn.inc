@@ -35,7 +35,7 @@ stock RespawnPlayer(client)
         LogMessage("Respawn %N, health=%d, maxHealth=%d",
                    client,GetClientHealth(client),GetMaxHealth(client));
 
-        if (GetClientHealth(client) <= 0)
+        if (GetClientHealth(client) <= 1)
             SetEntityHealth(client, GetMaxHealth(client));
 
         DispatchSpawn(client);
