@@ -450,7 +450,7 @@ public Native_RopeToggle(Handle:plugin,numParams)
 
 public Native_GiveHook(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 4)
+    if(numParams >= 1 && numParams <= 5)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -485,7 +485,7 @@ public Native_TakeHook(Handle:plugin,numParams)
 
 public Native_GiveGrab(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 4)
+    if(numParams >= 1 && numParams <= 5)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -520,7 +520,7 @@ public Native_TakeGrab(Handle:plugin,numParams)
 
 public Native_GiveRope(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 4)
+    if(numParams >= 1 && numParams <= 5)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))

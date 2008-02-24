@@ -32,7 +32,12 @@ stock RespawnPlayer(client)
         CS_RespawnPlayer(client);
     else
     {
-        SetEntityHealth(client, GetMaxHealth(client));
+        LogMessage("Respawn %N, health=%d, maxHealth=%d",
+                   client,GetClientHealth(client),GetMaxHealth(client));
+
+        if (GetClientHealth(client) <= 0)
+            SetEntityHealth(client, GetMaxHealth(client));
+
         DispatchSpawn(client);
     }
 }

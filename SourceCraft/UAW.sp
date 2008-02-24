@@ -362,7 +362,7 @@ public WorkRules(client, player, skilllevel)
                 cooldown=5.0;
             }
         }
-        GiveHook(client,duration,range,cooldown);
+        GiveHook(client,duration,range,cooldown,0);
     }
 }
 
