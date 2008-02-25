@@ -55,7 +55,7 @@ public Handle:CreateRace(const String:name[],                  const String:shor
     PushArrayString(ret,ult);
     PushArrayString(ret,ult_desc);
     PushArrayString(ret,required_level);
-    SaveRaceInfo(name);
+    SaveRaceInfo(short,name);
     return ret;
 }
 

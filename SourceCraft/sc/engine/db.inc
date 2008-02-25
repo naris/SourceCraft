@@ -19,7 +19,7 @@ public SQLTable()
     if (DBIDB)
     {
         // Create the tables, if they don't exist
-        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_races (race_ident int not null auto_increment, name varchar(64) not null, add_date timestamp default current_timestamp, PRIMARY KEY(race_ident), INDEX(name)) ENGINE=INNODB"))
+        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_races (race_ident int not null auto_increment, name varchar(16) not null, long_name varchar(64), add_date timestamp default current_timestamp, PRIMARY KEY(race_ident), INDEX(name)) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
@@ -50,20 +50,58 @@ public SQLTable()
     }
 }
 
-public SaveRaceInfo(const String:raceName[])
+public SaveRaceInfo(const String:shortName[], const String:raceName[])
 {
+    new race_ident;
     if(DBIDB)
     {
         decl String:SQLString[512] = "";
 
-        Format(SQLString,sizeof(SQLString), "INSERT IGNORE INTO sc_races (name,add_date) VALUES ('%s',current_timestamp)", raceName);
-        if (!SQL_FastQuery(DBIDB,SQLString))
+        Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races WHERE name='%s'", shortName);
+        new Handle:query=SQL_Query(DBIDB,SQLString);
+        if (query && SQL_FetchRow(query))
+            race_ident = SQL_FetchInt(query,0);
+        else
         {
-            decl String:error[256] = "";
-            SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Unable to insert race: %s\nSQL:%s", error, SQLString);
+            if (query)
+                CloseHandle(query);
+
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (name,long_name,add_date) VALUES ('%s',current_timestamp)", shortName, raceName);
+            if (SQL_FastQuery(DBIDB,SQLString))
+            {
+                query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
+                if (query)
+                {
+                    if (SQL_FetchRow(query))
+                        race_ident = SQL_FetchInt(query,0);
+                    else
+                    {
+                        decl String:error[256] = "";
+                        SQL_GetError(DBIDB, error, sizeof(error));
+                        LogError("Unable to fetch race_ident: %s", error);
+                        race_ident = -1;
+                    }
+
+                    CloseHandle(query);
+                }
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to query race_ident: %s", error);
+                    race_ident = -1;
+                }
+            }
+            else
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("Unable to insert race: %s\nSQL:%s", error, SQLString);
+                race_ident = -1;
+            }
         }
     }
+    return race_ident;
 }
 
 public LoadPlayerData(client,vectorpos)
@@ -223,7 +261,7 @@ public SavePlayerData(client,vectorpos)
                             {
                                 decl String:error[256] = "";
                                 SQL_GetError(DBIDB, error, sizeof(error));
-                                LogError("Unable to replace player: %s\nSQL:%s\n", error, SQLString);
+                                LogError("Unable to replace player: %s\nSQL:%s", error, SQLString);
                                 return;
                             }
 
@@ -245,7 +283,7 @@ public SavePlayerData(client,vectorpos)
                                     {
                                         decl String:error[256] = "";
                                         SQL_GetError(DBIDB, error, sizeof(error));
-                                        LogError("Unable to insert player's skill: %s\nSQL:%s\n",
+                                        LogError("Unable to insert player's skill: %s\nSQL:%s",
                                                 error, SQLString);
                                     }
                                 }
@@ -255,7 +293,7 @@ public SavePlayerData(client,vectorpos)
                         {
                             decl String:error[256] = "";
                             SQL_GetError(DBIDB, error, sizeof(error));
-                            LogError("Unable to query player's race ID: %s\nSQL:%s\n",
+                            LogError("Unable to query player's race ID: %s\nSQL:%s",
                                     error, SQLString);
 
                             if (race_query)
@@ -269,7 +307,7 @@ public SavePlayerData(client,vectorpos)
             {
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query player's ID: %s\nSQL:%s\n", error, SQLString);
+                LogError("Unable to query player's ID: %s", error);
 
                 if (player_query)
                     CloseHandle(player_query);
