@@ -18,27 +18,27 @@ public SQLTable()
 {
     if (DBIDB)
     {
-        // Create the tables, if they don;t exist
-        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_players (steamid varchar(64) not null, name varchar(64), race varchar(30), credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(steamid))"))
+        // Create the tables, if they don't exist
+        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_players (player_ident int not null auto_increment, steamid varchar(64) not null, name varchar(64), race varchar(30), credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(player_ident), UNIQUE INDEX (steamid)) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Error in the creation of the w3s_players SQL table:%s", error);
-            SetFailState("Error in the creation of the w3s_players SQL table");
+            LogError("Error in the creation of the sc_players SQL table:%s", error);
+            SetFailState("Error in the creation of the sc_players SQL table");
         }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_races (steamid varchar(64) not null, race varchar(30) not null, xp int default 0, level int default 0, PRIMARY KEY(steamid,race))"))
+        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_player_races (player_ident int not null, race_ident int not null auto_increment, race varchar(30) not null, xp int default 0, level int default 0, PRIMARY KEY(player_ident,race_ident), FOREIGN KEY (player_ident) REFERENCES sc_players(player_ident) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Error in the creation of the w3s_skills SQL table:%s", error);
-            SetFailState("Error in the creation of the w3s_skills SQL table");
+            LogError("Error in the creation of the sc_player_races SQL table:%s", error);
+            SetFailState("Error in the creation of the sc_player_races SQL table");
         }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_skills (steamid varchar(64) not null, race varchar(30) not null, skill int not null, skill_level int default 0,  PRIMARY KEY(steamid,race,skill))"))
+        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS w3s_player_skills (player_ident int not null, race_ident int not null, skill int not null, skill_level int default 0,  PRIMARY KEY(player_ident,race_ident,skill), FOREIGN KEY (player_ident,race_ident) REFERENCES sc_player_races(player_ident,race_ident) ON DELETE CASCADE) ON UPDATE CASCADE, FOREIGN KEY (player_ident) REFERENCES sc_players(player_ident) ON DELETE CASCADE ON UPDATE CASCADE)) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Error in the creation of the w3s_skills SQL table:%s", error);
-            SetFailState("Error in the creation of the w3s_skills SQL table");
+            LogError("Error in the creation of the sc_player_skills SQL table:%s", error);
+            SetFailState("Error in the creation of the sc_player_skills SQL table");
         }
     }
 }
@@ -136,11 +136,11 @@ public SavePlayerData(client,vectorpos)
             {
                 if (bUpdateIsOK)
                 {
-                    Format(SQLString,sizeof(SQLString), "INSERT INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race='%s', credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, raceName, credits, overall_level, raceName, credits, overall_level);
+                    Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race='%s', credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, raceName, credits, overall_level, raceName, credits, overall_level);
                 }
                 else
                 {
-                    Format(SQLString,sizeof(SQLString), "REPLACE INTO w3s_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)", steamid, name, raceName, credits, overall_level);
+                    Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_players (steamid,name,race,credits,overall_level,last_update) VALUES ('%s','%s','%s',%d,%d,current_timestamp)", steamid, name, raceName, credits, overall_level);
                 }
 
                 if (SQL_FastQuery(DBIDB,SQLString))
@@ -164,59 +164,115 @@ public SavePlayerData(client,vectorpos)
                 }
             }
 
-            new raceCount = GetArraySize(arrayRaces);
-            for(new raceId=0;raceId<raceCount;raceId++)
+            new player_ident;
+            new Handle:player_query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
+            if (player_query)
             {
-                new Handle:race=Race(raceId);
-                GetArrayString(race,RACE_SHORT_NAME,raceName,sizeof(raceName));
-
-                new xp    = GetXP(vectorpos,raceId);
-                new level = GetLevel(vectorpos,raceId);
-
-                if (xp || level)
+                new bool:fetch = SQL_FetchRow(player_query);
+                if (fetch)
                 {
-                    if (bUpdateIsOK)
-                    {
-                        Format(SQLString,sizeof(SQLString), "INSERT INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", steamid, raceName, xp, level, xp, level);
-                    }
-                    else
-                    {
-                        Format(SQLString,sizeof(SQLString), "REPLACE INTO w3s_player_races (steamid,race,xp,level) VALUES ('%s','%s',%d,%d)", steamid, raceName, xp, level);
-                    }
-                    if (!SQL_FastQuery(DBIDB,SQLString))
-                    {
-                        decl String:error[256] = "";
-                        SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to replace player: %s\nSQL:%s\n",
-                                 error, SQLString);
-                        return;
-                    }
+                    player_ident = SQL_FetchInt(player_query,0);
 
-                    for(new skill=0;skill<SKILL_COUNT;skill++)
+                    new raceCount = GetArraySize(arrayRaces);
+                    for(new raceId=0;raceId<raceCount;raceId++)
                     {
-                        new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
-                        if (skillLevel)
+                        new Handle:race=Race(raceId);
+                        GetArrayString(race,RACE_SHORT_NAME,raceName,sizeof(raceName));
+
+                        new xp    = GetXP(vectorpos,raceId);
+                        new level = GetLevel(vectorpos,raceId);
+
+                        if (xp || level)
                         {
                             if (bUpdateIsOK)
                             {
-                                Format(SQLString,sizeof(SQLString), "INSERT INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", steamid, raceName, skill, skillLevel, skillLevel);
+                                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_races (player_ident,race,xp,level) VALUES (%d,'%s',%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", player_ident, raceName, xp, level, xp, level);
                             }
                             else
                             {
-                                Format(SQLString,sizeof(SQLString), "REPLACE INTO w3s_player_skills (steamid,race,skill,skill_level) VALUES ('%s','%s',%d,%d)", steamid, raceName, skill, skillLevel);
+                                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_races (player_ident,race,xp,level) VALUES (%d,'%s',%d,%d)", player_ident, raceName, xp, level);
                             }
-
                             if (!SQL_FastQuery(DBIDB,SQLString))
                             {
                                 decl String:error[256] = "";
                                 SQL_GetError(DBIDB, error, sizeof(error));
-                                LogError("Unable to insert player's skill: %s\nSQL:%s\n",
-                                         error, SQLString);
+                                LogError("Unable to replace player: %s\nSQL:%s\n",
+                                        error, SQLString);
+                                return;
+                            }
+
+                            new race_ident;
+                            new Handle:race_query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
+                            if (race_query)
+                            {
+                                fetch = SQL_FetchRow(race_query);
+                                if (fetch)
+                                {
+                                    race_ident = SQL_FetchInt(race_query,0);
+
+                                    for(new skill=0;skill<SKILL_COUNT;skill++)
+                                    {
+                                        new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
+                                        if (skillLevel)
+                                        {
+                                            if (bUpdateIsOK)
+                                            {
+                                                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
+                                            }
+                                            else
+                                            {
+                                                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
+                                            }
+
+                                            if (!SQL_FastQuery(DBIDB,SQLString))
+                                            {
+                                                decl String:error[256] = "";
+                                                SQL_GetError(DBIDB, error, sizeof(error));
+                                                LogError("Unable to insert player's skill: %s\nSQL:%s\n",
+                                                        error, SQLString);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    decl String:error[256] = "";
+                                    SQL_GetError(DBIDB, error, sizeof(error));
+                                    LogError("Unable to fetch player's race ID: %s\nSQL:%s\n",
+                                            error, SQLString);
+                                    return;
+                                }
+                                CloseHandle(race_query);
+                            }
+                            else
+                            {
+                                decl String:error[256] = "";
+                                SQL_GetError(DBIDB, error, sizeof(error));
+                                LogError("Unable to query player's race ID: %s\nSQL:%s\n",
+                                        error, SQLString);
                                 return;
                             }
                         }
                     }
                 }
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to fetch player's ID: %s\nSQL:%s\n",
+                            error, SQLString);
+                    return;
+                }
+                CloseHandle(player_query);
+            }
+            else
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("Unable to query player's ID: %s\nSQL:%s\n",
+                        error, SQLString);
+                return;
             }
         }
     }
