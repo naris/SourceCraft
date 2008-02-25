@@ -40,7 +40,7 @@ public SQLTable()
             LogError("Error in the creation of the sc_player_races SQL table:%s", error);
             SetFailState("Error in the creation of the sc_player_races SQL table");
         }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_player_skills (player_ident int not null, race_ident int not null, skill int not null, skill_level int default 0,  PRIMARY KEY(player_ident,race_ident,skill), FOREIGN KEY (player_ident,race_ident) REFERENCES sc_player_races(player_ident,race_ident) ON DELETE CASCADE) ON UPDATE CASCADE, FOREIGN KEY (player_ident) REFERENCES sc_players(player_ident) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (race_ident) REFERENCES sc_races(race_ident) ON DELETE CASCADE ON UPDATE CASCADE)) ENGINE=INNODB"))
+        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_player_skills (player_ident int not null, race_ident int not null, skill int not null, skill_level int default 0,  PRIMARY KEY(player_ident,race_ident,skill), FOREIGN KEY (player_ident,race_ident) REFERENCES sc_player_races(player_ident,race_ident) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (player_ident) REFERENCES sc_players(player_ident) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (race_ident) REFERENCES sc_races(race_ident) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
