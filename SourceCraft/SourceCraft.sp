@@ -180,10 +180,25 @@ public OnMapStart()
     SetupSound(notEnoughWav,true,true);
 }
 
+
+public OnMapEnd()
+{
+    if (SAVE_ENABLED)
+    {
+        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        {
+            new client=GetClientIndex(x);
+            if (IsClientInGame(client))
+                SavePlayerData(client,x);
+        }
+    }
+}
+
 public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
+        LogMessage("Put %N in the Server", client);
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,0); // Player race

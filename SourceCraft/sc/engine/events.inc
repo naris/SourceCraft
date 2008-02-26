@@ -237,17 +237,3 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
     }
     return result;
 }
-
-public OnMapEnd()
-{
-    if (SAVE_ENABLED)
-    {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
-        {
-            new client=GetClientIndex(x);
-            if (IsClientInGame(client))
-                SavePlayerData(client,x);
-        }
-    }
-}
-
