@@ -19,7 +19,7 @@ public SQLTable()
     if (DBIDB)
     {
         // Create the tables, if they don't exist
-        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_races (race_ident int not null auto_increment, name varchar(16) not null, long_name varchar(64), add_date timestamp default current_timestamp, PRIMARY KEY(race_ident), INDEX(name)) ENGINE=INNODB"))
+        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_races (race_ident int not null auto_increment, race_name varchar(16) not null, long_name varchar(64), add_date timestamp default current_timestamp, PRIMARY KEY(race_ident), INDEX(race_name)) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
@@ -57,7 +57,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
     {
         decl String:SQLString[512] = "";
 
-        Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races WHERE name='%s'", shortName);
+        Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races WHERE race_name='%s'", shortName);
         new Handle:query=SQL_Query(DBIDB,SQLString);
         if (query && SQL_FetchRow(query))
             race_ident = SQL_FetchInt(query,0);
@@ -66,7 +66,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
             if (query)
                 CloseHandle(query);
 
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (race_name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
             if (SQL_FastQuery(DBIDB,SQLString))
             {
                 query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
@@ -81,7 +81,6 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
                         LogError("Unable to fetch race_ident: %s", error);
                         race_ident = -1;
                     }
-
                     CloseHandle(query);
                 }
                 else
@@ -114,7 +113,7 @@ public LoadPlayerData(client,vectorpos)
         {
             decl String:buf[256] = "";
             Format(buf,sizeof(buf),
-                   "SELECT race, credits, overall_level FROM w3s_players WHERE steamid = '%s'",
+                   "SELECT p.player_ident, p.race_ident, r.race_name, p.credits, p.overall_level FROM sc_players p, sc_races r WHERE p.steamid = '%s' AND r.race_ident = p.race_ident",
                    steamid);
 
             new Handle:query=SQL_Query(DBIDB,buf);
@@ -123,16 +122,19 @@ public LoadPlayerData(client,vectorpos)
                 fetch = SQL_FetchRow(query);
                 if (fetch)
                 {
+                    new player_ident = SQL_FetchInt(query,0);
+                    new race_ident = SQL_FetchInt(query,1);
+
                     decl String:raceName[64]="";
-                    SQL_FetchString(query,0,raceName,sizeof(raceName));
+                    SQL_FetchString(query,2,raceName,sizeof(raceName));
 
                     SetRace(vectorpos,FindRace(raceName));
-                    SetCredits(vectorpos,SQL_FetchInt(query,1));
-                    SetOverallLevel(vectorpos,SQL_FetchInt(query,2));
+                    SetCredits(vectorpos,SQL_FetchInt(query,3));
+                    SetOverallLevel(vectorpos,SQL_FetchInt(query,4));
 
                     Format(buf,sizeof(buf),
-                           "SELECT race, xp, level FROM w3s_player_races WHERE steamid = '%s'",
-                           steamid);
+                           "SELECT r.race_name, pr.xp, pr.level FROM sc_player_races pr, sc_races r WHERE player_ident = %d AND r.race_ident = pr.race_ident",
+                           player_ident);
 
                     new Handle:raceQuery=SQL_Query(DBIDB,buf);
                     if(raceQuery)
@@ -146,8 +148,8 @@ public LoadPlayerData(client,vectorpos)
                             SetLevel(vectorpos,raceId,SQL_FetchInt(raceQuery,2));
 
                             Format(buf,sizeof(buf),
-                                   "SELECT skill, skill_level FROM w3s_player_skills WHERE steamid = '%s' and race = '%s'",
-                                   steamid,raceName);
+                                   "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d",
+                                   player_ident,race_ident);
 
                             new Handle:skillQuery=SQL_Query(DBIDB,buf);
                             if(skillQuery)
