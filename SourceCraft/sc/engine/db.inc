@@ -111,12 +111,12 @@ public LoadPlayerData(client,vectorpos)
         decl String:steamid[64] = "";
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
-            decl String:buf[256] = "";
-            Format(buf,sizeof(buf),
+            decl String:SQLString[512] = "";
+            Format(SQLString,sizeof(SQLString),
                    "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
-            new Handle:query=SQL_Query(DBIDB,buf);
+            new Handle:query=SQL_Query(DBIDB,SQLString);
             if(query)
             {
                 fetch = SQL_FetchRow(query);
@@ -130,26 +130,26 @@ public LoadPlayerData(client,vectorpos)
                     SetCredits(vectorpos,SQL_FetchInt(query,2));
                     SetOverallLevel(vectorpos,SQL_FetchInt(query,3));
 
-                    Format(buf,sizeof(buf),
+                    Format(SQLString,sizeof(SQLString),
                            "SELECT race_ident, xp, level FROM sc_player_races WHERE player_ident = %d",
                            player_ident);
 
-                    new Handle:raceQuery=SQL_Query(DBIDB,buf);
+                    new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
                     if(raceQuery)
                     {
                         while (SQL_FetchRow(raceQuery))
                         {
-                            race_ident = SQL_FetchInt(query,0);
+                            race_ident = SQL_FetchInt(raceQuery,0);
                             raceId = FindRaceForIdent(race_ident);
 
                             SetXP(vectorpos,raceId,SQL_FetchInt(raceQuery,1));
                             SetLevel(vectorpos,raceId,SQL_FetchInt(raceQuery,2));
 
-                            Format(buf,sizeof(buf),
+                            Format(SQLString,sizeof(SQLString),
                                    "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d",
                                    player_ident,race_ident);
 
-                            new Handle:skillQuery=SQL_Query(DBIDB,buf);
+                            new Handle:skillQuery=SQL_Query(DBIDB,SQLString);
                             if(skillQuery)
                             {
                                 while (SQL_FetchRow(skillQuery))
@@ -160,11 +160,35 @@ public LoadPlayerData(client,vectorpos)
                                 }
                                 CloseHandle(skillQuery);
                             }
+                            else
+                            {
+                                decl String:error[256] = "";
+                                SQL_GetError(DBIDB, error, sizeof(error));
+                                LogError("Unable to query skill data: %s\nSQL:%s", error, SQLString);
+                            }
                         }
                         CloseHandle(raceQuery);
                     }
+                    else
+                    {
+                        decl String:error[256] = "";
+                        SQL_GetError(DBIDB, error, sizeof(error));
+                        LogError("Unable to query race data: %s\nSQL:%s", error, SQLString);
+                    }
+                }
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to fetch player data: %s\nSQL:%s", error, SQLString);
                 }
                 CloseHandle(query);
+            }
+            else
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("Unable to query player data: %s\nSQL:%s", error, SQLString);
             }
         }
     }
