@@ -8,19 +8,22 @@
 #define SKILL_COUNT 4
 #define SKILL_ULTIMATE 3 // Index of the Ultimate, starting at 0
 
+#define RACE_IDENT              0
+#define RACE_REQUIRED_LEVEL     1
+#define RACE_STRINGS            2
+
 #define RACE_NAME               0
 #define RACE_SHORT_NAME         1
 #define RACE_SWITCHMESSAGE      2
 #define RACE_SWITCHMESSAGE_DEAD 3
-#define RACE_SKILL_1            4
-#define RACE_SKILL_1_DESC       5
+#define RACE_SKILL              4
+#define RACE_SKILL_DESC         5
 #define RACE_SKILL_2            6
 #define RACE_SKILL_2_DESC       7
 #define RACE_SKILL_3            8
 #define RACE_SKILL_3_DESC       9
 #define RACE_ULTIMATE          10
 #define RACE_ULTIMATE_DESC     11
-#define RACE_REQUIRED_LEVEL    12
 
 // Functions called from menus.inc
 //public SkillMenu(client, vectorpos, Function:parentMenuFunction);
@@ -33,30 +36,38 @@ new bool:gSkillsMenuMode[MAXPLAYERS+1];
 new gShowSkillsTarget[MAXPLAYERS+1];
 new gRaceForSkills[MAXPLAYERS+1];
 
-public Handle:CreateRace(const String:name[],                  const String:short[],
-                         const String:switchmessage_instant[], const String:switchmessage_dead[],
-                         const String:skill1[],                const String:skill1_desc[],
-                         const String:skill2[],                const String:skill2_desc[],
-                         const String:skill3[],                const String:skill3_desc[],
-                         const String:ult[],                   const String:ult_desc[],
-                         const String:required_level[])
+public CreateRace(const String:name[],                  const String:short[],
+                  const String:switchmessage_instant[], const String:switchmessage_dead[],
+                  const String:skill1[],                const String:skill1_desc[],
+                  const String:skill2[],                const String:skill2_desc[],
+                  const String:skill3[],                const String:skill3_desc[],
+                  const String:ult[],                   const String:ult_desc[],
+                  required_level)
 {
-    new Handle:ret=CreateArray(ByteCountToCells(192));
-    PushArrayString(ret,name);
-    PushArrayString(ret,short);
-    PushArrayString(ret,switchmessage_instant);
-    PushArrayString(ret,switchmessage_dead);
-    PushArrayString(ret,skill1);
-    PushArrayString(ret,skill1_desc);
-    PushArrayString(ret,skill2);
-    PushArrayString(ret,skill2_desc);
-    PushArrayString(ret,skill3);
-    PushArrayString(ret,skill3_desc);
-    PushArrayString(ret,ult);
-    PushArrayString(ret,ult_desc);
-    PushArrayString(ret,required_level);
-    SaveRaceInfo(short,name);
-    return ret;
+    new Handle:newRace=CreateArray();
+
+    // Setup Race Strings.
+    new Handle:strings=CreateArray(ByteCountToCells(192));
+    PushArrayString(strings,name);
+    PushArrayString(strings,short);
+    PushArrayString(strings,switchmessage_instant);
+    PushArrayString(strings,switchmessage_dead);
+    PushArrayString(strings,skill1);
+    PushArrayString(strings,skill1_desc);
+    PushArrayString(strings,skill2);
+    PushArrayString(strings,skill2_desc);
+    PushArrayString(strings,skill3);
+    PushArrayString(strings,skill3_desc);
+    PushArrayString(strings,ult);
+    PushArrayString(strings,ult_desc);
+
+    // Setup Race Data.
+    PushArrayCell(newRace,SaveRaceInfo(short,name)); // ident from the Database
+    PushArrayCell(newRace,required_level);
+    PushArrayCell(newRace,strings);
+
+    // Add new Race Data into Race Array.
+    return PushArrayCell(arrayRaces,newRace); // return index.
 }
 
 public bool:InitiatearrayRaces()
@@ -70,14 +81,31 @@ public Handle:Race(racenum)
     return GetArrayCell(arrayRaces,racenum);
 }
 
+public GetRaceIdent(Handle:race)
+{
+    return GetArrayCell(race,RACE_IDENT);
+}
+
+public GetRaceRequiredLevel(Handle:race)
+{
+    return GetArrayCell(race,RACE_REQUIRED_LEVEL);
+}
+
+public Handle:GetRaceStrings(Handle:race)
+{
+    return GetArrayCell(race,RACE_STRINGS);
+}
+
 public GetRaceName(Handle:race, String:name[], maxlength)
 {
-    GetArrayString(race,RACE_NAME,name,maxlength);
+    new Handle:strings=GetArrayCell(race,RACE_STRINGS);
+    GetArrayString(strings,RACE_NAME,name,maxlength);
 }
 
 public GetRaceShortName(Handle:race, String:name[], maxlength)
 {
-    GetArrayString(race,RACE_SHORT_NAME,name,maxlength);
+    new Handle:strings=GetArrayCell(race,RACE_STRINGS);
+    GetArrayString(strings,RACE_SHORT_NAME,name,maxlength);
 }
 
 public FindRace(const String:name[])
@@ -86,8 +114,7 @@ public FindRace(const String:name[])
     new size = GetArraySize(arrayRaces);
     for(new x=0;x<size;x++)
     {
-        new Handle:race=GetArrayCell(arrayRaces,x);
-        GetArrayString(race,RACE_SHORT_NAME,curName,sizeof(curName));
+        GetRaceShortName(Race(x),curName,sizeof(curName));
         if(StrEqual(name,curName,false))
             return x;
     }
@@ -103,7 +130,8 @@ public PendingCheck(client,vectorpos)
         SetRace(vectorpos,pendingrace);
         decl String:buf[192];
         new Handle:race=Race(GetRace(vectorpos));
-        GetArrayString(race,2,buf,191);
+        new Handle:strings=GetArrayCell(race,RACE_STRINGS);
+        GetArrayString(strings,RACE_SWITCHMESSAGE,buf,sizeof(buf));
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
 
@@ -135,14 +163,15 @@ public SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
 
 public SkillsInfo_Skill(client,Handle:raceHandle,skill)
 {
+    new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     new Handle:menu=CreateMenu(SkillsInfo_Back);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,true);
 
     decl String:name[64];
-    GetArrayString(raceHandle,4+(skill*2),name,sizeof(name));
+    GetArrayString(stringsHandle,RACE_SKILL+(skill*2),name,sizeof(name));
     decl String:desc[256];
-    GetArrayString(raceHandle,4+(skill*2)+1,desc,sizeof(desc));
+    GetArrayString(stringsHandle,RACE_SKILL+(skill*2)+1,desc,sizeof(desc));
 
     SetMenuTitle(menu,"Skill information for %s\nDescription: %s",name,desc);
     AddMenuItem(menu,"","Back to the skills");
@@ -157,13 +186,14 @@ public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
 
     decl String:name[64];
     new Handle:raceHandle=Race(race);
-    GetRaceName(raceHandle,name,sizeof(name));
+    new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
+    GetArrayString(stringsHandle,RACE_NAME,name,sizeof(name));
     SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
 
     decl String:buf[64];
     for(new x=0;x<SKILL_COUNT;x++)
     {
-        GetArrayString(raceHandle,4+(x*2),buf,sizeof(buf));
+        GetArrayString(stringsHandle,RACE_SKILL+(x*2),buf,sizeof(buf));
         AddMenuItem(menu,"",buf);
     }
     if (change)
@@ -194,11 +224,12 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             else
             {
                 // They decided to change to this race.
+                new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
                 if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
                 {
                     SetPendingRace(vecpos,race);
                     decl String:buf[192];
-                    GetArrayString(raceHandle,3,buf,sizeof(buf));
+                    GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,buf,sizeof(buf));
                     PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
                 else
@@ -206,7 +237,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                     SetPendingRace(vecpos,-1);
                     SetRace(vecpos,race);
                     decl String:buf[192];
-                    GetArrayString(raceHandle,2,buf,sizeof(buf));
+                    GetArrayString(raceHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
                     PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
                 m_FirstSpawn[client]=0;
@@ -250,10 +281,11 @@ public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
 {
     new race=GetRace(vecpos);
     new Handle:raceHandle=Race(race);
+    new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     new Handle:panel=CreatePanel();
 
     decl String:name[64];
-    GetRaceName(raceHandle,name,sizeof(name));
+    GetArrayString(stringsHandle,RACE_NAME,name,sizeof(name));
 
     decl String:buffer[256];
     if (client == target)
@@ -268,7 +300,7 @@ public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
     DrawPanelText(panel,"-----------------------------");
     for(new x=0;x<SKILL_COUNT;x++)
     {
-        GetArrayString(raceHandle,4+(x*2),buf,sizeof(buf));
+        GetArrayString(stringsHandle,RACE_SKILL+(x*2),buf,sizeof(buf));
         Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(vecpos,race,x));
         DrawPanelText(panel,bufout);
     }

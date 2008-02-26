@@ -83,7 +83,7 @@ public DoLevelCheck(client,vectorpos)
                     SkillMenu(client, vectorpos, INVALID_FUNCTION);
 
                     decl String:raceName[64] = "";
-                    GetArrayString(Race(race),RACE_NAME,raceName,sizeof(raceName));
+                    GetRaceName(Race(race),raceName,sizeof(raceName));
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(vectorpos,race,curXP-reqXP);
@@ -104,7 +104,7 @@ public ShowXP(client,vecpos)
         new level=GetLevel(vecpos,race);
         decl String:racename[64];
         new Handle:racedata=Race(race);
-        GetArrayString(racedata,0,racename,63);
+        GetRaceName(racedata,racename,sizeof(racename));
         if (level<MAX_LEVELS)
         {
             PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d / %d. (Overall Level %d)",

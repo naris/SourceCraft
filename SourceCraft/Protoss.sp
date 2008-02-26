@@ -113,7 +113,7 @@ public OnPluginReady()
                       "Reveals enemy invisible units within range",
                       "Dark Archon Mind Control",
                       "Allows you to control an object from the opposite team.",
-                      "32");
+                      32);
 
     FindUberOffsets();
 

@@ -83,7 +83,7 @@ public OnPluginReady()
                       "Your level of Revulsion is so high, all enemies quake as you approach.", // Skill 3 Description
                       "Flatulence", // Ultimate Name
                       "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
-                      "16");
+                      16);
 
     FindUberOffsets();
 }

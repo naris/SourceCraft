@@ -23,7 +23,6 @@ public Native_CreateRace(Handle:plugin,numParams)
         decl String:name[64],String:short[16],String:switchmessage_instant[192],String:switchmessage_dead[192];
         decl String:skill1[64],String:skill1_desc[192],String:skill2[64],String:skill2_desc[192];
         decl String:skill3[64],String:skill3_desc[192],String:ult[64],String:ult_desc[192];
-        decl String:required_level[4];
         GetNativeString(1,name,sizeof(name));
         GetNativeString(2,short,sizeof(short));
         GetNativeString(3,switchmessage_instant,sizeof(switchmessage_instant));
@@ -37,16 +36,11 @@ public Native_CreateRace(Handle:plugin,numParams)
         GetNativeString(11,ult,sizeof(ult));
         GetNativeString(12,ult_desc,sizeof(ult_desc));
 
-        if (numParams >= 13)
-            GetNativeString(13,required_level,sizeof(required_level));
-        else
-            strcopy(required_level, sizeof(required_level), "0");
+        new required_level = (numParams >= 13) ? GetNativeCell(13) : 0;
 
-        new Handle:race=CreateRace(name,short,switchmessage_instant,switchmessage_dead,
-                                   skill1,skill1_desc,skill2,skill2_desc,skill3,skill3_desc,
-                                   ult,ult_desc,required_level);
-        PushArrayCell(arrayRaces,race);
-        return GetArraySize(arrayRaces)-1;
+        return CreateRace(name,short,switchmessage_instant,switchmessage_dead,
+                          skill1,skill1_desc,skill2,skill2_desc,skill3,skill3_desc,
+                          ult,ult_desc,required_level);
     }
     return -1;
 }

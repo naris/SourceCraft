@@ -90,7 +90,7 @@ public OnPluginReady()
                       "Detect cloaked units around you.",
                       "Nuclear Launch",
                       "Launches a Nuclear Device that does extreme damage to all players in the area.",
-                      "32");
+                      32);
 
     FindUberOffsets();
 

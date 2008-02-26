@@ -99,8 +99,7 @@ public OnPluginReady()
                       "Suicide Bomber",
                       "You explode when you die, causing great damage to opponents around you",
                       "Mad Bomber",
-                      "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!",
-                      "16");
+                      "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!", 16);
 
     FindUberOffsets();
 }

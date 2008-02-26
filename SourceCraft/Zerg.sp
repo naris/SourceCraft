@@ -61,7 +61,7 @@ public OnPluginReady()
                       "Regenerates Health of all teammates in range (It does NOT heal you).",
                       "Tentacles",
                       "Reach out and grab an opponent.",
-                      "32");
+                      32);
 
     FindUberOffsets();
 

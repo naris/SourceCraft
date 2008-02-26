@@ -173,16 +173,14 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
     new Handle:race;
     decl String:rbuf[4];
     decl String:rname[64];
-    decl String:rlevel[4];
     decl String:ritem[96];
     new raceCount = GetArraySize(arrayRaces);
     for(new x=0;x<raceCount;x++)
     {
         race=Race(x);
         Format(rbuf,sizeof(rbuf),"%d",x);
-        GetArrayString(race,RACE_NAME,rname,sizeof(rname));
-        GetArrayString(race,RACE_REQUIRED_LEVEL,rlevel,sizeof(rlevel));
-        new reqLevel = StringToInt(rlevel);
+        GetRaceName(race,rname,sizeof(rname));
+        new reqLevel = GetRaceRequiredLevel(race);
         if (reqLevel)
         {
             new level = GetOverallLevel(GetClientVectorPosition(client));

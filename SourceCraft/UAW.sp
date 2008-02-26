@@ -84,7 +84,7 @@ public OnPluginReady()
                       "Various good and not so good things happen at random intervals\nYou might get or lose money or experience, you might also die\n (However, you will no longer ever lose levels or XP)!",
                       "Work Rules",
                       "Use your ultimate bind to hook a line to a wall and traverse it.",
-                      "16");
+                      16);
 
     ControlHookGrabRope(true);
 }

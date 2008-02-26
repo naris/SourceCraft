@@ -28,13 +28,13 @@
  * @param skill3_desc: The description of the third skill. (max 192)
  * @param ult: The name of the ultimate. (max 64)
  * @param ult_desc: The description of the ultimate. (max 192)
- * @param required_level: The overeall level the player must obtain before changing to this race. (as a string)
+ * @param required_level: The overeall level the player must obtain before changing to this race.
  * @return The return value will be the race index or -1 if there was a problem.
  */         
 native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
                   String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],
                   String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[],
-                  String:required_level[]="0");
+                  required_level=0);
 
 /**
  * Registers a shop item with the SourceCraft plugin
