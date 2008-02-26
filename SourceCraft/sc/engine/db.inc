@@ -184,7 +184,7 @@ public SavePlayerData(client,vectorpos)
         {
             new credits       = GetCredits(vectorpos);
             new overall_level = GetOverallLevel(vectorpos);
-            new race_ident    = GetRaceIdent(GetRace(vectorpos));
+            new race_ident    = GetRaceIdent(Race(GetRace(vectorpos)));
 
             decl String:name[64];
             GetClientName(client,name,sizeof(name));
