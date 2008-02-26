@@ -121,6 +121,17 @@ public FindRace(const String:name[])
     return -1;
 }
 
+public FindRaceForIdent(ident)
+{
+    new size = GetArraySize(arrayRaces);
+    for(new x=0;x<size;x++)
+    {
+        if (GetRaceIdent(Race(x)) == ident)
+            return x;
+    }
+    return -1;
+}
+
 public PendingCheck(client,vectorpos)
 {
     new pendingrace=GetPendingRace(vectorpos);
