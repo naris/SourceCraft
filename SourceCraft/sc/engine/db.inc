@@ -18,34 +18,96 @@ public SQLTable()
 {
     if (DBIDB)
     {
+        decl String:SQLString[512] = "";
         // Create the tables, if they don't exist
-        if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_races (race_ident int not null auto_increment, race_name varchar(16) not null, long_name varchar(64), add_date timestamp default current_timestamp, PRIMARY KEY(race_ident), INDEX(race_name)) ENGINE=INNODB"))
+        Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
+               "CREATE TABLE IF NOT EXISTS sc_races ",
+               "(race_ident int not null auto_increment,",
+               " race_name varchar(16) not null,",
+               " long_name varchar(64),",
+               " add_date timestamp default current_timestamp,",
+               "PRIMARY KEY(race_ident),",
+               "INDEX(race_name)) ENGINE=INNODB");
+        if(!SQL_FastQuery(DBIDB,SQLString))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
             LogError("Error in the creation of the sc_races SQL table:%s", error);
             SetFailState("Error in the creation of the sc_races SQL table");
         }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_players (player_ident int not null auto_increment, steamid varchar(64) not null, name varchar(64), race_ident int default 0, credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(player_ident), UNIQUE INDEX (steamid)) ENGINE=INNODB"))
+        else 
         {
-            decl String:error[256] = "";
-            SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Error in the creation of the sc_players SQL table:%s", error);
-            SetFailState("Error in the creation of the sc_players SQL table");
-        }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_player_races (player_ident int not null, race_ident int not null, xp int default 0, level int default 0, PRIMARY KEY(player_ident,race_ident), FOREIGN KEY (player_ident) REFERENCES sc_players(player_ident) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (race_ident) REFERENCES sc_races(race_ident) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=INNODB"))
-        {
-            decl String:error[256] = "";
-            SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Error in the creation of the sc_player_races SQL table:%s", error);
-            SetFailState("Error in the creation of the sc_player_races SQL table");
-        }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_player_skills (player_ident int not null, race_ident int not null, skill int not null, skill_level int default 0,  PRIMARY KEY(player_ident,race_ident,skill), FOREIGN KEY (player_ident,race_ident) REFERENCES sc_player_races(player_ident,race_ident) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (player_ident) REFERENCES sc_players(player_ident) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (race_ident) REFERENCES sc_races(race_ident) ON DELETE CASCADE ON UPDATE CASCADE) ENGINE=INNODB"))
-        {
-            decl String:error[256] = "";
-            SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Error in the creation of the sc_player_skills SQL table:%s", error);
-            SetFailState("Error in the creation of the sc_player_skills SQL table");
+            Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s",
+                   "CREATE TABLE IF NOT EXISTS sc_players ",
+                   "(player_ident int not null auto_increment,",
+                   " steamid varchar(64) not null,",
+                   " name varchar(64),",
+                   " race_ident int default 0,",
+                   " credits int default 0,",
+                   " overall_level int default 0,",
+                   " last_update timestamp default current_timestamp,",
+                   "PRIMARY KEY(player_ident),",
+                   "UNIQUE INDEX (steamid)) ENGINE=INNODB");
+            if(!SQL_FastQuery(DBIDB,SQLString))
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("Error in the creation of the sc_players SQL table:%s", error);
+                SetFailState("Error in the creation of the sc_players SQL table");
+            }
+            else
+            {
+                Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                       "CREATE TABLE IF NOT EXISTS sc_player_races ",
+                       "(player_ident int not null,",
+                       " race_ident int not null,",
+                       " xp int default 0,",
+                       " level int default 0,",
+                       "PRIMARY KEY(player_ident,race_ident),",
+                       "FOREIGN KEY (player_ident)",
+                       "        REFERENCES sc_players(player_ident)",
+                       "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                       "INDEX (race_ident)",
+                       "FOREIGN KEY (race_ident)",
+                       "        REFERENCES sc_races(race_ident)",
+                       "        ON DELETE CASCADE ON UPDATE CASCADE) ",
+                       "ENGINE=INNODB");
+                if(!SQL_FastQuery(DBIDB,SQLString))
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Error in the creation of the sc_player_races SQL table:%s", error);
+                    SetFailState("Error in the creation of the sc_player_races SQL table");
+                }
+                else
+                {
+                    Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                           "CREATE TABLE IF NOT EXISTS sc_player_skills",
+                           "(player_ident int not null,",
+                           " race_ident int not null,",
+                           " skill int not null,",
+                           " skill_level int default 0,",
+                           "PRIMARY KEY(player_ident,race_ident,skill),",
+                           "FOREIGN KEY (player_ident)",
+                           "        REFERENCES sc_players(player_ident)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                           "INDEX (race_ident)",
+                           "FOREIGN KEY (race_ident)",
+                           "        REFERENCES sc_races(race_ident)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE)",
+                           "FOREIGN KEY (player_ident,race_ident)",
+                           "        REFERENCES sc_player_races(player_ident,race_ident)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                           "ENGINE=INNODB");
+                    if(!SQL_FastQuery(DBIDB,SQLString))
+                    {
+                        decl String:error[256] = "";
+                        SQL_GetError(DBIDB, error, sizeof(error));
+                        LogError("Error in the creation of the sc_player_skills SQL table:%s", error);
+                        SetFailState("Error in the creation of the sc_player_skills SQL table");
+                    }
+                }
+            }
         }
     }
 }
