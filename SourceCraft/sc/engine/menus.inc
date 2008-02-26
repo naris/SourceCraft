@@ -237,22 +237,23 @@ public SkillMenu(client, vectorpos, Function:parentMenuFunction)
     decl String:skillname[64];
     new curlevel;
     new Handle:race=Race(race_num);
+    new Handle:strings=GetArrayCell(race,RACE_STRINGS);
     decl String:sbuf[4];
     decl String:buf[192];
     new style = ITEMDRAW_DEFAULT;
     for(new x=0;x<SKILL_COUNT;x++)
     {
-        GetArrayString(race,4+(x*2),skillname,sizeof(skillname));
+        GetArrayString(strings,RACE_SKILL+(x*2),skillname,sizeof(skillname));
         Format(sbuf,sizeof(sbuf),"%d",x);
         curlevel=GetSkillLevel(vectorpos,race_num,x);
         if(curlevel!=4)
         {
             if(x!=SKILL_ULTIMATE)
-                Format(buf,191,"%s (Skill Level %d)",skillname,curlevel+1);
+                Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
             else
             {
-                Format(buf,191,"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
-                        skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
+                Format(buf,sizeof(buf),"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
+                       skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
                 if (GetLevel(vectorpos,race_num) < MIN_ULTIMATE_LEVEL)
                     style = ITEMDRAW_DISABLED;
             }
@@ -286,6 +287,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     {
                         new race=GetRace(vecpos);
                         new Handle:raceHandle=Race(race);
+                        new Handle:stringHandle=GetArrayCell(raceHandle,RACE_STRINGS);
                         new level = GetLevel(vecpos,race);
                         if (level >= MIN_ULTIMATE_LEVEL)
                         {
@@ -293,7 +295,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                             {
                                 SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                                 decl String:skillname[64];
-                                GetArrayString(raceHandle,4+(skill*2),skillname,sizeof(skillname));
+                                GetArrayString(stringHandle,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
                                 PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                             COLOR_GREEN,COLOR_DEFAULT,skillname,
                                             GetSkillLevel(vecpos,race,skill));
@@ -316,11 +318,12 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     {
                         new race=GetRace(vecpos);
                         new Handle:raceHandle=Race(race);
+                        new Handle:stringHandle=GetArrayCell(raceHandle,RACE_STRINGS);
                         if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
                         {
                             SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
                             decl String:skillname[64];
-                            GetArrayString(raceHandle,4+(skill*2),skillname,sizeof(skillname));
+                            GetArrayString(stringHandle,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
                             PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                         COLOR_GREEN,COLOR_DEFAULT,skillname,
                                         GetSkillLevel(vecpos,race,skill));
@@ -1084,12 +1087,10 @@ public Admin_SetRace(client,target)
         Format(buf,sizeof(buf),"%d",target);
 
         decl String:racename[64];
-        new Handle:raceHandle;
         new raceCount = GetArraySize(arrayRaces);
         for(new x=0;x<raceCount;x++)
         {
-            raceHandle=Race(x);
-            GetArrayString(raceHandle,0,racename,sizeof(racename));
+            GetRaceName(Race(x),racename,sizeof(racename));
             AddMenuItem(menu,buf,racename);
         }
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
@@ -1117,9 +1118,8 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
         if(targetvecpos>-1)
         {
             SetRace(targetvecpos,selection);
-            new Handle:racehandle=Race(selection);
             decl String:racename[64];
-            GetArrayString(racehandle,0,racename,sizeof(racename));
+            GetRaceName(Race(selection),racename,sizeof(racename));
             decl String:adminname[64];
             GetClientName(client,adminname,sizeof(adminname));
             decl String:targetname[64];
