@@ -198,7 +198,6 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        LogMessage("Put %N in the Server", client);
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,0); // Player race
