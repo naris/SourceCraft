@@ -67,7 +67,7 @@ public SQLTable()
                        "FOREIGN KEY (player_ident)",
                        "        REFERENCES sc_players(player_ident)",
                        "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                       "INDEX (race_ident)",
+                       "INDEX (race_ident),",
                        "FOREIGN KEY (race_ident)",
                        "        REFERENCES sc_races(race_ident)",
                        "        ON DELETE CASCADE ON UPDATE CASCADE) ",
@@ -91,13 +91,13 @@ public SQLTable()
                            "FOREIGN KEY (player_ident)",
                            "        REFERENCES sc_players(player_ident)",
                            "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                           "INDEX (race_ident)",
+                           "INDEX (race_ident),",
                            "FOREIGN KEY (race_ident)",
                            "        REFERENCES sc_races(race_ident)",
-                           "        ON DELETE CASCADE ON UPDATE CASCADE)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
                            "FOREIGN KEY (player_ident,race_ident)",
                            "        REFERENCES sc_player_races(player_ident,race_ident)",
-                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE)",
                            "ENGINE=INNODB");
                     if(!SQL_FastQuery(DBIDB,SQLString))
                     {
