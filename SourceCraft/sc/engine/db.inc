@@ -66,7 +66,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
             if (query)
                 CloseHandle(query);
 
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (name,long_name,add_date) VALUES ('%s',current_timestamp)", shortName, raceName);
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
             if (SQL_FastQuery(DBIDB,SQLString))
             {
                 query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
