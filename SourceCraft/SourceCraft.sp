@@ -18,9 +18,6 @@
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
 #define VERSION     "1.1.2 $Revision$ beta"
 
-// Temporary Definitions
-new Handle:arrayPlayers = INVALID_HANDLE;
-
 // ConVar definitions
 new Handle:m_SaveXPConVar         = INVALID_HANDLE;
 new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
@@ -93,8 +90,9 @@ public OnPluginStart()
 
     GetGameType();
     
-    arrayPlayers=CreateArray();
-    if(!InitiatearrayRaces())
+    if(!InitiatePlayerArray())
+        SetFailState("There was a failure in creating the player vector.");
+    if(!InitiateRaceArray())
         SetFailState("There was a failure in creating the race vector.");
     if(!InitiateShopVector())
         SetFailState("There was a failure in creating the shop vector.");
@@ -152,40 +150,23 @@ public OnAllPluginsLoaded()
 
 public OnPluginEnd()
 {
-    PrintToServer("-------------------------------------------------------------------------\n[SourceCraft] Plugin shutting down...");
-    for(new x=0;x<GetArraySize(arrayPlayers);x++)
-    {
-        new Handle:vec=GetArrayCell(arrayPlayers,x);
-        ClearArray(vec);
-    }
-    ClearArray(arrayPlayers);
-    for(new x=0;x<GetArraySize(arrayRaces);x++)
-    {
-        new Handle:vec=GetArrayCell(arrayRaces,x);
-        ClearArray(vec);
-    }
-    ClearArray(arrayRaces);
-    PrintToServer("[SourceCraft] Plugin shutdown finished.\n-------------------------------------------------------------------------");
+    ClearPlayerArray();
+    ClearRaceArray();
+    PrintToServer("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
 }
 
 public OnMapStart()
 {
-    for(new x=0;x<GetArraySize(arrayPlayers);x++)
-    {
-        new Handle:vec=GetArrayCell(arrayPlayers,x);
-        ClearArray(vec);
-    }
-    ClearArray(arrayPlayers); // Clear our temporary players vector.
-
+    ClearPlayerArray();
     SetupSound(notEnoughWav,true,true);
 }
-
 
 public OnMapEnd()
 {
     if (SAVE_ENABLED)
     {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        new playerCount = PLAYER_COUNT();
+        for(new x=0;x<playerCount;x++)
         {
             new client=GetClientIndex(x);
             if (IsClientInGame(client))
@@ -220,7 +201,7 @@ public OnClientPutInServer(client)
             PushArrayCell(immunities,0);     // Has immunity x
         PushArrayCell(newPlayer,immunities);
 
-        new raceCount = GetArraySize(arrayRaces);
+        new raceCount = RACE_COUNT();
         for(new x=0;x<raceCount;x++)
         {
             new Handle:raceinfo=CreateArray(); // Player's races

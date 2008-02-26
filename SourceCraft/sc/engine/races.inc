@@ -72,10 +72,23 @@ public CreateRace(const String:name[],                  const String:short[],
     return PushArrayCell(arrayRaces,newRace); // return index.
 }
 
-public bool:InitiatearrayRaces()
+public bool:InitiateRaceArray()
 {
     arrayRaces=CreateArray();
-    return true;
+    return bool:(arrayRaces != INVALID_HANDLE);
+}
+
+public ClearRaceArray()
+{
+    new raceCount = RACE_COUNT();
+    for(new x=0;x<raceCount;x++)
+    {
+        new Handle:vec=GetArrayCell(arrayRaces,x);
+        new Handle:strings=GetArrayCell(vec,RACE_STRINGS);
+        ClearArray(strings);
+        ClearArray(vec);
+    }
+    ClearArray(arrayRaces);
 }
 
 public Handle:Race(racenum)

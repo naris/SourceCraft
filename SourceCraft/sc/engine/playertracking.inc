@@ -47,6 +47,8 @@
 
 #define PLAYER_COUNT() GetArraySize(arrayPlayers)
 
+new Handle:arrayPlayers = INVALID_HANDLE;
+
 // Global definition
 new bool:g_RoundActive = true;
 
@@ -59,6 +61,37 @@ new Float:m_CloakTime[MAXPLAYERS+1];
 new bool:m_SpeedAltered[MAXPLAYERS+1];
 new bool:m_GravityAltered[MAXPLAYERS+1];
 new bool:m_VisibilityAltered[MAXPLAYERS+1];
+
+public bool:InitiatePlayerArray()
+{
+    arrayPlayers=CreateArray();
+    return bool:(arrayPlayers != INVALID_HANDLE);
+}
+
+public ClearPlayerArray()
+{
+    new raceCount = RACE_COUNT();
+    new playerCount = PLAYER_COUNT();
+    for(new x=0;x<playerCount;x++)
+    {
+        new Handle:vec=GetArrayCell(arrayPlayers,x);
+        new Handle:properties=GetArrayCell(vec,INFO_PROPERTIES);
+        new Handle:shopitems=GetArrayCell(vec,INFO_SHOPITEMS);
+        new Handle:immunities=GetArrayCell(vec,INFO_IMMUNITIES);
+        ClearArray(properties);
+        ClearArray(shopitems);
+        ClearArray(immunities);
+
+        for(new r=0;r<raceCount;r++)
+        {
+            new Handle:raceinfo=GetArrayCell(vec,INFO_COUNT+r);
+            ClearArray(raceinfo);
+        }
+
+        ClearArray(vec);
+    }
+    ClearArray(arrayPlayers);
+}
 
 public GetClientVectorPosition(client)
 {
