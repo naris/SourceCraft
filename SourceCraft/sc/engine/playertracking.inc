@@ -45,6 +45,8 @@
 
 #define TRACKING_COUNT                 15
 
+#define PLAYER_COUNT() GetArraySize(arrayPlayers)
+
 // Global definition
 new bool:g_RoundActive = true;
 

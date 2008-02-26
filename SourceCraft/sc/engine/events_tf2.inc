@@ -245,7 +245,8 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 
     if (GameType == tf2)
     {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        new playerCount = PLAYER_COUNT();
+        for(new x=0;x<playerCount;x++)
         {
             new client=GetClientIndex(x);
             if(IsClientInGame(client))

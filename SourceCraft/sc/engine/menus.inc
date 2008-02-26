@@ -613,7 +613,8 @@ public Action:AdminMenu(client,args)
     decl String:playername[64];
     decl String:playerbuf[4];
     new index;
-    for(new x=0;x<GetArraySize(arrayPlayers);x++)
+    new playerCount = PLAYER_COUNT();
+    for(new x=0;x<playerCount;x++)
     {
         index = GetClientIndex(x);
         Format(playerbuf,sizeof(playerbuf),"%d",index);
