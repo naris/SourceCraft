@@ -26,7 +26,7 @@ public SQLTable()
             LogError("Error in the creation of the sc_races SQL table:%s", error);
             SetFailState("Error in the creation of the sc_races SQL table");
         }
-        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_players (player_ident int not null auto_increment, steamid varchar(64) not null, name varchar(64), race varchar(30), credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(player_ident), UNIQUE INDEX (steamid)) ENGINE=INNODB"))
+        else if(!SQL_FastQuery(DBIDB,"CREATE TABLE IF NOT EXISTS sc_players (player_ident int not null auto_increment, steamid varchar(64) not null, name varchar(64), race_ident int default 0, credits int default 0, overall_level int default 0, last_update timestamp default current_timestamp, PRIMARY KEY(player_ident), UNIQUE INDEX (steamid)) ENGINE=INNODB"))
         {
             decl String:error[256] = "";
             SQL_GetError(DBIDB, error, sizeof(error));
@@ -113,7 +113,7 @@ public LoadPlayerData(client,vectorpos)
         {
             decl String:buf[256] = "";
             Format(buf,sizeof(buf),
-                   "SELECT p.player_ident, p.race_ident, r.race_name, p.credits, p.overall_level FROM sc_players p, sc_races r WHERE p.steamid = '%s' AND r.race_ident = p.race_ident",
+                   "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
             new Handle:query=SQL_Query(DBIDB,buf);
@@ -124,16 +124,14 @@ public LoadPlayerData(client,vectorpos)
                 {
                     new player_ident = SQL_FetchInt(query,0);
                     new race_ident = SQL_FetchInt(query,1);
+                    new raceId = FindRaceForIdent(race_ident);
 
-                    decl String:raceName[64]="";
-                    SQL_FetchString(query,2,raceName,sizeof(raceName));
-
-                    SetRace(vectorpos,FindRace(raceName));
-                    SetCredits(vectorpos,SQL_FetchInt(query,3));
-                    SetOverallLevel(vectorpos,SQL_FetchInt(query,4));
+                    SetRace(vectorpos,raceId);
+                    SetCredits(vectorpos,SQL_FetchInt(query,2));
+                    SetOverallLevel(vectorpos,SQL_FetchInt(query,3));
 
                     Format(buf,sizeof(buf),
-                           "SELECT r.race_name, pr.xp, pr.level FROM sc_player_races pr, sc_races r WHERE player_ident = %d AND r.race_ident = pr.race_ident",
+                           "SELECT race_ident, xp, level FROM sc_player_races WHERE player_ident = %d",
                            player_ident);
 
                     new Handle:raceQuery=SQL_Query(DBIDB,buf);
@@ -141,8 +139,8 @@ public LoadPlayerData(client,vectorpos)
                     {
                         while (SQL_FetchRow(raceQuery))
                         {
-                            SQL_FetchString(raceQuery,0,raceName,sizeof(raceName));
-                            new raceId=FindRace(raceName);
+                            race_ident = SQL_FetchInt(query,0);
+                            raceId = FindRaceForIdent(race_ident);
 
                             SetXP(vectorpos,raceId,SQL_FetchInt(raceQuery,1));
                             SetLevel(vectorpos,raceId,SQL_FetchInt(raceQuery,2));
