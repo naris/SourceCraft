@@ -174,7 +174,7 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
     decl String:rbuf[4];
     decl String:rname[64];
     decl String:ritem[96];
-    new raceCount = GetArraySize(arrayRaces);
+    new raceCount = RACE_COUNT();
     for(new x=0;x<raceCount;x++)
     {
         race=Race(x);
@@ -1087,7 +1087,7 @@ public Admin_SetRace(client,target)
         Format(buf,sizeof(buf),"%d",target);
 
         decl String:racename[64];
-        new raceCount = GetArraySize(arrayRaces);
+        new raceCount = RACE_COUNT();
         for(new x=0;x<raceCount;x++)
         {
             GetRaceName(Race(x),racename,sizeof(racename));

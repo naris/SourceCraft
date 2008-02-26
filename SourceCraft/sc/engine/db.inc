@@ -315,7 +315,7 @@ public SavePlayerData(client,vectorpos)
             {
                 player_ident = SQL_FetchInt(player_query,0);
 
-                new raceCount = GetArraySize(arrayRaces);
+                new raceCount = RACE_COUNT();
                 for(new raceId=0;raceId<raceCount;raceId++)
                 {
                     new xp    = GetXP(vectorpos,raceId);

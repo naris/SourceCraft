@@ -25,6 +25,8 @@
 #define RACE_ULTIMATE          10
 #define RACE_ULTIMATE_DESC     11
 
+#define RACE_COUNT() GetArraySize(arrayRaces)
+
 // Functions called from menus.inc
 //public SkillMenu(client, vectorpos, Function:parentMenuFunction);
 
