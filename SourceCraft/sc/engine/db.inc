@@ -135,7 +135,15 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
                 if (query)
                 {
                     if (SQL_FetchRow(query))
+                    {
                         race_ident = SQL_FetchInt(query,0);
+                        if (!SQL_FastQuery(DBIDB,"COMMIT"))
+                        {
+                            decl String:error[256] = "";
+                            SQL_GetError(DBIDB, error, sizeof(error));
+                            LogError("Error commiting race data: %s", error);
+                        }
+                    }
                     else
                     {
                         decl String:error[256] = "";
@@ -355,12 +363,21 @@ public SavePlayerData(client,vectorpos)
                                     Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
                                 }
 
-                                if (!SQL_FastQuery(DBIDB,SQLString))
+                                if (SQL_FastQuery(DBIDB,SQLString))
+                                {
+                                    if (!SQL_FastQuery(DBIDB,"COMMIT"))
+                                    {
+                                        decl String:error[256] = "";
+                                        SQL_GetError(DBIDB, error, sizeof(error));
+                                        LogError("Error commiting player data: %s", error);
+                                    }
+                                }
+                                else
                                 {
                                     decl String:error[256] = "";
                                     SQL_GetError(DBIDB, error, sizeof(error));
                                     LogError("Unable to insert player's skill: %s\nSQL:%s",
-                                            error, SQLString);
+                                             error, SQLString);
                                 }
                             }
                         }
