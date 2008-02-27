@@ -196,6 +196,7 @@ public OnPluginStart()
 		HookEvent("dod_stats_weapon_attack",  Event_DODSWeaponAttack);
 		HookEvent("player_death", Event_DODSPlayerDeath);
 		HookEvent("player_hurt",  Event_DODSPlayerHurt);
+		//HookEvent("player_spawn", Event_DODSRoundEnd);
 		HookEvent("dod_round_win", Event_DODSRoundEnd);
 		HookEvent("dod_game_over", Event_DODSRoundEnd);
 	}

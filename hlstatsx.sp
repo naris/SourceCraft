@@ -255,7 +255,8 @@ find_player_team_slot(String: team[64]) {
 				ts_player_color = -1;
 			}
 			new max_clients = GetMaxClients();
-			for(new player_index = 1; player_index <= max_clients; player_index++) {
+			for(new i = 1; i <= max_clients; i++) {
+				new player_index = i;
 				if ((IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 					new player_team_index = GetClientTeam(player_index);
 					if (player_team_index == team_index) {
@@ -287,7 +288,8 @@ find_player_team_slot(String: team[64]) {
 				red_player_color = -1;
 			}
 			new max_clients = GetMaxClients();
-			for(new player_index = 1; player_index <= max_clients; player_index++) {
+			for(new i = 1; i <= max_clients; i++) {
+				new player_index = i;
 				if ((IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 					new player_team_index = GetClientTeam(player_index);
 					if (player_team_index == team_index) {
@@ -384,13 +386,13 @@ public validate_team_colors()
 	}
 }
 
-public add_message_cache(String: message[192], String: parsed_message[192], color_index) {
+public add_message_cache(const String: message[192], const String: parsed_message[192], color_index) {
 	message_cache = message;
 	parsed_message_cache = parsed_message;
 	cached_color_index = color_index;
 }
 
-public bool:is_message_cached(String: message[192]) {
+public bool:is_message_cached(const String: message[192]) {
 	//if (strcmp(message, message_cache) == 0) {
 	//	return 1;
 	//}
@@ -671,7 +673,7 @@ public Action:hlx_sm_psay(args)
                     (IsClientConnected(player_index)) && (IsClientInGame(player_index))) {
 			new color_index = player_index;
 
-			//decl String:display_message[192];
+			decl String:display_message[192];
 			//if (strcmp(game_mod, "CSS") == 0) {
 			if (game_mod_id == CSS) {
 				
@@ -694,17 +696,16 @@ public Action:hlx_sm_psay(args)
 						add_message_cache(client_message_backup, client_message, color_index);
 					}
 				}
-				PrintToChat(player_index, "\x04HLstatsX:\x01 %s", client_message);
-				//Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
-				//
-				//new Handle:hBf;
-				//hBf = StartMessageOne("SayText2", player_index);
-				//if (hBf != INVALID_HANDLE) {
-				//	BfWriteByte(hBf, color_index); 
-				//	BfWriteByte(hBf, 0); 
-				//	BfWriteString(hBf, display_message);
-				//	EndMessage();
-				//}
+				Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
+
+				new Handle:hBf;
+				hBf = StartMessageOne("SayText2", player_index);
+				if (hBf != INVALID_HANDLE) {
+					BfWriteByte(hBf, color_index); 
+					BfWriteByte(hBf, 0); 
+					BfWriteString(hBf, display_message);
+					EndMessage();
+				}
 			} else if (game_mod_id == TF) {
 				
 				if (is_colored > 0) {
@@ -726,17 +727,16 @@ public Action:hlx_sm_psay(args)
 						add_message_cache(client_message_backup, client_message, color_index);
 					}
 				}
-				PrintToChat(player_index, "\x04HLstatsX:\x01 %s", client_message);
-				//Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
-				//
-				//new Handle:hBf;
-				//hBf = StartMessageOne("SayText2", player_index);
-				//if (hBf != INVALID_HANDLE) {
-				//	BfWriteByte(hBf, color_index); 
-				//	BfWriteByte(hBf, 0); 
-				//	BfWriteString(hBf, display_message);
-				//	EndMessage();
-				//}
+				Format(display_message, 192, "\x04HLstatsX:\x01 %s", client_message);
+
+				new Handle:hBf;
+				hBf = StartMessageOne("SayText2", player_index);
+				if (hBf != INVALID_HANDLE) {
+					BfWriteByte(hBf, color_index); 
+					BfWriteByte(hBf, 0); 
+					BfWriteString(hBf, display_message);
+					EndMessage();
+				}
 			} else {
 				PrintToChat(player_index, "HLstatsX: %s", client_message);
 				//Format(display_message, 192, "HLstatsX: %s", client_message);
