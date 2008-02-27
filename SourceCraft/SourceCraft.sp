@@ -265,7 +265,20 @@ public bool:ParseSettings()
     FileToKeyValues(keyValue,path);
     decl String:error[256];
     DBIDB=SQL_DefConnect(error,sizeof(error));
-    if(!DBIDB)
+    if(DBIDB)
+    {
+        decl String:dbident[256];
+        SQL_ReadDriver(DBIDB, dbident, sizeof(dbident));
+        LogMessage("Connected to the %s database", dbident);
+
+        new Handle:driver = SQL_GetDriver();
+        decl String:dbtype[256];
+        SQL_GetDriverIdent(driver, dbtype, sizeof(dbtype));
+        decl String:dbproduct[256];
+        SQL_GetDriverProduct(driver, dbproduct, sizeof(dbproduct));
+        LogMessage("Database type = %s, Database product = %s", dbtype, dbproduct);
+    }
+    else
         LogError("Unable to get a Database Connection: %s", error);
 
     // Load level configuration
