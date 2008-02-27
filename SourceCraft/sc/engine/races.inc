@@ -155,10 +155,12 @@ public PendingCheck(client,vectorpos)
         SetPendingRace(vectorpos,-1);
         SetRace(vectorpos,pendingrace);
         decl String:buf[192];
-        new Handle:race=Race(GetRace(vectorpos));
-        new Handle:strings=GetArrayCell(race,RACE_STRINGS);
-        GetArrayString(strings,RACE_SWITCHMESSAGE,buf,sizeof(buf));
+        new race=GetRace(vectorpos);
+        new Handle:raceHandle=Race(race);
+        new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
+        GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+        LogMessage("%N switched to %d-%d(%s)",client,race,raceHandle,buf);
     }
 
     if (GetPendingSkillReset(vectorpos))
@@ -257,14 +259,16 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                     decl String:buf[192];
                     GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,buf,sizeof(buf));
                     PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
+                    LogMessage("%N will switch to %d-%d(%s)",client,race,raceHandle,buf);
                 }
                 else
                 {
                     SetPendingRace(vecpos,-1);
                     SetRace(vecpos,race);
                     decl String:buf[192];
-                    GetArrayString(raceHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
+                    GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
                     PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
+                    LogMessage("%N switched to %d-%d(%s)",client,race,raceHandle,buf);
                 }
                 m_FirstSpawn[client]=0;
             }

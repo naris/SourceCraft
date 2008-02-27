@@ -192,15 +192,15 @@ public OnClientPutInServer(client)
         PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
 
         new Handle:shopitems=CreateArray(); // Player's shop items
+        PushArrayCell(newPlayer,shopitems);
         new shopItemCount=GetArraySize(shopVector);
         for(new x=0;x<shopItemCount;x++)
             PushArrayCell(shopitems,0);     // Owns item x
-        PushArrayCell(newPlayer,shopitems);
 
         new Handle:immunities=CreateArray(); // Player's immunities
+        PushArrayCell(newPlayer,immunities);
         for(new x=0;x<IMMUNITY_COUNT;x++)
             PushArrayCell(immunities,0);     // Has immunity x
-        PushArrayCell(newPlayer,immunities);
 
         new raceCount = RACE_COUNT();
         for(new x=0;x<raceCount;x++)

@@ -247,12 +247,6 @@ public LoadPlayerData(client,vectorpos)
                         LogError("Unable to query race data: %s\nSQL:%s", error, SQLString);
                     }
                 }
-                else
-                {
-                    decl String:error[256] = "";
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to fetch player data: %s\nSQL:%s", error, SQLString);
-                }
                 CloseHandle(query);
             }
             else
