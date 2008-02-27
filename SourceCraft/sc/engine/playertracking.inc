@@ -142,9 +142,9 @@ public SetRace(vectorpos,race)
     new oldrace=GetArrayCell(vec,INFO_RACE);
     if (race != oldrace)
     {
-        SetArrayCell(vec,1,race);
+        SetArrayCell(vec,INFO_RACE,race);
         Call_StartForward(g_OnRaceSelectedHandle);
-        Call_PushCell(GetArrayCell(vec,0));
+        Call_PushCell(GetArrayCell(vec,INFO_CLIENT_INDEX));
         Call_PushCell(vectorpos);
         Call_PushCell(oldrace);
         Call_PushCell(race);
