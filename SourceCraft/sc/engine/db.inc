@@ -18,8 +18,9 @@ public SQLTable()
 {
     if (DBIDB)
     {
-        decl String:SQLString[2048] = "";
         // Create the tables, if they don't exist
+
+        decl String:SQLString[2048] = "";
         Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
                "CREATE TABLE IF NOT EXISTS sc_races ",
                "(race_ident int not null auto_increment,",
@@ -27,7 +28,11 @@ public SQLTable()
                " long_name varchar(64),",
                " add_date timestamp default current_timestamp,",
                "PRIMARY KEY(race_ident),",
-               "INDEX(race_name)) ENGINE=INNODB");
+               "INDEX(race_name))");
+
+        if (!DBIsSQLite)
+            StrCat(SQLString,sizeof(SQLString), " ENGINE=INNODB");
+
         if(!SQL_FastQuery(DBIDB,SQLString))
         {
             decl String:error[256] = "";
@@ -47,7 +52,11 @@ public SQLTable()
                    " overall_level int default 0,",
                    " last_update timestamp default current_timestamp,",
                    "PRIMARY KEY(player_ident),",
-                   "UNIQUE INDEX (steamid)) ENGINE=INNODB");
+                   "UNIQUE INDEX (steamid))");
+
+            if (!DBIsSQLite)
+                StrCat(SQLString,sizeof(SQLString), " ENGINE=INNODB");
+
             if(!SQL_FastQuery(DBIDB,SQLString))
             {
                 decl String:error[256] = "";
@@ -57,21 +66,34 @@ public SQLTable()
             }
             else
             {
-                Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                       "CREATE TABLE IF NOT EXISTS sc_player_races ",
-                       "(player_ident int not null,",
-                       " race_ident int not null,",
-                       " xp int default 0,",
-                       " level int default 0,",
-                       "PRIMARY KEY(player_ident,race_ident),",
-                       "FOREIGN KEY (player_ident)",
-                       "        REFERENCES sc_players(player_ident)",
-                       "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                       "INDEX (race_ident),",
-                       "FOREIGN KEY (race_ident)",
-                       "        REFERENCES sc_races(race_ident)",
-                       "        ON DELETE CASCADE ON UPDATE CASCADE) ",
-                       "ENGINE=INNODB");
+                if (DBIsSQLite)
+                {
+                    Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
+                           "CREATE TABLE IF NOT EXISTS sc_player_races ",
+                           "(player_ident int not null,",
+                           " race_ident int not null,",
+                           " xp int default 0,",
+                           " level int default 0,",
+                           "PRIMARY KEY(player_ident,race_ident))");
+                }
+                else
+                {
+                    Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                           "CREATE TABLE IF NOT EXISTS sc_player_races ",
+                           "(player_ident int not null,",
+                           " race_ident int not null,",
+                           " xp int default 0,",
+                           " level int default 0,",
+                           "PRIMARY KEY(player_ident,race_ident),",
+                           "FOREIGN KEY (player_ident)",
+                           "        REFERENCES sc_players(player_ident)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                           "INDEX (race_ident),",
+                           "FOREIGN KEY (race_ident)",
+                           "        REFERENCES sc_races(race_ident)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE) ",
+                           "ENGINE=INNODB");
+                }
                 if(!SQL_FastQuery(DBIDB,SQLString))
                 {
                     decl String:error[256] = "";
@@ -81,24 +103,37 @@ public SQLTable()
                 }
                 else
                 {
-                    Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                           "CREATE TABLE IF NOT EXISTS sc_player_skills",
-                           "(player_ident int not null,",
-                           " race_ident int not null,",
-                           " skill int not null,",
-                           " skill_level int default 0,",
-                           "PRIMARY KEY(player_ident,race_ident,skill),",
-                           "FOREIGN KEY (player_ident)",
-                           "        REFERENCES sc_players(player_ident)",
-                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                           "INDEX (race_ident),",
-                           "FOREIGN KEY (race_ident)",
-                           "        REFERENCES sc_races(race_ident)",
-                           "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                           "FOREIGN KEY (player_ident,race_ident)",
-                           "        REFERENCES sc_player_races(player_ident,race_ident)",
-                           "        ON DELETE CASCADE ON UPDATE CASCADE) ",
-                           "ENGINE=INNODB");
+                    if (DBIsSQLite)
+                    {
+                        Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
+                               "CREATE TABLE IF NOT EXISTS sc_player_skills",
+                               "(player_ident int not null,",
+                               " race_ident int not null,",
+                               " skill int not null,",
+                               " skill_level int default 0,",
+                               "PRIMARY KEY(player_ident,race_ident,skill))");
+                    }
+                    else
+                    {
+                        Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+                               "CREATE TABLE IF NOT EXISTS sc_player_skills",
+                               "(player_ident int not null,",
+                               " race_ident int not null,",
+                               " skill int not null,",
+                               " skill_level int default 0,",
+                               "PRIMARY KEY(player_ident,race_ident,skill),",
+                               "FOREIGN KEY (player_ident)",
+                               "        REFERENCES sc_players(player_ident)",
+                               "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                               "INDEX (race_ident),",
+                               "FOREIGN KEY (race_ident)",
+                               "        REFERENCES sc_races(race_ident)",
+                               "        ON DELETE CASCADE ON UPDATE CASCADE,",
+                               "FOREIGN KEY (player_ident,race_ident)",
+                               "        REFERENCES sc_player_races(player_ident,race_ident)",
+                               "        ON DELETE CASCADE ON UPDATE CASCADE) ",
+                               "ENGINE=INNODB");
+                    }
                     if(!SQL_FastQuery(DBIDB,SQLString))
                     {
                         decl String:error[256] = "";
@@ -131,42 +166,51 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
             Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (race_name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
             if (SQL_FastQuery(DBIDB,SQLString))
             {
-                query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
-                if (query)
+                if (DBIsSQLite)
+                    strcopy(SQLString,sizeof(SQLString), "SELECT last_insert_rowid()");
+                else
+                    strcopy(SQLString,sizeof(SQLString), "SELECT last_insert_id()");
+
+                new Handle:race_query=SQL_Query(DBIDB,SQLString);
+                if (race_query)
                 {
-                    if (SQL_FetchRow(query))
+                    if (SQL_FetchRow(race_query))
                     {
-                        race_ident = SQL_FetchInt(query,0);
+                        race_ident = SQL_FetchInt(race_query,0);
                         if (!SQL_FastQuery(DBIDB,"COMMIT"))
                         {
                             decl String:error[256] = "";
                             SQL_GetError(DBIDB, error, sizeof(error));
-                            LogError("Error commiting race data: %s", error);
+                            LogError("Error commiting race %s data: %s",
+                                     shortName, error);
                         }
                     }
                     else
                     {
+                        race_ident = -1;
                         decl String:error[256] = "";
                         SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to fetch race_ident: %s", error);
-                        race_ident = -1;
+                        LogError("Unable to fetch race_ident for %s: %s",
+                                 shortName, error);
                     }
-                    CloseHandle(query);
+                    CloseHandle(race_query);
                 }
                 else
                 {
+                    race_ident = -1;
                     decl String:error[256] = "";
                     SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to query race_ident: %s", error);
-                    race_ident = -1;
+                    LogError("Unable to query race_ident for %s: %s",
+                             shortName, error);
                 }
             }
             else
             {
+                race_ident = -1;
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to insert race: %s\nSQL:%s", error, SQLString);
-                race_ident = -1;
+                LogError("Unable to insert race %s: %s\nSQL:%s",
+                         shortName, error, SQLString);
             }
         }
     }
@@ -229,7 +273,8 @@ public LoadPlayerData(client,vectorpos)
                             {
                                 decl String:error[256] = "";
                                 SQL_GetError(DBIDB, error, sizeof(error));
-                                LogError("Unable to query skill data: %s\nSQL:%s", error, SQLString);
+                                LogError("Unable to query %N's (%s) skill data: %s\nSQL:%s",
+                                         client, steamid, error, SQLString);
                             }
                         }
                         CloseHandle(raceQuery);
@@ -238,7 +283,8 @@ public LoadPlayerData(client,vectorpos)
                     {
                         decl String:error[256] = "";
                         SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to query race data: %s\nSQL:%s", error, SQLString);
+                        LogError("Unable to query %N's (%s) race data: %s\nSQL:%s",
+                                 client, steamid, error, SQLString);
                     }
                 }
                 CloseHandle(query);
@@ -247,9 +293,12 @@ public LoadPlayerData(client,vectorpos)
             {
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query player data: %s\nSQL:%s", error, SQLString);
+                LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
+                         client, steamid, error, SQLString);
             }
         }
+        else
+            LogError("Unable to obtain steamid for %N!", client);
     }
 
     // Return 2 if not fetched so race selection menu will be displayed
@@ -263,6 +312,8 @@ public SavePlayerData(client,vectorpos)
         decl String:steamid[64]="";
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
+            decl String:SQLString[512] = "";
+
             new credits           = GetCredits(vectorpos);
             new overall_level     = GetOverallLevel(vectorpos);
             new player_ident      = GetDatabaseIdent(vectorpos);
@@ -275,8 +326,6 @@ public SavePlayerData(client,vectorpos)
             GetClientName(client,name,sizeof(name));
             ReplaceString(name,sizeof(name),"\\","\\\\");
             ReplaceString(name,sizeof(name),"'","''");
-
-            decl String:SQLString[512] = "";
 
             if (player_ident > 0)
             {
