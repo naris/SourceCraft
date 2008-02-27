@@ -18,7 +18,7 @@ public SQLTable()
 {
     if (DBIDB)
     {
-        decl String:SQLString[512] = "";
+        decl String:SQLString[2048] = "";
         // Create the tables, if they don't exist
         Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
                "CREATE TABLE IF NOT EXISTS sc_races ",
