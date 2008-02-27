@@ -97,7 +97,7 @@ public SQLTable()
                            "        ON DELETE CASCADE ON UPDATE CASCADE,",
                            "FOREIGN KEY (player_ident,race_ident)",
                            "        REFERENCES sc_player_races(player_ident,race_ident)",
-                           "        ON DELETE CASCADE ON UPDATE CASCADE)",
+                           "        ON DELETE CASCADE ON UPDATE CASCADE) ",
                            "ENGINE=INNODB");
                     if(!SQL_FastQuery(DBIDB,SQLString))
                     {
