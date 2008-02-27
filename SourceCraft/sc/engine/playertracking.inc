@@ -12,16 +12,17 @@
 #define _player_tracking_included
 
 #define INFO_CLIENT_INDEX               0
-#define INFO_RACE                       1
-#define INFO_PENDING_RACE               2
-#define INFO_PENDING_SKILL_RESET        3
-#define INFO_CREDITS                    4
-#define INFO_OVERALL_LEVEL              5
-#define INFO_PROPERTIES                 6
-#define INFO_SHOPITEMS                  7
-#define INFO_IMMUNITIES                 8
+#define INFO_DATABASE_IDENT             1
+#define INFO_RACE                       2
+#define INFO_PENDING_RACE               3
+#define INFO_PENDING_SKILL_RESET        4
+#define INFO_CREDITS                    5
+#define INFO_OVERALL_LEVEL              6
+#define INFO_PROPERTIES                 7
+#define INFO_SHOPITEMS                  8
+#define INFO_IMMUNITIES                 9
 
-#define INFO_COUNT                      9
+#define INFO_COUNT                     10
 
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
@@ -115,6 +116,18 @@ public GetClientIndex(vectorpos)
 {
     new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
     return GetArrayCell(vec,INFO_CLIENT_INDEX);
+}
+
+public GetDatabaseIdent(vectorpos)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    return GetArrayCell(vec,INFO_DATABASE_IDENT);
+}
+
+public SetDatabaseIdent(vectorpos,ident)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
+    SetArrayCell(vec,INFO_DATABASE_IDENT,ident);
 }
 
 public GetRace(vectorpos)

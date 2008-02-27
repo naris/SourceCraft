@@ -196,6 +196,7 @@ public LoadPlayerData(client,vectorpos)
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
 
+                    SetDatabaseIdent(vectorpos,player_ident);
                     SetRace(vectorpos,raceId);
                     SetCredits(vectorpos,SQL_FetchInt(query,2));
                     SetOverallLevel(vectorpos,SQL_FetchInt(query,3));
@@ -276,6 +277,7 @@ public SavePlayerData(client,vectorpos)
         {
             new credits       = GetCredits(vectorpos);
             new overall_level = GetOverallLevel(vectorpos);
+            new player_ident  = GetDatabaseIdent(vectorpos);
             new race_ident    = GetRaceIdent(Race(GetRace(vectorpos)));
 
             decl String:name[64];
@@ -317,12 +319,27 @@ public SavePlayerData(client,vectorpos)
                 }
             }
 
-            new player_ident;
-            new Handle:player_query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
-            if (player_query && SQL_FetchRow(player_query))
+            if (player_ident < 0)
             {
-                player_ident = SQL_FetchInt(player_query,0);
+                new Handle:player_query=SQL_Query(DBIDB,"SELECT LAST_INSERT_ID()");
+                if (player_query && SQL_FetchRow(player_query))
+                {
+                    player_ident = SQL_FetchInt(player_query,0);
+                }
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to query player's ID: %s", error);
 
+                    if (player_query)
+                        CloseHandle(player_query);
+                }
+                CloseHandle(player_query);
+            }
+
+            if (player_ident >= 0)
+            {
                 new raceCount = RACE_COUNT();
                 for(new raceId=0;raceId<raceCount;raceId++)
                 {
@@ -383,17 +400,9 @@ public SavePlayerData(client,vectorpos)
                         }
                     }
                 }
-                CloseHandle(player_query);
             }
             else
-            {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query player's ID: %s", error);
-
-                if (player_query)
-                    CloseHandle(player_query);
-            }
+                LogError("Unable to obtain ident for %N.", client);
         }
     }
 }

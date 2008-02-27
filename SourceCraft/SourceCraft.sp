@@ -181,6 +181,7 @@ public OnClientPutInServer(client)
     {
         new Handle:newPlayer=CreateArray();
         PushArrayCell(newPlayer,client); // The first thing is client index
+        PushArrayCell(newPlayer,-1); // Database Ident
         PushArrayCell(newPlayer,0); // Player race
         PushArrayCell(newPlayer,-1); // Pending race
         PushArrayCell(newPlayer,0); // Pending skill reset
