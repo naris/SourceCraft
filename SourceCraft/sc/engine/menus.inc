@@ -777,8 +777,9 @@ public Admin_PlayerInfo(client,target)
 
         new race=GetRace(targetvecpos);
         new Handle:rhand=Race(race);
+        new Handle:shand=GetArrayCell(rhand,RACE_STRINGS);
         decl String:race_name[64];
-        GetArrayString(rhand,0,race_name,sizeof(race_name));
+        GetArrayString(shand,RACE_NAME,race_name,sizeof(race_name));
 
         new credits=GetCredits(targetvecpos);
         new xp=GetXP(targetvecpos,race);
