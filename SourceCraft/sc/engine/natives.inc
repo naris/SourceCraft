@@ -397,7 +397,7 @@ public Native_SetSpeed(Handle:plugin,numParams)
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
-                if(plugin==GetArrayCell(t,0))
+                if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
                 {
                     indice=x;
                     indiceHandle=t;
@@ -447,7 +447,7 @@ public Native_SetGravity(Handle:plugin,numParams)
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
-                if(plugin==GetArrayCell(t,0))
+                if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
                 {
                     indice=x;
                     indiceHandle=t;
@@ -524,7 +524,7 @@ public Native_SetVisibility(Handle:plugin,numParams)
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
-                if(plugin==GetArrayCell(t,0))
+                if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
                 {
                     indice=x;
                     indiceHandle=t;
@@ -587,7 +587,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
-                if(plugin==GetArrayCell(t,0))
+                if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
                 {
                     indice=x;
                     indiceHandle=t;
@@ -637,7 +637,7 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
-                if(plugin==GetArrayCell(t,0))
+                if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
                 {
                     indice=x;
                     indiceHandle=t;
@@ -687,7 +687,7 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
-                if(plugin==GetArrayCell(t,0))
+                if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
                 {
                     indice=x;
                     indiceHandle=t;

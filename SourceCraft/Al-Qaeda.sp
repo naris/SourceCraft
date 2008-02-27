@@ -286,7 +286,7 @@ public OnRaceSelected(client,player,oldrace,newrace)
 public Action:MadBomber(Handle:timer,any:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
     {
@@ -326,7 +326,7 @@ public Action:MadBomber(Handle:timer,any:temp)
 public Action:Kaboom(Handle:timer,any:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
     {

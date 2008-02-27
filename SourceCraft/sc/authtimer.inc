@@ -10,11 +10,13 @@
 #endif
 #define _authtimer_included
 
+#define AUTHINFO_ID 0
+
 stock AuthTimer(Float:delay,index,Timer:func)
 {
     new Handle:temp=CreateArray(ByteCountToCells(64));
     decl String:auth[64];
-    GetClientAuthString(index,auth,63);
+    GetClientAuthString(index,auth,sizeof(auth));
     PushArrayString(temp,auth);
     CreateTimer(delay,func,temp);
 }
@@ -27,7 +29,7 @@ stock PlayerOfAuth(const String:auth[])
     {
         if(IsClientInGame(x))
         {
-            GetClientAuthString(x,authStr,63);
+            GetClientAuthString(x,authStr,sizeof(authStr));
             if(StrEqual(auth,authStr))
                 return x;
         }

@@ -252,11 +252,11 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     new size=GetArraySize(vecPlayerWeapons[client]);
                     decl String:wepName[128];
                     decl String:auth[64];
-                    GetClientAuthString(client,auth,63);
+                    GetClientAuthString(client,auth,sizeof(auth));
                     PushArrayString(temp,auth);
                     for(new x=0;x<size;x++)
                     {
-                        GetArrayString(vecPlayerWeapons[client],x,wepName,127);
+                        GetArrayString(vecPlayerWeapons[client],x,wepName,sizeof(wepName));
                         PushArrayString(temp,wepName);
                     }
                     CreateTimer(0.2,Ankh,temp);
@@ -508,7 +508,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 public Action:RestoreSpeed(Handle:timer,any:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
     {
@@ -668,7 +668,7 @@ public Action:Ankh(Handle:timer,any:temp)
     {
         decl String:wepName[128];
         decl String:auth[64];
-        GetArrayString(temp,0,auth,63);
+        GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
         new client=PlayerOfAuth(auth);
         if(client)
         {
@@ -692,7 +692,7 @@ public Action:Ankh(Handle:timer,any:temp)
             }
             for(new x=1;x<GetArraySize(temp);x++)
             {
-                GetArrayString(temp,x,wepName,127);
+                GetArrayString(temp,x,wepName,sizeof(wepName));
                 new ent=GiveItem(client,wepName);
                 new ammotype=GetAmmoType(ent);
                 if(ammotype!=-1)
@@ -707,7 +707,7 @@ public Action:Ankh(Handle:timer,any:temp)
 public Action:DoMole(Handle:timer,Handle:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if (client)
     {
@@ -744,7 +744,7 @@ public Action:DoMole(Handle:timer,Handle:temp)
 public Action:DoPeriapt(Handle:timer,Handle:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
     {

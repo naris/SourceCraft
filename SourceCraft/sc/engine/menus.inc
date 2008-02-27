@@ -388,10 +388,10 @@ public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
             count++;
             Format(itembuf,sizeof(itembuf),"%d",x);
             itemHandle=ShopItem(x);
-            GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+            GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
             if (shopmenu)
             {
-                GetArrayString(itemHandle,2,cost,7);
+                GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
                 Format(linestr,sizeof(linestr),"%s - %s %s",itemname,cost,currencies);
                 AddMenuItem(shopMenu,itembuf,linestr);
             }
@@ -461,12 +461,12 @@ public ShopMenu_Item(client,vecpos,item)
     decl String:itemname[64];
     new Handle:itemHandle;
     itemHandle=ShopItem(item);
-    GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+    GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
     decl String:desc[300];
-    GetArrayString(itemHandle,1,desc,sizeof(desc));
+    GetArrayString(itemHandle,SHOPITEM_DESC,desc,sizeof(desc));
     Format(desc,sizeof(desc),"Description: %s",desc);
     decl String:cost[32];
-    GetArrayString(itemHandle,2,cost,31);
+    GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
     Format(cost,31,"Cost: %s %s",cost, currencies);
     SetMenuTitle(shopMenu_Item,"[SourceCraft] Shop Item - %s - You have %d %s\n%s\n%s",
                  itemname,credits,currencies,desc,cost);
@@ -502,9 +502,9 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
                 new Handle:itemHandle=ShopItem(item);
 
                 decl String:itemname[64];
-                GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+                GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
 
-                GetArrayString(itemHandle,2,cost,3);
+                GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
                 new cost_num=StringToInt(cost);
                 if(credits>=cost_num)
                 {
@@ -578,7 +578,7 @@ public ShowItems(client,target,vectorpos,Function:parentMenuFunction)
         if (GetOwnsItem(vectorpos,x))
         {
             itemHandle=ShopItem(x);
-            GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+            GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
             DrawPanelText(panel,itemname);
         }
     }
@@ -999,7 +999,7 @@ public Admin_GiveShopItem(client,target)
         for(new x=0;x<shopItemCount;x++)
         {
             itemHandle=ShopItem(x);
-            GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+            GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
             AddMenuItem(menu,buf,itemname);
         }
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
@@ -1037,7 +1037,7 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
                 Call_Finish(result);
                 new Handle:itemHandle=ShopItem(item);
                 decl String:itemname[64];
-                GetArrayString(itemHandle,0,itemname,sizeof(itemname));
+                GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
                 decl String:adminname[64];
                 GetClientName(client,adminname,sizeof(adminname));
                 decl String:targetname[64];

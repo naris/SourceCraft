@@ -313,7 +313,7 @@ public Action:PlayerProperties(Handle:timer)
         for(new x=0;x<GetArraySize(arrayPlayers);x++)
         {
             new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
-            new client=GetArrayCell(playerHandle,0);
+            new client=GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
             if(IsClientInGame(client))
             {
                 new bool:overridePlayerVisibility=false;

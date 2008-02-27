@@ -37,7 +37,7 @@ stock RespawnPlayer(client)
 public Action:RespawnPlayerHandle(Handle:timer,any:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
         RespawnPlayer(client);
@@ -48,7 +48,7 @@ public Action:RespawnPlayerHandle(Handle:timer,any:temp)
 public Action:ResetUber(Handle:timer,Handle:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
         UnUberEntity(client);

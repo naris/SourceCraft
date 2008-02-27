@@ -23,7 +23,7 @@ stock UnFreezeEntity(entity)
 public Action:UnfreezePlayer(Handle:timer,Handle:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
         UnFreezeEntity(client);

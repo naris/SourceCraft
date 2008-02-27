@@ -39,7 +39,7 @@ public GetShopItem(const String:name[])
     for(new x=0;x<size;x++)
     {
         new Handle:item=GetArrayCell(shopVector,x);
-        GetArrayString(item,SHOPITEM_NAME,curName,63);
+        GetArrayString(item,SHOPITEM_NAME,curName,sizeof(curName));
         if(!StrEqual(name,curName,false))
             return x;
     }

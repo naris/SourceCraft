@@ -18,8 +18,8 @@
 #include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/freeze"
 #include "sc/authtimer"
+#include "sc/freeze"
 
 #include "sc/log" // for debugging
 

@@ -16,9 +16,9 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/freeze"
 #include "sc/authtimer"
 #include "sc/maxhealth"
+#include "sc/freeze"
 
 new String:teleportWav[] = "beams/beamstart5.wav";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
@@ -218,7 +218,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
 public Action:DoDevotionAura(Handle:timer,Handle:temp)
 {
     decl String:auth[64];
-    GetArrayString(temp,0,auth,63);
+    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
     new client=PlayerOfAuth(auth);
     if(client)
     {

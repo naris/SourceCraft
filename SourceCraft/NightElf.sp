@@ -17,9 +17,9 @@
 #include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/freeze"
 #include "sc/authtimer"
 #include "sc/maxhealth"
+#include "sc/freeze"
 #include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
