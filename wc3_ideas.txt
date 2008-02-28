@@ -1,3 +1,60 @@
+Recorded on 3-PG's Server. This was a bug in attempt be able to attach sentrys to moving objects.(ie trains, cars, ect.)
+
+Below are the mods on their servers:
+
+Change Log
+01/27/08 - Fix a bug with Parenting Enigneer Building that it would attach to players if they are close by.
+01/27/08 - Engineer Buildings now have the ability to Parent with moving entities. If you can build on an elevator or moving car then it will move with it.
+01/23/08 - 1st grenade is completed and working. Not implemented on our server yet. Requires testing :)
+01/23/08 - Fixed bugs with a player death message when a player is killed by pyro explosion.
+01/23/08 - Huge update. Pyro explode code is rewritten from scratch. No longer goes through walls or alive players.
+01/18/08 - Crits Fixed!
+01/15/08 - TF2 update broke crits.
+
+Rules
+
+Sky walking is allowed as long as you are able to shoot and be shot at. If there is only a 1 way wall that allows you to shoot through but blocks in-comming bullets/rockets then it is not allowed.
+
+Anti Exploits/CheatsCurrently blocking certain cvars that allow a player to see a cloak spy.
+
+Currently blocking certain cvars that allow a player to exploit perfui and have a wall hack.
+
+Sudden Death ModeDuring Sudden Death mode a class will be randomly selected and every player will spawn as that class. All weapons are stripped except melee weapons. Melee = Fist, Axe, Glass bottle, etc...
+
+ScoutREMOVED - Double attack speed for Baseball bat and Scatter Gun.
+
+Pyro
+Explodes when killed causing up to 200.0 damage at a 350.0 distance radius to players. The furter away the less damage delt.Maxspeed 340.0 | Default 300.0 Pyro's Maxspeed increased from 300 to 340.Flame Boxsize 16.0 | Default 8.0 Size of the Flamethrower flames.
+REMOVED - Flame Close Range Multiplier 1.5 | Default 1.2 Flamethrower damage multiplier when in close range.
+
+Sniper
+Charge Time Damage 150.0 | Sniper charge time is instant when zoomed in.
+
+Medic
+Heal Aura 30 | Medic puts off a Healing Aura that will heal 30 points of health per a second. Works through walls and emits a ring on the floor. Medics can heal themselves with 10 health per a second. For each player healed per a tick will add 0.01 to the Uber Charge meter. Uber Charge becomes active at 1.00. If you heal 5 of your teammates per a tick it will give you 0.05 a tick until their health is full.
+
+CritsMultiplier 2.0 | Default 3.0 How much the damage of a critical hit gets multiplied by
+Crit Chance 1.0 | Default 0.005 Percentage of having a Critical Hit! 1 = 100%
+RespawnSpawn Timer 8.0 | Default 10.0 Time you have to wait before you can spawn again.
+
+SpyCloak
+Consume Rate 10.0 | Default 10 How fast the cloak energy is used.
+Cloak Regen Rate 10.0 | Default 3.3 How fast the cloak energy is regenerated while uncloaked.
+Cloak No Attack Time 0.0 | Default 2.0 Delay until a spy can attack after uncloaking.
+Invis Time 1.0 | Default 1.0 How long it takes to cloak.Invis Unstealth Time 0.0 | Default 2.0 How long it takes to uncloak.
+
+Sentry Gun
+Ammocheat 1 | Default 0 Turrets have unlimited ammo. No need for engineer to restock.Damage 32 | Default 16 The damage a Sentry Gun does.
+Newtarget Dist 999 | Default 200 Distance a Sentry Gun can lock on and attack.
+
+Teleporter
+Recharge Time 2.0 | Default 10 Teleporters now take 2 seconds to recharge.
+Removed teleporter sickness.
+
+Engineer
+Upgrade Per Hit 200 | Default 25 How much metal to use when a engineer tries to upgrade a Sentry Gun.
+Engineer Buildings now have the ability to Parent with moving entities. If you can build on an elevator or moving car then it will move with it.
+
 Jiggly's uber medic race
 
 Jig: heal teammates
