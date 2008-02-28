@@ -332,6 +332,7 @@ public SavePlayerData(client,vectorpos)
                 Format(SQLString,sizeof(SQLString), "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp WHERE player_ident = %d", race_ident, credits, overall_level, player_ident);
                 if (!SQL_FastQuery(DBIDB,SQLString))
                 {
+                    SetDatabaseIdent(vectorpos,-1);
                     decl String:error[256] = "";
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to update %N's player record: %s\nSQL:%s",
@@ -341,14 +342,7 @@ public SavePlayerData(client,vectorpos)
             }
             else
             {
-                if (DBIsSQLite)
-                {
-                    Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, name, race_ident, credits, overall_level);
-                }
-                else
-                {
-                    Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp", steamid, name, race_ident, credits, overall_level, race_ident, credits, overall_level);
-                }
+                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, name, race_ident, credits, overall_level);
 
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
@@ -390,6 +384,7 @@ public SavePlayerData(client,vectorpos)
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to insert/replace %N's player data: %s\nSQL:%s",
                              client, error, SQLString);
+                    SetDatabaseIdent(vectorpos,-1);
                     return;
                 }
             }
