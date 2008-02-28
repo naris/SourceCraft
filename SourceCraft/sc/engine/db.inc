@@ -382,9 +382,29 @@ public SavePlayerData(client,vectorpos)
                 {
                     decl String:error[256] = "";
                     SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to insert/replace %N's player data, client=%d, vectorpos=%d, player_ident=%d: %s\nSQL:%s",
+                    LogError("Unable to insert %N's player data, client=%d, vectorpos=%d, player_ident=%d: %s\nSQL:%s",
                              client, client, vectorpos, player_ident, error, SQLString);
-                    SetDatabaseIdent(vectorpos,-1);
+
+                    Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
+                           steamid);
+
+                    new Handle:query=SQL_Query(DBIDB,SQLString);
+                    if(query)
+                    {
+                        fetch = SQL_FetchRow(query);
+                        if (fetch)
+                        {
+                            player_ident = SQL_FetchInt(query,0);
+                            if (player_ident > 0)
+                            {
+                                LogMessage("Found %N's player_ident=%d, retrying save...",
+                                            client, player_ident);
+
+                                SetDatabaseIdent(vectorpos,player_ident);
+                                SavePlayerData(client,vectorpos);
+                            }
+                        }
+                    }
                     return;
                 }
             }
@@ -449,6 +469,8 @@ public SavePlayerData(client,vectorpos)
                         SQL_GetError(DBIDB, error, sizeof(error));
                         LogError("Unable to insert/replace %N's %s data: %s\nSQL:%s",
                                  client, raceName, error, SQLString);
+
+                        SetDatabaseIdent(vectorpos,-1); // Reset ident!
                     }
                 }
             }
