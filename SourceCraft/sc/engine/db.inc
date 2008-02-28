@@ -335,8 +335,8 @@ public SavePlayerData(client,vectorpos)
                     SetDatabaseIdent(vectorpos,-1);
                     decl String:error[256] = "";
                     SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to update %N's player record: %s\nSQL:%s",
-                             client, error, SQLString);
+                    LogError("Unable to update %N's player record, client=%d, vectorpos=%d, player_ident=%d: %s\nSQL:%s",
+                             client, client, vectorpos, player_ident, error, SQLString);
                     return;
                 }
             }
@@ -382,12 +382,15 @@ public SavePlayerData(client,vectorpos)
                 {
                     decl String:error[256] = "";
                     SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to insert/replace %N's player data: %s\nSQL:%s",
-                             client, error, SQLString);
+                    LogError("Unable to insert/replace %N's player data, client=%d, vectorpos=%d, player_ident=%d: %s\nSQL:%s",
+                             client, client, vectorpos, player_ident, error, SQLString);
                     SetDatabaseIdent(vectorpos,-1);
                     return;
                 }
             }
+
+            LogMessage("Updated %N's player data, client=%d, vectorpos=%d, player_ident=%d",
+                       client, client, vectorpos, player_ident);
 
             new raceCount = RACE_COUNT();
             for(raceId=0;raceId<raceCount;raceId++)
@@ -411,6 +414,9 @@ public SavePlayerData(client,vectorpos)
 
                     if (SQL_FastQuery(DBIDB,SQLString))
                     {
+                        LogMessage("Updated %N's race data, player_ident=%d, race_ident=%d",
+                                   client, player_ident, race_ident);
+
                         for(new skill=0;skill<SKILL_COUNT;skill++)
                         {
                             new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
@@ -454,5 +460,7 @@ public SavePlayerData(client,vectorpos)
                 LogError("Error commiting %N's data: %s", client, error);
             }
         }
+        else
+            LogError("Unable to obtain steamid for %N", client);
     }
 }
