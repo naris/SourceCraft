@@ -267,16 +267,10 @@ public bool:ParseSettings()
     DBIDB=SQL_DefConnect(error,sizeof(error));
     if(DBIDB)
     {
-        decl String:dbident[256];
+        decl String:dbident[64];
         SQL_ReadDriver(DBIDB, dbident, sizeof(dbident));
         LogMessage("Connected to the %s database", dbident);
-
-        new Handle:driver = SQL_GetDriver();
-        decl String:dbtype[256];
-        SQL_GetDriverIdent(driver, dbtype, sizeof(dbtype));
-        decl String:dbproduct[256];
-        SQL_GetDriverProduct(driver, dbproduct, sizeof(dbproduct));
-        LogMessage("Database type = %s, Database product = %s", dbtype, dbproduct);
+        DBIsSQLite = (StrContains(dbident, "sqlite", false) >= 0);
     }
     else
         LogError("Unable to get a Database Connection: %s", error);
