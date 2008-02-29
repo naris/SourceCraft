@@ -221,8 +221,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, damage, "TerranGhost::PlayerDeathEvent", raceID);
-
     if (victim_player != -1 && victim_race == raceID)
     {
         SetVisibility(victim_player, -1);
@@ -240,8 +238,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
-    LogEventDamage(event,damage,"TerranGhost::PlayerHurtEvent", raceID);
-
     if (attacker_index && attacker_index != victim_index)
     {
         if (victim_race == raceID)

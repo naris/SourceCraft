@@ -197,8 +197,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, damage, "UndeadScourge::PlayerDeathEvent", raceID);
-
     if (victim_race == raceID && !m_Suicided[victim_index])
     {
         new ult_level=GetSkillLevel(victim_player,raceID,3);
@@ -213,8 +211,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
-    LogEventDamage(event, damage, "UndeadScourge::PlayerHurtEvent", raceID);
-
     new bool:changed=false;
     if (attacker_race == raceID && attacker_index != victim_index)
     {

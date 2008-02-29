@@ -218,8 +218,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    LogEventDamage(event, damage, "TerranConfederacy::PlayerDeathEvent", raceID);
-
     if (victim_race == raceID)
     {
         new seniority_skill=GetSkillLevel(victim_player,raceID,0);
