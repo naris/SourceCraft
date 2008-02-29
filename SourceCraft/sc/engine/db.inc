@@ -357,6 +357,7 @@ public SavePlayerData(client,vectorpos)
                         if(SQL_FetchRow(player_query))
                         {
                             player_ident = SQL_FetchInt(player_query,0);
+                            SetDatabaseIdent(vectorpos,player_ident);
                             CloseHandle(player_query);
                         }
                         else
