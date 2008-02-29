@@ -391,8 +391,7 @@ public SavePlayerData(client,vectorpos)
                     new Handle:query=SQL_Query(DBIDB,SQLString);
                     if(query)
                     {
-                        fetch = SQL_FetchRow(query);
-                        if (fetch)
+                        if (SQL_FetchRow(query))
                         {
                             player_ident = SQL_FetchInt(query,0);
                             if (player_ident > 0)
