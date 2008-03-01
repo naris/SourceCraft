@@ -619,7 +619,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
-	new Float:soundTime = GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
+	new Float:soundTime = 0.0; // GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
 	if (soundTime < duration)
 		soundTime = duration;
 
