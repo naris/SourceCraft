@@ -217,6 +217,7 @@ public Plugin:myinfo =
 };
 
 public OnPluginStart(){
+	LogMessage("SDK version is %d", GuessSDKVersion());
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
@@ -619,7 +620,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
-	new Float:soundTime = 0.0; // GetSoundDuration(filelocation); // Apparently doesn't work for mp3s :(
+	new Float:soundTime = 0.0; // GetSoundDuration(filelocation);
 	if (soundTime < duration)
 		soundTime = duration;
 
@@ -656,18 +657,17 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 					EmitSoundToClient(client, filelocation);
 				}
 			}else{
-				//new clientlist[MAXPLAYERS+1];
-				//new clientcount = 0;
+				new clientlist[MAXPLAYERS+1];
+				new clientcount = 0;
 				new playersconnected = GetMaxClients();
 				for (new i = 1; i <= playersconnected; i++){
 					if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(client)){
-						//clientlist[clientcount++] = i;
-						EmitSoundToClient(i, filelocation);
+						clientlist[clientcount++] = i;
 					}
 				}
-				//if (clientcount){
-				//	EmitSound(clientlist, clientcount, filelocation);
-				//}
+				if (clientcount){
+					EmitSound(clientlist, clientcount, filelocation);
+				}
 				if (name[0] && IsClientInGame(client) && !IsFakeClient(client)){
 					LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
 					           adminonly ? "admin sound " : "", name, filelocation);
