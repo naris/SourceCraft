@@ -1,7 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PL_VERSION "1.0"
+#define PL_VERSION "2.0"
 
 public Plugin:myinfo = 
 {
@@ -17,11 +17,10 @@ new maxents;
 //new ResourceEnt;
 
 new TimeOffset, OwnerOffset, TeamOffset;
-new Handle:TeleporterList;
+new TeleporterList[ 33 ][ 2 ], maxplayers;
 
 #define LIST_SENTRY 0
 #define LIST_TEAM 1
-#define LIST_OWNER 2
 
 
 #define ENABLEDTELE 0
@@ -30,6 +29,8 @@ new Handle:TeleporterList;
 
 new Handle:g_cvars[3];
 new Handle:teletimer = INVALID_HANDLE;
+
+new temp;
 
 public OnPluginStart(){
 	CreateConVar("sm_tf_teletools", PL_VERSION, "Teleport Tools", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
@@ -41,12 +42,12 @@ public OnPluginStart(){
 	TimeOffset = FindSendPropInfo("CObjectTeleporter", "m_flRechargeTime");
 	OwnerOffset = FindSendPropInfo("CObjectTeleporter", "m_hBuilder");
 	TeamOffset = FindSendPropInfo("CObjectTeleporter", "m_iTeamNum");
+	temp = FindSendPropInfo("CObjectTeleporter", "m_iObjectType");
 	
 	HookConVarChange(g_cvars[ENABLEDTELE],  TF2ConfigsChanged );
 	HookConVarChange(g_cvars[TELEBLUETIME], TF2ConfigsChanged ); 
 	HookConVarChange(g_cvars[TELEREDTIME],  TF2ConfigsChanged );
 	
-	TeleporterList = CreateArray( 3 );
 	
 	HookEvent("player_builtobject", Event_player_builtobject);
 	
@@ -67,36 +68,56 @@ stock Createtimers(){
         return;
     }
     
-    if( GetConVarFloat( g_cvars[TELEBLUETIME] ) > 0.0 || GetConVarFloat( g_cvars[TELEREDTIME] ) > 0.0){
-        //LogMessage("Creating timer!")
-        teletimer = CreateTimer( 0.2, CheckAllTeles, 0, TIMER_REPEAT);    
+    new Float:bluetime = GetConVarFloat( g_cvars[TELEBLUETIME] );
+    new Float:redtime  = GetConVarFloat( g_cvars[TELEREDTIME] );
+    
+    if( bluetime > 0.0 && redtime > 0.0){
+        if(redtime > bluetime){
+            CreateTeleTimer( bluetime );    
+        } else if ( redtime < bluetime) {
+            CreateTeleTimer( redtime );    
+        } else{
+            CreateTeleTimer( bluetime );    
+        }
+        return;
+    }
+    
+    if (bluetime > 0.0){
+        CreateTeleTimer( bluetime ); 
+    }
+    
+    if (redtime > 0.0){
+        CreateTeleTimer( redtime ); 
     }
 }
 
+stock CreateTeleTimer( Float:time ){
+    teletimer = CreateTimer( time, CheckAllTeles, 0, TIMER_REPEAT);
+}
+
 public Action:CheckAllTeles(Handle:timer, any:useless){
-    new data[3] ,i, count = GetArraySize( TeleporterList );
+    new i;
     new Float:bluetime = GetConVarFloat( g_cvars[TELEBLUETIME] );
     new Float:redtime  = GetConVarFloat( g_cvars[TELEREDTIME] );
     
     new Float:oldtime, Float:newtime;
     
-    for(i = 0; i< count; i++){
-        GetArrayArray(TeleporterList, i, data);
+    for(i = 1; i< maxplayers; i++){    
+        if(TeleporterList[i][LIST_SENTRY] == 0)
+            continue;
         
-        if(!IsValidEntity(data[ LIST_SENTRY ])){
-            RemoveFromArray( TeleporterList, i);
-            i--;
-            count--;
+        if(!IsValidEntity(  TeleporterList[i][LIST_SENTRY])){
+            TeleporterList[i][LIST_SENTRY] = 0;
             continue;
         }
         
-        if( data[ LIST_TEAM ] == 3 && bluetime <= 0.0 )   {
+        if( TeleporterList[i][ LIST_TEAM ] == 3 && bluetime <= 0.0 )   {
             continue;        
-        } else if( data[ LIST_TEAM ] == 2 && redtime <= 0.0 )   {
+        } else if( TeleporterList[i][ LIST_TEAM ] == 2 && redtime <= 0.0 )   {
             continue;        
         }
         
-        oldtime = GetEntDataFloat(data[ LIST_SENTRY ], TimeOffset);
+        oldtime = GetEntDataFloat(TeleporterList[i][ LIST_SENTRY ], TimeOffset);
         
         if( float(RoundFloat(oldtime)) == oldtime){ continue; }
         
@@ -104,15 +125,15 @@ public Action:CheckAllTeles(Handle:timer, any:useless){
         
         //LogMessage("Chane %0.2f %0.2f", newtime, oldtime);
         
-        if( data[ LIST_TEAM ] == 3 )   {
+        if( TeleporterList[i][ LIST_TEAM ] == 3 )   {
             newtime +=  bluetime;      
-        } else if( data[ LIST_TEAM ] == 2 )   {
+        } else if( TeleporterList[i][ LIST_TEAM ] == 2 )   {
             newtime += redtime;
         }
         
         //LogMessage("Newtime %0.2f", newtime);
         
-        SetEntDataFloat(data[ LIST_SENTRY ], TimeOffset, float(RoundFloat(newtime)), true);
+        SetEntDataFloat(TeleporterList[i][ LIST_SENTRY ], TimeOffset, float(RoundFloat(newtime)), true);
     } 
 }
 
@@ -125,21 +146,20 @@ public Action:Event_player_builtobject(Handle:event, const String:name[], bool:d
     //2=teleporter exit
     //3=sentry
     
-    ClearArray( TeleporterList );
-    
-    new i, info[3];
-    decl String:classname[64];
-    for(i = 24; i <= maxents; i++){
+    if ( GetEventInt(event, "object") != 1)
+        return Plugin_Continue;
+        
+    new i, owner;
+    decl String:classname[19];
+    for(i =  maxplayers + 1; i <= maxents; i++){
 	 	if(IsValidEntity(i)){
-			GetEntityNetClass(i, classname, 64);
-			if(StrEqual(classname, "CObjectTeleporter")){				
-                info[ LIST_SENTRY ] = i;
-                info[ LIST_TEAM ] = GetEntData(i, TeamOffset, 4);
-                info[ LIST_OWNER ] = GetEntDataEnt2(i, OwnerOffset);
-                
-                //LogMessage("Found: %d %d %d", i, info[ LIST_TEAM ], info[ LIST_OWNER ]);
-                
-                PushArrayArray(TeleporterList, info); 			
+			GetEntityNetClass(i, classname, sizeof(classname));
+			if(StrEqual(classname, "CObjectTeleporter")){
+		        if( GetEntData(i, temp, 4) == 1 ){
+                    owner = GetEntDataEnt2(i, OwnerOffset);		    
+                    TeleporterList[owner][ LIST_TEAM ] = GetEntData(i, TeamOffset, 4);
+			        TeleporterList[owner][ LIST_SENTRY ] = i;	
+                }	
 			}
 		}
 	} 
@@ -148,7 +168,7 @@ public Action:Event_player_builtobject(Handle:event, const String:name[], bool:d
 }
 
 public OnMapStart(){
-    //maxplayers = GetMaxClients();
+    maxplayers = GetMaxClients();
     maxents = GetMaxEntities();
     //ResourceEnt = FindResourceObject();
 	
