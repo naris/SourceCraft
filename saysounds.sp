@@ -206,6 +206,7 @@ new Float:LastSound[MAXPLAYERS+1];
 new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 new Float:globalLastAdminSound = 0.0;
+new SDKVersion;
 
 public Plugin:myinfo = 
 {
@@ -217,7 +218,7 @@ public Plugin:myinfo =
 };
 
 public OnPluginStart(){
-	LogMessage("SDK version is %d", GuessSDKVersion());
+	SDKVersion = GuessSDKVersion();
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
@@ -620,7 +621,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
-	new Float:soundTime = 0.0; // GetSoundDuration(filelocation);
+	new Float:soundTime = (SDKVersion >= 30) ? GetSoundDuration(filelocation) : 0.0;
 	if (soundTime < duration)
 		soundTime = duration;
 
