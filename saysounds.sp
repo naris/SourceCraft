@@ -91,6 +91,10 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added check for Fake clients (bots) before Emitting Sounds
 		  or sending Chat messages.
+	1.17  Mar 1, 2008
+		* Modified by -=|JFH|=-Naris
+		* Fixed crash in Counter-Strike (Windows) by NOt calling GetSoundDuration()
+		  unless the SDKVersion >= 30 (Version or Orangebox/TF2)
 
 
 Todo:
@@ -182,7 +186,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.16"
+#define PLUGIN_VERSION "1.17"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
