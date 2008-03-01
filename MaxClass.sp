@@ -10,9 +10,12 @@
 #define TF2_PYRO 7
 #define TF2_SPY 8
 #define TF2_ENG 9
-#define PL_VERSION "3.1"
+#define PL_VERSION "3.1BETA"
 
 #define DEBUG 0
+//To change the flag, look at: http://docs.sourcemod.net/api/index.php?fastload=file&id=28& for the right values
+#define TF2L_ADMIN_FLAG Admin_Reservation
+#define CHECKFORADMIN 1
 
 public Plugin:myinfo = 
 {
@@ -64,6 +67,13 @@ public Action:PlayerTeamBalanced(Handle:event, const String:name[], bool:dontBro
 		return;
 		
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	#if CHECKFORADMIN == 1
+    	if(CheckForAdmin( client )){
+            return;
+        }
+    #endif
+	
 	new team = GetEventInt(event, "team");
 	new class = TF_GetClass(client);
 	new clientcount = GetClientCount(true);
@@ -97,6 +107,13 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 		
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+    #if CHECKFORADMIN == 1
+    	if(CheckForAdmin( client )){
+            return;
+        }
+    #endif
+	
 	new clientcount = GetClientCount(true);
 	new class = TF_GetClass(client);
 	new team = GetClientTeam(client);
@@ -130,6 +147,13 @@ public Action:Playerchangeclass(Handle:event, const String:name[], bool:dontBroa
 		return;
  
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	#if CHECKFORADMIN == 1
+    	if(CheckForAdmin( client )){
+            return;
+        }
+    #endif
+	
 	new class = GetEventInt(event, "class");
 	new oldclass = TF_GetClass(client);
 	
@@ -189,8 +213,16 @@ RecountClasses(){
 	}
 	
 	for(i=1; i<=maxplayers; i++){
-	 	if(IsClientInGame(i))
+	 	if(IsClientInGame(i)){
+	 	    #if CHECKFORADMIN == 1
+            if(CheckForAdmin( i )){
+                return;
+            }
+            #endif
+	 	 
 			CurrentCount[ GetClientTeam(i) ][ TF_GetClass(i) ]++;
+			
+		}
 	}
 }
 
@@ -385,4 +417,15 @@ stock SwitchClientClass(client, class){
 	FakeClientCommand(client, "joinclass %s", TF_ClassNames[class]);
 	FakeClientCommandEx(client, "joinclass %s", TF_ClassNames[class]); 
 	
+}
+
+
+stock bool:CheckForAdmin( client ){
+    if(client == 0){ return true; }
+    
+    new AdminId:adminid = GetUserAdmin(client);
+    if(adminid == INVALID_ADMIN_ID)
+        return false;
+
+    return GetAdminFlag( adminid , TF2L_ADMIN_FLAG ) || GetAdminFlag( adminid , Admin_Root );
 }
