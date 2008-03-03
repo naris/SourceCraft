@@ -210,7 +210,6 @@ new Float:LastSound[MAXPLAYERS+1];
 new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 new Float:globalLastAdminSound = 0.0;
-new SDKVersion;
 
 public Plugin:myinfo = 
 {
@@ -222,7 +221,6 @@ public Plugin:myinfo =
 };
 
 public OnPluginStart(){
-	SDKVersion = GuessSDKVersion();
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
@@ -625,12 +623,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	}
 
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
-	new Float:soundTime = (SDKVersion >= 30) ? GetSoundDuration(filelocation) : 0.0;
-	if (soundTime < duration)
-		soundTime = duration;
-
-	if (waitTime < soundTime)
-		waitTime = soundTime;
+	if (waitTime < duration)
+		waitTime = duration;
 
 	new Float:adminTime = 0.0;
 	if (adminonly)
@@ -643,8 +637,8 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		}
 
 		adminTime = GetConVarFloat(cvaradmintime);
-		if (adminTime < soundTime)
-			adminTime = soundTime;
+		if (adminTime < duration)
+			adminTime = duration;
 	}
 
 	new soundLimit = isadmin ? GetConVarInt(cvaradminlimit) : GetConVarInt(cvarsoundlimit);	
@@ -652,7 +646,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		if (globalLastSound < thetime){
 			SndCount[client]++;
 			LastSound[client] = thetime + waitTime;
-			globalLastSound   = thetime + soundTime;
+			globalLastSound   = thetime + duration;
 
 			if (adminonly)
 				globalLastAdminSound = thetime + adminTime;
