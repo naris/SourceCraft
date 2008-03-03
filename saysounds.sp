@@ -95,6 +95,11 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Fixed crash in Counter-Strike (Windows) by NOT calling GetSoundDuration()
 		  unless the SDKVersion >= 30 (Version or Orangebox/TF2)
+	1.18  Mar 2, 2008
+		* Modified by -=|JFH|=-Naris
+		* Also added check to not call GetSoundDuration() for mp3 files.
+		* Added sm_sound_logging to turn logging of sounds played on and off.
+		* Added sm_sound_allow_bots to allow bots to trigger sounds.
 
 
 Todo:
@@ -110,6 +115,7 @@ Cvarlist (default value):
 	sm_sound_announce 0		 Turns on announcements when a sound is played
 	sm_sound_sentence 0	 	 When set, will trigger sounds if keyword is embedded in a sentence
 	sm_sound_logging 0	 	 When set, will log sounds that are played
+	sm_sound_allow_bots 0	 	 When set, will allow bots to play sounds
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
 	sm_join_spawn 1 		 Wait until the player spawns before playing the join sound
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
@@ -187,7 +193,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.17"
+#define PLUGIN_VERSION "1.18"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
