@@ -93,7 +93,7 @@ Versions:
 		  or sending Chat messages.
 	1.17  Mar 1, 2008
 		* Modified by -=|JFH|=-Naris
-		* Fixed crash in Counter-Strike (Windows) by NOt calling GetSoundDuration()
+		* Fixed crash in Counter-Strike (Windows) by NOT calling GetSoundDuration()
 		  unless the SDKVersion >= 30 (Version or Orangebox/TF2)
 
 
@@ -109,6 +109,7 @@ Cvarlist (default value):
 	sm_sound_admin_warn 0		 Number of sounds to warn admin at
 	sm_sound_announce 0		 Turns on announcements when a sound is played
 	sm_sound_sentence 0	 	 When set, will trigger sounds if keyword is embedded in a sentence
+	sm_sound_logging 0	 	 When set, will log sounds that are played
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
 	sm_join_spawn 1 		 Wait until the player spawns before playing the join sound
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
@@ -200,6 +201,8 @@ new Handle:cvaradminwarn = INVALID_HANDLE;
 new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:cvarannounce = INVALID_HANDLE;
 new Handle:cvarsentence = INVALID_HANDLE;
+new Handle:cvarlogging = INVALID_HANDLE;
+new Handle:cvarallowbots = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
@@ -210,6 +213,7 @@ new Float:LastSound[MAXPLAYERS+1];
 new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 new Float:globalLastAdminSound = 0.0;
+new SDKVersion;
 
 public Plugin:myinfo = 
 {
@@ -221,6 +225,7 @@ public Plugin:myinfo =
 };
 
 public OnPluginStart(){
+	SDKVersion = GuessSDKVersion();
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
@@ -234,6 +239,8 @@ public OnPluginStart(){
 	cvaradminlimit = CreateConVar("sm_sound_admin_limit","0","Maximum sounds per admin (0 for unlimited)",FCVAR_PLUGIN);
 	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
 	cvarsentence = CreateConVar("sm_sound_sentence","0","When set, will trigger sounds if keyword is embedded in a sentence",FCVAR_PLUGIN);
+	cvarlogging = CreateConVar("sm_sound_logging","1","When set, will log sounds that are played",FCVAR_PLUGIN);
+	cvarallowbots = CreateConVar("sm_sound_allow_bots","1","When set, will allow bots to play sounds",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -357,8 +364,8 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 }
 
 public OnClientAuthorized(client, const String:auth[]){
-	if(!IsFakeClient(client)){
-		if(client != 0){
+	if(client != 0){
+		if(!IsFakeClient(client) || GetConVarBool(cvarallowbots)){
 			SndOn[client] = 1;
 			SndCount[client] = 0;
 			LastSound[client] = 0.0;
@@ -622,6 +629,15 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		return Plugin_Handled;
 	}
 
+	// Make sure NOT to crash Counter Strike!
+	// Also, Don't check duration of mp3's (that might crash)
+	if (SDKVersion >= 30 && StrContains(filelocation, "mp3", false) <= -1)
+	{
+		new Float:soundTime = GetSoundDuration(filelocation);
+		if (duration < soundTime)
+			duration = soundTime;
+	}
+
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	if (waitTime < duration)
 		waitTime = duration;
@@ -668,12 +684,14 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 					EmitSound(clientlist, clientcount, filelocation);
 				}
 				if (name[0] && IsClientInGame(client) && !IsFakeClient(client)){
-					LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
-					           adminonly ? "admin sound " : "", name, filelocation);
 					if (GetConVarBool(cvarannounce)){
 						PrintToChatAll("%N played %s", client, name);
 					}
-				}else{
+					if (GetConVarBool(cvarlogging)){
+						LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
+							   adminonly ? "admin sound " : "", name, filelocation);
+					}
+				}else if (GetConVarBool(cvarlogging)){
 					LogMessage("[Say Sounds] played %s", filelocation);
 				}
 			}
