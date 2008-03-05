@@ -328,16 +328,12 @@ bool:VampiricAura(damage, index, player, victim_index, victim_player)
             case 4:
                 percent_health=0.30;
         }
+
         new leechhealth=RoundFloat(float(damage)*percent_health);
         if(leechhealth <= 0)
             leechhealth = 1;
 
         new victim_health=GetClientHealth(victim_index);
-        new before_victim_health = victim_health;
-
-        new health=GetClientHealth(index);
-        new before_health = health;
-
         if (victim_health >= leechhealth)
         {
             victim_health = 0;
@@ -358,12 +354,8 @@ bool:VampiricAura(damage, index, player, victim_index, victim_player)
 
         SetEntityHealth(victim_index, victim_health);
 
-        health += leechhealth;
-        SetEntityHealth(index,health);
-
-        LogMessage("%N (health=%d,%d) leached %d health from %N (health=%d,%d)",
-                   index, before_health, health, leechhealth,
-                   victim_index, victim_health, before_victim_health);
+        new health=GetClientHealth(index);
+        SetEntityHealth(index,health + leechhealth);
 
         new Float:start[3];
         GetClientAbsOrigin(index, start);
