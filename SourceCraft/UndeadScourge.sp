@@ -309,7 +309,7 @@ Levitation(client, player, skilllevel)
     SetGravity(player,gravity);
 }
 
-bool:VampiricAura(damage, victim_index, victim_player, index, player)
+bool:VampiricAura(damage, index, player, victim_index, victim_player)
 {
     new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
