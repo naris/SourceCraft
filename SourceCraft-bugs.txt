@@ -4,7 +4,7 @@ Reaver Scarbs: Still causing massive explosion lag on my system when i've encoun
 
 Mole: sometime i've bought a mole and i've lost the crystals. Can you put a limit in on moles? say only 2 in a respawn at once? getting gang raped by 2 heavies a pyro and medic really sucked.
 
-Hook: Speed is faster then scout run speed, thus allowing heavies to zoom around the map while shooing at incredible speeds. The hook is usable to move even when the person is supposed to be frozen (i'm not talking about another ability i'm talking about when we're all in respawn and both sides can't move). On some maps the hook can be used to get to a capture point during setup when nobody else can.
+*Fixed*Hook: Speed is faster then scout run speed, thus allowing heavies to zoom around the map while shooing at incredible speeds. The hook is usable to move even when the person is supposed to be frozen (i'm not talking about another ability i'm talking about when we're all in respawn and both sides can't move). On some maps the hook can be used to get to a capture point during setup when nobody else can.
 
 Pickpocket: is it working?
 
@@ -20,7 +20,7 @@ Mask of death/vampiric aura: on an engineer the sg doesn't get the healing effec
 
  Additional, the orb or evasion doesn't work on al-quada ultimates...
 
-and from time to time i get u238 bullets when i haven't chosen em (usually at the same level as my stimpacks)
+*Fixed*and from time to time i get u238 bullets when i haven't chosen em (usually at the same level as my stimpacks)
 
 1.  As stated by clueless noob, it would be nice if after reincarnation you can face a random direction.  It almost seems that you're facing the opposite direction from where your opponent is and thus getting raped through the reincarnation over and over again.  Or is it even possible that the reincarnation spawns you in a random spot within a 10ft radius of your death rather than on the spot (or make it a higher level ability or something by doing so)?
 
@@ -54,7 +54,7 @@ dont know how about teleporters dont want 2 crash the game 2 many times
 
 Acute strike works 100% of the time instead of the stated 15% in the description. Chain lightning does not always work on nearby targets, i.e right next to me.
 
-It seems that there is a way to acquire more levels than one actually has skill points in simply by reseting skills, investing their skill points in any 2 skills of their race and then reseting their skills again and investing in the other 2 skills. For example, I have a level 8 terran, it has level 4 armor, level 4 u238 shells, and level 4 jetpack and I cant get rid of the extra levels no matter what I try. U238 shells do not work consistently with melee weapons.
+*Fixed*It seems that there is a way to acquire more levels than one actually has skill points in simply by reseting skills, investing their skill points in any 2 skills of their race and then reseting their skills again and investing in the other 2 skills. For example, I have a level 8 terran, it has level 4 armor, level 4 u238 shells, and level 4 jetpack and I cant get rid of the extra levels no matter what I try. U238 shells do not work consistently with melee weapons.
 
 Reaver scarabs sometimes stop working during maps.
 
@@ -274,7 +274,7 @@ Heavy Armor seems a bit lite weight. Too random. Be nice if at level 4 it was a 
 
 *Jetpack is awesome.
 
-Once again I have too many stats. I'm a lvl 7 Terran with 8 skill points. For some reason it just gives me the invisibility skill~
+*fixed*Once again I have too many stats. I'm a lvl 7 Terran with 8 skill points. For some reason it just gives me the invisibility skill~
 
 Heavy Armour
 *Fixed!Sometimes it absorbs more damage than was done [normally with smaller weapons] and gives me back health. Which is awesome so don't fix it.
