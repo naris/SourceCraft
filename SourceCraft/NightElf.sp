@@ -378,9 +378,16 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 
 public Action:AllowEntangle(Handle:timer,any:index)
 {
-    EmitSoundToClient(index, rechargeWav);
-    PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cEntangled Roots%c is now available again!",
-                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     m_AllowEntangle[index]=true;
+
+    if (IsClientInGame(index) && IsPlayerAlive(index))
+    {
+        if (GetRace(GetPlayer(index)) == raceID)
+        {
+            EmitSoundToClient(index, rechargeWav);
+            PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cEntangled Roots%c is now available again!",
+                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+        }
+    }                
     return Plugin_Stop;
 }
