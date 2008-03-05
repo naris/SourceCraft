@@ -296,6 +296,24 @@ public SetSkillLevel(vectorpos,race,skill,level)
     Call_Finish(result);
 }
 
+public IncrementSkillLevel(vectorpos,race,skill)
+{
+    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new num=RACEINFO_SKILLS+skill;
+    new old=GetArrayCell(raceinfo,num);
+    new level=old+1;
+    SetArrayCell(raceinfo,num,level);
+    Call_StartForward(g_OnSkillLevelChangedHandle);
+    Call_PushCell(GetClientIndex(vectorpos));
+    Call_PushCell(vectorpos);
+    Call_PushCell(race);
+    Call_PushCell(skill);
+    Call_PushCell(old);
+    Call_PushCell(level);
+    new result;
+    Call_Finish(result);
+}
+
 public GetSkillCount(vectorpos,race)
 {
     new ret=0;

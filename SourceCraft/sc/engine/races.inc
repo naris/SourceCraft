@@ -363,6 +363,8 @@ ResetSkillsNow(client,vecpos)
     PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
                 COLOR_GREEN,COLOR_DEFAULT);
 
-    if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+    if(GetLevel(vecpos,race) > 0)
         SkillMenu(client, vecpos, INVALID_FUNCTION);
+
+    SavePlayerData(client,vecpos);
 }

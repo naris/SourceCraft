@@ -440,24 +440,22 @@ public SavePlayerData(client,vectorpos)
                         for(new skill=0;skill<SKILL_COUNT;skill++)
                         {
                             new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
-                            if (skillLevel)
-                            {
-                                if (DBIsSQLite)
-                                {
-                                    Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
-                                }
-                                else
-                                {
-                                    Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
-                                }
 
-                                if (!SQL_FastQuery(DBIDB,SQLString))
-                                {
-                                    decl String:error[256] = "";
-                                    SQL_GetError(DBIDB, error, sizeof(error));
-                                    LogError("Unable to insert/replace one of %N's skills: %s\nSQL:%s",
-                                             client, error, SQLString);
-                                }
+                            if (DBIsSQLite)
+                            {
+                                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
+                            }
+                            else
+                            {
+                                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
+                            }
+
+                            if (!SQL_FastQuery(DBIDB,SQLString))
+                            {
+                                decl String:error[256] = "";
+                                SQL_GetError(DBIDB, error, sizeof(error));
+                                LogError("Unable to insert/replace one of %N's skills: %s\nSQL:%s",
+                                         client, error, SQLString);
                             }
                         }
                     }

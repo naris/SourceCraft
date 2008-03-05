@@ -283,17 +283,22 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 new skill=StringToInt(SelectionInfo);
                 if (skill > -1 && skill < SKILL_COUNT)
                 {
-                    if (skill==SKILL_ULTIMATE)
+                    new race = GetRace(vecpos);
+                    new level = GetLevel(vecpos,race);
+                    if (GetSkillCount(vecpos,race)>=level)
                     {
-                        new race=GetRace(vecpos);
+                        PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
+                                    COLOR_GREEN,COLOR_DEFAULT);
+                    }
+                    else
+                    {
                         new Handle:raceHandle=Race(race);
                         new Handle:stringHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-                        new level = GetLevel(vecpos,race);
-                        if (level >= MIN_ULTIMATE_LEVEL)
+                        if (skill==SKILL_ULTIMATE)
                         {
-                            if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
+                            if (level >= MIN_ULTIMATE_LEVEL)
                             {
-                                SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
+                                IncrementSkillLevel(vecpos,race,skill);
                                 decl String:skillname[64];
                                 GetArrayString(stringHandle,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
                                 PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
@@ -302,36 +307,18 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                             }
                             else
                             {
-                                PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
-                                            COLOR_GREEN,COLOR_DEFAULT);
+                                PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
+                                            COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
                             }
                         }
                         else
                         {
-                            PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
-                                        COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
-                        }
-                        if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                            SkillMenu(client,vecpos,gSkillMenuParentMenuFunction[client]);
-                    }
-                    else
-                    {
-                        new race=GetRace(vecpos);
-                        new Handle:raceHandle=Race(race);
-                        new Handle:stringHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-                        if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                        {
-                            SetSkillLevel(vecpos,race,skill,GetSkillLevel(vecpos,race,skill)+1);
+                            IncrementSkillLevel(vecpos,race,skill);
                             decl String:skillname[64];
                             GetArrayString(stringHandle,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
                             PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                         COLOR_GREEN,COLOR_DEFAULT,skillname,
                                         GetSkillLevel(vecpos,race,skill));
-                        }
-                        else
-                        {
-                            PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
-                                        COLOR_GREEN,COLOR_DEFAULT);
                         }
 
                         if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
