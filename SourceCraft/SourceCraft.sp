@@ -94,6 +94,9 @@ public OnPluginStart()
         SetFailState("There was a failure in creating the player vector.");
     if(!InitiateRaceArray())
         SetFailState("There was a failure in creating the race vector.");
+
+    SQL_TConnect(SQL_Connected, "sourcecraft");
+
     if(!InitiateShopVector())
         SetFailState("There was a failure in creating the shop vector.");
     if(!InitiateHelpVector())
@@ -134,9 +137,6 @@ public OnPluginStart()
 
 public OnAllPluginsLoaded()
 {
-    if(SAVE_ENABLED)
-        SQLTable();
-
     if(!m_CalledReady)
     {
         Call_StartForward(g_OnPluginReadyHandle);
@@ -263,17 +263,6 @@ public bool:ParseSettings()
     decl String:path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM,path,sizeof(path),"configs/sourcecraft.ini");
     FileToKeyValues(keyValue,path);
-    decl String:error[256];
-    DBIDB=SQL_DefConnect(error,sizeof(error));
-    if(DBIDB)
-    {
-        decl String:dbident[64];
-        SQL_ReadDriver(DBIDB, dbident, sizeof(dbident));
-        LogMessage("Connected to the %s database", dbident);
-        DBIsSQLite = (StrContains(dbident, "sqlite", false) >= 0);
-    }
-    else
-        LogError("Unable to get a Database Connection: %s", error);
 
     // Load level configuration
     KvRewind(keyValue);
