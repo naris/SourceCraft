@@ -197,26 +197,13 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    new bool:changed=false;
-    if (attacker_race == raceID && attacker_index != victim_index)
-    {
-        if (VampiricAura(damage, attacker_index, attacker_player, victim_index, victim_player))
-            changed = true;
-    }
-
-    if (assister_race == raceID && assister_index != victim_index)
-    {
-        if (VampiricAura(damage, assister_index, assister_player, victim_index, victim_player))
-            changed = true;
-    }
-
     if (victim_race == raceID && !m_Suicided[victim_index])
     {
         new ult_level=GetSkillLevel(victim_player,raceID,3);
         if (ult_level)
             SuicideBomber(victim_index,victim_player,ult_level,true);
     }
-    return changed ? Plugin_Changed : Plugin_Continue;
+    return Plugin_Continue;
 }
 
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
@@ -333,43 +320,46 @@ bool:VampiricAura(damage, index, player, victim_index, victim_player)
         if(leechhealth <= 0)
             leechhealth = 1;
 
-        new victim_health=GetClientHealth(victim_index);
-        if (victim_health >= leechhealth)
+        //if(leechhealth)
         {
-            victim_health = 0;
-            LogKill(index, victim_index, "vampiric_aura", "Vampiric Aura", leechhealth);
-        }
-        else
-        {
-            victim_health -= leechhealth;
+            new victim_health=GetClientHealth(victim_index);
+            if (victim_health <= leechhealth)
+            {
+                victim_health = 0;
+                LogKill(index, victim_index, "vampiric_aura", "Vampiric Aura", leechhealth);
+            }
+            else
+            {
+                victim_health -= leechhealth;
 
-            PrintToChat(victim_index,"%c[SourceCraft] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
+                PrintToChat(victim_index,"%c[SourceCraft] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
                         COLOR_GREEN,index,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
 
-            PrintToChat(index,"%c[SourceCraft]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
+                PrintToChat(index,"%c[SourceCraft]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
                         COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim_index,COLOR_TEAM,COLOR_DEFAULT);
 
-            LogToGame("[SourceCraft] %N leeched %d health from %N\n", index, leechhealth, victim_index);
+                LogToGame("[SourceCraft] %N leeched %d health from %N\n", index, leechhealth, victim_index);
+            }
+
+            SetEntityHealth(victim_index, victim_health);
+
+            new health=GetClientHealth(index);
+            SetEntityHealth(index,health + leechhealth);
+
+            new Float:start[3];
+            GetClientAbsOrigin(index, start);
+            start[2] += 1620;
+
+            new Float:end[3];
+            GetClientAbsOrigin(index, end);
+            end[2] += 20;
+
+            new color[4] = { 255, 10, 25, 255 };
+            TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
+                    0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
+            TE_SendToAll();
+            return true;
         }
-
-        SetEntityHealth(victim_index, victim_health);
-
-        new health=GetClientHealth(index);
-        SetEntityHealth(index,health + leechhealth);
-
-        new Float:start[3];
-        GetClientAbsOrigin(index, start);
-        start[2] += 1620;
-
-        new Float:end[3];
-        GetClientAbsOrigin(index, end);
-        end[2] += 20;
-
-        new color[4] = { 255, 10, 25, 255 };
-        TE_SetupBeamPoints(start,end,g_beamSprite,g_haloSprite,
-                           0, 1, 3.0, 20.0,10.0,5,50.0,color,255);
-        TE_SendToAll();
-        return true;
     }
     return false;
 }
