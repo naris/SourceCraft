@@ -80,6 +80,16 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
         LogError("There was a failure in creating the forward based functions.");
         return false;
     }
+    else if(!InitiatePlayerArray())
+    {
+        LogError("There was a failure in creating the player vector.");
+        return false;
+    }
+    else if(!InitiateRaceArray())
+    {
+        LogError("There was a failure in creating the race vector.");
+        return false;
+    }
     else
         return true;
 }
@@ -90,13 +100,6 @@ public OnPluginStart()
 
     GetGameType();
     
-    if(!InitiatePlayerArray())
-        SetFailState("There was a failure in creating the player vector.");
-    if(!InitiateRaceArray())
-        SetFailState("There was a failure in creating the race vector.");
-
-    SQL_TConnect(SQL_Connected, "sourcecraft");
-
     if(!InitiateShopVector())
         SetFailState("There was a failure in creating the shop vector.");
     if(!InitiateHelpVector())
@@ -136,6 +139,12 @@ public OnPluginStart()
 }
 
 public OnAllPluginsLoaded()
+{
+    if(DBIDB)
+        SQL_TConnect(SQL_Connected, "sourcecraft");
+}
+
+public OnDatabaseSetup()
 {
     if(!m_CalledReady)
     {
