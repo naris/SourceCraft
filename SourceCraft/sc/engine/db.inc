@@ -40,7 +40,7 @@ public SQL_CreateTables()
     // Create the sc_races table, if it doesn't exist
     decl String:SQLString[512] = "";
     Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
-            "CREATE TABLE IF NOT EXISTS sc_races2 ",
+            "CREATE TABLE IF NOT EXISTS sc_races ",
             "(race_ident int not null auto_increment,",
             " race_name varchar(16) not null,",
             " long_name varchar(64),",
@@ -62,7 +62,7 @@ public SQL_CreateTables()
     {
         // Create the sc_players table, if it doesn't exist
         Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s",
-                "CREATE TABLE IF NOT EXISTS sc_players2 ",
+                "CREATE TABLE IF NOT EXISTS sc_players ",
                 "(player_ident int not null auto_increment,",
                 " steamid varchar(64) not null,",
                 " name varchar(64),",
@@ -88,12 +88,12 @@ public SQL_CreatePlayers(Handle:owner, Handle:hndl, const String:error[], any:da
     else
     {
         // Create the sc_player_races table, if it doesn't exist
-        decl String:SQLString[1024] = "";
+        decl String:SQLString[2560] = "";
 
         if (DBIsSQLite)
         {
             Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_races2 ",
+                    "CREATE TABLE IF NOT EXISTS sc_player_races ",
                     "(player_ident int not null,",
                     " race_ident int not null,",
                     " xp int default 0,",
@@ -103,18 +103,18 @@ public SQL_CreatePlayers(Handle:owner, Handle:hndl, const String:error[], any:da
         else
         {
             Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_races2 ",
+                    "CREATE TABLE IF NOT EXISTS sc_player_races ",
                     "(player_ident int not null,",
                     " race_ident int not null,",
                     " xp int default 0,",
                     " level int default 0,",
                     "PRIMARY KEY(player_ident,race_ident),",
                     "FOREIGN KEY (player_ident)",
-                    "        REFERENCES sc_players2(player_ident)",
+                    "        REFERENCES sc_players(player_ident)",
                     "        ON DELETE CASCADE ON UPDATE CASCADE,",
                     "INDEX (race_ident),",
                     "FOREIGN KEY (race_ident)",
-                    "        REFERENCES sc_races2(race_ident)",
+                    "        REFERENCES sc_races(race_ident)",
                     "        ON DELETE CASCADE ON UPDATE CASCADE) ",
                     "ENGINE=INNODB");
         }
@@ -134,7 +134,7 @@ public SQL_CreatePlayerRaces(Handle:owner, Handle:hndl, const String:error[], an
         if (DBIsSQLite)
         {
             Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_skills2 ",
+                    "CREATE TABLE IF NOT EXISTS sc_player_skills ",
                     "(player_ident int not null,",
                     " race_ident int not null,",
                     " skill int not null,",
@@ -144,21 +144,21 @@ public SQL_CreatePlayerRaces(Handle:owner, Handle:hndl, const String:error[], an
         else
         {
             Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_skills2 ",
+                    "CREATE TABLE IF NOT EXISTS sc_player_skills ",
                     "(player_ident int not null,",
                     " race_ident int not null,",
                     " skill int not null,",
                     " skill_level int default 0,",
                     "PRIMARY KEY(player_ident,race_ident,skill),",
                     "FOREIGN KEY (player_ident)",
-                    "        REFERENCES sc_players2(player_ident)",
+                    "        REFERENCES sc_players(player_ident)",
                     "        ON DELETE CASCADE ON UPDATE CASCADE,",
                     "INDEX (race_ident),",
                     "FOREIGN KEY (race_ident)",
-                    "        REFERENCES sc_races2(race_ident)",
+                    "        REFERENCES sc_races(race_ident)",
                     "        ON DELETE CASCADE ON UPDATE CASCADE,",
                     "FOREIGN KEY (player_ident,race_ident)",
-                    "        REFERENCES sc_player_races2(player_ident,race_ident)",
+                    "        REFERENCES sc_player_races(player_ident,race_ident)",
                     "        ON DELETE CASCADE ON UPDATE CASCADE) ",
                     "ENGINE=INNODB");
         }
@@ -183,7 +183,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
         // since we have to return the result to the caller!
         SQL_LockDatabase(DBIDB);
 
-        Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races2 WHERE race_name='%s'", shortName);
+        Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races WHERE race_name='%s'", shortName);
 
         new Handle:query=SQL_Query(DBIDB,SQLString);
         if (query && SQL_FetchRow(query))
@@ -196,7 +196,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
             if (query)
                 CloseHandle(query);
 
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races2 (race_name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (race_name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
             if (SQL_FastQuery(DBIDB,SQLString))
             {
                 if (DBIsSQLite)
@@ -259,7 +259,7 @@ public LoadPlayerData(client,vectorpos)
             // since we have to return the result to the caller!
             SQL_LockDatabase(DBIDB);
 
-            Format(SQLString,sizeof(SQLString), "SELECT player_ident, race_ident, credits, overall_level FROM sc_players2 WHERE steamid = '%s'", steamid);
+            Format(SQLString,sizeof(SQLString), "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'", steamid);
 
             new Handle:query=SQL_Query(DBIDB,SQLString);
             if(query)
@@ -283,7 +283,7 @@ public LoadPlayerData(client,vectorpos)
                     CloseHandle(query);
                     SQL_UnlockDatabase(DBIDB);
 
-                    Format(SQLString,sizeof(SQLString), "SELECT race_ident, xp, level FROM sc_player_races2 WHERE player_ident = %d", player_ident);
+                    Format(SQLString,sizeof(SQLString), "SELECT race_ident, xp, level FROM sc_player_races WHERE player_ident = %d", player_ident);
 
                     new Handle:dataPack = CreateDataPack();
                     WritePackCell(dataPack, client);
@@ -341,7 +341,7 @@ public SQL_LoadRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
                 SetXP(vectorpos,raceId,SQL_FetchInt(hndl,1));
                 SetLevel(vectorpos,raceId,SQL_FetchInt(hndl,2));
 
-                Format(SQLString,sizeof(SQLString), "SELECT skill, skill_level FROM sc_player_skills2 WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
+                Format(SQLString,sizeof(SQLString), "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
@@ -403,7 +403,7 @@ public SavePlayerData(client,vectorpos)
 
             if (player_ident > 0)
             {
-                Format(SQLString,sizeof(SQLString), "UPDATE sc_players2 SET race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp WHERE player_ident = %d", race_ident, credits, overall_level, player_ident);
+                Format(SQLString,sizeof(SQLString), "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp WHERE player_ident = %d", race_ident, credits, overall_level, player_ident);
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
@@ -414,7 +414,7 @@ public SavePlayerData(client,vectorpos)
             }
             else
             {
-                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players2 (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, name, race_ident, credits, overall_level);
+                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, name, race_ident, credits, overall_level);
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
@@ -477,7 +477,7 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
             LogError("Unable to insert %N's player data, client=%d, vectorpos=%d: %s",
                      client, client, vectorpos, error);
 
-            Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players2 WHERE steamid = '%s'",
+            Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
             new Handle:dataPack = CreateDataPack();
@@ -580,11 +580,11 @@ public SavePlayerRaces(client, vectorpos, player_ident)
 
             if (DBIsSQLite)
             {
-                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_races2 (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, xp, level);
+                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_races (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, xp, level);
             }
             else
             {
-                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_races2 (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", player_ident, race_ident, xp, level, xp, level);
+                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_races (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", player_ident, race_ident, xp, level, xp, level);
             }
 
             new Handle:dataPack = CreateDataPack();
@@ -635,11 +635,11 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
 
                 if (DBIsSQLite)
                 {
-                    Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills2 (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
+                    Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
                 }
                 else
                 {
-                    Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills2 (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
+                    Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
                 }
 
                 SQL_TQuery(DBIDB, SQL_SavePlayerSkills, SQLString, client);
