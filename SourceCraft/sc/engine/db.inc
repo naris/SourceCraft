@@ -10,33 +10,35 @@
 #endif
 #define _db_included
 
-forward OnDatabaseSetup();
-
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
 new bool:DBIsSQLite = false;
 
-public SQL_Connected(Handle:owner, Handle:hndl, const String:error[], any:data)
+public ConnectToDatabase()
 {
-    if (hndl == INVALID_HANDLE)
-        ThrowError("Unable to get a Database Connection: %s", error);
+    decl String:error[256] = "";
+    DBIDB = SQL_Connect("sourcecraft",true,error,sizeof(error));
+    if (DBIDB == INVALID_HANDLE || error[0] != '\0')
+    {
+        LogError("Error connecting to the database:%s", error);
+        return false;
+    }
     else
     {
-        DBIDB=hndl;
-
         decl String:dbident[64];
         SQL_ReadDriver(DBIDB, dbident, sizeof(dbident));
         LogMessage("Connected to the %s database", dbident);
         DBIsSQLite = (StrContains(dbident, "sqlite", false) >= 0);
 
         SQL_CreateTables();
+        return true;
     }
 }
 
 public SQL_CreateTables()
 {
     // Create the sc_races table, if it doesn't exist
-    decl String:SQLString[2048] = "";
+    decl String:SQLString[512] = "";
     Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
             "CREATE TABLE IF NOT EXISTS sc_races2 ",
             "(race_ident int not null auto_increment,",
@@ -49,18 +51,16 @@ public SQL_CreateTables()
     if (!DBIsSQLite)
         StrCat(SQLString,sizeof(SQLString), " ENGINE=INNODB");
 
-    SQL_TQuery(DBIDB, SQL_CreateRaces, SQLString);
-}
-
-public SQL_CreateRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-    if (hndl == INVALID_HANDLE || error[0] != '\0')
-        ThrowError("Error in the creation of the sc_races SQL table:%s", error);
+    if(!SQL_FastQuery(DBIDB,SQLString))
+    {
+        decl String:error[256] = "";
+        SQL_GetError(DBIDB, error, sizeof(error));
+        LogError("Error in the creation of the sc_races SQL table:%s", error);
+        SetFailState("Error in the creation of the sc_races SQL table");
+    }
     else 
     {
         // Create the sc_players table, if it doesn't exist
-        decl String:SQLString[2048] = "";
-
         Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s",
                 "CREATE TABLE IF NOT EXISTS sc_players2 ",
                 "(player_ident int not null auto_increment,",
@@ -88,7 +88,7 @@ public SQL_CreatePlayers(Handle:owner, Handle:hndl, const String:error[], any:da
     else
     {
         // Create the sc_player_races table, if it doesn't exist
-        decl String:SQLString[2048] = "";
+        decl String:SQLString[1024] = "";
 
         if (DBIsSQLite)
         {
@@ -170,8 +170,6 @@ public SQL_CreatePlayerSkills(Handle:owner, Handle:hndl, const String:error[], a
 {
     if (hndl == INVALID_HANDLE || error[0] != '\0')
         ThrowError("Error in the creation of the sc_player_skills SQL table:%s", error);
-    else
-        OnDatabaseSetup();
 }
 
 public SaveRaceInfo(const String:shortName[], const String:raceName[])

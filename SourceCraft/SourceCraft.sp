@@ -99,6 +99,14 @@ public OnPluginStart()
     PrintToServer("-------------------------------------------------------------------------\n[SourceCraft] Plugin loading...");
 
     GetGameType();
+
+    if(!InitiatePlayerArray())
+        SetFailState("There was a failure in creating the player vector.");
+    if(!InitiateRaceArray())
+        SetFailState("There was a failure in creating the race vector.");
+
+    if(!ConnectToDatabase())
+        SetFailState("There was a failure in connecting to the database.");
     
     if(!InitiateShopVector())
         SetFailState("There was a failure in creating the shop vector.");
@@ -139,12 +147,6 @@ public OnPluginStart()
 }
 
 public OnAllPluginsLoaded()
-{
-    if(DBIDB)
-        SQL_TConnect(SQL_Connected, "sourcecraft");
-}
-
-public OnDatabaseSetup()
 {
     if(!m_CalledReady)
     {
