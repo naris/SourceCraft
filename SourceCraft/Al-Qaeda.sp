@@ -212,8 +212,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
             TE_SendToAll();
 
-            SetUber(client);
-            AuthTimer(1.0,client,ResetUber);
+            //SetUber(client);
+            //AuthTimer(1.0,client,ResetUber);
         }
     }
     return Plugin_Continue;
