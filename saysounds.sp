@@ -100,6 +100,11 @@ Versions:
 		* Also added check to not call GetSoundDuration() for mp3 files.
 		* Added sm_sound_logging to turn logging of sounds played on and off.
 		* Added sm_sound_allow_bots to allow bots to trigger sounds.
+	1.19  Mar 2, 2008
+		* Modified by -=|JFH|=-Naris
+		* Removed sm_sound_allow_bots to allow bots to trigger sounds.
+		* Removed several checks for Fake Clients.
+		* Commented out code that calls GetSoundDuration()
 
 
 Todo:
@@ -115,7 +120,6 @@ Cvarlist (default value):
 	sm_sound_announce 0		 Turns on announcements when a sound is played
 	sm_sound_sentence 0	 	 When set, will trigger sounds if keyword is embedded in a sentence
 	sm_sound_logging 0	 	 When set, will log sounds that are played
-	sm_sound_allow_bots 0	 	 When set, will allow bots to play sounds
 	sm_join_exit 0 			 Play sounds when someone joins or exits the game
 	sm_join_spawn 1 		 Wait until the player spawns before playing the join sound
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
@@ -188,12 +192,12 @@ File Format:
 // BEIGN MOD BY LAMDACORE
 // extra memory usability for a lot of sounds.
 // Uncomment the next line (w/#pragma) to add additional memory
-//#pragma dynamic 65536 
+#pragma dynamic 65536 
 // END MOD BY LAMDACORE
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.18"
+#define PLUGIN_VERSION "1.19"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
@@ -208,7 +212,6 @@ new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:cvarannounce = INVALID_HANDLE;
 new Handle:cvarsentence = INVALID_HANDLE;
 new Handle:cvarlogging = INVALID_HANDLE;
-new Handle:cvarallowbots = INVALID_HANDLE;
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
@@ -219,7 +222,7 @@ new Float:LastSound[MAXPLAYERS+1];
 new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 new Float:globalLastAdminSound = 0.0;
-new SDKVersion;
+//new SDKVersion;
 
 public Plugin:myinfo = 
 {
@@ -231,7 +234,7 @@ public Plugin:myinfo =
 };
 
 public OnPluginStart(){
-	SDKVersion = GuessSDKVersion();
+	//SDKVersion = GuessSDKVersion();
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
@@ -246,7 +249,6 @@ public OnPluginStart(){
 	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
 	cvarsentence = CreateConVar("sm_sound_sentence","0","When set, will trigger sounds if keyword is embedded in a sentence",FCVAR_PLUGIN);
 	cvarlogging = CreateConVar("sm_sound_logging","1","When set, will log sounds that are played",FCVAR_PLUGIN);
-	cvarallowbots = CreateConVar("sm_sound_allow_bots","1","When set, will allow bots to play sounds",FCVAR_PLUGIN);
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -371,14 +373,12 @@ public PlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast){
 
 public OnClientAuthorized(client, const String:auth[]){
 	if(client != 0){
-		if(!IsFakeClient(client) || GetConVarBool(cvarallowbots)){
-			SndOn[client] = 1;
-			SndCount[client] = 0;
-			LastSound[client] = 0.0;
-			firstSpawn[client]=true;
-			if(!GetConVarBool(cvarjoinspawn)){
-				CheckJoin(client, auth);
-			}
+		SndOn[client] = 1;
+		SndCount[client] = 0;
+		LastSound[client] = 0.0;
+		firstSpawn[client]=true;
+		if(!GetConVarBool(cvarjoinspawn)){
+			CheckJoin(client, auth);
 		}
 	}
 }
@@ -440,40 +440,6 @@ public OnClientDisconnect(client){
 			SndCount[client] = 0;
 		}
 	}
-}
-
-bool:Submit_Sound(client,const String:name[])
-{
-	decl String:filelocation[PLATFORM_MAX_PATH+1];
-	decl String:file[8] = "file";
-	new count = KvGetNum(listfile, "count", 1);
-	if (count > 1){
-		Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
-	}
-	KvGetString(listfile, file, filelocation, sizeof(filelocation));
-	if (!strlen(filelocation) && StrEqual(file, "file1")){
-		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
-	}
-	if (strlen(filelocation)){
-		Send_Sound(client, filelocation,name);
-		return true;
-	}
-	return false;
-}
-
-Send_Sound(client, const String:filelocation[], const String:name[])
-{
-	new adminonly = KvGetNum(listfile, "admin",0);
-	new singleonly = KvGetNum(listfile, "single",0);
-	new Float:duration = KvGetFloat(listfile, "duration",0.0);
-	new Handle:pack;
-	CreateDataTimer(0.2,Command_Play_Sound,pack);
-	WritePackCell(pack, client);
-	WritePackCell(pack, adminonly);
-	WritePackCell(pack, singleonly);
-	WritePackFloat(pack, duration);
-	WritePackString(pack, filelocation);
-	WritePackString(pack, name);
 }
 
 public Action:Command_Say(client,args){
@@ -605,6 +571,40 @@ public Action:Command_InsurgencySay(client,args){
 	return Plugin_Continue;
 }
 
+bool:Submit_Sound(client,const String:name[])
+{
+	decl String:filelocation[PLATFORM_MAX_PATH+1];
+	decl String:file[8] = "file";
+	new count = KvGetNum(listfile, "count", 1);
+	if (count > 1){
+		Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
+	}
+	KvGetString(listfile, file, filelocation, sizeof(filelocation));
+	if (!strlen(filelocation) && StrEqual(file, "file1")){
+		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
+	}
+	if (strlen(filelocation)){
+		Send_Sound(client, filelocation,name);
+		return true;
+	}
+	return false;
+}
+
+Send_Sound(client, const String:filelocation[], const String:name[])
+{
+	new adminonly = KvGetNum(listfile, "admin",0);
+	new singleonly = KvGetNum(listfile, "single",0);
+	new Float:duration = KvGetFloat(listfile, "duration",0.0);
+	new Handle:pack;
+	CreateDataTimer(0.2,Command_Play_Sound,pack);
+	WritePackCell(pack, client);
+	WritePackCell(pack, adminonly);
+	WritePackCell(pack, singleonly);
+	WritePackFloat(pack, duration);
+	WritePackString(pack, filelocation);
+	WritePackString(pack, name);
+}
+
 public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:name[PLATFORM_MAX_PATH+1];
@@ -637,12 +637,14 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 
 	// Make sure NOT to crash Counter Strike!
 	// Also, Don't check duration of mp3's (that might crash)
+	/*
 	if (SDKVersion >= 30 && StrContains(filelocation, "mp3", false) <= -1)
 	{
 		new Float:soundTime = GetSoundDuration(filelocation);
 		if (duration < soundTime)
 			duration = soundTime;
 	}
+	*/
 
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	if (waitTime < duration)
@@ -748,7 +750,7 @@ public Action:Command_Sound_Reset(client, args){
 		if (count > 0){
 			for(new x=0;x<count;x++){
 				new player=clients[x];
-				if(IsPlayerAlive(player) && !IsFakeClient(player)){
+				if(IsPlayerAlive(player)){
 					SndCount[player] = 0;
 					new String:clientname[64];
 					GetClientName(player,clientname,MAXPLAYERS);
@@ -779,7 +781,7 @@ public Action:Command_Sound_Ban(client, args){
 	if (count > 0){
 		for(new x=0;x<count;x++){
 			new player=clients[x];
-			if(IsPlayerAlive(player) && !IsFakeClient(player)){
+			if(IsPlayerAlive(player)){
 				new String:clientname[64];
 				GetClientName(player,clientname,MAXPLAYERS);
 				if (restrict_playing_sounds[player] == 1){
@@ -812,7 +814,7 @@ public Action:Command_Sound_Unban(client, args){
 	if (count > 0){
 		for(new x=0;x<count;x++){
 			new player=clients[x];
-			if(IsPlayerAlive(player) && !IsFakeClient(player)){
+			if(IsPlayerAlive(player)){
 				new String:clientname[64];
 				GetClientName(player,clientname,MAXPLAYERS);
 				if (restrict_playing_sounds[player] == 0){
