@@ -54,7 +54,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","8");
+    cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","10");
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
