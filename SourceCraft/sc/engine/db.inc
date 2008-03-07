@@ -187,10 +187,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
 
         new Handle:query=SQL_Query(DBIDB,SQLString);
         if (query && SQL_FetchRow(query))
-        {
             race_ident = SQL_FetchInt(query,0);
-            LogMessage("Found race_ident=%d for %s", race_ident, shortName);
-        }
         else
         {
             if (query)
@@ -208,10 +205,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
                 if (race_query)
                 {
                     if (SQL_FetchRow(race_query))
-                    {
                         race_ident = SQL_FetchInt(race_query,0);
-                        LogMessage("Inserted race %s,  race_ident=%d", shortName, race_ident);
-                    }
                     else
                     {
                         decl String:error[256] = "";
@@ -239,9 +233,6 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
         }
         SQL_UnlockDatabase(DBIDB);
     }
-    else
-        ThrowNativeError(-1, "Database Connection Not Found");
-
     return race_ident;
 }
 

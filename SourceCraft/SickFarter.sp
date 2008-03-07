@@ -351,9 +351,11 @@ public Fart(player,client,ultlevel)
     TE_SetupDust(clientLoc,dir,range,100.0);
     TE_SendToAll();
 
+    /*
     new color[4] = { 255, 100, 100, 200 };
     TE_SetupBeamFollow(client, g_steamSprite, g_steamSprite, 100.8, 10.0, 5.0, 100, color);
     TE_SendToAll();
+    */
 
     new count=0;
     new maxplayers=GetMaxClients();
@@ -400,7 +402,7 @@ public Fart(player,client,ultlevel)
             }
         }
     }
-    new Float:cooldown = GetConVarFloat(cvarFartCooldown) * 0.0; // Disable cooldown for now
+    new Float:cooldown = GetConVarFloat(cvarFartCooldown);
 
     if (count)
     {

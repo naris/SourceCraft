@@ -74,7 +74,7 @@ public OnPluginStart()
     GetGameType();
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
-    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
+    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
 
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))
         SetFailState("Could not hook the player_spawn event.");
