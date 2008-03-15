@@ -18,6 +18,9 @@
 #include "sc/trace"
 #include "sc/authtimer"
 #include "sc/maxhealth"
+#include "sc/weapons"
+#include "sc/respawn"
+#include "sc/weapons"
 #include "sc/respawn"
 #include "sc/log"
 
@@ -151,7 +154,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     if (attacker_race == raceID && attacker_index != victim_index)
     {
         if (victim_player != -1)
-            PickPocket(victim_index, victim_player, attacker_index, attacker_player);
+            PickPocket(event, victim_index, victim_player, attacker_index, attacker_player);
 
         if (attacker_player != -1)
         {
@@ -164,7 +167,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     if (assister_race == raceID && assister_index != victim_index)
     {
         if (victim_player != -1)
-            PickPocket(victim_index, victim_player, assister_index, assister_player);
+            PickPocket(event, victim_index, victim_player, assister_index, assister_player);
 
         if (assister_player != -1)
         {
@@ -233,22 +236,26 @@ public bool:FesteringAbomination(damage, victim_index, index, player)
     return false;
 }
 
-public PickPocket(victim_index, victim_player, index, player)
+public PickPocket(Handle:event,victim_index, victim_player, index, player)
 {
     new skill_pp = GetSkillLevel(player,raceID,1);
     if (skill_pp > 0)
     {
+        decl String:weapon[64] = "";
+        new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
+        new bool:is_melee=IsMelee(weapon, is_equipment);
+
         new chance;
         switch(skill_pp)
         {
             case 1:
-                chance=15;
+                chance=is_melee ? 25 : 15;
             case 2:
-                chance=25;
+                chance=is_melee ? 40 : 25;
             case 3:
-                chance=40;
+                chance=is_melee ? 60 : 40;
             case 4:
-                chance=60;
+                chance=is_melee ? 80 : 60;
         }
         new r = GetRandomInt(1,100);
         if(r<=chance)
@@ -257,13 +264,13 @@ public PickPocket(victim_index, victim_player, index, player)
             switch(skill_pp)
             {
                 case 1:
-                    percent=0.20;
+                    percent=is_melee ? 0.37 : 0.20;
                 case 2:
-                    percent=0.37;
+                    percent=is_melee ? 0.53 : 0.37;
                 case 3:
-                    percent=0.63;
+                    percent=is_melee ? 0.80 : 0.63;
                 case 4:
-                    percent=1.0;
+                    percent=is_melee ? 1.0 : 0.92;
             }
 
             new victim_cash=GetCredits(victim_player);
