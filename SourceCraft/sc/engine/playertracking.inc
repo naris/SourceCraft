@@ -69,29 +69,78 @@ public bool:InitiatePlayerArray()
     return bool:(arrayPlayers != INVALID_HANDLE);
 }
 
+public CreatePlayer(client)
+{
+    new Handle:newPlayer=CreateArray();
+    PushArrayCell(newPlayer,client); // The first thing is client index
+    PushArrayCell(newPlayer,-1); // Database Ident
+    PushArrayCell(newPlayer,0); // Player race
+    PushArrayCell(newPlayer,-1); // Pending race
+    PushArrayCell(newPlayer,0); // Pending skill reset
+    PushArrayCell(newPlayer,0); // Credits
+    PushArrayCell(newPlayer,0); // Overall Level
+
+    new Handle:properties=CreateArray(); // Player's properties
+    PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
+
+    new Handle:shopitems=CreateArray(); // Player's shop items
+    PushArrayCell(newPlayer,shopitems);
+    new shopItemCount=GetArraySize(shopVector);
+    for(new x=0;x<shopItemCount;x++)
+        PushArrayCell(shopitems,0);     // Owns item x
+
+    new Handle:immunities=CreateArray(); // Player's immunities
+    PushArrayCell(newPlayer,immunities);
+    for(new x=0;x<IMMUNITY_COUNT;x++)
+        PushArrayCell(immunities,0);     // Has immunity x
+
+    new raceCount = RACE_COUNT();
+    for(new x=0;x<raceCount;x++)
+    {
+        new Handle:raceinfo=CreateArray(); // Player's races
+        PushArrayCell(newPlayer,raceinfo);
+        PushArrayCell(raceinfo,0); // Race x XP
+        PushArrayCell(raceinfo,0); // Race x Level
+        for(new y=0;y<SKILL_COUNT;y++)
+            PushArrayCell(raceinfo,0); // Skill level for race x skill y
+    }
+
+    new vecpos = -1;
+    if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
+    {
+        // Put our new player at the end of the arrayPlayers vector
+        vecpos = PushArrayCell(arrayPlayers,newPlayer);
+    }
+
+    return vecpos;
+}
+
 public ClearPlayerArray()
 {
-    new raceCount = RACE_COUNT();
     new playerCount = PLAYER_COUNT();
     for(new x=0;x<playerCount;x++)
-    {
-        new Handle:vec=GetArrayCell(arrayPlayers,x);
-        new Handle:properties=GetArrayCell(vec,INFO_PROPERTIES);
-        new Handle:shopitems=GetArrayCell(vec,INFO_SHOPITEMS);
-        new Handle:immunities=GetArrayCell(vec,INFO_IMMUNITIES);
-        ClearArray(properties);
-        ClearArray(shopitems);
-        ClearArray(immunities);
-
-        for(new r=0;r<raceCount;r++)
-        {
-            new Handle:raceinfo=GetArrayCell(vec,INFO_COUNT+r);
-            ClearArray(raceinfo);
-        }
-
-        ClearArray(vec);
-    }
+        ClearPlayer(x);
     ClearArray(arrayPlayers);
+}
+
+public ClearPlayer(x)
+{
+    new Handle:vec=GetArrayCell(arrayPlayers,x);
+    new Handle:properties=GetArrayCell(vec,INFO_PROPERTIES);
+    new Handle:shopitems=GetArrayCell(vec,INFO_SHOPITEMS);
+    new Handle:immunities=GetArrayCell(vec,INFO_IMMUNITIES);
+    ClearArray(properties);
+    ClearArray(shopitems);
+    ClearArray(immunities);
+
+    new raceCount = RACE_COUNT();
+    for(new r=0;r<raceCount;r++)
+    {
+        new Handle:raceinfo=GetArrayCell(vec,INFO_COUNT+r);
+        ClearArray(raceinfo);
+    }
+
+    ClearArray(vec);
 }
 
 public GetClientVectorPosition(client)
@@ -100,9 +149,12 @@ public GetClientVectorPosition(client)
     for(new x=0;x<size;x++)
     {
         new Handle:ply=GetArrayCell(arrayPlayers,x);
-        new curClient=GetArrayCell(ply,INFO_CLIENT_INDEX);
-        if(client==curClient)
-            return x;
+        if (ply != INVALID_HANDLE)
+        {
+            new curClient=GetArrayCell(ply,INFO_CLIENT_INDEX);
+            if(client==curClient)
+                return x;
+        }
     }
     return -1;
 }

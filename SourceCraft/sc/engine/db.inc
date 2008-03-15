@@ -13,6 +13,7 @@
 // DBI
 new Handle:DBIDB = INVALID_HANDLE;
 new bool:DBIsSQLite = false;
+new bool:g_AllPlayersSaved = false;
 
 public ConnectToDatabase()
 {
@@ -381,6 +382,7 @@ public SaveAllPlayersData()
             if (IsClientInGame(client))
                 SavePlayerData(client,x, false);
         }
+        g_AllPlayersSaved = true;
     }
 }
 
@@ -681,6 +683,9 @@ public SQL_SavePlayerSkills(Handle:owner, Handle:hndl, const String:error[], any
             ThrowError("Unable to insert/replace one of %N's skills: %s", client, error);
 
         if (removePlayer)
+        {
+            ClearPlayer(vectorpos);
             RemoveFromArray(arrayPlayers,vectorpos);
+        }
     }
 }

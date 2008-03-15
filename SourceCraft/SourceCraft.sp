@@ -106,7 +106,7 @@ public OnPluginStart()
         SetFailState("There was a failure in creating the race vector.");
 
     if(!ConnectToDatabase())
-        SetFailState("There was a failure in connecting to the database.");
+        LogMessage("Saving DISABLED!");
     
     if(!InitiateShopVector())
         SetFailState("There was a failure in creating the shop vector.");
@@ -170,11 +170,12 @@ public OnMapStart()
 {
     ClearPlayerArray();
     SetupSound(notEnoughWav,true,true);
+    g_AllPlayersSaved = false;
 }
 
 public OnMapEnd()
 {
-    if (GameType != tf2)
+    if (!g_AllPlayersSaved)
         SaveAllPlayersData();
 }
 
@@ -182,50 +183,17 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        new Handle:newPlayer=CreateArray();
-        PushArrayCell(newPlayer,client); // The first thing is client index
-        PushArrayCell(newPlayer,-1); // Database Ident
-        PushArrayCell(newPlayer,0); // Player race
-        PushArrayCell(newPlayer,-1); // Pending race
-        PushArrayCell(newPlayer,0); // Pending skill reset
-        PushArrayCell(newPlayer,0); // Credits
-        PushArrayCell(newPlayer,0); // Overall Level
+        m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
-        new Handle:properties=CreateArray(); // Player's properties
-        PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
-
-        new Handle:shopitems=CreateArray(); // Player's shop items
-        PushArrayCell(newPlayer,shopitems);
-        new shopItemCount=GetArraySize(shopVector);
-        for(new x=0;x<shopItemCount;x++)
-            PushArrayCell(shopitems,0);     // Owns item x
-
-        new Handle:immunities=CreateArray(); // Player's immunities
-        PushArrayCell(newPlayer,immunities);
-        for(new x=0;x<IMMUNITY_COUNT;x++)
-            PushArrayCell(immunities,0);     // Has immunity x
-
-        new raceCount = RACE_COUNT();
-        for(new x=0;x<raceCount;x++)
+        new vecpos = CreatePlayer(client);
+        if (vecpos >= 0)
         {
-            new Handle:raceinfo=CreateArray(); // Player's races
-            PushArrayCell(newPlayer,raceinfo);
-            PushArrayCell(raceinfo,0); // Race x XP
-            PushArrayCell(raceinfo,0); // Race x Level
-            for(new y=0;y<SKILL_COUNT;y++)
-                PushArrayCell(raceinfo,0); // Skill level for race x skill y
-        }
-
-        if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
-        {
-            PushArrayCell(arrayPlayers,newPlayer); // Put our new player at the end of the arrayPlayers vector
             Call_StartForward(g_OnPlayerAuthedHandle);
             Call_PushCell(client);
             Call_PushCell(GetClientVectorPosition(client));
             new res;
             Call_Finish(res);
-            m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
-            new vecpos=GetClientVectorPosition(client);
+
             if(SAVE_ENABLED)
                 m_FirstSpawn[client]=LoadPlayerData(client,vecpos);
             else
@@ -249,7 +217,10 @@ public OnClientDisconnect(client)
             if (SAVE_ENABLED)
                 SavePlayerData(client,clientVecPos,true);
             else
+            {
+                ClearPlayer(clientVecPos);
                 RemoveFromArray(arrayPlayers,clientVecPos);
+            }
 
             m_FirstSpawn[client]=2;
         }
