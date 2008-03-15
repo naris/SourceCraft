@@ -635,17 +635,6 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		return Plugin_Handled;
 	}
 
-	// Make sure NOT to crash Counter Strike!
-	// Also, Don't check duration of mp3's (that might crash)
-	/*
-	if (SDKVersion >= 30 && StrContains(filelocation, "mp3", false) <= -1)
-	{
-		new Float:soundTime = GetSoundDuration(filelocation);
-		if (duration < soundTime)
-			duration = soundTime;
-	}
-	*/
-
 	new Float:waitTime = GetConVarFloat(cvartimebetween);
 	if (waitTime < duration)
 		waitTime = duration;
