@@ -267,8 +267,8 @@ public LoadPlayerData(client,vectorpos)
                     SetCredits(vectorpos,SQL_FetchInt(query,2));
                     SetOverallLevel(vectorpos,SQL_FetchInt(query,3));
 
-                    LogMessage("Loaded %N's player data, client=%d, vectorpos=%d, player_ident=%d",
-                               client, client, vectorpos, player_ident);
+                    //LogMessage("Loaded %N's player data, client=%d, vectorpos=%d, player_ident=%d",
+                    //           client, client, vectorpos, player_ident);
 
                     // Load the rest of the Player data using threads.
                     CloseHandle(query);
@@ -439,8 +439,8 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
         }
         else
         {
-            LogMessage("Updated %N's player data, client=%d, vectorpos=%d, player_ident=%d",
-                       client, client, vectorpos, player_ident);
+            //LogMessage("Updated %N's player data, client=%d, vectorpos=%d, player_ident=%d",
+            //           client, client, vectorpos, player_ident);
 
             SavePlayerRaces(client, vectorpos, player_ident);
         }
@@ -510,8 +510,8 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
             new player_ident = SQL_FetchInt(hndl,0);
             if (player_ident > 0)
             {
-                LogMessage("Found %N's player_ident=%d, retrying save...",
-                           client, player_ident);
+                //LogMessage("Found %N's player_ident=%d, retrying save...",
+                //           client, player_ident);
 
                 SetDatabaseIdent(vectorpos,player_ident);
                 SavePlayerData(client,vectorpos);
@@ -544,8 +544,8 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
             new player_ident = SQL_FetchInt(hndl,0);
             SetDatabaseIdent(vectorpos,player_ident);
 
-            LogMessage("Inserted %N's player data, client=%d, vectorpos=%d, player_ident=%d",
-                       client, client, vectorpos, player_ident);
+            //LogMessage("Inserted %N's player data, client=%d, vectorpos=%d, player_ident=%d",
+            //           client, client, vectorpos, player_ident);
 
             SavePlayerRaces(client, vectorpos, player_ident);
         }
@@ -616,8 +616,8 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
         }
         else
         {
-            LogMessage("Updated %N's race data, player_ident=%d, race_ident=%d",
-                       client, player_ident, race_ident);
+            //LogMessage("Updated %N's race data, player_ident=%d, race_ident=%d",
+            //           client, player_ident, race_ident);
 
             decl String:SQLString[512] = "";
             for(new skill=0;skill<SKILL_COUNT;skill++)
