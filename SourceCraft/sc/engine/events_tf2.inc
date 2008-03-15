@@ -338,5 +338,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
             GiveMvpXP(index,vecpos,3,points);
         }
     }
+
+    SaveAllPlayersData();
 }
 

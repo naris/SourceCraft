@@ -43,8 +43,8 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/engine/damage"
 #include "sc/engine/races"
 #include "sc/engine/shopmenu"
-#include "sc/engine/db"
 #include "sc/engine/playertracking"
+#include "sc/engine/db"
 #include "sc/engine/natives"
 #include "sc/engine/hooks"
 #include "sc/engine/xp"
@@ -174,16 +174,8 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    if (SAVE_ENABLED)
-    {
-        new playerCount = PLAYER_COUNT();
-        for(new x=0;x<playerCount;x++)
-        {
-            new client=GetClientIndex(x);
-            if (IsClientInGame(client))
-                SavePlayerData(client,x);
-        }
-    }
+    if (GameType != tf2)
+        SaveAllPlayersData();
 }
 
 public OnClientPutInServer(client)

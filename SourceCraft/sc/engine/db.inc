@@ -370,6 +370,20 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
     }
 }
 
+public SaveAllPlayersData()
+{
+    if (SAVE_ENABLED)
+    {
+        new playerCount = PLAYER_COUNT();
+        for(new x=0;x<playerCount;x++)
+        {
+            new client=GetClientIndex(x);
+            if (IsClientInGame(client))
+                SavePlayerData(client,x);
+        }
+    }
+}
+
 public SavePlayerData(client,vectorpos)
 {
     if(DBIDB)
