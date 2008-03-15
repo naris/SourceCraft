@@ -250,7 +250,8 @@ public PickPocket(victim_index, victim_player, index, player)
             case 4:
                 chance=60;
         }
-        if(GetRandomInt(1,100)<=chance)
+        new r = GetRandomInt(1,100);
+        if(r<=chance)
         {
             new Float:percent;
             switch(skill_pp)
@@ -282,13 +283,21 @@ public PickPocket(victim_index, victim_player, index, player)
                 decl String:currencies[64];
                 GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
 
+                LogMessage("%N stole %d %s from %N", index, amount, currencies, victim_index);
+
                 PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
                             COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
                 PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
                             COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
             }
+            else
+                LogMessage("%N has no cash to steal", victim_index);
         }
+        else
+            LogMessage("%N's chance (%d of %d) to steal from %N was too high", index, r, chance, victim_index);
     }
+    else
+        LogMessage("%N's doesn't have pickpocket skills", index);
 }
 
 public Fart(player,client,ultlevel)
