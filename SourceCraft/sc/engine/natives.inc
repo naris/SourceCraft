@@ -742,8 +742,8 @@ public bool:InitNatives()
     CreateNative("SetSkillLevel",Native_SetSkillLevel);
     CreateNative("GetXP",Native_GetXP);
     CreateNative("SetXP",Native_SetXP);
-    CreateNative("GetCredits",Native_GetXP);
-    CreateNative("SetCredits",Native_SetXP);
+    CreateNative("GetCredits",Native_GetCredits);
+    CreateNative("SetCredits",Native_SetCredits);
     CreateNative("GetOwnsItem",Native_GetOwnsItem);
     CreateNative("SetOwnsItem",Native_SetOwnsItem);
     CreateNative("GetImmunity",Native_GetImmunity);

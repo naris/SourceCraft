@@ -260,22 +260,22 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
         new r = GetRandomInt(1,100);
         if(r<=chance)
         {
-            new Float:percent;
-            switch(skill_pp)
-            {
-                case 1:
-                    percent=is_melee ? 0.37 : 0.20;
-                case 2:
-                    percent=is_melee ? 0.53 : 0.37;
-                case 3:
-                    percent=is_melee ? 0.80 : 0.63;
-                case 4:
-                    percent=is_melee ? 1.0 : 0.92;
-            }
-
             new victim_cash=GetCredits(victim_player);
             if (victim_cash > 0)
             {
+                new Float:percent;
+                switch(skill_pp)
+                {
+                    case 1:
+                        percent=is_melee ? 0.37 : 0.20;
+                    case 2:
+                        percent=is_melee ? 0.53 : 0.37;
+                    case 3:
+                        percent=is_melee ? 0.80 : 0.63;
+                    case 4:
+                        percent=is_melee ? 1.0 : 0.92;
+                }
+
                 new cash=GetCredits(player);
                 new amount = RoundToCeil(float(victim_cash) * percent);
 
@@ -298,7 +298,7 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
                             COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
             }
             else
-                LogMessage("%N has no cash to steal", victim_index);
+                LogMessage("%N has no cash to steal %d", victim_index, victim_cash);
         }
         else
             LogMessage("%N's chance (%d of %d) to steal from %N was too high", index, r, chance, victim_index);
