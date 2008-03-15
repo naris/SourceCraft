@@ -247,9 +247,10 @@ public OnClientDisconnect(client)
         if (clientVecPos>-1)
         {
             if (SAVE_ENABLED)
-                SavePlayerData(client,clientVecPos);
+                SavePlayerData(client,clientVecPos,true);
+            else
+                RemoveFromArray(arrayPlayers,clientVecPos);
 
-            RemoveFromArray(arrayPlayers,clientVecPos);
             m_FirstSpawn[client]=2;
         }
     }

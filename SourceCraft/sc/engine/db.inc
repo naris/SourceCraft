@@ -379,12 +379,12 @@ public SaveAllPlayersData()
         {
             new client=GetClientIndex(x);
             if (IsClientInGame(client))
-                SavePlayerData(client,x);
+                SavePlayerData(client,x, false);
         }
     }
 }
 
-public SavePlayerData(client,vectorpos)
+public SavePlayerData(client,vectorpos,bool:removePlayer)
 {
     if(DBIDB)
     {
@@ -414,6 +414,7 @@ public SavePlayerData(client,vectorpos)
                 WritePackCell(dataPack, client);
                 WritePackCell(dataPack, vectorpos);
                 WritePackCell(dataPack, player_ident);
+                WritePackCell(dataPack, _:removePlayer);
                 ResetPack(dataPack);
                 SQL_TQuery(DBIDB, SQL_UpdatePlayer, SQLString, dataPack);
             }
@@ -424,6 +425,7 @@ public SavePlayerData(client,vectorpos)
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
                 WritePackCell(dataPack, vectorpos);
+                WritePackCell(dataPack, _:removePlayer);
                 WritePackString(dataPack, steamid);
                 ResetPack(dataPack);
                 SQL_TQuery(DBIDB, SQL_InsertPlayer, SQLString, dataPack);
@@ -443,6 +445,7 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
         new client       = ReadPackCell(data); 
         new vectorpos    = ReadPackCell(data); 
         new player_ident = ReadPackCell(data); 
+        new bool:removePlayer  = bool:ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -456,7 +459,7 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
             //LogMessage("Updated %N's player data, client=%d, vectorpos=%d, player_ident=%d",
             //           client, client, vectorpos, player_ident);
 
-            SavePlayerRaces(client, vectorpos, player_ident);
+            SavePlayerRaces(client, vectorpos, player_ident, removePlayer);
         }
     }
 }
@@ -471,6 +474,7 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
 
         new client    = ReadPackCell(data); 
         new vectorpos = ReadPackCell(data); 
+        new bool:removePlayer  = bool:ReadPackCell(data); 
 
         decl String:steamid[64]="";
         ReadPackString(data, steamid, sizeof(steamid));
@@ -488,6 +492,7 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
             new Handle:dataPack = CreateDataPack();
             WritePackCell(dataPack, client);
             WritePackCell(dataPack, vectorpos);
+            WritePackCell(dataPack, removePlayer);
             ResetPack(dataPack);
             SQL_TQuery(DBIDB, SQL_SelectPlayerIdent, SQLString, dataPack);
         }
@@ -501,6 +506,7 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
             new Handle:dataPack = CreateDataPack();
             WritePackCell(dataPack, client);
             WritePackCell(dataPack, vectorpos);
+            WritePackCell(dataPack, _:removePlayer);
             ResetPack(dataPack);
             SQL_TQuery(DBIDB, SQL_SelectLastPlayerIdent, SQLString, dataPack);
         }
@@ -515,6 +521,7 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
     {
         new client    = ReadPackCell(data); 
         new vectorpos = ReadPackCell(data); 
+        new bool:removePlayer  = bool:ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -528,7 +535,7 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
                 //           client, player_ident);
 
                 SetDatabaseIdent(vectorpos,player_ident);
-                SavePlayerData(client,vectorpos);
+                SavePlayerData(client,vectorpos,removePlayer);
             }
             else
             {
@@ -549,6 +556,7 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
     {
         new client    = ReadPackCell(data); 
         new vectorpos = ReadPackCell(data); 
+        new bool:removePlayer  = bool:ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -556,12 +564,10 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
         else if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
         {
             new player_ident = SQL_FetchInt(hndl,0);
+            SavePlayerRaces(client, vectorpos, player_ident, removePlayer);
             SetDatabaseIdent(vectorpos,player_ident);
-
             //LogMessage("Inserted %N's player data, client=%d, vectorpos=%d, player_ident=%d",
             //           client, client, vectorpos, player_ident);
-
-            SavePlayerRaces(client, vectorpos, player_ident);
         }
         else
             ThrowError("Unable to fetch %N's ident: %s", client, error);
@@ -569,7 +575,7 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
 }
 
 
-public SavePlayerRaces(client, vectorpos, player_ident)
+public SavePlayerRaces(client, vectorpos, player_ident, bool:removePlayer)
 {
     decl String:SQLString[512] = "";
     new raceCount = RACE_COUNT();
@@ -599,6 +605,7 @@ public SavePlayerRaces(client, vectorpos, player_ident)
             WritePackCell(dataPack, raceId);
             WritePackCell(dataPack, race_ident);
             WritePackCell(dataPack, _:raceHandle);
+            WritePackCell(dataPack, _:removePlayer);
             ResetPack(dataPack);
             SQL_TQuery(DBIDB, SQL_SavePlayerRaces, SQLString, dataPack);
         }
@@ -617,6 +624,7 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
         new raceId = ReadPackCell(data);
         new race_ident = ReadPackCell(data);
         new Handle:raceHandle = Handle:ReadPackCell(data);
+        new bool:removePlayer  = bool:ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -647,15 +655,32 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
                     Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
                 }
 
-                SQL_TQuery(DBIDB, SQL_SavePlayerSkills, SQLString, client);
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, client);
+                WritePackCell(dataPack, _:removePlayer);
+                ResetPack(dataPack);
+                SQL_TQuery(DBIDB, SQL_SavePlayerSkills, SQLString, dataPack);
             }
         }
     }
 
 }
 
-public SQL_SavePlayerSkills(Handle:owner, Handle:hndl, const String:error[], any:client)
+public SQL_SavePlayerSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
-    if (hndl == INVALID_HANDLE || error[0] != '\0')
-        ThrowError("Unable to insert/replace one of %N's skills: %s", client, error);
+    if (data == INVALID_HANDLE)
+        ThrowError("Invalid Datapack Passed to SQL_SavePlayerSkills!");
+    else 
+    {
+        new client = ReadPackCell(data); 
+        new vectorpos = ReadPackCell(data); 
+        new bool:removePlayer  = bool:ReadPackCell(data); 
+        CloseHandle(data);
+
+        if (hndl == INVALID_HANDLE || error[0] != '\0')
+            ThrowError("Unable to insert/replace one of %N's skills: %s", client, error);
+
+        if (removePlayer)
+            RemoveFromArray(arrayPlayers,vectorpos);
+    }
 }
