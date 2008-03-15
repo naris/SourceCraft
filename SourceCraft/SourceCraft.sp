@@ -215,12 +215,10 @@ public OnClientDisconnect(client)
         if (clientVecPos>-1)
         {
             if (SAVE_ENABLED)
-                SavePlayerData(client,clientVecPos,true);
-            else
-            {
-                ClearPlayer(clientVecPos);
-                RemoveFromArray(arrayPlayers,clientVecPos);
-            }
+                SavePlayerData(client,clientVecPos,false);
+
+            ClearPlayer(clientVecPos);
+            RemoveFromArray(arrayPlayers,clientVecPos);
 
             m_FirstSpawn[client]=2;
         }
