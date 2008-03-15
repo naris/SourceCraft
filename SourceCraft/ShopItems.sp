@@ -389,12 +389,33 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 assister_index,assister_player,assister_race,
                                 damage)
 {
-    new bool:changed    = false;
+    new bool:changed = false;
 
     if(victim_index && victim_index != attacker_index)
     {
         if(victim_player !=-1 && attacker_player != -1)
         {
+            if (GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
+            {
+                if(isMole[attacker_index])
+                {
+                    new victim_health = GetClientHealth(victim_index);
+                    new prev_health   = victim_health+damage;
+                    new new_health    = (victim_health+prev_health)/2;
+
+                    if (new_health <= victim_health)
+                        new_health = victim_health+(damage/2);
+
+                    if (new_health>victim_health)
+                    {
+                        changed = true;
+                        SetEntityHealth(victim_index,new_health);
+                        PrintToChat(victim_index,"%c[SourceCraft]%c You have received %d hp from %cMole Protection%c.",
+                                    COLOR_GREEN,COLOR_DEFAULT,new_health-victim_health,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+                }
+            }
+
             if(!GetImmunity(victim_player,Immunity_ShopItems))
             {
                 if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
@@ -482,21 +503,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                     }
                     PrintToChat(victim_index,"%c[SourceCraft] %s %chas frozen you with the %cOrb of Frost%c",
                                 COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                }
-
-                if (GetOwnsItem(attacker_player,shopItem[ITEM_MOLE_PROTECTION]))
-                {
-                    if(isMole[attacker_index])
-                    {
-                        new h1=GetEventInt(event,"health")+damage;
-                        new h2=GetClientHealth(victim_index);
-                        if(!h2)
-                            SetEntityHealth(victim_index,0); // They should really be dead.
-                        else if(h2<h1)
-                            SetEntityHealth(victim_index,(h1+h2)/2);
-
-                        changed = true;
-                    }
                 }
             }
         }
