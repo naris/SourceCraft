@@ -659,6 +659,7 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
+                WritePackCell(dataPack, vectorpos);
                 WritePackCell(dataPack, _:removePlayer);
                 ResetPack(dataPack);
                 SQL_TQuery(DBIDB, SQL_SavePlayerSkills, SQLString, dataPack);
