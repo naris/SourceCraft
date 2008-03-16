@@ -93,7 +93,7 @@ public OnPluginStart()
         SetFailState("Couldn't hook the player_spawn event.");
 
     CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
-    CreateTimer(2.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(1.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 
     if (GameType == cstrike)
         CreateTimer(1.0,TrackWeapons,INVALID_HANDLE,TIMER_REPEAT);
@@ -113,7 +113,7 @@ public OnPluginReady()
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
     shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack","You will be given ammo or metal every 10 seconds.","35");
-    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every 2 seconds, won't exceed your normal HP.","15");
+    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every second, won't exceed your normal HP.","15");
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
