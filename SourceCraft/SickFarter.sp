@@ -257,8 +257,7 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
             case 4:
                 chance=is_melee ? 80 : 60;
         }
-        new r = GetRandomInt(1,100);
-        if(r<=chance)
+        if(GetRandomInt(1,100)<=chance)
         {
             new victim_cash=GetCredits(victim_player);
             if (victim_cash > 0)
@@ -267,13 +266,13 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
                 switch(skill_pp)
                 {
                     case 1:
-                        percent=is_melee ? 0.37 : 0.20;
+                        percent=GetRandomFloat(0.1,is_melee ? 0.37 : 0.20);
                     case 2:
-                        percent=is_melee ? 0.53 : 0.37;
+                        percent=GetRandomFloat(0.2,is_melee ? 0.53 : 0.37);
                     case 3:
-                        percent=is_melee ? 0.80 : 0.63;
+                        percent=GetRandomFloat(0.3,is_melee ? 0.80 : 0.63);
                     case 4:
-                        percent=is_melee ? 1.0 : 0.92;
+                        percent=GetRandomFloat(is_melee ? 1.0 : 0.92, 1.0);
                 }
 
                 new cash=GetCredits(player);
@@ -297,14 +296,8 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
                 PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
                             COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
             }
-            else
-                LogMessage("%N has no cash to steal %d", victim_index, victim_cash);
         }
-        else
-            LogMessage("%N's chance (%d of %d) to steal from %N was too high", index, r, chance, victim_index);
     }
-    else
-        LogMessage("%N's doesn't have pickpocket skills", index);
 }
 
 public Fart(player,client,ultlevel)
