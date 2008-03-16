@@ -387,7 +387,7 @@ public SaveAllPlayersData()
         {
             new client=GetClientIndex(x);
             if (IsClientInGame(client))
-                SavePlayerData(client,x,true);
+                SavePlayerData(client,x,false);
         }
         g_AllPlayersSaved = true;
     }
