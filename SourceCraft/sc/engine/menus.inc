@@ -70,7 +70,14 @@ public IntroMenu(client)
 {
     new Handle:introMenu=CreateMenu(IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
-    SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get XP points for completing objectives.\nEach level gained, you may choose a skill to\nlevel up. For a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+    if (RACE_COUNT() >= 1)
+    {
+        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose a skill to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+    }
+    else
+    {
+        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Crystals for completing objectives.\nPurchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+    }
     SetMenuExitButton(introMenu,true);
     AddMenuItem(introMenu,"","Exit");
     DisplayMenu(introMenu,client, 20);
@@ -81,7 +88,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
     if (action == MenuAction_Select ||
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
-        if (m_FirstSpawn[client] > 1)
+        if (m_FirstSpawn[client] > 1 && RACE_COUNT() >= 1)
             RaceMenu(client, true, INVALID_FUNCTION);
         else
             m_FirstSpawn[client]=0;
@@ -95,15 +102,17 @@ public MainMenu(client,vecpos,Function:parentMenuFunction)
     new Handle:scMenu=CreateMenu(Menu_Select);
     SetMenuExitButton(scMenu,true);
     SetMenuTitle(scMenu,"[SourceCraft] Choose a task.");
+    new race_style = (RACE_COUNT() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     decl String:buf[4];
     Format(buf,sizeof(buf),"%d",vecpos);
-    AddMenuItem(scMenu,buf,"Bring up the shopmenu");
-    AddMenuItem(scMenu,buf,"Change your race");
-    AddMenuItem(scMenu,buf,"View your race's skills information");
-    AddMenuItem(scMenu,buf,"Reset your skills");
-    AddMenuItem(scMenu,buf,"Spend unused skill points");
-    AddMenuItem(scMenu,buf,"Show current skill levels");
-    AddMenuItem(scMenu,buf,"Show current items owned");
+    AddMenuItem(scMenu,buf,"Bring up the shopmenu",shop_style);
+    AddMenuItem(scMenu,buf,"Change your race",race_style);
+    AddMenuItem(scMenu,buf,"View your race's skills information",race_style);
+    AddMenuItem(scMenu,buf,"Reset your skills",race_style);
+    AddMenuItem(scMenu,buf,"Spend unused skill points",race_style);
+    AddMenuItem(scMenu,buf,"Show current skill levels",race_style);
+    AddMenuItem(scMenu,buf,"Show current items owned",shop_style);
     AddMenuItem(scMenu,buf,"View command list");
     DisplayMenu(scMenu,client,MENU_TIME_FOREVER);
 }
@@ -159,41 +168,47 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 
 public RaceMenu(client,bool:change,Function:parentMenuFunction)
 {
-    new Handle:crMenu=CreateMenu(RaceMenu_Selected);
-    
-    if (change)
-        SetMenuTitle(crMenu, "[SourceCraft] Select your desired race.\n");
-    else
-        SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
-
-    SetMenuExitButton(crMenu,true);
-    SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
-
-    // Iterate through the races and print them out
-    new Handle:race;
-    decl String:rbuf[4];
-    decl String:rname[64];
-    decl String:ritem[96];
-    new raceCount = RACE_COUNT();
-    for(new x=0;x<raceCount;x++)
+    if (RACE_COUNT() >= 1)
     {
-        race=Race(x);
-        Format(rbuf,sizeof(rbuf),"%d",x);
-        GetRaceName(race,rname,sizeof(rname));
-        new reqLevel = GetRaceRequiredLevel(race);
-        if (reqLevel)
-        {
-            new level = GetOverallLevel(GetClientVectorPosition(client));
-            new style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-            Format(ritem,sizeof(ritem),"%s (overall level must be >= %d)",rname, reqLevel);
-            AddMenuItem(crMenu,rbuf,ritem,style);
-        }
+        new Handle:crMenu=CreateMenu(RaceMenu_Selected);
+
+        if (change)
+            SetMenuTitle(crMenu, "[SourceCraft] Select your desired race.\n");
         else
-            AddMenuItem(crMenu,rbuf,rname);
+            SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
+
+        SetMenuExitButton(crMenu,true);
+        SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
+
+        // Iterate through the races and print them out
+        new Handle:race;
+        decl String:rbuf[4];
+        decl String:rname[64];
+        decl String:ritem[96];
+        new raceCount = RACE_COUNT();
+        for(new x=0;x<raceCount;x++)
+        {
+            race=Race(x);
+            Format(rbuf,sizeof(rbuf),"%d",x);
+            GetRaceName(race,rname,sizeof(rname));
+            new reqLevel = GetRaceRequiredLevel(race);
+            if (reqLevel)
+            {
+                new level = GetOverallLevel(GetClientVectorPosition(client));
+                new style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                Format(ritem,sizeof(ritem),"%s (overall level must be >= %d)",rname, reqLevel);
+                AddMenuItem(crMenu,rbuf,ritem,style);
+            }
+            else
+                AddMenuItem(crMenu,rbuf,rname);
+        }
+        gRaceMenuMode[client]=change;
+        gRaceMenuParentMenuFunction[client]=parentMenuFunction;
+        DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
-    gRaceMenuMode[client]=change;
-    gRaceMenuParentMenuFunction[client]=parentMenuFunction;
-    DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
+    else
+        PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
+                COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -227,41 +242,47 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
 public SkillMenu(client, vectorpos, Function:parentMenuFunction)
 {
-    new Handle:sMenu=CreateMenu(SMenu_Selected);
-    new race_num=GetRace(vectorpos);
-    new skillcount=GetSkillCount(vectorpos,race_num);
-    new level=GetLevel(vectorpos,race_num);
-    SetMenuExitButton(sMenu,true);
-    SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
-    SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
-    decl String:skillname[64];
-    new curlevel;
-    new Handle:race=Race(race_num);
-    new Handle:strings=GetArrayCell(race,RACE_STRINGS);
-    decl String:sbuf[4];
-    decl String:buf[192];
-    new style = ITEMDRAW_DEFAULT;
-    for(new x=0;x<SKILL_COUNT;x++)
+    if (RACE_COUNT() >= 1)
     {
-        GetArrayString(strings,RACE_SKILL+(x*2),skillname,sizeof(skillname));
-        Format(sbuf,sizeof(sbuf),"%d",x);
-        curlevel=GetSkillLevel(vectorpos,race_num,x);
-        if(curlevel!=4)
+        new Handle:sMenu=CreateMenu(SMenu_Selected);
+        new race_num=GetRace(vectorpos);
+        new skillcount=GetSkillCount(vectorpos,race_num);
+        new level=GetLevel(vectorpos,race_num);
+        SetMenuExitButton(sMenu,true);
+        SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
+        SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
+        decl String:skillname[64];
+        new curlevel;
+        new Handle:race=Race(race_num);
+        new Handle:strings=GetArrayCell(race,RACE_STRINGS);
+        decl String:sbuf[4];
+        decl String:buf[192];
+        new style = ITEMDRAW_DEFAULT;
+        for(new x=0;x<SKILL_COUNT;x++)
         {
-            if(x!=SKILL_ULTIMATE)
-                Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
-            else
+            GetArrayString(strings,RACE_SKILL+(x*2),skillname,sizeof(skillname));
+            Format(sbuf,sizeof(sbuf),"%d",x);
+            curlevel=GetSkillLevel(vectorpos,race_num,x);
+            if(curlevel!=4)
             {
-                Format(buf,sizeof(buf),"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
-                       skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
-                if (GetLevel(vectorpos,race_num) < MIN_ULTIMATE_LEVEL)
-                    style = ITEMDRAW_DISABLED;
+                if(x!=SKILL_ULTIMATE)
+                    Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
+                else
+                {
+                    Format(buf,sizeof(buf),"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
+                           skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
+                    if (GetLevel(vectorpos,race_num) < MIN_ULTIMATE_LEVEL)
+                        style = ITEMDRAW_DISABLED;
+                }
+                AddMenuItem(sMenu,sbuf,buf,style);
             }
-            AddMenuItem(sMenu,sbuf,buf,style);
         }
+        gSkillMenuParentMenuFunction[client]=parentMenuFunction;
+        DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
     }
-    gSkillMenuParentMenuFunction[client]=parentMenuFunction;
-    DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
+    else
+        PrintToChat(client, "%c[SourceCraft] %cThere are no races or skills to choose!",
+                COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -348,53 +369,59 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
 public ShopMenu(client, vectorpos, bool:shopmenu, Function:parentMenuFunction)
 {
-    new credits=GetCredits(vectorpos);
-    decl String:currencies[64];
-    GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-    new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
-    SetMenuExitButton(shopMenu,true);
-    SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
-
-    if (shopmenu)
-        SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,currencies);
-    else
-        SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,currencies);
-
-    new Handle:itemHandle;
-    decl String:itemname[64];
-    decl String:itembuf[4];
-    decl String:linestr[96];
-    decl String:cost[8];
-
-    new count = 0;
     new shopItemCount = GetArraySize(shopVector);
-    for(new x=0;x<shopItemCount;x++)
+    if (shopItemCount >= 1)
     {
-        if (shopmenu || GetOwnsItem(vectorpos,x))
-        {
-            count++;
-            Format(itembuf,sizeof(itembuf),"%d",x);
-            itemHandle=ShopItem(x);
-            GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
-            if (shopmenu)
-            {
-                GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-                Format(linestr,sizeof(linestr),"%s - %s %s",itemname,cost,currencies);
-                AddMenuItem(shopMenu,itembuf,linestr);
-            }
-            else
-                AddMenuItem(shopMenu,itembuf,itemname);
-        }
-    }
+        new credits=GetCredits(vectorpos);
+        decl String:currencies[64];
+        GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+        new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
+        SetMenuExitButton(shopMenu,true);
+        SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
 
-    if (count)
-    {
-        gShopMenuMode[client] = shopmenu;
-        gShopMenuParentMenuFunction[client]=parentMenuFunction;
-        DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+        if (shopmenu)
+            SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,currencies);
+        else
+            SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,currencies);
+
+        new Handle:itemHandle;
+        decl String:itemname[64];
+        decl String:itembuf[4];
+        decl String:linestr[96];
+        decl String:cost[8];
+
+        new count = 0;
+        for(new x=0;x<shopItemCount;x++)
+        {
+            if (shopmenu || GetOwnsItem(vectorpos,x))
+            {
+                count++;
+                Format(itembuf,sizeof(itembuf),"%d",x);
+                itemHandle=ShopItem(x);
+                GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+                if (shopmenu)
+                {
+                    GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
+                    Format(linestr,sizeof(linestr),"%s - %s %s",itemname,cost,currencies);
+                    AddMenuItem(shopMenu,itembuf,linestr);
+                }
+                else
+                    AddMenuItem(shopMenu,itembuf,itemname);
+            }
+        }
+
+        if (count)
+        {
+            gShopMenuMode[client] = shopmenu;
+            gShopMenuParentMenuFunction[client]=parentMenuFunction;
+            DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+        }
+        else
+            ShowItems(client,client,vectorpos,parentMenuFunction);
     }
     else
-        ShowItems(client,client,vectorpos,parentMenuFunction);
+        PrintToChat(client, "%c[SourceCraft] %cThere are no items in the shopmenu!",
+                    COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -642,6 +669,8 @@ public Admin_Player(client,targetvecpos)
     SetMenuExitButton(adminMenu_Player,true);
     SetMenuExitBackButton(adminMenu_Player,true);
 
+    new race_style = (RACE_COUNT() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     new index = GetClientIndex(targetvecpos);
     SetMenuTitle(adminMenu_Player,"[SourceCraft] Administration options for %N.", index);
     decl String:buf[4];
@@ -651,11 +680,11 @@ public Admin_Player(client,targetvecpos)
     decl String:changeCredits[128];
     Format(changeCredits,sizeof(changeCredits),"Increase/Decrease %s", currencies);
     AddMenuItem(adminMenu_Player,buf,"View detailed information");
-    AddMenuItem(adminMenu_Player,buf,"Reset skills");
-    AddMenuItem(adminMenu_Player,buf,"Set race");
-    AddMenuItem(adminMenu_Player,buf,"Give shop item");
-    AddMenuItem(adminMenu_Player,buf,"Increase/Decrease XP");
-    AddMenuItem(adminMenu_Player,buf,"Increase/Decrease Level");
+    AddMenuItem(adminMenu_Player,buf,"Reset skills", race_style);
+    AddMenuItem(adminMenu_Player,buf,"Set race", race_style);
+    AddMenuItem(adminMenu_Player,buf,"Give shop item", shop_style);
+    AddMenuItem(adminMenu_Player,buf,"Increase/Decrease XP", race_style);
+    AddMenuItem(adminMenu_Player,buf,"Increase/Decrease Level", race_style);
     AddMenuItem(adminMenu_Player,buf,changeCredits);
     DisplayMenu(adminMenu_Player,client,MENU_TIME_FOREVER);
 }
