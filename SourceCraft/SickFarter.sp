@@ -266,13 +266,13 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
                 switch(skill_pp)
                 {
                     case 1:
-                        percent=GetRandomFloat(0.1,is_melee ? 0.37 : 0.20);
+                        percent=GetRandomFloat(0.10,is_melee ? 0.37 : 0.20);
                     case 2:
-                        percent=GetRandomFloat(0.2,is_melee ? 0.53 : 0.37);
+                        percent=GetRandomFloat(0.20,is_melee ? 0.53 : 0.37);
                     case 3:
-                        percent=GetRandomFloat(0.3,is_melee ? 0.80 : 0.63);
+                        percent=GetRandomFloat(0.30,is_melee ? 0.80 : 0.63);
                     case 4:
-                        percent=GetRandomFloat(is_melee ? 1.0 : 0.92, 1.0);
+                        percent=GetRandomFloat(is_melee ? 0.82 : 0.50, 1.0);
                 }
 
                 new cash=GetCredits(player);
