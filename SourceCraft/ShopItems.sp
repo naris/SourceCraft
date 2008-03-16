@@ -104,7 +104,7 @@ public OnPluginReady()
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","40");
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","55");
     shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","60");
-    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you  invisible when standing still AND holding the knife, shovel or other melee weapon.","45");
+    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you invisible when standing still AND holding the knife, shovel or other melee weapon.","45");
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","10");
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","20");
     shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","35");
