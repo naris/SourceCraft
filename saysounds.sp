@@ -249,6 +249,7 @@ public OnPluginStart(){
 	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
 	cvarsentence = CreateConVar("sm_sound_sentence","0","When set, will trigger sounds if keyword is embedded in a sentence",FCVAR_PLUGIN);
 	cvarlogging = CreateConVar("sm_sound_logging","1","When set, will log sounds that are played",FCVAR_PLUGIN);
+
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
@@ -258,6 +259,9 @@ public OnPluginStart(){
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say2", Command_InsurgencySay);
 	RegConsoleCmd("say_team", Command_Say);
+
+	// Execute the config file
+	AutoExecConfig(true, "sm_saysounds");
 
 	HookEventEx("player_spawn",PlayerSpawn);
 
