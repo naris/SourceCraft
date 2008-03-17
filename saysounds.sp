@@ -105,6 +105,10 @@ Versions:
 		* Removed sm_sound_allow_bots to allow bots to trigger sounds.
 		* Removed several checks for Fake Clients.
 		* Commented out code that calls GetSoundDuration()
+	1.20  Mar 16, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added AutoExecConfig()
+		* Removed code that calls GetSoundDuration().
 
 
 Todo:
@@ -197,7 +201,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.19"
+#define PLUGIN_VERSION "1.20"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
