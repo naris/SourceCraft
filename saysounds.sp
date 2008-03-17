@@ -143,6 +143,9 @@ Versions:
 				* Removed several checks for Fake Clients.
 				* Commented out code that calls GetSoundDuration()
 		* Added event "build" Support
+	2.0.3 Mar 16, 2008
+		* Modified by -=|JFH|=-Naris
+		* Merged the last few saysounds changes with saysounds hybrid.
 
 
 Todo:
@@ -309,19 +312,17 @@ new Float:LastSound[MAXPLAYERS+1];
 new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 new Float:globalLastAdminSound = 0.0;
-//new SDKVersion;
 
 public Plugin:myinfo = 
 {
-	name = "Say Sounds",
-	author = "Hell Phoenix",
-	description = "Say Sounds",
+	name = "Say Sounds (including Hybrid Edition)",
+	author = "Hell Phoenix, -=|JFH|=-Naris, [RiCK] Stokes, LAMDACORE",
+	description = "Say Sounds and Action Sounds packaged into one neat plugin! Welcome to the new day of SaySounds Hybrid!",
 	version = PLUGIN_VERSION,
 	url = "http://www.charliemaurice.com/plugins/"
 };
 
 public OnPluginStart(){
-	//SDKVersion = GuessSDKVersion();
 	CreateConVar("sm_saysounds_version", PLUGIN_VERSION, "Say Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarsoundenable = CreateConVar("sm_sound_enable","1","Turns Sounds On/Off",FCVAR_PLUGIN);
 	cvarsoundwarn = CreateConVar("sm_sound_warn","3","Number of sounds to warn person at (0 for no warnings)",FCVAR_PLUGIN);
