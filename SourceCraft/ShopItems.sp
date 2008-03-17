@@ -861,9 +861,9 @@ LootCorpse(Handle:event,victim_index, victim_player, index, player)
 
             LogMessage("%N stole %d %s from %N", index, amount, currencies, victim_index);
 
-            PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
+            PrintToChat(index,"%c[SourceCraft]%c You have looted %d %s from %N!",
                     COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
-            PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
+            PrintToChat(victim_index,"%c[SourceCraft]%c %N looted %d %s from your corpse!",
                     COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
         }
     }
