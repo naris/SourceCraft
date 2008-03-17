@@ -109,6 +109,40 @@ Versions:
 		* Modified by -=|JFH|=-Naris
 		* Added AutoExecConfig()
 		* Removed code that calls GetSoundDuration().
+	2.0   March 15, 2008
+	    * Modified by [RiCK] Stokes aka. FernFerret
+		* Made version 2.0 due to massive functionallity change
+		* Changed Plugin name from Saysounds, to Saysoundshybrid
+		* Changed Reference from saysounds.cfg to saysoundshybrid.cfg
+		* Added ability to create sounds from actions in TF2 :) (Currently only 3 supported(Flag Events, Kill Events, 
+		- Medic Uber Event) more to be added later
+		* Added ability to hide soundmenu from non admins (sm_sound_showmenu)
+		* Added menu for admins to show ALL sounds admin and public (sm_all_sounds)
+		* Added above two items to admin menu under "Server Commands"
+		* Added a few new types of data that you can add in config file including "actiononly" which will allow
+		- SSH(SaySoundsHybrid) to play the sound, aka clients will download it, but they can't play it
+		- Other types are covered in the demo section of this file
+		* Changed the Sound_Menu function: Added AllSounds parameter
+		* Updated Credits
+	2.0.1 March 15, 2008
+		* Modified by [RiCK] Stokes aka. FernFerret
+		* Fixed Error about hiding the sound menu
+		* Updated to Core Version 1.17 - Fixed the crash on windows servers due to the getsoundduration
+		* Added Spy disguiseing event(boolean) when a spy goes to disguise, triggers a true, opposite when he goes undisguised
+	2.0.2 March 15, 2008
+		* Modified by [RiCK] Stokes aka. FernFerret
+		* Updated to Core Version 1.19 - The Following fixes were ported in:
+			1.18  Mar 2, 2008
+				* Modified by -=|JFH|=-Naris
+				* Also added check to not call GetSoundDuration() for mp3 files.
+				* Added sm_sound_logging to turn logging of sounds played on and off.
+				* Added sm_sound_allow_bots to allow bots to trigger sounds.
+			1.19  Mar 2, 2008
+				* Modified by -=|JFH|=-Naris
+				* Removed sm_sound_allow_bots to allow bots to trigger sounds.
+				* Removed several checks for Fake Clients.
+				* Commented out code that calls GetSoundDuration()
+		* Added event "build" Support
 
 
 Todo:
@@ -129,6 +163,7 @@ Cvarlist (default value):
 	sm_specific_join_exit 0 	 Play sounds when a specific STEAM ID joins or exits the game
 	sm_time_between_sounds 4.5 	 Time between each sound trigger, 0.0 to disable checking
 	sm_time_between_admin_sounds 4.5 Time between each sound trigger (for admins), 0.0 to disable checking
+	sm_sound_showmenu 1		Turns the Public Sound Menu on(1) or off(0)
 
 Admin Commands:
 	sm_sound_ban <user>		 Bans a player from using sounds
@@ -136,6 +171,7 @@ Admin Commands:
 	sm_sound_reset <all|user>	 Resets sound quota for user, or everyone if all
 	sm_admin_sounds 		 Display a menu of all admin sounds to play
 	!adminsounds 			 When used in chat will present a menu of all admin sound to play.
+	!allsounds			 When used in chat will present a menu of all sounds to play.
 	
 User Commands:
 	sm_sound_menu 			 Display a menu of all sounds (trigger words) to play
@@ -182,8 +218,52 @@ File Format:
 			{
 				"file"	"misc/doh.wav"	// This will set all other options to default values
 			}
+			* ####FernFerret####
+			* New Section showing how to use Action Sounds Extention
+			* New Parameters:
+				- actiononly	If this variable is set to 1, the sound cannot be 
+				 				played by a menu or a client typing
+				- action		If the action filled in here is performed, the sound will play
+				- param			The best way to think of param is "Play Sound if [ACTION] with [PARAM]"
+				* 				Some examples are Flag events**, or weapons***
+				- prob			The probability of a sound playing, if you want a sound to play 20% of the time
+				* 				the fill in prob as ".2" or the percentage divided by 100
+				* Some examples:
+			"invincible"
+			{
+				"file"	"admin_plugin/invincible.wav"
+				"admin"	"1"
+				"actiononly" "1"
+				"action"	"uber"
+				// Note: If the action is uber, you do not need param
+				// Prob is assumed 1 or 100% if nothing is provied
+			}
+			"lightmyfire"
+			{
+				"file"	"admin_plugin/lmf.wav"
+				"admin"	"1"
+				"actiononly" "1"
+				"action"	"kill"
+				"param"		"flamethrower"
+				"prob"		".05"
+			}
 		}
-	
+
+	**  Current Flag actions are:
+		flag_picked_up
+		flag_captured
+		flag_defended
+		flag_dropped
+	*** Weapons are whatever the weapon is listed as in the source engine, will put up list soon
+	* 
+	* Any Questions, post on the forums: 
+	* 
+	* THANKS to Hell Phoenix for the great plugin, -=|JFH|=-Naris for the
+	* Excellent improvements making this plugin truly a diamond among the others and 
+	* LAMDACORE for his contributions to the effiecy of this plugin running
+	* 
+	* Enjoy Say Sounds Hybrid
+	* - [RiCK] Stokes aka. FernFerret
 */
 
 
@@ -201,7 +281,7 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.20"
+#define PLUGIN_VERSION "2.0.3"
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
@@ -216,6 +296,9 @@ new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:cvarannounce = INVALID_HANDLE;
 new Handle:cvarsentence = INVALID_HANDLE;
 new Handle:cvarlogging = INVALID_HANDLE;
+/*####FernFerret####*/
+new Handle:cvarshowsoundmenu = INVALID_HANDLE;
+/*##################*/
 new Handle:listfile = INVALID_HANDLE;
 new Handle:hAdminMenu = INVALID_HANDLE;
 new String:soundlistfile[PLATFORM_MAX_PATH] = "";
@@ -253,11 +336,21 @@ public OnPluginStart(){
 	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
 	cvarsentence = CreateConVar("sm_sound_sentence","0","When set, will trigger sounds if keyword is embedded in a sentence",FCVAR_PLUGIN);
 	cvarlogging = CreateConVar("sm_sound_logging","1","When set, will log sounds that are played",FCVAR_PLUGIN);
+	/*####FernFerret####*/
+	// This is the Variable that will enable or disable the sound menu to public users, Admin users will always have
+	// access to their menus, From the admin menu it is a toggle variable
+	cvarshowsoundmenu = CreateConVar("sm_sound_showmenu","1","1 To show menu to users, 0 to hide menu from users (admins excluded)",FCVAR_PLUGIN);
+	/*##################*/
 
 	RegAdminCmd("sm_sound_ban", Command_Sound_Ban, ADMFLAG_BAN, "sm_sound_ban <user> : Bans a player from using sounds");
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
 	RegAdminCmd("sm_admin_sounds", Command_Admin_Sounds,ADMFLAG_GENERIC, "Display a menu of Admin sounds to play");
+	/*####FernFerret####*/
+	// This is the admin command that shows all sounds, it is currently set to show to a GENERIC ADMIN
+	RegAdminCmd("sm_all_sounds", Command_All_Sounds, ADMFLAG_GENERIC,"Display a menu of ALL sounds to play");
+	/*##################*/
+
 	RegConsoleCmd("sm_sound_list", Command_Sound_List, "List available sounds to console");
 	RegConsoleCmd("sm_sound_menu", Command_Sound_Menu, "Display a menu of sounds to play");
 	RegConsoleCmd("say", Command_Say);
@@ -267,6 +360,13 @@ public OnPluginStart(){
 	// Execute the config file
 	AutoExecConfig(true, "sm_saysounds");
 
+	/*####FernFerret####*/
+	// This is where we hook the events that we will use and assign them to functions
+	HookEvent("teamplay_flag_event", Event_Flag);
+	HookEvent("player_death", Event_Kill);
+	HookEvent("player_chargedeployed", Event_UberCharge);
+	HookEvent("player_builtobject", Event_Build);
+	/*##################*/
 	HookEventEx("player_spawn",PlayerSpawn);
 
 	/* Account for late loading */
@@ -294,6 +394,12 @@ public OnAdminMenuReady(Handle:topmenu)
 		new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
 		AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
 				server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
+
+		/*####FernFerret####*/
+		// Added two new items to the admin menu, the soundmenu hide (toggle) and the all sounds menu
+		AddToTopMenu(hAdminMenu, "sm_all_sounds", TopMenuObject_Item, Play_All_Sound, server_commands, "sm_all_sounds", ADMFLAG_GENERIC);
+		AddToTopMenu(hAdminMenu, "sm_sound_showmenu", TopMenuObject_Item, Set_Sound_Menu, server_commands, "sm_sound_showmenu", ADMFLAG_CHANGEMAP);
+		/*##################*/
 	}
 }
 
@@ -303,8 +409,153 @@ public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:obje
 	if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "Play Admin Sound");
 	else if (action == TopMenuAction_SelectOption)
-		Sound_Menu(param,true);
+		Sound_Menu(param,true,false);
 }
+
+/*####FernFerret####*/
+// Start FernFerret's Action Sounds Code
+// This function sets parameters for showing the All Sounds item in the menu
+public Play_All_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+{
+	if (action == TopMenuAction_DisplayOption)
+		Format(buffer, maxlength, "Play a Sound");
+	else if (action == TopMenuAction_SelectOption)
+		Sound_Menu(param,false,true);
+}
+// Creates the SoundMenu show/hide item in the admin menu, it is a toggle
+public Set_Sound_Menu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+{
+	if(GetConVarInt(cvarshowsoundmenu) == 1)
+	{
+		if (action == TopMenuAction_DisplayOption)
+			Format(buffer, maxlength, "Hide Sound Menu");
+		else if (action == TopMenuAction_SelectOption)
+			SetConVarInt(cvarshowsoundmenu, 0);
+	}
+	else
+	{
+		if (action == TopMenuAction_DisplayOption)
+			Format(buffer, maxlength, "Show Sound Menu");
+		else if (action == TopMenuAction_SelectOption)
+			SetConVarInt(cvarshowsoundmenu, 1);
+	}
+}
+
+// Generic Sound event, this gets triggered whenever an event that is supported is triggered
+public runSoundEvent(Handle:event,const String:type[],const String:extra[])
+{
+	decl String:action[PLATFORM_MAX_PATH+1];
+	decl String:extraparam[PLATFORM_MAX_PATH+1];
+	decl String:location[PLATFORM_MAX_PATH+1];
+	// Send to all clients, will update in future to add To client/To Team/To All
+	new clientlist[MAXPLAYERS+1];
+	new clientcount = 0;
+	new playersconnected = GetMaxClients();
+	for (new i = 1; i <= playersconnected; i++){
+		if(SndOn[i] && IsClientInGame(i)){
+			clientlist[clientcount++] = i;
+		}
+	}
+	KvRewind(listfile);
+	if (!KvGotoFirstSubKey(listfile))
+	{
+		return false;
+	}
+	// Do while loop that finds out what extra parameter is and plays according sound, also adds random
+	do
+	{
+		KvGetString(listfile, "action",action,sizeof(action),"");
+		//PrintToServer("Found Subkey, trying to match (%s) with (%s)",action,type);
+		if (StrEqual(action, type))
+		{
+			KvGetString(listfile, "file", location, sizeof(location),"");
+			KvGetString(listfile, "param",extraparam,sizeof(extraparam),"");
+			// Used for identifying the names of things
+			//PrintToChatAll("Found Subkey, trying to match (%s) with (%s)",extra,extraparam);
+			if(StrEqual(extra, extraparam))
+			{
+				// Next section performs random calculations, all percents in decimal from 1-0
+				new Float:random = KvGetFloat(listfile, "prob",1.0);
+				// Added error checking  for the random number
+				if(random <= 0.0)
+				{
+					random = 0.01;
+					PrintToChatAll("Your random value for (%s) is <= 0, please make it above 0",location);
+				}
+				if(random > 1.0)
+				{
+					random = 1.0;
+				}
+				new Float:generated = GetRandomFloat(0.0,1.0);
+				if(generated <= random)
+				{
+					EmitSound(clientlist, clientcount, location);
+				}
+				return true;
+			}
+		}
+	} while (KvGotoNextKey(listfile));
+	return false;
+}
+// Event section, place events here
+public Action:Event_UberCharge(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	runSoundEvent(event,"uber","uber");
+	return Plugin_Continue;
+}
+public Action:Event_Flag(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	// pick up(1), capture(2), defend(3), dropped(4)
+	// Translate the Integer that is the input to a string so that users
+	// can just add a string to the config file
+	decl String:flagstring[PLATFORM_MAX_PATH+1];
+	new flagint;
+	flagint = GetEventInt(event, "eventtype");
+	switch(flagint)
+	{
+		case 1:
+			strcopy(flagstring,sizeof(flagstring),"flag_picked_up");
+		case 2:
+			strcopy(flagstring,sizeof(flagstring),"flag_captured");
+		case 3:
+			strcopy(flagstring,sizeof(flagstring),"flag_defended");
+		case 4:
+			strcopy(flagstring,sizeof(flagstring),"flag_dropped");
+		default:
+			strcopy(flagstring,sizeof(flagstring),"flag_captured");
+	}
+	runSoundEvent(event,"flag",flagstring);
+	return Plugin_Continue;
+}
+public Action:Event_Kill(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	decl String:wepstring[PLATFORM_MAX_PATH+1];
+	GetEventString(event, "weapon",wepstring,PLATFORM_MAX_PATH+1);
+	runSoundEvent(event,"kill",wepstring);
+	return Plugin_Continue;
+}
+public Action:Event_Build(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	decl String:object[PLATFORM_MAX_PATH+1];
+	new objectint = GetEventInt(event,"object");
+	switch(objectint)
+	{
+		case 0:
+			strcopy(object,sizeof(object),"obj_dispenser");
+		case 1:
+			strcopy(object,sizeof(object),"obj_tele_in");
+		case 2:
+			strcopy(object,sizeof(object),"obj_tele_out");
+		case 3:
+			strcopy(object,sizeof(object),"obj_sentry");
+		default:
+			strcopy(object,sizeof(object),"obj_dispenser");
+	}
+	runSoundEvent(event,"build",object);
+	return Plugin_Continue;
+}
+// End FernFerret's Code
+/*##################*/
 
 public OnMapStart(){
 	globalLastSound = 0.0;
@@ -487,15 +738,23 @@ public Action:Command_Say(client,args){
 			strcmp(speech[startidx],"soundlist",false) == 0){
 				//List_Sounds(client);
 				//PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
-				Sound_Menu(client,false);
+				if(GetConVarInt(cvarshowsoundmenu) == 1){
+					Sound_Menu(client,false,false);
+				}
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
 			strcmp(speech[startidx],"soundmenu",false) == 0){
-				Sound_Menu(client,false);
+				if(GetConVarInt(cvarshowsoundmenu) == 1){
+					Sound_Menu(client,false,false);
+				}
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
 			strcmp(speech[startidx],"adminsounds",false) == 0){
-				Sound_Menu(client,true);
+				Sound_Menu(client,true,false);
+				return Plugin_Handled;
+		}else if(strcmp(speech[startidx],"!allsounds",false) == 0 ||
+			strcmp(speech[startidx],"allsounds",false) == 0){
+				Sound_Menu(client,false,true);
 				return Plugin_Handled;
 		}
 
@@ -554,10 +813,10 @@ public Action:Command_InsurgencySay(client,args){
 			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 			return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
-			Sound_Menu(client,false);
+			Sound_Menu(client,false,false);
 			return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
-			Sound_Menu(client,true);
+			Sound_Menu(client,true,false);
 			return Plugin_Handled;
 		}
 
@@ -602,12 +861,19 @@ Send_Sound(client, const String:filelocation[], const String:name[])
 {
 	new adminonly = KvGetNum(listfile, "admin",0);
 	new singleonly = KvGetNum(listfile, "single",0);
+	/*####FernFerret####*/
+	// Added the action only param to the pack
+	new actiononly = KvGetNum(listfile, "actiononly",0);
+	/*##################*/
 	new Float:duration = KvGetFloat(listfile, "duration",0.0);
 	new Handle:pack;
 	CreateDataTimer(0.2,Command_Play_Sound,pack);
 	WritePackCell(pack, client);
 	WritePackCell(pack, adminonly);
 	WritePackCell(pack, singleonly);
+	/*####FernFerret####*/
+	WritePackCell(pack, actiononly);
+	/*##################*/
 	WritePackFloat(pack, duration);
 	WritePackString(pack, filelocation);
 	WritePackString(pack, name);
@@ -620,9 +886,25 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new client = ReadPackCell(pack);
 	new adminonly = ReadPackCell(pack);
 	new singleonly = ReadPackCell(pack);
+	/*####FernFerret####*/
+	new actiononly = ReadPackCell(pack);
+	/*##################*/
 	new Float:duration = ReadPackFloat(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	ReadPackString(pack, name , sizeof(name));
+
+	/*####FernFerret####*/
+	// Checks for Action Only sounds and messages user telling them why they can't play an action only sound
+	if (IsClientInGame(client) && !IsFakeClient(client))
+	{
+		//new AdminId:aid = GetUserAdmin(client);
+		//isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+		if(actiononly == 1){
+			PrintToChat(client,"[Action Sounds] Sorry, this is an action sound!");
+			return Plugin_Handled;
+		}
+	}
+	/*##################*/
 
 	new bool:isadmin = false;
 	if (IsClientInGame(client) && !IsFakeClient(client))
@@ -848,20 +1130,40 @@ stock List_Sounds(client){
 }
 
 public Action:Command_Sound_Menu(client, args){
-	Sound_Menu(client,false);
+	/*####FernFerret####*/
+	// Just a note: event though this is the first time I note that I changed the Sound_Menu function
+	// It has been modified earlier in the code (Ctrl-F works wonders :) ) to add an AllSounds parameter, true if
+	// you would like to display ALL sounds false if you do not want to
+	//Sound_Menu(client,false);==>Sound_Menu(client,false,false);
+	Sound_Menu(client,false,false);
+	/*##################*/
 }
 
 public Action:Command_Admin_Sounds(client, args){
-	Sound_Menu(client,true);
+	/*####FernFerret####*/
+	//Sound_Menu(client,true);==>Sound_Menu(client,true,false);
+	Sound_Menu(client,true,false);
+	/*##################*/
 }
 
-public Sound_Menu(client, bool:adminsounds){
-	if (adminsounds){
+/*####FernFerret####*/
+// Added the allsounds menu which shows all sounds
+public Action:Command_All_Sounds(client, args){
+	Sound_Menu(client,false,true);
+}
+
+/*##################*/
+/*####FernFerret####*/
+//Added the bool:alsounds, if active this overrides adminsounds and shows all
+public Sound_Menu(client, bool:adminsounds, bool:allsounds){
+/*##################*/
+	if (adminsounds || allsounds){
 		new AdminId:aid = GetUserAdmin(client);
 		new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
 
 		if (!isadmin){
-			PrintToChat(client,"[Say Sounds] You must be an admin to play admin sounds!");
+			//PrintToChat(client,"[Say Sounds] You must be an admin to play admin sounds!");
+			PrintToChat(client,"[Say Sounds] You must be an admin view this menu!");
 			return;
 		}
 	}
@@ -882,7 +1184,20 @@ public Sound_Menu(client, bool:adminsounds){
 			    !StrEqual(buffer, "ExitSound") &&
 			    strncmp(buffer,"STEAM_",6,false))
 			{
-				if (adminsounds){
+				/*####FernFerret####*/
+				// Added aditional checks to see if the sound is admin only, and if it is, it won't show up anywhere
+				if (allsounds)
+				{
+					if(!KvGetNum(listfile, "actiononly",0))
+					{
+						Format(num,3,"%d",count);
+						AddMenuItem(soundmenu,num,buffer);
+						count++;
+					}
+				}
+				// Changed next line to else if rather than if
+				/*##################*/
+				else if (adminsounds){
 					if (KvGetNum(listfile, "admin",0)){
 						Format(num,3,"%d",count);
 						AddMenuItem(soundmenu,num,buffer);
