@@ -80,7 +80,7 @@ public OnPluginReady()
                       "Festering Abomination", //Skill 1 Name
                       "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
                       "Pickpocket", // Skill 2 Name
-                      "Steals crystals from enemies.", // Skill 2 Description
+                      "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.", // Skill 2 Description
                       "Revulsion", // Skill 3 Name
                       "Your level of Revulsion is so high, all enemies quake as you approach.", // Skill 3 Description
                       "Flatulence", // Ultimate Name

@@ -130,7 +130,7 @@ public OnPluginReady()
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
     shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack","You will be given ammo or metal every 10 seconds.","35");
-    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting","Allows you to loot a corpse of crystals when you kill them.","85");
+    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting","Gives you a 55-85% chance to loot up to 50-75% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.","85");
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every second, won't exceed your normal HP.","15");
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
@@ -849,7 +849,7 @@ LootCorpse(Handle:event,victim_index, victim_player, index, player)
         new victim_cash=GetCredits(victim_player);
         if (victim_cash > 0)
         {
-            new Float:percent=GetRandomFloat(0.10,is_melee ? 1.00 : 0.50);
+            new Float:percent=GetRandomFloat(0.10,is_melee ? 0.75 : 0.50);
             new cash=GetCredits(player);
             new amount = RoundToCeil(float(victim_cash) * percent);
 
