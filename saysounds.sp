@@ -818,6 +818,10 @@ public Action:Command_InsurgencySay(client,args){
 		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
 			Sound_Menu(client,true,false);
 			return Plugin_Handled;
+		}else if(strcmp(speech[startidx],"!allsounds",false) == 0 ||
+			strcmp(speech[startidx],"allsounds",false) == 0){
+				Sound_Menu(client,false,true);
+				return Plugin_Handled;
 		}
 
 		KvRewind(listfile);
