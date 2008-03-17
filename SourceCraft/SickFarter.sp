@@ -18,7 +18,6 @@
 #include "sc/trace"
 #include "sc/authtimer"
 #include "sc/maxhealth"
-#include "sc/weapons"
 #include "sc/respawn"
 #include "sc/weapons"
 #include "sc/respawn"
@@ -257,24 +256,12 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
             case 4:
                 chance=is_melee ? 80 : 60;
         }
-        if(GetRandomInt(1,100)<=chance)
+        if(GetRandomInt(1,100)<=chance && !IsUber(victim_index))
         {
             new victim_cash=GetCredits(victim_player);
             if (victim_cash > 0)
             {
-                new Float:percent;
-                switch(skill_pp)
-                {
-                    case 1:
-                        percent=GetRandomFloat(0.10,is_melee ? 0.37 : 0.20);
-                    case 2:
-                        percent=GetRandomFloat(0.20,is_melee ? 0.53 : 0.37);
-                    case 3:
-                        percent=GetRandomFloat(0.30,is_melee ? 0.80 : 0.63);
-                    case 4:
-                        percent=GetRandomFloat(is_melee ? 0.82 : 0.50, 1.0);
-                }
-
+                new Float:percent=GetRandomFloat(0.0,is_melee ? 0.15 : 0.05);
                 new cash=GetCredits(player);
                 new amount = RoundToCeil(float(victim_cash) * percent);
 

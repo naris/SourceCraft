@@ -19,6 +19,7 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/respawn"
+#include "sc/weapons"
 #include "sc/log"
 
 // Defines
@@ -35,12 +36,14 @@
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
 #define ITEM_PACK            11 // Ammo Pack - Given HE Grenades or ammo or metal over time
-#define ITEM_RING            12 // Ring of Regeneration + 1 - Given extra health over time
-#define ITEM_MOLE            13 // Mole - Respawn in enemies spawn with cloak.
-#define ITEM_MOLE_PROTECTION 14 // Mole Protection - Reduce damage from a Mole.
-//#define ITEM_GOGGLES       15 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         16 // Purchase Admin on the Server
-#define MAXITEMS             14
+#define ITEM_SACK            12 // Sack of looting - Loot crystals from corpses.
+#define ITEM_RING            13 // Ring of Regeneration + 1 - Given extra health over time
+#define ITEM_MOLE            14 // Mole - Respawn in enemies spawn with cloak.
+#define ITEM_MOLE_PROTECTION 15 // Mole Protection - Reduce damage from a Mole.
+#define ITEM_MOLE_REFLECTION 16 // Mole Protection - Reflects damage back to the Mole.
+//#define ITEM_GOGGLES       17 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         18 // Purchase Admin on the Server
+#define MAXITEMS             16
  
 new myWepsOffset;
 new curWepOffset;
@@ -66,6 +69,9 @@ new Handle:hWeaponDrop    = INVALID_HANDLE;
 new Handle:hGiveAmmo      = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
+new Handle:m_Currency   = INVALID_HANDLE; 
+new Handle:m_Currencies = INVALID_HANDLE; 
+
 new shopItem[MAXITEMS+1];
 
 new String:bootsWav[] = "sourcecraft/bootospeed.mp3";
@@ -78,6 +84,17 @@ public Plugin:myinfo =
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
+
+public OnConfigsExecuted()
+{
+    m_Currency = FindConVar("sc_currency");
+    if (m_Currency == INVALID_HANDLE)
+        SetFailState("Couldn't find sc_currency variable");
+
+    m_Currencies = FindConVar("sc_currencies");
+    if (m_Currencies == INVALID_HANDLE)
+        SetFailState("Couldn't find sc_currencies variable");
+}
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -113,9 +130,11 @@ public OnPluginReady()
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
     shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack","You will be given ammo or metal every 10 seconds.","35");
+    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting","Allows you to loot a corpse of crystals when you kill them.","85");
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every second, won't exceed your normal HP.","15");
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
+    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection","Reflect some damage back to the mole\nto give yourself a fighting chance.","45");
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     FindUberOffsets();
@@ -304,6 +323,18 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 {
     if(victim_player>-1)
     {
+        if(attacker_player>-1)
+        {
+            if(GetOwnsItem(attacker_player,shopItem[ITEM_SACK]))
+                LootCorpse(event, victim_index, victim_player, attacker_index, attacker_player);
+        }
+
+        if(assister_player>-1)
+        {
+            if(GetOwnsItem(assister_player,shopItem[ITEM_SACK]))
+                LootCorpse(event, victim_index, victim_player, assister_index, assister_player);
+        }
+
         if (GameType == cstrike ||
             !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
         {
@@ -343,11 +374,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
             if(GetOwnsItem(victim_player,shopItem[ITEM_PACK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_PACK],false);
 
-            //if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
-            //    SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
+            if(GetOwnsItem(victim_player,shopItem[ITEM_SACK]))
+                SetOwnsItem(victim_player,shopItem[ITEM_SACK],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_RING]))
                 SetOwnsItem(victim_player,shopItem[ITEM_RING],false);
+
+            //if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
+            //    SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE]))
             {
@@ -362,6 +396,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
                 SetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION],false);
+
+            if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION]))
+                SetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION],false);
         }
 
         if(GetOwnsItem(victim_player,shopItem[ITEM_PERIAPT]))
@@ -395,9 +432,10 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     {
         if(victim_player !=-1 && attacker_player != -1)
         {
-            if (GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
+            if(isMole[attacker_index])
             {
-                if(isMole[attacker_index])
+                new reflection = GetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION]);
+                if (reflection || GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
                 {
                     new victim_health = GetClientHealth(victim_index);
                     new prev_health   = victim_health+damage;
@@ -409,9 +447,41 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                     if (new_health>victim_health)
                     {
                         changed = true;
+                        new amount = new_health-victim_health;
+
+                        if (reflection)
+                        {
+                            if(!GetImmunity(attacker_player,Immunity_ShopItems) &&
+                               !GetImmunity(attacker_player,Immunity_HealthTake) && !IsUber(attacker_index))
+                            {
+                                new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
+                                new newhp=GetClientHealth(attacker_index)-reflect;
+                                if (newhp <= 0)
+                                {
+                                    newhp=0;
+                                    LogKill(victim_index, attacker_index, "mole_reflection", "Mole Reflection", reflect);
+                                }
+                                else
+                                    LogDamage(victim_index, attacker_index, "mole_reflection", "Mole Reflection", reflect);
+
+                                SetEntityHealth(attacker_index,newhp);
+
+                                if (amount < reflect)
+                                {
+                                    new_health += reflect - amount;
+                                    amount = reflect;
+                                }
+                            }
+
+                            PrintToChat(victim_index,"%c[SourceCraft]%c You have received %d hp from %cMole Reflection%c.",
+                                        COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
+                        }
+                        else
+                        {
+                            PrintToChat(victim_index,"%c[SourceCraft]%c You have received %d hp from %cMole Protection%c.",
+                                        COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
+                        }
                         SetEntityHealth(victim_index,new_health);
-                        PrintToChat(victim_index,"%c[SourceCraft]%c You have received %d hp from %cMole Protection%c.",
-                                    COLOR_GREEN,COLOR_DEFAULT,new_health-victim_health,COLOR_TEAM,COLOR_DEFAULT);
                     }
                 }
             }
@@ -765,6 +835,38 @@ UsePeriapt(client)
 {
     IncreaseHealth(client, 50);
     usedPeriapt[client]=true;
+}
+
+LootCorpse(Handle:event,victim_index, victim_player, index, player)
+{
+    decl String:weapon[64] = "";
+    new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
+    new bool:is_melee=IsMelee(weapon, is_equipment);
+
+    new chance=is_melee ? 85 : 55;
+    if(GetRandomInt(1,100)<=chance)
+    {
+        new victim_cash=GetCredits(victim_player);
+        if (victim_cash > 0)
+        {
+            new Float:percent=GetRandomFloat(0.10,is_melee ? 1.00 : 0.50);
+            new cash=GetCredits(player);
+            new amount = RoundToCeil(float(victim_cash) * percent);
+
+            SetCredits(victim_player,victim_cash-amount);
+            SetCredits(player,cash+amount);
+
+            decl String:currencies[64];
+            GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
+
+            LogMessage("%N stole %d %s from %N", index, amount, currencies, victim_index);
+
+            PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
+                    COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+            PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
+                    COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
+        }
+    }
 }
 
 // Non-specific stuff

@@ -366,5 +366,5 @@ ResetSkillsNow(client,vecpos)
     if(GetLevel(vecpos,race) > 0)
         SkillMenu(client, vecpos, INVALID_FUNCTION);
 
-    SavePlayerData(client,vecpos,true);
+    SavePlayerData(client,vecpos,false);
 }
