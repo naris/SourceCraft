@@ -113,11 +113,11 @@ public PlayerChargeDeployed(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
         {
-            GiveChargeDeployedXP(index,vecpos);
-            GiveChargeDeployedCredits(index,vecpos);
+            GiveChargeDeployedXP(index,playerHandle);
+            GiveChargeDeployedCredits(index,playerHandle);
         }
     }
 }
@@ -128,9 +128,9 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveObjectBuiltXP(index,vecpos);
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
+            GiveObjectBuiltXP(index,playerHandle);
     }
 }
 
@@ -143,24 +143,24 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
     if (attacker > 0 && attacker != userid)
     {
         new attacker_index=GetClientOfUserId(attacker);
-        new vecpos=GetClientVectorPosition(attacker_index);
-        if(vecpos!=-1)
-            GiveObjectDestroyedXP(attacker_index,vecpos);
+        new Handle:attacker_player=GetPlayerHandle(attacker_index);
+        if (attacker_player != INVALID_HANDLE)
+            GiveObjectDestroyedXP(attacker_index,attacker_player);
     }
     else
     {
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            TakeObjectBuiltXP(index,vecpos);
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
+            TakeObjectBuiltXP(index,playerHandle);
     }
 
     new assister = GetEventInt(event,"assister");
     if (assister> 0 && assister != userid)
     {
         new assister_index=GetClientOfUserId(assister);
-        new vecpos=GetClientVectorPosition(assister_index);
-        if(vecpos!=-1)
-            GiveObjectDestroyedXP(assister_index,vecpos);
+        new Handle:assister_player=GetPlayerHandle(assister_index);
+        if (assister_player != INVALID_HANDLE)
+            GiveObjectDestroyedXP(assister_index,assister_player);
     }
 
     decl String:weapon[64] = "";
@@ -177,15 +177,15 @@ public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new eventtype = GetEventInt(event,"eventtype");
         if (eventtype == 2) // Flag Captured
         {
-            new vecpos=GetClientVectorPosition(player);
-            if (vecpos!=-1)
-                GiveFlagCapturedXP(player,vecpos);
+            new Handle:playerHandle=GetPlayerHandle(player);
+            if (playerHandle != INVALID_HANDLE)
+                GiveFlagCapturedXP(player,playerHandle);
         }
         else if (eventtype == 1) // Flag Picked Up
         {
-            new vecpos=GetClientVectorPosition(player);
-            if (vecpos!=-1)
-                GivePickedUpFlagCredits(player,vecpos);
+            new Handle:playerHandle=GetPlayerHandle(player);
+            if (playerHandle != INVALID_HANDLE)
+                GivePickedUpFlagCredits(player,playerHandle);
         }
     }
 }
@@ -200,18 +200,18 @@ public EventPointCapture(Handle:event,const String:name[],bool:dontBroadcast)
         new len = strlen(cappers);
         for(new i=0;i<len;i++)
         {
-            new index  = cappers{i};
-            new vecpos = GetClientVectorPosition(index);
-            if (vecpos != -1)
+            new index = cappers{i};
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
                 if (captured)
                 {
-                    GivePointCapturedXP(index,vecpos);
-                    GivePointCapturedCredits(index,vecpos);
+                    GivePointCapturedXP(index,playerHandle);
+                    GivePointCapturedCredits(index,playerHandle);
                 }
                 else // if (startcap)
                 {
-                    GivePointTouchedCredits(index,vecpos);
+                    GivePointTouchedCredits(index,playerHandle);
                 }
             }
         }
@@ -223,9 +223,9 @@ public EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetEventInt(event,"blocker");
     if (index > 0)
     {
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveCaptureBlockedXP(index,vecpos);
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
+            GiveCaptureBlockedXP(index,playerHandle);
     }
 }
 
@@ -245,10 +245,9 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 
     if (GameType == tf2)
     {
-        new playerCount = PLAYER_COUNT();
-        for(new x=0;x<playerCount;x++)
+        new playerCount = GetMaxClients();
+        for(new client=1;client<=playerCount;client++)
         {
-            new client=GetClientIndex(x);
             if(IsClientInGame(client))
             {
                 m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed);
@@ -270,11 +269,11 @@ public RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
         if (IsClientInGame(index) && IsPlayerAlive(index) &&
             GetClientTeam(index) == team)
         {
-            new vecpos=GetClientVectorPosition(index);
-            if (vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                GiveRoundWinCredits(index,vecpos);
-                GiveRoundWinXP(index,vecpos);
+                GiveRoundWinCredits(index,playerHandle);
+                GiveRoundWinXP(index,playerHandle);
             }
         }
     }
@@ -294,11 +293,11 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         if (IsClientInGame(index) && IsPlayerAlive(index) &&
             GetClientTeam(index) == team)
         {
-            new vecpos=GetClientVectorPosition(index);
-            if (vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                GiveGameWinCredits(index,vecpos,score);
-                GiveGameWinXP(index,vecpos,score);
+                GiveGameWinCredits(index,playerHandle,score);
+                GiveGameWinXP(index,playerHandle,score);
             }
         }
     }
@@ -306,39 +305,39 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
     new index = GetEventInt(event, "player_1");
     if (index)
     {
-        new vecpos=GetClientVectorPosition(index);
-        if (vecpos>-1)
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
         {
             new points = GetEventInt(event,"player_1_points");
-            GiveMvpCredits(index,vecpos,1,points);
-            GiveMvpXP(index,vecpos,1,points);
+            GiveMvpCredits(index,playerHandle,1,points);
+            GiveMvpXP(index,playerHandle,1,points);
         }
     }
 
     index = GetEventInt(event, "player_2");
     if (index)
     {
-        new vecpos=GetClientVectorPosition(index);
-        if (vecpos>-1)
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
         {
             new points = GetEventInt(event,"player_2_points");
-            GiveMvpCredits(index,vecpos,2,points);
-            GiveMvpXP(index,vecpos,2,points);
+            GiveMvpCredits(index,playerHandle,2,points);
+            GiveMvpXP(index,playerHandle,2,points);
         }
     }
 
     index = GetEventInt(event, "player_3");
     if (index)
     {
-        new vecpos=GetClientVectorPosition(index);
-        if (vecpos>-1)
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
         {
             new points = GetEventInt(event,"player_3_points");
-            GiveMvpCredits(index,vecpos,3,points);
-            GiveMvpXP(index,vecpos,3,points);
+            GiveMvpCredits(index,playerHandle,3,points);
+            GiveMvpXP(index,playerHandle,3,points);
         }
     }
 
-    SaveAllPlayersData();
+    SaveAllPlayersData(false);
 }
 

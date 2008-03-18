@@ -99,14 +99,14 @@ public HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuCancel_ExitBack &&
             gHelpParentMenuFunction[client] != INVALID_FUNCTION)
         {
-            new vecpos=GetClientVectorPosition(client);
-            if(vecpos >- 1)
+            new Handle:playerHandle=GetPlayerHandle(client);
+            if (playerHandle != INVALID_HANDLE)
             {
                 decl result;
                 ClientCommand(client,"play buttons/button14.wav");
                 Call_StartFunction(INVALID_HANDLE, gHelpParentMenuFunction[client]);
                 Call_PushCell(client);
-                Call_PushCell(vecpos);
+                Call_PushCell(playerHandle);
                 Call_PushCell(INVALID_FUNCTION);
                 Call_Finish(result);
             }

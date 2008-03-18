@@ -28,7 +28,7 @@
 #define RACE_COUNT() GetArraySize(arrayRaces)
 
 // Functions called from menus.inc
-//public SkillMenu(client, vectorpos, Function:parentMenuFunction);
+//public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction);
 
 // A vector of race infomation
 new Handle:arrayRaces;
@@ -72,7 +72,7 @@ public CreateRace(const String:name[],                  const String:short[],
     return PushArrayCell(arrayRaces,newRace); // return index.
 }
 
-public bool:InitiateRaceArray()
+public bool:InitRaceArray()
 {
     arrayRaces=CreateArray();
     return bool:(arrayRaces != INVALID_HANDLE);
@@ -147,25 +147,25 @@ public FindRaceForIdent(ident)
     return -1;
 }
 
-public PendingCheck(client,vectorpos)
+public PendingCheck(client,Handle:playerHandle)
 {
-    new pendingrace=GetPendingRace(vectorpos);
+    new pendingrace=GetPendingRace(playerHandle);
     if(pendingrace>-1)
     {
-        SetPendingRace(vectorpos,-1);
-        SetRace(vectorpos,pendingrace);
+        SetPendingRace(playerHandle,-1);
+        SetRace(playerHandle,pendingrace);
         decl String:buf[192];
-        new race=GetRace(vectorpos);
+        new race=GetRace(playerHandle);
         new Handle:raceHandle=Race(race);
         new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
         GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
 
-    if (GetPendingSkillReset(vectorpos))
+    if (GetPendingSkillReset(playerHandle))
     {
-        SetPendingSkillReset(vectorpos,0);
-        ResetSkillsNow(client,vectorpos);
+        SetPendingSkillReset(playerHandle,0);
+        ResetSkillsNow(client,playerHandle);
     }
 }
 
@@ -241,8 +241,8 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
     if(action==MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        new vecpos=GetClientVectorPosition(client);
-        if(vecpos>-1)
+        new Handle:playerHandle=GetPlayerHandle(client);
+        if (playerHandle != INVALID_HANDLE)
         {
             new race=gRaceForSkills[client];
             new Handle:raceHandle=Race(race);
@@ -254,15 +254,15 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                 new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
                 if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
                 {
-                    SetPendingRace(vecpos,race);
+                    SetPendingRace(playerHandle,race);
                     decl String:buf[192];
                     GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,buf,sizeof(buf));
                     PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
                 }
                 else
                 {
-                    SetPendingRace(vecpos,-1);
-                    SetRace(vecpos,race);
+                    SetPendingRace(playerHandle,-1);
+                    SetRace(playerHandle,race);
                     decl String:buf[192];
                     GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
                     PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
@@ -284,7 +284,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             if (backFn == RaceMenu)
                 Call_PushCell(gSkillsMenuMode[client]);
             else
-                Call_PushCell(GetClientVectorPosition(client));
+                Call_PushCell(GetPlayerHandle(client));
 
             Call_PushCell(INVALID_FUNCTION);
             Call_Finish(result);
@@ -292,21 +292,21 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public ResetSkills(client,vecpos)
+public ResetSkills(client,Handle:playerHandle)
 {
     if(IsPlayerAlive(client))
     {
-        SetPendingSkillReset(vecpos,1);
+        SetPendingSkillReset(playerHandle,1);
         PrintToChat(client,"%c[SourceCraft] %cYour skills for your current race will be reset when you die or respawn.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
     else
-        ResetSkillsNow(client,vecpos);
+        ResetSkillsNow(client,playerHandle);
 }
 
-public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
+public ShowSkills(client,target,Handle:playerHandle,Function:parentMenuFunction)
 {
-    new race=GetRace(vecpos);
+    new race=GetRace(playerHandle);
     new Handle:raceHandle=Race(race);
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     new Handle:panel=CreatePanel();
@@ -328,7 +328,7 @@ public ShowSkills(client,target,vecpos,Function:parentMenuFunction)
     for(new x=0;x<SKILL_COUNT;x++)
     {
         GetArrayString(stringsHandle,RACE_SKILL+(x*2),buf,sizeof(buf));
-        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(vecpos,race,x));
+        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(playerHandle,race,x));
         DrawPanelText(panel,bufout);
     }
     DrawPanelText(panel,"-----------------------------");
@@ -354,17 +354,17 @@ public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-ResetSkillsNow(client,vecpos)
+ResetSkillsNow(client,Handle:playerHandle)
 {
-    new race=GetRace(vecpos);
+    new race=GetRace(playerHandle);
     for(new x=0;x<SKILL_COUNT;x++)
-        SetSkillLevel(vecpos,race,x,0);
+        SetSkillLevel(playerHandle,race,x,0);
 
     PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
                 COLOR_GREEN,COLOR_DEFAULT);
 
-    if(GetLevel(vecpos,race) > 0)
-        SkillMenu(client, vecpos, INVALID_FUNCTION);
+    if(GetLevel(playerHandle,race) > 0)
+        SkillMenu(client, playerHandle, INVALID_FUNCTION);
 
-    SavePlayerData(client,vecpos,false);
+    SavePlayerData(client,playerHandle,false);
 }

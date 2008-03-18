@@ -100,149 +100,149 @@ native HealPlayer(client, amount,health=-1,max=-1);
 native GetClass(client);
 
 /**
- * Gets the Player ID used for the rest of the interface natives.
+ * Gets the Player Handle used for the rest of the interface natives.
  * @param client: The client's index you want.
- * @return The return value will be the Player ID, -1 on failure.
+ * @return The return value will be the Player Handle, INVALID_HANDLE on failure.
  */
-native GetPlayer(client);
+native Handle:GetPlayerHandle(client);
 
 /**
  * Gets the current level for the provided race.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
  * @return The return value will be the level, if -1 then it failed.
  */
-native GetLevel(player,race);
+native GetLevel(Handle:player,race);
 
 /**
  * Sets the current level for the provided race.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
  * @param newlevel: The level you want to set to 
  * @noreturn
  */
-native SetLevel(player,race,newlevel);
+native SetLevel(Handle:player,race,newlevel);
 
 /**
  * Gets the current race for the player.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @return The return value will be the race of the player, if -1 then it failed.
  */
-native GetRace(player);
+native GetRace(Handle:player);
 
 /**
  * Gets the XP for the provided race.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
  * @return The return value will be the xp, if -1 then it failed.
  */
-native GetXP(player,race);
+native GetXP(Handle:player,race);
 
 /**
  * Sets the XP for the provided race.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
  * @param newxp: The XP you want to set to 
  * @noreturn
  */
-native SetXP(player,race,newxp);
+native SetXP(Handle:player,race,newxp);
 
 /**
  * Gets the current level for the skill for the provided race.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
  * @param skill: The skill you want to lookup with, (0==skill1,1==skill2,2==skill3,3==ultimate) 
  * @return The return value will be the skill level, if -1 then it failed.
  */
-native GetSkillLevel(player,race,skill);
+native GetSkillLevel(Handle:player,race,skill);
 
 /**
  * Sets the current level for the skill for the provided race.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
  * @param skill: The skill you want to lookup with, (0==skill1,1==skill2,2==skill3,3==ultimate) 
  * @param newlevel: The level you want to set to 
  * @noreturn
  */
-native SetSkillLevel(player,race,skill,newlevel);
+native SetSkillLevel(Handle:player,race,skill,newlevel);
 
 /**
  * Gets the amount of Credits a player has.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @return The return value will be the xp, if -1 then it failed.
  */
-native GetCredits(player);
+native GetCredits(Handle:player);
 
 /**
  * Sets the amunt of Credits a player has.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param newcredits: The XP you want to set to 
  * @noreturn
  */
-native SetCredits(player,newcredits);
+native SetCredits(Handle:player,newcredits);
 
 /**
  * Gets if the player owns a specific item.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param item: The item ID returned from CreateShopItem
  * @return The return value will be 1 if they own it, if 0 they don't, if -1 then it failed.
  */
-native GetOwnsItem(player,item);
+native GetOwnsItem(Handle:player,item);
 
 /**
  * Sets if the player owns a specific item.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param item: The item ID returned from CreateShopItem
  * @param owns: 1 if you want them to own it, 0 if you want them not to own it 
  * @noreturn
  */
-native SetOwnsItem(player,item,owns=1);
+native SetOwnsItem(Handle:player,item,owns=1);
 
 /**
  * Gets the state of a certain immunity.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param immunity: The immunity you want to check. 
  * @return The return value will be 1 if they are immune, if 0 they aren't, if -1 then it failed.
  */
-native GetImmunity(player,Immunity:immunity);
+native GetImmunity(Handle:player,Immunity:immunity);
 
 /**
  * Sets if the player owns a specific item.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param immunity: The immunity you want to set.
  * @param imm_state: The state of immunity, 1 if they are, 0 if they aren't.
  * @noreturn
  */
-native SetImmunity(player,Immunity:immunity,imm_state=1);
+native SetImmunity(Handle:player,Immunity:immunity,imm_state=1);
 
 /**
  * Sets the speed for the player that is handled within the SourceCraft system,
  * good for skills and items that set speed so you don't end up making the player slower.
  * Pass -1.0 as speed when they no longer should use the speed, make sure to do this when
  * they no longer have the skill or item, or whatever.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native SetSpeed(player,Float:speed=-1.0);
+native SetSpeed(Handle:player,Float:speed=-1.0);
 
 /**
  * Sets the gravity for the player that is handled within the SourceCraft system,
  * good for skills and items that set gravity so you don't end up making the player jump lower.
  * Pass -1.0 as gravity when they no longer should use the gravity, make sure to do this when
  * they no longer have the skill or item, or whatever.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native SetGravity(player,Float:gravity=-1.0);
+native SetGravity(Handle:player,Float:gravity=-1.0);
 
 /**
  * Sets the visibility for the player that is handled within the SourceCraft system,
  * good for skills and items that set (in)visibility so you don't end up making the player
  * more visibile. Pass 255 as visibility when they no longer should use the (in)visibility,
  * make sure to do this when they no longer have the skill or item, or whatever.
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param visibility: The visibility you want to pass.
  * @param type: The type of visibility to use.
  * @param factor1: The 1st factor (either melee factor or activation delay)
@@ -254,7 +254,7 @@ native SetGravity(player,Float:gravity=-1.0);
  * @param b: Blue Component.
  * @noreturn
  */
-native SetVisibility(player,visibility=-1,
+native SetVisibility(Handle:player,visibility=-1,
                      VisibilityType:type=VisibilityType:-1,
                      Float:factor1=-1.0,Float:factor2=-1.0,
                      RenderMode:mode=RenderMode:-1,
@@ -265,31 +265,31 @@ native SetVisibility(player,visibility=-1,
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
  * Pass -1.0 as speed when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param speed: The speed you want to pass.
  * @noreturn
  */
-native SetOverrideSpeed(player,Float:speed=-1.0);
+native SetOverrideSpeed(Handle:player,Float:speed=-1.0);
 
 /**
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
  * Pass -1.0 as gravity when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param gravity: The gravity you want to pass.
  * @noreturn
  */
-native SetOverrideGravity(player,Float:gravity=-1.0);
+native SetOverrideGravity(Handle:player,Float:gravity=-1.0);
 
 /**
  * Overrides the (in)visibility for SourceCraft , useful for punishing them or whatever.
  * Pass -1 as visibility when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
- * @param player: The player ID to use. Can be retrieved with GetPlayer.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param visibility: The visibility you want to pass.
  * @noreturn
  */
-native SetOverrideVisiblity(player,visibility=-1);
+native SetOverrideVisiblity(Handle:player,visibility=-1);
 
 /**
  * Called when the plugin is ready.
@@ -299,95 +299,95 @@ forward OnPluginReady();
 /**
  * Gets called when the player has been authed.
  * @param client: The client's index.
- * @param player: The player ID that was authed.
+ * @param player: The player handle that was authed.
  */
-forward OnPlayerAuthed(client,player);
+forward OnPlayerAuthed(client,Handle:player);
 
 /**
  * Gets called when someone changes their race.
  * @param client: The client's index.
- * @param player: The player ID of the client.
+ * @param player: The player handle of the client.
  * @param oldrace: The player's old race. 
  * @param newrace: The player's new race.
  */
-forward OnRaceSelected(client,player,oldrace,newrace);
+forward OnRaceSelected(client,Handle:player,oldrace,newrace);
 #define OnRaceChanged OnRaceSelected
 
 /**
  * Gets called when the +ultimate or -ultimate command is called,
  * IT ISN'T ALWAYS FOR YOUR RACE, YOU NEED TO CHECK!!!
  * @param client: The client's index.
- * @param player: The player ID of the client.
+ * @param player: The player handle of the client.
  * @param race: The race for which it was called.
  * @param pressed: If true, +ultimate, false, -ultimate.
  */
-forward OnUltimateCommand(client,player,race,bool:pressed);
+forward OnUltimateCommand(client,Handle:player,race,bool:pressed);
 
 /**
  * Gets called when a player purchases an item.
  * @param client: The client's index.
- * @param player: The player ID of the client.
+ * @param player: The player handle of the client.
  * @param item: The item that was purchased.
  */
-forward OnItemPurchase(client,player,item);
+forward OnItemPurchase(client,Handle:player,item);
 
 /**
  * Gets called when a skill level is changed.
  * @param client: The client's index.
- * @param player: The player ID of the client.
+ * @param player: The player handle of the client.
  * @param race: The race effected.
  * @param skill: The skill effected.
  * @param oldskilllevel: The old skill level.
  * @param newskilllevel: The new skill level.   
  */
-forward OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel);
+forward OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel);
 
 /**
  * Gets called when XP is given to a player
  * @param client: The client's index.
- * @param player: The player ID of the client.
+ * @param player: The player handle of the client.
  * @param amount: The amount given (updateable).
  * @param taken: The amount is to be taken instead of given.
  */
-forward OnXPGiven(client,player,&amount,bool:taken);
+forward OnXPGiven(client,Handle:player,&amount,bool:taken);
 
 /**
  * Gets called when credits are given to a player
  * @param client: The client's index.
- * @param player: The player ID of the client.
+ * @param player: The player handle of the client.
  * @param amount: The amount given (updateable).
  * @param taken: The amount is to be taken instead of given.
  */
-forward OnCreditsGiven(client,player,&amount,bool:taken);
+forward OnCreditsGiven(client,Handle:player,&amount,bool:taken);
 
 /**
  * Gets called for player_hurt
  * @param victim_index: The victim's index.
- * @param victim_player: The player ID of the victim.
+ * @param victim_player: The player handle of the victim.
  * @param attacker_race: The race of the victim.
  * @param attacker_index: The attacker's index.
- * @param attacker_player: The player ID of the attacker.
+ * @param attacker_player: The player handle of the attacker.
  * @param attacker_race: The race of the attacker.
  * @param assister_index: The attacker's assister.
- * @param assister_player: The player ID of the assister.
+ * @param assister_player: The player handle of the assister.
  * @param assister_race: The race of the assister.
  * @param damage: The amount of damage infliced on the victim.
  */
-forward Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+forward Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage);
 
 /**
  * Gets called for player_death
  * @param victim_index: The victim's index.
- * @param victim_player: The player ID of the victim.
+ * @param victim_player: The player handle of the victim.
  * @param attacker_race: The race of the victim.
  * @param attacker_index: The attacker's index.
- * @param attacker_player: The player ID of the attacker.
+ * @param attacker_player: The player handle of the attacker.
  * @param attacker_race: The race of the attacker.
  * @param assister_index: The attacker's assister.
- * @param assister_player: The player ID of the assister.
+ * @param assister_player: The player handle of the assister.
  * @param assister_race: The race of the assister.
  * @param damage: The amount of damage infliced on the victim.
  * @param weapon: The weapon used by the attacker.
@@ -397,8 +397,8 @@ forward Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_
  * @param backstab: Set to true for backstabs.
  * @param melee: Set to true when a melee weapon (knife, etc) was used.
  */
-forward Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                  attacker_index,attacker_player,attacker_race,
-                                  assister_index,assister_player,assister_race,
+forward Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                  attacker_index,Handle:attacker_player,attacker_race,
+                                  assister_index,Handle:assister_player,assister_race,
                                   damage,const String:weapon[],bool:is_equipment,
                                   customkill,bool:headshot,bool:backstab,bool:melee);

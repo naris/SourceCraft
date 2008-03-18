@@ -17,71 +17,71 @@
 #define GAME_WIN_CREDITS        2 // Multiplied by score
 #define MVP_CREDITS             1 // Multiplied by place * points
 
-public ShowCredits(client,vecpos)
+public ShowCredits(client,Handle:playerHandle)
 {
-    new credits=GetCredits(vecpos);
+    new credits=GetCredits(playerHandle);
     decl String:currencies[64];
     GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
     PrintToChat(client,"%c[SourceCraft] %cYou have %d %s.",
                 COLOR_GREEN,COLOR_DEFAULT,credits, currencies);
 }
 
-public GiveKillCredits(client,vectorpos)
+public GiveKillCredits(client,Handle:playerHandle)
 {
     new addcredits= (SAVE_ENABLED) ? KILL_CREDITS_LONGTERM : KILL_CREDITS_SHORTTERM;
-    GiveCredits(client,vectorpos,addcredits,"getting a kill");
+    GiveCredits(client,playerHandle,addcredits,"getting a kill");
 }
 
-public GivePickedUpFlagCredits(client,vectorpos)
+public GivePickedUpFlagCredits(client,Handle:playerHandle)
 {
-    GiveCredits(client,vectorpos,FLAG_CREDITS,"picking up the intelligence");
+    GiveCredits(client,playerHandle,FLAG_CREDITS,"picking up the intelligence");
 }
 
-public GivePointCapturedCredits(client,vectorpos)
+public GivePointCapturedCredits(client,Handle:playerHandle)
 {
-    GiveCredits(client,vectorpos,POINT_CREDITS,"capturing a point");
+    GiveCredits(client,playerHandle,POINT_CREDITS,"capturing a point");
 }
 
-public GivePointTouchedCredits(client,vectorpos)
+public GivePointTouchedCredits(client,Handle:playerHandle)
 {
-    GiveCredits(client,vectorpos,TOUCH_CREDITS,"touching a point");
+    GiveCredits(client,playerHandle,TOUCH_CREDITS,"touching a point");
 }
 
-public GiveChargeDeployedCredits(client,vectorpos)
+public GiveChargeDeployedCredits(client,Handle:playerHandle)
 {
-    GiveCredits(client,vectorpos,CHARGE_CREDITS,"deploying Ubercharge");
+    GiveCredits(client,playerHandle,CHARGE_CREDITS,"deploying Ubercharge");
 }
 
-public GiveRoundWinCredits(client,vectorpos)
+public GiveRoundWinCredits(client,Handle:playerHandle)
 {
-    GiveCredits(client,vectorpos,ROUND_WIN_CREDITS,"winning a round");
+    GiveCredits(client,playerHandle,ROUND_WIN_CREDITS,"winning a round");
 }
 
-public GiveGameWinCredits(client,vectorpos,score)
+public GiveGameWinCredits(client,Handle:playerHandle,score)
 {
-    GiveCredits(client,vectorpos,GAME_WIN_CREDITS*score,"winning the game");
+    GiveCredits(client,playerHandle,GAME_WIN_CREDITS*score,"winning the game");
 }
 
-public GiveMvpCredits(client,vectorpos,place,points)
+public GiveMvpCredits(client,Handle:playerHandle,place,points)
 {
     new String:reason[64];
     Format(reason,sizeof(reason),"being MVP #%d with %d points",place,points);
-    GiveCredits(client,vectorpos,points*place*MVP_CREDITS,reason);
+    GiveCredits(client,playerHandle,points*place*MVP_CREDITS,reason);
 }
 
-public GiveCredits(client,vectorpos, amount, const String:reason[])
+public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
 {
     new Action:result;
     Call_StartForward(g_OnCreditsGivenHandle);
     Call_PushCell(client);
-    Call_PushCell(vectorpos);
+    Call_PushCell(playerHandle);
     Call_PushCellRef(amount);
     Call_PushCell(false);
     Call_Finish(result);
 
     if (result != Plugin_Stop)
     {
-        new curcredits=GetCredits(vectorpos);
+        new curcredits=GetCredits(playerHandle);
         new newcredits=curcredits+amount;
 
         decl String:currencies[64];
@@ -90,7 +90,7 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
         new maxCredits = GetConVarInt(m_MaxCredits);
         if(newcredits <= maxCredits || maxCredits == 0)
         {
-            SetCredits(vectorpos,newcredits);
+            SetCredits(playerHandle,newcredits);
             LogMessage("%N gained %d %s for %s", client, amount, currencies, reason);
             PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, currencies, reason);
@@ -100,7 +100,7 @@ public GiveCredits(client,vectorpos, amount, const String:reason[])
             new amt = maxCredits-amount;
             if (amt > 0)
             {
-                SetCredits(vectorpos,maxCredits);
+                SetCredits(playerHandle,maxCredits);
                 LogMessage("%N gained %d %s for %s", client, amt, currencies, reason);
                 PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s for %s.",
                         COLOR_GREEN,COLOR_DEFAULT,currencies,maxCredits,amt,currencies, reason);

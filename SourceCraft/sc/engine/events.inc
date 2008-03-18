@@ -47,19 +47,19 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 }
             }
 
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
         {
-            PendingCheck(index,vecpos);
+            PendingCheck(index,playerHandle);
             PrintToChat(index, "This is a Test of the SourceCraft Beta");
-            ShowXP(index,vecpos);
-            ShowCredits(index,vecpos);
+            ShowXP(index,playerHandle);
+            ShowCredits(index,playerHandle);
             PrintToChat(index, "Please report any bugs in the forums of www.jigglysfunhouse.net");
-            new race=GetRace(vecpos);
+            new race=GetRace(playerHandle);
             if (m_FirstSpawn[index])
                 IntroMenu(index);
-            else if (GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                SkillMenu(index, vecpos, INVALID_FUNCTION);
+            else if (GetSkillCount(playerHandle,race)<GetLevel(playerHandle,race))
+                SkillMenu(index, playerHandle, INVALID_FUNCTION);
         }
     }
 }
@@ -74,18 +74,18 @@ public Action:PlayerHurtEvent(Handle:event,const String:name[],bool:dontBroadcas
         new victim_index=GetClientOfUserId(victim_userid);
         if (victim_index)
         {
-            new victim_player=GetClientVectorPosition(victim_index);
-            new victim_race=(victim_player > -1) ? GetRace(victim_player) : -1;
+            new Handle:victim_player=GetPlayerHandle(victim_index);
+            new victim_race=(victim_player != INVALID_HANDLE) ? GetRace(victim_player) : -1;
 
             new attacker_userid=GetEventInt(event,"attacker");
             new attacker_index=GetClientOfUserId(attacker_userid);
-            new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : -1;
-            new attacker_race=(attacker_player != -1) ? GetRace(attacker_player) : -1;
+            new Handle:attacker_player=(attacker_index) ? GetPlayerHandle(attacker_index) : INVALID_HANDLE;
+            new attacker_race=(attacker_player != INVALID_HANDLE) ? GetRace(attacker_player) : -1;
 
             new assister_userid=GetEventInt(event,"assister");
             new assister_index=GetClientOfUserId(assister_userid);
-            new assister_player=(assister_index) ? GetClientVectorPosition(assister_index) : -1;
-            new assister_race=(assister_player != -1) ? GetRace(assister_player) : -1;
+            new Handle:assister_player=(assister_index) ? GetPlayerHandle(assister_index) : INVALID_HANDLE;
+            new assister_race=(assister_player != INVALID_HANDLE) ? GetRace(assister_player) : -1;
 
             new damage=GetDamage(event, victim_index);
 
@@ -129,20 +129,20 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             new bool:backstab;
             new bool:headshot;
 
-            new victim_player=GetClientVectorPosition(victim_index);
-            new victim_race=(victim_player != -1) ? GetRace(victim_player) : -1;
+            new Handle:victim_player=GetPlayerHandle(victim_index);
+            new victim_race=(victim_player != INVALID_HANDLE) ? GetRace(victim_player) : -1;
 
             new attacker_userid=GetEventInt(event,"attacker");
             new attacker_index=GetClientOfUserId(attacker_userid);
-            new attacker_player=(attacker_index) ? GetClientVectorPosition(attacker_index) : -1;
-            new attacker_race=(attacker_player != -1) ? GetRace(attacker_player) : -1;
+            new Handle:attacker_player=(attacker_index) ? GetPlayerHandle(attacker_index) : INVALID_HANDLE;
+            new attacker_race=(attacker_player != INVALID_HANDLE) ? GetRace(attacker_player) : -1;
             new bool:attacker_dominated=bool:GetEventInt(event,"dominated");
             new bool:attacker_revenge=bool:GetEventInt(event,"revenge");
 
             new assister_userid=GetEventInt(event,"assister");
             new assister_index=GetClientOfUserId(assister_userid);
-            new assister_player=(assister_index) ? GetClientVectorPosition(assister_index) : -1;
-            new assister_race=(assister_player != -1) ? GetRace(assister_player) : -1;
+            new Handle:assister_player=(assister_index) ? GetPlayerHandle(assister_index) : INVALID_HANDLE;
+            new assister_race=(assister_player != INVALID_HANDLE) ? GetRace(assister_player) : -1;
             new bool:assister_dominated=bool:GetEventInt(event,"assister_dominated");
             new bool:assister_revenge=bool:GetEventInt(event,"assister_revenge");
 
@@ -194,14 +194,15 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
 
             if (attacker_index)
             {
-                if (attacker_player != -1 && attacker_userid != victim_userid)
+                if (attacker_player != INVALID_HANDLE &&
+                    attacker_userid != victim_userid)
                 {
                     if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
                     {
                         GiveKillCredits(attacker_index,attacker_player);
                         GiveKillXP(attacker_index,attacker_player,victim_index,
-                                   headshot,backstab,melee,attacker_dominated,
-                                   attacker_revenge,false);
+                                   victim_player,headshot,backstab,melee,
+                                   attacker_dominated,attacker_revenge,false);
                     }
                 }
                 SaveHealth(attacker_index);
@@ -209,14 +210,15 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
 
             if (assister_index)
             {
-                if (assister_player != -1 && assister_userid != victim_userid)
+                if (assister_player != INVALID_HANDLE &&
+                    assister_userid != victim_userid)
                 {
                     if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
                     {
                         GiveKillCredits(assister_index,assister_player);
                         GiveKillXP(assister_index,assister_player,victim_index,
-                                   headshot,backstab,melee,assister_dominated,
-                                   assister_revenge,true);
+                                   victim_player,headshot,backstab,melee,
+                                   assister_dominated,assister_revenge,true);
                     }
                 }
                 SaveHealth(assister_index);
@@ -224,7 +226,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
 
             if (victim_index)
             {
-                if (victim_player!=-1)
+                if (victim_player != INVALID_HANDLE)
                 {
                     PendingCheck(victim_index,victim_player);
                     new race=GetRace(victim_player);

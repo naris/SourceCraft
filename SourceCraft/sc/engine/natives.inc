@@ -212,26 +212,26 @@ public Native_HealPlayer(Handle:plugin,numParams)
  */
 public Native_GetClass(Handle:plugin,numParams)
 {
-    if(numParams==1 && GameType == tf2)
+    if (numParams == 1 && GameType == tf2)
         return GetClass(GetNativeCell(1));
     else
         return -1;
 }
 
-public Native_GetPlayer(Handle:plugin,numParams)
+public Native_GetPlayerHandle(Handle:plugin,numParams)
 {
-    if(numParams==1)
-        return GetClientVectorPosition(GetNativeCell(1));
+    if (numParams == 1)
+        return _:GetPlayerHandle(GetNativeCell(1));
     else
-        return -1;
+        return _:INVALID_HANDLE;
 }
 
 public Native_GetRace(Handle:plugin,numParams)
 {
-    if(numParams==1)
+    if (numParams==1)
     {
-        new player=GetNativeCell(1);
-        if(player!=-1)
+        new Handle:player=Handle:GetNativeCell(1);
+        if (player != INVALID_HANDLE)
             return GetRace(player);
     }
     return -1;
@@ -239,11 +239,11 @@ public Native_GetRace(Handle:plugin,numParams)
 
 public Native_GetLevel(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
-        if(player!=-1&&race!=-1)
+        if (player != INVALID_HANDLE && race != -1)
             return GetLevel(player,race);
     }
     return -1;
@@ -251,24 +251,24 @@ public Native_GetLevel(Handle:plugin,numParams)
 
 public Native_SetLevel(Handle:plugin,numParams)
 {
-    if(numParams==3)
+    if (numParams==3)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
         new newlevel=GetNativeCell(3);
-        if(player!=-1&&race!=-1)
+        if (player != INVALID_HANDLE && race != -1)
             SetLevel(player,race,newlevel);
     }
 }
 
 public Native_GetSkillLevel(Handle:plugin,numParams)
 {
-    if(numParams==3)
+    if (numParams==3)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
         new skill=GetNativeCell(3);
-        if(player!=-1&&race!=-1&&skill!=-1)
+        if (player != INVALID_HANDLE && race != -1 && skill != -1)
             return GetSkillLevel(player,race,skill);
     }
     return -1;
@@ -276,24 +276,24 @@ public Native_GetSkillLevel(Handle:plugin,numParams)
 
 public Native_SetSkillLevel(Handle:plugin,numParams)
 {
-    if(numParams==4)
+    if (numParams==4)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
         new skill=GetNativeCell(3);
         new newlevel=GetNativeCell(4);
-        if(player!=-1&&race!=-1&&skill!=-1)
+        if (player != INVALID_HANDLE && race != -1 && skill != -1)
             SetSkillLevel(player,race,skill,newlevel);
     }
 }
 
 public Native_GetXP(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
-        if(player!=-1&&race!=-1)
+        if (player != INVALID_HANDLE && race != -1)
             return GetXP(player,race);
     }
     return -1;
@@ -301,12 +301,12 @@ public Native_GetXP(Handle:plugin,numParams)
 
 public Native_SetXP(Handle:plugin,numParams)
 {
-    if(numParams==3)
+    if (numParams==3)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
         new newxp=GetNativeCell(3);
-        if(player!=-1&&race!=-1&&newxp!=-1)
+        if (player != INVALID_HANDLE && race != -1 && newxp != -1)
         {
             SetXP(player,race,newxp);
             DoLevelCheck(GetClientIndex(player),player);
@@ -316,10 +316,10 @@ public Native_SetXP(Handle:plugin,numParams)
 
 public Native_GetCredits(Handle:plugin,numParams)
 {
-    if(numParams==1)
+    if (numParams==1)
     {
-        new player=GetNativeCell(1);
-        if(player!=-1)
+        new Handle:player=Handle:GetNativeCell(1);
+        if (player != INVALID_HANDLE)
             return GetCredits(player);
     }
     return -1;
@@ -327,22 +327,22 @@ public Native_GetCredits(Handle:plugin,numParams)
 
 public Native_SetCredits(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new newcredits=GetNativeCell(2);
-        if(player!=-1)
+        if (player != INVALID_HANDLE)
             SetCredits(player,newcredits);
     }
 }
 
 public Native_GetOwnsItem(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new item=GetNativeCell(2);
-        if(player!=-1&&item!=-1)
+        if (player != INVALID_HANDLE && item != -1)
             return GetOwnsItem(player,item);
     }
     return -1;
@@ -350,23 +350,23 @@ public Native_GetOwnsItem(Handle:plugin,numParams)
 
 public Native_SetOwnsItem(Handle:plugin,numParams)
 {
-    if(numParams==3)
+    if (numParams==3)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new item=GetNativeCell(2);
         new owns=GetNativeCell(3);
-        if(player!=-1&&item!=-1)
+        if (player != INVALID_HANDLE && item != -1)
             SetOwnsItem(player,item,owns);
     }
 }
 
 public Native_GetImmunity(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new immunity=GetNativeCell(2);
-        if(player!=-1&&immunity!=-1)
+        if (player != INVALID_HANDLE && immunity != -1)
             return GetImmunity(player,immunity);
     }
     return -1;
@@ -374,23 +374,23 @@ public Native_GetImmunity(Handle:plugin,numParams)
 
 public Native_SetImmunity(Handle:plugin,numParams)
 {
-    if(numParams==3)
+    if (numParams==3)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new immunity=GetNativeCell(2);
         new imm_state=GetNativeCell(3);
-        if(player!=-1&&immunity!=-1&&imm_state!=-1)
+        if(player!=INVALID_HANDLE&&immunity!=-1&&imm_state!=-1)
             SetImmunity(player,immunity,imm_state);
     }
 }
 
 public Native_SetSpeed(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        if (player != -1)
+        if (player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -436,11 +436,11 @@ public Native_SetSpeed(Handle:plugin,numParams)
 
 public Native_SetGravity(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams==2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player=Handle:GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
-        if (player!=-1)
+        if (player!=INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -505,9 +505,9 @@ public Native_SetGravity(Handle:plugin,numParams)
 */
 public Native_SetVisibility(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 10)
+    if (numParams >= 1 && numParams <= 10)
     {
-        new player              = GetNativeCell(1);
+        new Handle:player       = Handle:GetNativeCell(1);
         new visibility          = (numParams >= 2) ? GetNativeCell(2) : -1;
         new VisibilityType:type = (numParams >= 3) ? GetNativeCell(3) : VisibilityType:-1;
         new Float:factor1       = (numParams >= 4) ? GetNativeCell(4) : -1.0;
@@ -517,7 +517,7 @@ public Native_SetVisibility(Handle:plugin,numParams)
         new r                   = (numParams >= 8) ? GetNativeCell(8) : -1;
         new g                   = (numParams >= 9) ? GetNativeCell(9) : -1;
         new b                   = (numParams >= 10) ? GetNativeCell(10) : -1;
-        if(player != -1)
+        if(player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -575,12 +575,12 @@ public Native_SetVisibility(Handle:plugin,numParams)
 
 public Native_SetOverrideSpeed(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams == 2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player = Handle:GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
         LogMessage("[natives] Set overridespeed of %N to %f", GetClientIndex(player), speed);
-        if(player!=-1)
+        if (player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -626,11 +626,11 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
 
 public Native_SetOverrideGravity(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams == 2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player = Handle:GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
-        if(player!=-1)
+        if (player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -676,11 +676,11 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
 
 public Native_SetOverrideVisiblity(Handle:plugin,numParams)
 {
-    if(numParams==2)
+    if (numParams == 2)
     {
-        new player=GetNativeCell(1);
+        new Handle:player = Handle:GetNativeCell(1);
         new visibility=GetNativeCell(2);
-        if(player!=-1)
+        if (player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
@@ -734,7 +734,7 @@ public bool:InitNatives()
     CreateNative("HurtPlayer",Native_HurtPlayer);
     CreateNative("HealPlayer",Native_HealPlayer);
     CreateNative("GetClass",Native_GetRace);
-    CreateNative("GetPlayer",Native_GetPlayer);
+    CreateNative("GetPlayerHandle",Native_GetPlayerHandle);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
     CreateNative("SetLevel",Native_SetLevel);

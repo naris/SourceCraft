@@ -33,9 +33,9 @@ public BombDefusedEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveDefuseXP(index,vecpos);
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
+            GiveDefuseXP(index,playerHandle);
     }
 }
 
@@ -45,9 +45,9 @@ public BombPlantedEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GivePlantXP(index,vecpos);
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
+            GivePlantXP(index,playerHandle);
     }
 }
 
@@ -57,8 +57,8 @@ public HostageRescuedEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        new vecpos=GetClientVectorPosition(index);
-        if(vecpos!=-1)
-            GiveHostageRescuedXP(index,vecpos);
+        new Handle:playerHandle=GetPlayerHandle(index);
+        if (playerHandle != INVALID_HANDLE)
+            GiveHostageRescuedXP(index,playerHandle);
     }
 }

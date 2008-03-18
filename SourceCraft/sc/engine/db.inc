@@ -244,7 +244,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
     return race_ident;
 }
 
-public LoadPlayerData(client,vectorpos)
+public LoadPlayerData(client,Handle:playerHandle)
 {
     new bool:fetch=false;
     if(DBIDB)
@@ -270,13 +270,13 @@ public LoadPlayerData(client,vectorpos)
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
 
-                    SetDatabaseIdent(vectorpos,player_ident);
-                    SetRace(vectorpos,raceId);
-                    SetCredits(vectorpos,SQL_FetchInt(query,2));
-                    SetOverallLevel(vectorpos,SQL_FetchInt(query,3));
+                    SetDatabaseIdent(playerHandle,player_ident);
+                    SetRace(playerHandle,raceId);
+                    SetCredits(playerHandle,SQL_FetchInt(query,2));
+                    SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
 
-                    //LogMessage("Loaded %N's player data, client=%d, vectorpos=%d, player_ident=%d",
-                    //           client, client, vectorpos, player_ident);
+                    //LogMessage("Loaded %N's player data, client=%d, playerHandle=%d, player_ident=%d",
+                    //           client, client, playerHandle, player_ident);
 
                     // Load the rest of the Player data using threads.
                     CloseHandle(query);
@@ -286,7 +286,7 @@ public LoadPlayerData(client,vectorpos)
 
                     new Handle:dataPack = CreateDataPack();
                     WritePackCell(dataPack, client);
-                    WritePackCell(dataPack, vectorpos);
+                    WritePackCell(dataPack, _:playerHandle);
                     WritePackCell(dataPack, player_ident);
                     ResetPack(dataPack);
                     SQL_TQuery(DBIDB, SQL_LoadRaces, SQLString, dataPack);
@@ -321,8 +321,8 @@ public SQL_LoadRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
         ThrowError("Invalid Datapack Passed to SQL_LoadRaces!");
     else 
     {
-        new client       = ReadPackCell(data); 
-        new vectorpos    = ReadPackCell(data); 
+        new client = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
         new player_ident = ReadPackCell(data);
         CloseHandle(data);
 
@@ -337,14 +337,14 @@ public SQL_LoadRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
                 new race_ident = SQL_FetchInt(hndl,0);
                 new raceId = FindRaceForIdent(race_ident);
 
-                SetXP(vectorpos,raceId,SQL_FetchInt(hndl,1));
-                SetLevel(vectorpos,raceId,SQL_FetchInt(hndl,2));
+                SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
+                SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
 
                 Format(SQLString,sizeof(SQLString), "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
-                WritePackCell(dataPack, vectorpos);
+                WritePackCell(dataPack, _:playerHandle);
                 WritePackCell(dataPack, raceId);
                 ResetPack(dataPack);
                 SQL_TQuery(DBIDB, SQL_LoadSkills, SQLString, dataPack);
@@ -359,9 +359,9 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
         ThrowError("Invalid Datapack Passed to SQL_LoadSkills!");
     else 
     {
-        new client    = ReadPackCell(data); 
-        new vectorpos = ReadPackCell(data); 
-        new raceId    = ReadPackCell(data);
+        new client = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
+        new raceId = ReadPackCell(data);
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -370,7 +370,7 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
         {
             while (SQL_FetchRow(hndl))
             {
-                SetSkillLevel(vectorpos,raceId,
+                SetSkillLevel(playerHandle,raceId,
                               SQL_FetchInt(hndl,0),
                               SQL_FetchInt(hndl,1));
             }
@@ -378,22 +378,22 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
     }
 }
 
-public SaveAllPlayersData()
+public SaveAllPlayersData(bool:threaded)
 {
     if (SAVE_ENABLED)
     {
-        new playerCount = PLAYER_COUNT();
-        for(new x=0;x<playerCount;x++)
+        new playerCount = GetMaxClients();
+        for(new client=1;client<=playerCount;client++)
         {
-            new client=GetClientIndex(x);
-            if (IsClientInGame(client))
-                SavePlayerData(client,x,false);
+            new Handle:playerHandle=GetPlayerHandle(client);
+            if (playerHandle != INVALID_HANDLE)
+                SavePlayerData(client,playerHandle,threaded);
         }
         g_AllPlayersSaved = true;
     }
 }
 
-public SavePlayerData(client,vectorpos, bool:threaded)
+public SavePlayerData(client, Handle:playerHandle, bool:threaded)
 {
     if(DBIDB)
     {
@@ -402,11 +402,11 @@ public SavePlayerData(client,vectorpos, bool:threaded)
         {
             decl String:SQLString[512] = "";
 
-            new credits           = GetCredits(vectorpos);
-            new overall_level     = GetOverallLevel(vectorpos);
-            new player_ident      = GetDatabaseIdent(vectorpos);
+            new credits           = GetCredits(playerHandle);
+            new overall_level     = GetOverallLevel(playerHandle);
+            new player_ident      = GetDatabaseIdent(playerHandle);
 
-            new raceId            = GetRace(vectorpos);
+            new raceId            = GetRace(playerHandle);
             new Handle:raceHandle = Race(raceId);
             new race_ident        = GetRaceIdent(raceHandle);
 
@@ -423,7 +423,7 @@ public SavePlayerData(client,vectorpos, bool:threaded)
                 {
                     new Handle:dataPack = CreateDataPack();
                     WritePackCell(dataPack, client);
-                    WritePackCell(dataPack, vectorpos);
+                    WritePackCell(dataPack, _:playerHandle);
                     WritePackCell(dataPack, player_ident);
                     ResetPack(dataPack);
                     SQL_TQuery(DBIDB, SQL_UpdatePlayer, SQLString, dataPack);
@@ -434,14 +434,14 @@ public SavePlayerData(client,vectorpos, bool:threaded)
                     SQL_LockDatabase(DBIDB);
 
                     if (SQL_FastQuery(DBIDB,SQLString))
-                        SavePlayerRaces(client, vectorpos, player_ident,threaded);
+                        SavePlayerRaces(client, playerHandle, player_ident,threaded);
                     else
                     {
-                        SetDatabaseIdent(vectorpos,-1);
+                        SetDatabaseIdent(playerHandle,-1);
                         decl String:error[256] = "";
                         SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to update %N's player record, client=%d, vectorpos=%d, player_ident=%d: %s\nSQL:%s",
-                                client, client, vectorpos, player_ident, error, SQLString);
+                        LogError("Unable to update %N's player record, client=%d, playerHandle=%d, player_ident=%d: %s\nSQL:%s",
+                                client, client, playerHandle, player_ident, error, SQLString);
                     }
                     SQL_UnlockDatabase(DBIDB);
                 }
@@ -454,7 +454,7 @@ public SavePlayerData(client,vectorpos, bool:threaded)
                 {
                     new Handle:dataPack = CreateDataPack();
                     WritePackCell(dataPack, client);
-                    WritePackCell(dataPack, vectorpos);
+                    WritePackCell(dataPack, _:playerHandle);
                     WritePackString(dataPack, steamid);
                     ResetPack(dataPack);
                     SQL_TQuery(DBIDB, SQL_InsertPlayer, SQLString, dataPack);
@@ -477,9 +477,9 @@ public SavePlayerData(client,vectorpos, bool:threaded)
                             if(SQL_FetchRow(player_query))
                             {
                                 player_ident = SQL_FetchInt(player_query,0);
-                                SetDatabaseIdent(vectorpos,player_ident);
+                                SetDatabaseIdent(playerHandle,player_ident);
                                 CloseHandle(player_query);
-                                SavePlayerRaces(client, vectorpos, player_ident,threaded);
+                                SavePlayerRaces(client, playerHandle, player_ident,threaded);
                             }
                             else
                             {
@@ -502,8 +502,8 @@ public SavePlayerData(client,vectorpos, bool:threaded)
                     {
                         decl String:error[256] = "";
                         SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to insert %N's player data, client=%d, vectorpos=%d, player_ident=%d: %s\nSQL:%s",
-                                client, client, vectorpos, player_ident, error, SQLString);
+                        LogError("Unable to insert %N's player data, client=%d, playerHandle=%d, player_ident=%d: %s\nSQL:%s",
+                                client, client, playerHandle, player_ident, error, SQLString);
 
                         Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
                                 steamid);
@@ -519,8 +519,8 @@ public SavePlayerData(client,vectorpos, bool:threaded)
                                     LogMessage("Found %N's player_ident=%d, retrying save...",
                                             client, player_ident);
 
-                                    SetDatabaseIdent(vectorpos,player_ident);
-                                    SavePlayerData(client,vectorpos,threaded);
+                                    SetDatabaseIdent(playerHandle,player_ident);
+                                    SavePlayerData(client,playerHandle,threaded);
                                 }
                             }
                         }
@@ -540,23 +540,23 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
         ThrowError("Invalid Datapack Passed to SQL_UpdatePlayer!");
     else 
     {
-        new client       = ReadPackCell(data); 
-        new vectorpos    = ReadPackCell(data); 
+        new client = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
         new player_ident = ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
         {
-            SetDatabaseIdent(vectorpos,-1);
-            ThrowError("Unable to update %N's player record, client=%d, vectorpos=%d, player_ident=%d: %s",
-                       client, client, vectorpos, player_ident, error);
+            SetDatabaseIdent(playerHandle,-1);
+            ThrowError("Unable to update %N's player record, client=%d, playerHandle=%d, player_ident=%d: %s",
+                       client, client, playerHandle, player_ident, error);
         }
         else
         {
-            //LogMessage("Updated %N's player data, client=%d, vectorpos=%d, player_ident=%d",
-            //           client, client, vectorpos, player_ident);
+            //LogMessage("Updated %N's player data, client=%d, playerHandle=%d, player_ident=%d",
+            //           client, client, playerHandle, player_ident);
 
-            SavePlayerRaces(client, vectorpos, player_ident,true);
+            SavePlayerRaces(client, playerHandle, player_ident,true);
         }
     }
 }
@@ -569,8 +569,8 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
     {
         decl String:SQLString[512] = "";
 
-        new client    = ReadPackCell(data); 
-        new vectorpos = ReadPackCell(data); 
+        new client = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
 
         decl String:steamid[64]="";
         ReadPackString(data, steamid, sizeof(steamid));
@@ -579,15 +579,15 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
         {
-            LogError("Unable to insert %N's player data, client=%d, vectorpos=%d: %s",
-                     client, client, vectorpos, error);
+            LogError("Unable to insert %N's player data, client=%d, playerHandle=%d: %s",
+                     client, client, playerHandle, error);
 
             Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
             new Handle:dataPack = CreateDataPack();
             WritePackCell(dataPack, client);
-            WritePackCell(dataPack, vectorpos);
+            WritePackCell(dataPack, _:playerHandle);
             ResetPack(dataPack);
             SQL_TQuery(DBIDB, SQL_SelectPlayerIdent, SQLString, dataPack);
         }
@@ -600,7 +600,7 @@ public SQL_InsertPlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
 
             new Handle:dataPack = CreateDataPack();
             WritePackCell(dataPack, client);
-            WritePackCell(dataPack, vectorpos);
+            WritePackCell(dataPack, _:playerHandle);
             ResetPack(dataPack);
             SQL_TQuery(DBIDB, SQL_SelectLastPlayerIdent, SQLString, dataPack);
         }
@@ -613,8 +613,8 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
         ThrowError("Invalid Datapack Passed to SQL_SelectPlayerIdent!");
     else 
     {
-        new client    = ReadPackCell(data); 
-        new vectorpos = ReadPackCell(data); 
+        new client = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -627,8 +627,8 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
                 //LogMessage("Found %N's player_ident=%d, retrying save...",
                 //           client, player_ident);
 
-                SetDatabaseIdent(vectorpos,player_ident);
-                SavePlayerData(client,vectorpos,true);
+                SetDatabaseIdent(playerHandle,player_ident);
+                SavePlayerData(client,playerHandle,true);
             }
             else
             {
@@ -647,8 +647,8 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
         ThrowError("Invalid Datapack Passed to SQL_LoadSkills!");
     else 
     {
-        new client    = ReadPackCell(data); 
-        new vectorpos = ReadPackCell(data); 
+        new client = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
@@ -656,24 +656,24 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
         else if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
         {
             new player_ident = SQL_FetchInt(hndl,0);
-            SetDatabaseIdent(vectorpos,player_ident);
-            SavePlayerRaces(client, vectorpos, player_ident,true);
-            //LogMessage("Inserted %N's player data, client=%d, vectorpos=%d, player_ident=%d",
-            //           client, client, vectorpos, player_ident);
+            SetDatabaseIdent(playerHandle,player_ident);
+            SavePlayerRaces(client, playerHandle, player_ident,true);
+            //LogMessage("Inserted %N's player data, client=%d, playerHandle=%d, player_ident=%d",
+            //           client, client, playerHandle, player_ident);
         }
         else
             ThrowError("Unable to fetch %N's ident: %s", client, error);
     }
 }
 
-public SavePlayerRaces(client, vectorpos, player_ident, bool:threaded)
+public SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
 {
     decl String:SQLString[512] = "";
     new raceCount = RACE_COUNT();
     for(new raceId=0;raceId<raceCount;raceId++)
     {
-        new xp    = GetXP(vectorpos,raceId);
-        new level = GetLevel(vectorpos,raceId);
+        new xp    = GetXP(playerHandle,raceId);
+        new level = GetLevel(playerHandle,raceId);
 
         if (xp || level)
         {
@@ -693,7 +693,7 @@ public SavePlayerRaces(client, vectorpos, player_ident, bool:threaded)
             {
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
-                WritePackCell(dataPack, vectorpos);
+                WritePackCell(dataPack, _:playerHandle);
                 WritePackCell(dataPack, player_ident);
                 WritePackCell(dataPack, raceId);
                 WritePackCell(dataPack, race_ident);
@@ -705,7 +705,7 @@ public SavePlayerRaces(client, vectorpos, player_ident, bool:threaded)
             {
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
-                    SavePlayerSkills(client, vectorpos, player_ident, raceId, race_ident, raceHandle, threaded);
+                    SavePlayerSkills(client, playerHandle, player_ident, raceId, race_ident, raceHandle, threaded);
                 }
                 else
                 {
@@ -716,7 +716,7 @@ public SavePlayerRaces(client, vectorpos, player_ident, bool:threaded)
                     LogError("Unable to insert/replace %N's %s data: %s\nSQL:%s",
                              client, raceName, error, SQLString);
 
-                    SetDatabaseIdent(vectorpos,-1); // Reset ident!
+                    SetDatabaseIdent(playerHandle,-1); // Reset ident!
                 }
             }
         }
@@ -730,7 +730,7 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
     else 
     {
         new client = ReadPackCell(data); 
-        new vectorpos = ReadPackCell(data); 
+        new Handle:playerHandle = Handle:ReadPackCell(data); 
         new player_ident = ReadPackCell(data); 
         new raceId = ReadPackCell(data);
         new race_ident = ReadPackCell(data);
@@ -744,24 +744,24 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
             ThrowError("Unable to insert/replace %N's %s data: %s",
                        client, raceName, error);
 
-            SetDatabaseIdent(vectorpos,-1); // Reset ident!
+            SetDatabaseIdent(playerHandle,-1); // Reset ident!
         }
         else
         {
             //LogMessage("Updated %N's race data, player_ident=%d, race_ident=%d",
             //           client, player_ident, race_ident);
 
-            SavePlayerSkills(client, vectorpos, player_ident, raceId, race_ident, raceHandle, true);
+            SavePlayerSkills(client, playerHandle, player_ident, raceId, race_ident, raceHandle, true);
         }
     }
 }
 
-public SavePlayerSkills(client, vectorpos, player_ident, raceId, race_ident, Handle:raceHandle, bool:threaded)
+public SavePlayerSkills(client, Handle:playerHandle, player_ident, raceId, race_ident, Handle:raceHandle, bool:threaded)
 {
     decl String:SQLString[512] = "";
     for(new skill=0;skill<SKILL_COUNT;skill++)
     {
-        new skillLevel = GetSkillLevel(vectorpos,raceId,skill);
+        new skillLevel = GetSkillLevel(playerHandle,raceId,skill);
 
         if (DBIsSQLite)
         {

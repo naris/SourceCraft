@@ -80,12 +80,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
         LogError("There was a failure in creating the forward based functions.");
         return false;
     }
-    else if(!InitiatePlayerArray())
-    {
-        LogError("There was a failure in creating the player vector.");
-        return false;
-    }
-    else if(!InitiateRaceArray())
+    else if(!InitRaceArray())
     {
         LogError("There was a failure in creating the race vector.");
         return false;
@@ -100,9 +95,7 @@ public OnPluginStart()
 
     GetGameType();
 
-    if(!InitiatePlayerArray())
-        SetFailState("There was a failure in creating the player vector.");
-    if(!InitiateRaceArray())
+    if(!InitRaceArray())
         SetFailState("There was a failure in creating the race vector.");
 
     if(!ConnectToDatabase())
@@ -176,7 +169,7 @@ public OnMapStart()
 public OnMapEnd()
 {
     if (!g_AllPlayersSaved)
-        SaveAllPlayersData();
+        SaveAllPlayersData(false);
 }
 
 public OnClientPutInServer(client)
@@ -185,22 +178,23 @@ public OnClientPutInServer(client)
     {
         m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
-        new vecpos = CreatePlayer(client);
-        if (vecpos >= 0)
+        new Handle:playerHandle=CreatePlayer(client);
+        if (playerHandle != INVALID_HANDLE)
         {
             Call_StartForward(g_OnPlayerAuthedHandle);
             Call_PushCell(client);
-            Call_PushCell(GetClientVectorPosition(client));
+            Call_PushCell(playerHandle);
             new res;
             Call_Finish(res);
 
             if(SAVE_ENABLED)
-                m_FirstSpawn[client]=LoadPlayerData(client,vecpos);
+                m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
             else
                 m_FirstSpawn[client]=2;
 
+            // Default race to human for new players.
             if (m_FirstSpawn[client] == 2)
-                SetRace(vecpos, FindRace("human")); // Default race to human.
+                SetRace(playerHandle, FindRace("human"));
         }
         else
             SetFailState("There was a failure processing client %d-%N.", client, client);
@@ -211,14 +205,13 @@ public OnClientDisconnect(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        new clientVecPos=GetClientVectorPosition(client);
-        if (clientVecPos>-1)
+        new Handle:playerHandle=GetPlayerHandle(client);
+        if (playerHandle != INVALID_HANDLE)
         {
             if (SAVE_ENABLED)
-                SavePlayerData(client,clientVecPos,false);
+                SavePlayerData(client,playerHandle,false);
 
-            ClearPlayer(clientVecPos);
-            RemoveFromArray(arrayPlayers,clientVecPos);
+            ClearPlayer(client,playerHandle);
 
             m_FirstSpawn[client]=2;
         }

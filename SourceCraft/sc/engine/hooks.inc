@@ -36,8 +36,8 @@ public Action:SayCommand(client,args)
 {
     decl String:arg1[32];
     GetCmdArg(1,arg1,sizeof(arg1));
-    new vecpos=GetClientVectorPosition(client);
-    if(vecpos>-1)
+    new Handle:playerHandle=GetPlayerHandle(client);
+    if (playerHandle != INVALID_HANDLE)
     {
         decl String:currencies[64];
         GetConVarString(m_Currencies, currencies, sizeof(currencies));
@@ -46,7 +46,7 @@ public Action:SayCommand(client,args)
 
         if(CommandCheck(arg1,"showxp",63))
         {
-            ShowXP(client,vecpos);
+            ShowXP(client,playerHandle);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"changerace",63))
@@ -61,19 +61,19 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"skillsinfo",63))
         {
-            SkillsInfo(client,GetRace(vecpos),false,INVALID_FUNCTION);
+            SkillsInfo(client,GetRace(playerHandle),false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"resetskills",63))
         {
-            ResetSkills(client,vecpos);
+            ResetSkills(client,playerHandle);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"spendskills",63))
         {
-            new race=GetRace(vecpos);
-            if(GetSkillCount(vecpos,race)<GetLevel(vecpos,race))
-                SkillMenu(client,vecpos,INVALID_FUNCTION);
+            new race=GetRace(playerHandle);
+            if(GetSkillCount(playerHandle,race)<GetLevel(playerHandle,race))
+                SkillMenu(client,playerHandle,INVALID_FUNCTION);
             else
             {
                 PrintToChat(client,"%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
@@ -82,23 +82,23 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"showskills",63))
         {
-            ShowSkills(client,client,vecpos,INVALID_FUNCTION);
+            ShowSkills(client,client,playerHandle,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showcredits",63)|| CommandCheck(arg1,showCurrency,63))
         {
-            ShowCredits(client,vecpos);
+            ShowCredits(client,playerHandle);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"shopmenu",63))
         {
-            ShopMenu(client,vecpos,true,INVALID_FUNCTION);
+            ShopMenu(client,playerHandle,true,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showitems",63) || CommandCheck(arg1,"inventory",63) ||
                 CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
         {
-            ShopMenu(client,vecpos,false,INVALID_FUNCTION);
+            ShopMenu(client,playerHandle,false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"schelp",63) || CommandCheck(arg1,"help",63))
@@ -108,7 +108,7 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"scmenu",63) || CommandCheck(arg1,"menu",63))
         {
-            MainMenu(client,vecpos,INVALID_FUNCTION);
+            MainMenu(client,playerHandle,INVALID_FUNCTION);
             return Plugin_Handled;
         }
 	}
@@ -119,17 +119,17 @@ public Action:UltimateCommand(client,args)
 {
     decl String:command[32];
     GetCmdArg(0,command,32);
-    new vecpos=GetClientVectorPosition(client);
-    if(vecpos>-1)
+    new Handle:playerHandle=GetPlayerHandle(client);
+    if (playerHandle != INVALID_HANDLE)
     {
-        new race=GetRace(vecpos);
+        new race=GetRace(playerHandle);
         new bool:pressed=false;
         if(!strcmp(command,"+ultimate"))
             pressed=true;
 
         Call_StartForward(g_OnUltimateCommandHandle);
         Call_PushCell(client);
-        Call_PushCell(vecpos);
+        Call_PushCell(playerHandle);
         Call_PushCell(race);
         Call_PushCell(pressed);
         new result;
@@ -140,20 +140,20 @@ public Action:UltimateCommand(client,args)
  
 public Action:ShopMenuCommand(client,args)
 {
-    new vecpos=GetClientVectorPosition(client);
-    if(vecpos>-1)
+    new Handle:playerHandle=GetPlayerHandle(client);
+    if (playerHandle != INVALID_HANDLE)
     {
-        ShopMenu(client,vecpos,true,INVALID_FUNCTION);
+        ShopMenu(client,playerHandle,true,INVALID_FUNCTION);
     }
     return Plugin_Handled;
 }
  
 public Action:SCMenuCommand(client,args)
 {
-    new vecpos=GetClientVectorPosition(client);
-    if(vecpos>-1)
+    new Handle:playerHandle=GetPlayerHandle(client);
+    if (playerHandle != INVALID_HANDLE)
     {
-        MainMenu(client,vecpos,INVALID_FUNCTION);
+        MainMenu(client,playerHandle,INVALID_FUNCTION);
     }
     return Plugin_Handled;
 }

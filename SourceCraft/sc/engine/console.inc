@@ -41,37 +41,44 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
     if(StrEqual(matchstr,"@all",false))
     {
         // All?
-        new playerCount = PLAYER_COUNT();
-        for(new x=0;x<playerCount;x++)
+        new playerCount = GetMaxClients();
+        for(new index=1;index<=playerCount;index++)
         {
-            PushArrayCell(matchHandle,GetClientIndex(x));
+            if (IsClientInGame(index))
+            {
+                PushArrayCell(matchHandle,index);
+            }
         }
     }
     else
     {
         // Team?
         if(StrEqual(matchstr,"@ct",false) ||
-           StrEqual(matchstr,"@red",false) ||
-	       StrEqual(matchstr,"@axis",false))
+                StrEqual(matchstr,"@red",false) ||
+                StrEqual(matchstr,"@axis",false))
         {
-            new playerCount = PLAYER_COUNT();
-            for(new x=0;x<playerCount;x++)
+            new playerCount = GetMaxClients();
+            for(new index=1;index<=playerCount;index++)
             {
-                new index=GetClientIndex(x);
-                if(GetClientTeam(index)==3)
-                    PushArrayCell(matchHandle,index);
+                if (IsClientInGame(index))
+                {
+                    if(GetClientTeam(index)==3)
+                        PushArrayCell(matchHandle,index);
+                }
             }
         }
         else if (StrEqual(matchstr,"@t",false) ||
-                 StrEqual(matchstr,"@blue",false) ||
-                 StrEqual(matchstr,"@allies",false))
+                StrEqual(matchstr,"@blue",false) ||
+                StrEqual(matchstr,"@allies",false))
         {
-            new playerCount = PLAYER_COUNT();
-            for(new x=0;x<playerCount;x++)
+            new playerCount = GetMaxClients();
+            for(new index=1;index<=playerCount;index++)
             {
-                new index=GetClientIndex(x);
-                if(GetClientTeam(index)==2)
-                    PushArrayCell(matchHandle,index);
+                if (IsClientInGame(index))
+                {
+                    if(GetClientTeam(index)==2)
+                        PushArrayCell(matchHandle,index);
+                }
             }
         }
         else
@@ -80,25 +87,29 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
             if(matchstr[0]=='@')
             {
                 new uid=StringToInt(matchstr[1]);
-                new playerCount = PLAYER_COUNT();
-                for(new x=0;x<playerCount;x++)
+                new playerCount = GetMaxClients();
+                for(new index=1;index<=playerCount;index++)
                 {
-                    new index=GetClientIndex(x);
-                    if(GetClientUserId(index)==uid)
-                        PushArrayCell(matchHandle,index);
+                    if (IsClientInGame(index))
+                    {
+                        if(GetClientUserId(index)==uid)
+                            PushArrayCell(matchHandle,index);
+                    }
                 }
             }
             else
             {
                 // Player name?
-                new playerCount = PLAYER_COUNT();
-                for(new x=0;x<playerCount;x++)
+                new playerCount = GetMaxClients();
+                for(new index=1;index<=playerCount;index++)
                 {
-                    new index=GetClientIndex(x);
-                    new String:name[64];
-                    GetClientName(index,name,63);
-                    if(StrContains(name,matchstr,false)!=-1)
-                        PushArrayCell(matchHandle,index);
+                    if (IsClientInGame(index))
+                    {
+                        new String:name[64];
+                        GetClientName(index,name,63);
+                        if(StrContains(name,matchstr,false)!=-1)
+                            PushArrayCell(matchHandle,index);
+                    }
                 }
             }
         }
@@ -123,15 +134,15 @@ public Action:CMD_SetXP(client,args)
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             new index=GetArrayCell(matchHandle,x);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new race=GetRace(vecpos);
-                SetXP(vecpos,race,xp);
+                new race=GetRace(playerHandle);
+                SetXP(playerHandle,race,xp);
                 PrintToConsole(client,"[SourceCraft] You just set \"%N's\" XP to %d.",index,xp);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" set your XP to %d.",
                             COLOR_GREEN,COLOR_DEFAULT,client,xp);
-                DoLevelCheck(index,vecpos);
+                DoLevelCheck(index,playerHandle);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -158,15 +169,15 @@ public Action:CMD_GiveXP(client,args)
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             new index=GetArrayCell(matchHandle,x);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new race=GetRace(vecpos);
-                SetXP(vecpos,race,GetXP(vecpos,race)+xp);
+                new race=GetRace(playerHandle);
+                SetXP(playerHandle,race,GetXP(playerHandle,race)+xp);
                 PrintToConsole(client,"[SourceCraft] You just gave %d XP to \"%N\".",xp,index);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" gave you %d XP.",
                             COLOR_GREEN,COLOR_DEFAULT,client,xp);
-                DoLevelCheck(index,vecpos);
+                DoLevelCheck(index,playerHandle);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -193,18 +204,18 @@ public Action:CMD_RemoveXP(client,args)
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
             new index=GetArrayCell(matchHandle,x);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new race=GetRace(vecpos);
-                new newxp=GetXP(vecpos,race)-xp;
+                new race=GetRace(playerHandle);
+                new newxp=GetXP(playerHandle,race)-xp;
                 if(newxp<0)
                     newxp=0;
-                SetXP(vecpos,race,newxp);
+                SetXP(playerHandle,race,newxp);
                 PrintToConsole(client,"[SourceCraft] You just removed %d XP from \"%N\".",xp,index);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" removed %d XP from you.",
                             COLOR_GREEN,COLOR_DEFAULT,client,xp);
-                DoLevelCheck(index,vecpos);
+                DoLevelCheck(index,playerHandle);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -238,22 +249,22 @@ public Action:CMD_SetLevel(client,args)
             decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
             GetClientName(index,name,63);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new race=GetRace(vecpos);
+                new race=GetRace(playerHandle);
                 for(new y=0;y<SKILL_COUNT;y++)
-                    SetSkillLevel(vecpos,race,y,0);
+                    SetSkillLevel(playerHandle,race,y,0);
                 if(level>SKILL_COUNT*4)
                     level=SKILL_COUNT*4;
                 if(level<0)
                     level=0;
-                SetLevel(vecpos,race,level);
+                SetLevel(playerHandle,race,level);
                 PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" level to %d.",name,level);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,level);
                 if(level>0)
-                    SkillMenu(index, vecpos, INVALID_FUNCTION);
+                    SkillMenu(index, playerHandle, INVALID_FUNCTION);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -282,21 +293,21 @@ public Action:CMD_GiveLevel(client,args)
             decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
             GetClientName(index,name,63);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new race=GetRace(vecpos);
-                new newlevel=GetLevel(vecpos,race)+1;
+                new race=GetRace(playerHandle);
+                new newlevel=GetLevel(playerHandle,race)+1;
                 if(newlevel>MAX_LEVELS)
                     PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at their max level.",name);
                 else
                 {
-                    SetLevel(vecpos,race,newlevel);
-                    SetOverallLevel(vecpos, GetOverallLevel(vecpos)+1);
+                    SetLevel(playerHandle,race,newlevel);
+                    SetOverallLevel(playerHandle, GetOverallLevel(playerHandle)+1);
                     PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" a level.",name);
                     PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
-                    SkillMenu(index, vecpos, INVALID_FUNCTION);
+                    SkillMenu(index, playerHandle, INVALID_FUNCTION);
                 }
             }
         }
@@ -326,24 +337,24 @@ public Action:CMD_RemoveLevel(client,args)
             decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
             GetClientName(index,name,63);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new race=GetRace(vecpos);
-                new newlevel=GetLevel(vecpos,race)-1;
+                new race=GetRace(playerHandle);
+                new newlevel=GetLevel(playerHandle,race)-1;
                 if(newlevel<0)
                     PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at level 0.",name);
                 else
                 {
                     for(new y=0;y<SKILL_COUNT;y++)
-                        SetSkillLevel(vecpos,race,y,0);
-                    SetLevel(vecpos,race,newlevel);
-                    SetOverallLevel(vecpos, GetOverallLevel(vecpos)-1);
+                        SetSkillLevel(playerHandle,race,y,0);
+                    SetLevel(playerHandle,race,newlevel);
+                    SetOverallLevel(playerHandle, GetOverallLevel(playerHandle)-1);
                     PrintToConsole(client,"[SourceCraft] You just removed a level from player \"%s\".",name);
                     PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
                     if(newlevel>0)
-                        SkillMenu(index, vecpos, INVALID_FUNCTION);
+                        SkillMenu(index, playerHandle, INVALID_FUNCTION);
                 }
             }
         }
@@ -385,10 +396,10 @@ public Action:CMD_SetCredits(client,args)
             decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
             GetClientName(index,name,63);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                SetCredits(vecpos,credits);
+                SetCredits(playerHandle,credits);
                 PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" %s to %d.",name,currencies,credits);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your %s to %d.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,currencies,credits);
@@ -429,16 +440,16 @@ public Action:CMD_GiveCredits(client,args)
             decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
             GetClientName(index,name,63);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new newcreds=GetCredits(vecpos)+credits;
+                new newcreds=GetCredits(playerHandle)+credits;
                 if(newcreds<0)
                     newcreds=0;
                 new maxCredits = GetConVarInt(m_MaxCredits);
                 if(newcreds>maxCredits)
                     newcreds=maxCredits;
-                SetCredits(vecpos,newcreds);
+                SetCredits(playerHandle,newcreds);
                 PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" %d %s.",name,credits,currencies);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" give you %d %s.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
@@ -479,16 +490,16 @@ public Action:CMD_RemoveCredits(client,args)
             decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
             GetClientName(index,name,63);
-            new vecpos=GetClientVectorPosition(index);
-            if(vecpos>-1)
+            new Handle:playerHandle=GetPlayerHandle(index);
+            if (playerHandle != INVALID_HANDLE)
             {
-                new newcreds=GetCredits(vecpos)-credits;
+                new newcreds=GetCredits(playerHandle)-credits;
                 if(newcreds<0)
                     newcreds=0;
                 new maxCredits = GetConVarInt(m_MaxCredits);
                 if(newcreds>maxCredits)
                     newcreds=maxCredits;
-                SetCredits(vecpos,newcreds);
+                SetCredits(playerHandle,newcreds);
                 PrintToConsole(client,"[SourceCraft] You just removed %d %s from player \"%s\".",credits,currencies,name);
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d %s from you.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);

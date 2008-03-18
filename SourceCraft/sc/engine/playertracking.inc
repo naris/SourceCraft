@@ -46,9 +46,9 @@
 
 #define TRACKING_COUNT                 15
 
-#define PLAYER_COUNT() GetArraySize(arrayPlayers)
+//#define PLAYER_COUNT() GetArraySize(arrayPlayers)
 
-new Handle:arrayPlayers = INVALID_HANDLE;
+new Handle:arrayPlayers[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
 // Global definition
 new bool:g_RoundActive = true;
@@ -63,141 +63,138 @@ new bool:m_SpeedAltered[MAXPLAYERS+1];
 new bool:m_GravityAltered[MAXPLAYERS+1];
 new bool:m_VisibilityAltered[MAXPLAYERS+1];
 
-public bool:InitiatePlayerArray()
-{
-    arrayPlayers=CreateArray();
-    return bool:(arrayPlayers != INVALID_HANDLE);
-}
-
-public CreatePlayer(client)
+public Handle:CreatePlayer(client)
 {
     new Handle:newPlayer=CreateArray();
-    PushArrayCell(newPlayer,client); // The first thing is client index
-    PushArrayCell(newPlayer,-1); // Database Ident
-    PushArrayCell(newPlayer,0); // Player race
-    PushArrayCell(newPlayer,-1); // Pending race
-    PushArrayCell(newPlayer,0); // Pending skill reset
-    PushArrayCell(newPlayer,0); // Credits
-    PushArrayCell(newPlayer,0); // Overall Level
-
-    new Handle:properties=CreateArray(); // Player's properties
-    PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
-
-    new Handle:shopitems=CreateArray(); // Player's shop items
-    PushArrayCell(newPlayer,shopitems);
-    new shopItemCount=GetArraySize(shopVector);
-    for(new x=0;x<shopItemCount;x++)
-        PushArrayCell(shopitems,0);     // Owns item x
-
-    new Handle:immunities=CreateArray(); // Player's immunities
-    PushArrayCell(newPlayer,immunities);
-    for(new x=0;x<IMMUNITY_COUNT;x++)
-        PushArrayCell(immunities,0);     // Has immunity x
-
-    new raceCount = RACE_COUNT();
-    for(new x=0;x<raceCount;x++)
+    if (newPlayer != INVALID_HANDLE)
     {
-        new Handle:raceinfo=CreateArray(); // Player's races
-        PushArrayCell(newPlayer,raceinfo);
-        PushArrayCell(raceinfo,0); // Race x XP
-        PushArrayCell(raceinfo,0); // Race x Level
-        for(new y=0;y<SKILL_COUNT;y++)
-            PushArrayCell(raceinfo,0); // Skill level for race x skill y
-    }
+        PushArrayCell(newPlayer,client); // The first thing is client index
+        PushArrayCell(newPlayer,-1); // Database Ident
+        PushArrayCell(newPlayer,0); // Player race
+        PushArrayCell(newPlayer,-1); // Pending race
+        PushArrayCell(newPlayer,0); // Pending skill reset
+        PushArrayCell(newPlayer,0); // Credits
+        PushArrayCell(newPlayer,0); // Overall Level
 
-    new vecpos = -1;
-    if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
-    {
-        // Put our new player at the end of the arrayPlayers vector
-        vecpos = PushArrayCell(arrayPlayers,newPlayer);
-    }
+        new Handle:properties=CreateArray(); // Player's properties
+        PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
 
-    return vecpos;
+        new Handle:shopitems=CreateArray(); // Player's shop items
+        PushArrayCell(newPlayer,shopitems);
+        new shopItemCount=GetArraySize(shopVector);
+        for(new x=0;x<shopItemCount;x++)
+            PushArrayCell(shopitems,0);     // Owns item x
+
+        new Handle:immunities=CreateArray(); // Player's immunities
+        PushArrayCell(newPlayer,immunities);
+        for(new x=0;x<IMMUNITY_COUNT;x++)
+            PushArrayCell(immunities,0);     // Has immunity x
+
+        new raceCount = RACE_COUNT();
+        for(new x=0;x<raceCount;x++)
+        {
+            new Handle:raceinfo=CreateArray(); // Player's races
+            PushArrayCell(newPlayer,raceinfo);
+            PushArrayCell(raceinfo,0); // Race x XP
+            PushArrayCell(raceinfo,0); // Race x Level
+            for(new y=0;y<SKILL_COUNT;y++)
+                PushArrayCell(raceinfo,0); // Skill level for race x skill y
+        }
+
+        // Perform a sanity check.
+        if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
+        {
+            new Handle:playerHandle=arrayPlayers[client];
+            if (playerHandle != INVALID_HANDLE)
+                ClearPlayer(client, playerHandle);
+
+            arrayPlayers[client] = newPlayer;
+        }
+        else
+        {
+            // Something is really wrong!
+            newPlayer = INVALID_HANDLE;
+        }
+    }
+    return newPlayer;
 }
 
 public ClearPlayerArray()
 {
-    new playerCount = PLAYER_COUNT();
-    for(new x=0;x<playerCount;x++)
-        ClearPlayer(x);
-    ClearArray(arrayPlayers);
-}
-
-public ClearPlayer(x)
-{
-    new Handle:vec=GetArrayCell(arrayPlayers,x);
-    new Handle:properties=GetArrayCell(vec,INFO_PROPERTIES);
-    new Handle:shopitems=GetArrayCell(vec,INFO_SHOPITEMS);
-    new Handle:immunities=GetArrayCell(vec,INFO_IMMUNITIES);
-    ClearArray(properties);
-    ClearArray(shopitems);
-    ClearArray(immunities);
-
-    new raceCount = RACE_COUNT();
-    for(new r=0;r<raceCount;r++)
+    for(new client=0;client<=MAXPLAYERS;client++)
     {
-        new Handle:raceinfo=GetArrayCell(vec,INFO_COUNT+r);
-        ClearArray(raceinfo);
+        new Handle:playerHandle=arrayPlayers[client];
+        if (playerHandle != INVALID_HANDLE)
+            ClearPlayer(client, playerHandle);
     }
-
-    ClearArray(vec);
 }
 
-public GetClientVectorPosition(client)
+public ClearPlayer(client,Handle:playerHandle)
 {
-    new size=GetArraySize(arrayPlayers);
-    for(new x=0;x<size;x++)
+    if (playerHandle != INVALID_HANDLE)
     {
-        new Handle:ply=GetArrayCell(arrayPlayers,x);
-        if (ply != INVALID_HANDLE)
+        new index = GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
+        if (client != index)
         {
-            new curClient=GetArrayCell(ply,INFO_CLIENT_INDEX);
-            if(client==curClient)
-                return x;
+            LogError("Attempt to clear player %d that actually contains %d",
+                     client, index);
+            SetFailState("Player Array Corrupted!");
         }
+
+        new Handle:properties=GetArrayCell(playerHandle,INFO_PROPERTIES);
+        ClearArray(properties);
+
+        new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
+        ClearArray(shopitems);
+        new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
+        ClearArray(immunities);
+
+        new raceCount = RACE_COUNT();
+        for(new r=0;r<raceCount;r++)
+        {
+            new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+r);
+            ClearArray(raceinfo);
+        }
+
+        ClearArray(playerHandle);
+        arrayPlayers[client] = INVALID_HANDLE;
     }
-    return -1;
 }
 
-stock GetPlayer(client)
+public Handle:GetPlayerHandle(client)
 {
-    return GetClientVectorPosition(client);
+    return arrayPlayers[client];
 }
 
-public GetClientIndex(vectorpos)
+public GetClientIndex(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_CLIENT_INDEX);
+    return GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
 }
 
-public GetDatabaseIdent(vectorpos)
+public GetDatabaseIdent(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_DATABASE_IDENT);
+    return GetArrayCell(playerHandle,INFO_DATABASE_IDENT);
 }
 
-public SetDatabaseIdent(vectorpos,ident)
+public SetDatabaseIdent(Handle:playerHandle,ident)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_DATABASE_IDENT,ident);
+    SetArrayCell(playerHandle,INFO_DATABASE_IDENT,ident);
 }
 
-public GetRace(vectorpos)
+public GetRace(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_RACE);
+    return GetArrayCell(playerHandle,INFO_RACE);
 }
 
-public SetRace(vectorpos,race)
+public SetRace(Handle:playerHandle,race)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    new oldrace=GetArrayCell(vec,INFO_RACE);
+    new oldrace=GetArrayCell(playerHandle,INFO_RACE);
     if (race != oldrace)
     {
-        SetArrayCell(vec,INFO_RACE,race);
+        SetArrayCell(playerHandle,INFO_RACE,race);
         Call_StartForward(g_OnRaceSelectedHandle);
-        Call_PushCell(GetArrayCell(vec,INFO_CLIENT_INDEX));
-        Call_PushCell(vectorpos);
+        Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
+        Call_PushCell(playerHandle);
         Call_PushCell(oldrace);
         Call_PushCell(race);
         new result;
@@ -205,141 +202,129 @@ public SetRace(vectorpos,race)
     }
 }
 
-public GetPendingRace(vectorpos)
+public GetPendingRace(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_PENDING_RACE);
+    return GetArrayCell(playerHandle,INFO_PENDING_RACE);
 }
 
-public SetPendingRace(vectorpos,pend)
+public SetPendingRace(Handle:playerHandle,pend)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_PENDING_RACE,pend);
+    SetArrayCell(playerHandle,INFO_PENDING_RACE,pend);
 }
 
-public GetPendingSkillReset(vectorpos)
+public GetPendingSkillReset(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_PENDING_SKILL_RESET);
+    return GetArrayCell(playerHandle,INFO_PENDING_SKILL_RESET);
 }
 
-public SetPendingSkillReset(vectorpos,pend)
+public SetPendingSkillReset(Handle:playerHandle,pend)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_PENDING_SKILL_RESET,pend);
+    SetArrayCell(playerHandle,INFO_PENDING_SKILL_RESET,pend);
 }
 
-public GetCredits(vectorpos)
+public GetCredits(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_CREDITS);
+    return GetArrayCell(playerHandle,INFO_CREDITS);
 }
 
-public SetCredits(vectorpos,credits)
+public SetCredits(Handle:playerHandle,credits)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_CREDITS,credits);
+    SetArrayCell(playerHandle,INFO_CREDITS,credits);
 }
 
-public GetOverallLevel(vectorpos)
+public GetOverallLevel(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_OVERALL_LEVEL);
+    return GetArrayCell(playerHandle,INFO_OVERALL_LEVEL);
 }
 
-public SetOverallLevel(vectorpos,level)
+public SetOverallLevel(Handle:playerHandle,level)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    SetArrayCell(vec,INFO_OVERALL_LEVEL,level);
+    SetArrayCell(playerHandle,INFO_OVERALL_LEVEL,level);
 }
 
-public Handle:GetPropertyInfo(vectorpos)
+public Handle:GetPropertyInfo(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_PROPERTIES);
+    return GetArrayCell(playerHandle,INFO_PROPERTIES);
 }
 
-public Handle:GetShopItemInfo(vectorpos)
+public Handle:GetShopItemInfo(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_SHOPITEMS);
+    return GetArrayCell(playerHandle,INFO_SHOPITEMS);
 }
 
-public GetOwnsItem(vectorpos,item)
+public GetOwnsItem(Handle:playerHandle,item)
 {
-    new Handle:shopitems=GetShopItemInfo(vectorpos);
+    new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
     return GetArrayCell(shopitems,item);
 }
 
-public SetOwnsItem(vectorpos,item,owns)
+public SetOwnsItem(Handle:playerHandle,item,owns)
 {
-    new Handle:shopitems=GetShopItemInfo(vectorpos);
+    new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
     SetArrayCell(shopitems,item,owns);
 }
 
-public Handle:GetImmunityInfo(vectorpos)
+public Handle:GetImmunityInfo(Handle:playerHandle)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_IMMUNITIES);
+    return GetArrayCell(playerHandle,INFO_IMMUNITIES);
 }
 
-public GetImmunity(vectorpos,immunity)
+public GetImmunity(Handle:playerHandle,immunity)
 {
-    new Handle:immunities=GetImmunityInfo(vectorpos);
+    new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
     return GetArrayCell(immunities,immunity);
 }
 
-public SetImmunity(vectorpos,immunity,imm_state)
+public SetImmunity(Handle:playerHandle,immunity,imm_state)
 {
-    new Handle:immunities=GetImmunityInfo(vectorpos);
+    new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
     SetArrayCell(immunities,immunity,imm_state);
 }
 
-public Handle:GetRaceInfo(vectorpos,race)
+public Handle:GetRaceInfo(Handle:playerHandle,race)
 {
-    new Handle:vec=GetArrayCell(arrayPlayers,vectorpos);
-    return GetArrayCell(vec,INFO_COUNT+race);
+    return GetArrayCell(playerHandle,INFO_COUNT+race);
 }
 
-public GetXP(vectorpos,race)
+public GetXP(Handle:playerHandle,race)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     return GetArrayCell(raceinfo,RACEINFO_XP);
 }
 
-public SetXP(vectorpos,race,xp)
+public SetXP(Handle:playerHandle,race,xp)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     SetArrayCell(raceinfo,RACEINFO_XP,xp);
 }
 
-public GetLevel(vectorpos,race)
+public GetLevel(Handle:playerHandle,race)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     return GetArrayCell(raceinfo,RACEINFO_LEVEL);
 }
 
-public SetLevel(vectorpos,race,level)
+public SetLevel(Handle:playerHandle,race,level)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     SetArrayCell(raceinfo,RACEINFO_LEVEL,level);
 }
 
-public GetSkillLevel(vectorpos,race,skill)
+public GetSkillLevel(Handle:playerHandle,race,skill)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     return GetArrayCell(raceinfo,RACEINFO_SKILLS+skill);
 }
 
-public SetSkillLevel(vectorpos,race,skill,level)
+public SetSkillLevel(Handle:playerHandle,race,skill,level)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     new num=RACEINFO_SKILLS+skill;
     new old=GetArrayCell(raceinfo,num);
     SetArrayCell(raceinfo,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
-    Call_PushCell(GetClientIndex(vectorpos));
-    Call_PushCell(vectorpos);
+    Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
+    Call_PushCell(playerHandle);
     Call_PushCell(race);
     Call_PushCell(skill);
     Call_PushCell(old);
@@ -348,16 +333,16 @@ public SetSkillLevel(vectorpos,race,skill,level)
     Call_Finish(result);
 }
 
-public IncrementSkillLevel(vectorpos,race,skill)
+public IncrementSkillLevel(Handle:playerHandle,race,skill)
 {
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     new num=RACEINFO_SKILLS+skill;
     new old=GetArrayCell(raceinfo,num);
     new level=old+1;
     SetArrayCell(raceinfo,num,level);
     Call_StartForward(g_OnSkillLevelChangedHandle);
-    Call_PushCell(GetClientIndex(vectorpos));
-    Call_PushCell(vectorpos);
+    Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
+    Call_PushCell(playerHandle);
     Call_PushCell(race);
     Call_PushCell(skill);
     Call_PushCell(old);
@@ -366,10 +351,10 @@ public IncrementSkillLevel(vectorpos,race,skill)
     Call_Finish(result);
 }
 
-public GetSkillCount(vectorpos,race)
+public GetSkillCount(Handle:playerHandle,race)
 {
     new ret=0;
-    new Handle:raceinfo=GetRaceInfo(vectorpos,race);
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     new num=RACEINFO_SKILLS+SKILL_COUNT;
     for(new x=RACEINFO_SKILLS;x<num;x++)
         ret+=GetArrayCell(raceinfo,x);
@@ -380,161 +365,164 @@ public Action:PlayerProperties(Handle:timer)
 {
     if (g_RoundActive)
     {
-        for(new x=0;x<GetArraySize(arrayPlayers);x++)
+        for(new client=0;client<=MAXPLAYERS;client++)
         {
-            new Handle:playerHandle=GetArrayCell(arrayPlayers,x);
-            new client=GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
-            if(IsClientInGame(client))
+            new Handle:playerHandle=arrayPlayers[client];
+            if (playerHandle != INVALID_HANDLE)
             {
-                new bool:overridePlayerVisibility=false;
-                new bool:overridePlayerGravity=false;
-                new bool:overridePlayerSpeed=false;
-
-                new Float:gravity=-1.0,Float:speed=-1.0;
-                new visibility=-1,r=-1,g=-1,b=-1;
-                new RenderMode:mode=RenderMode:-1;
-                new RenderFx:fx=RenderFx:-1;
-                new visibilityRank=-1;
-
-                decl String:wepName[128] = "";
-                GetClientWeapon(client, wepName, 127);
-
-                new bool:isStill = IsStill(client);
-
-                new Handle:pinfo=GetPropertyInfo(x);
-                for(new y=0;y<GetArraySize(pinfo);y++)
+                //new client=GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
+                if(IsClientInGame(client))
                 {
-                    // check which plugin is the highest/lowest bidder, but first, override?
-                    new Handle:temp             = GetArrayCell(pinfo,y);
-                    new Float:overridespeed     = GetArrayCell(temp,TRACKING_OVERRIDE_SPEED);
-                    new Float:overridegravity   = GetArrayCell(temp,TRACKING_OVERRIDE_GRAVITY);
-                    new overridevisibility      = GetArrayCell(temp,TRACKING_OVERRIDE_VISIBILITY);
-                    new Float:checkSpeed        = GetArrayCell(temp,TRACKING_SPEED);
-                    new Float:checkGravity      = GetArrayCell(temp,TRACKING_GRAVITY);
-                    new checkVisibility         = GetArrayCell(temp,TRACKING_VISIBILITY);
-                    new VisibilityType:type     = GetArrayCell(temp,TRACKING_VISIBILITY_TYPE);
-                    new Float:factor1           = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR1);
-                    new Float:factor2           = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR2);
-                    new RenderFx:checkFx        = GetArrayCell(temp,TRACKING_VISIBILITY_FX);
-                    new RenderMode:checkMode    = GetArrayCell(temp,TRACKING_VISIBILITY_MODE);
-                    new checkR                  = GetArrayCell(temp,TRACKING_VISIBILITY_R);
-                    new checkG                  = GetArrayCell(temp,TRACKING_VISIBILITY_G);
-                    new checkB                  = GetArrayCell(temp,TRACKING_VISIBILITY_B);
+                    new bool:overridePlayerVisibility=false;
+                    new bool:overridePlayerGravity=false;
+                    new bool:overridePlayerSpeed=false;
 
-                    if(!overridePlayerSpeed)
+                    new Float:gravity=-1.0,Float:speed=-1.0;
+                    new visibility=-1,r=-1,g=-1,b=-1;
+                    new RenderMode:mode=RenderMode:-1;
+                    new RenderFx:fx=RenderFx:-1;
+                    new visibilityRank=-1;
+
+                    decl String:wepName[128] = "";
+                    GetClientWeapon(client, wepName, 127);
+
+                    new bool:isStill = IsStill(client);
+
+                    new Handle:pinfo=GetPropertyInfo(playerHandle);
+                    for(new y=0;y<GetArraySize(pinfo);y++)
                     {
-                        if(overridespeed >= 0.0)
-                        {
-                            speed=overridespeed;
-                            overridePlayerSpeed=true;
-                        }
-                        else if(checkSpeed > speed)
-                        {
-                            speed=checkSpeed;
-                        }
-                    }
+                        // check which plugin is the highest/lowest bidder, but first, override?
+                        new Handle:temp             = GetArrayCell(pinfo,y);
+                        new Float:overridespeed     = GetArrayCell(temp,TRACKING_OVERRIDE_SPEED);
+                        new Float:overridegravity   = GetArrayCell(temp,TRACKING_OVERRIDE_GRAVITY);
+                        new overridevisibility      = GetArrayCell(temp,TRACKING_OVERRIDE_VISIBILITY);
+                        new Float:checkSpeed        = GetArrayCell(temp,TRACKING_SPEED);
+                        new Float:checkGravity      = GetArrayCell(temp,TRACKING_GRAVITY);
+                        new checkVisibility         = GetArrayCell(temp,TRACKING_VISIBILITY);
+                        new VisibilityType:type     = GetArrayCell(temp,TRACKING_VISIBILITY_TYPE);
+                        new Float:factor1           = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR1);
+                        new Float:factor2           = GetArrayCell(temp,TRACKING_VISIBILITY_FACTOR2);
+                        new RenderFx:checkFx        = GetArrayCell(temp,TRACKING_VISIBILITY_FX);
+                        new RenderMode:checkMode    = GetArrayCell(temp,TRACKING_VISIBILITY_MODE);
+                        new checkR                  = GetArrayCell(temp,TRACKING_VISIBILITY_R);
+                        new checkG                  = GetArrayCell(temp,TRACKING_VISIBILITY_G);
+                        new checkB                  = GetArrayCell(temp,TRACKING_VISIBILITY_B);
 
-                    if(!overridePlayerGravity)
-                    {
-                        if(overridegravity >= 0.0)
+                        if(!overridePlayerSpeed)
                         {
-                            gravity=overridegravity;
-                            overridePlayerGravity=true;
-                            m_GravityAltered[client]=true;
-                        }
-                        else if(checkGravity >= 0 &&
-                                (gravity < 0.0 || checkGravity < gravity))
-                        {
-                            gravity=checkGravity;
-                            m_GravityAltered[client]=true;
-                        }
-                    }
-
-                    if(!overridePlayerVisibility)
-                    {
-                        if(overridevisibility >= 0)
-                        {
-                            visibility=overridevisibility;
-                            overridePlayerVisibility=true;
-                            m_VisibilityAltered[client]=true;
-                        }
-                        else if (checkVisibility >= 0 || _:type >= 0 ||
-                                 _:checkFx >= 0 || _:checkMode >= 0)
-                        {
-                            new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
-                                                                type, factor1, factor2, checkMode, checkFx);
-
-                            if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
+                            if(overridespeed >= 0.0)
                             {
+                                speed=overridespeed;
+                                overridePlayerSpeed=true;
+                            }
+                            else if(checkSpeed > speed)
+                            {
+                                speed=checkSpeed;
+                            }
+                        }
+
+                        if(!overridePlayerGravity)
+                        {
+                            if(overridegravity >= 0.0)
+                            {
+                                gravity=overridegravity;
+                                overridePlayerGravity=true;
+                                m_GravityAltered[client]=true;
+                            }
+                            else if(checkGravity >= 0 &&
+                                    (gravity < 0.0 || checkGravity < gravity))
+                            {
+                                gravity=checkGravity;
+                                m_GravityAltered[client]=true;
+                            }
+                        }
+
+                        if(!overridePlayerVisibility)
+                        {
+                            if(overridevisibility >= 0)
+                            {
+                                visibility=overridevisibility;
+                                overridePlayerVisibility=true;
                                 m_VisibilityAltered[client]=true;
-                                visibilityRank=checkRank;
-                                visibility=(checkVisibility < 0) ? 255 : checkVisibility;
-                                mode=(_:checkMode < 0) ? RENDER_NORMAL : checkMode;
-                                fx=(_:checkFx < 0) ? RENDERFX_NONE : checkFx;
-                                r=(_:checkR < 0) ? 255 : checkR;
-                                g=(_:checkG < 0) ? 255 : checkG;
-                                b=(_:checkB < 0) ? 255 : checkB;
+                            }
+                            else if (checkVisibility >= 0 || _:type >= 0 ||
+                                    _:checkFx >= 0 || _:checkMode >= 0)
+                            {
+                                new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
+                                                                    type, factor1, factor2, checkMode, checkFx);
+
+                                if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
+                                {
+                                    m_VisibilityAltered[client]=true;
+                                    visibilityRank=checkRank;
+                                    visibility=(checkVisibility < 0) ? 255 : checkVisibility;
+                                    mode=(_:checkMode < 0) ? RENDER_NORMAL : checkMode;
+                                    fx=(_:checkFx < 0) ? RENDERFX_NONE : checkFx;
+                                    r=(_:checkR < 0) ? 255 : checkR;
+                                    g=(_:checkG < 0) ? 255 : checkG;
+                                    b=(_:checkB < 0) ? 255 : checkB;
+                                }
                             }
                         }
                     }
-                }
 
-                if (m_SpeedAltered[client] || overridePlayerSpeed || speed >= 0.0)
-                {
-                    if (speed < 0.0)
-                        speed = 1.0;
-
-                    if (GameType == tf2)
+                    if (m_SpeedAltered[client] || overridePlayerSpeed || speed >= 0.0)
                     {
-                        new Float:classSpeed = GetClassSpeed(client);
-                        new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
-                        if (m_BaseSpeed[client] == 0.0)
-                            m_BaseSpeed[client] == curSpeed;
+                        if (speed < 0.0)
+                            speed = 1.0;
 
-                        new Float:newSpeed = classSpeed * speed;
-                        if (curSpeed != newSpeed)
+                        if (GameType == tf2)
                         {
-                            SetEntDataFloat(client,m_OffsetMaxSpeed, newSpeed);
-                            if (newSpeed == 0.0)
-                                SetEntityMoveType(client, MOVETYPE_NONE);
-                            else if (GetEntityMoveType(client) == MOVETYPE_NONE)
-                                SetEntityMoveType(client, MOVETYPE_WALK);
+                            new Float:classSpeed = GetClassSpeed(client);
+                            new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
+                            if (m_BaseSpeed[client] == 0.0)
+                                m_BaseSpeed[client] == curSpeed;
+
+                            new Float:newSpeed = classSpeed * speed;
+                            if (curSpeed != newSpeed)
+                            {
+                                SetEntDataFloat(client,m_OffsetMaxSpeed, newSpeed);
+                                if (newSpeed == 0.0)
+                                    SetEntityMoveType(client, MOVETYPE_NONE);
+                                else if (GetEntityMoveType(client) == MOVETYPE_NONE)
+                                    SetEntityMoveType(client, MOVETYPE_WALK);
+                            }
+
+                            m_SpeedAltered[client] = (speed != 1.0);
                         }
-
-                        m_SpeedAltered[client] = (speed != 1.0);
+                        else // not tf2
+                        {
+                            if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
+                                SetEntDataFloat(client,m_OffsetSpeed,speed);
+                        }
                     }
-                    else // not tf2
+
+                    if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                     {
-                        if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                            SetEntDataFloat(client,m_OffsetSpeed,speed);
+                        if (visibility < 0 || visibility >= 255)
+                        {
+                            ResetVisibility(client);
+
+                            // Visibility is back to normal, Reset the altered flag
+                            m_VisibilityAltered[client]=false;
+                        }
+                        else
+                            SetVisibility(client, visibility, mode, fx, r, g, b);
                     }
-                }
 
-                if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
-                {
-                    if (visibility < 0 || visibility >= 255)
+                    if (m_GravityAltered[client] || overridePlayerGravity || gravity >= 0.0)
                     {
-                        ResetVisibility(client);
+                        if (gravity < 0.0)
+                            gravity = 1.0;
 
-                        // Visibility is back to normal, Reset the altered flag
-                        m_VisibilityAltered[client]=false;
-                    }
-                    else
-                        SetVisibility(client, visibility, mode, fx, r, g, b);
-                }
+                        if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
+                            SetEntDataFloat(client,m_OffsetGravity[client], gravity);
 
-                if (m_GravityAltered[client] || overridePlayerGravity || gravity >= 0.0)
-                {
-                    if (gravity < 0.0)
-                        gravity = 1.0;
-
-                    if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
-                        SetEntDataFloat(client,m_OffsetGravity[client], gravity);
-
-                    if (gravity == 1.0)
-                    {
-                        // Gravity is back to normal, Reset the altered flag
-                        m_GravityAltered[client]=false;
+                        if (gravity == 1.0)
+                        {
+                            // Gravity is back to normal, Reset the altered flag
+                            m_GravityAltered[client]=false;
+                        }
                     }
                 }
             }
