@@ -699,7 +699,7 @@ ResetVisibility(client)
 {
     if (m_OwnerOffset != -1)
     {
-        if(client>-1)
+        if(client>0)
         {
             new count=GetEntityCount();
             for(new y=GetMaxClients()+1;y<count;y++)

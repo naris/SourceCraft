@@ -214,14 +214,14 @@ public OnMapStart()
     SetupSound(bootsWav, true, true);
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
 
-public OnItemPurchase(client,player,item)
+public OnItemPurchase(client,Handle:player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
     {
@@ -260,8 +260,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     {
         GetClientAbsOrigin(client,spawnLoc[client]);
 
-        new player=GetPlayer(client);
-        if(player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             if(GetOwnsItem(player,shopItem[ITEM_ANKH]))        // Ankh of Reincarnation
             {
@@ -315,21 +315,21 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    if(victim_player>-1)
+    if (victim_player != INVALID_HANDLE)
     {
-        if(attacker_player>-1)
+        if (attacker_player != INVALID_HANDLE)
         {
             if(GetOwnsItem(attacker_player,shopItem[ITEM_SACK]))
                 LootCorpse(event, victim_index, victim_player, attacker_index, attacker_player);
         }
 
-        if(assister_player>-1)
+        if (assister_player != INVALID_HANDLE)
         {
             if(GetOwnsItem(assister_player,shopItem[ITEM_SACK]))
                 LootCorpse(event, victim_index, victim_player, assister_index, assister_player);
@@ -421,16 +421,16 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed = false;
 
     if(victim_index && victim_index != attacker_index)
     {
-        if(victim_player !=-1 && attacker_player != -1)
+        if (victim_player != INVALID_HANDLE && attacker_player != INVALID_HANDLE)
         {
             if(isMole[attacker_index])
             {
@@ -514,7 +514,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                         changed = true;
                     }
 
-                    if (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_CLAWS]) &&
+                    if (assister_player != INVALID_HANDLE &&
+                        GetOwnsItem(assister_player,shopItem[ITEM_CLAWS]) &&
                         (!gClawTime[assister_index] ||
                          GetGameTime() - gClawTime[assister_index] > 1.000))
                     {
@@ -546,7 +547,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                                 COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
-                if (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_MASK]))
+                if (assister_player != INVALID_HANDLE &&
+                    GetOwnsItem(assister_player,shopItem[ITEM_MASK]))
                 {
                     new newhealth=GetClientHealth(assister_index)+2;
                     SetEntityHealth(assister_index,newhealth);
@@ -557,14 +559,15 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
                 }
 
                 if (GetOwnsItem(attacker_player,shopItem[ITEM_ORB]) ||
-                    (assister_player != -1 && GetOwnsItem(assister_player,shopItem[ITEM_ORB])))
+                    (assister_player != INVALID_HANDLE &&
+                     GetOwnsItem(assister_player,shopItem[ITEM_ORB])))
                 {
                     SetOverrideSpeed(victim_player,0.5);
                     AuthTimer(5.0,victim_index,RestoreSpeed);
 
                     decl String:aname[128];
                     GetClientName(attacker_index,aname,sizeof(aname));
-                    if (assister_index > -1)
+                    if (assister_index > 0)
                     {
                         decl String:assister[64];
                         GetClientName(assister_index,assister,sizeof(aname));
@@ -588,8 +591,8 @@ public Action:RestoreSpeed(Handle:timer,any:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
-        new player=GetPlayer(client);
-        if(player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
             SetOverrideSpeed(player,-1.0);
     }
     ClearArray(temp);
@@ -603,8 +606,9 @@ public Action:Regeneration(Handle:timer)
     {
         if(IsClientInGame(x) && IsPlayerAlive(x))
         {
-            new player=GetPlayer(x);
-            if(player>=0 && GetOwnsItem(player,shopItem[ITEM_RING]))
+            new Handle:player=GetPlayerHandle(x);
+            if (player != INVALID_HANDLE &&
+                GetOwnsItem(player,shopItem[ITEM_RING]))
             {
                 new newhp=GetClientHealth(x)+1;
                 new maxhp=GetMaxHealth(x);
@@ -623,17 +627,18 @@ public Action:AmmoPack(Handle:timer)
     {
         if(IsClientInGame(client) && IsPlayerAlive(client))
         {
-            new player=GetPlayer(client);
-            if (player>=0 && GetOwnsItem(player,shopItem[ITEM_PACK]))
+            new Handle:player=GetPlayerHandle(client);
+            if (player != INVALID_HANDLE &&
+                GetOwnsItem(player,shopItem[ITEM_PACK]))
             {
                 if (GameType == cstrike)
                 {
-                    GiveItem(player,"weapon_hegrenade");
+                    GiveItem(client,"weapon_hegrenade");
                 }
                 else if (GameType == dod)
                 {
-                    new team=GetClientTeam(player);
-                    GiveItem(player,team == 2 ? "weapon_frag_us" : "weapon_frag_ger");
+                    new team=GetClientTeam(client);
+                    GiveItem(client,team == 2 ? "weapon_frag_us" : "weapon_frag_ger");
                 }
                 else if (GameType == tf2)
                 {
@@ -726,7 +731,7 @@ public Action:TrackWeapons(Handle:timer)
                     new wepEnt=GetEntDataEnt(x,iterOffset);
                     if(wepEnt>0&&IsValidEdict(wepEnt))
                     {
-                        GetEdictClassname(wepEnt,wepName,127);
+                        GetEdictClassname(wepEnt,wepName,sizeof(wepName));
                         if(!StrEqual(wepName,"weapon_c4"))
                             PushArrayString(vecPlayerWeapons[x],wepName);
                     }
@@ -757,7 +762,7 @@ public Action:Ankh(Handle:timer,any:temp)
                 new ent=GetEntDataEnt(client,iter);
                 if(ent>0&&IsValidEdict(ent))
                 {
-                    GetEdictClassname(ent,wepName,127);
+                    GetEdictClassname(ent,wepName,sizeof(wepName));
                     if(!StrEqual(wepName,"weapon_c4"))
                     {
                         DropWeapon(client,ent);
@@ -837,7 +842,7 @@ UsePeriapt(client)
     usedPeriapt[client]=true;
 }
 
-LootCorpse(Handle:event,victim_index, victim_player, index, player)
+LootCorpse(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
     decl String:weapon[64] = "";
     new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
@@ -863,9 +868,9 @@ LootCorpse(Handle:event,victim_index, victim_player, index, player)
             LogMessage("%N stole %d %s from %N", index, amount, currencies, victim_index);
 
             PrintToChat(index,"%c[SourceCraft]%c You have looted %d %s from %N!",
-                    COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                        COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
             PrintToChat(victim_index,"%c[SourceCraft]%c %N looted %d %s from your corpse!",
-                    COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
+                        COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
         }
     }
 }

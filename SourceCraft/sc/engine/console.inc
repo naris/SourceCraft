@@ -119,7 +119,7 @@ public PlayerParse(const String:matchstr[], &Handle:matchHandle)
 public Action:CMD_SetXP(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: Setxp <player> <xp>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_setxp <player> <xp>");
     else
     {
         decl String:match[64];

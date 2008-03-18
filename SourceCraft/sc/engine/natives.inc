@@ -379,7 +379,7 @@ public Native_SetImmunity(Handle:plugin,numParams)
         new Handle:player=Handle:GetNativeCell(1);
         new immunity=GetNativeCell(2);
         new imm_state=GetNativeCell(3);
-        if(player!=INVALID_HANDLE&&immunity!=-1&&imm_state!=-1)
+        if (player != INVALID_HANDLE && immunity != -1 && imm_state != -1)
             SetImmunity(player,immunity,imm_state);
     }
 }
@@ -393,7 +393,7 @@ public Native_SetSpeed(Handle:plugin,numParams)
         if (player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
-            new indice=-1,Handle:indiceHandle;
+            new indice=-1, Handle:indiceHandle;
             for(new x=0;x<GetArraySize(temp);x++)
             {
                 new Handle:t=GetArrayCell(temp,x);

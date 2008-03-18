@@ -109,18 +109,18 @@ stock LogEventDamage(Handle:event,damage,const String:source[], race_id)
 {
     new userid=GetEventInt(event,"userid");
     new victim=GetClientOfUserId(userid);
-    new victim_vec=GetPlayer(victim);
-    new victim_race=(victim_vec>-1) ? GetRace(victim_vec) : -1;
+    new victim_player=GetPlayerHandle(victim);
+    new victim_race=(victim_player != INVALID_HANDLE) ? GetRace(victim_player) : -1;
 
     new attacker_uid=GetEventInt(event,"attacker");
     new attacker=GetClientOfUserId(attacker_uid);
-    new attacker_vec=GetPlayer(attacker);
-    new attacker_race=(attacker_vec>-1) ? GetRace(attacker_vec) : -1;
+    new attacker_player=GetPlayerHandle(attacker);
+    new attacker_race=(attacker_player != INVALID_HANDLE) ? GetRace(attacker_player) : -1;
 
     new assister_uid = GetEventInt(event,"assister");
     new assister=GetClientOfUserId(assister_uid);
-    new assister_vec=GetPlayer(assister);
-    new assister_race=(assister_vec>-1) ? GetRace(assister_vec) : -1;
+    new assister_player=GetPlayerHandle(assister);
+    new assister_race=(assister_player != INVALID_HANDLE) ? GetRace(assister_player) : -1;
 
     if (race_id == victim_race   || race_id == attacker_race ||
         race_id == assister_race || race_id < 0)
