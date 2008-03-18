@@ -117,13 +117,13 @@ public OnMapStart()
     SetupSound(rechargeWav, true, true);
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
     m_AllowFart[client]=true;
 }
 
-public OnRaceSelected(client,player,oldrace,newrace)
+public OnRaceSelected(client,Handle:player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
@@ -131,7 +131,7 @@ public OnRaceSelected(client,player,oldrace,newrace)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (pressed && m_AllowFart[client] &&
         race == raceID && IsPlayerAlive(client))
@@ -143,19 +143,19 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 }
 
 // Events
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
 
     if (attacker_race == raceID && attacker_index != victim_index)
     {
-        if (victim_player != -1)
+        if (victim_player != INVALID_HANDLE)
             PickPocket(event, victim_index, victim_player, attacker_index, attacker_player);
 
-        if (attacker_player != -1)
+        if (attacker_player != INVALID_HANDLE)
         {
             if (FesteringAbomination(damage, victim_index, attacker_index, attacker_player))
                 changed = true;
@@ -165,10 +165,10 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
     if (assister_race == raceID && assister_index != victim_index)
     {
-        if (victim_player != -1)
+        if (victim_player != INVALID_HANDLE)
             PickPocket(event, victim_index, victim_player, assister_index, assister_player);
 
-        if (assister_player != -1)
+        if (assister_player != INVALID_HANDLE)
         {
             if (FesteringAbomination(damage, victim_index, assister_index, assister_player))
                 changed = true;
@@ -178,7 +178,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:FesteringAbomination(damage, victim_index, index, player)
+public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
@@ -235,7 +235,7 @@ public bool:FesteringAbomination(damage, victim_index, index, player)
     return false;
 }
 
-public PickPocket(Handle:event,victim_index, victim_player, index, player)
+public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
     new skill_pp = GetSkillLevel(player,raceID,1);
     if (skill_pp > 0)
@@ -287,7 +287,7 @@ public PickPocket(Handle:event,victim_index, victim_player, index, player)
     }
 }
 
-public Fart(player,client,ultlevel)
+public Fart(Handle:player,client,ultlevel)
 {
     new num=ultlevel*3;
     new Float:range;
@@ -360,8 +360,8 @@ public Fart(player,client,ultlevel)
         if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
             GetClientTeam(client) != GetClientTeam(index))
         {
-            new player_check=GetPlayer(index);
-            if (player_check>-1)
+            new Handle:player_check=GetPlayerHandle(index);
+            if (player_check != INVALID_HANDLE)
             {
                 if (!GetImmunity(player_check,Immunity_Ultimates) &&
                     !GetImmunity(player_check,Immunity_HealthTake) && !IsUber(index))
@@ -434,8 +434,8 @@ public Action:Revulsion(Handle:timer)
         {
             if (IsPlayerAlive(client))
             {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new skill_revulsion=GetSkillLevel(player,raceID,2);
                     if (skill_revulsion)
@@ -475,8 +475,8 @@ public Action:Revulsion(Handle:timer)
                             {
                                 if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
                                 {
-                                    new player_check=GetPlayer(index);
-                                    if (player_check>-1)
+                                    new Handle:player_check=GetPlayerHandle(index);
+                                    if (player_check != INVALID_HANDLE)
                                     {
                                         if (IsInRange(client,index,range))
                                         {

@@ -218,7 +218,7 @@ public OnMapEnd()
     }
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     m_AllowMindControl[client]=true;
 }
@@ -229,7 +229,7 @@ public OnClientDisconnect(client)
     ResetMindControledObjects(client, false);
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
     {
@@ -238,7 +238,7 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client) &&
         m_AllowMindControl[client] && pressed)
@@ -253,8 +253,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new index=GetClientOfUserId(userid);
     if (index>0)
     {
-        new player=GetPlayer(index);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(index);
+        if (player != INVALID_HANDLE)
         {
             new race = GetRace(player);
             if (race == raceID)
@@ -263,9 +263,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
@@ -291,9 +291,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
@@ -316,7 +316,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-bool:ReaverScarab(damage, victim_index, victim_player, index, player)
+bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new skill_cg = GetSkillLevel(player,raceID,0);
     if (skill_cg > 0)
@@ -385,7 +385,7 @@ bool:ReaverScarab(damage, victim_index, victim_player, index, player)
     return false;
 }
 
-MindControl(client,player)
+MindControl(client,Handle:player)
 {
     new ult_level=GetSkillLevel(player,raceID,3);
     if(ult_level)
@@ -458,8 +458,8 @@ MindControl(client,player)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
                                 new builder = GetEntDataEnt2(target, m_BuilderOffset[obj]); // Get the current owner of the object.
-                                new player_check=GetPlayer(builder);
-                                if (player_check>-1)
+                                new Handle:player_check=GetPlayerHandle(builder);
+                                if (player_check != INVALID_HANDLE)
                                 {
                                     if (!GetImmunity(player_check,Immunity_Ultimates))
                                     {
@@ -661,7 +661,7 @@ public Action:AllowMindControl(Handle:timer,any:index)
     m_AllowMindControl[index]=true;
     if (IsClientInGame(index) && IsPlayerAlive(index))
     {
-        if (GetRace(GetPlayer(index)) == raceID)
+        if (GetRace(GetPlayerHandle(index)) == raceID)
         {
             EmitSoundToClient(index, rechargeWav);
             PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cMind Control%c is now available again!",
@@ -680,8 +680,8 @@ public Action:CloakingAndDetector(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:cloaking_range;
                     new skill_cloaking=GetSkillLevel(player,raceID,1);
@@ -725,19 +725,15 @@ public Action:CloakingAndDetector(Handle:timer)
                         {
                             if (IsPlayerAlive(index))
                             {
-                                new player_check=GetPlayer(index);
-                                if (player_check>-1)
+                                new Handle:player_check=GetPlayerHandle(index);
+                                if (player_check != INVALID_HANDLE)
                                 {
                                     if (GetClientTeam(index) == GetClientTeam(client))
                                     {
-                                        new check_player = GetPlayer(index);
-                                        if (check_player>-1)
+                                        if (GetRace(player_check) == raceID &&
+                                            GetSkillLevel(player_check,raceID,1) > 0)
                                         {
-                                            if (GetRace(check_player) == raceID &&
-                                                GetSkillLevel(check_player,raceID,1) > 0)
-                                            {
-                                                continue; // Don't cloak other arbiters!
-                                            }
+                                            continue; // Don't cloak other arbiters!
                                         }
 
                                         new bool:cloak = IsInRange(client,index,cloaking_range);
@@ -828,8 +824,8 @@ ResetCloakingAndDetector(client)
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
     {
-        new player = GetPlayer(index);
-        if (player > -1)
+        new Handle:player = GetPlayerHandle(index);
+        if (player != INVALID_HANDLE)
         {
             if (m_Cloaked[client][index])
             {
