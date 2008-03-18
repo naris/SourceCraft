@@ -81,7 +81,7 @@ public OnMapStart()
         SetFailState("Couldn't find lghtning Model");
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
@@ -107,7 +107,7 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
@@ -118,7 +118,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
 {
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
@@ -131,7 +131,7 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     }
 }
 
-public OnItemPurchase(client,player,item)
+public OnItemPurchase(client,Handle:player,item)
 {
     new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
@@ -145,7 +145,7 @@ public OnItemPurchase(client,player,item)
     }
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
 }
@@ -157,8 +157,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player=GetPlayer(client);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new race = GetRace(player);
             if (race == raceID)
@@ -179,9 +179,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
@@ -191,12 +191,14 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
     if (attacker_race == raceID && victim_index != attacker_index)
     {
-        changed |= U238Shells(damage, victim_index, attacker_index, attacker_player);
+        changed |= U238Shells(damage, victim_index, victim_player,
+                                      attacker_index, attacker_player);
     }
 
     if (assister_race == raceID && victim_index != assister_index)
     {
-        changed |= U238Shells(damage, victim_index, assister_index, assister_player);
+        changed |= U238Shells(damage, victim_index, victim_player,
+                                      assister_index, assister_player);
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
@@ -213,7 +215,7 @@ SetupArmor(client, skilllevel)
     }
 }
 
-bool:Armor(damage, victim_index, victim_player)
+bool:Armor(damage, victim_index, Handle:victim_player)
 {
     new skill_level_armor = GetSkillLevel(victim_player,raceID,1);
     if (skill_level_armor)
@@ -268,12 +270,12 @@ bool:Armor(damage, victim_index, victim_player)
     return false;
 }
 
-bool:U238Shells(damage, victim_index, index, player)
+bool:U238Shells(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0)
     {
-        if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
+        if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
         {
             if(GetRandomInt(1,100)<=25)
             {
@@ -313,7 +315,7 @@ bool:U238Shells(damage, victim_index, index, player)
     return false;
 }
 
-Stimpacks(client, player, skilllevel)
+Stimpacks(client, Handle:player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
