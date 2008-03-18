@@ -5,9 +5,9 @@
  * Author(s): Anthony Iacono 
  * Modifications by: Naris (Murray Wilson)
  */
- 
+
 #pragma semicolon 1
- 
+
 #include <sourcemod>
 #include <sdktools>
 
@@ -54,16 +54,16 @@ public OnPluginStart()
 public OnPluginReady()
 {
     raceID=CreateRace("Night Elf", "nightelf",
-                      "You are now a Night Elf.",
-                      "You will be a Night Elf when you die or respawn.",
-                      "Evasion",
-                      "Gives you 5-30% chance of evading a shot.",
-                      "Thorns Aura",
-                      "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
-                      "Trueshot Aura",
-                      "Does 20-80% extra damage to the \nenemy, chance is 30-60%.",
-                      "Entangled Roots",
-                      "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
+            "You are now a Night Elf.",
+            "You will be a Night Elf when you die or respawn.",
+            "Evasion",
+            "Gives you 5-30% chance of evading a shot.",
+            "Thorns Aura",
+            "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
+            "Trueshot Aura",
+            "Does 20-80% extra damage to the \nenemy, chance is 30-60%.",
+            "Entangled Roots",
+            "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
 
     FindUberOffsets();
 }
@@ -81,7 +81,7 @@ public OnMapStart()
     SetupSound(rechargeWav,true,true);
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
     m_AllowEntangle[client]=true;
@@ -97,16 +97,16 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
-                                damage)
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+        attacker_index,Handle:attacker_player,attacker_race,
+        assister_index,Handle:assister_player,assister_race,
+        damage)
 {
     new bool:changed=false;
     if (victim_race == raceID)
     {
         changed |= Evasion(damage, victim_index, victim_player,
-                           attacker_index, assister_index);
+                attacker_index, assister_index);
     }
 
     if (attacker_index && attacker_index != victim_index)
@@ -115,8 +115,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 
         if (attacker_race == raceID)
         {
-            amount = TrueshotAura(damage, victim_index,
-                                  attacker_index, attacker_player);
+            amount = TrueshotAura(damage, victim_index, victim_player,
+                    attacker_index, attacker_player);
             if (amount)
                 changed = true;
         }
@@ -124,7 +124,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         if (victim_race == raceID)
         {
             amount += ThornsAura(damage, victim_index, victim_player,
-                                 attacker_index, attacker_player);
+                    attacker_index, attacker_player);
         }
 
         if (amount)
@@ -136,14 +136,14 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
         new amount = 0;
         if (assister_race == raceID)
         {
-            amount = TrueshotAura(damage, victim_index,
-                                  assister_index, assister_player);
+            amount = TrueshotAura(damage, victim_index, victim_player,
+                    assister_index, assister_player);
         }
 
         if (victim_race == raceID)
         {
             amount += ThornsAura(damage, victim_index, victim_player,
-                                 assister_index, assister_player);
+                    assister_index, assister_player);
         }
 
         if (amount)
@@ -153,7 +153,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:Evasion(damage, victim_index, victim_player, attacker_index, assister_index)
+public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, assister_index)
 {
     new skill_level_evasion = GetSkillLevel(victim_player,raceID,0);
     if (skill_level_evasion)
@@ -205,7 +205,7 @@ public bool:Evasion(damage, victim_index, victim_player, attacker_index, assiste
     return false;
 }
 
-public ThornsAura(damage, victim_index, victim_player, index, player)
+public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new skill_level_thorns = GetSkillLevel(victim_player,raceID,1);
     if (skill_level_thorns)
@@ -251,11 +251,13 @@ public ThornsAura(damage, victim_index, victim_player, index, player)
     return 0;
 }
 
-public TrueshotAura(damage, victim_index, index, player)
+public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     // Trueshot Aura
     new skill_level_trueshot=GetSkillLevel(player,raceID,2);
-    if (skill_level_trueshot && !IsUber(victim_index))
+    if (skill_level_trueshot &&
+        !GetImmunity(victim_player,Immunity_HealthTake) &&
+        !IsUber(victim_index))
     {
         if (GetRandomInt(1,100) <= GetRandomInt(30,60))
         {
@@ -299,7 +301,7 @@ public TrueshotAura(damage, victim_index, index, player)
     return 0;
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && pressed && IsPlayerAlive(client) &&
         m_AllowEntangle[client])
@@ -328,8 +330,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
                 if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
                     GetClientTeam(index) != GetClientTeam(client))
                 {
-                    new player_check=GetPlayer(index);
-                    if (player_check>-1)
+                    new Handle:player_check=GetPlayerHandle(index);
+                    if (player_check != INVALID_HANDLE)
                     {
                         if (!GetImmunity(player_check,Immunity_Ultimates))
                         {
@@ -382,7 +384,7 @@ public Action:AllowEntangle(Handle:timer,any:index)
 
     if (IsClientInGame(index) && IsPlayerAlive(index))
     {
-        if (GetRace(GetPlayer(index)) == raceID)
+        if (GetRace(GetPlayerHandle(index)) == raceID)
         {
             EmitSoundToClient(index, rechargeWav);
             PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cEntangled Roots%c is now available again!",

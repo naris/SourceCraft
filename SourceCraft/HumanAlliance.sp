@@ -97,13 +97,13 @@ public OnMapStart()
     SetupSound(rechargeWav, true, true);
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
     m_TeleportCount[client]=0;
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
@@ -129,7 +129,7 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
@@ -175,7 +175,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
 {
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
@@ -193,8 +193,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player=GetPlayer(client);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new race = GetRace(player);
             if (race == raceID)
@@ -223,15 +223,15 @@ public Action:DoDevotionAura(Handle:timer,Handle:temp)
     if(client)
     {
         SaveMaxHealth(client);
-        DevotionAura(client, GetSkillLevel(GetPlayer(client),raceID,1));
+        DevotionAura(client, GetSkillLevel(GetPlayerHandle(client),raceID,1));
     }
     ClearArray(temp);
     return Plugin_Stop;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
@@ -242,9 +242,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     return Plugin_Continue;
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     if (attacker_index && attacker_index != victim_index)
@@ -261,7 +261,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return Plugin_Continue;
 }
 
-DoImmunity(client, player, skilllevel, bool:value)
+DoImmunity(client, Handle:player, skilllevel, bool:value)
 {
     if (skilllevel >= 1)
     {
@@ -326,7 +326,7 @@ DevotionAura(client, skill_devo)
     }
 }
 
-Bash(victim_index, player)
+Bash(victim_index, Handle:player)
 {
     new skill_bash=GetSkillLevel(player,raceID,2);
     if (skill_bash)
@@ -520,7 +520,7 @@ public Action:AllowTeleport(Handle:timer,any:index)
     m_TeleportCount[index]=0;
     if(IsClientInGame(index))
     {
-        new player = GetPlayer(index);
+        new Handle:player = GetPlayerHandle(index);
         if (GetRace(player) == raceID && IsPlayerAlive(index))
         {
             EmitSoundToClient(index, rechargeWav);

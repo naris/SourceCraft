@@ -151,12 +151,12 @@ public OnMapStart()
     }
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (pressed)
     {
@@ -188,7 +188,7 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player = GetPlayer(client);
+        new Handle:player = GetPlayerHandle(client);
         if (GetRace(player) == raceID && IsPlayerAlive(client))
         {
             m_IsChangingClass[client] = true;
@@ -219,9 +219,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     return Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
@@ -273,7 +273,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     return Plugin_Continue;
 }
 
-public OnRaceSelected(client,player,oldrace,newrace)
+public OnRaceSelected(client,Handle:player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
@@ -290,8 +290,8 @@ public Action:MadBomber(Handle:timer,any:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
-        new player = GetPlayer(client);
-        if (player > -1)
+        new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new ult_level=GetSkillLevel(player,raceID,3);
             if (ult_level)
@@ -330,8 +330,8 @@ public Action:Kaboom(Handle:timer,any:temp)
     new client=PlayerOfAuth(auth);
     if(client)
     {
-        new player = GetPlayer(client);
-        if (player > -1)
+        new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new suicide_skill=GetSkillLevel(player,raceID,2);
             Bomber(client,player,suicide_skill,true);
@@ -341,7 +341,7 @@ public Action:Kaboom(Handle:timer,any:temp)
     return Plugin_Stop;
 }
 
-public Bomber(client,player,level,bool:ondeath)
+public Bomber(client,Handle:player,level,bool:ondeath)
 {
     new Float:radius;
     new r_int, damage;
@@ -389,8 +389,8 @@ public Bomber(client,player,level,bool:ondeath)
         if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
             GetClientTeam(index) != GetClientTeam(client) && !IsUber(index))
         {
-            new check_player=GetPlayer(index);
-            if (check_player>-1)
+            new Handle:check_player=GetPlayerHandle(index);
+            if (check_player != INVALID_HANDLE)
             {
                 if (!ondeath && !GetImmunity(check_player,Immunity_Ultimates) &&
                                 !GetImmunity(check_player,Immunity_Explosion))
@@ -448,8 +448,8 @@ public Action:FlamingWrath(Handle:timer)
         {
             if (IsPlayerAlive(client))
             {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new skill_flaming_wrath=GetSkillLevel(player,raceID,1);
                     if (skill_flaming_wrath)
@@ -478,8 +478,8 @@ public Action:FlamingWrath(Handle:timer)
                                     GetClientTeam(index) != GetClientTeam(client) &&
                                     !IsUber(index))
                                 {
-                                    new player_check=GetPlayer(index);
-                                    if (player_check>-1)
+                                    new Handle:player_check=GetPlayerHandle(index);
+                                    if (player_check != INVALID_HANDLE)
                                     {
                                         if (!GetImmunity(player_check, Immunity_HealthTake) &&
                                             IsInRange(client,index,range))

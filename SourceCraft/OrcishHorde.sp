@@ -136,13 +136,13 @@ public OnMapStart()
     }
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
     m_AllowChainLightning[client]=true;
 }
 
-public OnRaceSelected(client,player,oldrace,newrace)
+public OnRaceSelected(client,Handle:player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
     {
@@ -153,7 +153,7 @@ public OnRaceSelected(client,player,oldrace,newrace)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (pressed && m_AllowChainLightning[client] &&
         race == raceID && IsPlayerAlive(client))
@@ -182,9 +182,12 @@ public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontB
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player = GetPlayer(client);
-        if (GetRace(player) == raceID && IsPlayerAlive(client))
-            m_IsChangingClass[client] = true;
+        new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
+        {
+            if (GetRace(player) == raceID && IsPlayerAlive(client))
+                m_IsChangingClass[client] = true;
+        }
     }
     return Plugin_Continue;
 }
@@ -195,8 +198,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player=GetPlayer(client);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new race=GetRace(player);
             if (race==raceID)
@@ -222,9 +225,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     return Plugin_Continue;
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
@@ -263,9 +266,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
@@ -307,7 +310,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     }
 }
 
-bool:AcuteStrike(damage, victim_index, victim_player, index, player)
+bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new skill_cs = GetSkillLevel(player,raceID,0);
     if (skill_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
@@ -350,7 +353,7 @@ bool:AcuteStrike(damage, victim_index, victim_player, index, player)
     return false;
 }
 
-bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const String:weapon[])
+bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:player, const String:weapon[])
 {
     if (StrEqual(weapon,"hegrenade",false) ||
         StrEqual(weapon,"tf_projectile_pipe",false) ||
@@ -406,7 +409,7 @@ bool:AcuteGrenade(damage, victim_index, victim_player, index, player, const Stri
     return false;
 }
 
-ChainLightning(player,client,ultlevel)
+ChainLightning(Handle:player,client,ultlevel)
 {
     new dmg;
     new Float:range;
@@ -443,8 +446,8 @@ ChainLightning(player,client,ultlevel)
         if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
             GetClientTeam(client) != GetClientTeam(index))
         {
-            new player_check=GetPlayer(index);
-            if (player_check>-1)
+            new Handle:player_check=GetPlayerHandle(index);
+            if (player_check != INVALID_HANDLE)
             {
                 if (!GetImmunity(player_check,Immunity_Ultimates) &&
                     !GetImmunity(player_check,Immunity_HealthTake) &&
@@ -509,7 +512,7 @@ public Action:AllowChainLightning(Handle:timer,any:index)
 
     if (IsClientInGame(index) && IsPlayerAlive(index))
     {
-        if (GetRace(GetPlayer(index)) == raceID)
+        if (GetRace(GetPlayerHandle(index)) == raceID)
         {
             EmitSoundToClient(index, rechargeWav);
             PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cChained Lightning%c is now available again!",
