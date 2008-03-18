@@ -111,12 +111,12 @@ public OnMapStart()
     SetupSound(explodeWav, true, true);
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
 }
 
-public OnXPGiven(client,player,&amount)
+public OnXPGiven(client,Handle:player,&amount)
 {
     if (GetRace(player)==raceID && IsPlayerAlive(client))
     {
@@ -138,7 +138,7 @@ public OnXPGiven(client,player,&amount)
     }
 }
 
-public OnCreditsGiven(client,player,&amount)
+public OnCreditsGiven(client,Handle:player,&amount)
 {
     if (GetRace(player)==raceID && IsPlayerAlive(client))
     {
@@ -160,7 +160,7 @@ public OnCreditsGiven(client,player,&amount)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
@@ -177,8 +177,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player=GetPlayer(client);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new race = GetRace(player);
             if (race == raceID)
@@ -212,9 +212,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
@@ -301,7 +301,7 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
@@ -319,7 +319,7 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
 {
     if(race == raceID && newskilllevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
     {
@@ -328,7 +328,7 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     }
 }
 
-public WorkRules(client, player, skilllevel)
+public WorkRules(client, Handle:player, skilllevel)
 {
     if (skilllevel)
     {
@@ -375,8 +375,8 @@ public Action:Negotiations(Handle:timer)
         {
             if (IsPlayerAlive(client))
             {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new skill_negotiations=GetSkillLevel(player,raceID,2);
                     if (skill_negotiations)
@@ -578,7 +578,7 @@ public Action:Negotiations(Handle:timer)
     return Plugin_Continue;
 }
 
-AddCredits(client, player, amount, const String:reason[])
+AddCredits(client, Handle:player, amount, const String:reason[])
 {
     decl String:currencies[64];
     GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));

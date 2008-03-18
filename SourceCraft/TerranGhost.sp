@@ -140,7 +140,7 @@ public OnMapStart()
     SetupSound(lockdownWav, true, true);
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     m_AllowNuclearLaunch[client]=true;
 }
@@ -150,7 +150,7 @@ public OnClientDisconnect(client)
     ResetOcularImplants(client);
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
@@ -169,7 +169,7 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && m_AllowNuclearLaunch[client] &&
         IsPlayerAlive(client))
@@ -185,7 +185,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
 {
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
@@ -201,8 +201,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player=GetPlayer(client);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new race = GetRace(player);
             if (race == raceID)
@@ -215,13 +215,13 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
-    if (victim_player != -1 && victim_race == raceID)
+    if (victim_player != INVALID_HANDLE && victim_race == raceID)
     {
         SetVisibility(victim_player, -1);
 
@@ -233,9 +233,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     if (attacker_index && attacker_index != victim_index)
@@ -255,7 +255,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return Plugin_Continue;
 }
 
-bool:Cloak(client, player, skilllevel)
+bool:Cloak(client, Handle:player, skilllevel)
 {
     new alpha, Float:delay, Float:duration;
     switch(skilllevel)
@@ -307,7 +307,7 @@ bool:Cloak(client, player, skilllevel)
                   RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
 }
 
-Lockdown(victim_index, player)
+Lockdown(victim_index, Handle:player)
 {
     new skill_lockdown=GetSkillLevel(player,raceID,1);
     if (skill_lockdown)
@@ -348,8 +348,8 @@ public Action:OcularImplants(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:detecting_range;
                     new skill_detecting=GetSkillLevel(player,raceID,2);
@@ -376,8 +376,8 @@ public Action:OcularImplants(Handle:timer)
                         {
                             if (IsPlayerAlive(index))
                             {
-                                new player_check=GetPlayer(index);
-                                if (player_check>-1)
+                                new Handle:player_check=GetPlayerHandle(index);
+                                if (player_check != INVALID_HANDLE)
                                 {
                                     decl String:clientName[64];
                                     GetClientName(client,clientName,63);
@@ -441,8 +441,8 @@ ResetOcularImplants(client)
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
     {
-        new player = GetPlayer(index);
-        if (player > -1)
+        new Handle:player = GetPlayerHandle(index);
+        if (player != INVALID_HANDLE)
         {
             if (m_Detected[client][index])
             {
@@ -539,7 +539,7 @@ public Action:TrackNuclearTarget(Handle:timer,any:index)
     return Plugin_Stop;
 }
 
-LaunchNuclearDevice(client,player)
+LaunchNuclearDevice(client,Handle:player)
 {
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
     SetVisibility(player, 100, TimedInvisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
@@ -563,8 +563,8 @@ public Action:NuclearLockOn(Handle:timer,any:client)
         new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
         PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %2.0f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
 
-        new player = GetPlayer(client);
-        if (player != -1)
+        new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             SetVisibility(player, -1);
             SetOverrideSpeed(player, -1.0);
@@ -583,15 +583,17 @@ public Action:NuclearLockOn(Handle:timer,any:client)
 public Action:NuclearExplosion(Handle:timer,any:client)
 {
     new num    = 0;
-    new player = GetPlayer(client);
-    if (m_NuclearLaunchLockedOn[client] && player != -1)
+    if (m_NuclearLaunchLockedOn[client])
     {
-        new Float:radius, Float:scale;
-        new r_int, magnitude, damage;
-        new ult_level=GetSkillLevel(player,raceID,3);
-        switch(ult_level)
+        new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
-            case 1:
+            new Float:radius, Float:scale;
+            new r_int, magnitude, damage;
+            new ult_level=GetSkillLevel(player,raceID,3);
+            switch(ult_level)
+            {
+                case 1:
                 {
                     damage = 600;
                     radius = 600.0;
@@ -599,7 +601,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                     magnitude = 600;
                     scale = 100.0;
                 }
-            case 2:
+                case 2:
                 {
                     damage = 700;
                     radius = 1000.0;
@@ -607,7 +609,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                     magnitude = 1000;
                     scale = 100.0;
                 }
-            case 3:
+                case 3:
                 {
                     damage = 800;
                     radius = 2000.0;
@@ -615,7 +617,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                     magnitude = 2000;
                     scale = 100.0;
                 }
-            case 4:
+                case 4:
                 {
                     damage = 1000;
                     radius = 0.0;
@@ -623,53 +625,54 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                     magnitude = 3000;
                     scale = 100.0;
                 }
-        }
+            }
 
-        TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,scale,1,0,r_int,magnitude);
-        TE_SendToAll();
+            TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,scale,1,0,r_int,magnitude);
+            TE_SendToAll();
 
-        EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
-                       SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
-                       SNDPITCH_NORMAL,-1,m_nuclearAimPos[client],
-                       NULL_VECTOR,true,0.0);
+            EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
+                           SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
+                           SNDPITCH_NORMAL,-1,m_nuclearAimPos[client],
+                           NULL_VECTOR,true,0.0);
 
-        new count = GetClientCount();
-        for(new index=1;index<=count;index++)
-        {
-            if (IsClientInGame(index) && IsPlayerAlive(index))
+            new count = GetClientCount();
+            for(new index=1;index<=count;index++)
             {
-                new check_player=GetPlayer(index);
-                if (check_player>-1)
+                if (IsClientInGame(index) && IsPlayerAlive(index))
                 {
-                    if (!GetImmunity(check_player,Immunity_Ultimates) &&
-                        !GetImmunity(check_player,Immunity_Explosion) &&
-                        !IsUber(index))
+                    new Handle:check_player=GetPlayerHandle(index);
+                    if (check_player != INVALID_HANDLE)
                     {
-                        new Float:check_location[3];
-                        GetClientAbsOrigin(index,check_location);
-
-                        new hp=PowerOfRange(m_nuclearAimPos[client],radius,check_location,damage,0.5,false);
-                        if (hp)
+                        if (!GetImmunity(check_player,Immunity_Ultimates) &&
+                            !GetImmunity(check_player,Immunity_Explosion) &&
+                            !IsUber(index))
                         {
-                            if (TraceTarget(client, index, m_nuclearAimPos[client], check_location))
-                            {
-                                new newhealth = GetClientHealth(index)-hp;
-                                if (newhealth <= 0)
-                                {
-                                    newhealth=0;
-                                    new addxp=5+ult_level;
-                                    new newxp=GetXP(player,raceID)+addxp;
-                                    SetXP(player,raceID,newxp);
+                            new Float:check_location[3];
+                            GetClientAbsOrigin(index,check_location);
 
-                                    //LogKill(client, index, "nuclear_launch", "Nuclear Launch", hp, addxp);
-                                    KillPlayer(index,client,"nuclear_launch");
-                                }
-                                else
+                            new hp=PowerOfRange(m_nuclearAimPos[client],radius,check_location,damage,0.5,false);
+                            if (hp)
+                            {
+                                if (TraceTarget(client, index, m_nuclearAimPos[client], check_location))
                                 {
-                                    LogDamage(client, index, "nuclear_launch", "Nuclear Launch", hp);
-                                    HurtPlayer(index,hp,client,"nuclear_launch");
+                                    new newhealth = GetClientHealth(index)-hp;
+                                    if (newhealth <= 0)
+                                    {
+                                        newhealth=0;
+                                        new addxp=5+ult_level;
+                                        new newxp=GetXP(player,raceID)+addxp;
+                                        SetXP(player,raceID,newxp);
+
+                                        //LogKill(client, index, "nuclear_launch", "Nuclear Launch", hp, addxp);
+                                        KillPlayer(index,client,"nuclear_launch");
+                                    }
+                                    else
+                                    {
+                                        LogDamage(client, index, "nuclear_launch", "Nuclear Launch", hp);
+                                        HurtPlayer(index,hp,client,"nuclear_launch");
+                                    }
+                                    num++;
                                 }
-                                num++;
                             }
                         }
                     }

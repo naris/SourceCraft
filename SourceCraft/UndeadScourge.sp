@@ -96,7 +96,7 @@ public OnMapStart()
     SetupSound(explodeWav, true, true);
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (pressed)
     {
@@ -109,7 +109,7 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
 {
     if(race == raceID && GetRace(player) == raceID)
     {
@@ -120,7 +120,7 @@ public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
     }
 }
 
-public OnItemPurchase(client,player,item)
+public OnItemPurchase(client,Handle:player,item)
 {
     new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
@@ -143,7 +143,7 @@ public OnItemPurchase(client,player,item)
     }
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
@@ -171,8 +171,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new index      = GetClientOfUserId(userid);
     if (index)
     {
-        new player = GetPlayer(index);
-        if (player > -1)
+        new Handle:player = GetPlayerHandle(index);
+        if (player != INVALID_HANDLE)
         {
             m_Suicided[index]=false;
             new race=GetRace(player);
@@ -191,9 +191,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     return Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_race,
-                                 attacker_index,attacker_player,attacker_race,
-                                 assister_index,assister_player,assister_race,
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
                                  damage,const String:weapon[], bool:is_equipment,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
@@ -206,9 +206,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,victim_player,victim_
     return Plugin_Continue;
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
@@ -226,7 +226,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-UnholyAura(client, player, skilllevel)
+UnholyAura(client, Handle:player, skilllevel)
 {
     new Float:speed=1.0;
     switch (skilllevel)
@@ -261,7 +261,7 @@ UnholyAura(client, player, skilllevel)
     SetSpeed(player,speed);
 }
 
-Levitation(client, player, skilllevel)
+Levitation(client, Handle:player, skilllevel)
 {
     new Float:gravity=1.0;
     switch (skilllevel)
@@ -296,7 +296,7 @@ Levitation(client, player, skilllevel)
     SetGravity(player,gravity);
 }
 
-bool:VampiricAura(damage, index, player, victim_index, victim_player)
+bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_player)
 {
     new skill = GetSkillLevel(player,raceID,0);
     if (skill > 0 && GetRandomInt(1,10) <= 6 &&
@@ -364,7 +364,7 @@ bool:VampiricAura(damage, index, player, victim_index, victim_player)
     return false;
 }
 
-SuicideBomber(client,player,ult_level,bool:ondeath)
+SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
 {
     if (!ondeath)
     {
@@ -411,8 +411,8 @@ SuicideBomber(client,player,ult_level,bool:ondeath)
         if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
             GetClientTeam(index) != GetClientTeam(client))
         {
-            new check_player=GetPlayer(index);
-            if (check_player>-1)
+            new Handle:check_player=GetPlayerHandle(index);
+            if (check_player != INVALID_HANDLE)
             {
                 if (!GetImmunity(check_player,Immunity_Ultimates) &&
                     !GetImmunity(check_player,Immunity_Explosion) &&

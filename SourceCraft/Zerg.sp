@@ -82,7 +82,7 @@ public OnMapStart()
     SetupSound(deniedWav, true, true);
 }
 
-public OnRaceSelected(client,player,oldrace,race)
+public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
@@ -97,7 +97,7 @@ public OnRaceSelected(client,player,oldrace,race)
     }
 }
 
-public OnPlayerAuthed(client,player)
+public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
 }
@@ -111,8 +111,8 @@ public Action:Regeneration(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new player=GetPlayer(client);
-                if(player>=0 && GetRace(player) == raceID)
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new skill_regeneration=GetSkillLevel(player,raceID,1);
                     if (skill_regeneration)
@@ -148,8 +148,8 @@ public Action:Regeneration(Handle:timer)
                             if (index != client && IsClientInGame(index) &&
                                 IsPlayerAlive(index) && GetClientTeam(index) == team)
                             {
-                                new player_check=GetPlayer(index);
-                                if (player_check>-1)
+                                new Handle:player_check=GetPlayerHandle(index);
+                                if (player_check != INVALID_HANDLE)
                                 {
                                     if (IsInRange(client,index,range))
                                     {
@@ -184,7 +184,7 @@ public Action:Regeneration(Handle:timer)
     return Plugin_Continue;
 }
 
-public OnUltimateCommand(client,player,race,bool:pressed)
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
@@ -201,8 +201,8 @@ public Action:OnGrab(client, target)
     {
         if ( GetClientTeam(client) != GetClientTeam(target))
         {
-            new player_check=GetPlayer(target);
-            if (player_check>-1)
+            new Handle:player_check=GetPlayerHandle(target);
+            if (player_check != INVALID_HANDLE)
             {
                 if (!GetImmunity(player_check,Immunity_Ultimates))
                 {
@@ -234,15 +234,15 @@ public Action:OnGrab(client, target)
 
 public Action:OnDrop(client, target)
 {
-    new player_check=GetPlayer(target);
-    if (player_check>-1)
+    new Handle:player_check=GetPlayerHandle(target);
+    if (player_check != INVALID_HANDLE)
     {
         SetOverrideGravity(player_check, -1.0);
     }
     return Plugin_Continue;
 }
 
-public OnSkillLevelChanged(client,player,race,skill,oldskilllevel,newskilllevel)
+public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
 {
     if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
     {
@@ -261,8 +261,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        new player=GetPlayer(client);
-        if (player>-1)
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
             new race = GetRace(player);
             if (race == raceID)
@@ -275,9 +275,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_race,
-                                attacker_index,attacker_player,attacker_race,
-                                assister_index,assister_player,assister_race,
+public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
                                 damage)
 {
     new bool:changed=false;
@@ -308,7 +308,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,victim_player,victim_r
 }
 
 
-public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, player)
+public bool:Zerg_AdrenalGlands(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
     if (skill_adrenal_glands)
@@ -354,7 +354,7 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, victim_player, index, playe
     return false;
 }
 
-public Zerg_Tentacles(client, player, skilllevel)
+public Zerg_Tentacles(client, Handle:player, skilllevel)
 {
     if (skilllevel)
     {
