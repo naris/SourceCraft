@@ -46,8 +46,6 @@
 
 #define TRACKING_COUNT                 15
 
-//#define PLAYER_COUNT() GetArraySize(arrayPlayers)
-
 new Handle:arrayPlayers[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
 // Global definition
@@ -90,15 +88,16 @@ public Handle:CreatePlayer(client)
         for(new x=0;x<IMMUNITY_COUNT;x++)
             PushArrayCell(immunities,0);     // Has immunity x
 
-        new raceCount = RACE_COUNT();
-        for(new x=0;x<raceCount;x++)
+        new raceCount = GetRaceCount();
+        for(new race=0;race<raceCount;race++)
         {
             new Handle:raceinfo=CreateArray(); // Player's races
             PushArrayCell(newPlayer,raceinfo);
-            PushArrayCell(raceinfo,0); // Race x XP
-            PushArrayCell(raceinfo,0); // Race x Level
-            for(new y=0;y<SKILL_COUNT;y++)
-                PushArrayCell(raceinfo,0); // Skill level for race x skill y
+            PushArrayCell(raceinfo,0); // Race XP
+            PushArrayCell(raceinfo,0); // Race Level
+            new skillCount = GetSkillCount(GetRaceHandle(race));
+            for(new skill=0;skill<skillCount;skill++)
+                PushArrayCell(raceinfo,0); // Skill level for each skill of the race
         }
 
         // Perform a sanity check.
@@ -149,7 +148,7 @@ public ClearPlayer(client,Handle:playerHandle)
         new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
         ClearArray(immunities);
 
-        new raceCount = RACE_COUNT();
+        new raceCount = GetRaceCount();
         for(new r=0;r<raceCount;r++)
         {
             new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+r);
@@ -351,11 +350,12 @@ public IncrementSkillLevel(Handle:playerHandle,race,skill)
     Call_Finish(result);
 }
 
-public GetSkillCount(Handle:playerHandle,race)
+public GetSkillLevelCount(Handle:playerHandle,race)
 {
     new ret=0;
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new num=RACEINFO_SKILLS+SKILL_COUNT;
+    new skillCount = GetSkillCount(GetRaceHandle(race));
+    new num=RACEINFO_SKILLS+skillCount;
     for(new x=RACEINFO_SKILLS;x<num;x++)
         ret+=GetArrayCell(raceinfo,x);
     return ret;

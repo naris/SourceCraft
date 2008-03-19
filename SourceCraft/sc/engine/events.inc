@@ -58,7 +58,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race=GetRace(playerHandle);
             if (m_FirstSpawn[index])
                 IntroMenu(index);
-            else if (GetSkillCount(playerHandle,race)<GetLevel(playerHandle,race))
+            else if (GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                 SkillMenu(index, playerHandle, INVALID_FUNCTION);
         }
     }
@@ -230,7 +230,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 {
                     PendingCheck(victim_index,victim_player);
                     new race=GetRace(victim_player);
-                    if(GetSkillCount(victim_player,race)<GetLevel(victim_player,race))
+                    if(GetSkillLevelCount(victim_player,race)<GetLevel(victim_player,race))
                         SkillMenu(victim_index, victim_player, INVALID_FUNCTION);
                 }
                 SaveHealth(victim_index);

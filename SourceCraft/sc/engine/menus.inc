@@ -70,7 +70,7 @@ public IntroMenu(client)
 {
     new Handle:introMenu=CreateMenu(IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose a skill to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
     }
@@ -88,7 +88,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
     if (action == MenuAction_Select ||
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
-        if (m_FirstSpawn[client] > 1 && RACE_COUNT() >= 1)
+        if (m_FirstSpawn[client] > 1 && GetRaceCount() >= 1)
             RaceMenu(client, true, INVALID_FUNCTION);
         else
             m_FirstSpawn[client]=0;
@@ -102,7 +102,7 @@ public MainMenu(client,Handle:playerHandle,Function:parentMenuFunction)
     new Handle:scMenu=CreateMenu(Menu_Select);
     SetMenuExitButton(scMenu,true);
     SetMenuTitle(scMenu,"[SourceCraft] Choose a task.");
-    new race_style = (RACE_COUNT() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     decl String:buf[11];
     Format(buf,sizeof(buf),"%d",playerHandle);
@@ -146,7 +146,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
                 case 4: // spendskills
                 {
                     new race=GetRace(playerHandle);
-                    if(GetSkillCount(playerHandle,race)<GetLevel(playerHandle,race))
+                    if(GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                         SkillMenu(client, playerHandle, MainMenu);
                     else
                     {
@@ -173,7 +173,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 
 public RaceMenu(client,bool:change,Function:parentMenuFunction)
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         new Handle:crMenu=CreateMenu(RaceMenu_Selected);
 
@@ -190,7 +190,7 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
         decl String:rbuf[11];
         decl String:rname[64];
         decl String:ritem[96];
-        new raceCount = RACE_COUNT();
+        new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
         {
             raceHandle=GetRaceHandle(race);
@@ -247,11 +247,11 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
 public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         new Handle:sMenu=CreateMenu(SMenu_Selected);
         new race_num=GetRace(playerHandle);
-        new skillcount=GetSkillCount(playerHandle,race_num);
+        new skillcount=GetSkillLevelCount(playerHandle,race_num);
         new level=GetLevel(playerHandle,race_num);
         SetMenuExitButton(sMenu,true);
         SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
@@ -262,22 +262,24 @@ public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
         decl String:sbuf[11];
         decl String:buf[192];
         new style = ITEMDRAW_DEFAULT;
-        for(new skill=0;skill<SKILL_COUNT;skill++)
+        new skillCount=GetSkillCount(raceHandle);
+        for(new skill=0;skill<skillCount;skill++)
         {
             GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
             Format(sbuf,sizeof(sbuf),"%d",skill);
             curlevel=GetSkillLevel(playerHandle,race_num,skill);
             if (curlevel != 4)
             {
-                if (skill != SKILL_ULTIMATE)
-                    Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
-                else
+                if (IsSkillUltimate(raceHandle, skill))
                 {
                     Format(buf,sizeof(buf),"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
                            skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
                     if (GetLevel(playerHandle,race_num) < MIN_ULTIMATE_LEVEL)
                         style = ITEMDRAW_DISABLED;
                 }
+                else
+                    Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
+
                 AddMenuItem(sMenu,sbuf,buf,style);
             }
         }
@@ -297,45 +299,30 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
-            if (selection >= 0 && selection < SKILL_COUNT)
+            new race = GetRace(playerHandle);
+            new Handle:raceHandle=GetRaceHandle(race);
+            new skillCount=GetSkillCount(raceHandle);
+
+            decl String:SelectionInfo[11];
+            decl String:SelectionDispText[256];
+            new SelectionStyle;
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
+                    SelectionDispText,sizeof(SelectionDispText));
+            new skill=StringToInt(SelectionInfo);
+            if (skill >= 0 && skill < skillCount)
             {
                 // Okay, they selected a valid skill
-                decl String:SelectionInfo[11];
-                decl String:SelectionDispText[256];
-                new SelectionStyle;
-                GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
-                            SelectionDispText,sizeof(SelectionDispText));
-                new skill=StringToInt(SelectionInfo);
-                if (skill > -1 && skill < SKILL_COUNT)
+                new level = GetLevel(playerHandle,race);
+                if (GetSkillLevelCount(playerHandle,race)>=level)
                 {
-                    new race = GetRace(playerHandle);
-                    new level = GetLevel(playerHandle,race);
-                    if (GetSkillCount(playerHandle,race)>=level)
+                    PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
+                                COLOR_GREEN,COLOR_DEFAULT);
+                }
+                else
+                {
+                    if (IsSkillUltimate(raceHandle, skill))
                     {
-                        PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
-                                    COLOR_GREEN,COLOR_DEFAULT);
-                    }
-                    else
-                    {
-                        new Handle:raceHandle=GetRaceHandle(race);
-                        if (skill==SKILL_ULTIMATE)
-                        {
-                            if (level >= MIN_ULTIMATE_LEVEL)
-                            {
-                                IncrementSkillLevel(playerHandle,race,skill);
-                                decl String:skillname[64];
-                                GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
-                                PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                            COLOR_GREEN,COLOR_DEFAULT,skillname,
-                                            GetSkillLevel(playerHandle,race,skill));
-                            }
-                            else
-                            {
-                                PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
-                                            COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
-                            }
-                        }
-                        else
+                        if (level >= MIN_ULTIMATE_LEVEL)
                         {
                             IncrementSkillLevel(playerHandle,race,skill);
                             decl String:skillname[64];
@@ -344,10 +331,24 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                                         COLOR_GREEN,COLOR_DEFAULT,skillname,
                                         GetSkillLevel(playerHandle,race,skill));
                         }
-
-                        if (GetSkillCount(playerHandle,race)<GetLevel(playerHandle,race))
-                            SkillMenu(client,playerHandle,gSkillMenuParentMenuFunction[client]);
+                        else
+                        {
+                            PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
+                                        COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
+                        }
                     }
+                    else
+                    {
+                        IncrementSkillLevel(playerHandle,race,skill);
+                        decl String:skillname[64];
+                        GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
+                        PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
+                                    COLOR_GREEN,COLOR_DEFAULT,skillname,
+                                    GetSkillLevel(playerHandle,race,skill));
+                    }
+
+                    if (GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                        SkillMenu(client,playerHandle,gSkillMenuParentMenuFunction[client]);
                 }
             }
         }
@@ -673,7 +674,7 @@ public Admin_Player(client,target)
     SetMenuExitButton(adminMenu_Player,true);
     SetMenuExitBackButton(adminMenu_Player,true);
 
-    new race_style = (RACE_COUNT() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     SetMenuTitle(adminMenu_Player,"[SourceCraft] Administration options for %N.", target);
     decl String:buf[11];
@@ -718,10 +719,11 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
                 {
                     // Reset skills
                     new race=GetRace(targetHandle);
-                    for(new y=0;y<SKILL_COUNT;y++)
+                    new skillCount=GetSkillCount(GetRaceHandle(race));
+                    for(new y=0;y<skillCount;y++)
                             SetSkillLevel(targetHandle,race,y,0);
 
-                    if(GetSkillCount(targetHandle,race)<GetLevel(targetHandle,race))
+                    if(GetSkillLevelCount(targetHandle,race)<GetLevel(targetHandle,race))
                         SkillMenu(target, targetHandle, Admin_Player);
 
                     PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" reset your skills.",
@@ -1090,7 +1092,7 @@ public Admin_SetRace(client,target)
         Format(buf,sizeof(buf),"%d",target);
 
         decl String:racename[64];
-        new raceCount = RACE_COUNT();
+        new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
         {
             GetRaceName(GetRaceHandle(race),racename,sizeof(racename));
@@ -1222,7 +1224,8 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
                 {
                     SetLevel(targetHandle,race,newlevel);
                     SetOverallLevel(targetHandle, GetOverallLevel(targetHandle)-1);
-                    for(new x=0;x<SKILL_COUNT;x++)
+                    new skillCount=GetSkillCount(GetRaceHandle(race));
+                    for(new x=0;x<skillCount;x++)
                         SetSkillLevel(targetHandle,race,x,0);
 
                     PrintToChat(client, "%c[SourceCraft] %cYou removed a level from player \"%N\".",

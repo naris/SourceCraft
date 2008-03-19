@@ -668,7 +668,7 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
 public SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
 {
     decl String:SQLString[512] = "";
-    new raceCount = RACE_COUNT();
+    new raceCount = GetRaceCount();
     for(new raceId=0;raceId<raceCount;raceId++)
     {
         new xp    = GetXP(playerHandle,raceId);
@@ -758,7 +758,8 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
 public SavePlayerSkills(client, Handle:playerHandle, player_ident, raceId, race_ident, Handle:raceHandle, bool:threaded)
 {
     decl String:SQLString[512] = "";
-    for(new skill=0;skill<SKILL_COUNT;skill++)
+    new skillCount = GetSkillCount(raceHandle);
+    for(new skill=0;skill<skillCount;skill++)
     {
         new skillLevel = GetSkillLevel(playerHandle,raceId,skill);
 

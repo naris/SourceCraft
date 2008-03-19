@@ -27,7 +27,7 @@
 #define RACE_ULTIMATE           6
 #define RACE_ULTIMATE_DESC      7
 
-#define RACE_COUNT() GetArraySize(arrayRaces)
+#define GetRaceCount() GetArraySize(arrayRaces)
 
 // A vector of race infomation
 new Handle:arrayRaces;
@@ -54,7 +54,8 @@ public CreateRace(const String:name[],                  const String:short[],
     PushArrayString(stringsHandle,switchmessage_instant);
     PushArrayString(stringsHandle,switchmessage_dead);
 
-    new Handle:skillsHandle=CreateArray(); // Races's skills
+    // Setup Race Skills.
+    new Handle:skillsHandle=CreateArray();
     PushArrayString(skillsHandle,skill1);
     PushArrayString(skillsHandle,skill1_desc);
     PushArrayString(skillsHandle,skill2);
@@ -82,7 +83,7 @@ public bool:InitRaceArray()
 
 public ClearRaceArray()
 {
-    new raceCount = RACE_COUNT();
+    new raceCount = GetRaceCount();
     for(new x=0;x<raceCount;x++)
     {
         new Handle:vec=GetArrayCell(arrayRaces,x);
@@ -158,6 +159,16 @@ public GetSkillNameAndDesc(Handle:raceHandle,skill, String:name[], maxName,
     new index = (skill*2);
     GetArrayString(skillsHandle,index,name,maxName);
     GetArrayString(skillsHandle,index+1,desc,maxDesc);
+}
+
+public bool:IsSkillUltimate(Handle:raceHandle,skill)
+{
+    return (skill == SKILL_ULTIMATE);
+}
+
+public GetSkillCount(Handle:raceHandle)
+{
+    return SKILL_COUNT;
 }
 
 public FindRace(const String:name[])
@@ -251,7 +262,8 @@ public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
     GetRaceName(raceHandle, name, sizeof(name));
     SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
 
-    for(new skill=0;skill<SKILL_COUNT;skill++)
+    new skillCount = GetSkillCount(raceHandle);
+    for(new skill=0;skill<skillCount;skill++)
     {
         GetSkillName(raceHandle, skill, name, sizeof(name));
         AddMenuItem(menu,"",name);
@@ -279,7 +291,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         {
             new race=gRaceForSkills[client];
             new Handle:raceHandle=GetRaceHandle(race);
-            if (selection < SKILL_COUNT)
+            if (selection < GetSkillCount(raceHandle))
                 SkillsInfo_Skill(client,raceHandle,selection);
             else
             {
@@ -356,7 +368,8 @@ public ShowSkills(client,target,Handle:playerHandle,Function:parentMenuFunction)
     decl String:buf[64];
     decl String:bufout[256];
     DrawPanelText(panel,"-----------------------------");
-    for(new skill=0;skill<SKILL_COUNT;skill++)
+    new skillCount = GetSkillCount(raceHandle);
+    for(new skill=0;skill<skillCount;skill++)
     {
         GetSkillName(raceHandle, skill, buf, sizeof(buf));
         Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(playerHandle,race,skill));
@@ -388,7 +401,8 @@ public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
 ResetSkillsNow(client,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
-    for(new skill=0;skill<SKILL_COUNT;skill++)
+    new skillCount=GetSkillCount(GetRaceHandle(race));
+    for(new skill=0;skill<skillCount;skill++)
         SetSkillLevel(playerHandle,race,skill,0);
 
     PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",

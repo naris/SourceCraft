@@ -63,7 +63,7 @@ ReqLevelXP(level)
 
 public DoLevelCheck(client,Handle:playerHandle)
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         new bool:m_Go=true;
         while(m_Go)
@@ -99,7 +99,7 @@ public DoLevelCheck(client,Handle:playerHandle)
 
 public ShowXP(client,Handle:playerHandle)
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         new race=GetRace(playerHandle);
         if (race >= 0)
@@ -127,7 +127,7 @@ public ShowXP(client,Handle:playerHandle)
 public GiveKillXP(index,Handle:playerHandle,victim_index,Handle:victim_player,bool:headshot,
                   bool:backstab,bool:melee,bool:dominated,bool:revenge,bool:assist)
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         new amount;
         if (victim_player != INVALID_HANDLE)
@@ -260,7 +260,7 @@ public GiveMvpXP(client,Handle:playerHandle,place,points)
 
 public GiveXP(client,Handle:playerHandle, amount, const String:reason[])
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         // Called when a player is given XP
         new Action:result;
@@ -287,7 +287,7 @@ public GiveXP(client,Handle:playerHandle, amount, const String:reason[])
 
 public TakeXP(client,Handle:playerHandle, amount, const String:reason[])
 {
-    if (RACE_COUNT() >= 1)
+    if (GetRaceCount() >= 1)
     {
         // Called when a player destroys thier own object
         new Action:result;

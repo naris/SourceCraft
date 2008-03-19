@@ -253,10 +253,11 @@ public Action:CMD_SetLevel(client,args)
             if (playerHandle != INVALID_HANDLE)
             {
                 new race=GetRace(playerHandle);
-                for(new y=0;y<SKILL_COUNT;y++)
+                new skillCount = GetSkillCount(GetRaceHandle(race));
+                for(new y=0;y<skillCount;y++)
                     SetSkillLevel(playerHandle,race,y,0);
-                if(level>SKILL_COUNT*4)
-                    level=SKILL_COUNT*4;
+                if(level>skillCount*4)
+                    level=skillCount*4;
                 if(level<0)
                     level=0;
                 SetLevel(playerHandle,race,level);
@@ -346,7 +347,8 @@ public Action:CMD_RemoveLevel(client,args)
                     PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at level 0.",name);
                 else
                 {
-                    for(new y=0;y<SKILL_COUNT;y++)
+                    new skillCount = GetSkillCount(GetRaceHandle(race));
+                    for(new y=0;y<skillCount;y++)
                         SetSkillLevel(playerHandle,race,y,0);
                     SetLevel(playerHandle,race,newlevel);
                     SetOverallLevel(playerHandle, GetOverallLevel(playerHandle)-1);

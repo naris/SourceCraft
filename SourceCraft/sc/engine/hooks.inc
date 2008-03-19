@@ -72,7 +72,7 @@ public Action:SayCommand(client,args)
         else if(CommandCheck(arg1,"spendskills",63))
         {
             new race=GetRace(playerHandle);
-            if(GetSkillCount(playerHandle,race)<GetLevel(playerHandle,race))
+            if(GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                 SkillMenu(client,playerHandle,INVALID_FUNCTION);
             else
             {
