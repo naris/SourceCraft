@@ -250,35 +250,38 @@ public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
     if (GetRaceCount() >= 1)
     {
         new Handle:sMenu=CreateMenu(SMenu_Selected);
-        new race_num=GetRace(playerHandle);
-        new skillcount=GetSkillLevelCount(playerHandle,race_num);
-        new level=GetLevel(playerHandle,race_num);
+        new race=GetRace(playerHandle);
+        new skillcount=GetSkillLevelCount(playerHandle,race);
+        new level=GetLevel(playerHandle,race);
         SetMenuExitButton(sMenu,true);
         SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
         SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
         decl String:skillname[64];
-        new curlevel;
-        new Handle:raceHandle=GetRaceHandle(race_num);
+        new skillLevel;
+        new Handle:raceHandle=GetRaceHandle(race);
         decl String:sbuf[11];
         decl String:buf[192];
         new style = ITEMDRAW_DEFAULT;
-        new skillCount=GetSkillCount(raceHandle);
+        new skillCount = GetSkillCount(raceHandle);
+        new raceLevel = GetLevel(playerHandle,race);
+        new minLevel = MIN_ULTIMATE_LEVEL;
+        new activeUltimate = GetActiveUltimate(playerHandle,race);
         for(new skill=0;skill<skillCount;skill++)
         {
             GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
             Format(sbuf,sizeof(sbuf),"%d",skill);
-            curlevel=GetSkillLevel(playerHandle,race_num,skill);
-            if (curlevel != 4)
+            skillLevel=GetSkillLevel(playerHandle,race,skill);
+            if (skillLevel != 4)
             {
                 if (IsSkillUltimate(raceHandle, skill))
                 {
                     Format(buf,sizeof(buf),"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
-                           skillname,curlevel+1,MIN_ULTIMATE_LEVEL);
-                    if (GetLevel(playerHandle,race_num) < MIN_ULTIMATE_LEVEL)
+                           skillname,skillLevel+1,minLevel);
+                    if (raceLevel < minLevel || (activeUltimate >= 0 && activeUltimate != skill))
                         style = ITEMDRAW_DISABLED;
                 }
                 else
-                    Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
+                    Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,skillLevel+1);
 
                 AddMenuItem(sMenu,sbuf,buf,style);
             }
@@ -322,24 +325,36 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 {
                     if (IsSkillUltimate(raceHandle, skill))
                     {
-                        if (level >= MIN_ULTIMATE_LEVEL)
+                        new minLevel = MIN_ULTIMATE_LEVEL;
+                        if (level >= minLevel)
                         {
-                            IncrementSkillLevel(playerHandle,race,skill);
-                            decl String:skillname[64];
-                            GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
-                            PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                        COLOR_GREEN,COLOR_DEFAULT,skillname,
-                                        GetSkillLevel(playerHandle,race,skill));
+                            new activeUltimate = GetActiveUltimate(playerHandle,race);
+                            if (activeUltimate < 0 || activeUltimate == skill)
+                            {
+                                IncrementSkillLevel(playerHandle,race,skill,true);
+                                decl String:skillname[64];
+                                GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
+                                PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
+                                            COLOR_GREEN,COLOR_DEFAULT,skillname,
+                                            GetSkillLevel(playerHandle,race,skill));
+                            }
+                            else
+                            {
+                                decl String:activename[64];
+                                GetSkillName(raceHandle, activeUltimate, activename, sizeof(activename));
+                                PrintToChat(client, "%c[SourceCraft] %cYou have already chosen \"%s\" as your ultimate, to reset your skills use resetskills.",
+                                            COLOR_GREEN,COLOR_DEFAULT,activename);
+                            }
                         }
                         else
                         {
                             PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
-                                        COLOR_GREEN,COLOR_DEFAULT,MIN_ULTIMATE_LEVEL);
+                                        COLOR_GREEN,COLOR_DEFAULT,minLevel);
                         }
                     }
                     else
                     {
-                        IncrementSkillLevel(playerHandle,race,skill);
+                        IncrementSkillLevel(playerHandle,race,skill,false);
                         decl String:skillname[64];
                         GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
                         PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",

@@ -26,7 +26,8 @@
 
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
-#define RACEINFO_SKILLS                 2
+#define RACEINFO_ACTIVE_ULTIMATE        2
+#define RACEINFO_SKILLS                 3
 
 #define TRACKING_PLUGIN_HANDLE          0
 #define TRACKING_OVERRIDE_SPEED         1
@@ -93,8 +94,9 @@ public Handle:CreatePlayer(client)
         {
             new Handle:raceinfo=CreateArray(); // Player's races
             PushArrayCell(newPlayer,raceinfo);
-            PushArrayCell(raceinfo,0); // Race XP
-            PushArrayCell(raceinfo,0); // Race Level
+            PushArrayCell(raceinfo,0); // Race's XP
+            PushArrayCell(raceinfo,0); // Race's Level
+            PushArrayCell(raceinfo,-1); // Race's Active Ultimate Skill 
             new skillCount = GetSkillCount(GetRaceHandle(race));
             for(new skill=0;skill<skillCount;skill++)
                 PushArrayCell(raceinfo,0); // Skill level for each skill of the race
@@ -309,6 +311,18 @@ public SetLevel(Handle:playerHandle,race,level)
     SetArrayCell(raceinfo,RACEINFO_LEVEL,level);
 }
 
+public GetActiveUltimate(Handle:playerHandle,race)
+{
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+    return GetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE);
+}
+
+public SetActiveUltimate(Handle:playerHandle,race,skill)
+{
+    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+    SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,skill);
+}
+
 public GetSkillLevel(Handle:playerHandle,race,skill)
 {
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
@@ -332,13 +346,16 @@ public SetSkillLevel(Handle:playerHandle,race,skill,level)
     Call_Finish(result);
 }
 
-public IncrementSkillLevel(Handle:playerHandle,race,skill)
+public IncrementSkillLevel(Handle:playerHandle,race,skill,bool:isUltimate)
 {
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
     new num=RACEINFO_SKILLS+skill;
     new old=GetArrayCell(raceinfo,num);
     new level=old+1;
     SetArrayCell(raceinfo,num,level);
+    if (isUltimate)
+        SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,skill);
+
     Call_StartForward(g_OnSkillLevelChangedHandle);
     Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
     Call_PushCell(playerHandle);

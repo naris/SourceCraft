@@ -420,6 +420,8 @@ public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
 ResetSkillsNow(client,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
+    SetActiveUltimate(playerHandle,race,-1);
+
     new skillCount=GetSkillCount(GetRaceHandle(race));
     for(new skill=0;skill<skillCount;skill++)
         SetSkillLevel(playerHandle,race,skill,0);
