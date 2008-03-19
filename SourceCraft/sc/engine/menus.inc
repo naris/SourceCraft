@@ -259,13 +259,12 @@ public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
         decl String:skillname[64];
         new curlevel;
         new Handle:raceHandle=GetRaceHandle(race_num);
-        new Handle:strings=GetArrayCell(raceHandle,RACE_STRINGS);
         decl String:sbuf[11];
         decl String:buf[192];
         new style = ITEMDRAW_DEFAULT;
         for(new skill=0;skill<SKILL_COUNT;skill++)
         {
-            GetArrayString(strings,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
+            GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
             Format(sbuf,sizeof(sbuf),"%d",skill);
             curlevel=GetSkillLevel(playerHandle,race_num,skill);
             if (curlevel != 4)
@@ -319,14 +318,13 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     else
                     {
                         new Handle:raceHandle=GetRaceHandle(race);
-                        new Handle:stringHandle=GetArrayCell(raceHandle,RACE_STRINGS);
                         if (skill==SKILL_ULTIMATE)
                         {
                             if (level >= MIN_ULTIMATE_LEVEL)
                             {
                                 IncrementSkillLevel(playerHandle,race,skill);
                                 decl String:skillname[64];
-                                GetArrayString(stringHandle,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
+                                GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
                                 PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                             COLOR_GREEN,COLOR_DEFAULT,skillname,
                                             GetSkillLevel(playerHandle,race,skill));
@@ -341,7 +339,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                         {
                             IncrementSkillLevel(playerHandle,race,skill);
                             decl String:skillname[64];
-                            GetArrayString(stringHandle,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
+                            GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
                             PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
                                         COLOR_GREEN,COLOR_DEFAULT,skillname,
                                         GetSkillLevel(playerHandle,race,skill));
@@ -793,17 +791,15 @@ public Admin_PlayerInfo(client,target)
         SetMenuExitBackButton(playerInfo,true);
 
         new race=GetRace(targetHandle);
-        new Handle:rhand=GetRaceHandle(race);
-        new Handle:shand=GetArrayCell(rhand,RACE_STRINGS);
-        decl String:race_name[64];
-        GetArrayString(shand,RACE_NAME,race_name,sizeof(race_name));
-
-        new credits=GetCredits(targetHandle);
         new xp=GetXP(targetHandle,race);
         new level=GetLevel(targetHandle,race);
+        new credits=GetCredits(targetHandle);
+
+        decl String:raceName[64];
+        GetRaceName(GetRaceHandle(race), raceName, sizeof(raceName));
 
         SetMenuTitle(playerInfo,"[SourceCraft] Info for %N.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
-                     target,race_name,currency,credits,xp,level);
+                     target,raceName,currency,credits,xp,level);
 
         decl String:buf[11];
         Format(buf,sizeof(buf),"%d",target);
