@@ -136,7 +136,7 @@ public OnPluginReady()
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
     shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection","Reflect some damage back to the mole\nto give yourself a fighting chance.","45");
-    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention","Keep your Mole Protection or Reflection\nafter you die until it is used.","15");
+    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention","Keep your Mole Protection and/or Reflection\nafter you die until it is used.","15");
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     FindUberOffsets();
@@ -437,10 +437,11 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     {
         if (victim_player != INVALID_HANDLE && attacker_player != INVALID_HANDLE)
         {
-            if(isMole[attacker_index])
+            if (isMole[attacker_index])
             {
                 new reflection = GetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION]);
-                if (reflection || GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
+                new protection = GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]);
+                if (reflection || protection)
                 {
                     new victim_health = GetClientHealth(victim_index);
                     new prev_health   = victim_health+damage;
@@ -448,6 +449,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
                     if (new_health <= victim_health)
                         new_health = victim_health+(damage/2);
+
+                    if (reflection && protection && GetRandomInt(1,100)<=50)
+                        new_health += (damage*GetRandomFloat(0.25,0.75));
 
                     if (new_health>victim_health)
                     {
