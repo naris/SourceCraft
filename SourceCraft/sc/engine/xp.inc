@@ -82,7 +82,7 @@ public DoLevelCheck(client,Handle:playerHandle)
                     SkillMenu(client, playerHandle, INVALID_FUNCTION);
 
                     decl String:raceName[64] = "";
-                    GetRaceName(Race(race),raceName,sizeof(raceName));
+                    GetRaceName(GetRaceHandle(race),raceName,sizeof(raceName));
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(playerHandle,race,curXP-reqXP);
@@ -106,8 +106,7 @@ public ShowXP(client,Handle:playerHandle)
         {
             new level=GetLevel(playerHandle,race);
             decl String:racename[64];
-            new Handle:racedata=Race(race);
-            GetRaceName(racedata,racename,sizeof(racename));
+            GetRaceName(GetRaceHandle(race),racename,sizeof(racename));
             if (level<MAX_LEVELS)
             {
                 PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d / %d. (Overall Level %d)",

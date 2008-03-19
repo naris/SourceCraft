@@ -186,17 +186,17 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
         SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
 
         // Iterate through the races and print them out
-        new Handle:race;
+        new Handle:raceHandle;
         decl String:rbuf[11];
         decl String:rname[64];
         decl String:ritem[96];
         new raceCount = RACE_COUNT();
-        for(new x=0;x<raceCount;x++)
+        for(new race=0;race<raceCount;race++)
         {
-            race=Race(x);
-            Format(rbuf,sizeof(rbuf),"%d",x);
-            GetRaceName(race,rname,sizeof(rname));
-            new reqLevel = GetRaceRequiredLevel(race);
+            raceHandle=GetRaceHandle(race);
+            Format(rbuf,sizeof(rbuf),"%d",race);
+            GetRaceName(raceHandle,rname,sizeof(rname));
+            new reqLevel = GetRaceRequiredLevel(raceHandle);
             if (reqLevel)
             {
                 new level = GetOverallLevel(GetPlayerHandle(client));
@@ -258,19 +258,19 @@ public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
         SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
         decl String:skillname[64];
         new curlevel;
-        new Handle:race=Race(race_num);
-        new Handle:strings=GetArrayCell(race,RACE_STRINGS);
+        new Handle:raceHandle=GetRaceHandle(race_num);
+        new Handle:strings=GetArrayCell(raceHandle,RACE_STRINGS);
         decl String:sbuf[11];
         decl String:buf[192];
         new style = ITEMDRAW_DEFAULT;
-        for(new x=0;x<SKILL_COUNT;x++)
+        for(new skill=0;skill<SKILL_COUNT;skill++)
         {
-            GetArrayString(strings,RACE_SKILL+(x*2),skillname,sizeof(skillname));
-            Format(sbuf,sizeof(sbuf),"%d",x);
-            curlevel=GetSkillLevel(playerHandle,race_num,x);
-            if(curlevel!=4)
+            GetArrayString(strings,RACE_SKILL+(skill*2),skillname,sizeof(skillname));
+            Format(sbuf,sizeof(sbuf),"%d",skill);
+            curlevel=GetSkillLevel(playerHandle,race_num,skill);
+            if (curlevel != 4)
             {
-                if(x!=SKILL_ULTIMATE)
+                if (skill != SKILL_ULTIMATE)
                     Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,curlevel+1);
                 else
                 {
@@ -318,7 +318,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     }
                     else
                     {
-                        new Handle:raceHandle=Race(race);
+                        new Handle:raceHandle=GetRaceHandle(race);
                         new Handle:stringHandle=GetArrayCell(raceHandle,RACE_STRINGS);
                         if (skill==SKILL_ULTIMATE)
                         {
@@ -793,7 +793,7 @@ public Admin_PlayerInfo(client,target)
         SetMenuExitBackButton(playerInfo,true);
 
         new race=GetRace(targetHandle);
-        new Handle:rhand=Race(race);
+        new Handle:rhand=GetRaceHandle(race);
         new Handle:shand=GetArrayCell(rhand,RACE_STRINGS);
         decl String:race_name[64];
         GetArrayString(shand,RACE_NAME,race_name,sizeof(race_name));
@@ -1095,9 +1095,9 @@ public Admin_SetRace(client,target)
 
         decl String:racename[64];
         new raceCount = RACE_COUNT();
-        for(new x=0;x<raceCount;x++)
+        for(new race=0;race<raceCount;race++)
         {
-            GetRaceName(Race(x),racename,sizeof(racename));
+            GetRaceName(GetRaceHandle(race),racename,sizeof(racename));
             AddMenuItem(menu,buf,racename);
         }
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
@@ -1126,7 +1126,7 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
         {
             SetRace(targetHandle,selection);
             decl String:racename[64];
-            GetRaceName(Race(selection),racename,sizeof(racename));
+            GetRaceName(GetRaceHandle(selection),racename,sizeof(racename));
 
             PrintToChat(client, "%c[SourceCraft] %cYou set player \"%N\" to race %s.",
                         COLOR_GREEN,COLOR_DEFAULT,target,racename);

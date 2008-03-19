@@ -406,8 +406,7 @@ public SavePlayerData(client, Handle:playerHandle, bool:threaded)
             new overall_level     = GetOverallLevel(playerHandle);
             new player_ident      = GetDatabaseIdent(playerHandle);
 
-            new raceId            = GetRace(playerHandle);
-            new Handle:raceHandle = Race(raceId);
+            new Handle:raceHandle = GetRaceHandle(GetRace(playerHandle));
             new race_ident        = GetRaceIdent(raceHandle);
 
             decl String:name[64];
@@ -677,7 +676,7 @@ public SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
 
         if (xp || level)
         {
-            new Handle:raceHandle = Race(raceId);
+            new Handle:raceHandle = GetRaceHandle(raceId);
             new race_ident = GetRaceIdent(raceHandle);
 
             if (DBIsSQLite)

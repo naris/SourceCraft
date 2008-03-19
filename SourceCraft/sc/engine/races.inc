@@ -91,7 +91,7 @@ public ClearRaceArray()
     ClearArray(arrayRaces);
 }
 
-public Handle:Race(racenum)
+public Handle:GetRaceHandle(racenum)
 {
     return GetArrayCell(arrayRaces,racenum);
 }
@@ -127,11 +127,11 @@ public FindRace(const String:name[])
 {
     decl String:curName[64]="";
     new size = GetArraySize(arrayRaces);
-    for(new x=0;x<size;x++)
+    for(new race=0;race<size;race++)
     {
-        GetRaceShortName(Race(x),curName,sizeof(curName));
+        GetRaceShortName(GetRaceHandle(race),curName,sizeof(curName));
         if(StrEqual(name,curName,false))
-            return x;
+            return race;
     }
     return -1;
 }
@@ -139,10 +139,10 @@ public FindRace(const String:name[])
 public FindRaceForIdent(ident)
 {
     new size = GetArraySize(arrayRaces);
-    for(new x=0;x<size;x++)
+    for(new race=0;race<size;race++)
     {
-        if (GetRaceIdent(Race(x)) == ident)
-            return x;
+        if (GetRaceIdent(GetRaceHandle(race)) == ident)
+            return race;
     }
     return -1;
 }
@@ -155,8 +155,7 @@ public PendingCheck(client,Handle:playerHandle)
         SetPendingRace(playerHandle,-1);
         SetRace(playerHandle,pendingrace);
         decl String:buf[192];
-        new race=GetRace(playerHandle);
-        new Handle:raceHandle=Race(race);
+        new Handle:raceHandle=GetRaceHandle(GetRace(playerHandle));
         new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
         GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,buf,sizeof(buf));
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
@@ -212,15 +211,15 @@ public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
     SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
 
     decl String:name[64];
-    new Handle:raceHandle=Race(race);
+    new Handle:raceHandle=GetRaceHandle(race);
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     GetArrayString(stringsHandle,RACE_NAME,name,sizeof(name));
     SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
 
     decl String:buf[64];
-    for(new x=0;x<SKILL_COUNT;x++)
+    for(new skill=0;skill<SKILL_COUNT;skill++)
     {
-        GetArrayString(stringsHandle,RACE_SKILL+(x*2),buf,sizeof(buf));
+        GetArrayString(stringsHandle,RACE_SKILL+(skill*2),buf,sizeof(buf));
         AddMenuItem(menu,"",buf);
     }
     if (change)
@@ -245,7 +244,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         if (playerHandle != INVALID_HANDLE)
         {
             new race=gRaceForSkills[client];
-            new Handle:raceHandle=Race(race);
+            new Handle:raceHandle=GetRaceHandle(race);
             if (selection < SKILL_COUNT)
                 SkillsInfo_Skill(client,raceHandle,selection);
             else
@@ -307,7 +306,7 @@ public ResetSkills(client,Handle:playerHandle)
 public ShowSkills(client,target,Handle:playerHandle,Function:parentMenuFunction)
 {
     new race=GetRace(playerHandle);
-    new Handle:raceHandle=Race(race);
+    new Handle:raceHandle=GetRaceHandle(race);
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     new Handle:panel=CreatePanel();
 
@@ -325,10 +324,10 @@ public ShowSkills(client,target,Handle:playerHandle,Function:parentMenuFunction)
     decl String:buf[64];
     decl String:bufout[256];
     DrawPanelText(panel,"-----------------------------");
-    for(new x=0;x<SKILL_COUNT;x++)
+    for(new skill=0;skill<SKILL_COUNT;skill++)
     {
-        GetArrayString(stringsHandle,RACE_SKILL+(x*2),buf,sizeof(buf));
-        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(playerHandle,race,x));
+        GetArrayString(stringsHandle,RACE_SKILL+(skill*2),buf,sizeof(buf));
+        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(playerHandle,race,skill));
         DrawPanelText(panel,bufout);
     }
     DrawPanelText(panel,"-----------------------------");
@@ -357,8 +356,8 @@ public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
 ResetSkillsNow(client,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
-    for(new x=0;x<SKILL_COUNT;x++)
-        SetSkillLevel(playerHandle,race,x,0);
+    for(new skill=0;skill<SKILL_COUNT;skill++)
+        SetSkillLevel(playerHandle,race,skill,0);
 
     PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
                 COLOR_GREEN,COLOR_DEFAULT);
