@@ -5,27 +5,22 @@
  * Author(s): Anthony Iacono  
  */
 
-#define SKILL_COUNT 4
-#define SKILL_ULTIMATE 3 // Index of the Ultimate, starting at 0
-
 #define RACE_IDENT              0
 #define RACE_REQUIRED_LEVEL     1
 #define RACE_STRINGS            2
-#define RACE_SKILLS             3
+#define RACE_SKILL_FLAGS        3
+#define RACE_SKILL_STRINGS      4
+#define RACE_DATA_COUNT         5
 
 #define RACE_NAME               0
 #define RACE_SHORT_NAME         1
 #define RACE_SWITCHMESSAGE      2
 #define RACE_SWITCHMESSAGE_DEAD 3
+#define RACE_STRING_COUNT       4
 
-#define RACE_SKILL              0
-#define RACE_SKILL_DESC         1
-#define RACE_SKILL_2            2
-#define RACE_SKILL_2_DESC       3
-#define RACE_SKILL_3            4
-#define RACE_SKILL_3_DESC       5
-#define RACE_ULTIMATE           6
-#define RACE_ULTIMATE_DESC      7
+#define SKILL_NAME              0
+#define SKILL_DESC              1
+#define SKILL_DATA_COUNT        2
 
 #define GetRaceCount() GetArraySize(arrayRaces)
 
@@ -55,21 +50,30 @@ public CreateRace(const String:name[],                  const String:short[],
     PushArrayString(stringsHandle,switchmessage_dead);
 
     // Setup Race Skills.
-    new Handle:skillsHandle=CreateArray();
-    PushArrayString(skillsHandle,skill1);
-    PushArrayString(skillsHandle,skill1_desc);
-    PushArrayString(skillsHandle,skill2);
-    PushArrayString(skillsHandle,skill2_desc);
-    PushArrayString(skillsHandle,skill3);
-    PushArrayString(skillsHandle,skill3_desc);
-    PushArrayString(skillsHandle,ult);
-    PushArrayString(skillsHandle,ult_desc);
+    new Handle:skillStringsHandle=CreateArray();
+    new Handle:skillFlagsHandle=CreateArray();
+    PushArrayString(skillStringsHandle,skill1);
+    PushArrayString(skillStringsHandle,skill1_desc);
+    PushArrayCell(skillFlagsHandle, 0);         // Normal Skill
+
+    PushArrayString(skillStringsHandle,skill2);
+    PushArrayString(skillStringsHandle,skill2_desc);
+    PushArrayCell(skillFlagsHandle, 0);         // Normal Skill
+
+    PushArrayString(skillStringsHandle,skill3);
+    PushArrayString(skillStringsHandle,skill3_desc);
+    PushArrayCell(skillFlagsHandle, 0);         // Normal Skill
+
+    PushArrayString(skillStringsHandle,ult);
+    PushArrayString(skillStringsHandle,ult_desc);
+    PushArrayCell(skillFlagsHandle, 1);         // Ultimate Skill
 
     // Setup Race Data.
     PushArrayCell(newRace,SaveRaceInfo(short,name)); // ident from the Database
     PushArrayCell(newRace,required_level);
     PushArrayCell(newRace,stringsHandle);
-    PushArrayCell(newRace,skillsHandle);
+    PushArrayCell(newRace,skillFlagsHandle);
+    PushArrayCell(newRace,skillStringsHandle);
 
     // Add new Race Data into Race Array.
     return PushArrayCell(arrayRaces,newRace); // return index.
@@ -88,9 +92,11 @@ public ClearRaceArray()
     {
         new Handle:vec=GetArrayCell(arrayRaces,x);
         new Handle:stringsHandle=GetArrayCell(vec,RACE_STRINGS);
-        new Handle:skillsHandle=GetArrayCell(vec,RACE_SKILLS);
+        new Handle:skillFlagsHandle=GetArrayCell(vec,RACE_SKILL_FLAGS);
+        new Handle:skillStringsHandle=GetArrayCell(vec,RACE_SKILL_STRINGS);
         ClearArray(stringsHandle);
-        ClearArray(skillsHandle);
+        ClearArray(skillFlagsHandle);
+        ClearArray(skillStringsHandle);
         ClearArray(vec);
     }
     ClearArray(arrayRaces);
@@ -111,64 +117,77 @@ public GetRaceRequiredLevel(Handle:raceHandle)
     return GetArrayCell(raceHandle,RACE_REQUIRED_LEVEL);
 }
 
-public Handle:GetRaceStrings(Handle:raceHandle)
-{
-    return GetArrayCell(raceHandle,RACE_STRINGS);
-}
-
 public GetRaceName(Handle:raceHandle, String:name[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-    GetArrayString(stringsHandle,RACE_NAME,name,maxlength);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,RACE_NAME,name,maxlength);
 }
 
 public GetRaceShortName(Handle:raceHandle, String:name[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-    GetArrayString(stringsHandle,RACE_SHORT_NAME,name,maxlength);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,RACE_SHORT_NAME,name,maxlength);
 }
 
 public GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-    GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,message,maxlength);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,message,maxlength);
 }
 
 public GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-    GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
 }
 
 public GetSkillName(Handle:raceHandle,skill, String:name[], maxlength)
 {
-    new Handle:skillsHandle=GetArrayCell(raceHandle,RACE_SKILLS);
-    GetArrayString(skillsHandle,(skill*2),name,maxlength);
+    new Handle:skillStringsHandle=GetArrayCell(raceHandle,RACE_SKILL_STRINGS);
+    if (skillStringsHandle != INVALID_HANDLE)
+        GetArrayString(skillStringsHandle,(skill*SKILL_DATA_COUNT),name,maxlength);
 }
 
 public GetSkillDesc(Handle:raceHandle,skill, String:desc[], maxlength)
 {
-    new Handle:skillsHandle=GetArrayCell(raceHandle,RACE_SKILLS);
-    GetArrayString(skillsHandle,(skill*2)+1,desc,maxlength);
+    new Handle:skillStringsHandle=GetArrayCell(raceHandle,RACE_SKILL_STRINGS);
+    if (skillStringsHandle != INVALID_HANDLE)
+        GetArrayString(skillStringsHandle,(skill*SKILL_DATA_COUNT)+SKILL_DESC,
+                       desc,maxlength);
 }
 
 public GetSkillNameAndDesc(Handle:raceHandle,skill, String:name[], maxName,
                            String:desc[], maxDesc)
 {
-    new Handle:skillsHandle=GetArrayCell(raceHandle,RACE_SKILLS);
-    new index = (skill*2);
-    GetArrayString(skillsHandle,index,name,maxName);
-    GetArrayString(skillsHandle,index+1,desc,maxDesc);
+    new Handle:skillStringsHandle=GetArrayCell(raceHandle,RACE_SKILL_STRINGS);
+    if (skillStringsHandle != INVALID_HANDLE)
+    {
+        new index = (skill*SKILL_DATA_COUNT);
+        GetArrayString(skillStringsHandle,index,name,maxName);
+        GetArrayString(skillStringsHandle,index+SKILL_DESC,desc,maxDesc);
+    }
 }
 
 public bool:IsSkillUltimate(Handle:raceHandle,skill)
 {
-    return (skill == SKILL_ULTIMATE);
+    new Handle:skillFlagsHandle=GetArrayCell(raceHandle,RACE_SKILL_FLAGS);
+    if (skillFlagsHandle != INVALID_HANDLE)
+        return bool:GetArrayCell(skillFlagsHandle, skill);
+    else
+        return false;
 }
 
 public GetSkillCount(Handle:raceHandle)
 {
-    return SKILL_COUNT;
+    new Handle:skillFlagsHandle=GetArrayCell(raceHandle,RACE_SKILL_FLAGS);
+    if (skillFlagsHandle != INVALID_HANDLE)
+        return GetArraySize(skillFlagsHandle);
+    else
+        return -1;
 }
 
 public FindRace(const String:name[])
