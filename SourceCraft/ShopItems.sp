@@ -40,10 +40,11 @@
 #define ITEM_RING            13 // Ring of Regeneration + 1 - Given extra health over time
 #define ITEM_MOLE            14 // Mole - Respawn in enemies spawn with cloak.
 #define ITEM_MOLE_PROTECTION 15 // Mole Protection - Reduce damage from a Mole.
-#define ITEM_MOLE_REFLECTION 16 // Mole Protection - Reflects damage back to the Mole.
-//#define ITEM_GOGGLES       17 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         18 // Purchase Admin on the Server
-#define MAXITEMS             16
+#define ITEM_MOLE_REFLECTION 16 // Mole Reflection - Reflects damage back to the Mole.
+#define ITEM_MOLE_RETENTION  17 // Mole Retention - Keep Mole Protection/Reflection until used.
+//#define ITEM_GOGGLES       18 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         19 // Purchase Admin on the Server
+#define MAXITEMS             17
  
 new myWepsOffset;
 new curWepOffset;
@@ -135,6 +136,7 @@ public OnPluginReady()
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
     shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection","Reflect some damage back to the mole\nto give yourself a fighting chance.","45");
+    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention","Keep your Mole Protection or Reflection\nafter you die until it is used.","15");
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     FindUberOffsets();
@@ -394,11 +396,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                 }
             }
 
-            if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
-                SetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION],false);
+            if (!GetOwnsItem(victim_player,shopItem[ITEM_MOLE_RETENTION]))
+            {
+                if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]))
+                    SetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION],false);
 
-            if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION]))
-                SetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION],false);
+                if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION]))
+                    SetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION],false);
+            }
         }
 
         if(GetOwnsItem(victim_player,shopItem[ITEM_PERIAPT]))
@@ -460,11 +465,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                 {
                                     newhp=0;
                                     LogKill(victim_index, attacker_index, "mole_reflection", "Mole Reflection", reflect);
+                                    KillPlayer(victim_index);
                                 }
                                 else
+                                {
                                     LogDamage(victim_index, attacker_index, "mole_reflection", "Mole Reflection", reflect);
-
-                                SetEntityHealth(attacker_index,newhp);
+                                    SetEntityHealth(attacker_index,newhp);
+                                }
 
                                 if (amount < reflect)
                                 {
@@ -482,6 +489,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                         COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
                         }
                         SetEntityHealth(victim_index,new_health);
+                    }
+
+                    if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_RETENTION]))
+                    {
+                        SetOwnsItem(victim_player,shopItem[ITEM_MOLE_RETENTION],false);
+                        PrintToChat(victim_index,"%c[SourceCraft]%c You have have used your %cMole Retention%c.",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                     }
                 }
             }

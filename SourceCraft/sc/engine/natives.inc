@@ -116,9 +116,9 @@ public Native_KillPlayer(Handle:plugin,numParams)
         }
         */
         // die! die! die!!!!
+        //FakeClientCommand(client,"kill\n");
         //SetEntityHealth(client,0);
-        //ForcePlayerSuicide(client);
-        FakeClientCommand(client,"kill\n");
+        ForcePlayerSuicide(client);
         SaveHealth(client);
         return 0;
     }
