@@ -557,10 +557,10 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                     VisibilityType:type, Float:factor1, Float:factor2,
                     &RenderMode:mode, &RenderFx:fx)
 {
+    new rank = visibility;
+
     if (type == TimedInvisibility || type == TimedMeleeInvisibility || type == GraduatedEffects)
     {
-        new rank = visibility;
-
         if (!isStill)
             visibility = 255;
         else if (m_CloakTime[client] != 0.0) // Currently Cloaked
@@ -568,17 +568,20 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             if (factor2 > 0.0 && (GetGameTime() - m_CloakTime[client]) >= factor2) // factor2 == duration
             {
                 visibility = 255;
-                mode = RENDER_NORMAL;
+                if (mode == RENDER_NONE)
+                    mode = RENDER_NORMAL;
             }
             else if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
             {
                 visibility = 0;
-                mode = RENDER_TRANSTEXTURE;
+                if (mode == RENDER_NORMAL)
+                    mode = RENDER_TRANSTEXTURE;
             }
             else
             {
                 visibility = 255;
-                mode = RENDER_NORMAL;
+                if (mode == RENDER_NONE)
+                    mode = RENDER_NORMAL;
             }
         }
         else // Not Cloaked
@@ -588,18 +591,21 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                 if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
                 {
                     visibility = 0;
-                    mode = RENDER_TRANSTEXTURE;
+                    if (mode == RENDER_NORMAL)
+                        mode = RENDER_TRANSTEXTURE;
                 }
                 else
                 {
                     visibility = 255;
-                    mode = RENDER_NORMAL;
+                    if (mode == RENDER_NONE)
+                        mode = RENDER_NORMAL;
                 }
             }
             else
             {
                 visibility = 255;
-                mode = RENDER_NORMAL;
+                if (mode == RENDER_NONE)
+                    mode = RENDER_NORMAL;
             }
         }
 
@@ -610,13 +616,11 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                 fx = RENDERFX_PULSE_FAST_WIDER;
             else if (fx == RENDERFX_GLOWSHELL)
                 fx = RENDERFX_MAX;
-            return rank;
+
+            mode = RENDER_TRANSTEXTURE;
         }
-        else
-        {
+        else if (visibility == 0)
             fx = RENDERFX_NONE;
-            return visibility;
-        }
     }
     else //if (type == BasicVisibility)
     {
@@ -634,15 +638,21 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             if (isStill)
                 visibility = RoundToNearest(float(visibility) * factor2);
         }
-
-        new rank = visibility;
-        if (mode > RENDER_NORMAL)
-            rank--;
-        if (fx > RENDERFX_NONE)
-            rank -= _:fx;
-
-        return rank;
     }
+
+    if (mode == RENDER_NONE)
+        rank = 0;
+    else
+    {
+        rank = visibility;
+        if (mode != RENDER_NORMAL)
+        {
+            rank--;
+            if (fx != RENDERFX_NONE)
+                rank -= _:fx;
+        }
+    }
+    return rank;
 }
 
 SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)

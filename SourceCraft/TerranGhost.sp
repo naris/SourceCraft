@@ -255,44 +255,81 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return Plugin_Continue;
 }
 
+/*
+enum RenderFx
+{	
+	RENDERFX_NONE = 0, 
+	RENDERFX_PULSE_SLOW, 
+	RENDERFX_PULSE_FAST, 
+	RENDERFX_PULSE_SLOW_WIDE, 
+	RENDERFX_PULSE_FAST_WIDE, 
+	RENDERFX_FADE_SLOW, 
+	RENDERFX_FADE_FAST, 
+	RENDERFX_SOLID_SLOW, 
+	RENDERFX_SOLID_FAST, 	   
+	RENDERFX_STROBE_SLOW, 
+	RENDERFX_STROBE_FAST, 
+	RENDERFX_STROBE_FASTER, 
+	RENDERFX_FLICKER_SLOW, 
+	RENDERFX_FLICKER_FAST,
+	RENDERFX_NO_DISSIPATION,
+	RENDERFX_DISTORT,			**< Distort/scale/translate flicker *
+	RENDERFX_HOLOGRAM,			**< kRenderFxDistort + distance fade *
+	RENDERFX_EXPLODE,			**< Scale up really big! *
+	RENDERFX_GLOWSHELL,			**< Glowing Shell *
+	RENDERFX_CLAMP_MIN_SCALE,	**< Keep this sprite from getting very small (SPRITES only!) *
+	RENDERFX_ENV_RAIN,			**< for environmental rendermode, make rain *
+	RENDERFX_ENV_SNOW,			**<  "        "            "    , make snow *
+	RENDERFX_SPOTLIGHT,			**< TEST CODE for experimental spotlight *
+	RENDERFX_RAGDOLL,			**< HACKHACK: TEST CODE for signalling death of a ragdoll character *
+	RENDERFX_PULSE_FAST_WIDER,
+	RENDERFX_MAX
+};
+*/
 bool:Cloak(client, Handle:player, skilllevel)
 {
-    new alpha, Float:delay, Float:duration;
+    new alpha, Float:delay, Float:duration, RenderFx:fx;
     switch(skilllevel)
     {
         case 1:
         {
-            alpha=200;
+            alpha = 255;
             delay = 2.0;
             duration = 5.0;
+            fx=RENDERFX_PULSE_SLOW;
         }
         case 2:
         {
-            alpha=150;
+            alpha = 235;
             delay = 1.5;
             duration = 10.0;
+            fx=RENDERFX_PULSE_FAST;
         }
         case 3:
         {
-            alpha=100;
+            alpha = 215;
             delay = 1.0;
             duration = 15.0;
+            fx=RENDERFX_FLICKER_SLOW;
         }
         case 4:
         {
-            alpha=50;
+            alpha = 200;
             delay = 0.5;
             duration = 20.0;
+            fx=RENDERFX_HOLOGRAM;
         }
     }
 
     /* If the Player also has the Cloak of Shadows,
-     * Decrease the visibility further
+     * Decrease the delay and Increase the duration.
      */
     new cloak = GetShopItem("Cloak of Shadows");
     if (cloak != -1 && GetOwnsItem(player,cloak))
     {
-        alpha *= 0.90;
+        alpha    *= 0.90;
+        delay    *= 0.90;
+        duration *= 1.10;
     }
 
     new Float:start[3];
@@ -303,8 +340,8 @@ bool:Cloak(client, Handle:player, skilllevel)
                           0, 1, 2.0, 10.0, 0.0, color, 10, 0);
     TE_SendToAll();
 
-    SetVisibility(player, alpha, GraduatedEffects, delay, duration,
-                  RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, alpha, TimedMeleeInvisibility, delay, duration,
+                  RENDER_TRANSTEXTURE, fx);
 }
 
 Lockdown(victim_index, Handle:player)
