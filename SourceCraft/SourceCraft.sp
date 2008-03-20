@@ -188,7 +188,7 @@ public OnClientPutInServer(client)
             Call_Finish(res);
 
             if(SAVE_ENABLED)
-                m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
+                m_FirstSpawn[client]=LoadPlayerData(client,playerHandle,false);
             else
                 m_FirstSpawn[client]=2;
 

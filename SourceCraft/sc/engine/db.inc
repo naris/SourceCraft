@@ -244,7 +244,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
     return race_ident;
 }
 
-public LoadPlayerData(client,Handle:playerHandle)
+public LoadPlayerData(client,Handle:playerHandle, bool:threaded)
 {
     new bool:fetch=false;
     if(DBIDB)
@@ -280,16 +280,37 @@ public LoadPlayerData(client,Handle:playerHandle)
 
                     // Load the rest of the Player data using threads.
                     CloseHandle(query);
-                    SQL_UnlockDatabase(DBIDB);
 
                     Format(SQLString,sizeof(SQLString), "SELECT race_ident, xp, level FROM sc_player_races WHERE player_ident = %d", player_ident);
 
-                    new Handle:dataPack = CreateDataPack();
-                    WritePackCell(dataPack, client);
-                    WritePackCell(dataPack, _:playerHandle);
-                    WritePackCell(dataPack, player_ident);
-                    ResetPack(dataPack);
-                    SQL_TQuery(DBIDB, SQL_LoadRaces, SQLString, dataPack);
+                    if (threaded)
+                    {
+                        SQL_UnlockDatabase(DBIDB);
+
+                        new Handle:dataPack = CreateDataPack();
+                        WritePackCell(dataPack, client);
+                        WritePackCell(dataPack, _:playerHandle);
+                        WritePackCell(dataPack, player_ident);
+                        ResetPack(dataPack);
+                        SQL_TQuery(DBIDB, SQL_LoadRaces, SQLString, dataPack);
+                    }
+                    else
+                    {
+                        new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
+                        if(raceQuery)
+                        {
+                            if (SQL_HasResultSet(raceQuery))
+                                ReadPlayerRaces(raceQuery, client, playerHandle, player_ident, threaded);
+                        }
+                        else
+                        {
+                            decl String:error[256] = "";
+                            SQL_GetError(DBIDB, error, sizeof(error));
+                            LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
+                                    client, steamid, error, SQLString);
+                        }
+                        CloseHandle(raceQuery);
+                    }
                 }
                 else
                 {
@@ -302,7 +323,7 @@ public LoadPlayerData(client,Handle:playerHandle)
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
-                         client, steamid, error, SQLString);
+                        client, steamid, error, SQLString);
 
                 SQL_UnlockDatabase(DBIDB);
             }
@@ -329,26 +350,49 @@ public SQL_LoadRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
         if (hndl == INVALID_HANDLE || error[0] != '\0')
             ThrowError("Unable to query %N's race data: %s", client, error);
         else if (SQL_HasResultSet(hndl))
+            ReadPlayerRaces(hndl, client, playerHandle, player_ident, true);
+    }
+}
+
+ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:threaded)
+{
+    decl String:SQLString[512] = "";
+
+    while (SQL_FetchRow(hndl))
+    {
+        new race_ident = SQL_FetchInt(hndl,0);
+        new raceId = FindRaceForIdent(race_ident);
+
+        SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
+        SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
+
+        Format(SQLString,sizeof(SQLString), "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
+
+        if (threaded)
         {
-            decl String:SQLString[512] = "";
-
-            while (SQL_FetchRow(hndl))
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, client);
+            WritePackCell(dataPack, _:playerHandle);
+            WritePackCell(dataPack, raceId);
+            ResetPack(dataPack);
+            SQL_TQuery(DBIDB, SQL_LoadSkills, SQLString, dataPack);
+        }
+        else
+        {
+            new Handle:skillQuery=SQL_Query(DBIDB,SQLString);
+            if(skillQuery)
             {
-                new race_ident = SQL_FetchInt(hndl,0);
-                new raceId = FindRaceForIdent(race_ident);
-
-                SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
-                SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
-
-                Format(SQLString,sizeof(SQLString), "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
-
-                new Handle:dataPack = CreateDataPack();
-                WritePackCell(dataPack, client);
-                WritePackCell(dataPack, _:playerHandle);
-                WritePackCell(dataPack, raceId);
-                ResetPack(dataPack);
-                SQL_TQuery(DBIDB, SQL_LoadSkills, SQLString, dataPack);
+                if (SQL_HasResultSet(skillQuery))
+                    ReadPlayerRaces(skillQuery, client, playerHandle, player_ident, threaded);
             }
+            else
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("Unable to query %N's player data: %s\nSQL:%s",
+                         client, error, SQLString);
+            }
+            CloseHandle(skillQuery);
         }
     }
 }
@@ -367,14 +411,15 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
         if (hndl == INVALID_HANDLE || error[0] != '\0')
             ThrowError("Unable to query %N's skill data: %s", client, error);
         else if (SQL_HasResultSet(hndl))
-        {
-            while (SQL_FetchRow(hndl))
-            {
-                SetSkillLevel(playerHandle,raceId,
-                              SQL_FetchInt(hndl,0),
-                              SQL_FetchInt(hndl,1));
-            }
-        }
+            ReadPlayerSkills(hndl, client, playerHandle, raceId, true);
+    }
+}
+
+ReadPlayerSkills(Handle:hndl, client, Handle:playerHandle, raceId, bool:threaded)
+{
+    while (SQL_FetchRow(hndl))
+    {
+        SetSkillLevel(playerHandle,raceId, SQL_FetchInt(hndl,0), SQL_FetchInt(hndl,1));
     }
 }
 
