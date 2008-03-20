@@ -35,9 +35,6 @@ new bool:m_JobsBank[MAXPLAYERS+1];
 new bool:m_TeleportOnSpawn[MAXPLAYERS+1];
 new Float:m_SpawnLoc[MAXPLAYERS+1][3];
 
-new Handle:m_Currency   = INVALID_HANDLE; 
-new Handle:m_Currencies = INVALID_HANDLE; 
-
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - UAW",
@@ -58,17 +55,6 @@ public OnPluginStart()
     GetGameType();
     HookEvent("player_spawn",PlayerSpawnEvent);
     CreateTimer(10.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
-}
-
-public OnConfigsExecuted()
-{
-    m_Currency = FindConVar("sc_currency");
-    if (m_Currency == INVALID_HANDLE)
-        SetFailState("Couldn't find sc_currency variable");
-
-    m_Currencies = FindConVar("sc_currencies");
-    if (m_Currencies == INVALID_HANDLE)
-        SetFailState("Couldn't find sc_currencies variable");
 }
 
 public OnPluginReady()
@@ -282,11 +268,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             {
                 // No monetary limit on UAW Buyout offers!
                 new amount = GetRandomInt(1,100);
-                decl String:currencies[64];
-                GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                 SetCredits(victim_player, GetCredits(victim_player)+amount);
-                PrintToChat(victim_index,"%c[SourceCraft]%c Due to %cSeniority%c, you have recieved %d %s from a %cBuyout%c offer!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(victim_index,"%c[SourceCraft]%c Due to %cSeniority%c, you have recieved %d crystals from a %cBuyout%c offer!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
             }
         }
     }
@@ -518,11 +502,9 @@ public Action:Negotiations(Handle:timer)
                                 case 17: // Forced Buyout
                                 {
                                     new amount = GetRandomInt(100,1000);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                                     SetCredits(player, GetCredits(player)+amount);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d %s!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount,currencies);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d crystals!",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
 
                                     new Float:location[3];
                                     GetClientAbsOrigin(client,location);
@@ -549,11 +531,9 @@ public Action:Negotiations(Handle:timer)
                                 {
                                     new balance = GetCredits(player);
                                     new amount = GetRandomInt(1,balance);
-                                    decl String:currencies[64];
-                                    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
                                     SetCredits(player, amount-balance);
-                                    PrintToChat(client,"%c[SourceCraft]%c You must pay %d %s for %cUnion Dues%c!",
-                                                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,COLOR_TEAM,COLOR_DEFAULT);
+                                    PrintToChat(client,"%c[SourceCraft]%c You must pay %d crystals for %cUnion Dues%c!",
+                                                COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                                 case 20: // OSHA
                                 {
@@ -580,9 +560,7 @@ public Action:Negotiations(Handle:timer)
 
 AddCredits(client, Handle:player, amount, const String:reason[])
 {
-    decl String:currencies[64];
-    GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
     SetCredits(player, GetCredits(player)+amount);
-    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d %s from %c%s%c!",
-                COLOR_GREEN,COLOR_DEFAULT,amount,currencies,reason,COLOR_TEAM,COLOR_DEFAULT);
+    PrintToChat(client,"%c[SourceCraft]%c You have recieved %d crystals from %c%s%c!",
+                COLOR_GREEN,COLOR_DEFAULT,amount,reason,COLOR_TEAM,COLOR_DEFAULT);
 }
