@@ -166,7 +166,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             if (level)
             {
                 EmitSoundToAll(allahWav,client);
-                AuthTimer(GetSoundDuration(allahWav), client, MadBomber);
+                AuthTimer(1.0, client, MadBomber);
             }
         }
     }
@@ -267,7 +267,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
         if (suicide_skill)
         {
             EmitSoundToAll(kaboomWav,victim_index);
-            AuthTimer(GetSoundDuration(kaboomWav), victim_index, Kaboom);
+            AuthTimer(1.0, victim_index, Kaboom);
         }
     }
     return Plugin_Continue;
