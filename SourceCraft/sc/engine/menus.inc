@@ -291,7 +291,7 @@ public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races or skills to choose!",
-                COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)

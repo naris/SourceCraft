@@ -50,7 +50,7 @@ public CreateRace(const String:name[],                  const String:short[],
     PushArrayString(stringsHandle,switchmessage_dead);
 
     // Setup Race Skills.
-    new Handle:skillStringsHandle=CreateArray();
+    new Handle:skillStringsHandle=CreateArray(ByteCountToCells(192));
     new Handle:skillFlagsHandle=CreateArray();
     PushArrayString(skillStringsHandle,skill1);
     PushArrayString(skillStringsHandle,skill1_desc);
