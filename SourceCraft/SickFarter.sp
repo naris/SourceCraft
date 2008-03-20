@@ -32,8 +32,6 @@ new raceID; // The ID we are assigned to
 new bool:m_AllowFart[MAXPLAYERS+1];
 //new Float:gFartLoc[MAXPLAYERS+1][3];
 
-new Handle:m_Currency   = INVALID_HANDLE; 
-new Handle:m_Currencies = INVALID_HANDLE; 
 new Handle:cvarFartCooldown = INVALID_HANDLE;
 
 new g_haloSprite;
@@ -50,17 +48,6 @@ public Plugin:myinfo =
     version = "1.0.0.0",
     url = "http://www.jigglysfunhouse.net/"
 };
-
-public OnConfigsExecuted()
-{
-    m_Currency = FindConVar("sc_currency");
-    if (m_Currency == INVALID_HANDLE)
-        SetFailState("Couldn't find sc_currency variable");
-
-    m_Currencies = FindConVar("sc_currencies");
-    if (m_Currencies == INVALID_HANDLE)
-        SetFailState("Couldn't find sc_currencies variable");
-}
 
 public OnPluginStart()
 {
@@ -273,15 +260,16 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
                                   0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
                 TE_SendToAll();
 
-                decl String:currencies[64];
-                GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-
-                LogMessage("%N stole %d %s from %N", index, amount, currencies, victim_index);
+                LogMessage("%N stole %d crystal(s) from %N", index, amount, victim_index);
 
                 PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
-                            COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                            COLOR_GREEN,COLOR_DEFAULT,amount,
+                            (amount == 1) ? "crystal" : "crystals",
+                            victim_index);
+
                 PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
-                            COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
+                            COLOR_GREEN,COLOR_DEFAULT,index,amount,
+                            (amount == 1) ? "crystal" : "crystals");
             }
         }
     }

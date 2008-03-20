@@ -18,8 +18,6 @@ public InitCVars()
     m_SaveXPConVar=CreateConVar("sc_savexp","1");
     m_MinimumUltimateLevel=CreateConVar("sc_minimumultimatelevel","8");
     m_MaxCredits=CreateConVar("sc_maxcredits","100");
-    m_Currency=CreateConVar("sc_currency","crystal", "Name of the currency");
-    m_Currencies=CreateConVar("sc_currencies","crystals", "Name of the currency in plural form");
 
     RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_SOURCECRAFT,"Set a player's XP");
     RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_SOURCECRAFT,"Give a player XP");
@@ -388,9 +386,6 @@ public Action:CMD_SetCredits(client,args)
         if(credits>maxCredits)
             credits=maxCredits;
             
-        decl String:currencies[64];
-        GetConVarString(m_Currencies, currencies, 63);
-
         new Handle:matchHandle=CreateArray();
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
@@ -402,9 +397,9 @@ public Action:CMD_SetCredits(client,args)
             if (playerHandle != INVALID_HANDLE)
             {
                 SetCredits(playerHandle,credits);
-                PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" %s to %d.",name,currencies,credits);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your %s to %d.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,currencies,credits);
+                PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" crystals to %d.",name,credits);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your crystals to %d.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -432,9 +427,6 @@ public Action:CMD_GiveCredits(client,args)
         if(credits<0)
             credits=0;
             
-        decl String:currencies[64];
-        GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
-
         new Handle:matchHandle=CreateArray();
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
@@ -452,9 +444,9 @@ public Action:CMD_GiveCredits(client,args)
                 if(newcreds>maxCredits)
                     newcreds=maxCredits;
                 SetCredits(playerHandle,newcreds);
-                PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" %d %s.",name,credits,currencies);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" give you %d %s.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
+                PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" %d crystals.",name,credits);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" give you %d crystals.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -482,9 +474,6 @@ public Action:CMD_RemoveCredits(client,args)
         if(credits<0)
             credits=0;
             
-        decl String:currencies[64];
-        GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, 63);
-
         new Handle:matchHandle=CreateArray();
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
@@ -502,9 +491,9 @@ public Action:CMD_RemoveCredits(client,args)
                 if(newcreds>maxCredits)
                     newcreds=maxCredits;
                 SetCredits(playerHandle,newcreds);
-                PrintToConsole(client,"[SourceCraft] You just removed %d %s from player \"%s\".",credits,currencies,name);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d %s from you.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits,currencies);
+                PrintToConsole(client,"[SourceCraft] You just removed %d crystals from player \"%s\".",credits,name);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d crystals from you.",
+                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)

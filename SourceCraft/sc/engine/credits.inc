@@ -20,10 +20,9 @@
 public ShowCredits(client,Handle:playerHandle)
 {
     new credits=GetCredits(playerHandle);
-    decl String:currencies[64];
-    GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
     PrintToChat(client,"%c[SourceCraft] %cYou have %d %s.",
-                COLOR_GREEN,COLOR_DEFAULT,credits, currencies);
+                COLOR_GREEN,COLOR_DEFAULT,credits,
+                (credits == 1) ? "crystal" : "crystals");
 }
 
 public GiveKillCredits(client,Handle:playerHandle)
@@ -84,16 +83,14 @@ public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
         new curcredits=GetCredits(playerHandle);
         new newcredits=curcredits+amount;
 
-        decl String:currencies[64];
-        GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-
         new maxCredits = GetConVarInt(m_MaxCredits);
         if(newcredits <= maxCredits || maxCredits == 0)
         {
             SetCredits(playerHandle,newcredits);
-            LogMessage("%N gained %d %s for %s", client, amount, currencies, reason);
+            LogMessage("%N gained %d crystals(s) for %s", client, amount, reason);
             PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
-                    COLOR_GREEN,COLOR_DEFAULT,amount, currencies, reason);
+                        COLOR_GREEN,COLOR_DEFAULT,amount,
+                        (amount == 1) ? "crystal" : "crystals", reason);
         }
         else
         {
@@ -101,9 +98,10 @@ public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
             if (amt > 0)
             {
                 SetCredits(playerHandle,maxCredits);
-                LogMessage("%N gained %d %s for %s", client, amt, currencies, reason);
-                PrintToChat(client, "%c[SourceCraft] %cThe max amount of %s is %d, so you have gained %d %s for %s.",
-                        COLOR_GREEN,COLOR_DEFAULT,currencies,maxCredits,amt,currencies, reason);
+                LogMessage("%N gained %d crystal(s) for %s", client, amt, reason);
+                PrintToChat(client, "%c[SourceCraft] %cThe max amount of crystals is %d, so you have gained %d %s for %s.",
+                        COLOR_GREEN,COLOR_DEFAULT,maxCredits,amt,
+                        (amt == 1) ? "crystal" : "crystals", reason);
             }
         }
     }

@@ -392,16 +392,14 @@ public ShopMenu(client, Handle:playerHandle, bool:shopmenu, Function:parentMenuF
     if (shopItemCount >= 1)
     {
         new credits=GetCredits(playerHandle);
-        decl String:currencies[64];
-        GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
         new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
         SetMenuExitButton(shopMenu,true);
         SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
 
         if (shopmenu)
-            SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,currencies);
+            SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
         else
-            SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,currencies);
+            SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
 
         new Handle:itemHandle;
         decl String:itemname[64];
@@ -421,7 +419,7 @@ public ShopMenu(client, Handle:playerHandle, bool:shopmenu, Function:parentMenuF
                 if (shopmenu)
                 {
                     GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-                    Format(linestr,sizeof(linestr),"%s - %s %s",itemname,cost,currencies);
+                    Format(linestr,sizeof(linestr),"%s - %s crystals",itemname,cost);
                     AddMenuItem(shopMenu,itembuf,linestr);
                 }
                 else
@@ -486,8 +484,6 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 public ShopMenu_Item(client,Handle:playerHandle,item)
 {
     new credits=GetCredits(playerHandle);
-    decl String:currencies[64];
-    GetConVarString((credits == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
     new Handle:shopMenu_Item=CreateMenu(ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
     SetMenuExitBackButton(shopMenu_Item,true);
@@ -500,9 +496,9 @@ public ShopMenu_Item(client,Handle:playerHandle,item)
     Format(desc,sizeof(desc),"Description: %s",desc);
     decl String:cost[32];
     GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-    Format(cost,sizeof(cost),"Cost: %s %s",cost, currencies);
+    Format(cost,sizeof(cost),"Cost: %s crystals",cost);
     SetMenuTitle(shopMenu_Item,"[SourceCraft] Shop Item - %s - You have %d %s\n%s\n%s",
-                 itemname,credits,currencies,desc,cost);
+                 itemname,credits,(credits == 1) ? "crystal" : "crystals",desc,cost);
     decl String:buf[11];
     Format(buf,sizeof(buf),"%d",item);
 
@@ -694,17 +690,13 @@ public Admin_Player(client,target)
     SetMenuTitle(adminMenu_Player,"[SourceCraft] Administration options for %N.", target);
     decl String:buf[11];
     Format(buf,sizeof(buf),"%d",target);
-    decl String:currencies[64];
-    GetConVarString(m_Currencies, currencies, sizeof(currencies));
-    decl String:changeCredits[128];
-    Format(changeCredits,sizeof(changeCredits),"Increase/Decrease %s", currencies);
     AddMenuItem(adminMenu_Player,buf,"View detailed information");
     AddMenuItem(adminMenu_Player,buf,"Reset skills", race_style);
     AddMenuItem(adminMenu_Player,buf,"Set race", race_style);
     AddMenuItem(adminMenu_Player,buf,"Give shop item", shop_style);
     AddMenuItem(adminMenu_Player,buf,"Increase/Decrease XP", race_style);
     AddMenuItem(adminMenu_Player,buf,"Increase/Decrease Level", race_style);
-    AddMenuItem(adminMenu_Player,buf,changeCredits);
+    AddMenuItem(adminMenu_Player,buf,"Increase/Decrease Crystals");
     DisplayMenu(adminMenu_Player,client,MENU_TIME_FOREVER);
 }
 
@@ -800,9 +792,6 @@ public Admin_PlayerInfo(client,target)
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
-        decl String:currency[64];
-        GetConVarString(m_Currencies, currency, sizeof(currency));
-
         new Handle:playerInfo=CreateMenu(Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
         SetMenuExitBackButton(playerInfo,true);
@@ -815,8 +804,8 @@ public Admin_PlayerInfo(client,target)
         decl String:raceName[64];
         GetRaceName(GetRaceHandle(race), raceName, sizeof(raceName));
 
-        SetMenuTitle(playerInfo,"[SourceCraft] Info for %N.\nRace: %s\n%s: %d\nXP: %d\nLevel: %d",
-                     target,raceName,currency,credits,xp,level);
+        SetMenuTitle(playerInfo,"[SourceCraft] Info for %N.\nRace: %s\nCrystals: %d\nXP: %d\nLevel: %d",
+                     target,raceName,credits,xp,level);
 
         decl String:buf[11];
         Format(buf,sizeof(buf),"%d",target);
@@ -1285,29 +1274,12 @@ public Admin_Credits(client,target)
         decl String:buf[11];
         Format(buf,sizeof(buf),"%d",target);
 
-        decl String:display[64];
-        decl String:currency[64];
-        decl String:currencies[64];
-        GetConVarString(m_Currency, currency, sizeof(currency));
-        GetConVarString(m_Currencies, currencies, sizeof(currencies));
-
-        Format(display,sizeof(display),"Give 1 %s", currency);
-        AddMenuItem(menu,buf,display);
-
-        Format(display,sizeof(display),"Give 5 %s", currencies);
-        AddMenuItem(menu,buf,display);
-
-        Format(display,sizeof(display),"Give 10 %s", currencies);
-        AddMenuItem(menu,buf,display);
-
-        Format(display,sizeof(display),"Remove 1 %s", currency);
-        AddMenuItem(menu,buf,display);
-
-        Format(display,sizeof(display),"Remove 5 %s", currencies);
-        AddMenuItem(menu,buf,display);
-
-        Format(display,sizeof(display),"Remove 10 %s", currencies);
-        AddMenuItem(menu,buf,display);
+        AddMenuItem(menu,buf,"Give 1 crystal");
+        AddMenuItem(menu,buf,"Give 5 crystals");
+        AddMenuItem(menu,buf,"Give 10 crystals");
+        AddMenuItem(menu,buf,"Remove 1 crystal");
+        AddMenuItem(menu,buf,"Remove 5 crystals");
+        AddMenuItem(menu,buf,"Remove 10 crystals");
 
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
@@ -1333,8 +1305,6 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
         new Handle:targetHandle=GetPlayerHandle(target);
         if (targetHandle != INVALID_HANDLE)
         {
-            decl String:currency[64];
-            GetConVarString(m_Currency, currency, sizeof(currency));
             if(selection<3) // Give credits
             {
                 new credadd;
@@ -1353,11 +1323,11 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
                     newcred=maxCredits;
                 SetCredits(targetHandle,newcred);
 
-                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%N\" %d %s(s).",
-                            COLOR_GREEN,COLOR_DEFAULT,target,credadd,currency);
+                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%N\" %d crystal(s).",
+                            COLOR_GREEN,COLOR_DEFAULT,target,credadd);
 
-                PrintToChat(target, "%c[SourceCraft] %cYou recieved %d %s(s) from admin \"%N\".",
-                            COLOR_GREEN,COLOR_DEFAULT,credadd,currency,client);
+                PrintToChat(target, "%c[SourceCraft] %cYou recieved %d crystal(s) from admin \"%N\".",
+                            COLOR_GREEN,COLOR_DEFAULT,credadd,client);
 
                 Admin_Credits(client,target);
             }
@@ -1378,11 +1348,11 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
                     newcred=0;
                 SetCredits(targetHandle,newcred);
 
-                PrintToChat(client, "%c[SourceCraft] %cYou removed %d %s(s) from player \"%N\".",
-                            COLOR_GREEN,COLOR_DEFAULT,credrem,currency,target);
+                PrintToChat(client, "%c[SourceCraft] %cYou removed %d crystal(s) from player \"%N\".",
+                            COLOR_GREEN,COLOR_DEFAULT,credrem,target);
 
-                PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" removed %d %s(s) from you.",
-                            COLOR_GREEN,COLOR_DEFAULT,client,credrem,currency);
+                PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" removed %d crystal(s) from you.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,credrem);
 
                 Admin_Credits(client,target);
             }

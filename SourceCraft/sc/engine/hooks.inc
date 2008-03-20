@@ -39,11 +39,6 @@ public Action:SayCommand(client,args)
     new Handle:playerHandle=GetPlayerHandle(client);
     if (playerHandle != INVALID_HANDLE)
     {
-        decl String:currencies[64];
-        GetConVarString(m_Currencies, currencies, sizeof(currencies));
-        decl String:showCurrency[64];
-        Format(showCurrency,sizeof(showCurrency),"show%s",currencies);
-
         if(CommandCheck(arg1,"showxp",63))
         {
             ShowXP(client,playerHandle);
@@ -85,7 +80,8 @@ public Action:SayCommand(client,args)
             ShowSkills(client,client,playerHandle,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"showcredits",63)|| CommandCheck(arg1,showCurrency,63))
+        else if(CommandCheck(arg1,"showcredits",63) || 
+                CommandCheck(arg1,"chowcrystals",63))
         {
             ShowCredits(client,playerHandle);
             return Plugin_Handled;

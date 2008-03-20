@@ -43,20 +43,8 @@ public InitHelpCommands()
     NewHelpCommand("say spendskills","Spend any unused skill points you have.");
     NewHelpCommand("say showskills","Show which skill levels you currently have.");
     NewHelpCommand("say shopmenu","Bring up the shop menu to buy items.");
-
-    decl String:currencies[64];
-    GetConVarString(m_Currencies, currencies, 63);
-    if (!StrEqual(currencies, "credits"))
-    {
-        decl String:name[64];
-        Format(name,63,"say show%s", currencies);
-        decl String:desc[128];
-        Format(desc,127,"Show your current %s count.", currencies,127);
-        NewHelpCommand(name,desc);
-    }
-    else
-        NewHelpCommand("say showcredits","Show your current shop credit count.");
-
+    NewHelpCommand("say showcrystals","Show your current shop crystal count.");
+    NewHelpCommand("say showcredits","Show your current shop crystal count.");
     NewHelpCommand("+ultimate","Use an ultimate that required a bind.");
     NewHelpCommand("sc_admin","Bring up the admin menu to modify player info.");
 }
@@ -127,7 +115,7 @@ public HelpMenu_Command(client,command)
     decl String:desc[300];
     GetArrayString(helpCommandHandle,1,desc,299);
     Format(desc,299,"Description: %s",desc);
-    SetMenuTitle(helpMenu_Command,"[SourceCraft] War3Source Command - %s\n%s",name,desc);
+    SetMenuTitle(helpMenu_Command,"SourceCraft Command - %s\n%s",name,desc);
     AddMenuItem(helpMenu_Command,"backtohelp","Back to help commands");
     DisplayMenu(helpMenu_Command,client,MENU_TIME_FOREVER);
 }

@@ -70,9 +70,6 @@ new Handle:hWeaponDrop    = INVALID_HANDLE;
 new Handle:hGiveAmmo      = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
-new Handle:m_Currency   = INVALID_HANDLE; 
-new Handle:m_Currencies = INVALID_HANDLE; 
-
 new shopItem[MAXITEMS+1];
 
 new String:bootsWav[] = "sourcecraft/bootospeed.mp3";
@@ -85,17 +82,6 @@ public Plugin:myinfo =
     version = "1.0.0.0",
     url = "http://pimpinjuice.net/"
 };
-
-public OnConfigsExecuted()
-{
-    m_Currency = FindConVar("sc_currency");
-    if (m_Currency == INVALID_HANDLE)
-        SetFailState("Couldn't find sc_currency variable");
-
-    m_Currencies = FindConVar("sc_currencies");
-    if (m_Currencies == INVALID_HANDLE)
-        SetFailState("Couldn't find sc_currencies variable");
-}
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -880,15 +866,16 @@ LootCorpse(Handle:event,victim_index, Handle:victim_player, index, Handle:player
             SetCredits(victim_player,victim_cash-amount);
             SetCredits(player,cash+amount);
 
-            decl String:currencies[64];
-            GetConVarString((amount == 1) ? m_Currency : m_Currencies, currencies, sizeof(currencies));
-
-            LogMessage("%N stole %d %s from %N", index, amount, currencies, victim_index);
+            LogMessage("%N stole %d crystals(s) from %N", index, amount, victim_index);
 
             PrintToChat(index,"%c[SourceCraft]%c You have looted %d %s from %N!",
-                        COLOR_GREEN,COLOR_DEFAULT,amount,currencies,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                        COLOR_GREEN,COLOR_DEFAULT,amount,
+                        (amount == 1) ? "crystal" : "crystals",
+                        victim_index,COLOR_TEAM,COLOR_DEFAULT);
+
             PrintToChat(victim_index,"%c[SourceCraft]%c %N looted %d %s from your corpse!",
-                        COLOR_GREEN,COLOR_DEFAULT,index,amount,currencies);
+                        COLOR_GREEN,COLOR_DEFAULT,index,amount,
+                        (amount == 1) ? "crystal" : "crystals");
         }
     }
 }
