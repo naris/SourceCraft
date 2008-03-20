@@ -310,6 +310,8 @@ public LoadPlayerData(client,Handle:playerHandle, bool:threaded)
                                     client, steamid, error, SQLString);
                         }
                         CloseHandle(raceQuery);
+
+                        SQL_UnlockDatabase(DBIDB);
                     }
                 }
                 else
@@ -383,7 +385,7 @@ ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:thr
             if(skillQuery)
             {
                 if (SQL_HasResultSet(skillQuery))
-                    ReadPlayerRaces(skillQuery, client, playerHandle, player_ident, threaded);
+                    ReadPlayerSkills(skillQuery, playerHandle, raceId);
             }
             else
             {
@@ -411,11 +413,11 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
         if (hndl == INVALID_HANDLE || error[0] != '\0')
             ThrowError("Unable to query %N's skill data: %s", client, error);
         else if (SQL_HasResultSet(hndl))
-            ReadPlayerSkills(hndl, client, playerHandle, raceId, true);
+            ReadPlayerSkills(hndl, playerHandle, raceId);
     }
 }
 
-ReadPlayerSkills(Handle:hndl, client, Handle:playerHandle, raceId, bool:threaded)
+ReadPlayerSkills(Handle:hndl, Handle:playerHandle, raceId)
 {
     while (SQL_FetchRow(hndl))
     {
