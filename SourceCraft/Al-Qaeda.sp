@@ -392,8 +392,8 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             new Handle:check_player=GetPlayerHandle(index);
             if (check_player != INVALID_HANDLE)
             {
-                if (!ondeath && !GetImmunity(check_player,Immunity_Ultimates) &&
-                                !GetImmunity(check_player,Immunity_Explosion))
+                if (!GetImmunity(check_player,Immunity_Ultimates) &&
+                    !GetImmunity(check_player,Immunity_Explosion))
                 {
                     new Float:check_location[3];
                     GetClientAbsOrigin(index,check_location);
@@ -412,17 +412,13 @@ public Bomber(client,Handle:player,level,bool:ondeath)
                                 SetXP(player,raceID,newxp);
 
                                 if (ondeath)
-                                {
                                     LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                    SetEntityHealth(index,newhealth);
-                                }
                                 else
-                                {
                                     LogKill(client, index, "mad_bomber", "Mad Bomber", hp, addxp);
-                                    KillPlayer(index);
-                                }
-                                LogMessage("[AlQaeda::Bomber] %N was killed by %N's bomb (%d hp)",
-                                           index, client, hp);
+
+                                KillPlayer(index);
+                                LogMessage("[AlQaeda::Bomber] %N was killed by %N's %s (%d hp)",
+                                           index, client, ondeath ? "Suicide Bomb" : "Mad Bomber", hp);
                             }
                             else
                             {
@@ -432,8 +428,8 @@ public Bomber(client,Handle:player,level,bool:ondeath)
                                     LogDamage(client, index, "mad_bomber", "Mad Bomber", hp);
 
                                 SetEntityHealth(index,newhealth);
-                                LogMessage("[AlQaeda::Bomber] %N was hurt by %N's bomb for %d hp",
-                                           index, client, hp);
+                                LogMessage("[AlQaeda::Bomber] %N was hurt by %N's %s for %d hp",
+                                           index, client, ondeath ? "Suicide Bomb" : "Mad Bomber", hp);
                             }
                         }
                         else
