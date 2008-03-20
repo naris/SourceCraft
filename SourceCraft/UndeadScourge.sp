@@ -422,7 +422,7 @@ SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
                     GetClientAbsOrigin(index,check_location);
 
                     new hp=PowerOfRange(client_location,radius,check_location,300);
-                    if (hp)
+                    if (hp > 0)
                     {
                         if (TraceTarget(client, index, client_location, check_location))
                         {
@@ -436,16 +436,31 @@ SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
 
                                 LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
                                 KillPlayer(index,client,"suicide_bomb");
+                                LogMessage("[Undead::SuicideBomber] %N was killed by %N's bomb (%d hp)",
+                                           index, client, hp);
                             }
                             else
                             {
                                 LogDamage(client, index, "suicide_bomb", "Suicide Bomb", hp);
                                 HurtPlayer(index,hp,client,"suicide_bomb");
+                                LogMessage("[Undead::SuicideBomber] %N was hurt by %N's bomb for %d hp",
+                                           index, client, hp);
                             }
                         }
+                        else
+                            LogMessage("[Undead::SuicideBomber] %N failed trace to %N's bomb", index, client);
                     }
+                    else
+                        LogMessage("[Undead::SuicideBomber] %N is would take no damage (%d) from %N's bomb",
+                                   index, hp, client);
                 }
+                else
+                    LogMessage("[Undead::SuicideBomber] %N is immune to %N's bomb", index, client);
             }
+            else
+                LogMessage("[Undead::SuicideBomber] %N has an INVALID HANDLE!", index);
         }
+        else
+            LogMessage("[Undead::SuicideBomber] %N is not a valid target for %N's bomb", index, client);
     }
 }

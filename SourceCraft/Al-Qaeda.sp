@@ -421,6 +421,8 @@ public Bomber(client,Handle:player,level,bool:ondeath)
                                     LogKill(client, index, "mad_bomber", "Mad Bomber", hp, addxp);
                                     KillPlayer(index);
                                 }
+                                LogMessage("[AlQaeda::Bomber] %N was killed by %N's bomb (%d hp)",
+                                           index, client, hp);
                             }
                             else
                             {
@@ -430,12 +432,25 @@ public Bomber(client,Handle:player,level,bool:ondeath)
                                     LogDamage(client, index, "mad_bomber", "Mad Bomber", hp);
 
                                 SetEntityHealth(index,newhealth);
+                                LogMessage("[AlQaeda::Bomber] %N was hurt by %N's bomb for %d hp",
+                                           index, client, hp);
                             }
                         }
+                        else
+                            LogMessage("[AlQaeda::Bomber] %N failed trace to %N's bomb", index, client);
                     }
+                    else
+                        LogMessage("[AlQaeda::Bomber] %N is would take no damage (%d) from %N's bomb",
+                                   index, hp, client);
                 }
+                else
+                    LogMessage("[AlQaeda::Bomber] %N is immune to %N's bomb", index, client);
             }
+            else
+                LogMessage("[AlQaeda::Bomber] %N has an INVALID HANDLE!", index);
         }
+        else
+            LogMessage("[AlQaeda::Bomber] %N is not a valid target for %N's bomb", index, client);
     }
 }
 
