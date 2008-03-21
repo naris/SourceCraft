@@ -162,9 +162,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new skill_cloak=GetSkillLevel(player,race,0);
-            if (skill_cloak)
-                Cloak(client, player, skill_cloak);
+            new upgrade_cloak=GetUpgradeLevel(player,race,0);
+            if (upgrade_cloak)
+                Cloak(client, player, upgrade_cloak);
         }
     }
 }
@@ -174,7 +174,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && m_AllowNuclearLaunch[client] &&
         IsPlayerAlive(client))
     {
-        new ult_level=GetSkillLevel(player,race,3);
+        new ult_level=GetUpgradeLevel(player,race,3);
         if(ult_level)
         {
             if (pressed)
@@ -185,12 +185,12 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
 {
-    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
+    if (race == raceID && newupgradelevel > 0 && GetRace(player) == raceID)
     {
-        if (skill==0)
-            Cloak(client, player, newskilllevel);
+        if (upgrade==0)
+            Cloak(client, player, newupgradelevel);
     }
 }
 
@@ -207,9 +207,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_cloak=GetSkillLevel(player,race,0);
-                if (skill_cloak)
-                    Cloak(client, player, skill_cloak);
+                new upgrade_cloak=GetUpgradeLevel(player,race,0);
+                if (upgrade_cloak)
+                    Cloak(client, player, upgrade_cloak);
             }
         }
     }
@@ -286,10 +286,10 @@ enum RenderFx
 	RENDERFX_MAX
 };
 */
-bool:Cloak(client, Handle:player, skilllevel)
+bool:Cloak(client, Handle:player, upgradelevel)
 {
     new alpha, Float:delay, Float:duration, RenderFx:fx;
-    switch(skilllevel)
+    switch(upgradelevel)
     {
         case 1:
         {
@@ -346,11 +346,11 @@ bool:Cloak(client, Handle:player, skilllevel)
 
 Lockdown(victim_index, Handle:player)
 {
-    new skill_lockdown=GetSkillLevel(player,raceID,1);
-    if (skill_lockdown)
+    new upgrade_lockdown=GetUpgradeLevel(player,raceID,1);
+    if (upgrade_lockdown)
     {
         new percent;
-        switch(skill_lockdown)
+        switch(upgrade_lockdown)
         {
             case 1:
                 percent=15;
@@ -389,10 +389,10 @@ public Action:OcularImplants(Handle:timer)
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:detecting_range;
-                    new skill_detecting=GetSkillLevel(player,raceID,2);
-                    if (skill_detecting)
+                    new upgrade_detecting=GetUpgradeLevel(player,raceID,2);
+                    if (upgrade_detecting)
                     {
-                        switch(skill_detecting)
+                        switch(upgrade_detecting)
                         {
                             case 1:
                                 detecting_range=300.0;
@@ -627,7 +627,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
         {
             new Float:radius, Float:scale;
             new r_int, magnitude, damage;
-            new ult_level=GetSkillLevel(player,raceID,3);
+            new ult_level=GetUpgradeLevel(player,raceID,3);
             switch(ult_level)
             {
                 case 1:

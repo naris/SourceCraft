@@ -25,9 +25,9 @@ public InitCVars()
     RegAdminCmd("sc_setlevel",CMD_SetLevel,ADMFLAG_SOURCECRAFT,"Set a player's level");
     RegAdminCmd("sc_givelevel",CMD_GiveLevel,ADMFLAG_SOURCECRAFT,"Give a player a single level");
     RegAdminCmd("sc_removelevel",CMD_RemoveLevel,ADMFLAG_SOURCECRAFT,"Remove a single level from a player");
-    RegAdminCmd("sc_setcredits",CMD_SetCredits,ADMFLAG_SOURCECRAFT,"Set a player's credit count");
-    RegAdminCmd("sc_givecredits",CMD_GiveCredits,ADMFLAG_SOURCECRAFT,"Give a player credits");
-    RegAdminCmd("sc_removecredits",CMD_RemoveCredits,ADMFLAG_SOURCECRAFT,"Remove some credits from a player");
+    RegAdminCmd("sc_setcrystals",CMD_SetCredits,ADMFLAG_SOURCECRAFT,"Set a player's crystal count");
+    RegAdminCmd("sc_givecrystals",CMD_GiveCredits,ADMFLAG_SOURCECRAFT,"Give a player crystals");
+    RegAdminCmd("sc_removecrystals",CMD_RemoveCredits,ADMFLAG_SOURCECRAFT,"Remove some crystals from a player");
 
     RegAdminCmd("sc_admin",AdminMenu,ADMFLAG_SOURCECRAFT,"Brings up the SourceCraft admin panel.");
 
@@ -251,19 +251,19 @@ public Action:CMD_SetLevel(client,args)
             if (playerHandle != INVALID_HANDLE)
             {
                 new race=GetRace(playerHandle);
-                new skillCount = GetSkillCount(GetRaceHandle(race));
-                for(new y=0;y<skillCount;y++)
-                    SetSkillLevel(playerHandle,race,y,0);
-                if(level>skillCount*4)
-                    level=skillCount*4;
+                new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+                for(new y=0;y<upgradeCount;y++)
+                    SetUpgradeLevel(playerHandle,race,y,0);
+                if(level>upgradeCount*4)
+                    level=upgradeCount*4;
                 if(level<0)
                     level=0;
                 SetLevel(playerHandle,race,level);
                 PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" level to %d.",name,level);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your level to %d, re-pick your skills.",
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your level to %d, re-pick your upgrades.",
                             COLOR_GREEN,COLOR_DEFAULT,adminname,level);
                 if(level>0)
-                    SkillMenu(index, playerHandle, INVALID_FUNCTION);
+                    UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -306,7 +306,7 @@ public Action:CMD_GiveLevel(client,args)
                     PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" a level.",name);
                     PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
-                    SkillMenu(index, playerHandle, INVALID_FUNCTION);
+                    UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
                 }
             }
         }
@@ -345,16 +345,16 @@ public Action:CMD_RemoveLevel(client,args)
                     PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at level 0.",name);
                 else
                 {
-                    new skillCount = GetSkillCount(GetRaceHandle(race));
-                    for(new y=0;y<skillCount;y++)
-                        SetSkillLevel(playerHandle,race,y,0);
+                    new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+                    for(new y=0;y<upgradeCount;y++)
+                        SetUpgradeLevel(playerHandle,race,y,0);
                     SetLevel(playerHandle,race,newlevel);
                     SetOverallLevel(playerHandle, GetOverallLevel(playerHandle)-1);
                     PrintToConsole(client,"[SourceCraft] You just removed a level from player \"%s\".",name);
-                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed a level from you, re-pick your skills.",
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed a level from you, re-pick your upgrades.",
                                 COLOR_GREEN,COLOR_DEFAULT,adminname);
                     if(newlevel>0)
-                        SkillMenu(index, playerHandle, INVALID_FUNCTION);
+                        UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
                 }
             }
         }
@@ -367,7 +367,7 @@ public Action:CMD_RemoveLevel(client,args)
 public Action:CMD_SetCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: Setcredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_setcrystals <player> <amount>");
     else
     {
         decl String:match[64];
@@ -411,7 +411,7 @@ public Action:CMD_SetCredits(client,args)
 public Action:CMD_GiveCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givecredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givecrystals <player> <amount>");
     else
     {
         decl String:match[64];
@@ -458,7 +458,7 @@ public Action:CMD_GiveCredits(client,args)
 public Action:CMD_RemoveCredits(client,args)
 {
     if(args!=2)
-        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givecredits <player> <amount>");
+        PrintToConsole(client,"[SourceCraft] The syntax of the command is: sc_givecrystals <player> <amount>");
     else
     {
         decl String:match[64];

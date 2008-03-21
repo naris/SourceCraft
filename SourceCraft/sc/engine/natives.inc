@@ -21,25 +21,25 @@ public Native_CreateRace(Handle:plugin,numParams)
     if (numParams >=12 && numParams <= 13)
     {
         decl String:name[64],String:short[16],String:switchmessage_instant[192],String:switchmessage_dead[192];
-        decl String:skill1[64],String:skill1_desc[192],String:skill2[64],String:skill2_desc[192];
-        decl String:skill3[64],String:skill3_desc[192],String:ult[64],String:ult_desc[192];
+        decl String:upgrade1[64],String:upgrade1_desc[192],String:upgrade2[64],String:upgrade2_desc[192];
+        decl String:upgrade3[64],String:upgrade3_desc[192],String:ult[64],String:ult_desc[192];
         GetNativeString(1,name,sizeof(name));
         GetNativeString(2,short,sizeof(short));
         GetNativeString(3,switchmessage_instant,sizeof(switchmessage_instant));
         GetNativeString(4,switchmessage_dead,sizeof(switchmessage_dead));
-        GetNativeString(5,skill1,sizeof(skill1));
-        GetNativeString(6,skill1_desc,sizeof(skill1_desc));
-        GetNativeString(7,skill2,sizeof(skill2));
-        GetNativeString(8,skill2_desc,sizeof(skill2_desc));
-        GetNativeString(9,skill3,sizeof(skill3));
-        GetNativeString(10,skill3_desc,sizeof(skill3_desc));
+        GetNativeString(5,upgrade1,sizeof(upgrade1));
+        GetNativeString(6,upgrade1_desc,sizeof(upgrade1_desc));
+        GetNativeString(7,upgrade2,sizeof(upgrade2));
+        GetNativeString(8,upgrade2_desc,sizeof(upgrade2_desc));
+        GetNativeString(9,upgrade3,sizeof(upgrade3));
+        GetNativeString(10,upgrade3_desc,sizeof(upgrade3_desc));
         GetNativeString(11,ult,sizeof(ult));
         GetNativeString(12,ult_desc,sizeof(ult_desc));
 
         new required_level = (numParams >= 13) ? GetNativeCell(13) : 0;
 
         return CreateRace(name,short,switchmessage_instant,switchmessage_dead,
-                          skill1,skill1_desc,skill2,skill2_desc,skill3,skill3_desc,
+                          upgrade1,upgrade1_desc,upgrade2,upgrade2_desc,upgrade3,upgrade3_desc,
                           ult,ult_desc,required_level);
     }
     return -1;
@@ -269,29 +269,29 @@ public Native_SetLevel(Handle:plugin,numParams)
     }
 }
 
-public Native_GetSkillLevel(Handle:plugin,numParams)
+public Native_GetUpgradeLevel(Handle:plugin,numParams)
 {
     if (numParams==3)
     {
         new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
-        new skill=GetNativeCell(3);
-        if (player != INVALID_HANDLE && race != -1 && skill != -1)
-            return GetSkillLevel(player,race,skill);
+        new upgrade=GetNativeCell(3);
+        if (player != INVALID_HANDLE && race != -1 && upgrade != -1)
+            return GetUpgradeLevel(player,race,upgrade);
     }
     return -1;
 }
 
-public Native_SetSkillLevel(Handle:plugin,numParams)
+public Native_SetUpgradeLevel(Handle:plugin,numParams)
 {
     if (numParams==4)
     {
         new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
-        new skill=GetNativeCell(3);
+        new upgrade=GetNativeCell(3);
         new newlevel=GetNativeCell(4);
-        if (player != INVALID_HANDLE && race != -1 && skill != -1)
-            SetSkillLevel(player,race,skill,newlevel);
+        if (player != INVALID_HANDLE && race != -1 && upgrade != -1)
+            SetUpgradeLevel(player,race,upgrade,newlevel);
     }
 }
 
@@ -494,9 +494,9 @@ public Native_SetGravity(Handle:plugin,numParams)
 
 /**
 * Sets the visibility for the player that is handled within the SourceCraft system,
-* good for skills and items that set (in)visibility so you don't end up making the player
+* good for upgrades and items that set (in)visibility so you don't end up making the player
 * more visibile. Pass 255 as visibility when they no longer should use the (in)visibility,
-* make sure to do this when they no longer have the skill or item, or whatever.
+* make sure to do this when they no longer have the upgrade or item, or whatever.
 * @param player: The player ID to use. Can be retrieved with GetPlayer.
 * @param visibility: The visibility you want to pass.
 * @param type: The type of visibility to use.
@@ -746,8 +746,8 @@ public bool:InitNatives()
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
     CreateNative("SetLevel",Native_SetLevel);
-    CreateNative("GetSkillLevel",Native_GetSkillLevel);
-    CreateNative("SetSkillLevel",Native_SetSkillLevel);
+    CreateNative("GetUpgradeLevel",Native_GetUpgradeLevel);
+    CreateNative("SetUpgradeLevel",Native_SetUpgradeLevel);
     CreateNative("GetXP",Native_GetXP);
     CreateNative("SetXP",Native_SetXP);
     CreateNative("GetCredits",Native_GetCredits);
@@ -771,7 +771,7 @@ public bool:InitForwards()
     g_OnUltimateCommandHandle=CreateGlobalForward("OnUltimateCommand",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnPluginReadyHandle=CreateGlobalForward("OnPluginReady",ET_Ignore);
     g_OnRaceSelectedHandle=CreateGlobalForward("OnRaceSelected",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
-    g_OnSkillLevelChangedHandle=CreateGlobalForward("OnSkillLevelChanged",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
+    g_OnUpgradeLevelChangedHandle=CreateGlobalForward("OnUpgradeLevelChanged",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnItemPurchaseHandle=CreateGlobalForward("OnItemPurchase",ET_Ignore,Param_Cell,Param_Cell,Param_Cell);
     g_OnXPGivenHandle=CreateGlobalForward("OnXPGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef,Param_Cell);
     g_OnCreditsGivenHandle=CreateGlobalForward("OnCreditsGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef,Param_Cell);

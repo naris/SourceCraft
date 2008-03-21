@@ -39,7 +39,8 @@ public Action:SayCommand(client,args)
     new Handle:playerHandle=GetPlayerHandle(client);
     if (playerHandle != INVALID_HANDLE)
     {
-        if(CommandCheck(arg1,"showxp",63))
+        if(CommandCheck(arg1,"showexperience",63) ||
+           CommandCheck(arg1,"showxp",63))
         {
             ShowXP(client,playerHandle);
             return Plugin_Handled;
@@ -54,34 +55,44 @@ public Action:SayCommand(client,args)
             RaceMenu(client,false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"skillsinfo",63))
+        else if (CommandCheck(arg1,"upgradeinfo",63) ||
+                 CommandCheck(arg1,"skillsinfo",63))
         {
-            SkillsInfo(client,GetRace(playerHandle),false,INVALID_FUNCTION);
+            UpgradesInfo(client,GetRace(playerHandle),false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"resetskills",63))
+        else if (CommandCheck(arg1,"reset",63) ||
+                 CommandCheck(arg1,"resetupgrade",63) ||
+                 CommandCheck(arg1,"resetupgrades",63) ||
+                 CommandCheck(arg1,"resetskills",63))
         {
-            ResetSkills(client,playerHandle);
+            ResetUpgrades(client,playerHandle);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"spendskills",63))
+        else if (CommandCheck(arg1,"upgrade",63) ||
+                 CommandCheck(arg1,"spendupgrade",63) ||
+                 CommandCheck(arg1,"spendupgrades",63) ||
+                 CommandCheck(arg1,"spendskills",63))
         {
             new race=GetRace(playerHandle);
-            if(GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                SkillMenu(client,playerHandle,INVALID_FUNCTION);
+            if(GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                UpgradeMenu(client,playerHandle,INVALID_FUNCTION);
             else
             {
-                PrintToChat(client,"%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.",COLOR_GREEN,COLOR_DEFAULT);
+                PrintToChat(client,"%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use reset.",COLOR_GREEN,COLOR_DEFAULT);
             }
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"showskills",63))
+        else if(CommandCheck(arg1,"showupgrade",63) ||
+                CommandCheck(arg1,"showupgrades",63) ||
+                CommandCheck(arg1,"showskills",63))
         {
-            ShowSkills(client,client,playerHandle,INVALID_FUNCTION);
+            ShowUpgrades(client,client,playerHandle,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"showcredits",63) || 
-                CommandCheck(arg1,"chowcrystals",63))
+        else if(CommandCheck(arg1,"crystals",63) || 
+                CommandCheck(arg1,"showcrystals",63) ||
+                CommandCheck(arg1,"showcredits",63))
         {
             ShowCredits(client,playerHandle);
             return Plugin_Handled;
@@ -91,18 +102,22 @@ public Action:SayCommand(client,args)
             ShopMenu(client,playerHandle,true,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"showitems",63) || CommandCheck(arg1,"inventory",63) ||
-                CommandCheck(arg1,"inven",63) || CommandCheck(arg1,"inv",63))
+        else if(CommandCheck(arg1,"showitems",63) ||
+                CommandCheck(arg1,"inventory",63) ||
+                CommandCheck(arg1,"inven",63) ||
+                CommandCheck(arg1,"inv",63))
         {
             ShopMenu(client,playerHandle,false,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"schelp",63) || CommandCheck(arg1,"help",63))
+        else if(CommandCheck(arg1,"schelp",63) ||
+                CommandCheck(arg1,"help",63))
         {
             Help(client,INVALID_FUNCTION);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg1,"scmenu",63) || CommandCheck(arg1,"menu",63))
+        else if(CommandCheck(arg1,"scmenu",63) ||
+                CommandCheck(arg1,"menu",63))
         {
             MainMenu(client,playerHandle,INVALID_FUNCTION);
             return Plugin_Handled;

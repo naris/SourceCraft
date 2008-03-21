@@ -64,12 +64,12 @@ public OnPluginReady()
                       "farter", // SQLite ID name (short name, no spaces)
                       "You are now a Sick Fucker.", // Selected Race message
                       "You will be a Sick Fucker when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                      "Festering Abomination", //Skill 1 Name
-                      "Gives you a 15% chance of doing\n40-240% more damage.", // Skill 1 Description
-                      "Pickpocket", // Skill 2 Name
-                      "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.", // Skill 2 Description
-                      "Revulsion", // Skill 3 Name
-                      "Your level of Revulsion is so high, all enemies quake as you approach.", // Skill 3 Description
+                      "Festering Abomination", //Upgrade 1 Name
+                      "Gives you a 15% chance of doing\n40-240% more damage.", // Upgrade 1 Description
+                      "Pickpocket", // Upgrade 2 Name
+                      "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.", // Upgrade 2 Description
+                      "Revulsion", // Upgrade 3 Name
+                      "Your level of Revulsion is so high, all enemies quake as you approach.", // Upgrade 3 Description
                       "Flatulence", // Ultimate Name
                       "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
                       16);
@@ -123,9 +123,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowFart[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new skill = GetSkillLevel(player,race,3);
-        if (skill)
-            Fart(player,client,skill);
+        new upgrade = GetUpgradeLevel(player,race,3);
+        if (upgrade)
+            Fart(player,client,upgrade);
     }
 }
 
@@ -167,13 +167,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 {
-    new skill_cs = GetSkillLevel(player,raceID,0);
-    if (skill_cs > 0)
+    new upgrade_cs = GetUpgradeLevel(player,raceID,0);
+    if (upgrade_cs > 0)
     {
         if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
         {
             new chance;
-            switch(skill_cs)
+            switch(upgrade_cs)
             {
                 case 1:
                     chance=10;
@@ -187,7 +187,7 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
             if(GetRandomInt(1,100)<=chance)
             {
                 new Float:percent;
-                switch(skill_cs)
+                switch(upgrade_cs)
                 {
                     case 1:
                         percent=0.10;
@@ -224,15 +224,15 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 
 public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
-    new skill_pp = GetSkillLevel(player,raceID,1);
-    if (skill_pp > 0)
+    new upgrade_pp = GetUpgradeLevel(player,raceID,1);
+    if (upgrade_pp > 0)
     {
         decl String:weapon[64] = "";
         new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
         new bool:is_melee=IsMelee(weapon, is_equipment);
 
         new chance;
-        switch(skill_pp)
+        switch(upgrade_pp)
         {
             case 1:
                 chance=is_melee ? 25 : 15;
@@ -243,7 +243,10 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
             case 4:
                 chance=is_melee ? 80 : 60;
         }
-        if(GetRandomInt(1,100)<=chance && !IsUber(victim_index))
+
+        if( GetRandomInt(1,100)<=chance &&
+            !GetImmunity(victim_player,Immunity_Theft) &&
+            !IsUber(victim_index))
         {
             new victim_cash=GetCredits(victim_player);
             if (victim_cash > 0)
@@ -425,13 +428,13 @@ public Action:Revulsion(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new skill_revulsion=GetSkillLevel(player,raceID,2);
-                    if (skill_revulsion)
+                    new upgrade_revulsion=GetUpgradeLevel(player,raceID,2);
+                    if (upgrade_revulsion)
                     {
-                        new num=skill_revulsion*3;
+                        new num=upgrade_revulsion*3;
                         new Float:range;
                         new health;
-                        switch(skill_revulsion)
+                        switch(upgrade_revulsion)
                         {
                             case 1:
                             {

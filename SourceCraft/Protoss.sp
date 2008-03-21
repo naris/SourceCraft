@@ -318,11 +318,11 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new skill_cg = GetSkillLevel(player,raceID,0);
-    if (skill_cg > 0)
+    new upgrade_cg = GetUpgradeLevel(player,raceID,0);
+    if (upgrade_cg > 0)
     {
         new Float:percent, chance;
-        switch(skill_cg)
+        switch(upgrade_cg)
         {
             case 1:
             {
@@ -387,7 +387,7 @@ bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:play
 
 MindControl(client,Handle:player)
 {
-    new ult_level=GetSkillLevel(player,raceID,3);
+    new ult_level=GetUpgradeLevel(player,raceID,3);
     if(ult_level)
     {
         if (!GetConVarBool(cvarMindControlEnable))
@@ -684,10 +684,10 @@ public Action:CloakingAndDetector(Handle:timer)
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:cloaking_range;
-                    new skill_cloaking=GetSkillLevel(player,raceID,1);
-                    if (skill_cloaking)
+                    new upgrade_cloaking=GetUpgradeLevel(player,raceID,1);
+                    if (upgrade_cloaking)
                     {
-                        switch(skill_cloaking)
+                        switch(upgrade_cloaking)
                         {
                             case 1:
                                 cloaking_range=300.0;
@@ -701,10 +701,10 @@ public Action:CloakingAndDetector(Handle:timer)
                     }
 
                     new Float:detecting_range;
-                    new skill_detecting=GetSkillLevel(player,raceID,2);
-                    if (skill_detecting)
+                    new upgrade_detecting=GetUpgradeLevel(player,raceID,2);
+                    if (upgrade_detecting)
                     {
-                        switch(skill_detecting)
+                        switch(upgrade_detecting)
                         {
                             case 1:
                                 detecting_range=300.0;
@@ -731,7 +731,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                     if (GetClientTeam(index) == GetClientTeam(client))
                                     {
                                         if (GetRace(player_check) == raceID &&
-                                            GetSkillLevel(player_check,raceID,1) > 0)
+                                            GetUpgradeLevel(player_check,raceID,1) > 0)
                                         {
                                             continue; // Don't cloak other arbiters!
                                         }

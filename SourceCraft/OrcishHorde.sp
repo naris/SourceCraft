@@ -94,12 +94,12 @@ public OnPluginReady()
                       "orc", // SQLite ID name (short name, no spaces)
                       "You are now an Orcish Horde.", // Selected Race message
                       "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                      "Acute Strike", //Skill 1 Name
-                      "Gives you a 25% chance of doing\n40-120% more damage.", // Skill 1 Description
-                      "Acute Grenade", // Skill 2 Name
-                      "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.", // Skill 2 Description
-                      "Reincarnation", // Skill 3 Name
-                      "Gives you a 15-80% chance of respawning\nonce.", // Skill 3 Description
+                      "Acute Strike", //Upgrade 1 Name
+                      "Gives you a 25% chance of doing\n40-120% more damage.", // Upgrade 1 Description
+                      "Acute Grenade", // Upgrade 2 Name
+                      "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.", // Upgrade 2 Description
+                      "Reincarnation", // Upgrade 3 Name
+                      "Gives you a 15-80% chance of respawning\nonce.", // Upgrade 3 Description
                       "Chain Lightning", // Ultimate Name
                       "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
 
@@ -158,9 +158,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowChainLightning[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new skill = GetSkillLevel(player,race,3);
-        if (skill)
-            ChainLightning(player,client,skill);
+        new upgrade = GetUpgradeLevel(player,race,3);
+        if (upgrade)
+            ChainLightning(player,client,upgrade);
     }
 }
 
@@ -275,11 +275,11 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     if (victim_race==raceID && !m_IsChangingClass[victim_index] &&
         (!m_HasRespawned[victim_index] || GameType != cstrike))
     {
-        new skill=GetSkillLevel(victim_player,victim_race,2);
-        if (skill)
+        new upgrade=GetUpgradeLevel(victim_player,victim_race,2);
+        if (upgrade)
         {
             new percent;
-            switch (skill)
+            switch (upgrade)
             {
                 case 1:
                     percent=15;
@@ -290,7 +290,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                 case 4:
                     percent=80;
             }
-            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2*skill)
+            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2*upgrade)
             {
                 GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
@@ -312,14 +312,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
 bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new skill_cs = GetSkillLevel(player,raceID,0);
-    if (skill_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+    new upgrade_cs = GetUpgradeLevel(player,raceID,0);
+    if (upgrade_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
                      && !IsUber(victim_index))
     {
         if(GetRandomInt(1,100)<=25)
         {
             new Float:percent;
-            switch(skill_cs)
+            switch(upgrade_cs)
             {
                 case 1:
                     percent=0.40;
@@ -365,14 +365,14 @@ bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:play
         StrEqual(weapon,"weapon_bazooka",false) ||
         StrEqual(weapon,"weapon_pschreck",false))
     {
-        new skill_cg = GetSkillLevel(player,raceID,1);
-        if (skill_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+        new upgrade_cg = GetUpgradeLevel(player,raceID,1);
+        if (upgrade_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
                          && !IsUber(victim_index))
         {
             if(GetRandomInt(1,100)<=15)
             {
                 new Float:percent;
-                switch(skill_cg)
+                switch(upgrade_cg)
                 {
                     case 1:
                         percent=0.35;

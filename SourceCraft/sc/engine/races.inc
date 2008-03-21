@@ -8,8 +8,8 @@
 #define RACE_IDENT              0
 #define RACE_REQUIRED_LEVEL     1
 #define RACE_STRINGS            2
-#define RACE_SKILL_FLAGS        3
-#define RACE_SKILL_STRINGS      4
+#define RACE_UPGRADE_FLAGS      3
+#define RACE_UPGRADE_STRINGS    4
 #define RACE_DATA_COUNT         5
 
 #define RACE_NAME               0
@@ -18,25 +18,25 @@
 #define RACE_SWITCHMESSAGE_DEAD 3
 #define RACE_STRING_COUNT       4
 
-#define SKILL_NAME              0
-#define SKILL_DESC              1
-#define SKILL_DATA_COUNT        2
+#define UPGRADE_NAME            0
+#define UPGRADE_DESC            1
+#define UPGRADE_DATA_COUNT      2
 
 #define GetRaceCount() GetArraySize(arrayRaces)
 
 // A vector of race infomation
 new Handle:arrayRaces;
 
-new Function:gSkillsInfoParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
-new bool:gSkillsMenuMode[MAXPLAYERS+1];
-new gShowSkillsTarget[MAXPLAYERS+1];
-new gRaceForSkills[MAXPLAYERS+1];
+new Function:gUpgradesInfoParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new bool:gUpgradesMenuMode[MAXPLAYERS+1];
+new gShowUpgradesTarget[MAXPLAYERS+1];
+new gRaceForUpgrades[MAXPLAYERS+1];
 
 public CreateRace(const String:name[],                  const String:short[],
                   const String:switchmessage_instant[], const String:switchmessage_dead[],
-                  const String:skill1[],                const String:skill1_desc[],
-                  const String:skill2[],                const String:skill2_desc[],
-                  const String:skill3[],                const String:skill3_desc[],
+                  const String:upgrade1[],                const String:upgrade1_desc[],
+                  const String:upgrade2[],                const String:upgrade2_desc[],
+                  const String:upgrade3[],                const String:upgrade3_desc[],
                   const String:ult[],                   const String:ult_desc[],
                   required_level)
 {
@@ -49,34 +49,44 @@ public CreateRace(const String:name[],                  const String:short[],
     PushArrayString(stringsHandle,switchmessage_instant);
     PushArrayString(stringsHandle,switchmessage_dead);
 
-    // Setup Race Skills.
-    new Handle:skillStringsHandle=CreateArray(ByteCountToCells(192));
-    new Handle:skillFlagsHandle=CreateArray();
-    PushArrayString(skillStringsHandle,skill1);
-    PushArrayString(skillStringsHandle,skill1_desc);
-    PushArrayCell(skillFlagsHandle, 0);         // Normal Skill
+    // Setup Race Upgrades.
+    new Handle:upgradeStringsHandle=CreateArray(ByteCountToCells(192));
+    new Handle:upgradeFlagsHandle=CreateArray();
+    PushArrayString(upgradeStringsHandle,upgrade1);
+    PushArrayString(upgradeStringsHandle,upgrade1_desc);
+    PushArrayCell(upgradeFlagsHandle, 0);         // Normal Upgrade
 
-    PushArrayString(skillStringsHandle,skill2);
-    PushArrayString(skillStringsHandle,skill2_desc);
-    PushArrayCell(skillFlagsHandle, 0);         // Normal Skill
+    PushArrayString(upgradeStringsHandle,upgrade2);
+    PushArrayString(upgradeStringsHandle,upgrade2_desc);
+    PushArrayCell(upgradeFlagsHandle, 0);         // Normal Upgrade
 
-    PushArrayString(skillStringsHandle,skill3);
-    PushArrayString(skillStringsHandle,skill3_desc);
-    PushArrayCell(skillFlagsHandle, 0);         // Normal Skill
+    PushArrayString(upgradeStringsHandle,upgrade3);
+    PushArrayString(upgradeStringsHandle,upgrade3_desc);
+    PushArrayCell(upgradeFlagsHandle, 0);         // Normal Upgrade
 
-    PushArrayString(skillStringsHandle,ult);
-    PushArrayString(skillStringsHandle,ult_desc);
-    PushArrayCell(skillFlagsHandle, 1);         // Ultimate Skill
+    PushArrayString(upgradeStringsHandle,ult);
+    PushArrayString(upgradeStringsHandle,ult_desc);
+    PushArrayCell(upgradeFlagsHandle, 1);         // Ultimate Upgrade
 
     // Setup Race Data.
     PushArrayCell(newRace,SaveRaceInfo(short,name)); // ident from the Database
     PushArrayCell(newRace,required_level);
     PushArrayCell(newRace,stringsHandle);
-    PushArrayCell(newRace,skillFlagsHandle);
-    PushArrayCell(newRace,skillStringsHandle);
+    PushArrayCell(newRace,upgradeFlagsHandle);
+    PushArrayCell(newRace,upgradeStringsHandle);
 
     // Add new Race Data into Race Array.
     return PushArrayCell(arrayRaces,newRace); // return index.
+}
+
+public AddUpgrade(Handle:race, const String:name[], const String:desc[], bool:ultimate)
+{
+    new Handle:upgradeStringsHandle=GetArrayCell(race,RACE_UPGRADE_STRINGS);
+    PushArrayString(upgradeStringsHandle,name);
+    PushArrayString(upgradeStringsHandle,desc);
+
+    new Handle:upgradeFlagsHandle=GetArrayCell(race,RACE_UPGRADE_FLAGS);
+    return PushArrayCell(upgradeFlagsHandle, ultimate); // return index
 }
 
 public bool:InitRaceArray()
@@ -97,13 +107,13 @@ public ClearRaceArray()
         ClearArray(stringsHandle);
         CloseHandle(stringsHandle);
 
-        new Handle:skillFlagsHandle=GetArrayCell(vec,RACE_SKILL_FLAGS);
-        ClearArray(skillFlagsHandle);
-        CloseHandle(skillFlagsHandle);
+        new Handle:upgradeFlagsHandle=GetArrayCell(vec,RACE_UPGRADE_FLAGS);
+        ClearArray(upgradeFlagsHandle);
+        CloseHandle(upgradeFlagsHandle);
 
-        new Handle:skillStringsHandle=GetArrayCell(vec,RACE_SKILL_STRINGS);
-        ClearArray(skillStringsHandle);
-        CloseHandle(skillStringsHandle);
+        new Handle:upgradeStringsHandle=GetArrayCell(vec,RACE_UPGRADE_STRINGS);
+        ClearArray(upgradeStringsHandle);
+        CloseHandle(upgradeStringsHandle);
 
         ClearArray(vec);
         CloseHandle(vec);
@@ -154,47 +164,47 @@ public GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength)
         GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
 }
 
-public GetSkillName(Handle:raceHandle,skill, String:name[], maxlength)
+public GetUpgradeName(Handle:raceHandle,upgrade, String:name[], maxlength)
 {
-    new Handle:skillStringsHandle=GetArrayCell(raceHandle,RACE_SKILL_STRINGS);
-    if (skillStringsHandle != INVALID_HANDLE)
-        GetArrayString(skillStringsHandle,(skill*SKILL_DATA_COUNT),name,maxlength);
+    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
+    if (upgradeStringsHandle != INVALID_HANDLE)
+        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT),name,maxlength);
 }
 
-public GetSkillDesc(Handle:raceHandle,skill, String:desc[], maxlength)
+public GetUpgradeDesc(Handle:raceHandle,upgrade, String:desc[], maxlength)
 {
-    new Handle:skillStringsHandle=GetArrayCell(raceHandle,RACE_SKILL_STRINGS);
-    if (skillStringsHandle != INVALID_HANDLE)
-        GetArrayString(skillStringsHandle,(skill*SKILL_DATA_COUNT)+SKILL_DESC,
+    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
+    if (upgradeStringsHandle != INVALID_HANDLE)
+        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT)+UPGRADE_DESC,
                        desc,maxlength);
 }
 
-public GetSkillNameAndDesc(Handle:raceHandle,skill, String:name[], maxName,
+public GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
                            String:desc[], maxDesc)
 {
-    new Handle:skillStringsHandle=GetArrayCell(raceHandle,RACE_SKILL_STRINGS);
-    if (skillStringsHandle != INVALID_HANDLE)
+    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
+    if (upgradeStringsHandle != INVALID_HANDLE)
     {
-        new index = (skill*SKILL_DATA_COUNT);
-        GetArrayString(skillStringsHandle,index,name,maxName);
-        GetArrayString(skillStringsHandle,index+SKILL_DESC,desc,maxDesc);
+        new index = (upgrade*UPGRADE_DATA_COUNT);
+        GetArrayString(upgradeStringsHandle,index,name,maxName);
+        GetArrayString(upgradeStringsHandle,index+UPGRADE_DESC,desc,maxDesc);
     }
 }
 
-public bool:IsSkillUltimate(Handle:raceHandle,skill)
+public bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
 {
-    new Handle:skillFlagsHandle=GetArrayCell(raceHandle,RACE_SKILL_FLAGS);
-    if (skillFlagsHandle != INVALID_HANDLE)
-        return bool:GetArrayCell(skillFlagsHandle, skill);
+    new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
+    if (upgradeFlagsHandle != INVALID_HANDLE)
+        return bool:GetArrayCell(upgradeFlagsHandle, upgrade);
     else
         return false;
 }
 
-public GetSkillCount(Handle:raceHandle)
+public GetUpgradeCount(Handle:raceHandle)
 {
-    new Handle:skillFlagsHandle=GetArrayCell(raceHandle,RACE_SKILL_FLAGS);
-    if (skillFlagsHandle != INVALID_HANDLE)
-        return GetArraySize(skillFlagsHandle);
+    new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
+    if (upgradeFlagsHandle != INVALID_HANDLE)
+        return GetArraySize(upgradeFlagsHandle);
     else
         return -1;
 }
@@ -236,64 +246,64 @@ public PendingCheck(client,Handle:playerHandle)
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
 
-    if (GetPendingSkillReset(playerHandle))
+    if (GetPendingUpgradeReset(playerHandle))
     {
-        SetPendingSkillReset(playerHandle,0);
-        ResetSkillsNow(client,playerHandle);
+        SetPendingUpgradeReset(playerHandle,0);
+        ResetUpgradesNow(client,playerHandle);
     }
 }
 
-public SkillsInfo_Back(Handle:menu,MenuAction:action,client,selection)
+public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        SkillsInfo(client,gRaceForSkills[client],gSkillsMenuMode[client],
-                   gSkillsInfoParentMenuFunction[client]);
+        UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client],
+                   gUpgradesInfoParentMenuFunction[client]);
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            SkillsInfo(client,gRaceForSkills[client],gSkillsMenuMode[client],
-                       gSkillsInfoParentMenuFunction[client]);
+            UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client],
+                       gUpgradesInfoParentMenuFunction[client]);
         }
     }
 }
 
-public SkillsInfo_Skill(client,Handle:raceHandle,skill)
+public UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
 {
     decl String:name[64];
     decl String:desc[256];
 
-    new Handle:menu=CreateMenu(SkillsInfo_Back);
+    new Handle:menu=CreateMenu(UpgradesInfo_Back);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,true);
 
-    GetSkillNameAndDesc(raceHandle, skill, name, sizeof(name), desc, sizeof(desc));
+    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc));
 
-    SetMenuTitle(menu,"Skill information for %s\nDescription: %s",name,desc);
-    AddMenuItem(menu,"","Back to the skills");
+    SetMenuTitle(menu,"Upgrade information for %s\nDescription: %s",name,desc);
+    AddMenuItem(menu,"","Back to the upgrades");
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
-public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
+public UpgradesInfo(client,race,bool:change,Function:parentMenuFunction)
 {
     decl String:name[64];
 
-    new Handle:menu=CreateMenu(SkillsInfo_Selected);
+    new Handle:menu=CreateMenu(UpgradesInfo_Selected);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
 
     new Handle:raceHandle=GetRaceHandle(race);
     GetRaceName(raceHandle, name, sizeof(name));
-    SetMenuTitle(menu,"[%s] Select a skill for more info.", name);
+    SetMenuTitle(menu,"[%s] Select a upgrade for more info.", name);
 
-    new skillCount = GetSkillCount(raceHandle);
-    for(new skill=0;skill<skillCount;skill++)
+    new upgradeCount = GetUpgradeCount(raceHandle);
+    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
-        GetSkillName(raceHandle, skill, name, sizeof(name));
+        GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
         AddMenuItem(menu,"",name);
     }
     if (change)
@@ -303,13 +313,13 @@ public SkillsInfo(client,race,bool:change,Function:parentMenuFunction)
         AddMenuItem(menu,name,"Change to this Race");
     }
 
-    gRaceForSkills[client] = race;
-    gSkillsMenuMode[client] = change;
-    gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
+    gRaceForUpgrades[client] = race;
+    gUpgradesMenuMode[client] = change;
+    gUpgradesInfoParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
-public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
+public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
@@ -317,10 +327,10 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
-            new race=gRaceForSkills[client];
+            new race=gRaceForUpgrades[client];
             new Handle:raceHandle=GetRaceHandle(race);
-            if (selection < GetSkillCount(raceHandle))
-                SkillsInfo_Skill(client,raceHandle,selection);
+            if (selection < GetUpgradeCount(raceHandle))
+                UpgradesInfo_Upgrade(client,raceHandle,selection);
             else
             {
                 // They decided to change to this race.
@@ -345,7 +355,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
     }
     else if (action == MenuAction_Cancel)
     {
-        new Function:backFn = gSkillsInfoParentMenuFunction[client];
+        new Function:backFn = gUpgradesInfoParentMenuFunction[client];
         if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
         {
             decl result;
@@ -354,7 +364,7 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             Call_PushCell(client);
 
             if (backFn == RaceMenu)
-                Call_PushCell(gSkillsMenuMode[client]);
+                Call_PushCell(gUpgradesMenuMode[client]);
             else
                 Call_PushCell(GetPlayerHandle(client));
 
@@ -364,19 +374,19 @@ public SkillsInfo_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-public ResetSkills(client,Handle:playerHandle)
+public ResetUpgrades(client,Handle:playerHandle)
 {
     if(IsPlayerAlive(client))
     {
-        SetPendingSkillReset(playerHandle,1);
-        PrintToChat(client,"%c[SourceCraft] %cYour skills for your current race will be reset when you die or respawn.",
+        SetPendingUpgradeReset(playerHandle,1);
+        PrintToChat(client,"%c[SourceCraft] %cYour upgrades for your current race will be reset when you die or respawn.",
                     COLOR_GREEN,COLOR_DEFAULT);
     }
     else
-        ResetSkillsNow(client,playerHandle);
+        ResetUpgradesNow(client,playerHandle);
 }
 
-public ShowSkills(client,target,Handle:playerHandle,Function:parentMenuFunction)
+public ShowUpgrades(client,target,Handle:playerHandle,Function:parentMenuFunction)
 {
     new race=GetRace(playerHandle);
     new Handle:raceHandle=GetRaceHandle(race);
@@ -387,59 +397,59 @@ public ShowSkills(client,target,Handle:playerHandle,Function:parentMenuFunction)
 
     decl String:buffer[256];
     if (client == target)
-        Format(buffer,sizeof(buffer),"[SourceCraft] Here are your %s skill levels.", name);
+        Format(buffer,sizeof(buffer),"[SourceCraft] Here are your %s upgrade levels.", name);
     else
-        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's %s skill levels.", target, name);
+        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's %s upgrade levels.", target, name);
 
     SetPanelTitle(panel,buffer);
 
     decl String:buf[64];
     decl String:bufout[256];
     DrawPanelText(panel,"-----------------------------");
-    new skillCount = GetSkillCount(raceHandle);
-    for(new skill=0;skill<skillCount;skill++)
+    new upgradeCount = GetUpgradeCount(raceHandle);
+    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
-        GetSkillName(raceHandle, skill, buf, sizeof(buf));
-        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetSkillLevel(playerHandle,race,skill));
+        GetUpgradeName(raceHandle, upgrade, buf, sizeof(buf));
+        Format(bufout,sizeof(bufout),"%s - Level %d",buf,GetUpgradeLevel(playerHandle,race,upgrade));
         DrawPanelText(panel,bufout);
     }
     DrawPanelText(panel,"-----------------------------");
     DrawPanelItem(panel,"Close");
 
-    gShowSkillsTarget[client]=target;
-    gSkillsInfoParentMenuFunction[client]=parentMenuFunction;
-    SendPanelToClient(panel,client,ShowSkills_Selected,0);
+    gShowUpgradesTarget[client]=target;
+    gUpgradesInfoParentMenuFunction[client]=parentMenuFunction;
+    SendPanelToClient(panel,client,ShowUpgrades_Selected,0);
     CloseHandle(panel);
 }
 
-public ShowSkills_Selected(Handle:menu,MenuAction:action,client,selection)
+public ShowUpgrades_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if (gSkillsInfoParentMenuFunction[client] != INVALID_FUNCTION)
+    if (gUpgradesInfoParentMenuFunction[client] != INVALID_FUNCTION)
     {
         decl result;
         ClientCommand(client,"play buttons/button14.wav");
-        Call_StartFunction(INVALID_HANDLE, gSkillsInfoParentMenuFunction[client]);
+        Call_StartFunction(INVALID_HANDLE, gUpgradesInfoParentMenuFunction[client]);
         Call_PushCell(client);
-        Call_PushCell(gShowSkillsTarget[client]);
+        Call_PushCell(gShowUpgradesTarget[client]);
         Call_PushCell(INVALID_FUNCTION);
         Call_Finish(result);
     }
 }
 
-ResetSkillsNow(client,Handle:playerHandle)
+ResetUpgradesNow(client,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
     SetActiveUltimate(playerHandle,race,-1);
 
-    new skillCount=GetSkillCount(GetRaceHandle(race));
-    for(new skill=0;skill<skillCount;skill++)
-        SetSkillLevel(playerHandle,race,skill,0);
+    new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
+    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+        SetUpgradeLevel(playerHandle,race,upgrade,0);
 
-    PrintToChat(client,"%c[SourceCraft] %cYour skills have been reset for your current race.",
+    PrintToChat(client,"%c[SourceCraft] %cYour upgrades have been reset for your current race.",
                 COLOR_GREEN,COLOR_DEFAULT);
 
     if(GetLevel(playerHandle,race) > 0)
-        SkillMenu(client, playerHandle, INVALID_FUNCTION);
+        UpgradeMenu(client, playerHandle, INVALID_FUNCTION);
 
     SavePlayerData(client,playerHandle,false);
 }

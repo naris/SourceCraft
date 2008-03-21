@@ -162,7 +162,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new level = GetSkillLevel(player,race,3);
+            new level = GetUpgradeLevel(player,race,3);
             if (level)
             {
                 EmitSoundToAll(allahWav,client);
@@ -234,11 +234,11 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
         }
         else
         {
-            new reincarnation_skill=GetSkillLevel(victim_player,victim_race,0);
-            if (reincarnation_skill)
+            new reincarnation_level=GetUpgradeLevel(victim_player,victim_race,0);
+            if (reincarnation_level)
             {
                 new percent;
-                switch (reincarnation_skill)
+                switch (reincarnation_level)
                 {
                     case 1:
                         percent=9;
@@ -250,7 +250,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                         percent=53;
                 }
                 if (GetRandomInt(1,100)<=percent &&
-                    m_ReincarnationCount[victim_index] < 2*reincarnation_skill)
+                    m_ReincarnationCount[victim_index] < 2*reincarnation_level)
                 {
                     m_IsRespawning[victim_index]=true;
                     m_ReincarnationCount[victim_index]++;
@@ -263,8 +263,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             }
         }
 
-        new suicide_skill=GetSkillLevel(victim_player,victim_race,2);
-        if (suicide_skill)
+        new suicide_level=GetUpgradeLevel(victim_player,victim_race,2);
+        if (suicide_level)
         {
             EmitSoundToAll(kaboomWav,victim_index);
             AuthTimer(0.4, victim_index, Kaboom);
@@ -291,7 +291,7 @@ public Action:MadBomber(Handle:timer,any:arg)
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new ult_level=GetSkillLevel(player,raceID,3);
+            new ult_level=GetUpgradeLevel(player,raceID,3);
             if (ult_level)
             {
                 new percent;
@@ -328,8 +328,8 @@ public Action:Kaboom(Handle:timer,any:arg)
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new suicide_skill=GetSkillLevel(player,raceID,2);
-            Bomber(client,player,suicide_skill,true);
+            new suicide_level=GetUpgradeLevel(player,raceID,2);
+            Bomber(client,player,suicide_level,true);
         }
     }
     return Plugin_Stop;
@@ -441,12 +441,12 @@ public Action:FlamingWrath(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new skill_flaming_wrath=GetSkillLevel(player,raceID,1);
-                    if (skill_flaming_wrath)
+                    new flaming_wrath_level=GetUpgradeLevel(player,raceID,1);
+                    if (flaming_wrath_level)
                     {
-                        new num=skill_flaming_wrath*5;
+                        new num=flaming_wrath_level*5;
                         new Float:range=1.0;
-                        switch(skill_flaming_wrath)
+                        switch(flaming_wrath_level)
                         {
                             case 1:
                                 range=300.0;
@@ -483,17 +483,17 @@ public Action:FlamingWrath(Handle:timer)
                                                                   0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                                 TE_SendToAll();
 
-                                                new newhp=GetClientHealth(index)-skill_flaming_wrath;
+                                                new newhp=GetClientHealth(index)-flaming_wrath_level;
                                                 if (newhp <= 0)
                                                 {
                                                     newhp=0;
-                                                    //LogKill(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
+                                                    //LogKill(client, index, "flaming_wrath", "Flaming Wrath", flaming_wrath_level);
                                                     KillPlayer(index,client,"flaming_wrath");
                                                 }
                                                 else
                                                 {
-                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", skill_flaming_wrath);
-                                                    HurtPlayer(index,skill_flaming_wrath,client,"flaming_wrath");
+                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", flaming_wrath_level);
+                                                    HurtPlayer(index,flaming_wrath_level,client,"flaming_wrath");
                                                 }
 
                                                 if (++count > num)

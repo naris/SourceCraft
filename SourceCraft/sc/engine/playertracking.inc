@@ -15,7 +15,7 @@
 #define INFO_DATABASE_IDENT             1
 #define INFO_RACE                       2
 #define INFO_PENDING_RACE               3
-#define INFO_PENDING_SKILL_RESET        4
+#define INFO_PENDING_UPGRADE_RESET      4
 #define INFO_CREDITS                    5
 #define INFO_OVERALL_LEVEL              6
 #define INFO_PROPERTIES                 7
@@ -27,7 +27,7 @@
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
 #define RACEINFO_ACTIVE_ULTIMATE        2
-#define RACEINFO_SKILLS                 3
+#define RACEINFO_UPGRADES               3
 
 #define TRACKING_PLUGIN_HANDLE          0
 #define TRACKING_OVERRIDE_SPEED         1
@@ -52,7 +52,7 @@ new Handle:arrayPlayers[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 // Global definition
 new bool:g_RoundActive = true;
 
-new Handle:g_OnSkillLevelChangedHandle = INVALID_HANDLE;
+new Handle:g_OnUpgradeLevelChangedHandle = INVALID_HANDLE;
 new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
 
 new Float:m_BaseSpeed[MAXPLAYERS+1];
@@ -71,7 +71,7 @@ public Handle:CreatePlayer(client)
         PushArrayCell(newPlayer,-1); // Database Ident
         PushArrayCell(newPlayer,0); // Player race
         PushArrayCell(newPlayer,-1); // Pending race
-        PushArrayCell(newPlayer,0); // Pending skill reset
+        PushArrayCell(newPlayer,0); // Pending upgrade reset
         PushArrayCell(newPlayer,0); // Credits
         PushArrayCell(newPlayer,0); // Overall Level
 
@@ -96,10 +96,10 @@ public Handle:CreatePlayer(client)
             PushArrayCell(newPlayer,raceinfo);
             PushArrayCell(raceinfo,0); // Race's XP
             PushArrayCell(raceinfo,0); // Race's Level
-            PushArrayCell(raceinfo,-1); // Race's Active Ultimate Skill 
-            new skillCount = GetSkillCount(GetRaceHandle(race));
-            for(new skill=0;skill<skillCount;skill++)
-                PushArrayCell(raceinfo,0); // Skill level for each skill of the race
+            PushArrayCell(raceinfo,-1); // Race's Active Ultimate Upgrade 
+            new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                PushArrayCell(raceinfo,0); // Upgrade level for each upgrade of the race
         }
 
         // Perform a sanity check.
@@ -219,14 +219,14 @@ public SetPendingRace(Handle:playerHandle,pend)
     SetArrayCell(playerHandle,INFO_PENDING_RACE,pend);
 }
 
-public GetPendingSkillReset(Handle:playerHandle)
+public GetPendingUpgradeReset(Handle:playerHandle)
 {
-    return GetArrayCell(playerHandle,INFO_PENDING_SKILL_RESET);
+    return GetArrayCell(playerHandle,INFO_PENDING_UPGRADE_RESET);
 }
 
-public SetPendingSkillReset(Handle:playerHandle,pend)
+public SetPendingUpgradeReset(Handle:playerHandle,pend)
 {
-    SetArrayCell(playerHandle,INFO_PENDING_SKILL_RESET,pend);
+    SetArrayCell(playerHandle,INFO_PENDING_UPGRADE_RESET,pend);
 }
 
 public GetCredits(Handle:playerHandle)
@@ -323,63 +323,63 @@ public GetActiveUltimate(Handle:playerHandle,race)
     return GetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE);
 }
 
-public SetActiveUltimate(Handle:playerHandle,race,skill)
+public SetActiveUltimate(Handle:playerHandle,race,upgrade)
 {
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,skill);
+    SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
 }
 
-public GetSkillLevel(Handle:playerHandle,race,skill)
+public GetUpgradeLevel(Handle:playerHandle,race,upgrade)
 {
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    return GetArrayCell(raceinfo,RACEINFO_SKILLS+skill);
+    return GetArrayCell(raceinfo,RACEINFO_UPGRADES+upgrade);
 }
 
-public SetSkillLevel(Handle:playerHandle,race,skill,level)
+public SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 {
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new num=RACEINFO_SKILLS+skill;
+    new num=RACEINFO_UPGRADES+upgrade;
     new old=GetArrayCell(raceinfo,num);
     SetArrayCell(raceinfo,num,level);
-    Call_StartForward(g_OnSkillLevelChangedHandle);
+    Call_StartForward(g_OnUpgradeLevelChangedHandle);
     Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
     Call_PushCell(playerHandle);
     Call_PushCell(race);
-    Call_PushCell(skill);
+    Call_PushCell(upgrade);
     Call_PushCell(old);
     Call_PushCell(level);
     new result;
     Call_Finish(result);
 }
 
-public IncrementSkillLevel(Handle:playerHandle,race,skill,bool:isUltimate)
+public IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
 {
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new num=RACEINFO_SKILLS+skill;
+    new num=RACEINFO_UPGRADES+upgrade;
     new old=GetArrayCell(raceinfo,num);
     new level=old+1;
     SetArrayCell(raceinfo,num,level);
     if (isUltimate)
-        SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,skill);
+        SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
 
-    Call_StartForward(g_OnSkillLevelChangedHandle);
+    Call_StartForward(g_OnUpgradeLevelChangedHandle);
     Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
     Call_PushCell(playerHandle);
     Call_PushCell(race);
-    Call_PushCell(skill);
+    Call_PushCell(upgrade);
     Call_PushCell(old);
     Call_PushCell(level);
     new result;
     Call_Finish(result);
 }
 
-public GetSkillLevelCount(Handle:playerHandle,race)
+public GetUpgradeLevelCount(Handle:playerHandle,race)
 {
     new ret=0;
     new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new skillCount = GetSkillCount(GetRaceHandle(race));
-    new num=RACEINFO_SKILLS+skillCount;
-    for(new x=RACEINFO_SKILLS;x<num;x++)
+    new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+    new num=RACEINFO_UPGRADES+upgradeCount;
+    for(new x=RACEINFO_UPGRADES;x<num;x++)
         ret+=GetArrayCell(raceinfo,x);
     return ret;
 }

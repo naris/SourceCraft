@@ -92,17 +92,17 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new skill_armor = GetSkillLevel(player,raceID,1);
-            if (skill_armor)
-                SetupArmor(client, skill_armor);
+            new upgrade_armor = GetUpgradeLevel(player,raceID,1);
+            if (upgrade_armor)
+                SetupArmor(client, upgrade_armor);
 
-            new skill_stimpacks = GetSkillLevel(player,race,2);
-            if (skill_stimpacks)
-                Stimpacks(client, player, skill_stimpacks);
+            new upgrade_stimpacks = GetUpgradeLevel(player,race,2);
+            if (upgrade_stimpacks)
+                Stimpacks(client, player, upgrade_stimpacks);
 
-            new skill_jetpack=GetSkillLevel(player,race,3);
-            if (skill_jetpack)
-                Jetpack(client, skill_jetpack);
+            new upgrade_jetpack=GetUpgradeLevel(player,race,3);
+            if (upgrade_jetpack)
+                Jetpack(client, upgrade_jetpack);
         }
     }
 }
@@ -118,16 +118,16 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
 {
-    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
+    if (race == raceID && newupgradelevel > 0 && GetRace(player) == raceID)
     {
-        if (skill==1)
-            SetupArmor(client, newskilllevel);
-        else if (skill==2)
-            Stimpacks(client, player, newskilllevel);
-        else if (skill==3)
-            Jetpack(client, newskilllevel);
+        if (upgrade==1)
+            SetupArmor(client, newupgradelevel);
+        else if (upgrade==2)
+            Stimpacks(client, player, newupgradelevel);
+        else if (upgrade==3)
+            Jetpack(client, newupgradelevel);
     }
 }
 
@@ -139,8 +139,8 @@ public OnItemPurchase(client,Handle:player,item)
         new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new skill=GetSkillLevel(player,race,2);
-            Stimpacks(client, player, skill);
+            new upgrade=GetUpgradeLevel(player,race,2);
+            Stimpacks(client, player, upgrade);
         }
     }
 }
@@ -163,17 +163,17 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_armor = GetSkillLevel(player,raceID,1);
-                if (skill_armor)
-                    SetupArmor(client, skill_armor);
+                new upgrade_armor = GetUpgradeLevel(player,raceID,1);
+                if (upgrade_armor)
+                    SetupArmor(client, upgrade_armor);
 
-                new skill_stimpacks = GetSkillLevel(player,race,2);
-                if (skill_stimpacks)
-                    Stimpacks(client, player, skill_stimpacks);
+                new upgrade_stimpacks = GetUpgradeLevel(player,race,2);
+                if (upgrade_stimpacks)
+                    Stimpacks(client, player, upgrade_stimpacks);
 
-                new skill_jetpack=GetSkillLevel(player,race,3);
-                if (skill_jetpack)
-                    Jetpack(client, skill_jetpack);
+                new upgrade_jetpack=GetUpgradeLevel(player,race,3);
+                if (upgrade_jetpack)
+                    Jetpack(client, upgrade_jetpack);
             }
         }
     }
@@ -204,9 +204,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-SetupArmor(client, skilllevel)
+SetupArmor(client, upgradelevel)
 {
-    switch (skilllevel)
+    switch (upgradelevel)
     {
         case 1: m_Armor[client] = GetMaxHealth(client);
         case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
@@ -217,11 +217,11 @@ SetupArmor(client, skilllevel)
 
 bool:Armor(damage, victim_index, Handle:victim_player)
 {
-    new skill_level_armor = GetSkillLevel(victim_player,raceID,1);
-    if (skill_level_armor)
+    new upgrade_level_armor = GetUpgradeLevel(victim_player,raceID,1);
+    if (upgrade_level_armor)
     {
         new Float:from_percent,Float:to_percent;
-        switch(skill_level_armor)
+        switch(upgrade_level_armor)
         {
             case 1:
             {
@@ -272,15 +272,15 @@ bool:Armor(damage, victim_index, Handle:victim_player)
 
 bool:U238Shells(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new skill_cs = GetSkillLevel(player,raceID,0);
-    if (skill_cs > 0)
+    new upgrade_cs = GetUpgradeLevel(player,raceID,0);
+    if (upgrade_cs > 0)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
         {
             if(GetRandomInt(1,100)<=25)
             {
                 new Float:percent;
-                switch(skill_cs)
+                switch(upgrade_cs)
                 {
                     case 1:
                         percent=0.30;
@@ -315,10 +315,10 @@ bool:U238Shells(damage, victim_index, Handle:victim_player, index, Handle:player
     return false;
 }
 
-Stimpacks(client, Handle:player, skilllevel)
+Stimpacks(client, Handle:player, upgradelevel)
 {
     new Float:speed=1.0;
-    switch (skilllevel)
+    switch (upgradelevel)
     {
         case 1:
             speed=1.10;
@@ -350,12 +350,12 @@ Stimpacks(client, Handle:player, skilllevel)
     SetSpeed(player,speed);
 }
 
-Jetpack(client, skilllevel)
+Jetpack(client, upgradelevel)
 {
-    if (skilllevel)
+    if (upgradelevel)
     {
         new fuel,Float:refueling_time;
-        switch(skilllevel)
+        switch(upgradelevel)
         {
             case 1:
             {

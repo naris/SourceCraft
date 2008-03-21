@@ -37,14 +37,15 @@
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
 #define ITEM_PACK            11 // Ammo Pack - Given HE Grenades or ammo or metal over time
 #define ITEM_SACK            12 // Sack of looting - Loot crystals from corpses.
-#define ITEM_RING            13 // Ring of Regeneration + 1 - Given extra health over time
-#define ITEM_MOLE            14 // Mole - Respawn in enemies spawn with cloak.
-#define ITEM_MOLE_PROTECTION 15 // Mole Protection - Reduce damage from a Mole.
-#define ITEM_MOLE_REFLECTION 16 // Mole Reflection - Reflects damage back to the Mole.
-#define ITEM_MOLE_RETENTION  17 // Mole Retention - Keep Mole Protection/Reflection until used.
-//#define ITEM_GOGGLES       18 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         19 // Purchase Admin on the Server
-#define MAXITEMS             17
+#define ITEM_LOCKBOX         13 // Lockbox - Keep crystals safe from theft.
+#define ITEM_RING            14 // Ring of Regeneration + 1 - Given extra health over time
+#define ITEM_MOLE            15 // Mole - Respawn in enemies spawn with cloak.
+#define ITEM_MOLE_PROTECTION 16 // Mole Protection - Reduce damage from a Mole.
+#define ITEM_MOLE_REFLECTION 17 // Mole Reflection - Reflects damage back to the Mole.
+#define ITEM_MOLE_RETENTION  18 // Mole Retention - Keep Mole Protection/Reflection until used.
+//#define ITEM_GOGGLES       19 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         20 // Purchase Admin on the Server
+#define MAXITEMS             19
  
 new myWepsOffset;
 new curWepOffset;
@@ -118,6 +119,7 @@ public OnPluginReady()
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
     shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack","You will be given ammo or metal every 10 seconds.","35");
     shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting","Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!","85");
+    shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox","A lockbox to keep your crystals safe from theft.","20");
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every second, won't exceed your normal HP.","15");
     shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
@@ -211,24 +213,26 @@ public OnPlayerAuthed(client,Handle:player)
 
 public OnItemPurchase(client,Handle:player,item)
 {
-    if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))              // Boots of Speed
+    if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))             // Boots of Speed
     {
         SetSpeed(player,1.2);
         EmitSoundToAll(bootsWav,client);
     }
-    else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))         // Cloak of Shadows
+    else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))        // Cloak of Shadows
         SetVisibility(player, 0, TimedMeleeInvisibility, 1.0, 10.0);
-    else if(item==shopItem[ITEM_NECKLACE])                          // Necklace of Immunity
+    else if(item==shopItem[ITEM_NECKLACE])                              // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
-    else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))       // Periapt of Health
+    else if(item==shopItem[ITEM_LOCKBOX])                               // Lockbox
+        SetImmunity(player,Immunity_Theft,true);
+    else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))      // Periapt of Health
         UsePeriapt(client);
-    else if(item==shopItem[ITEM_TOME])                              // Tome of Experience
+    else if(item==shopItem[ITEM_TOME])                                  // Tome of Experience
     {
         SetXP(player,GetRace(player),GetXP(player,GetRace(player))+25);
         SetOwnsItem(player,shopItem[ITEM_TOME],false);
         PrintToChat(client,"%c[SourceCraft] %cYou gained 25XP.",COLOR_GREEN,COLOR_DEFAULT);
     }
-    else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))       // Scroll of Respawning 
+    else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))      // Scroll of Respawning 
     {
         SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
         if (GameType == tf2)
@@ -236,7 +240,7 @@ public OnItemPurchase(client,Handle:player,item)
         else
             RespawnPlayer(client);
     }
-    else if(item==shopItem[ITEM_SOCK])                              // Sock of the Feather
+    else if(item==shopItem[ITEM_SOCK])                                  // Sock of the Feather
         SetGravity(player,0.5);
 }
 
@@ -251,7 +255,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            if(GetOwnsItem(player,shopItem[ITEM_ANKH]))        // Ankh of Reincarnation
+            if(GetOwnsItem(player,shopItem[ITEM_ANKH]))                 // Ankh of Reincarnation
             {
                 if (GameType == cstrike)
                 {
@@ -366,6 +370,12 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_SACK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_SACK],false);
+
+            if(GetOwnsItem(victim_player,shopItem[ITEM_LOCKBOX]))
+            {
+                SetOwnsItem(victim_player,shopItem[ITEM_LOCKBOX],false);
+                SetImmunity(victim_player,Immunity_Theft,false);
+            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_RING]))
                 SetOwnsItem(victim_player,shopItem[ITEM_RING],false);
@@ -566,7 +576,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
                 if (GetOwnsItem(attacker_player,shopItem[ITEM_ORB]) ||
                     (assister_player != INVALID_HANDLE &&
-                     GetOwnsItem(assister_player,shopItem[ITEM_ORB])))
+                     GetOwnsItem(assister_player,shopItem[ITEM_ORB])) &&
+                     !GetImmunity(victim_player,Immunity_Freezing))
                 {
                     SetOverrideSpeed(victim_player,0.5);
                     AuthTimer(5.0,victim_index,RestoreSpeed);
@@ -848,7 +859,7 @@ LootCorpse(Handle:event,victim_index, Handle:victim_player, index, Handle:player
     new bool:backstab=GetEventInt(event, "customkill") == 2;
 
     new chance=backstab ? 85 : (is_melee ? 75 : 55);
-    if(GetRandomInt(1,100)<=chance)
+    if( GetRandomInt(1,100)<=chance && !GetImmunity(victim_player,Immunity_Theft))
     {
         new victim_cash=GetCredits(victim_player);
         if (victim_cash > 0)

@@ -20,20 +20,20 @@
  * @param short: The shortname used for SQL stuff. (max 16) 
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
  * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
- * @param skill1: The name of the first skill. (max 64)
- * @param skill1_desc: The description of the first skill. (max 192)
- * @param skill2: The name of the second skill. (max 64)
- * @param skill2_desc: The description of the second skill. (max 192)
- * @param skill3: The name of the third skill. (max 64)
- * @param skill3_desc: The description of the third skill. (max 192)
+ * @param upgrade1: The name of the first upgrade. (max 64)
+ * @param upgrade1_desc: The description of the first upgrade. (max 192)
+ * @param upgrade2: The name of the second upgrade. (max 64)
+ * @param upgrade2_desc: The description of the second upgrade. (max 192)
+ * @param upgrade3: The name of the third upgrade. (max 64)
+ * @param upgrade3_desc: The description of the third upgrade. (max 192)
  * @param ult: The name of the ultimate. (max 64)
  * @param ult_desc: The description of the ultimate. (max 192)
  * @param required_level: The overeall level the player must obtain before changing to this race.
  * @return The return value will be the race index or -1 if there was a problem.
  */         
 native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
-                  String:skill1[],String:skill1_desc[],String:skill2[],String:skill2_desc[],
-                  String:skill3[],String:skill3_desc[],String:ult[],String:ult_desc[],
+                  String:upgrade1[],String:upgrade1_desc[],String:upgrade2[],String:upgrade2_desc[],
+                  String:upgrade3[],String:upgrade3_desc[],String:ult[],String:ult_desc[],
                   required_level=0);
 
 /**
@@ -148,23 +148,23 @@ native GetXP(Handle:player,race);
 native SetXP(Handle:player,race,newxp);
 
 /**
- * Gets the current level for the skill for the provided race.
+ * Gets the current level for the upgrade for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
- * @param skill: The skill you want to lookup with, (0==skill1,1==skill2,2==skill3,3==ultimate) 
- * @return The return value will be the skill level, if -1 then it failed.
+ * @param upgrade: The upgrade you want to lookup with, (0==upgrade1,1==upgrade2,2==upgrade3,3==ultimate) 
+ * @return The return value will be the upgrade level, if -1 then it failed.
  */
-native GetSkillLevel(Handle:player,race,skill);
+native GetUpgradeLevel(Handle:player,race,upgrade);
 
 /**
- * Sets the current level for the skill for the provided race.
+ * Sets the current level for the upgrade for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace
- * @param skill: The skill you want to lookup with, (0==skill1,1==skill2,2==skill3,3==ultimate) 
+ * @param upgrade: The upgrade you want to lookup with, (0==upgrade1,1==upgrade2,2==upgrade3,3==ultimate) 
  * @param newlevel: The level you want to set to 
  * @noreturn
  */
-native SetSkillLevel(Handle:player,race,skill,newlevel);
+native SetUpgradeLevel(Handle:player,race,upgrade,newlevel);
 
 /**
  * Gets the amount of Credits a player has.
@@ -217,9 +217,9 @@ native SetImmunity(Handle:player,Immunity:immunity,imm_state=1);
 
 /**
  * Sets the speed for the player that is handled within the SourceCraft system,
- * good for skills and items that set speed so you don't end up making the player slower.
+ * good for upgrades and items that set speed so you don't end up making the player slower.
  * Pass -1.0 as speed when they no longer should use the speed, make sure to do this when
- * they no longer have the skill or item, or whatever.
+ * they no longer have the upgrade or item, or whatever.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param speed: The speed you want to pass.
  * @noreturn
@@ -228,9 +228,9 @@ native SetSpeed(Handle:player,Float:speed=-1.0);
 
 /**
  * Sets the gravity for the player that is handled within the SourceCraft system,
- * good for skills and items that set gravity so you don't end up making the player jump lower.
+ * good for upgrades and items that set gravity so you don't end up making the player jump lower.
  * Pass -1.0 as gravity when they no longer should use the gravity, make sure to do this when
- * they no longer have the skill or item, or whatever.
+ * they no longer have the upgrade or item, or whatever.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param gravity: The gravity you want to pass.
  * @noreturn
@@ -239,9 +239,9 @@ native SetGravity(Handle:player,Float:gravity=-1.0);
 
 /**
  * Sets the visibility for the player that is handled within the SourceCraft system,
- * good for skills and items that set (in)visibility so you don't end up making the player
+ * good for upgrades and items that set (in)visibility so you don't end up making the player
  * more visibile. Pass 255 as visibility when they no longer should use the (in)visibility,
- * make sure to do this when they no longer have the skill or item, or whatever.
+ * make sure to do this when they no longer have the upgrade or item, or whatever.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param visibility: The visibility you want to pass.
  * @param type: The type of visibility to use.
@@ -332,15 +332,15 @@ forward OnUltimateCommand(client,Handle:player,race,bool:pressed);
 forward OnItemPurchase(client,Handle:player,item);
 
 /**
- * Gets called when a skill level is changed.
+ * Gets called when a upgrade level is changed.
  * @param client: The client's index.
  * @param player: The player handle of the client.
  * @param race: The race effected.
- * @param skill: The skill effected.
- * @param oldskilllevel: The old skill level.
- * @param newskilllevel: The new skill level.   
+ * @param upgrade: The upgrade effected.
+ * @param oldupgradelevel: The old upgrade level.
+ * @param newupgradelevel: The new upgrade level.   
  */
-forward OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel);
+forward OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel);
 
 /**
  * Gets called when XP is given to a player

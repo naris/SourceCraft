@@ -136,28 +136,28 @@ public SQL_CreatePlayerRaces(Handle:owner, Handle:hndl, const String:error[], an
         ThrowError("Error in the creation of the sc_player_races SQL table:%s", error);
     else
     {
-        // Create the sc_player_skills table, if it doesn't exist
+        // Create the sc_player_upgrades table, if it doesn't exist
         decl String:SQLString[2048] = "";
 
         if (DBIsSQLite)
         {
             Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_skills ",
+                    "CREATE TABLE IF NOT EXISTS sc_player_upgrades ",
                     "(player_ident int not null,",
                     " race_ident int not null,",
-                    " skill int not null,",
-                    " skill_level int default 0,",
-                    "PRIMARY KEY(player_ident,race_ident,skill))");
+                    " upgrade int not null,",
+                    " upgrade_level int default 0,",
+                    "PRIMARY KEY(player_ident,race_ident,upgrade))");
         }
         else
         {
             Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_skills ",
+                    "CREATE TABLE IF NOT EXISTS sc_player_upgrades ",
                     "(player_ident int not null,",
                     " race_ident int not null,",
-                    " skill int not null,",
-                    " skill_level int default 0,",
-                    "PRIMARY KEY(player_ident,race_ident,skill),",
+                    " upgrade int not null,",
+                    " upgrade_level int default 0,",
+                    "PRIMARY KEY(player_ident,race_ident,upgrade),",
                     "FOREIGN KEY (player_ident)",
                     "        REFERENCES sc_players(player_ident)",
                     "        ON DELETE CASCADE ON UPDATE CASCADE,",
@@ -170,14 +170,14 @@ public SQL_CreatePlayerRaces(Handle:owner, Handle:hndl, const String:error[], an
                     "        ON DELETE CASCADE ON UPDATE CASCADE) ",
                     "ENGINE=INNODB");
         }
-        SQL_TQuery(DBIDB, SQL_CreatePlayerSkills, SQLString);
+        SQL_TQuery(DBIDB, SQL_CreatePlayerUpgrades, SQLString);
     }
 }
 
-public SQL_CreatePlayerSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
+public SQL_CreatePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
     if (hndl == INVALID_HANDLE || error[0] != '\0')
-        ThrowError("Error in the creation of the sc_player_skills SQL table:%s", error);
+        ThrowError("Error in the creation of the sc_player_upgrades SQL table:%s", error);
 }
 
 public SaveRaceInfo(const String:shortName[], const String:raceName[])
@@ -368,7 +368,7 @@ ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:thr
         SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
         SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
 
-        Format(SQLString,sizeof(SQLString), "SELECT skill, skill_level FROM sc_player_skills WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
+        Format(SQLString,sizeof(SQLString), "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
 
         if (threaded)
         {
@@ -377,15 +377,15 @@ ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:thr
             WritePackCell(dataPack, _:playerHandle);
             WritePackCell(dataPack, raceId);
             ResetPack(dataPack);
-            SQL_TQuery(DBIDB, SQL_LoadSkills, SQLString, dataPack);
+            SQL_TQuery(DBIDB, SQL_LoadUpgrades, SQLString, dataPack);
         }
         else
         {
-            new Handle:skillQuery=SQL_Query(DBIDB,SQLString);
-            if(skillQuery)
+            new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
+            if(upgradeQuery)
             {
-                if (SQL_HasResultSet(skillQuery))
-                    ReadPlayerSkills(skillQuery, playerHandle, raceId);
+                if (SQL_HasResultSet(upgradeQuery))
+                    ReadPlayerUpgrades(upgradeQuery, playerHandle, raceId);
             }
             else
             {
@@ -394,15 +394,15 @@ ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:thr
                 LogError("Unable to query %N's player data: %s\nSQL:%s",
                          client, error, SQLString);
             }
-            CloseHandle(skillQuery);
+            CloseHandle(upgradeQuery);
         }
     }
 }
 
-public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
+public SQL_LoadUpgrades(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
     if (data == INVALID_HANDLE)
-        ThrowError("Invalid Datapack Passed to SQL_LoadSkills!");
+        ThrowError("Invalid Datapack Passed to SQL_LoadUpgrades!");
     else 
     {
         new client = ReadPackCell(data); 
@@ -411,17 +411,17 @@ public SQL_LoadSkills(Handle:owner, Handle:hndl, const String:error[], any:data)
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
-            ThrowError("Unable to query %N's skill data: %s", client, error);
+            ThrowError("Unable to query %N's upgrade data: %s", client, error);
         else if (SQL_HasResultSet(hndl))
-            ReadPlayerSkills(hndl, playerHandle, raceId);
+            ReadPlayerUpgrades(hndl, playerHandle, raceId);
     }
 }
 
-ReadPlayerSkills(Handle:hndl, Handle:playerHandle, raceId)
+ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
 {
     while (SQL_FetchRow(hndl))
     {
-        SetSkillLevel(playerHandle,raceId, SQL_FetchInt(hndl,0), SQL_FetchInt(hndl,1));
+        SetUpgradeLevel(playerHandle,raceId, SQL_FetchInt(hndl,0), SQL_FetchInt(hndl,1));
     }
 }
 
@@ -690,7 +690,7 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
 public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
     if (data == INVALID_HANDLE)
-        ThrowError("Invalid Datapack Passed to SQL_LoadSkills!");
+        ThrowError("Invalid Datapack Passed to SQL_LoadUpgrades!");
     else 
     {
         new client = ReadPackCell(data); 
@@ -751,7 +751,7 @@ public SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
             {
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
-                    SavePlayerSkills(client, playerHandle, player_ident, raceId, race_ident, raceHandle, threaded);
+                    SavePlayerUpgrades(client, playerHandle, player_ident, raceId, race_ident, raceHandle, threaded);
                 }
                 else
                 {
@@ -797,31 +797,31 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
             //LogMessage("Updated %N's race data, player_ident=%d, race_ident=%d",
             //           client, player_ident, race_ident);
 
-            SavePlayerSkills(client, playerHandle, player_ident, raceId, race_ident, raceHandle, true);
+            SavePlayerUpgrades(client, playerHandle, player_ident, raceId, race_ident, raceHandle, true);
         }
     }
 }
 
-public SavePlayerSkills(client, Handle:playerHandle, player_ident, raceId, race_ident, Handle:raceHandle, bool:threaded)
+public SavePlayerUpgrades(client, Handle:playerHandle, player_ident, raceId, race_ident, Handle:raceHandle, bool:threaded)
 {
     decl String:SQLString[512] = "";
-    new skillCount = GetSkillCount(raceHandle);
-    for(new skill=0;skill<skillCount;skill++)
+    new upgradeCount = GetUpgradeCount(raceHandle);
+    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
-        new skillLevel = GetSkillLevel(playerHandle,raceId,skill);
+        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
 
         if (DBIsSQLite)
         {
-            Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_skills (player_ident,race,skill,skill_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, skill, skillLevel);
+            Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_upgrades (player_ident,race,upgrade,upgrade_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, upgrade, upgradeLevel);
         }
         else
         {
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_skills (player_ident,race_ident,skill,skill_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE skill_level=%d", player_ident, race_ident, skill, skillLevel, skillLevel);
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_upgrades (player_ident,race_ident,upgrade,upgrade_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE upgrade_level=%d", player_ident, race_ident, upgrade, upgradeLevel, upgradeLevel);
         }
 
         if (threaded)
         {
-            SQL_TQuery(DBIDB, SQL_SavePlayerSkills, SQLString, client);
+            SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, client);
         }
         else
         {
@@ -829,15 +829,15 @@ public SavePlayerSkills(client, Handle:playerHandle, player_ident, raceId, race_
             {
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to insert/replace one of %N's skills: %s\nSQL:%s",
+                LogError("Unable to insert/replace one of %N's upgrades: %s\nSQL:%s",
                          client, error, SQLString);
             }
         }
     }
 }
 
-public SQL_SavePlayerSkills(Handle:owner, Handle:hndl, const String:error[], any:client)
+public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], any:client)
 {
     if (hndl == INVALID_HANDLE || error[0] != '\0')
-        ThrowError("Unable to insert/replace one of %N's skills: %s", client, error);
+        ThrowError("Unable to insert/replace one of %N's upgrades: %s", client, error);
 }

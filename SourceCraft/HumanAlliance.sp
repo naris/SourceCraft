@@ -112,19 +112,19 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             m_TeleportCount[client]=0;
             ResetMaxHealth(client);
 
-            new skill_immune=GetSkillLevel(player,race,0);
-            if (skill_immune)
-                DoImmunity(client, player, skill_immune,false);
+            new upgrade_immune=GetUpgradeLevel(player,race,0);
+            if (upgrade_immune)
+                DoImmunity(client, player, upgrade_immune,false);
         }
         else if (race == raceID)
         {
-            new skill_immune=GetSkillLevel(player,race,0);
-            if (skill_immune)
-                DoImmunity(client, player, skill_immune,true);
+            new upgrade_immune=GetUpgradeLevel(player,race,0);
+            if (upgrade_immune)
+                DoImmunity(client, player, upgrade_immune,true);
 
-            new skill_devo=GetSkillLevel(player,race,1);
-            if (skill_devo)
-                DevotionAura(client, skill_devo);
+            new upgrade_devo=GetUpgradeLevel(player,race,1);
+            if (upgrade_devo)
+                DevotionAura(client, upgrade_devo);
         }
     }
 }
@@ -133,7 +133,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
-        new ult_level=GetSkillLevel(player,race,3);
+        new ult_level=GetUpgradeLevel(player,race,3);
         if(ult_level)
         {
             if (pressed)
@@ -175,14 +175,14 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
-public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
 {
-    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
+    if (race == raceID && newupgradelevel > 0 && GetRace(player) == raceID)
     {
-        if (skill == 0)
-            DoImmunity(client, player, newskilllevel,true);
-        else if (skill == 1)
-            DevotionAura(client, newskilllevel);
+        if (upgrade == 0)
+            DoImmunity(client, player, newupgradelevel,true);
+        else if (upgrade == 1)
+            DevotionAura(client, newupgradelevel);
     }
 }
 
@@ -202,12 +202,12 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                 GetClientAbsOrigin(client,spawnLoc[client]);
                 m_TeleportCount[client]=0;
 
-                new skill_immune=GetSkillLevel(player,race,0);
-                if (skill_immune)
-                    DoImmunity(client, player, skill_immune,true);
+                new upgrade_immune=GetUpgradeLevel(player,race,0);
+                if (upgrade_immune)
+                    DoImmunity(client, player, upgrade_immune,true);
 
-                new skill_devo=GetSkillLevel(player,race,1);
-                if (skill_devo)
+                new upgrade_devo=GetUpgradeLevel(player,race,1);
+                if (upgrade_devo)
                     AuthTimer(0.1,client,DoDevotionAura);
             }
         }
@@ -221,7 +221,7 @@ public Action:DoDevotionAura(Handle:timer,any:arg)
     if(client)
     {
         SaveMaxHealth(client);
-        DevotionAura(client, GetSkillLevel(GetPlayerHandle(client),raceID,1));
+        DevotionAura(client, GetUpgradeLevel(GetPlayerHandle(client),raceID,1));
     }
     return Plugin_Stop;
 }
@@ -258,18 +258,18 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return Plugin_Continue;
 }
 
-DoImmunity(client, Handle:player, skilllevel, bool:value)
+DoImmunity(client, Handle:player, upgradelevel, bool:value)
 {
-    if (skilllevel >= 1)
+    if (upgradelevel >= 1)
     {
         SetImmunity(player,Immunity_ShopItems,value);
-        if (skilllevel >= 2)
+        if (upgradelevel >= 2)
         {
             SetImmunity(player,Immunity_Explosion,value);
-            if (skilllevel >= 3)
+            if (upgradelevel >= 3)
             {
                 SetImmunity(player,Immunity_HealthTake,value);
-                if (skilllevel >= 4)
+                if (upgradelevel >= 4)
                     SetImmunity(player,Immunity_Ultimates,value);
             }
         }
@@ -287,12 +287,12 @@ DoImmunity(client, Handle:player, skilllevel, bool:value)
     }
 }
 
-DevotionAura(client, skill_devo)
+DevotionAura(client, upgrade_devo)
 {
     if (client &&  IsClientInGame(client))
     {
         new hpadd;
-        switch(skill_devo)
+        switch(upgrade_devo)
         {
             case 1:
                 hpadd=15;
@@ -325,12 +325,12 @@ DevotionAura(client, skill_devo)
 
 Bash(victim_index, Handle:player)
 {
-    new skill_bash=GetSkillLevel(player,raceID,2);
-    if (skill_bash)
+    new upgrade_bash=GetUpgradeLevel(player,raceID,2);
+    if (upgrade_bash)
     {
         // Bash
         new percent;
-        switch(skill_bash)
+        switch(upgrade_bash)
         {
             case 1:
                 percent=15;

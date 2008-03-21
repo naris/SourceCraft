@@ -12,7 +12,7 @@
 
 new Function:gShopMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new Function:gRaceMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
-new Function:gSkillMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
+new Function:gUpgradeMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new bool:gShopMenuMode[MAXPLAYERS+1];
 new bool:gRaceMenuMode[MAXPLAYERS+1];
 new gShowItemsTarget[MAXPLAYERS+1];
@@ -72,7 +72,7 @@ public IntroMenu(client)
     SetMenuExitButton(introMenu,false);
     if (GetRaceCount() >= 1)
     {
-        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose a skill to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
     }
     else
     {
@@ -108,10 +108,10 @@ public MainMenu(client,Handle:playerHandle,Function:parentMenuFunction)
     Format(buf,sizeof(buf),"%d",playerHandle);
     AddMenuItem(scMenu,buf,"Bring up the shopmenu",shop_style);
     AddMenuItem(scMenu,buf,"Change your race",race_style);
-    AddMenuItem(scMenu,buf,"View your race's skills information",race_style);
-    AddMenuItem(scMenu,buf,"Reset your skills",race_style);
-    AddMenuItem(scMenu,buf,"Spend unused skill points",race_style);
-    AddMenuItem(scMenu,buf,"Show current skill levels",race_style);
+    AddMenuItem(scMenu,buf,"View your race's upgrade information",race_style);
+    AddMenuItem(scMenu,buf,"Reset your upgrades",race_style);
+    AddMenuItem(scMenu,buf,"Spend unused upgrade points",race_style);
+    AddMenuItem(scMenu,buf,"Show current upgrade levels",race_style);
     AddMenuItem(scMenu,buf,"Show current items owned",shop_style);
     AddMenuItem(scMenu,buf,"View command list");
     DisplayMenu(scMenu,client,MENU_TIME_FOREVER);
@@ -136,25 +136,25 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
                     ShopMenu(client,playerHandle,true,MainMenu);
                 case 1: // changerace
                     RaceMenu(client,true,MainMenu);
-                case 2: // skillsinfo
-                    SkillsInfo(client,GetRace(playerHandle),false,MainMenu);
-                case 3: // resetskills
+                case 2: // upgradesinfo
+                    UpgradesInfo(client,GetRace(playerHandle),false,MainMenu);
+                case 3: // resetupgrades
                 {
-                    ResetSkills(client,playerHandle);
+                    ResetUpgrades(client,playerHandle);
                     MainMenu(client,playerHandle,INVALID_FUNCTION);
                 }
-                case 4: // spendskills
+                case 4: // spendupgrades
                 {
                     new race=GetRace(playerHandle);
-                    if(GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                        SkillMenu(client, playerHandle, MainMenu);
+                    if(GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                        UpgradeMenu(client, playerHandle, MainMenu);
                     else
                     {
-                        PrintToChat(client, "%c[SourceCraft] %cYou don't have any skill points to spend, if you want to reset your skills use resetskills.", COLOR_GREEN,COLOR_DEFAULT);
+                        PrintToChat(client, "%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
-                case 5: // showskills
-                    ShowSkills(client,client,playerHandle,MainMenu);
+                case 5: // showupgrades
+                    ShowUpgrades(client,client,playerHandle,MainMenu);
                 case 6: // showitems
                     ShopMenu(client,playerHandle,false,MainMenu);
                 case 7: // help
@@ -221,7 +221,7 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        SkillsInfo(client,selection,gRaceMenuMode[client],RaceMenu);
+        UpgradesInfo(client,selection,gRaceMenuMode[client],RaceMenu);
     }
     else if (action == MenuAction_Cancel)
     {
@@ -245,52 +245,52 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public SkillMenu(client, Handle:playerHandle, Function:parentMenuFunction)
+public UpgradeMenu(client, Handle:playerHandle, Function:parentMenuFunction)
 {
     if (GetRaceCount() >= 1)
     {
         new Handle:sMenu=CreateMenu(SMenu_Selected);
         new race=GetRace(playerHandle);
-        new skillcount=GetSkillLevelCount(playerHandle,race);
+        new upgradecount=GetUpgradeLevelCount(playerHandle,race);
         new level=GetLevel(playerHandle,race);
         SetMenuExitButton(sMenu,true);
         SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
-        SetMenuTitle(sMenu,"[SourceCraft] Select your desired skill. (%d/%d)",skillcount,level);
-        decl String:skillname[64];
-        new skillLevel;
+        SetMenuTitle(sMenu,"[SourceCraft] Select your desired upgrade. (%d/%d)",upgradecount,level);
+        decl String:upgradename[64];
+        new upgradeLevel;
         new Handle:raceHandle=GetRaceHandle(race);
         decl String:sbuf[11];
         decl String:buf[192];
         new style = ITEMDRAW_DEFAULT;
-        new skillCount = GetSkillCount(raceHandle);
+        new upgradeCount = GetUpgradeCount(raceHandle);
         new raceLevel = GetLevel(playerHandle,race);
         new minLevel = MIN_ULTIMATE_LEVEL;
         new activeUltimate = GetActiveUltimate(playerHandle,race);
-        for(new skill=0;skill<skillCount;skill++)
+        for(new upgrade=0;upgrade<upgradeCount;upgrade++)
         {
-            GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
-            Format(sbuf,sizeof(sbuf),"%d",skill);
-            skillLevel=GetSkillLevel(playerHandle,race,skill);
-            if (skillLevel != 4)
+            GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
+            Format(sbuf,sizeof(sbuf),"%d",upgrade);
+            upgradeLevel=GetUpgradeLevel(playerHandle,race,upgrade);
+            if (upgradeLevel != 4)
             {
-                if (IsSkillUltimate(raceHandle, skill))
+                if (IsUpgradeUltimate(raceHandle, upgrade))
                 {
-                    Format(buf,sizeof(buf),"Ultimate: %s (Skill Level %d) (Minimum Level %d)",
-                           skillname,skillLevel+1,minLevel);
-                    if (raceLevel < minLevel || (activeUltimate >= 0 && activeUltimate != skill))
+                    Format(buf,sizeof(buf),"Ultimate: %s (Upgrade Level %d) (Minimum Level %d)",
+                           upgradename,upgradeLevel+1,minLevel);
+                    if (raceLevel < minLevel || (activeUltimate >= 0 && activeUltimate != upgrade))
                         style = ITEMDRAW_DISABLED;
                 }
                 else
-                    Format(buf,sizeof(buf),"%s (Skill Level %d)",skillname,skillLevel+1);
+                    Format(buf,sizeof(buf),"%s (Upgrade Level %d)",upgradename,upgradeLevel+1);
 
                 AddMenuItem(sMenu,sbuf,buf,style);
             }
         }
-        gSkillMenuParentMenuFunction[client]=parentMenuFunction;
+        gUpgradeMenuParentMenuFunction[client]=parentMenuFunction;
         DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
     }
     else
-        PrintToChat(client, "%c[SourceCraft] %cThere are no races or skills to choose!",
+        PrintToChat(client, "%c[SourceCraft] %cThere are no races or upgrades to choose!",
                     COLOR_GREEN,COLOR_DEFAULT);
 }
 
@@ -304,45 +304,45 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         {
             new race = GetRace(playerHandle);
             new Handle:raceHandle=GetRaceHandle(race);
-            new skillCount=GetSkillCount(raceHandle);
+            new upgradeCount=GetUpgradeCount(raceHandle);
 
             decl String:SelectionInfo[11];
             decl String:SelectionDispText[256];
             new SelectionStyle;
             GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
                     SelectionDispText,sizeof(SelectionDispText));
-            new skill=StringToInt(SelectionInfo);
-            if (skill >= 0 && skill < skillCount)
+            new upgrade=StringToInt(SelectionInfo);
+            if (upgrade >= 0 && upgrade < upgradeCount)
             {
-                // Okay, they selected a valid skill
+                // Okay, they selected a valid upgrade
                 new level = GetLevel(playerHandle,race);
-                if (GetSkillLevelCount(playerHandle,race)>=level)
+                if (GetUpgradeLevelCount(playerHandle,race)>=level)
                 {
-                    PrintToChat(client, "%c[SourceCraft] %cYou can not choose a skill without gaining another level.",
+                    PrintToChat(client, "%c[SourceCraft] %cYou can not choose a upgrade without gaining another level.",
                                 COLOR_GREEN,COLOR_DEFAULT);
                 }
                 else
                 {
-                    if (IsSkillUltimate(raceHandle, skill))
+                    if (IsUpgradeUltimate(raceHandle, upgrade))
                     {
                         new minLevel = MIN_ULTIMATE_LEVEL;
                         if (level >= minLevel)
                         {
                             new activeUltimate = GetActiveUltimate(playerHandle,race);
-                            if (activeUltimate < 0 || activeUltimate == skill)
+                            if (activeUltimate < 0 || activeUltimate == upgrade)
                             {
-                                IncrementSkillLevel(playerHandle,race,skill,true);
-                                decl String:skillname[64];
-                                GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
+                                IncrementUpgradeLevel(playerHandle,race,upgrade,true);
+                                decl String:upgradename[64];
+                                GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
                                 PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                            COLOR_GREEN,COLOR_DEFAULT,skillname,
-                                            GetSkillLevel(playerHandle,race,skill));
+                                            COLOR_GREEN,COLOR_DEFAULT,upgradename,
+                                            GetUpgradeLevel(playerHandle,race,upgrade));
                             }
                             else
                             {
                                 decl String:activename[64];
-                                GetSkillName(raceHandle, activeUltimate, activename, sizeof(activename));
-                                PrintToChat(client, "%c[SourceCraft] %cYou have already chosen \"%s\" as your ultimate, to reset your skills use resetskills.",
+                                GetUpgradeName(raceHandle, activeUltimate, activename, sizeof(activename));
+                                PrintToChat(client, "%c[SourceCraft] %cYou have already chosen \"%s\" as your ultimate, to reset your upgrades use resetupgrades.",
                                             COLOR_GREEN,COLOR_DEFAULT,activename);
                             }
                         }
@@ -354,23 +354,23 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     }
                     else
                     {
-                        IncrementSkillLevel(playerHandle,race,skill,false);
-                        decl String:skillname[64];
-                        GetSkillName(raceHandle, skill, skillname, sizeof(skillname));
+                        IncrementUpgradeLevel(playerHandle,race,upgrade,false);
+                        decl String:upgradename[64];
+                        GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
                         PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                    COLOR_GREEN,COLOR_DEFAULT,skillname,
-                                    GetSkillLevel(playerHandle,race,skill));
+                                    COLOR_GREEN,COLOR_DEFAULT,upgradename,
+                                    GetUpgradeLevel(playerHandle,race,upgrade));
                     }
 
-                    if (GetSkillLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                        SkillMenu(client,playerHandle,gSkillMenuParentMenuFunction[client]);
+                    if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                        UpgradeMenu(client,playerHandle,gUpgradeMenuParentMenuFunction[client]);
                 }
             }
         }
     }
     else if (action == MenuAction_Cancel)
     {
-        new Function:backFn = gSkillMenuParentMenuFunction[client];
+        new Function:backFn = gUpgradeMenuParentMenuFunction[client];
         if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
         {
             decl result;
@@ -691,7 +691,7 @@ public Admin_Player(client,target)
     decl String:buf[11];
     Format(buf,sizeof(buf),"%d",target);
     AddMenuItem(adminMenu_Player,buf,"View detailed information");
-    AddMenuItem(adminMenu_Player,buf,"Reset skills", race_style);
+    AddMenuItem(adminMenu_Player,buf,"Reset upgrades", race_style);
     AddMenuItem(adminMenu_Player,buf,"Set race", race_style);
     AddMenuItem(adminMenu_Player,buf,"Give shop item", shop_style);
     AddMenuItem(adminMenu_Player,buf,"Increase/Decrease XP", race_style);
@@ -724,19 +724,19 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
                 }
                 case 1:
                 {
-                    // Reset skills
+                    // Reset upgrades
                     new race=GetRace(targetHandle);
-                    new skillCount=GetSkillCount(GetRaceHandle(race));
-                    for(new y=0;y<skillCount;y++)
-                            SetSkillLevel(targetHandle,race,y,0);
+                    new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
+                    for(new y=0;y<upgradeCount;y++)
+                            SetUpgradeLevel(targetHandle,race,y,0);
 
-                    if(GetSkillLevelCount(targetHandle,race)<GetLevel(targetHandle,race))
-                        SkillMenu(target, targetHandle, Admin_Player);
+                    if(GetUpgradeLevelCount(targetHandle,race)<GetLevel(targetHandle,race))
+                        UpgradeMenu(target, targetHandle, Admin_Player);
 
-                    PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" reset your skills.",
+                    PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" reset your upgrades.",
                                 COLOR_GREEN,COLOR_DEFAULT,client);
 
-                    PrintToChat(client, "%c[SourceCraft] %cYou reset player \"%N\" skills.",
+                    PrintToChat(client, "%c[SourceCraft] %cYou reset player \"%N\" upgrades.",
                                 COLOR_GREEN,COLOR_DEFAULT,target);
                 }
                 case 2:
@@ -809,7 +809,7 @@ public Admin_PlayerInfo(client,target)
 
         decl String:buf[11];
         Format(buf,sizeof(buf),"%d",target);
-        AddMenuItem(playerInfo,buf,"View Player's skill levels");
+        AddMenuItem(playerInfo,buf,"View Player's upgrade levels");
         AddMenuItem(playerInfo,buf,"View Player's shop items");
         AddMenuItem(playerInfo,buf,"Back to options");
         DisplayMenu(playerInfo,client,MENU_TIME_FOREVER);
@@ -838,8 +838,8 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
         {
             switch(selection)
             {
-                case 0: // skill levels
-                    ShowSkills(client,target,targetHandle,Admin_PlayerInfo);
+                case 0: // upgrade levels
+                    ShowUpgrades(client,target,targetHandle,Admin_PlayerInfo);
                 case 1: // shop items
                     ShowItems(client,target,targetHandle,Admin_PlayerInfo);
                 default:
@@ -1206,7 +1206,7 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
                 {
                     SetLevel(targetHandle,race,newlevel);
                     SetOverallLevel(targetHandle, GetOverallLevel(targetHandle)+1);
-                    SkillMenu(target, targetHandle, Admin_Level);
+                    UpgradeMenu(target, targetHandle, Admin_Level);
 
                     PrintToChat(client, "%c[SourceCraft] %cYou gave player \"%N\" a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,target);
@@ -1228,18 +1228,18 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
                 {
                     SetLevel(targetHandle,race,newlevel);
                     SetOverallLevel(targetHandle, GetOverallLevel(targetHandle)-1);
-                    new skillCount=GetSkillCount(GetRaceHandle(race));
-                    for(new x=0;x<skillCount;x++)
-                        SetSkillLevel(targetHandle,race,x,0);
+                    new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
+                    for(new x=0;x<upgradeCount;x++)
+                        SetUpgradeLevel(targetHandle,race,x,0);
 
                     PrintToChat(client, "%c[SourceCraft] %cYou removed a level from player \"%N\".",
                                 COLOR_GREEN,COLOR_DEFAULT,target);
 
-                    PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" removed a level from you, re-pick your skills.",
+                    PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" removed a level from you, re-pick your upgrades.",
                                 COLOR_GREEN,COLOR_DEFAULT,client);
 
                     if(newlevel>0)
-                        SkillMenu(target, targetHandle, Admin_Level);
+                        UpgradeMenu(target, targetHandle, Admin_Level);
                 }
             }
             Admin_Level(client,target);

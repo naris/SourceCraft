@@ -34,18 +34,17 @@ public bool:InitiateHelpVector()
 
 public InitHelpCommands()
 {
-    NewHelpCommand("say scmenu","Bring up the SourceCraft menu.");
+    NewHelpCommand("say menu","Bring up the SourceCraft menu.");
     NewHelpCommand("say showxp","Show the current experience information for the current race.");
     NewHelpCommand("say changerace","Change to a different race.");
     NewHelpCommand("say raceinfo","Display information for all the races.");
-    NewHelpCommand("say skillsinfo","Display the skill information for the current race.");
-    NewHelpCommand("say resetskills","Resets all your skill levels for the current race and allows you to rechoose.");
-    NewHelpCommand("say spendskills","Spend any unused skill points you have.");
-    NewHelpCommand("say showskills","Show which skill levels you currently have.");
+    NewHelpCommand("say upgradeinfo","Display the upgrade information for the current race.");
+    NewHelpCommand("say reset","Resets all your upgrade levels for the current race and allows you to rechoose.");
+    NewHelpCommand("say upgrade","Spend any unused upgrade points you have.");
+    NewHelpCommand("say showupgrades","Show which upgrade levels you currently have.");
     NewHelpCommand("say shopmenu","Bring up the shop menu to buy items.");
     NewHelpCommand("say showcrystals","Show your current shop crystal count.");
-    NewHelpCommand("say showcredits","Show your current shop crystal count.");
-    NewHelpCommand("+ultimate","Use an ultimate that required a bind.");
+    NewHelpCommand("+ultimate","Use an ultimate that requires a bind.");
     NewHelpCommand("sc_admin","Bring up the admin menu to modify player info.");
 }
 

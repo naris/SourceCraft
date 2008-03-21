@@ -79,7 +79,7 @@ public DoLevelCheck(client,Handle:playerHandle)
                     new oLevel = GetOverallLevel(playerHandle);
                     SetOverallLevel(playerHandle, ++oLevel);
                     SetLevel(playerHandle,race,level);
-                    SkillMenu(client, playerHandle, INVALID_FUNCTION);
+                    UpgradeMenu(client, playerHandle, INVALID_FUNCTION);
 
                     decl String:raceName[64] = "";
                     GetRaceName(GetRaceHandle(race),raceName,sizeof(raceName));

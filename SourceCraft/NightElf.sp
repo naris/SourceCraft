@@ -155,11 +155,11 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, assister_index)
 {
-    new skill_level_evasion = GetSkillLevel(victim_player,raceID,0);
-    if (skill_level_evasion)
+    new upgrade_level_evasion = GetUpgradeLevel(victim_player,raceID,0);
+    if (upgrade_level_evasion)
     {
         new chance;
-        switch(skill_level_evasion)
+        switch(upgrade_level_evasion)
         {
             case 1:
                 chance=5;
@@ -207,13 +207,13 @@ public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, 
 
 public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new skill_level_thorns = GetSkillLevel(victim_player,raceID,1);
-    if (skill_level_thorns)
+    new upgrade_level_thorns = GetUpgradeLevel(victim_player,raceID,1);
+    if (upgrade_level_thorns)
     {
         if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
         {
             new chance;
-            switch(skill_level_thorns)
+            switch(upgrade_level_thorns)
             {
                 case 1:
                     chance=15;
@@ -254,15 +254,15 @@ public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:play
 public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     // Trueshot Aura
-    new skill_level_trueshot=GetSkillLevel(player,raceID,2);
-    if (skill_level_trueshot &&
+    new upgrade_level_trueshot=GetUpgradeLevel(player,raceID,2);
+    if (upgrade_level_trueshot &&
         !GetImmunity(victim_player,Immunity_HealthTake) &&
         !IsUber(victim_index))
     {
         if (GetRandomInt(1,100) <= GetRandomInt(30,60))
         {
             new Float:percent;
-            switch(skill_level_trueshot)
+            switch(upgrade_level_trueshot)
             {
                 case 1:
                     percent=0.20;
@@ -306,7 +306,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && pressed && IsPlayerAlive(client) &&
         m_AllowEntangle[client])
     {
-        new ult_level=GetSkillLevel(player,race,3);
+        new ult_level=GetUpgradeLevel(player,race,3);
         if(ult_level)
         {
             new Float:range=1.0;

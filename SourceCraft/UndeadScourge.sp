@@ -102,21 +102,21 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new ult_level = GetSkillLevel(player,race,3);
+            new ult_level = GetUpgradeLevel(player,race,3);
             if (ult_level)
                 SuicideBomber(client,player,ult_level,false);
         }
     }
 }
 
-public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
 {
     if(race == raceID && GetRace(player) == raceID)
     {
-        if (skill==1)
-            UnholyAura(client, player, newskilllevel);
-        else if (skill==2)
-            Levitation(client, player, newskilllevel);
+        if (upgrade==1)
+            UnholyAura(client, player, newupgradelevel);
+        else if (upgrade==2)
+            Levitation(client, player, newupgradelevel);
     }
 }
 
@@ -128,16 +128,16 @@ public OnItemPurchase(client,Handle:player,item)
         new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new skilllevel_unholy = GetSkillLevel(player,race,1);
-            UnholyAura(client,player, skilllevel_unholy);
+            new upgradelevel_unholy = GetUpgradeLevel(player,race,1);
+            UnholyAura(client,player, upgradelevel_unholy);
         }
         else
         {
             new sock = GetShopItem("Sock of the Feather");
             if (sock == item)
             {
-                new skilllevel_levi = GetSkillLevel(player,race,2);
-                Levitation(client,player, skilllevel_levi);
+                new upgradelevel_levi = GetUpgradeLevel(player,race,2);
+                Levitation(client,player, upgradelevel_levi);
             }
         }
     }
@@ -154,13 +154,13 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new skilllevel_unholy = GetSkillLevel(player,race,1);
-            if (skilllevel_unholy)
-                UnholyAura(client, player, skilllevel_unholy);
+            new upgradelevel_unholy = GetUpgradeLevel(player,race,1);
+            if (upgradelevel_unholy)
+                UnholyAura(client, player, upgradelevel_unholy);
 
-            new skilllevel_levi = GetSkillLevel(player,race,2);
-            if (skilllevel_levi)
-                Levitation(client, player, skilllevel_levi);
+            new upgradelevel_levi = GetUpgradeLevel(player,race,2);
+            if (upgradelevel_levi)
+                Levitation(client, player, upgradelevel_levi);
         }
     }
 }
@@ -178,13 +178,13 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             new race=GetRace(player);
             if(race==raceID)
             {
-                new skilllevel_unholy = GetSkillLevel(player,race,1);
-                if (skilllevel_unholy)
-                    UnholyAura(index, player, skilllevel_unholy);
+                new upgradelevel_unholy = GetUpgradeLevel(player,race,1);
+                if (upgradelevel_unholy)
+                    UnholyAura(index, player, upgradelevel_unholy);
 
-                new skilllevel_levi = GetSkillLevel(player,race,2);
-                if (skilllevel_levi)
-                    Levitation(index, player, skilllevel_levi);
+                new upgradelevel_levi = GetUpgradeLevel(player,race,2);
+                if (upgradelevel_levi)
+                    Levitation(index, player, upgradelevel_levi);
             }
         }
     }
@@ -199,7 +199,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_race == raceID && !m_Suicided[victim_index])
     {
-        new ult_level=GetSkillLevel(victim_player,raceID,3);
+        new ult_level=GetUpgradeLevel(victim_player,raceID,3);
         if (ult_level)
             SuicideBomber(victim_index,victim_player,ult_level,true);
     }
@@ -226,10 +226,10 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-UnholyAura(client, Handle:player, skilllevel)
+UnholyAura(client, Handle:player, upgradelevel)
 {
     new Float:speed=1.0;
-    switch (skilllevel)
+    switch (upgradelevel)
     {
         case 1:
             speed=1.05;
@@ -261,10 +261,10 @@ UnholyAura(client, Handle:player, skilllevel)
     SetSpeed(player,speed);
 }
 
-Levitation(client, Handle:player, skilllevel)
+Levitation(client, Handle:player, upgradelevel)
 {
     new Float:gravity=1.0;
-    switch (skilllevel)
+    switch (upgradelevel)
     {
         case 1:
             gravity=0.92;
@@ -298,13 +298,13 @@ Levitation(client, Handle:player, skilllevel)
 
 bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_player)
 {
-    new skill = GetSkillLevel(player,raceID,0);
-    if (skill > 0 && GetRandomInt(1,10) <= 6 &&
+    new upgrade = GetUpgradeLevel(player,raceID,0);
+    if (upgrade > 0 && GetRandomInt(1,10) <= 6 &&
         !GetImmunity(victim_player, Immunity_HealthTake) &&
         !IsUber(victim_index))
     {
         new Float:percent_health;
-        switch(skill)
+        switch(upgrade)
         {
             case 1:
                 percent_health=0.12;

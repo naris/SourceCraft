@@ -90,9 +90,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             TakeGrab(client);
         else if (race == raceID)
         {
-            new skill_tentacles=GetSkillLevel(player,race,3);
-            if (skill_tentacles)
-                Zerg_Tentacles(client, player, skill_tentacles);
+            new upgrade_tentacles=GetUpgradeLevel(player,race,3);
+            if (upgrade_tentacles)
+                Zerg_Tentacles(client, player, upgrade_tentacles);
         }
     }
 }
@@ -114,21 +114,21 @@ public Action:Regeneration(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new skill_regeneration=GetSkillLevel(player,raceID,1);
-                    if (skill_regeneration)
+                    new upgrade_regeneration=GetUpgradeLevel(player,raceID,1);
+                    if (upgrade_regeneration)
                     {
-                        new newhp=GetClientHealth(client)+skill_regeneration;
+                        new newhp=GetClientHealth(client)+upgrade_regeneration;
                         new maxhp=GetMaxHealth(client);
                         if(newhp<=maxhp)
                             SetEntityHealth(client,newhp);
                     }
 
-                    new skill_healing_aura=GetSkillLevel(player,raceID,2);
-                    if (skill_healing_aura)
+                    new upgrade_healing_aura=GetUpgradeLevel(player,raceID,2);
+                    if (upgrade_healing_aura)
                     {
-                        new num=skill_healing_aura*5;
+                        new num=upgrade_healing_aura*5;
                         new Float:range=1.0;
-                        switch(skill_healing_aura)
+                        switch(upgrade_healing_aura)
                         {
                             case 1:
                                 range=300.0;
@@ -161,7 +161,7 @@ public Action:Regeneration(Handle:timer)
                                             new max=GetMaxHealth(index);
                                             if (health < max)
                                             {
-                                                HealPlayer(index,skill_healing_aura*5,health,max);
+                                                HealPlayer(index,upgrade_healing_aura*5,health,max);
 
                                                 new color[4] = { 0, 0, 255, 255 };
                                                 TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
@@ -242,14 +242,14 @@ public Action:OnDrop(client, target)
     return Plugin_Continue;
 }
 
-public OnSkillLevelChanged(client,Handle:player,race,skill,oldskilllevel,newskilllevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
 {
-    if (race == raceID && newskilllevel > 0 && GetRace(player) == raceID)
+    if (race == raceID && newupgradelevel > 0 && GetRace(player) == raceID)
     {
         if (IsPlayerAlive(client))
         {
-            if (skill==3)
-                Zerg_Tentacles(client, player, newskilllevel);
+            if (upgrade==3)
+                Zerg_Tentacles(client, player, newupgradelevel);
         }
     }
 }
@@ -267,9 +267,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new skill_tentacles=GetSkillLevel(player,race,3);
-                if (skill_tentacles)
-                    Zerg_Tentacles(client, player, skill_tentacles);
+                new upgrade_tentacles=GetUpgradeLevel(player,race,3);
+                if (upgrade_tentacles)
+                    Zerg_Tentacles(client, player, upgrade_tentacles);
             }
         }
     }
@@ -310,14 +310,14 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:Zerg_AdrenalGlands(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new skill_adrenal_glands=GetSkillLevel(player,raceID,0);
-    if (skill_adrenal_glands)
+    new upgrade_adrenal_glands=GetUpgradeLevel(player,raceID,0);
+    if (upgrade_adrenal_glands)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) &&
             !IsUber(victim_index) && IsInRange(index,victim_index,100.0))
         {
             new Float:percent;
-            switch(skill_adrenal_glands)
+            switch(upgrade_adrenal_glands)
             {
                 case 1:
                     percent=0.15;
@@ -354,12 +354,12 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, Handle:victim_player, index
     return false;
 }
 
-public Zerg_Tentacles(client, Handle:player, skilllevel)
+public Zerg_Tentacles(client, Handle:player, upgradelevel)
 {
-    if (skilllevel)
+    if (upgradelevel)
     {
         new duration, Float:range;
-        switch(skilllevel)
+        switch(upgradelevel)
         {
             case 1:
             {
