@@ -109,14 +109,14 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
     if(race == raceID && GetRace(player) == raceID)
     {
         if (upgrade==1)
-            UnholyAura(client, player, newupgradelevel);
+            UnholyAura(client, player, new_level);
         else if (upgrade==2)
-            Levitation(client, player, newupgradelevel);
+            Levitation(client, player, new_level);
     }
 }
 
@@ -128,16 +128,16 @@ public OnItemPurchase(client,Handle:player,item)
         new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new upgradelevel_unholy = GetUpgradeLevel(player,race,1);
-            UnholyAura(client,player, upgradelevel_unholy);
+            new unholy_level = GetUpgradeLevel(player,race,1);
+            UnholyAura(client,player, unholy_level);
         }
         else
         {
             new sock = GetShopItem("Sock of the Feather");
             if (sock == item)
             {
-                new upgradelevel_levi = GetUpgradeLevel(player,race,2);
-                Levitation(client,player, upgradelevel_levi);
+                new levitation_level = GetUpgradeLevel(player,race,2);
+                Levitation(client,player, levitation_level);
             }
         }
     }
@@ -154,13 +154,13 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new upgradelevel_unholy = GetUpgradeLevel(player,race,1);
-            if (upgradelevel_unholy)
-                UnholyAura(client, player, upgradelevel_unholy);
+            new unholy_level = GetUpgradeLevel(player,race,1);
+            if (unholy_level)
+                UnholyAura(client, player, unholy_level);
 
-            new upgradelevel_levi = GetUpgradeLevel(player,race,2);
-            if (upgradelevel_levi)
-                Levitation(client, player, upgradelevel_levi);
+            new levitation_level = GetUpgradeLevel(player,race,2);
+            if (levitation_level)
+                Levitation(client, player, levitation_level);
         }
     }
 }
@@ -178,13 +178,13 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             new race=GetRace(player);
             if(race==raceID)
             {
-                new upgradelevel_unholy = GetUpgradeLevel(player,race,1);
-                if (upgradelevel_unholy)
-                    UnholyAura(index, player, upgradelevel_unholy);
+                new unholy_level = GetUpgradeLevel(player,race,1);
+                if (unholy_level)
+                    UnholyAura(index, player, unholy_level);
 
-                new upgradelevel_levi = GetUpgradeLevel(player,race,2);
-                if (upgradelevel_levi)
-                    Levitation(index, player, upgradelevel_levi);
+                new levitation_level = GetUpgradeLevel(player,race,2);
+                if (levitation_level)
+                    Levitation(index, player, levitation_level);
             }
         }
     }
@@ -226,10 +226,10 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-UnholyAura(client, Handle:player, upgradelevel)
+UnholyAura(client, Handle:player, level)
 {
     new Float:speed=1.0;
-    switch (upgradelevel)
+    switch (level)
     {
         case 1:
             speed=1.05;
@@ -261,10 +261,10 @@ UnholyAura(client, Handle:player, upgradelevel)
     SetSpeed(player,speed);
 }
 
-Levitation(client, Handle:player, upgradelevel)
+Levitation(client, Handle:player, level)
 {
     new Float:gravity=1.0;
-    switch (upgradelevel)
+    switch (level)
     {
         case 1:
             gravity=0.92;
@@ -298,13 +298,13 @@ Levitation(client, Handle:player, upgradelevel)
 
 bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_player)
 {
-    new upgrade = GetUpgradeLevel(player,raceID,0);
-    if (upgrade > 0 && GetRandomInt(1,10) <= 6 &&
+    new level = GetUpgradeLevel(player,raceID,0);
+    if (level > 0 && GetRandomInt(1,10) <= 6 &&
         !GetImmunity(victim_player, Immunity_HealthTake) &&
         !IsUber(victim_index))
     {
         new Float:percent_health;
-        switch(upgrade)
+        switch(level)
         {
             case 1:
                 percent_health=0.12;

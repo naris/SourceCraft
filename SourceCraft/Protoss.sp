@@ -318,11 +318,11 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new upgrade_cg = GetUpgradeLevel(player,raceID,0);
-    if (upgrade_cg > 0)
+    new rs_level = GetUpgradeLevel(player,raceID,0);
+    if (rs_level > 0)
     {
         new Float:percent, chance;
-        switch(upgrade_cg)
+        switch(rs_level)
         {
             case 1:
             {
@@ -684,10 +684,10 @@ public Action:CloakingAndDetector(Handle:timer)
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:cloaking_range;
-                    new upgrade_cloaking=GetUpgradeLevel(player,raceID,1);
-                    if (upgrade_cloaking)
+                    new cloaking_level=GetUpgradeLevel(player,raceID,1);
+                    if (cloaking_level)
                     {
-                        switch(upgrade_cloaking)
+                        switch(cloaking_level)
                         {
                             case 1:
                                 cloaking_range=300.0;
@@ -701,10 +701,10 @@ public Action:CloakingAndDetector(Handle:timer)
                     }
 
                     new Float:detecting_range;
-                    new upgrade_detecting=GetUpgradeLevel(player,raceID,2);
-                    if (upgrade_detecting)
+                    new detecting_level=GetUpgradeLevel(player,raceID,2);
+                    if (detecting_level)
                     {
-                        switch(upgrade_detecting)
+                        switch(detecting_level)
                         {
                             case 1:
                                 detecting_range=300.0;

@@ -123,9 +123,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowFart[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new upgrade = GetUpgradeLevel(player,race,3);
-        if (upgrade)
-            Fart(player,client,upgrade);
+        new level = GetUpgradeLevel(player,race,3);
+        if (level)
+            Fart(player,client,level);
     }
 }
 
@@ -167,13 +167,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 {
-    new upgrade_cs = GetUpgradeLevel(player,raceID,0);
-    if (upgrade_cs > 0)
+    new fa_level = GetUpgradeLevel(player,raceID,0);
+    if (fa_level > 0)
     {
         if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
         {
             new chance;
-            switch(upgrade_cs)
+            switch(fa_level)
             {
                 case 1:
                     chance=10;
@@ -187,7 +187,7 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
             if(GetRandomInt(1,100)<=chance)
             {
                 new Float:percent;
-                switch(upgrade_cs)
+                switch(fa_level)
                 {
                     case 1:
                         percent=0.10;
@@ -224,15 +224,15 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 
 public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
-    new upgrade_pp = GetUpgradeLevel(player,raceID,1);
-    if (upgrade_pp > 0)
+    new pp_level = GetUpgradeLevel(player,raceID,1);
+    if (pp_level > 0)
     {
         decl String:weapon[64] = "";
         new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
         new bool:is_melee=IsMelee(weapon, is_equipment);
 
         new chance;
-        switch(upgrade_pp)
+        switch(pp_level)
         {
             case 1:
                 chance=is_melee ? 25 : 15;
@@ -428,13 +428,13 @@ public Action:Revulsion(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new upgrade_revulsion=GetUpgradeLevel(player,raceID,2);
-                    if (upgrade_revulsion)
+                    new revulsion_level=GetUpgradeLevel(player,raceID,2);
+                    if (revulsion_level)
                     {
-                        new num=upgrade_revulsion*3;
+                        new num=revulsion_level*3;
                         new Float:range;
                         new health;
-                        switch(upgrade_revulsion)
+                        switch(revulsion_level)
                         {
                             case 1:
                             {

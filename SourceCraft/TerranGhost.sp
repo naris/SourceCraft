@@ -162,9 +162,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new upgrade_cloak=GetUpgradeLevel(player,race,0);
-            if (upgrade_cloak)
-                Cloak(client, player, upgrade_cloak);
+            new cloak_level=GetUpgradeLevel(player,race,0);
+            if (cloak_level)
+                Cloak(client, player, cloak_level);
         }
     }
 }
@@ -185,12 +185,12 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if (race == raceID && newupgradelevel > 0 && GetRace(player) == raceID)
+    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
     {
         if (upgrade==0)
-            Cloak(client, player, newupgradelevel);
+            Cloak(client, player, new_level);
     }
 }
 
@@ -207,9 +207,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new upgrade_cloak=GetUpgradeLevel(player,race,0);
-                if (upgrade_cloak)
-                    Cloak(client, player, upgrade_cloak);
+                new cloak_level=GetUpgradeLevel(player,race,0);
+                if (cloak_level)
+                    Cloak(client, player, cloak_level);
             }
         }
     }
@@ -286,10 +286,10 @@ enum RenderFx
 	RENDERFX_MAX
 };
 */
-bool:Cloak(client, Handle:player, upgradelevel)
+bool:Cloak(client, Handle:player, level)
 {
     new alpha, Float:delay, Float:duration, RenderFx:fx;
-    switch(upgradelevel)
+    switch(level)
     {
         case 1:
         {
@@ -346,11 +346,11 @@ bool:Cloak(client, Handle:player, upgradelevel)
 
 Lockdown(victim_index, Handle:player)
 {
-    new upgrade_lockdown=GetUpgradeLevel(player,raceID,1);
-    if (upgrade_lockdown)
+    new lockdown_level=GetUpgradeLevel(player,raceID,1);
+    if (lockdown_level)
     {
         new percent;
-        switch(upgrade_lockdown)
+        switch(lockdown_level)
         {
             case 1:
                 percent=15;
@@ -389,10 +389,10 @@ public Action:OcularImplants(Handle:timer)
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:detecting_range;
-                    new upgrade_detecting=GetUpgradeLevel(player,raceID,2);
-                    if (upgrade_detecting)
+                    new detecting_level=GetUpgradeLevel(player,raceID,2);
+                    if (detecting_level)
                     {
-                        switch(upgrade_detecting)
+                        switch(detecting_level)
                         {
                             case 1:
                                 detecting_range=300.0;

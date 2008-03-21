@@ -106,10 +106,10 @@ public OnXPGiven(client,Handle:player,&amount)
 {
     if (GetRace(player)==raceID && IsPlayerAlive(client))
     {
-        new upgrade_inflated_wages=GetUpgradeLevel(player,raceID,0);
-        if (upgrade_inflated_wages)
+        new inflated_wages_level=GetUpgradeLevel(player,raceID,0);
+        if (inflated_wages_level)
         {
-            switch(upgrade_inflated_wages)
+            switch(inflated_wages_level)
             {
                 case 1:
                     amount=RoundToNearest(float(amount)*1.5);
@@ -128,10 +128,10 @@ public OnCreditsGiven(client,Handle:player,&amount)
 {
     if (GetRace(player)==raceID && IsPlayerAlive(client))
     {
-        new upgrade_inflated_wages=GetUpgradeLevel(player,raceID,0);
-        if (upgrade_inflated_wages)
+        new inflated_wages_level=GetUpgradeLevel(player,raceID,0);
+        if (inflated_wages_level)
         {
-            switch(upgrade_inflated_wages)
+            switch(inflated_wages_level)
             {
                 case 1:
                     amount *= 2;
@@ -169,9 +169,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new upgrade_workrules=GetUpgradeLevel(player,race,3);
-                if (upgrade_workrules)
-                    WorkRules(client, player, upgrade_workrules);
+                new work_rules_level=GetUpgradeLevel(player,race,3);
+                if (work_rules_level)
+                    WorkRules(client, player, work_rules_level);
 
                 if (m_TeleportOnSpawn[client])
                 {
@@ -206,11 +206,11 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_race == raceID)
     {
-        new seniority_upgrade=GetUpgradeLevel(victim_player,raceID,0);
-        if (seniority_upgrade)
+        new seniority_level=GetUpgradeLevel(victim_player,raceID,0);
+        if (seniority_level)
         {
             new buyout, jobsBank, sheltered;
-            switch (seniority_upgrade)
+            switch (seniority_level)
             {
                 case 1:
                 {
@@ -296,28 +296,28 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             m_JobsBank[client]=false;
             m_TeleportOnSpawn[client]=false;
 
-            new upgrade_workrules=GetUpgradeLevel(player,race,3);
-            if (upgrade_workrules)
-                WorkRules(client, player, upgrade_workrules);
+            new work_rules_level=GetUpgradeLevel(player,race,3);
+            if (work_rules_level)
+                WorkRules(client, player, work_rules_level);
         }
     }
 }
 
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,oldupgradelevel,newupgradelevel)
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if(race == raceID && newupgradelevel > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
+    if(race == raceID && new_level > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
     {
         if (upgrade==3)
-            WorkRules(client, player, newupgradelevel);
+            WorkRules(client, player, new_level);
     }
 }
 
-public WorkRules(client, Handle:player, upgradelevel)
+public WorkRules(client, Handle:player, level)
 {
-    if (upgradelevel)
+    if (level)
     {
         new duration, Float:range, Float:cooldown;
-        switch(upgradelevel)
+        switch(level)
         {
             case 1:
             {
@@ -345,7 +345,7 @@ public WorkRules(client, Handle:player, upgradelevel)
             }
         }
         LogMessage("Give a a hook to %N, level=%d, duration=%d, range=%f, cooldown=%f",
-                   client, upgradelevel, duration, range, cooldown);
+                   client, level, duration, range, cooldown);
         GiveHook(client,duration,range,cooldown,0);
     }
 }
@@ -362,11 +362,11 @@ public Action:Negotiations(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new upgrade_negotiations=GetUpgradeLevel(player,raceID,2);
-                    if (upgrade_negotiations)
+                    new negotiations_level=GetUpgradeLevel(player,raceID,2);
+                    if (negotiations_level)
                     {
                         new percent;
-                        switch(upgrade_negotiations)
+                        switch(negotiations_level)
                         {
                             case 1:
                                 percent=10;

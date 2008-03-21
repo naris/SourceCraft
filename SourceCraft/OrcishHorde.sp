@@ -158,9 +158,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowChainLightning[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new upgrade = GetUpgradeLevel(player,race,3);
-        if (upgrade)
-            ChainLightning(player,client,upgrade);
+        new level = GetUpgradeLevel(player,race,3);
+        if (level)
+            ChainLightning(player,client,level);
     }
 }
 
@@ -275,11 +275,11 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     if (victim_race==raceID && !m_IsChangingClass[victim_index] &&
         (!m_HasRespawned[victim_index] || GameType != cstrike))
     {
-        new upgrade=GetUpgradeLevel(victim_player,victim_race,2);
-        if (upgrade)
+        new level=GetUpgradeLevel(victim_player,victim_race,2);
+        if (level)
         {
             new percent;
-            switch (upgrade)
+            switch (level)
             {
                 case 1:
                     percent=15;
@@ -290,7 +290,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                 case 4:
                     percent=80;
             }
-            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2*upgrade)
+            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2*level)
             {
                 GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
@@ -312,14 +312,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
 bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new upgrade_cs = GetUpgradeLevel(player,raceID,0);
-    if (upgrade_cs > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+    new cs_level = GetUpgradeLevel(player,raceID,0);
+    if (cs_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
                      && !IsUber(victim_index))
     {
         if(GetRandomInt(1,100)<=25)
         {
             new Float:percent;
-            switch(upgrade_cs)
+            switch(cs_level)
             {
                 case 1:
                     percent=0.40;
@@ -365,14 +365,14 @@ bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:play
         StrEqual(weapon,"weapon_bazooka",false) ||
         StrEqual(weapon,"weapon_pschreck",false))
     {
-        new upgrade_cg = GetUpgradeLevel(player,raceID,1);
-        if (upgrade_cg > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+        new cg_level = GetUpgradeLevel(player,raceID,1);
+        if (cg_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
                          && !IsUber(victim_index))
         {
             if(GetRandomInt(1,100)<=15)
             {
                 new Float:percent;
-                switch(upgrade_cg)
+                switch(cg_level)
                 {
                     case 1:
                         percent=0.35;
