@@ -100,6 +100,7 @@ public Native_KillPlayer(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         ForcePlayerSuicide(client);
 
+        /*
         new Handle:event = CreateEvent("player_death");
         if (event != INVALID_HANDLE)
         {
@@ -124,6 +125,8 @@ public Native_KillPlayer(Handle:plugin,numParams)
             SetEventBool(event, "from_sourcecraft", true);
             FireEvent(event);
         }
+        */
+
         SaveHealth(client);
         return 0;
     }
