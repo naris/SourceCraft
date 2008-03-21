@@ -460,7 +460,7 @@ SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
             else
                 LogMessage("[Undead::SuicideBomber] %N has an INVALID HANDLE!", index);
         }
-        else
+        else if (index != client)
             LogMessage("[Undead::SuicideBomber] %N is not a valid target for %N's bomb", index, client);
     }
 }

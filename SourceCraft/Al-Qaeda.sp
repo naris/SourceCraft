@@ -445,7 +445,7 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             else
                 LogMessage("[AlQaeda::Bomber] %N has an INVALID HANDLE!", index);
         }
-        else
+        else if (client != index)
             LogMessage("[AlQaeda::Bomber] %N is not a valid target for %N's bomb", index, client);
     }
 }
