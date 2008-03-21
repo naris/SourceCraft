@@ -98,7 +98,8 @@ public Native_KillPlayer(Handle:plugin,numParams)
     if (numParams >= 1 && numParams <= 4)
     {
         new client = GetNativeCell(1);
-        /*
+        ForcePlayerSuicide(client);
+
         new Handle:event = CreateEvent("player_death");
         if (event != INVALID_HANDLE)
         {
@@ -106,19 +107,14 @@ public Native_KillPlayer(Handle:plugin,numParams)
             SetEventInt(event, "attacker", (numParams >= 2) ? GetClientUserId(GetNativeCell(2)) : 0);
             if (numParams >= 3)
             {
-                decl weapon[64] = "";
+                decl String:weapon[64] = "";
                 GetNativeString(3,weapon,sizeof(weapon));
                 SetEventString(event, "weapon", weapon);
             }
             SetEventInt(event, "assister", (numParams >= 4) ? GetClientUserId(GetNativeCell(4)) : 0);
-            SetEventBool(event, "from_sourcecraft" true);
+            SetEventBool(event, "from_sourcecraft", true);
             FireEvent(event);
         }
-        */
-        // die! die! die!!!!
-        //FakeClientCommand(client,"kill\n");
-        //SetEntityHealth(client,0);
-        ForcePlayerSuicide(client);
         SaveHealth(client);
         return 0;
     }
