@@ -435,32 +435,16 @@ SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
                                 SetXP(player,raceID,newxp);
 
                                 LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                KillPlayer(index,client,"suicide_bomb");
-                                LogMessage("[Undead::SuicideBomber] %N was killed by %N's bomb (%d hp)",
-                                           index, client, hp);
                             }
                             else
                             {
                                 LogDamage(client, index, "suicide_bomb", "Suicide Bomb", hp);
                                 HurtPlayer(index,hp,client,"suicide_bomb");
-                                LogMessage("[Undead::SuicideBomber] %N was hurt by %N's bomb for %d hp",
-                                           index, client, hp);
                             }
                         }
-                        else
-                            LogMessage("[Undead::SuicideBomber] %N failed trace to %N's bomb", index, client);
                     }
-                    else
-                        LogMessage("[Undead::SuicideBomber] %N is would take no damage (%d) from %N's bomb",
-                                   index, hp, client);
                 }
-                else
-                    LogMessage("[Undead::SuicideBomber] %N is immune to %N's bomb", index, client);
             }
-            else
-                LogMessage("[Undead::SuicideBomber] %N has an INVALID HANDLE!", index);
         }
-        else if (index != client)
-            LogMessage("[Undead::SuicideBomber] %N is not a valid target for %N's bomb", index, client);
     }
 }
