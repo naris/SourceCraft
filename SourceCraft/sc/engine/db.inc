@@ -433,7 +433,7 @@ public SaveAllPlayersData(bool:threaded)
         for(new client=1;client<=playerCount;client++)
         {
             new Handle:playerHandle=GetPlayerHandle(client);
-            if (playerHandle != INVALID_HANDLE)
+            if (playerHandle != INVALID_HANDLE && IsClientInGame(client))
                 SavePlayerData(client,playerHandle,threaded);
         }
         g_AllPlayersSaved = true;
