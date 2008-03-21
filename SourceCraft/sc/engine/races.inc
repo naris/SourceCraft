@@ -81,7 +81,9 @@ public CreateRace(const String:name[],                  const String:short[],
 
 public bool:InitRaceArray()
 {
-    arrayRaces=CreateArray();
+    if (arrayRaces == INVALID_HANDLE)
+        arrayRaces = CreateArray();
+
     return bool:(arrayRaces != INVALID_HANDLE);
 }
 
@@ -92,12 +94,19 @@ public ClearRaceArray()
     {
         new Handle:vec=GetArrayCell(arrayRaces,x);
         new Handle:stringsHandle=GetArrayCell(vec,RACE_STRINGS);
-        new Handle:skillFlagsHandle=GetArrayCell(vec,RACE_SKILL_FLAGS);
-        new Handle:skillStringsHandle=GetArrayCell(vec,RACE_SKILL_STRINGS);
         ClearArray(stringsHandle);
+        CloseHandle(stringsHandle);
+
+        new Handle:skillFlagsHandle=GetArrayCell(vec,RACE_SKILL_FLAGS);
         ClearArray(skillFlagsHandle);
+        CloseHandle(skillFlagsHandle);
+
+        new Handle:skillStringsHandle=GetArrayCell(vec,RACE_SKILL_STRINGS);
         ClearArray(skillStringsHandle);
+        CloseHandle(skillStringsHandle);
+
         ClearArray(vec);
+        CloseHandle(vec);
     }
     ClearArray(arrayRaces);
 }

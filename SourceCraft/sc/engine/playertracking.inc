@@ -144,20 +144,26 @@ public ClearPlayer(client,Handle:playerHandle)
 
         new Handle:properties=GetArrayCell(playerHandle,INFO_PROPERTIES);
         ClearArray(properties);
+        CloseHandle(properties);
 
         new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
         ClearArray(shopitems);
+        CloseHandle(shopitems);
+
         new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
         ClearArray(immunities);
+        CloseHandle(immunities);
 
         new raceCount = GetRaceCount();
         for(new r=0;r<raceCount;r++)
         {
             new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+r);
             ClearArray(raceinfo);
+            CloseHandle(raceinfo);
         }
 
         ClearArray(playerHandle);
+        CloseHandle(playerHandle);
         arrayPlayers[client] = INVALID_HANDLE;
     }
 }
