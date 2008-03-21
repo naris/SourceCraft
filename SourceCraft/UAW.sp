@@ -64,15 +64,15 @@ public OnPluginReady()
                                  "You will join the UAW when you die or respawn.",
                                  16);
 
-    wageID          = AddUpgrade("Inflated Wages",
+    wageID          = AddUpgrade(raceID,"Inflated Wages",
                                  "You get paid more and level faster.");
 
-    seniorityID     = AddUpgrade("Seniority",
+    seniorityID     = AddUpgrade(raceID,"Seniority",
                                  "Gives you a 15-80% chance of immediately respawning where you died.");
 
-    negotiationID = AddUpgrade("Negotiations", "Various good and not so good things happen at random intervals\nYou might get or lose money or experience, you might also die\n (However, you will no longer ever lose levels or XP)!");
+    negotiationID = AddUpgrade(raceID,"Negotiations", "Various good and not so good things happen at random intervals\nYou might get or lose money or experience, you might also die\n (However, you will no longer ever lose levels or XP)!");
 
-    workID        = AddUpgrade("Work Rules",
+    workID        = AddUpgrade(raceID,"Work Rules",
                                "Use your ultimate bind to hook a line to a wall and traverse it.",
                                true); // Ultimate
 

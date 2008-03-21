@@ -66,16 +66,16 @@ public OnPluginReady()
                             "You are now part of the Human Alliance.",
                             "You will be part of the Human Alliance when you die or respawn.");
 
-    immunityID = AddUpgrade("Immunity",
+    immunityID = AddUpgrade(raceID,"Immunity",
                             "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking at level 3,\nand Ultimates at Level 4.");
 
-    devotionID = AddUpgrade("Devotion Aura",
+    devotionID = AddUpgrade(raceID,"Devotion Aura",
                             "Gives you additional 15-50 health each round.");
 
-    bashID     = AddUpgrade("Bash",
+    bashID     = AddUpgrade(raceID,"Bash",
                             "Gives you a 15-32\% chance to render an \nenemy immobile for 1 second.");
 
-    teleportID = AddUpgrade("Teleport",
+    teleportID = AddUpgrade(raceID,"Teleport",
                             "Allows you to teleport to where you \naim, 60-105 feet being the range.",
                             true); // Ultimate
 

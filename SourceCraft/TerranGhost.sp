@@ -84,16 +84,16 @@ public OnPluginReady()
                              "You will be a Terran Ghost when you die or respawn.",
                              32);
 
-    cloakID     = AddUpgrade("Personal Cloaking Device",
+    cloakID     = AddUpgrade(raceID,"Personal Cloaking Device",
                              "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still");
 
-    lockdownID  = AddUpgrade("Lockdown",
+    lockdownID  = AddUpgrade(raceID,"Lockdown",
                              "Have a 15-52\% chance to render an \nenemy immobile for 1 second.");
 
-    detectorID  = AddUpgrade("Ocular Implants",
+    detectorID  = AddUpgrade(raceID,"Ocular Implants",
                              "Detect cloaked units around you.");
 
-    nukeID      = AddUpgrade("Nuclear Launch",
+    nukeID      = AddUpgrade(raceID,"Nuclear Launch",
                              "Launches a Nuclear Device that does extreme damage to all players in the area.",
                              true); // Ultimate
 

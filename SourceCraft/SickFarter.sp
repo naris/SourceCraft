@@ -65,15 +65,15 @@ public OnPluginReady()
                               "You will be a Sick Fucker when you die or respawn.",
                               16);
 
-    festerID     = AddUpgrade("Festering Abomination",
+    festerID     = AddUpgrade(raceID,"Festering Abomination",
                               "Gives you a 15% chance of doing\n40-240% more damage.");
 
-    pickPocketID = AddUpgrade("Pickpocket", "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.");
+    pickPocketID = AddUpgrade(raceID,"Pickpocket", "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.");
 
-    revulsionID  = AddUpgrade("Revulsion",
+    revulsionID  = AddUpgrade(raceID,"Revulsion",
                               "Your level of Revulsion is so high, all enemies quake as you approach.");
 
-    fartID       = AddUpgrade("Flatulence",
+    fartID       = AddUpgrade(raceID,"Flatulence",
                               "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
                               true); // Ultimate
 

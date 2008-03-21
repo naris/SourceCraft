@@ -55,14 +55,14 @@ public OnPluginReady()
                               "You are now an Undead Scourge.",
                               "You will be an Undead Scourge when you die or respawn.");
 
-    vampiricID   = AddUpgrade("Vampiric Aura", "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.");
+    vampiricID   = AddUpgrade(raceID,"Vampiric Aura", "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.");
 
-    unholyID     = AddUpgrade("Unholy Aura", "Gives you a speed boost, 8-36% faster.");
+    unholyID     = AddUpgrade(raceID,"Unholy Aura", "Gives you a speed boost, 8-36% faster.");
 
-    levitationID = AddUpgrade("Levitation",
+    levitationID = AddUpgrade(raceID,"Levitation",
                               "Allows you to jump higher by \nreducing your gravity by 8-64%.");
 
-    suicideID    = AddUpgrade("Suicide Bomber", "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.", true); // Ultimate
+    suicideID    = AddUpgrade(raceID,"Suicide Bomber", "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.", true); // Ultimate
 
     FindUberOffsets();
 

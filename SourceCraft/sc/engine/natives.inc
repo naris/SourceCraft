@@ -49,12 +49,13 @@ public Native_CreateRace(Handle:plugin,numParams)
 
 /**
  * Adds an upgrade to a race
+ * @param race: The race ID returned from CreateRace
  * @param name: The name of the upgrade. (max 64)
  * @param desc: The description of the upgrade. (max 192)
  * @param ultimate: Set to true to indicate upgrade is an ultimate.
  * @return The return value will be the upgrade index or -1 if there was a problem.
  *
- * native AddUpgrade(String:name[],String:desc[],bool:ultimate=false);
+ * native AddUpgrade(race, String:name[],String:desc[],bool:ultimate=false);
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
 {

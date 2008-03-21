@@ -51,10 +51,10 @@ public OnPluginReady()
                              "You will be part of the Terran Confederacy when you die or respawn.",
                              32);
 
-    u238ID      = AddUpgrade("Depleted U-238 Shells", "Increases damage");
-    armorID     = AddUpgrade("Heavy Armor", "Reduces damage.");
-    stimpackID  = AddUpgrade("Stimpacks", "Gives you a speed boost, 8-36% faster.");
-    jetpackID   = AddUpgrade("Jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
+    u238ID      = AddUpgrade(raceID,"Depleted U-238 Shells", "Increases damage");
+    armorID     = AddUpgrade(raceID,"Heavy Armor", "Reduces damage.");
+    stimpackID  = AddUpgrade(raceID,"Stimpacks", "Gives you a speed boost, 8-36% faster.");
+    jetpackID   = AddUpgrade(raceID,"Jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 
     FindUberOffsets();
 
