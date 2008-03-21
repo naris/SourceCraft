@@ -103,15 +103,24 @@ public Native_KillPlayer(Handle:plugin,numParams)
         new Handle:event = CreateEvent("player_death");
         if (event != INVALID_HANDLE)
         {
-            SetEventInt(event, "userid", GetClientUserId(client));
-            SetEventInt(event, "attacker", (numParams >= 2) ? GetClientUserId(GetNativeCell(2)) : 0);
-            if (numParams >= 3)
+            new attacker = 0;
+            new assister = 0;
+            decl String:weapon[64] = "";
+            if (numParams >= 2)
             {
-                decl String:weapon[64] = "";
-                GetNativeString(3,weapon,sizeof(weapon));
-                SetEventString(event, "weapon", weapon);
+                attacker = GetNativeCell(2);
+                if (numParams >= 3)
+                {
+                    GetNativeString(3,weapon,sizeof(weapon));
+                    if (numParams >= 4)
+                        assister = GetNativeCell(4);
+                }
             }
-            SetEventInt(event, "assister", (numParams >= 4) ? GetClientUserId(GetNativeCell(4)) : 0);
+
+            SetEventInt(event, "userid", GetClientUserId(client));
+            SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
+            SetEventString(event, "weapon", weapon);
+            SetEventInt(event, "assister", (assister) ? GetClientUserId(assister) : 0);
             SetEventBool(event, "from_sourcecraft", true);
             FireEvent(event);
         }

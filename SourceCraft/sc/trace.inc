@@ -12,8 +12,10 @@
 
 new g_TraceFilterIndex;
 
-stock bool:TraceTarget(client, target, const Float:clientLoc[3], const Float:targetLoc[3])
+stock bool:TraceTarget(client, target, Float:clientLoc[3], Float:targetLoc[3])
 {
+    clientLoc[2] += 5.0; // Adjust trace position to the middle
+    targetLoc[2] += 5.0; // of the person instead of the feet.
     g_TraceFilterIndex = client;
     TR_TraceRayFilter(clientLoc,targetLoc,MASK_SOLID,RayType_EndPoint,TraceRayFilterIndex);
     return (TR_GetEntityIndex() == target);
