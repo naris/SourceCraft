@@ -795,6 +795,7 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
 public bool:InitNatives()
 {
     CreateNative("CreateRace",Native_CreateRace);
+    CreateNative("AddUpgrade",Native_AddUpgrade);
     CreateNative("CreateShopItem",Native_CreateShopItem);
     CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
     CreateNative("GetShopItem",Native_GetShopItem);
