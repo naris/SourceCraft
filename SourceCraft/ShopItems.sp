@@ -255,18 +255,20 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 if (GameType == cstrike)
                 {
-                    new Handle:temp=CreateArray(ByteCountToCells(128));
-                    new size=GetArraySize(vecPlayerWeapons[client]);
                     decl String:wepName[128];
                     decl String:auth[64];
                     GetClientAuthString(client,auth,sizeof(auth));
-                    PushArrayString(temp,auth);
+
+                    new Handle:args=CreateArray(ByteCountToCells(128));
+                    PushArrayString(args,auth);
+
+                    new size=GetArraySize(vecPlayerWeapons[client]);
                     for(new x=0;x<size;x++)
                     {
                         GetArrayString(vecPlayerWeapons[client],x,wepName,sizeof(wepName));
-                        PushArrayString(temp,wepName);
+                        PushArrayString(args,wepName);
                     }
-                    CreateTimer(0.2,Ankh,temp);
+                    CreateTimer(0.2,Ankh,args);
                 }
                 SetOwnsItem(player,shopItem[ITEM_ANKH],false);
             }
@@ -588,18 +590,15 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 }
 
 // Item specific
-public Action:RestoreSpeed(Handle:timer,any:temp)
+public Action:RestoreSpeed(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
     {
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
             SetOverrideSpeed(player,-1.0);
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 
@@ -747,16 +746,16 @@ public Action:TrackWeapons(Handle:timer)
     return Plugin_Continue;
 }
 
-public Action:Ankh(Handle:timer,any:temp)
+public Action:Ankh(Handle:timer,any:args)
 {
     if (GameType == cstrike)
     {
-        decl String:wepName[128];
-        decl String:auth[64];
-        GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-        new client=PlayerOfAuth(auth);
+        decl String:auth[64] = "";
+        GetArrayString(args,AUTHINFO_ID,auth,sizeof(auth));
+        new client=PlayerOfAuthString(auth);
         if(client)
         {
+            decl String:wepName[128];
             new Float:playerPos[3];
             GetClientAbsOrigin(client,playerPos);
             playerPos[2]+=5.0;
@@ -775,25 +774,24 @@ public Action:Ankh(Handle:timer,any:temp)
                 }
                 iter+=4;
             }
-            for(new x=1;x<GetArraySize(temp);x++)
+            for(new x=1;x<GetArraySize(args);x++)
             {
-                GetArrayString(temp,x,wepName,sizeof(wepName));
+                GetArrayString(args,x,wepName,sizeof(wepName));
                 new ent=GiveItem(client,wepName);
                 new ammotype=GetAmmoType(ent);
                 if(ammotype!=-1)
                     GiveAmmo(client,ammotype,1000,true);
             }
         }
+        ClearArray(args);
+        CloseHandle(args);
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 
-public Action:DoMole(Handle:timer,Handle:temp)
+public Action:DoMole(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if (client)
     {
         new team=GetClientTeam(client);
@@ -822,21 +820,17 @@ public Action:DoMole(Handle:timer,Handle:temp)
             PrintToChat(client, "%c[SourceCraft] %cCould not find a place to mole to, there are no enemies!", COLOR_GREEN,COLOR_DEFAULT);
         }
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 
-public Action:DoPeriapt(Handle:timer,Handle:temp)
+public Action:DoPeriapt(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
     {
         SaveMaxHealth(client);
         UsePeriapt(client);
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 

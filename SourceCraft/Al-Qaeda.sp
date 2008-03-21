@@ -283,11 +283,9 @@ public OnRaceSelected(client,Handle:player,oldrace,newrace)
     }
 }
 
-public Action:MadBomber(Handle:timer,any:temp)
+public Action:MadBomber(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
     {
         new Handle:player = GetPlayerHandle(client);
@@ -319,15 +317,12 @@ public Action:MadBomber(Handle:timer,any:temp)
             }
         }
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 
-public Action:Kaboom(Handle:timer,any:temp)
+public Action:Kaboom(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
     {
         new Handle:player = GetPlayerHandle(client);
@@ -337,7 +332,6 @@ public Action:Kaboom(Handle:timer,any:temp)
             Bomber(client,player,suicide_skill,true);
         }
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 

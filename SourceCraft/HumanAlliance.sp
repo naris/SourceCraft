@@ -215,17 +215,14 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     return Plugin_Continue;
 }
 
-public Action:DoDevotionAura(Handle:timer,Handle:temp)
+public Action:DoDevotionAura(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
     {
         SaveMaxHealth(client);
         DevotionAura(client, GetSkillLevel(GetPlayerHandle(client),raceID,1));
     }
-    ClearArray(temp);
     return Plugin_Stop;
 }
 

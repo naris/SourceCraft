@@ -34,25 +34,19 @@ stock RespawnPlayer(client)
         DispatchSpawn(client);
 }
 
-public Action:RespawnPlayerHandle(Handle:timer,any:temp)
+public Action:RespawnPlayerHandle(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
         RespawnPlayer(client);
-    ClearArray(temp);
     return Plugin_Stop;
 }
 
-public Action:ResetUber(Handle:timer,Handle:temp)
+public Action:ResetUber(Handle:timer,any:arg)
 {
-    decl String:auth[64];
-    GetArrayString(temp,AUTHINFO_ID,auth,sizeof(auth));
-    new client=PlayerOfAuth(auth);
+    new client=PlayerOfAuthTimer(arg);
     if(client)
         UnUberEntity(client);
-    ClearArray(temp);
     return Plugin_Stop;
 }
 
