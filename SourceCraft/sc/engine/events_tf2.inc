@@ -340,6 +340,6 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         }
     }
 
-    SaveAllPlayersData(true);
+    SaveAllPlayersData(false);
 }
 
