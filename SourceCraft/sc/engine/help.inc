@@ -23,7 +23,7 @@ public NewHelpCommand(String:name[],String:info[])
     new Handle:vec=CreateArray(ByteCountToCells(256));
     PushArrayString(vec,name);
     PushArrayString(vec,info);
-    PushArrayCell(vecHelpCommands,vec);
+    return PushArrayCell(vecHelpCommands,vec);
 }
 
 public bool:InitiateHelpVector()

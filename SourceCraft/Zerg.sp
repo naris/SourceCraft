@@ -25,7 +25,7 @@
 new String:errorWav[] = "soundcraft/perror.mp3";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, glandsID, regenerationID, healingID, tentacleID;
 
 new g_haloSprite;
 new g_lightningSprite;
@@ -50,18 +50,15 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Zerg", "zerg",
-                      "You are now part of the Zerg.",
-                      "You will be part of the Zerg when you die or respawn.",
-                      "Adrenal Glands",
-                      "Increases Melee Attack Damage",
-                      "Regeneration",
-                      "Regenerates your Health.",
-                      "Healing Aura",
-                      "Regenerates Health of all teammates in range (It does NOT heal you).",
-                      "Tentacles",
-                      "Reach out and grab an opponent.",
-                      32);
+    raceID          = CreateRace("Zerg", "zerg",
+                                 "You are now part of the Zerg.",
+                                 "You will be part of the Zerg when you die or respawn.",
+                                 32);
+
+    glandsID        = AddUpgrade("Adrenal Glands", "Increases Melee Attack Damage");
+    regenerationID  = AddUpgrade("Regeneration", "Regenerates your Health.");
+    healingID       = AddUpgrade("Healing Aura", "Regenerates Health of all teammates in range (It does NOT heal you).");
+    tentacleID      = AddUpgrade("Tentacles", "Reach out and grab an opponent.", true); // Ultimate
 
     FindUberOffsets();
 
@@ -90,7 +87,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             TakeGrab(client);
         else if (race == raceID)
         {
-            new tentacles_level=GetUpgradeLevel(player,race,3);
+            new tentacles_level=GetUpgradeLevel(player,race,tentacleID);
             if (tentacles_level)
                 Zerg_Tentacles(client, player, tentacles_level);
         }
@@ -114,7 +111,7 @@ public Action:Regeneration(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new regeneration_level=GetUpgradeLevel(player,raceID,1);
+                    new regeneration_level=GetUpgradeLevel(player,raceID,regenerationID);
                     if (regeneration_level)
                     {
                         new newhp=GetClientHealth(client)+regeneration_level;
@@ -123,7 +120,7 @@ public Action:Regeneration(Handle:timer)
                             SetEntityHealth(client,newhp);
                     }
 
-                    new healing_aura_level=GetUpgradeLevel(player,raceID,2);
+                    new healing_aura_level=GetUpgradeLevel(player,raceID,healingID);
                     if (healing_aura_level)
                     {
                         new num=healing_aura_level*5;
@@ -267,7 +264,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new tentacles_level=GetUpgradeLevel(player,race,3);
+                new tentacles_level=GetUpgradeLevel(player,race,tentacleID);
                 if (tentacles_level)
                     Zerg_Tentacles(client, player, tentacles_level);
             }
@@ -310,7 +307,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:Zerg_AdrenalGlands(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new adrenal_glands_level=GetUpgradeLevel(player,raceID,0);
+    new adrenal_glands_level=GetUpgradeLevel(player,raceID,glandsID);
     if (adrenal_glands_level)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) &&

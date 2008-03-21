@@ -26,7 +26,7 @@
 new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, strikeID, grenadeID, reincarnationID, lightningID;
 
 new bool:m_AllowChainLightning[MAXPLAYERS+1];
 new bool:m_HasRespawned[MAXPLAYERS+1];
@@ -90,18 +90,21 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Orcish Horde", // Full race name
-                      "orc", // SQLite ID name (short name, no spaces)
-                      "You are now an Orcish Horde.", // Selected Race message
-                      "You will be an Orcish Horde when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                      "Acute Strike", //Upgrade 1 Name
-                      "Gives you a 25% chance of doing\n40-120% more damage.", // Upgrade 1 Description
-                      "Acute Grenade", // Upgrade 2 Name
-                      "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.", // Upgrade 2 Description
-                      "Reincarnation", // Upgrade 3 Name
-                      "Gives you a 15-80% chance of respawning\nonce.", // Upgrade 3 Description
-                      "Chain Lightning", // Ultimate Name
-                      "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage."); // Ultimate Description
+    raceID          = CreateRace("Orcish Horde", "orc",
+                                 "You are now an Orcish Horde.",
+                                 "You will be an Orcish Horde when you die or respawn.");
+
+    strikeID        = AddUpgrade("Acute Strike",
+                                 "Gives you a 25% chance of doing\n40-120% more damage.");
+
+    grenadeID       = AddUpgrade("Acute Grenade",
+                                 "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.");
+
+    reincarnationID = AddUpgrade("Reincarnation",
+                                 "Gives you a 15-80% chance of respawning\nonce.");
+
+    lightningID     = AddUpgrade("Chain Lightning",
+                                 "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.", true); // Ultimate
 
     FindUberOffsets();
 }
@@ -158,9 +161,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowChainLightning[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new level = GetUpgradeLevel(player,race,3);
-        if (level)
-            ChainLightning(player,client,level);
+        new lightning_level = GetUpgradeLevel(player,race,lightningID);
+        if (lightning_level)
+            ChainLightning(player,client,lightning_level);
     }
 }
 
@@ -275,11 +278,11 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     if (victim_race==raceID && !m_IsChangingClass[victim_index] &&
         (!m_HasRespawned[victim_index] || GameType != cstrike))
     {
-        new level=GetUpgradeLevel(victim_player,victim_race,2);
-        if (level)
+        new reincarnation_level=GetUpgradeLevel(victim_player,victim_race,reincarnationID);
+        if (reincarnation_level)
         {
             new percent;
-            switch (level)
+            switch (reincarnation_level)
             {
                 case 1:
                     percent=15;
@@ -290,7 +293,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                 case 4:
                     percent=80;
             }
-            if (GetRandomInt(1,100)<=percent && m_ReincarnationCount[victim_index] < 2*level)
+            if (GetRandomInt(1,100)<=percent &&
+                m_ReincarnationCount[victim_index] < 2*reincarnation_level)
             {
                 GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
@@ -312,14 +316,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
 bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new cs_level = GetUpgradeLevel(player,raceID,0);
-    if (cs_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+    new strike_level = GetUpgradeLevel(player,raceID,strikeID);
+    if (strike_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
                      && !IsUber(victim_index))
     {
         if(GetRandomInt(1,100)<=25)
         {
             new Float:percent;
-            switch(cs_level)
+            switch(strike_level)
             {
                 case 1:
                     percent=0.40;
@@ -365,14 +369,14 @@ bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:play
         StrEqual(weapon,"weapon_bazooka",false) ||
         StrEqual(weapon,"weapon_pschreck",false))
     {
-        new cg_level = GetUpgradeLevel(player,raceID,1);
-        if (cg_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
-                         && !IsUber(victim_index))
+        new grenade_level = GetUpgradeLevel(player,raceID,grenadeID);
+        if (grenade_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
+                              && !IsUber(victim_index))
         {
             if(GetRandomInt(1,100)<=15)
             {
                 new Float:percent;
-                switch(cg_level)
+                switch(grenade_level)
                 {
                     case 1:
                         percent=0.35;

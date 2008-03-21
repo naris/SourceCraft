@@ -16,35 +16,76 @@ new Handle:g_OnXPGivenHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerHurtEventHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerDeathEventHandle = INVALID_HANDLE;
 
+/**
+ * Registers a race with the SourceCraft plugin
+ * @param name: The name of the race. (max 64)
+ * @param short: The shortname used for SQL stuff. (max 16) 
+ * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
+ * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
+ * @param required_level: The overeall level the player must obtain before changing to this race.
+ * @return The return value will be the race index or -1 if there was a problem.
+ *
+ * native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
+ *                   required_level=0);
+ */         
 public Native_CreateRace(Handle:plugin,numParams)
 {
-    if (numParams >=12 && numParams <= 13)
+    if (numParams >=4 && numParams <= 5)
     {
-        decl String:name[64],String:short[16],String:switchmessage_instant[192],String:switchmessage_dead[192];
-        decl String:upgrade1[64],String:upgrade1_desc[192],String:upgrade2[64],String:upgrade2_desc[192];
-        decl String:upgrade3[64],String:upgrade3_desc[192],String:ult[64],String:ult_desc[192];
+        decl String:name[64],String:short[16];
+        decl String:switchmessage_instant[192];
+        decl String:switchmessage_dead[192];
         GetNativeString(1,name,sizeof(name));
         GetNativeString(2,short,sizeof(short));
         GetNativeString(3,switchmessage_instant,sizeof(switchmessage_instant));
         GetNativeString(4,switchmessage_dead,sizeof(switchmessage_dead));
-        GetNativeString(5,upgrade1,sizeof(upgrade1));
-        GetNativeString(6,upgrade1_desc,sizeof(upgrade1_desc));
-        GetNativeString(7,upgrade2,sizeof(upgrade2));
-        GetNativeString(8,upgrade2_desc,sizeof(upgrade2_desc));
-        GetNativeString(9,upgrade3,sizeof(upgrade3));
-        GetNativeString(10,upgrade3_desc,sizeof(upgrade3_desc));
-        GetNativeString(11,ult,sizeof(ult));
-        GetNativeString(12,ult_desc,sizeof(ult_desc));
 
-        new required_level = (numParams >= 13) ? GetNativeCell(13) : 0;
+        new required_level = (numParams >= 5) ? GetNativeCell(5) : 0;
 
-        return CreateRace(name,short,switchmessage_instant,switchmessage_dead,
-                          upgrade1,upgrade1_desc,upgrade2,upgrade2_desc,upgrade3,upgrade3_desc,
-                          ult,ult_desc,required_level);
+        return CreateRace(name,short,switchmessage_instant,switchmessage_dead,required_level);
     }
     return -1;
 }
 
+/**
+ * Adds an upgrade to a race
+ * @param name: The name of the upgrade. (max 64)
+ * @param desc: The description of the upgrade. (max 192)
+ * @param ultimate: Set to true to indicate upgrade is an ultimate.
+ * @return The return value will be the upgrade index or -1 if there was a problem.
+ *
+ * native AddUpgrade(String:name[],String:desc[],bool:ultimate=false);
+ */         
+public Native_AddUpgrade(Handle:plugin,numParams)
+{
+    if (numParams >=3 && numParams <= 4)
+    {
+        new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
+        if (raceHandle != INVALID_HANDLE)
+        {
+            decl String:name[64],String:desc[192];
+            GetNativeString(2,name,sizeof(name));
+            GetNativeString(3,desc,sizeof(desc));
+
+            new bool:ultimate = false;
+            if (numParams >= 4)
+                ultimate = bool:GetNativeCell(4);
+
+            return AddUpgrade(raceHandle, name, desc, ultimate);
+        }
+    }
+    return -1;
+}
+
+/**
+ * Registers a shop item with the SourceCraft plugin
+ * @param name: The name of the item. (max 64)
+ * @param desc: The description of the item. (max 256) 
+ * @param cost: The cost of the item as a string for vector reasons. (max 4 chars)
+ * @return The return value will be the item index or -1 if there was a problem.
+ *
+ * native CreateShopItem(String:name[],String:desc[],String:cost[]);
+ */         
 public Native_CreateShopItem(Handle:plugin,numParams)
 {
     if(numParams==3)
@@ -54,24 +95,40 @@ public Native_CreateShopItem(Handle:plugin,numParams)
         GetNativeString(2,desc,sizeof(desc));
         GetNativeString(3,cost,sizeof(cost));
         new Handle:item=CreateShopItem(name,desc,cost);
-        PushArrayCell(shopVector,item);
-        return GetArraySize(shopVector)-1;
+        return PushArrayCell(shopVector,item);
     }
-    return -1;
+    else
+        return -1;
 }
 
+/**
+ * Registers a help command with the SourceCraft plugin for help
+ * @param name: The name of the command. (max 64)
+ * @param desc: The description of the command. (max 256) 
+ * @return The return value will be the help index or -1 if there was a problem.
+ *
+ * native CreateHelpCommand(String:name[],String:desc[]);
+ */
 public Native_CreateHelpCommand(Handle:plugin,numParams)
 {
     if(numParams==2)
     {
-        decl String:name[64];
+        decl String:name[64],String:desc[256];
         GetNativeString(1,name,sizeof(name));
-        decl String:desc[256];
         GetNativeString(2,desc,sizeof(desc));
-        NewHelpCommand(name,desc);
+        return NewHelpCommand(name,desc);
     }
+    else
+        return -1;
 }
 
+/**
+ * Get the ShopItem ID of a shop item
+ * @param name: The name of the item. (max 64)
+ * @return The return value will be the item index or -1 if there was a problem.
+ *
+ * native GetShopItem(String:name[]);
+ */         
 public Native_GetShopItem(Handle:plugin,numParams)
 {
     if(numParams==1)
@@ -91,6 +148,7 @@ public Native_GetShopItem(Handle:plugin,numParams)
  * @param weapon: The weapon used to deal the damage to the client.
  * @param assister: The index of the assister.
  * @noreturn
+ *
  * native KillPlayer(client, attacker=0, const String:weapon[]="", assister=0);
  */
 public Native_KillPlayer(Handle:plugin,numParams)
@@ -142,6 +200,7 @@ public Native_KillPlayer(Handle:plugin,numParams)
  * @param weapon: The weapon used to deal the damage to the client.
  * @param assister: The index of the assister.
  * @noreturn
+ *
  * native HurtPlayer(client, damage, attacker=0, const String:weapon[]="", assister=0);
  */
 public Native_HurtPlayer(Handle:plugin,numParams)
@@ -192,6 +251,7 @@ public Native_HurtPlayer(Handle:plugin,numParams)
  * @param health: The health of the client.
  * @param max:    The max health of the client.
  * @noreturn
+ *
  * native HealPlayer(client, amount,health=0,max=0);
  */
 public Native_HealPlayer(Handle:plugin,numParams)

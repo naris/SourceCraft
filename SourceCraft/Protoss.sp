@@ -27,7 +27,7 @@ new String:controlWav[] = "sourcecraft/pteSum00.wav";
 new String:unCloakWav[] = "sourcecraft/PabCag00.wav";
 new String:cloakWav[] = "sourcecraft/pabRdy00.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, scarabID, cloakID, sensorID, controlID;
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
 new Handle:cvarMindControlEnable = INVALID_HANDLE;
@@ -102,18 +102,23 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Protoss", "protoss",
-                      "You are now part of the Protoss.",
-                      "You will be part of the Protoss when you die or respawn.",
-                      "Reaver Scarabs",
-                      "Explode upon contact with enemies, causing increased damage. (Disabled)",
-                      "Arbiter Reality-Warping Field",
-                      "Cloaks all friendly units within range",
-                      "Observer Sensors",
-                      "Reveals enemy invisible units within range",
-                      "Dark Archon Mind Control",
-                      "Allows you to control an object from the opposite team.",
-                      32);
+    raceID    = CreateRace("Protoss", "protoss",
+                           "You are now part of the Protoss.",
+                           "You will be part of the Protoss when you die or respawn.",
+                           32);
+
+    scarabID  = AddUpgrade("Reaver Scarabs",
+                           "Explode upon contact with enemies, causing increased damage. (Disabled)");
+
+    cloakID   = AddUpgrade("Arbiter Reality-Warping Field",
+                           "Cloaks all friendly units within range");
+
+    sensorID  = AddUpgrade("Observer Sensors",
+                           "Reveals enemy invisible units within range");
+
+    controlID = AddUpgrade("Dark Archon Mind Control",
+                           "Allows you to control an object from the opposite team.",
+                           true); // Ultimate
 
     FindUberOffsets();
 
@@ -318,7 +323,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new rs_level = GetUpgradeLevel(player,raceID,0);
+    new rs_level = GetUpgradeLevel(player,raceID,scarabID);
     if (rs_level > 0)
     {
         new Float:percent, chance;
@@ -387,7 +392,7 @@ bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:play
 
 MindControl(client,Handle:player)
 {
-    new ult_level=GetUpgradeLevel(player,raceID,3);
+    new ult_level=GetUpgradeLevel(player,raceID,controlID);
     if(ult_level)
     {
         if (!GetConVarBool(cvarMindControlEnable))
@@ -684,7 +689,7 @@ public Action:CloakingAndDetector(Handle:timer)
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:cloaking_range;
-                    new cloaking_level=GetUpgradeLevel(player,raceID,1);
+                    new cloaking_level=GetUpgradeLevel(player,raceID,cloakID);
                     if (cloaking_level)
                     {
                         switch(cloaking_level)
@@ -701,7 +706,7 @@ public Action:CloakingAndDetector(Handle:timer)
                     }
 
                     new Float:detecting_range;
-                    new detecting_level=GetUpgradeLevel(player,raceID,2);
+                    new detecting_level=GetUpgradeLevel(player,raceID,sensorID);
                     if (detecting_level)
                     {
                         switch(detecting_level)
@@ -731,7 +736,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                     if (GetClientTeam(index) == GetClientTeam(client))
                                     {
                                         if (GetRace(player_check) == raceID &&
-                                            GetUpgradeLevel(player_check,raceID,1) > 0)
+                                            GetUpgradeLevel(player_check,raceID,cloakID) > 0)
                                         {
                                             continue; // Don't cloak other arbiters!
                                         }

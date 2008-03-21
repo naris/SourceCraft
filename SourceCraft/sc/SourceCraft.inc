@@ -20,21 +20,20 @@
  * @param short: The shortname used for SQL stuff. (max 16) 
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
  * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
- * @param upgrade1: The name of the first upgrade. (max 64)
- * @param upgrade1_desc: The description of the first upgrade. (max 192)
- * @param upgrade2: The name of the second upgrade. (max 64)
- * @param upgrade2_desc: The description of the second upgrade. (max 192)
- * @param upgrade3: The name of the third upgrade. (max 64)
- * @param upgrade3_desc: The description of the third upgrade. (max 192)
- * @param ult: The name of the ultimate. (max 64)
- * @param ult_desc: The description of the ultimate. (max 192)
  * @param required_level: The overeall level the player must obtain before changing to this race.
  * @return The return value will be the race index or -1 if there was a problem.
  */         
 native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
-                  String:upgrade1[],String:upgrade1_desc[],String:upgrade2[],String:upgrade2_desc[],
-                  String:upgrade3[],String:upgrade3_desc[],String:ult[],String:ult_desc[],
                   required_level=0);
+
+/**
+ * Adds an upgrade to a race
+ * @param name: The name of the upgrade. (max 64)
+ * @param desc: The description of the upgrade. (max 192)
+ * @param ultimate: Set to true to indicate upgrade is an ultimate.
+ * @return The return value will be the upgrade index or -1 if there was a problem.
+ */         
+native AddUpgrade(String:name[],String:desc[],bool:ultimate=false);
 
 /**
  * Registers a shop item with the SourceCraft plugin
@@ -49,7 +48,7 @@ native CreateShopItem(String:name[],String:desc[],String:cost[]);
  * Registers a help command with the SourceCraft plugin for help
  * @param name: The name of the command. (max 64)
  * @param desc: The description of the command. (max 256) 
- * @noreturn
+ * @return The return value will be the help index or -1 if there was a problem.
  */
 native CreateHelpCommand(String:name[],String:desc[]);
 

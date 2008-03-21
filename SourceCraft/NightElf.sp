@@ -24,7 +24,7 @@
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, evasionID, thornsID, trueshotID, rootsID;
 
 new bool:m_AllowEntangle[MAXPLAYERS+1];
 new Handle:cvarEntangleCooldown = INVALID_HANDLE;
@@ -53,17 +53,22 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Night Elf", "nightelf",
-            "You are now a Night Elf.",
-            "You will be a Night Elf when you die or respawn.",
-            "Evasion",
-            "Gives you 5-30% chance of evading a shot.",
-            "Thorns Aura",
-            "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.",
-            "Trueshot Aura",
-            "Does 20-80% extra damage to the \nenemy, chance is 30-60%.",
-            "Entangled Roots",
-            "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.");
+    raceID      = CreateRace("Night Elf", "nightelf",
+                             "You are now a Night Elf.",
+                             "You will be a Night Elf when you die or respawn.");
+
+    evasionID   = AddUpgrade("Evasion",
+                             "Gives you 5-30% chance of evading a shot.");
+
+    thornsID    = AddUpgrade("Thorns Aura",
+                             "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.");
+
+    trueshotID  = AddUpgrade("Trueshot Aura",
+                             "Does 20-80% extra damage to the \nenemy, chance is 30-60%.");
+
+    rootsID     = AddUpgrade("Entangled Roots",
+                             "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.",
+                             true); // Ultimate
 
     FindUberOffsets();
 }
@@ -155,7 +160,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, assister_index)
 {
-    new evasion_level = GetUpgradeLevel(victim_player,raceID,0);
+    new evasion_level = GetUpgradeLevel(victim_player,raceID,evasionID);
     if (evasion_level)
     {
         new chance;
@@ -207,7 +212,7 @@ public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, 
 
 public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new thorns_level = GetUpgradeLevel(victim_player,raceID,1);
+    new thorns_level = GetUpgradeLevel(victim_player,raceID,thornsID);
     if (thorns_level)
     {
         if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
@@ -254,7 +259,7 @@ public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:play
 public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     // Trueshot Aura
-    new trueshot_level=GetUpgradeLevel(player,raceID,2);
+    new trueshot_level=GetUpgradeLevel(player,raceID,trueshotID);
     if (trueshot_level &&
         !GetImmunity(victim_player,Immunity_HealthTake) &&
         !IsUber(victim_index))
@@ -306,7 +311,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && pressed && IsPlayerAlive(client) &&
         m_AllowEntangle[client])
     {
-        new ult_level=GetUpgradeLevel(player,race,3);
+        new ult_level=GetUpgradeLevel(player,race,rootsID);
         if(ult_level)
         {
             new Float:range=1.0;

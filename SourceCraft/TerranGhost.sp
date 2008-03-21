@@ -23,7 +23,7 @@
 
 #include "sc/log" // for debugging
 
-new raceID; // The ID we are assigned to
+new raceID, cloakID, lockdownID, detectorID, nukeID;
 
 new explosionModel;
 new g_smokeSprite;
@@ -79,18 +79,23 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Terran Ghost", "ghost",
-                      "You are now a Terran Ghost.",
-                      "You will be a Terran Ghost when you die or respawn.",
-                      "Personal Cloaking Device",
-                      "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still",
-                      "Lockdown",
-                      "Have a 15-52\% chance to render an \nenemy immobile for 1 second.",
-                      "Ocular Implants",
-                      "Detect cloaked units around you.",
-                      "Nuclear Launch",
-                      "Launches a Nuclear Device that does extreme damage to all players in the area.",
-                      32);
+    raceID      = CreateRace("Terran Ghost", "ghost",
+                             "You are now a Terran Ghost.",
+                             "You will be a Terran Ghost when you die or respawn.",
+                             32);
+
+    cloakID     = AddUpgrade("Personal Cloaking Device",
+                             "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still");
+
+    lockdownID  = AddUpgrade("Lockdown",
+                             "Have a 15-52\% chance to render an \nenemy immobile for 1 second.");
+
+    detectorID  = AddUpgrade("Ocular Implants",
+                             "Detect cloaked units around you.");
+
+    nukeID      = AddUpgrade("Nuclear Launch",
+                             "Launches a Nuclear Device that does extreme damage to all players in the area.",
+                             true); // Ultimate
 
     FindUberOffsets();
 
@@ -162,7 +167,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new cloak_level=GetUpgradeLevel(player,race,0);
+            new cloak_level=GetUpgradeLevel(player,race,cloakID);
             if (cloak_level)
                 Cloak(client, player, cloak_level);
         }
@@ -174,7 +179,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && m_AllowNuclearLaunch[client] &&
         IsPlayerAlive(client))
     {
-        new ult_level=GetUpgradeLevel(player,race,3);
+        new ult_level=GetUpgradeLevel(player,race,nukeID);
         if(ult_level)
         {
             if (pressed)
@@ -207,7 +212,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new cloak_level=GetUpgradeLevel(player,race,0);
+                new cloak_level=GetUpgradeLevel(player,race,cloakID);
                 if (cloak_level)
                     Cloak(client, player, cloak_level);
             }
@@ -346,7 +351,7 @@ bool:Cloak(client, Handle:player, level)
 
 Lockdown(victim_index, Handle:player)
 {
-    new lockdown_level=GetUpgradeLevel(player,raceID,1);
+    new lockdown_level=GetUpgradeLevel(player,raceID,lockdownID);
     if (lockdown_level)
     {
         new percent;
@@ -389,7 +394,7 @@ public Action:OcularImplants(Handle:timer)
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
                     new Float:detecting_range;
-                    new detecting_level=GetUpgradeLevel(player,raceID,2);
+                    new detecting_level=GetUpgradeLevel(player,raceID,detectorID);
                     if (detecting_level)
                     {
                         switch(detecting_level)
@@ -627,7 +632,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
         {
             new Float:radius, Float:scale;
             new r_int, magnitude, damage;
-            new ult_level=GetUpgradeLevel(player,raceID,3);
+            new ult_level=GetUpgradeLevel(player,raceID,nukeID);
             switch(ult_level)
             {
                 case 1:

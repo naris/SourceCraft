@@ -25,7 +25,7 @@
 
 new String:explodeWav[] = "weapons/explode5.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, wageID, seniorityID, negotiationID, workID;
 
 new explosionModel;
 new g_purpleGlow;
@@ -59,18 +59,22 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("UAW", "uaw",
-                      "You have joined the UAW.",
-                      "You will join the UAW when you die or respawn.",
-                      "Inflated Wages",
-                      "You get paid more and level faster.",
-                      "Seniority",
-                      "Gives you a 15-80% chance of immediately respawning where you died.",
-                      "Negotiations",
-                      "Various good and not so good things happen at random intervals\nYou might get or lose money or experience, you might also die\n (However, you will no longer ever lose levels or XP)!",
-                      "Work Rules",
-                      "Use your ultimate bind to hook a line to a wall and traverse it.",
-                      16);
+    raceID          = CreateRace("UAW", "uaw",
+                                 "You have joined the UAW.",
+                                 "You will join the UAW when you die or respawn.",
+                                 16);
+
+    wageID          = AddUpgrade("Inflated Wages",
+                                 "You get paid more and level faster.");
+
+    seniorityID     = AddUpgrade("Seniority",
+                                 "Gives you a 15-80% chance of immediately respawning where you died.");
+
+    negotiationID = AddUpgrade("Negotiations", "Various good and not so good things happen at random intervals\nYou might get or lose money or experience, you might also die\n (However, you will no longer ever lose levels or XP)!");
+
+    workID        = AddUpgrade("Work Rules",
+                               "Use your ultimate bind to hook a line to a wall and traverse it.",
+                               true); // Ultimate
 
     ControlHookGrabRope(true);
 }
@@ -106,7 +110,7 @@ public OnXPGiven(client,Handle:player,&amount)
 {
     if (GetRace(player)==raceID && IsPlayerAlive(client))
     {
-        new inflated_wages_level=GetUpgradeLevel(player,raceID,0);
+        new inflated_wages_level=GetUpgradeLevel(player,raceID,wageID);
         if (inflated_wages_level)
         {
             switch(inflated_wages_level)
@@ -128,7 +132,7 @@ public OnCreditsGiven(client,Handle:player,&amount)
 {
     if (GetRace(player)==raceID && IsPlayerAlive(client))
     {
-        new inflated_wages_level=GetUpgradeLevel(player,raceID,0);
+        new inflated_wages_level=GetUpgradeLevel(player,raceID,wageID);
         if (inflated_wages_level)
         {
             switch(inflated_wages_level)
@@ -169,7 +173,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new work_rules_level=GetUpgradeLevel(player,race,3);
+                new work_rules_level=GetUpgradeLevel(player,race,workID);
                 if (work_rules_level)
                     WorkRules(client, player, work_rules_level);
 
@@ -206,7 +210,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_race == raceID)
     {
-        new seniority_level=GetUpgradeLevel(victim_player,raceID,0);
+        new seniority_level=GetUpgradeLevel(victim_player,raceID,seniorityID);
         if (seniority_level)
         {
             new buyout, jobsBank, sheltered;
@@ -296,7 +300,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             m_JobsBank[client]=false;
             m_TeleportOnSpawn[client]=false;
 
-            new work_rules_level=GetUpgradeLevel(player,race,3);
+            new work_rules_level=GetUpgradeLevel(player,race,workID);
             if (work_rules_level)
                 WorkRules(client, player, work_rules_level);
         }
@@ -362,7 +366,7 @@ public Action:Negotiations(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new negotiations_level=GetUpgradeLevel(player,raceID,2);
+                    new negotiations_level=GetUpgradeLevel(player,raceID,negotiationID);
                     if (negotiations_level)
                     {
                         new percent;

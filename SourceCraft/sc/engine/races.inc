@@ -34,10 +34,6 @@ new gRaceForUpgrades[MAXPLAYERS+1];
 
 public CreateRace(const String:name[],                  const String:short[],
                   const String:switchmessage_instant[], const String:switchmessage_dead[],
-                  const String:upgrade1[],                const String:upgrade1_desc[],
-                  const String:upgrade2[],                const String:upgrade2_desc[],
-                  const String:upgrade3[],                const String:upgrade3_desc[],
-                  const String:ult[],                   const String:ult_desc[],
                   required_level)
 {
     new Handle:newRace=CreateArray();
@@ -49,24 +45,9 @@ public CreateRace(const String:name[],                  const String:short[],
     PushArrayString(stringsHandle,switchmessage_instant);
     PushArrayString(stringsHandle,switchmessage_dead);
 
-    // Setup Race Upgrades.
+    // Setup Race Upgrade arrays.
     new Handle:upgradeStringsHandle=CreateArray(ByteCountToCells(192));
     new Handle:upgradeFlagsHandle=CreateArray();
-    PushArrayString(upgradeStringsHandle,upgrade1);
-    PushArrayString(upgradeStringsHandle,upgrade1_desc);
-    PushArrayCell(upgradeFlagsHandle, 0);         // Normal Upgrade
-
-    PushArrayString(upgradeStringsHandle,upgrade2);
-    PushArrayString(upgradeStringsHandle,upgrade2_desc);
-    PushArrayCell(upgradeFlagsHandle, 0);         // Normal Upgrade
-
-    PushArrayString(upgradeStringsHandle,upgrade3);
-    PushArrayString(upgradeStringsHandle,upgrade3_desc);
-    PushArrayCell(upgradeFlagsHandle, 0);         // Normal Upgrade
-
-    PushArrayString(upgradeStringsHandle,ult);
-    PushArrayString(upgradeStringsHandle,ult_desc);
-    PushArrayCell(upgradeFlagsHandle, 1);         // Ultimate Upgrade
 
     // Setup Race Data.
     PushArrayCell(newRace,SaveRaceInfo(short,name)); // ident from the Database

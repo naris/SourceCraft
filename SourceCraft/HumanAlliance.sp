@@ -23,7 +23,7 @@
 new String:teleportWav[] = "beams/beamstart5.wav";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, immunityID, devotionID, bashID, teleportID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -62,17 +62,22 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Human Alliance", "human",
-                      "You are now part of the Human Alliance.",
-                      "You will be part of the Human Alliance when you die or respawn.",
-                      "Immunity",
-                      "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking at level 3,\nand Ultimates at Level 4.",
-                      "Devotion Aura",
-                      "Gives you additional 15-50 health each round.",
-                      "Bash",
-                      "Have a 15-32\% chance to render an \nenemy immobile for 1 second.",
-                      "Teleport",
-                      "Allows you to teleport to where you \naim, 60-105 feet being the range.");
+    raceID     = CreateRace("Human Alliance", "human",
+                            "You are now part of the Human Alliance.",
+                            "You will be part of the Human Alliance when you die or respawn.");
+
+    immunityID = AddUpgrade("Immunity",
+                            "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking at level 3,\nand Ultimates at Level 4.");
+
+    devotionID = AddUpgrade("Devotion Aura",
+                            "Gives you additional 15-50 health each round.");
+
+    bashID     = AddUpgrade("Bash",
+                            "Gives you a 15-32\% chance to render an \nenemy immobile for 1 second.");
+
+    teleportID = AddUpgrade("Teleport",
+                            "Allows you to teleport to where you \naim, 60-105 feet being the range.",
+                            true); // Ultimate
 
     m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
     if(m_VelocityOffset == -1)
@@ -112,19 +117,19 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             m_TeleportCount[client]=0;
             ResetMaxHealth(client);
 
-            new immune_level=GetUpgradeLevel(player,race,0);
-            if (immune_level)
-                DoImmunity(client, player, immune_level,false);
+            new immunity_level=GetUpgradeLevel(player,race,immunityID);
+            if (immunity_level)
+                DoImmunity(client, player, immunity_level,false);
         }
         else if (race == raceID)
         {
-            new immune_level=GetUpgradeLevel(player,race,0);
-            if (immune_level)
-                DoImmunity(client, player, immune_level,true);
+            new immunity_level=GetUpgradeLevel(player,race,immunityID);
+            if (immunity_level)
+                DoImmunity(client, player, immunity_level,true);
 
-            new devo_level=GetUpgradeLevel(player,race,1);
-            if (devo_level)
-                DevotionAura(client, devo_level);
+            new devotion_level=GetUpgradeLevel(player,race,devotionID);
+            if (devotion_level)
+                DevotionAura(client, devotion_level);
         }
     }
 }
@@ -133,7 +138,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
-        new ult_level=GetUpgradeLevel(player,race,3);
+        new ult_level=GetUpgradeLevel(player,race,teleportID);
         if(ult_level)
         {
             if (pressed)
@@ -202,12 +207,12 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                 GetClientAbsOrigin(client,spawnLoc[client]);
                 m_TeleportCount[client]=0;
 
-                new immune_level=GetUpgradeLevel(player,race,0);
-                if (immune_level)
-                    DoImmunity(client, player, immune_level,true);
+                new immunity_level=GetUpgradeLevel(player,race,immunityID);
+                if (immunity_level)
+                    DoImmunity(client, player, immunity_level,true);
 
-                new devo_level=GetUpgradeLevel(player,race,1);
-                if (devo_level)
+                new devotion_level=GetUpgradeLevel(player,race,devotionID);
+                if (devotion_level)
                     AuthTimer(0.1,client,DoDevotionAura);
             }
         }
@@ -221,7 +226,7 @@ public Action:DoDevotionAura(Handle:timer,any:arg)
     if(client)
     {
         SaveMaxHealth(client);
-        DevotionAura(client, GetUpgradeLevel(GetPlayerHandle(client),raceID,1));
+        DevotionAura(client, GetUpgradeLevel(GetPlayerHandle(client),raceID,devotionID));
     }
     return Plugin_Stop;
 }
@@ -325,7 +330,7 @@ DevotionAura(client, level)
 
 Bash(victim_index, Handle:player)
 {
-    new upgrade_bash=GetUpgradeLevel(player,raceID,2);
+    new upgrade_bash=GetUpgradeLevel(player,raceID,bashID);
     if (upgrade_bash)
     {
         // Bash

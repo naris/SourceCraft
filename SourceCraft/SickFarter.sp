@@ -27,7 +27,7 @@ new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:anxiousWav[] = "misc/anxious.wav";
 new String:blowerWav[] = "misc/blower.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, festerID, pickPocketID, revulsionID, fartID;
 
 new bool:m_AllowFart[MAXPLAYERS+1];
 //new Float:gFartLoc[MAXPLAYERS+1][3];
@@ -60,19 +60,22 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Sick Fucker", // Full race name
-                      "farter", // SQLite ID name (short name, no spaces)
-                      "You are now a Sick Fucker.", // Selected Race message
-                      "You will be a Sick Fucker when you die or respawn.", // Selected Race message if you are not allowed until death or respawn
-                      "Festering Abomination", //Upgrade 1 Name
-                      "Gives you a 15% chance of doing\n40-240% more damage.", // Upgrade 1 Description
-                      "Pickpocket", // Upgrade 2 Name
-                      "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.", // Upgrade 2 Description
-                      "Revulsion", // Upgrade 3 Name
-                      "Your level of Revulsion is so high, all enemies quake as you approach.", // Upgrade 3 Description
-                      "Flatulence", // Ultimate Name
-                      "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
-                      16);
+    raceID       = CreateRace("Sick Fucker", "farter",
+                              "You are now a Sick Fucker.",
+                              "You will be a Sick Fucker when you die or respawn.",
+                              16);
+
+    festerID     = AddUpgrade("Festering Abomination",
+                              "Gives you a 15% chance of doing\n40-240% more damage.");
+
+    pickPocketID = AddUpgrade("Pickpocket", "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.");
+
+    revulsionID  = AddUpgrade("Revulsion",
+                              "Your level of Revulsion is so high, all enemies quake as you approach.");
+
+    fartID       = AddUpgrade("Flatulence",
+                              "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
+                              true); // Ultimate
 
     FindUberOffsets();
 }
@@ -123,9 +126,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowFart[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new level = GetUpgradeLevel(player,race,3);
-        if (level)
-            Fart(player,client,level);
+        new fart_level = GetUpgradeLevel(player,race,fartID);
+        if (fart_level)
+            Fart(player,client,fart_level);
     }
 }
 
@@ -167,7 +170,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 {
-    new fa_level = GetUpgradeLevel(player,raceID,0);
+    new fa_level = GetUpgradeLevel(player,raceID,festerID);
     if (fa_level > 0)
     {
         if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
@@ -224,7 +227,7 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
 
 public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
-    new pp_level = GetUpgradeLevel(player,raceID,1);
+    new pp_level = GetUpgradeLevel(player,raceID,pickPocketID);
     if (pp_level > 0)
     {
         decl String:weapon[64] = "";
@@ -428,7 +431,7 @@ public Action:Revulsion(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new revulsion_level=GetUpgradeLevel(player,raceID,2);
+                    new revulsion_level=GetUpgradeLevel(player,raceID,revulsionID);
                     if (revulsion_level)
                     {
                         new num=revulsion_level*3;

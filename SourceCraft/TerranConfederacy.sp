@@ -20,7 +20,7 @@
 
 #include "sc/log" // for debugging
 
-new raceID; // The ID we are assigned to
+new raceID, u238ID, armorID, stimpackID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -46,18 +46,15 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Terran Confederacy", "terran",
-                      "You are now part of the Terran Confederacy.",
-                      "You will be part of the Terran Confederacy when you die or respawn.",
-                      "Depleted U-238 Shells",
-                      "Increases damage",
-                      "Heavy Armor",
-                      "Reduces damage.",
-                      "Stimpacks",
-                      "Gives you a speed boost, 8-36% faster.",
-                      "Jetpack",
-                      "Allows you to fly until you run out of fuel.",
-                      32);
+    raceID      = CreateRace("Terran Confederacy", "terran",
+                             "You are now part of the Terran Confederacy.",
+                             "You will be part of the Terran Confederacy when you die or respawn.",
+                             32);
+
+    u238ID      = AddUpgrade("Depleted U-238 Shells", "Increases damage");
+    armorID     = AddUpgrade("Heavy Armor", "Reduces damage.");
+    stimpackID  = AddUpgrade("Stimpacks", "Gives you a speed boost, 8-36% faster.");
+    jetpackID   = AddUpgrade("Jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 
     FindUberOffsets();
 
@@ -92,15 +89,15 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new armor_level = GetUpgradeLevel(player,raceID,1);
+            new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
                 SetupArmor(client, armor_level);
 
-            new stimpacks_level = GetUpgradeLevel(player,race,2);
+            new stimpacks_level = GetUpgradeLevel(player,race,stimpackID);
             if (stimpacks_level)
                 Stimpacks(client, player, stimpacks_level);
 
-            new jetpack_level=GetUpgradeLevel(player,race,3);
+            new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
             if (jetpack_level)
                 Jetpack(client, jetpack_level);
         }
@@ -139,7 +136,7 @@ public OnItemPurchase(client,Handle:player,item)
         new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new level=GetUpgradeLevel(player,race,2);
+            new level=GetUpgradeLevel(player,race,stimpackID);
             Stimpacks(client, player, level);
         }
     }
@@ -163,15 +160,15 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new armor_level = GetUpgradeLevel(player,raceID,1);
+                new armor_level = GetUpgradeLevel(player,raceID,armorID);
                 if (armor_level)
                     SetupArmor(client, armor_level);
 
-                new stimpacks_level = GetUpgradeLevel(player,race,2);
+                new stimpacks_level = GetUpgradeLevel(player,race,stimpackID);
                 if (stimpacks_level)
                     Stimpacks(client, player, stimpacks_level);
 
-                new jetpack_level=GetUpgradeLevel(player,race,3);
+                new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
                 if (jetpack_level)
                     Jetpack(client, jetpack_level);
             }
@@ -217,7 +214,7 @@ SetupArmor(client, level)
 
 bool:Armor(damage, victim_index, Handle:victim_player)
 {
-    new armor_level = GetUpgradeLevel(victim_player,raceID,1);
+    new armor_level = GetUpgradeLevel(victim_player,raceID,armorID);
     if (armor_level)
     {
         new Float:from_percent,Float:to_percent;
@@ -272,7 +269,7 @@ bool:Armor(damage, victim_index, Handle:victim_player)
 
 bool:U238Shells(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new u238_level = GetUpgradeLevel(player,raceID,0);
+    new u238_level = GetUpgradeLevel(player,raceID,u238ID);
     if (u238_level > 0)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))

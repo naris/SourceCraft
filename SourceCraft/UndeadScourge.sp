@@ -21,7 +21,7 @@
 
 new String:explodeWav[] = "weapons/explode5.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, vampiricID, unholyID, levitationID, suicideID;
 
 new explosionModel;
 new g_beamSprite;
@@ -51,17 +51,18 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Undead Scourge", "undead",
-                      "You are now an Undead Scourge.",
-                      "You will be an Undead Scourge when you die or respawn.",
-                      "Vampiric Aura",
-                      "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.",
-                      "Unholy Aura",
-                      "Gives you a speed boost, 8-36% faster.",
-                      "Levitation",
-                      "Allows you to jump higher by \nreducing your gravity by 8-64%.",
-                      "Suicide Bomber",
-                      "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.");
+    raceID       = CreateRace("Undead Scourge", "undead",
+                              "You are now an Undead Scourge.",
+                              "You will be an Undead Scourge when you die or respawn.");
+
+    vampiricID   = AddUpgrade("Vampiric Aura", "Gives you a 60% chance to gain 12-30% of the\ndamage you did in attack, back as health. It can\nbe blocked if the player is immune.");
+
+    unholyID     = AddUpgrade("Unholy Aura", "Gives you a speed boost, 8-36% faster.");
+
+    levitationID = AddUpgrade("Levitation",
+                              "Allows you to jump higher by \nreducing your gravity by 8-64%.");
+
+    suicideID    = AddUpgrade("Suicide Bomber", "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.", true); // Ultimate
 
     FindUberOffsets();
 
@@ -102,7 +103,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new ult_level = GetUpgradeLevel(player,race,3);
+            new ult_level = GetUpgradeLevel(player,race,suicideID);
             if (ult_level)
                 SuicideBomber(client,player,ult_level,false);
         }
@@ -128,7 +129,7 @@ public OnItemPurchase(client,Handle:player,item)
         new boots = GetShopItem("Boots of Speed");
         if (boots == item)
         {
-            new unholy_level = GetUpgradeLevel(player,race,1);
+            new unholy_level = GetUpgradeLevel(player,race,unholyID);
             UnholyAura(client,player, unholy_level);
         }
         else
@@ -136,7 +137,7 @@ public OnItemPurchase(client,Handle:player,item)
             new sock = GetShopItem("Sock of the Feather");
             if (sock == item)
             {
-                new levitation_level = GetUpgradeLevel(player,race,2);
+                new levitation_level = GetUpgradeLevel(player,race,levitationID);
                 Levitation(client,player, levitation_level);
             }
         }
@@ -154,11 +155,11 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
-            new unholy_level = GetUpgradeLevel(player,race,1);
+            new unholy_level = GetUpgradeLevel(player,race,unholyID);
             if (unholy_level)
                 UnholyAura(client, player, unholy_level);
 
-            new levitation_level = GetUpgradeLevel(player,race,2);
+            new levitation_level = GetUpgradeLevel(player,race,levitationID);
             if (levitation_level)
                 Levitation(client, player, levitation_level);
         }
@@ -178,11 +179,11 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             new race=GetRace(player);
             if(race==raceID)
             {
-                new unholy_level = GetUpgradeLevel(player,race,1);
+                new unholy_level = GetUpgradeLevel(player,race,unholyID);
                 if (unholy_level)
                     UnholyAura(index, player, unholy_level);
 
-                new levitation_level = GetUpgradeLevel(player,race,2);
+                new levitation_level = GetUpgradeLevel(player,race,levitationID);
                 if (levitation_level)
                     Levitation(index, player, levitation_level);
             }
@@ -199,9 +200,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_race == raceID && !m_Suicided[victim_index])
     {
-        new ult_level=GetUpgradeLevel(victim_player,raceID,3);
-        if (ult_level)
-            SuicideBomber(victim_index,victim_player,ult_level,true);
+        new suicide_level=GetUpgradeLevel(victim_player,raceID,suicideID);
+        if (suicide_level)
+            SuicideBomber(victim_index,victim_player,suicide_level,true);
     }
     return Plugin_Continue;
 }
@@ -298,7 +299,7 @@ Levitation(client, Handle:player, level)
 
 bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_player)
 {
-    new level = GetUpgradeLevel(player,raceID,0);
+    new level = GetUpgradeLevel(player,raceID,vampiricID);
     if (level > 0 && GetRandomInt(1,10) <= 6 &&
         !GetImmunity(victim_player, Immunity_HealthTake) &&
         !IsUber(victim_index))

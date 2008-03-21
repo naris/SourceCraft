@@ -25,7 +25,7 @@ new String:allahWav[] = "sourcecraft/allahuakbar.wav";
 new String:kaboomWav[] = "sourcecraft/iraqi_engaging.wav";
 new String:explodeWav[] = "weapons/explode5.wav";
 
-new raceID; // The ID we are assigned to
+new raceID, reincarnationID, wrathID, suicideID, bomberID;
 
 new explosionModel;
 new bigExplosionModel;
@@ -89,17 +89,22 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID=CreateRace("Al-Qaeda", "alqaeda",
-                      "You are now an Al-Qaeda.",
-                      "You will be an Al-Qaeda when you die or respawn.",
-                      "Reincarnation",
-                      "Gives you a 15-80% chance of immediately respawning where you died.",
-                      "Flaming Wrath",
-                      "You cause damage to opponents around you.",
-                      "Suicide Bomber",
-                      "You explode when you die, causing great damage to opponents around you",
-                      "Mad Bomber",
-                      "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!", 16);
+    raceID = CreateRace("Al-Qaeda", "alqaeda",
+                        "You are now an Al-Qaeda.",
+                        "You will be an Al-Qaeda when you die or respawn.",
+                        16);
+
+    reincarnationID  = AddUpgrade("Reincarnation",
+                                  "Gives you a 15-80% chance of immediately respawning where you died.");
+
+    wrathID     = AddUpgrade("Flaming Wrath",
+                             "You cause damage to opponents around you.");
+
+    suicideID   = AddUpgrade("Suicide Bomber",
+                             "You explode when you die, causing great damage to opponents around you");
+
+    bomberID    = AddUpgrade("Mad Bomber",
+                             "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!", true); // Ultimate
 
     FindUberOffsets();
 }
@@ -162,7 +167,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         if (race == raceID && IsPlayerAlive(client))
         {
-            new level = GetUpgradeLevel(player,race,3);
+            new level = GetUpgradeLevel(player,race,bomberID);
             if (level)
             {
                 EmitSoundToAll(allahWav,client);
@@ -234,7 +239,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
         }
         else
         {
-            new reincarnation_level=GetUpgradeLevel(victim_player,victim_race,0);
+            new reincarnation_level=GetUpgradeLevel(victim_player,victim_race,reincarnationID);
             if (reincarnation_level)
             {
                 new percent;
@@ -263,7 +268,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             }
         }
 
-        new suicide_level=GetUpgradeLevel(victim_player,victim_race,2);
+        new suicide_level=GetUpgradeLevel(victim_player,victim_race,suicideID);
         if (suicide_level)
         {
             EmitSoundToAll(kaboomWav,victim_index);
@@ -291,7 +296,7 @@ public Action:MadBomber(Handle:timer,any:arg)
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new ult_level=GetUpgradeLevel(player,raceID,3);
+            new ult_level=GetUpgradeLevel(player,raceID,bomberID);
             if (ult_level)
             {
                 new percent;
@@ -328,7 +333,7 @@ public Action:Kaboom(Handle:timer,any:arg)
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new suicide_level=GetUpgradeLevel(player,raceID,2);
+            new suicide_level=GetUpgradeLevel(player,raceID,suicideID);
             Bomber(client,player,suicide_level,true);
         }
     }
@@ -441,7 +446,7 @@ public Action:FlamingWrath(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new flaming_wrath_level=GetUpgradeLevel(player,raceID,1);
+                    new flaming_wrath_level=GetUpgradeLevel(player,raceID,wrathID);
                     if (flaming_wrath_level)
                     {
                         new num=flaming_wrath_level*5;
