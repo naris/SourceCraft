@@ -167,7 +167,7 @@ public OnMapStart()
 public OnMapEnd()
 {
     if (!g_AllPlayersSaved)
-        SaveAllPlayersData(false);
+        SaveAllPlayersData(true);
 }
 
 public OnClientPutInServer(client)

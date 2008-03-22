@@ -72,7 +72,7 @@ public IntroMenu(client)
     SetMenuExitButton(introMenu,false);
     if (GetRaceCount() >= 1)
     {
-        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
     }
     else
     {
