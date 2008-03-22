@@ -226,9 +226,12 @@ public OnClientDisconnect(client)
                 // Don't use threaded saves when the map is changing!
                 new bool:threaded = !g_MapChanging;
                 SavePlayerData(client,playerHandle,threaded,threaded);
+                if (!threaded)
+                    ClearPlayer(client,playerHandle);
             }
+            else
+                ClearPlayer(client,playerHandle);
 
-            ClearPlayer(client,playerHandle);
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;
         }
