@@ -159,7 +159,7 @@ public OnPluginEnd()
 
 public OnMapStart()
 {
-    LogMessage("OnMapStart()");
+    //LogMessage("OnMapStart()");
     g_MapChanging = false;
     g_AllPlayersSaved = false;
     SetupSound(notEnoughWav,true,true);
@@ -168,17 +168,17 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
+    //LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
 
-    if(SAVE_ENABLED)
+    if (SAVE_ENABLED)
     {
         // Make sure all threaded DB transactions are complete!
         SQL_LockDatabase(DBIDB);
         SQL_UnlockDatabase(DBIDB);
-    }
 
-    if (!g_AllPlayersSaved)
-        SaveAllPlayersData(true);
+        if (!g_AllPlayersSaved)
+            SaveAllPlayersData(true);
+    }
 
     g_MapChanging = false;
 }
@@ -187,7 +187,7 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        LogMessage("OnClientPutInServer(%N)", client);
+        //LogMessage("OnClientPutInServer(%N)", client);
         m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
         new Handle:playerHandle=CreatePlayer(client);
@@ -217,7 +217,7 @@ public OnClientDisconnect(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        LogMessage("OnClientDisconnect(%N), g_MapChanging=%d", client, g_MapChanging);
+        //LogMessage("OnClientDisconnect(%N), g_MapChanging=%d", client, g_MapChanging);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {

@@ -424,19 +424,15 @@ ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
 
 public SaveAllPlayersData(bool:threaded)
 {
-    //LogMessage("SaveAllPlayersData(), threaded=%d", threaded);
-    if (SAVE_ENABLED)
+    new playerCount = GetMaxClients();
+    //LogMessage("SaveAllPlayersData(), threaded=%d, playerCount=%d", threaded, playerCount);
+    for(new client=1;client<=playerCount;client++)
     {
-        new playerCount = GetMaxClients();
-        //LogMessage("Saving All Players Data, playerCount=%d", playerCount);
-        for(new client=1;client<=playerCount;client++)
-        {
-            new Handle:playerHandle=GetPlayerHandle(client);
-            if (playerHandle != INVALID_HANDLE && IsClientInGame(client))
-                SavePlayerData(client,playerHandle,threaded,threaded);
-        }
-        g_AllPlayersSaved = true;
+        new Handle:playerHandle=GetPlayerHandle(client);
+        if (playerHandle != INVALID_HANDLE && IsClientInGame(client))
+            SavePlayerData(client,playerHandle,threaded,threaded);
     }
+    g_AllPlayersSaved = true;
 }
 
 public SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)

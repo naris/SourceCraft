@@ -340,6 +340,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         }
     }
 
-    SaveAllPlayersData(true);
+    if (SAVE_ENABLED)
+        SaveAllPlayersData(!g_MapChanging);
 }
 
