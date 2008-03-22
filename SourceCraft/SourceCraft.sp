@@ -159,13 +159,23 @@ public OnPluginEnd()
 
 public OnMapStart()
 {
-    ClearPlayerArray();
-    SetupSound(notEnoughWav,true,true);
+    LogMessage("OnMapStart()");
     g_AllPlayersSaved = false;
+    SetupSound(notEnoughWav,true,true);
+    ClearPlayerArray();
 }
 
 public OnMapEnd()
 {
+    LogMessage("OnMapEnd(), g_AllPlayersSaved=%d", g_AllPlayersSaved);
+
+    if(SAVE_ENABLED)
+    {
+        // Make sure all threaded DB transactions are complete!
+        SQL_LockDatabase(DBIDB);
+        SQL_UnlockDatabase(DBIDB);
+    }
+
     if (!g_AllPlayersSaved)
         SaveAllPlayersData(true);
 }
@@ -174,6 +184,7 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
+        LogMessage("OnClientPutInServer(%N)", client);
         m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
         new Handle:playerHandle=CreatePlayer(client);
@@ -203,13 +214,14 @@ public OnClientDisconnect(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
+        LogMessage("OnClientDisconnect(%N)", client);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
             if (SAVE_ENABLED)
-                SavePlayerData(client,playerHandle,true,true);
+                SavePlayerData(client,playerHandle,false,false);
 
-            //ClearPlayer(client,playerHandle);
+            ClearPlayer(client,playerHandle);
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;
         }

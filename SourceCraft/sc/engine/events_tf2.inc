@@ -98,11 +98,11 @@ public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
             m_BaseSpeed[client]=maxSpeed;
-            new Float:classSpeed=GetClassSpeed(client);
-            new oldClass=GetClass(client);
-            new newClass=GetEventInt(event,"class");
-            LogMessage("[ChangeClass] Set BaseSpeed of %N(%d) to %f, maxSpeed=%f, classSpeed=%f, oldClass=%d, newClass=%d",
-                       client, client, m_BaseSpeed[client], maxSpeed, classSpeed, oldClass ,newClass);
+            //new Float:classSpeed=GetClassSpeed(client);
+            //new oldClass=GetClass(client);
+            //new newClass=GetEventInt(event,"class");
+            //LogMessage("[ChangeClass] Set BaseSpeed of %N(%d) to %f, maxSpeed=%f, classSpeed=%f, oldClass=%d, newClass=%d",
+            //           client, client, m_BaseSpeed[client], maxSpeed, classSpeed, oldClass ,newClass);
         }
     }
 }
@@ -165,8 +165,8 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 
     decl String:weapon[64] = "";
     GetEventString(event, "weapon", weapon, sizeof(weapon));
-    LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, index,
-               GetEventInt(event,"objecttype"), weapon);
+    //LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, index,
+    //           GetEventInt(event,"objecttype"), weapon);
 }
 
 public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -253,8 +253,8 @@ public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
             if(IsClientInGame(client))
             {
                 m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed);
-                LogMessage("[RoundActive] Set BaseSpeed of %n(%d) to %f, classSpeed=%f",
-                           client, client, m_BaseSpeed[client],GetClassSpeed(client));
+                //LogMessage("[RoundActive] Set BaseSpeed of %n(%d) to %f, classSpeed=%f",
+                //           client, client, m_BaseSpeed[client],GetClassSpeed(client));
             }
         }
     }

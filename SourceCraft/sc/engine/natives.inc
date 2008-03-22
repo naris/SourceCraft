@@ -602,8 +602,8 @@ public Native_SetVisibility(Handle:plugin,numParams)
             }
             if(indice>-1)
             {
-                LogMessage("[natives] Update visibility for %N to %d, type=%d,f1=%f,f2=%f,mode=%d,fx=%d",
-                           GetClientIndex(player), visibility,type,factor1,factor2,mode,fx);
+                //LogMessage("[natives] Update visibility for %N to %d, type=%d,f1=%f,f2=%f,mode=%d,fx=%d",
+                //           GetClientIndex(player), visibility,type,factor1,factor2,mode,fx);
                 // update existing entry
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY,visibility);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_TYPE,type);
@@ -617,8 +617,8 @@ public Native_SetVisibility(Handle:plugin,numParams)
             }
             else
             {
-                LogMessage("[natives] Set visibility for %N to %d, type=%d,f1=%f,f2=%f,mode=%d,fx=%d",
-                           GetClientIndex(player), visibility,type,factor1,factor2,mode,fx);
+                //LogMessage("[natives] Set visibility for %N to %d, type=%d,f1=%f,f2=%f,mode=%d,fx=%d",
+                //           GetClientIndex(player), visibility,type,factor1,factor2,mode,fx);
                 // create a new entry
                 indiceHandle=CreateArray();
                 PushArrayCell(indiceHandle,plugin); // plugin handle
@@ -648,7 +648,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
     {
         new Handle:player = Handle:GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
-        LogMessage("[natives] Set overridespeed of %N to %f", GetClientIndex(player), speed);
+        //LogMessage("[natives] Set overridespeed of %N to %f", GetClientIndex(player), speed);
         if (player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);

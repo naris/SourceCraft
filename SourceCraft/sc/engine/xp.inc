@@ -276,7 +276,7 @@ public GiveXP(client,Handle:playerHandle, amount, const String:reason[])
             new race=GetRace(playerHandle);
             new newxp=GetXP(playerHandle,race)+amount;
             SetXP(playerHandle,race,newxp);
-            LogMessage("%N gained %d experience for %s", client, amount, reason);
+            //LogMessage("%N gained %d experience for %s", client, amount, reason);
             PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, reason);
             if(GetLevel(playerHandle,race)!=MAX_LEVELS)
@@ -303,7 +303,7 @@ public TakeXP(client,Handle:playerHandle, amount, const String:reason[])
             new race=GetRace(playerHandle);
             new newxp=GetXP(playerHandle,race)-amount;
             SetXP(playerHandle,race,newxp);
-            LogMessage("%N lost %d experience for %s", client, amount, reason);
+            //LogMessage("%N lost %d experience for %s", client, amount, reason);
             PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, reason);
             if(GetLevel(playerHandle,race)!=MAX_LEVELS)
