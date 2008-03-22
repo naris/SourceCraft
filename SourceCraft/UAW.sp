@@ -566,5 +566,5 @@ AddCredits(client, Handle:player, amount, const String:reason[])
 {
     SetCredits(player, GetCredits(player)+amount);
     PrintToChat(client,"%c[SourceCraft]%c You have recieved %d crystals from %c%s%c!",
-                COLOR_GREEN,COLOR_DEFAULT,amount,reason,COLOR_TEAM,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,reason,COLOR_DEFAULT);
 }

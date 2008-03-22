@@ -1323,10 +1323,10 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
                     newcred=maxCredits;
                 SetCredits(targetHandle,newcred);
 
-                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%N\" %d crystal(s).",
+                PrintToChat(client, "%c[SourceCraft] %cYou gave \"%N\" %d crystals.",
                             COLOR_GREEN,COLOR_DEFAULT,target,credadd);
 
-                PrintToChat(target, "%c[SourceCraft] %cYou recieved %d crystal(s) from admin \"%N\".",
+                PrintToChat(target, "%c[SourceCraft] %cYou recieved %d crystals from admin \"%N\".",
                             COLOR_GREEN,COLOR_DEFAULT,credadd,client);
 
                 Admin_Credits(client,target);
@@ -1348,10 +1348,10 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
                     newcred=0;
                 SetCredits(targetHandle,newcred);
 
-                PrintToChat(client, "%c[SourceCraft] %cYou removed %d crystal(s) from player \"%N\".",
+                PrintToChat(client, "%c[SourceCraft] %cYou removed %d crystals from player \"%N\".",
                             COLOR_GREEN,COLOR_DEFAULT,credrem,target);
 
-                PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" removed %d crystal(s) from you.",
+                PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" removed %d crystals from you.",
                             COLOR_GREEN,COLOR_DEFAULT,client,credrem);
 
                 Admin_Credits(client,target);
