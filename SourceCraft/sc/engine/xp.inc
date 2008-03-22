@@ -86,7 +86,7 @@ public DoLevelCheck(client,Handle:playerHandle)
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(playerHandle,race,curXP-reqXP);
-                    SavePlayerData(client,playerHandle,false);
+                    SavePlayerData(client,playerHandle,true,true);
                 }
                 else
                     m_Go=false;

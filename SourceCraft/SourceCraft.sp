@@ -207,11 +207,11 @@ public OnClientDisconnect(client)
         if (playerHandle != INVALID_HANDLE)
         {
             if (SAVE_ENABLED)
-                SavePlayerData(client,playerHandle,false);
+                SavePlayerData(client,playerHandle,true,true);
 
-            ClearPlayer(client,playerHandle);
-
-            m_FirstSpawn[client]=2;
+            //ClearPlayer(client,playerHandle);
+            arrayPlayers[client] = INVALID_HANDLE;
+            m_FirstSpawn[client] = 2;
         }
     }
 }

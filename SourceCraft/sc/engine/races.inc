@@ -432,5 +432,5 @@ ResetUpgradesNow(client,Handle:playerHandle)
     if(GetLevel(playerHandle,race) > 0)
         UpgradeMenu(client, playerHandle, INVALID_FUNCTION);
 
-    SavePlayerData(client,playerHandle,false);
+    SavePlayerData(client,playerHandle,true,true);
 }

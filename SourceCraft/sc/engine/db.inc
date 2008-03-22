@@ -430,13 +430,13 @@ public SaveAllPlayersData(bool:threaded)
         {
             new Handle:playerHandle=GetPlayerHandle(client);
             if (playerHandle != INVALID_HANDLE && IsClientInGame(client))
-                SavePlayerData(client,playerHandle,threaded);
+                SavePlayerData(client,playerHandle,threaded, true);
         }
         g_AllPlayersSaved = true;
     }
 }
 
-public SavePlayerData(client, Handle:playerHandle, bool:threaded)
+public SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
 {
     if(DBIDB)
     {
@@ -465,10 +465,9 @@ public SavePlayerData(client, Handle:playerHandle, bool:threaded)
                 {
                     // When threading, copy the data first so it can't
                     // get freed while we are using it!
-                    new Handle:playerData=ClonePlayer(playerHandle);
                     new Handle:dataPack = CreateDataPack();
                     WritePackCell(dataPack, client);
-                    WritePackCell(dataPack, _:playerData);
+                    WritePackCell(dataPack, _:(cloneData ? ClonePlayer(playerHandle) :  playerHandle));
                     WritePackCell(dataPack, player_ident);
                     ResetPack(dataPack);
                     SQL_TQuery(DBIDB, SQL_UpdatePlayer, SQLString, dataPack);
@@ -565,7 +564,7 @@ public SavePlayerData(client, Handle:playerHandle, bool:threaded)
                                             client, player_ident);
 
                                     SetDatabaseIdent(playerHandle,player_ident);
-                                    SavePlayerData(client,playerHandle,threaded);
+                                    SavePlayerData(client,playerHandle,threaded,cloneData);
                                 }
                             }
                         }
@@ -673,7 +672,7 @@ public SQL_SelectPlayerIdent(Handle:owner, Handle:hndl, const String:error[], an
                 //           client, player_ident);
 
                 SetDatabaseIdent(playerHandle,player_ident);
-                SavePlayerData(client,playerHandle,true);
+                SavePlayerData(client,playerHandle,true,false);
             }
             else
             {
