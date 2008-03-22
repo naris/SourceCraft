@@ -25,7 +25,7 @@ new Handle:m_MaxCredits           = INVALID_HANDLE;
 
 new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 
-#define SAVE_ENABLED       GetConVarInt(m_SaveXPConVar)==1
+#define SAVE_ENABLED       (GetConVarInt(m_SaveXPConVar)==1 && GetRaceCount() > 0)
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
 
 // SourceCraft Includes
