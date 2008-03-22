@@ -115,6 +115,50 @@ public Handle:CreatePlayer(client)
         {
             // Something is really wrong!
             newPlayer = INVALID_HANDLE;
+            LogError("ERROR: Player %N's data got fubard!", client);
+        }
+    }
+    return newPlayer;
+}
+
+public Handle:ClonePlayer(Handle:oldPlayer)
+{
+    new Handle:newPlayer=CreateArray();
+    if (newPlayer != INVALID_HANDLE)
+    {
+        PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_CLIENT_INDEX)); // The first thing is client index
+        PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_DATABASE_IDENT)); // Database Ident
+        PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_RACE)); // Player race
+        PushArrayCell(newPlayer,-1); // Pending race
+        PushArrayCell(newPlayer,0); // Pending upgrade reset
+        PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_CREDITS)); // Credits
+        PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_OVERALL_LEVEL)); // Overall Level
+
+        // Skip the lists that don't get saved.
+        PushArrayCell(newPlayer,INVALID_HANDLE); // Player's properties
+        PushArrayCell(newPlayer,INVALID_HANDLE); // Player's shop items
+        PushArrayCell(newPlayer,INVALID_HANDLE); // Player's immunities
+
+        new raceCount = GetRaceCount();
+        for(new race=0;race<raceCount;race++)
+        {
+            new Handle:oldRaceinfo=GetArrayCell(oldPlayer,INFO_COUNT+race);
+            new Handle:newRaceinfo=CreateArray(); // Player's races
+            PushArrayCell(newPlayer,newRaceinfo);
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_XP)); // Race's XP
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_LEVEL)); // Race's Level
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_ACTIVE_ULTIMATE)); // Race's Active Ultimate Upgrade 
+            new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_UPGRADES+upgrade)); // Upgrade level for each upgrade of the race
+        }
+
+        // Perform a sanity check.
+        if (GetArraySize(newPlayer)!=(INFO_COUNT+raceCount))
+        {
+            // Something is really wrong!
+            newPlayer = INVALID_HANDLE;
+            LogError("ERROR: cloned data got fubard!");
         }
     }
     return newPlayer;
@@ -135,24 +179,32 @@ public ClearPlayer(client,Handle:playerHandle)
     if (playerHandle != INVALID_HANDLE)
     {
         new index = GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
-        if (client != index)
+        if (client && client != index)
         {
-            LogError("Attempt to clear player %d that actually contains %d",
+            LogError("ERROR: Attempt to clear player %d that actually contains %d",
                      client, index);
-            SetFailState("Player Array Corrupted!");
         }
 
         new Handle:properties=GetArrayCell(playerHandle,INFO_PROPERTIES);
-        ClearArray(properties);
-        CloseHandle(properties);
+        if (properties != INVALID_HANDLE)
+        {
+            ClearArray(properties);
+            CloseHandle(properties);
+        }
 
         new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
-        ClearArray(shopitems);
-        CloseHandle(shopitems);
+        if (shopitems != INVALID_HANDLE)
+        {
+            ClearArray(shopitems);
+            CloseHandle(shopitems);
+        }
 
         new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
-        ClearArray(immunities);
-        CloseHandle(immunities);
+        if (immunities != INVALID_HANDLE)
+        {
+            ClearArray(immunities);
+            CloseHandle(immunities);
+        }
 
         new raceCount = GetRaceCount();
         for(new r=0;r<raceCount;r++)
@@ -164,7 +216,9 @@ public ClearPlayer(client,Handle:playerHandle)
 
         ClearArray(playerHandle);
         CloseHandle(playerHandle);
-        arrayPlayers[client] = INVALID_HANDLE;
+
+        if (client)
+            arrayPlayers[client] = INVALID_HANDLE;
     }
 }
 
