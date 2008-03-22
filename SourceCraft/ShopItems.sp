@@ -317,7 +317,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_player != INVALID_HANDLE)
     {
-        if (attacker_player != INVALID_HANDLE)
+        if (victim_index != attacker_index && attacker_player != INVALID_HANDLE)
         {
             if(GetOwnsItem(attacker_player,shopItem[ITEM_SACK]))
                 LootCorpse(event, victim_index, victim_player, attacker_index, attacker_player);

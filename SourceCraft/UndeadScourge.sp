@@ -436,6 +436,7 @@ SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
                                 SetXP(player,raceID,newxp);
 
                                 LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
+                                KillPlayer(index,client,"flaming_wrath");
                             }
                             else
                             {

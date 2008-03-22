@@ -492,7 +492,7 @@ public Action:FlamingWrath(Handle:timer)
                                                 if (newhp <= 0)
                                                 {
                                                     newhp=0;
-                                                    //LogKill(client, index, "flaming_wrath", "Flaming Wrath", flaming_wrath_level);
+                                                    LogKill(client, index, "flaming_wrath", "Flaming Wrath", flaming_wrath_level);
                                                     KillPlayer(index,client,"flaming_wrath");
                                                 }
                                                 else
