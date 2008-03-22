@@ -160,6 +160,7 @@ public OnPluginEnd()
 public OnMapStart()
 {
     LogMessage("OnMapStart()");
+    g_MapChanging = false;
     g_AllPlayersSaved = false;
     SetupSound(notEnoughWav,true,true);
     ClearPlayerArray();
@@ -167,7 +168,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    LogMessage("OnMapEnd(), g_AllPlayersSaved=%d", g_AllPlayersSaved);
+    LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
 
     if(SAVE_ENABLED)
     {
@@ -178,6 +179,8 @@ public OnMapEnd()
 
     if (!g_AllPlayersSaved)
         SaveAllPlayersData(true);
+
+    g_MapChanging = false;
 }
 
 public OnClientPutInServer(client)
@@ -214,12 +217,16 @@ public OnClientDisconnect(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        LogMessage("OnClientDisconnect(%N)", client);
+        LogMessage("OnClientDisconnect(%N), g_MapChanging=%d", client, g_MapChanging);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
             if (SAVE_ENABLED)
-                SavePlayerData(client,playerHandle,false,false);
+            {
+                // Don't use threaded saves when the map is changing!
+                new bool:threaded = !g_MapChanging;
+                SavePlayerData(client,playerHandle,threaded,threaded);
+            }
 
             ClearPlayer(client,playerHandle);
             arrayPlayers[client] = INVALID_HANDLE;

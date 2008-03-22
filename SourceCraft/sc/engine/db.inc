@@ -424,7 +424,7 @@ ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
 
 public SaveAllPlayersData(bool:threaded)
 {
-    LogMessage("SaveAllPlayersData()");
+    LogMessage("SaveAllPlayersData(), threaded=%d", threaded);
     if (SAVE_ENABLED)
     {
         new playerCount = GetMaxClients();
@@ -433,7 +433,7 @@ public SaveAllPlayersData(bool:threaded)
         {
             new Handle:playerHandle=GetPlayerHandle(client);
             if (playerHandle != INVALID_HANDLE && IsClientInGame(client))
-                SavePlayerData(client,playerHandle,threaded, true);
+                SavePlayerData(client,playerHandle,threaded,threaded);
         }
         g_AllPlayersSaved = true;
     }
@@ -441,7 +441,7 @@ public SaveAllPlayersData(bool:threaded)
 
 public SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
 {
-    LogMessage("SavePlayerData(%N), DBIDB=%d", client, DBIDB);
+    LogMessage("SavePlayerData(%N), threaded=%d, clone=%d, DBIDB=%d", client, threaded, cloneData, DBIDB);
     if(DBIDB)
     {
         decl String:steamid[64]="";

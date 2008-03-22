@@ -5,13 +5,16 @@
  * Author(s): Anthony Iacono  
  * Modifications by: Naris (Murray Wilson)
  */
+
+new bool:g_MapChanging = false;
  
 public bool:InitHooks()
 {
     RegConsoleCmd("say",SayCommand);
     RegConsoleCmd("say_team",SayCommand);
-    RegConsoleCmd("shopmenu",ShopMenuCommand);
-    RegConsoleCmd("sc_menu",SCMenuCommand);
+    RegConsoleCmd("changelevel",ChangelevelCommand);
+    RegConsoleCmd("shopmenu",ShopMenuCommand,"use SourceCraft shopmenu to purchase shop items");
+    RegConsoleCmd("sc_menu",SCMenuCommand,"use SourceCraft menu to change race, reset upgrades, etc...");
     RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
     return true;
@@ -167,5 +170,11 @@ public Action:SCMenuCommand(client,args)
         MainMenu(client,playerHandle,INVALID_FUNCTION);
     }
     return Plugin_Handled;
+}
+
+public Action:ChangelevelCommand(client,args)
+{
+    g_MapChanging = true;
+    return Plugin_Continue;
 }
 

@@ -216,9 +216,6 @@ public ClearPlayer(client,Handle:playerHandle)
 
         ClearArray(playerHandle);
         CloseHandle(playerHandle);
-
-        if (client)
-            arrayPlayers[client] = INVALID_HANDLE;
     }
 }
 
