@@ -323,6 +323,17 @@ bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_play
 
         //if(leechhealth)
         {
+            LogToGame("[SourceCraft] %N leeched %d health from %N\n", index, leechhealth, victim_index);
+
+            if (IsClientInGame(index) && IsPlayerAlive(index))
+            {
+                PrintToChat(index,"%c[SourceCraft]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
+                            COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+
+                new health=GetClientHealth(index);
+                SetEntityHealth(index,health + leechhealth);
+            }
+
             new victim_health=GetClientHealth(victim_index);
             if (victim_health <= leechhealth)
             {
@@ -335,17 +346,9 @@ bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_play
 
                 PrintToChat(victim_index,"%c[SourceCraft] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
                         COLOR_GREEN,index,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
-
-                PrintToChat(index,"%c[SourceCraft]%c You have leeched %d hp from %N using %cVampiric Aura%c.",
-                        COLOR_GREEN,COLOR_DEFAULT,leechhealth,victim_index,COLOR_TEAM,COLOR_DEFAULT);
-
-                LogToGame("[SourceCraft] %N leeched %d health from %N\n", index, leechhealth, victim_index);
             }
 
             SetEntityHealth(victim_index, victim_health);
-
-            new health=GetClientHealth(index);
-            SetEntityHealth(index,health + leechhealth);
 
             new Float:start[3];
             GetClientAbsOrigin(index, start);
