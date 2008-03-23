@@ -311,7 +311,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    LogMessage("RoundOver Event %d occurred", name);
+    //LogMessage("RoundOver Event %d occurred", name);
 
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
