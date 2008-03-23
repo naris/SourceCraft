@@ -400,7 +400,7 @@ public Fart(Handle:player,client,ultlevel)
     }
     else
     {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
     }
 
     if (cooldown > 0.0)
