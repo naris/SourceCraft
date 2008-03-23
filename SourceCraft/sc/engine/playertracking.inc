@@ -305,21 +305,24 @@ public Handle:GetPropertyInfo(Handle:playerHandle)
     return GetArrayCell(playerHandle,INFO_PROPERTIES);
 }
 
-public Handle:GetShopItemInfo(Handle:playerHandle)
-{
-    return GetArrayCell(playerHandle,INFO_SHOPITEMS);
-}
-
 public GetOwnsItem(Handle:playerHandle,item)
 {
-    new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
-    return GetArrayCell(shopitems,item);
+    if (GetShopItemCount() >= 1)
+    {
+        new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
+        return GetArrayCell(shopitems,item);
+    }
+    else
+        return 0;
 }
 
 public SetOwnsItem(Handle:playerHandle,item,owns)
 {
-    new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
-    SetArrayCell(shopitems,item,owns);
+    if (GetShopItemCount() >= 1)
+    {
+        new Handle:shopitems=GetArrayCell(playerHandle,INFO_SHOPITEMS);
+        SetArrayCell(shopitems,item,owns);
+    }
 }
 
 public Handle:GetImmunityInfo(Handle:playerHandle)
@@ -339,99 +342,132 @@ public SetImmunity(Handle:playerHandle,immunity,imm_state)
     SetArrayCell(immunities,immunity,imm_state);
 }
 
-public Handle:GetRaceInfo(Handle:playerHandle,race)
-{
-    return GetArrayCell(playerHandle,INFO_COUNT+race);
-}
-
 public GetXP(Handle:playerHandle,race)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    return GetArrayCell(raceinfo,RACEINFO_XP);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        return GetArrayCell(raceinfo,RACEINFO_XP);
+    }
+    else
+        return 0;
 }
 
 public SetXP(Handle:playerHandle,race,xp)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    SetArrayCell(raceinfo,RACEINFO_XP,xp);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        SetArrayCell(raceinfo,RACEINFO_XP,xp);
+    }
 }
 
 public GetLevel(Handle:playerHandle,race)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    return GetArrayCell(raceinfo,RACEINFO_LEVEL);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        return GetArrayCell(raceinfo,RACEINFO_LEVEL);
+    }
+    else
+        return 0;
 }
 
 public SetLevel(Handle:playerHandle,race,level)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    SetArrayCell(raceinfo,RACEINFO_LEVEL,level);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        SetArrayCell(raceinfo,RACEINFO_LEVEL,level);
+    }
 }
 
 public GetActiveUltimate(Handle:playerHandle,race)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    return GetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        return GetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE);
+    }
+    else
+        return -1;
 }
 
 public SetActiveUltimate(Handle:playerHandle,race,upgrade)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
+    }
 }
 
 public GetUpgradeLevel(Handle:playerHandle,race,upgrade)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    return GetArrayCell(raceinfo,RACEINFO_UPGRADES+upgrade);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        return GetArrayCell(raceinfo,RACEINFO_UPGRADES+upgrade);
+    }
+    else
+        return 0;
 }
 
 public SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new num=RACEINFO_UPGRADES+upgrade;
-    new old=GetArrayCell(raceinfo,num);
-    SetArrayCell(raceinfo,num,level);
-    Call_StartForward(g_OnUpgradeLevelChangedHandle);
-    Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
-    Call_PushCell(playerHandle);
-    Call_PushCell(race);
-    Call_PushCell(upgrade);
-    Call_PushCell(old);
-    Call_PushCell(level);
-    new result;
-    Call_Finish(result);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        new num=RACEINFO_UPGRADES+upgrade;
+        new old=GetArrayCell(raceinfo,num);
+        SetArrayCell(raceinfo,num,level);
+        Call_StartForward(g_OnUpgradeLevelChangedHandle);
+        Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
+        Call_PushCell(playerHandle);
+        Call_PushCell(race);
+        Call_PushCell(upgrade);
+        Call_PushCell(old);
+        Call_PushCell(level);
+        new result;
+        Call_Finish(result);
+    }
 }
 
 public IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
 {
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new num=RACEINFO_UPGRADES+upgrade;
-    new old=GetArrayCell(raceinfo,num);
-    new level=old+1;
-    SetArrayCell(raceinfo,num,level);
-    if (isUltimate)
-        SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        new num=RACEINFO_UPGRADES+upgrade;
+        new old=GetArrayCell(raceinfo,num);
+        new level=old+1;
+        SetArrayCell(raceinfo,num,level);
+        if (isUltimate)
+            SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
 
-    Call_StartForward(g_OnUpgradeLevelChangedHandle);
-    Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
-    Call_PushCell(playerHandle);
-    Call_PushCell(race);
-    Call_PushCell(upgrade);
-    Call_PushCell(old);
-    Call_PushCell(level);
-    new result;
-    Call_Finish(result);
+        Call_StartForward(g_OnUpgradeLevelChangedHandle);
+        Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
+        Call_PushCell(playerHandle);
+        Call_PushCell(race);
+        Call_PushCell(upgrade);
+        Call_PushCell(old);
+        Call_PushCell(level);
+        new result;
+        Call_Finish(result);
+    }
 }
 
 public GetUpgradeLevelCount(Handle:playerHandle,race)
 {
     new ret=0;
-    new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-    new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
-    new num=RACEINFO_UPGRADES+upgradeCount;
-    for(new x=RACEINFO_UPGRADES;x<num;x++)
-        ret+=GetArrayCell(raceinfo,x);
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+        new num=RACEINFO_UPGRADES+upgradeCount;
+        for(new x=RACEINFO_UPGRADES;x<num;x++)
+            ret+=GetArrayCell(raceinfo,x);
+    }
     return ret;
 }
 
@@ -462,7 +498,7 @@ public Action:PlayerProperties(Handle:timer)
 
                     new bool:isStill = IsStill(client);
 
-                    new Handle:pinfo=GetPropertyInfo(playerHandle);
+                    new Handle:pinfo=GetArrayCell(playerHandle,INFO_PROPERTIES);
                     for(new y=0;y<GetArraySize(pinfo);y++)
                     {
                         // check which plugin is the highest/lowest bidder, but first, override?

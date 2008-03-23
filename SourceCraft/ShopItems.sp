@@ -874,7 +874,7 @@ LootCorpse(Handle:event,victim_index, Handle:victim_player, index, Handle:player
             SetCredits(victim_player,victim_cash-amount);
             SetCredits(player,cash+amount);
 
-            LogMessage("%N stole %d crystals(s) from %N", index, amount, victim_index);
+            LogToGame("%N stole %d crystals from %N", index, amount, victim_index);
 
             PrintToChat(index,"%c[SourceCraft]%c You have looted %d %s from %N!",
                         COLOR_GREEN,COLOR_DEFAULT,amount,
