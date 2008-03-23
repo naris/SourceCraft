@@ -19,10 +19,13 @@
 
 public ShowCredits(client,Handle:playerHandle)
 {
-    new credits=GetCredits(playerHandle);
-    PrintToChat(client,"%c[SourceCraft] %cYou have %d %s.",
-                COLOR_GREEN,COLOR_DEFAULT,credits,
-                (credits == 1) ? "crystal" : "crystals");
+    if (GetShopItemCount() >= 1)
+    {
+        new credits=GetCredits(playerHandle);
+        PrintToChat(client,"%c[SourceCraft] %cYou have %d %s.",
+                    COLOR_GREEN,COLOR_DEFAULT,credits,
+                    (credits == 1) ? "crystal" : "crystals");
+    }
 }
 
 public GiveKillCredits(client,Handle:playerHandle)
@@ -70,38 +73,41 @@ public GiveMvpCredits(client,Handle:playerHandle,place,points)
 
 public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
 {
-    new Action:result;
-    Call_StartForward(g_OnCreditsGivenHandle);
-    Call_PushCell(client);
-    Call_PushCell(playerHandle);
-    Call_PushCellRef(amount);
-    Call_PushCell(false);
-    Call_Finish(result);
-
-    if (result != Plugin_Stop)
+    if (GetShopItemCount() >= 1)
     {
-        new curcredits=GetCredits(playerHandle);
-        new newcredits=curcredits+amount;
+        new Action:result;
+        Call_StartForward(g_OnCreditsGivenHandle);
+        Call_PushCell(client);
+        Call_PushCell(playerHandle);
+        Call_PushCellRef(amount);
+        Call_PushCell(false);
+        Call_Finish(result);
 
-        new maxCredits = GetConVarInt(m_MaxCredits);
-        if(newcredits <= maxCredits || maxCredits == 0)
+        if (result != Plugin_Stop)
         {
-            SetCredits(playerHandle,newcredits);
-            LogToGame("%N gained %d crystals(s) for %s", client, amount, reason);
-            PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
+            new curcredits=GetCredits(playerHandle);
+            new newcredits=curcredits+amount;
+
+            new maxCredits = GetConVarInt(m_MaxCredits);
+            if(newcredits <= maxCredits || maxCredits == 0)
+            {
+                SetCredits(playerHandle,newcredits);
+                LogToGame("%N gained %d crystals(s) for %s", client, amount, reason);
+                PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
                         COLOR_GREEN,COLOR_DEFAULT,amount,
                         (amount == 1) ? "crystal" : "crystals", reason);
-        }
-        else
-        {
-            new amt = maxCredits-amount;
-            if (amt > 0)
+            }
+            else
             {
-                SetCredits(playerHandle,maxCredits);
-                LogToGame("%N gained %d crystal(s) for %s", client, amt, reason);
-                PrintToChat(client, "%c[SourceCraft] %cThe max amount of crystals is %d, so you have gained %d %s for %s.",
-                        COLOR_GREEN,COLOR_DEFAULT,maxCredits,amt,
-                        (amt == 1) ? "crystal" : "crystals", reason);
+                new amt = maxCredits-amount;
+                if (amt > 0)
+                {
+                    SetCredits(playerHandle,maxCredits);
+                    LogToGame("%N gained %d crystal(s) for %s", client, amt, reason);
+                    PrintToChat(client, "%c[SourceCraft] %cThe max amount of crystals is %d, so you have gained %d %s for %s.",
+                            COLOR_GREEN,COLOR_DEFAULT,maxCredits,amt,
+                            (amt == 1) ? "crystal" : "crystals", reason);
+                }
             }
         }
     }
