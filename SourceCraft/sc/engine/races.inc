@@ -417,7 +417,7 @@ public ShowUpgrades_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-ResetUpgradesNow(client,Handle:playerHandle)
+public ResetUpgradesNow(client,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
     SetActiveUltimate(playerHandle,race,-1);

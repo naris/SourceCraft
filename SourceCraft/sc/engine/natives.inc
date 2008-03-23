@@ -356,6 +356,19 @@ public Native_SetUpgradeLevel(Handle:plugin,numParams)
     }
 }
 
+public Native_ResetUpgradeLevels(Handle:plugin,numParams)
+{
+    if (numParams==1)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        if (player != INVALID_HANDLE)
+        {
+            ResetUpgradesNow(GetClientIndex(player),
+                             player);
+        }
+    }
+}
+
 public Native_GetXP(Handle:plugin,numParams)
 {
     if (numParams==2)
@@ -810,6 +823,7 @@ public bool:InitNatives()
     CreateNative("SetLevel",Native_SetLevel);
     CreateNative("GetUpgradeLevel",Native_GetUpgradeLevel);
     CreateNative("SetUpgradeLevel",Native_SetUpgradeLevel);
+    CreateNative("ResetUpgradeLevels",Native_ResetUpgradeLevels);
     CreateNative("GetXP",Native_GetXP);
     CreateNative("SetXP",Native_SetXP);
     CreateNative("GetCredits",Native_GetCredits);

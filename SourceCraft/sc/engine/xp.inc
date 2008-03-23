@@ -8,8 +8,6 @@
  * Modifications by: Naris (Murray Wilson)
  */
  
-#define MAX_LEVELS          16
-
 #define HEADSHOT_XP         10
 #define BACKSTAB_XP         10
 #define ASSIST_XP           10
@@ -47,7 +45,7 @@ KillXP(level)
         return 0;
 }
 
-ReqLevelXP(level)
+public ReqLevelXP(level)
 {
     new Handle:temp;
     if(SAVE_ENABLED)
@@ -281,7 +279,7 @@ public GiveXP(client,Handle:playerHandle, amount, const String:reason[])
             LogToGame("%N gained %d experience for %s", client, amount, reason);
             PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, reason);
-            if(GetLevel(playerHandle,race)!=MAX_LEVELS)
+            if(GetLevel(playerHandle,race)<MAX_LEVELS)
                 DoLevelCheck(client,playerHandle);
         }
     }
@@ -308,7 +306,7 @@ public TakeXP(client,Handle:playerHandle, amount, const String:reason[])
             LogToGame("%N lost %d experience for %s", client, amount, reason);
             PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
                     COLOR_GREEN,COLOR_DEFAULT,amount, reason);
-            if(GetLevel(playerHandle,race)!=MAX_LEVELS)
+            if(GetLevel(playerHandle,race)<MAX_LEVELS)
                 DoLevelCheck(client,playerHandle);
         }
     }

@@ -354,6 +354,11 @@ public SetXP(Handle:playerHandle,race,xp)
     {
         new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         SetArrayCell(raceinfo,RACEINFO_XP,xp);
+        if (GetArrayCell(raceinfo,RACEINFO_LEVEL) < MAX_LEVELS)
+        {
+            DoLevelCheck(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
+                         playerHandle);
+        }
     }
 }
 
@@ -368,12 +373,29 @@ public GetLevel(Handle:playerHandle,race)
         return 0;
 }
 
-public SetLevel(Handle:playerHandle,race,level)
+public SetLevel(Handle:playerHandle,race,new_level)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
         new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
-        SetArrayCell(raceinfo,RACEINFO_LEVEL,level);
+        new old_level = GetArrayCell(raceinfo,RACEINFO_LEVEL);
+        new difference = new_level-old_level;
+        if (difference != 0)
+        {
+            new overall_level = GetArrayCell(playerHandle,INFO_OVERALL_LEVEL);
+            SetArrayCell(raceinfo,RACEINFO_LEVEL,new_level);
+            SetArrayCell(playerHandle,INFO_OVERALL_LEVEL,overall_level+difference);
+            if (difference < 0)
+            {
+                ResetUpgradesNow(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
+                                 playerHandle);
+            }
+            else // (difference > 0)
+            {
+                UpgradeMenu(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
+                            playerHandle, INVALID_FUNCTION);
+            }
+        }
     }
 }
 

@@ -153,7 +153,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
                 case 4: // spendupgrades
                 {
                     new race=GetRace(playerHandle);
-                    if(GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                    if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                         UpgradeMenu(client, playerHandle, MainMenu);
                     else
                     {

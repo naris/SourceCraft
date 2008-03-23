@@ -167,6 +167,13 @@ native GetUpgradeLevel(Handle:player,race,upgrade);
 native SetUpgradeLevel(Handle:player,race,upgrade,newlevel);
 
 /**
+ * Resets the levels for the upgrade for the curerent race.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @noreturn
+ */
+native ResetSetUpgradeLevels(Handle:player);
+
+/**
  * Gets the amount of Credits a player has.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @return The return value will be the xp, if -1 then it failed.

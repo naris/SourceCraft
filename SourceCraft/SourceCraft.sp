@@ -27,6 +27,7 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 
 #define SAVE_ENABLED       (GetConVarInt(m_SaveXPConVar)==1 && GetRaceCount() > 0)
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
+#define MAX_LEVELS         16
 
 // SourceCraft Includes
 #include "sc/util"
@@ -44,9 +45,9 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/engine/playertracking"
 #include "sc/engine/db"
 #include "sc/engine/natives"
-#include "sc/engine/hooks"
-#include "sc/engine/xp"
 #include "sc/engine/credits"
+#include "sc/engine/xp"
+#include "sc/engine/hooks"
 #include "sc/engine/console"
 #include "sc/engine/tf2classes"
 #include "sc/engine/menus"
