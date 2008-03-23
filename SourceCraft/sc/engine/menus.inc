@@ -220,7 +220,7 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)

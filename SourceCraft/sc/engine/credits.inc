@@ -94,8 +94,8 @@ public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
                 SetCredits(playerHandle,newcredits);
                 LogToGame("%N gained %d crystals(s) for %s", client, amount, reason);
                 PrintToChat(client, "%c[SourceCraft] %cYou have gained %d %s for %s.",
-                        COLOR_GREEN,COLOR_DEFAULT,amount,
-                        (amount == 1) ? "crystal" : "crystals", reason);
+                            COLOR_GREEN,COLOR_DEFAULT,amount,
+                            (amount == 1) ? "crystal" : "crystals", reason);
             }
             else
             {
@@ -105,8 +105,7 @@ public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
                     SetCredits(playerHandle,maxCredits);
                     LogToGame("%N gained %d crystal(s) for %s", client, amt, reason);
                     PrintToChat(client, "%c[SourceCraft] %cThe max amount of crystals is %d, so you have gained %d %s for %s.",
-                            COLOR_GREEN,COLOR_DEFAULT,maxCredits,amt,
-                            (amt == 1) ? "crystal" : "crystals", reason);
+                                COLOR_GREEN,COLOR_DEFAULT,maxCredits,amt,(amt == 1) ? "crystal" : "crystals", reason);
                 }
             }
         }

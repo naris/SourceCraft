@@ -232,11 +232,6 @@ public Action:CMD_SetLevel(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new level=StringToInt(buf);
         if(level<0)
             level=0;
@@ -244,9 +239,7 @@ public Action:CMD_SetLevel(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new Handle:playerHandle=GetPlayerHandle(index);
             if (playerHandle != INVALID_HANDLE)
             {
@@ -259,9 +252,9 @@ public Action:CMD_SetLevel(client,args)
                 if(level<0)
                     level=0;
                 SetLevel(playerHandle,race,level);
-                PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" level to %d.",name,level);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your level to %d, re-pick your upgrades.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,level);
+                PrintToConsole(client,"[SourceCraft] You just set player \"%N's\" level to %d.",index,level);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" set your level to %d, re-pick your upgrades.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,level);
                 if(level>0)
                     UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
             }
@@ -280,32 +273,25 @@ public Action:CMD_GiveLevel(client,args)
     {
         decl String:match[64];
         GetCmdArg(1,match,63);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new Handle:matchHandle=CreateArray();
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new Handle:playerHandle=GetPlayerHandle(index);
             if (playerHandle != INVALID_HANDLE)
             {
                 new race=GetRace(playerHandle);
                 new newlevel=GetLevel(playerHandle,race)+1;
                 if(newlevel>MAX_LEVELS)
-                    PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at their max level.",name);
+                    PrintToConsole(client,"[SourceCraft] Player \"%N\" is already at their max level.",index);
                 else
                 {
                     SetLevel(playerHandle,race,newlevel);
                     SetOverallLevel(playerHandle, GetOverallLevel(playerHandle)+1);
-                    PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" a level.",name);
-                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" gave you a level.",
-                                COLOR_GREEN,COLOR_DEFAULT,adminname);
+                    PrintToConsole(client,"[SourceCraft] You just gave player \"%N\" a level.",index);
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" gave you a level.",
+                                COLOR_GREEN,COLOR_DEFAULT,client);
                     UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
                 }
             }
@@ -324,25 +310,18 @@ public Action:CMD_RemoveLevel(client,args)
     {
         decl String:match[64];
         GetCmdArg(1,match,63);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new Handle:matchHandle=CreateArray();
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new Handle:playerHandle=GetPlayerHandle(index);
             if (playerHandle != INVALID_HANDLE)
             {
                 new race=GetRace(playerHandle);
                 new newlevel=GetLevel(playerHandle,race)-1;
                 if(newlevel<0)
-                    PrintToConsole(client,"[SourceCraft] Player \"%s\" is already at level 0.",name);
+                    PrintToConsole(client,"[SourceCraft] Player \"%N\" is already at level 0.",index);
                 else
                 {
                     new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
@@ -350,9 +329,9 @@ public Action:CMD_RemoveLevel(client,args)
                         SetUpgradeLevel(playerHandle,race,y,0);
                     SetLevel(playerHandle,race,newlevel);
                     SetOverallLevel(playerHandle, GetOverallLevel(playerHandle)-1);
-                    PrintToConsole(client,"[SourceCraft] You just removed a level from player \"%s\".",name);
-                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed a level from you, re-pick your upgrades.",
-                                COLOR_GREEN,COLOR_DEFAULT,adminname);
+                    PrintToConsole(client,"[SourceCraft] You just removed a level from player \"%N\".",index);
+                    PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" removed a level from you, re-pick your upgrades.",
+                                COLOR_GREEN,COLOR_DEFAULT,client);
                     if(newlevel>0)
                         UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
                 }
@@ -374,11 +353,6 @@ public Action:CMD_SetCredits(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new credits=StringToInt(buf);
         if(credits<0)
             credits=0;
@@ -390,16 +364,14 @@ public Action:CMD_SetCredits(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new Handle:playerHandle=GetPlayerHandle(index);
             if (playerHandle != INVALID_HANDLE)
             {
                 SetCredits(playerHandle,credits);
-                PrintToConsole(client,"[SourceCraft] You just set player \"%s's\" crystals to %d.",name,credits);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" set your crystals to %d.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
+                PrintToConsole(client,"[SourceCraft] You just set player \"%N's\" crystals to %d.",index,credits);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" set your crystals to %d.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -418,11 +390,6 @@ public Action:CMD_GiveCredits(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new credits=StringToInt(buf);
         if(credits<0)
             credits=0;
@@ -431,9 +398,7 @@ public Action:CMD_GiveCredits(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new Handle:playerHandle=GetPlayerHandle(index);
             if (playerHandle != INVALID_HANDLE)
             {
@@ -444,9 +409,9 @@ public Action:CMD_GiveCredits(client,args)
                 if(newcreds>maxCredits)
                     newcreds=maxCredits;
                 SetCredits(playerHandle,newcreds);
-                PrintToConsole(client,"[SourceCraft] You just gave player \"%s\" %d crystals.",name,credits);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" give you %d crystals.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
+                PrintToConsole(client,"[SourceCraft] You just gave player \"%N\" %d crystals.",index,credits);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" give you %d crystals.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -465,11 +430,6 @@ public Action:CMD_RemoveCredits(client,args)
         GetCmdArg(1,match,63);
         decl String:buf[32];
         GetCmdArg(2,buf,31);
-        new String:adminname[64];
-        if(client!=0)
-            GetClientName(client,adminname,63);
-        else
-            adminname="Console";
         new credits=StringToInt(buf);
         if(credits<0)
             credits=0;
@@ -478,9 +438,7 @@ public Action:CMD_RemoveCredits(client,args)
         PlayerParse(match,matchHandle);
         for(new x=0;x<GetArraySize(matchHandle);x++)
         {
-            decl String:name[64];
             new index=GetArrayCell(matchHandle,x);
-            GetClientName(index,name,63);
             new Handle:playerHandle=GetPlayerHandle(index);
             if (playerHandle != INVALID_HANDLE)
             {
@@ -491,9 +449,9 @@ public Action:CMD_RemoveCredits(client,args)
                 if(newcreds>maxCredits)
                     newcreds=maxCredits;
                 SetCredits(playerHandle,newcreds);
-                PrintToConsole(client,"[SourceCraft] You just removed %d crystals from player \"%s\".",credits,name);
-                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%s\" removed %d crystals from you.",
-                            COLOR_GREEN,COLOR_DEFAULT,adminname,credits);
+                PrintToConsole(client,"[SourceCraft] You just removed %d crystals from player \"%N\".",credits,index);
+                PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" removed %d crystals from you.",
+                            COLOR_GREEN,COLOR_DEFAULT,client,credits);
             }
         }
         if(GetArraySize(matchHandle)==0)
