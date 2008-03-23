@@ -980,11 +980,11 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 						PrintToChatAll("%N played %s", client, name);
 					}
 					if (GetConVarBool(cvarlogging)){
-						LogMessage("%s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
+						LogToGame("[Say Sounds] %s%N played %s%s(%s)", isadmin ? "Admin " : "", client,
 							   adminonly ? "admin sound " : "", name, filelocation);
 					}
 				}else if (GetConVarBool(cvarlogging)){
-					LogMessage("[Say Sounds] played %s", filelocation);
+					LogToGame("[Say Sounds] played %s", filelocation);
 				}
 			}
 		}
