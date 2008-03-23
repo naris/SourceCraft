@@ -163,8 +163,8 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
             GiveObjectDestroyedXP(assister_index,assister_player);
     }
 
-    decl String:weapon[64] = "";
-    GetEventString(event, "weapon", weapon, sizeof(weapon));
+    //decl String:weapon[64] = "";
+    //GetEventString(event, "weapon", weapon, sizeof(weapon));
     //LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, index,
     //           GetEventInt(event,"objecttype"), weapon);
 }
