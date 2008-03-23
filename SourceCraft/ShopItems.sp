@@ -555,12 +555,15 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
                 if (GetOwnsItem(attacker_player,shopItem[ITEM_MASK]))
                 {
-                    new newhealth=GetClientHealth(attacker_index)+2;
-                    SetEntityHealth(attacker_index,newhealth);
-                    changed = true;
+                    if (IsClientInGame(attacker_index) && IsPlayerAlive(attacker_index))
+                    {
+                        new newhealth=GetClientHealth(attacker_index)+2;
+                        SetEntityHealth(attacker_index,newhealth);
+                        changed = true;
 
-                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
-                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                        PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
+                                    COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                    }
                 }
 
                 if (assister_player != INVALID_HANDLE &&
