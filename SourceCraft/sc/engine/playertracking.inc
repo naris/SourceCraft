@@ -325,11 +325,6 @@ public SetOwnsItem(Handle:playerHandle,item,owns)
     }
 }
 
-public Handle:GetImmunityInfo(Handle:playerHandle)
-{
-    return GetArrayCell(playerHandle,INFO_IMMUNITIES);
-}
-
 public GetImmunity(Handle:playerHandle,immunity)
 {
     new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
