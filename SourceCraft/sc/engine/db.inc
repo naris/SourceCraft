@@ -362,36 +362,39 @@ ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:thr
         new race_ident = SQL_FetchInt(hndl,0);
         new raceId = FindRaceForIdent(race_ident);
 
-        SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
-        SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
-
-        Format(SQLString,sizeof(SQLString), "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
-
-        if (threaded)
+        if (raceId >= 0)
         {
-            new Handle:dataPack = CreateDataPack();
-            WritePackCell(dataPack, client);
-            WritePackCell(dataPack, _:playerHandle);
-            WritePackCell(dataPack, raceId);
-            ResetPack(dataPack);
-            SQL_TQuery(DBIDB, SQL_LoadUpgrades, SQLString, dataPack);
-        }
-        else
-        {
-            new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
-            if(upgradeQuery)
+            SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
+            SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
+
+            Format(SQLString,sizeof(SQLString), "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
+
+            if (threaded)
             {
-                if (SQL_HasResultSet(upgradeQuery))
-                    ReadPlayerUpgrades(upgradeQuery, playerHandle, raceId);
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, client);
+                WritePackCell(dataPack, _:playerHandle);
+                WritePackCell(dataPack, raceId);
+                ResetPack(dataPack);
+                SQL_TQuery(DBIDB, SQL_LoadUpgrades, SQLString, dataPack);
             }
             else
             {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query %N's player data: %s\nSQL:%s",
-                         client, error, SQLString);
+                new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
+                if(upgradeQuery)
+                {
+                    if (SQL_HasResultSet(upgradeQuery))
+                        ReadPlayerUpgrades(upgradeQuery, playerHandle, raceId);
+                }
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to query %N's player data: %s\nSQL:%s",
+                             client, error, SQLString);
+                }
+                CloseHandle(upgradeQuery);
             }
-            CloseHandle(upgradeQuery);
         }
     }
 }
