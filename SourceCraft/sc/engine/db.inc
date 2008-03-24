@@ -268,11 +268,13 @@ public LoadPlayerData(client,Handle:playerHandle, bool:threaded)
                 if (fetch)
                 {
                     new player_ident = SQL_FetchInt(query,0);
+                    SetDatabaseIdent(playerHandle,player_ident);
+
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
+                    if (raceId >= 0)
+                        SetRace(playerHandle,raceId);
 
-                    SetDatabaseIdent(playerHandle,player_ident);
-                    SetRace(playerHandle,raceId);
                     SetCredits(playerHandle,SQL_FetchInt(query,2));
                     SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
 
