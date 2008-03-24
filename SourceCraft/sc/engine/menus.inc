@@ -190,7 +190,7 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
             SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
 
         SetMenuExitButton(crMenu,true);
-        SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
+        //SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
 
         // Iterate through the races and print them out
         new Handle:raceHandle;
@@ -261,7 +261,7 @@ public UpgradeMenu(client, Handle:playerHandle, Function:parentMenuFunction)
         new upgradecount=GetUpgradeLevelCount(playerHandle,race);
         new level=GetLevel(playerHandle,race);
         SetMenuExitButton(sMenu,true);
-        SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
+        //SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
         SetMenuTitle(sMenu,"[SourceCraft] Select your desired upgrade. (%d/%d)",upgradecount,level);
         decl String:upgradename[64];
         new upgradeLevel;
@@ -401,7 +401,7 @@ public ShopMenu(client, Handle:playerHandle, bool:shopmenu, Function:parentMenuF
         new credits=GetCredits(playerHandle);
         new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
         SetMenuExitButton(shopMenu,true);
-        SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
+        //SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
 
         if (shopmenu)
             SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
@@ -493,7 +493,7 @@ public ShopMenu_Item(client,Handle:playerHandle,item)
     new credits=GetCredits(playerHandle);
     new Handle:shopMenu_Item=CreateMenu(ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
-    SetMenuExitBackButton(shopMenu_Item,true);
+    //SetMenuExitBackButton(shopMenu_Item,true);
     decl String:itemname[64];
     new Handle:itemHandle;
     itemHandle=ShopItem(item);
@@ -629,6 +629,7 @@ public ShowItems(client,target,Handle:playerHandle,Function:parentMenuFunction)
 
 public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
 {
+    /*
     if (gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
     {
         decl result;
@@ -639,6 +640,7 @@ public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
         Call_PushCell(INVALID_FUNCTION);
         Call_Finish(result);
     }
+    */
 }
 
 public Action:AdminMenu(client,args)
@@ -690,7 +692,7 @@ public Admin_Player(client,target)
 {
     new Handle:adminMenu_Player=CreateMenu(Admin_Player_Select);
     SetMenuExitButton(adminMenu_Player,true);
-    SetMenuExitBackButton(adminMenu_Player,true);
+    //SetMenuExitBackButton(adminMenu_Player,true);
 
     new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
@@ -801,7 +803,7 @@ public Admin_PlayerInfo(client,target)
     {
         new Handle:playerInfo=CreateMenu(Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
-        SetMenuExitBackButton(playerInfo,true);
+        //SetMenuExitBackButton(playerInfo,true);
 
         new race=GetRace(targetHandle);
         new xp=GetXP(targetHandle,race);
@@ -896,7 +898,7 @@ public Admin_XP(client,target)
     {
         new Handle:menu=CreateMenu(Admin_XP_Select);
         SetMenuExitButton(menu,true);
-        SetMenuExitBackButton(menu,true);
+        //SetMenuExitBackButton(menu,true);
         SetMenuTitle(menu,"[SourceCraft] Select an option for %N.",target);
 
         decl String:buf[11];
@@ -1005,7 +1007,7 @@ public Admin_GiveShopItem(client,target)
     {
         new Handle:menu=CreateMenu(Admin_GSI_Select);
         SetMenuExitButton(menu,true);
-        SetMenuExitBackButton(menu,true);
+        //SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select an item to give to %N.", target);
 
@@ -1095,7 +1097,7 @@ public Admin_SetRace(client,target)
     {
         new Handle:menu=CreateMenu(Admin_SetRace_Select);
         SetMenuExitButton(menu,true);
-        SetMenuExitBackButton(menu,true);
+        //SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select a race for %N.", target);
 
@@ -1166,7 +1168,7 @@ public Admin_Level(client,target)
     {
         new Handle:menu=CreateMenu(Admin_Level_Select);
         SetMenuExitButton(menu,true);
-        SetMenuExitBackButton(menu,true);
+        //SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select an option for %N.", target);
 
@@ -1274,7 +1276,7 @@ public Admin_Credits(client,target)
     {
         new Handle:menu=CreateMenu(Admin_Credits_Select);
         SetMenuExitButton(menu,true);
-        SetMenuExitBackButton(menu,true);
+        //SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select an option for %N.", target);
 

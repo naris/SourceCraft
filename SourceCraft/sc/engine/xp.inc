@@ -85,8 +85,10 @@ public DoLevelCheck(client,Handle:playerHandle)
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(playerHandle,race,curXP-reqXP);
 
+                    /*
                     if (SAVE_ENABLED)
                         SavePlayerData(client,playerHandle,true,true);
+                    */
                 }
                 else
                     m_Go=false;

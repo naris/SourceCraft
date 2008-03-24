@@ -90,6 +90,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
+    LogMessage("-------------------------------------------------------------------------\n[SourceCraft] Plugin loading...");
     PrintToServer("-------------------------------------------------------------------------\n[SourceCraft] Plugin loading...");
 
     GetGameType();
@@ -136,6 +137,7 @@ public OnPluginStart()
     CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
 
     PrintToServer("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
+    LogMessage("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
 }
 
 public OnAllPluginsLoaded()
@@ -155,12 +157,13 @@ public OnPluginEnd()
 {
     ClearPlayerArray();
     ClearRaceArray();
+    LogMessage("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
     PrintToServer("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
 }
 
 public OnMapStart()
 {
-    //LogMessage("OnMapStart()");
+    LogMessage("OnMapStart()");
     g_MapChanging = false;
     g_AllPlayersSaved = false;
     SetupSound(notEnoughWav,true,true);
@@ -169,7 +172,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    //LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
+    LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
 
     if (SAVE_ENABLED)
     {

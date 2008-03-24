@@ -405,6 +405,7 @@ public ShowUpgrades(client,target,Handle:playerHandle,Function:parentMenuFunctio
 
 public ShowUpgrades_Selected(Handle:menu,MenuAction:action,client,selection)
 {
+    /*
     if (gUpgradesInfoParentMenuFunction[client] != INVALID_FUNCTION)
     {
         decl result;
@@ -415,6 +416,7 @@ public ShowUpgrades_Selected(Handle:menu,MenuAction:action,client,selection)
         Call_PushCell(INVALID_FUNCTION);
         Call_Finish(result);
     }
+    */
 }
 
 public ResetUpgradesNow(client,Handle:playerHandle)
@@ -432,6 +434,8 @@ public ResetUpgradesNow(client,Handle:playerHandle)
     if(GetLevel(playerHandle,race) > 0)
         UpgradeMenu(client, playerHandle, INVALID_FUNCTION);
 
+    /*
     if (SAVE_ENABLED)
         SavePlayerData(client,playerHandle,true,true);
+    */
 }
