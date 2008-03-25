@@ -15,7 +15,7 @@ new m_OffsetMaxSpeed=-1;
 new m_OffsetNumHealers=-1;
 new m_OffsetPlayerCond=-1;
 
-public bool:InitOffset()
+bool:InitOffset()
 {
     new bool:ret=true;
 
@@ -43,7 +43,7 @@ public bool:InitOffset()
     return ret;
 }
 
-public bool:InitTFOffset()
+bool:InitTFOffset()
 {
     new bool:ret=true;
 

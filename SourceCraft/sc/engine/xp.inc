@@ -45,7 +45,7 @@ KillXP(level)
         return 0;
 }
 
-public ReqLevelXP(level)
+ReqLevelXP(level)
 {
     new Handle:temp;
     if(SAVE_ENABLED)
@@ -59,7 +59,7 @@ public ReqLevelXP(level)
         return 0;
 }
 
-public DoLevelCheck(client,Handle:playerHandle)
+DoLevelCheck(client,Handle:playerHandle)
 {
     if (GetRaceCount() >= 1)
     {
@@ -77,7 +77,7 @@ public DoLevelCheck(client,Handle:playerHandle)
                     new oLevel = GetOverallLevel(playerHandle);
                     SetOverallLevel(playerHandle, ++oLevel);
                     SetLevel(playerHandle,race,level);
-                    UpgradeMenu(client, playerHandle, INVALID_FUNCTION);
+                    UpgradeMenu(client, playerHandle);
 
                     decl String:raceName[64] = "";
                     GetRaceName(GetRaceHandle(race),raceName,sizeof(raceName));
@@ -97,7 +97,7 @@ public DoLevelCheck(client,Handle:playerHandle)
     }
 }
 
-public ShowXP(client,Handle:playerHandle)
+ShowXP(client,Handle:playerHandle)
 {
     if (GetRaceCount() >= 1)
     {
@@ -124,7 +124,7 @@ public ShowXP(client,Handle:playerHandle)
     }
 }
 
-public GiveKillXP(index,Handle:playerHandle,victim_index,Handle:victim_player,bool:headshot,
+GiveKillXP(index,Handle:playerHandle,Handle:victim_player,bool:headshot,
                   bool:backstab,bool:melee,bool:dominated,bool:revenge,bool:assist)
 {
     if (GetRaceCount() >= 1)
@@ -179,86 +179,86 @@ public GiveKillXP(index,Handle:playerHandle,victim_index,Handle:victim_player,bo
     }
 }
 
-public GiveDefuseXP(client,Handle:playerHandle)
+GiveDefuseXP(client,Handle:playerHandle)
 {
     // Called when a player defuses the bomb
     GiveXP(client,playerHandle,DEFUSE_XP, "defusing the bomb");
 }
 
-public GivePlantXP(client,Handle:playerHandle)
+GivePlantXP(client,Handle:playerHandle)
 {
     // Called when a player plants the bomb
     GiveXP(client,playerHandle,PLANT_XP, "planting the bomb");
 }
 
-public GiveHostageRescuedXP(client,Handle:playerHandle)
+GiveHostageRescuedXP(client,Handle:playerHandle)
 {
     // Called when a player rescues a hostage
     GiveXP(client,playerHandle,HOSTAGERESCUED_XP, "rescuing a hostage");
 }
 
-public GiveChargeDeployedXP(client,Handle:playerHandle)
+GiveChargeDeployedXP(client,Handle:playerHandle)
 {
     // Called when a player deploys thier charge (medic goes uber)
     GiveXP(client,playerHandle,CHARGE_XP, "deploying Ubercharge");
 }
 
-public GiveObjectBuiltXP(client,Handle:playerHandle)
+GiveObjectBuiltXP(client,Handle:playerHandle)
 {
     // Called when a player builds an object
     GiveXP(client,playerHandle,BUILD_XP, "building something");
 }
 
-public TakeObjectBuiltXP(client,Handle:playerHandle)
+TakeObjectBuiltXP(client,Handle:playerHandle)
 {
     // Called when a player destroys thier own object
     TakeXP(client,playerHandle,BUILD_XP, "destroying your own object");
 }
 
-public GiveObjectDestroyedXP(client,Handle:playerHandle)
+GiveObjectDestroyedXP(client,Handle:playerHandle)
 {
     // Called when a player destroys an object
     GiveXP(client,playerHandle,DESTROY_XP, "destroying something");
 }
 
-public GiveFlagCapturedXP(client,Handle:playerHandle)
+GiveFlagCapturedXP(client,Handle:playerHandle)
 {
     // Called when a player captures a flag
     GiveXP(client,playerHandle,CAPTURE_FLAG_XP, "capturing the intelligence");
 }
 
-public GivePointCapturedXP(client,Handle:playerHandle)
+GivePointCapturedXP(client,Handle:playerHandle)
 {
     // Called when a player captures a point
     GiveXP(client,playerHandle,CAPTURE_POINT_XP, "capturing a point");
 }
 
-public GiveCaptureBlockedXP(client,Handle:playerHandle)
+GiveCaptureBlockedXP(client,Handle:playerHandle)
 {
     // Called when a player blocks a capture
     GiveXP(client,playerHandle,BLOCK_XP, "blocking a point");
 }
 
-public GiveRoundWinXP(client,Handle:playerHandle)
+GiveRoundWinXP(client,Handle:playerHandle)
 {
     // Called when a team wins a round
     GiveXP(client,playerHandle,ROUND_WIN_XP, "winning a round");
 }
 
-public GiveGameWinXP(client,Handle:playerHandle,score)
+GiveGameWinXP(client,Handle:playerHandle,score)
 {
     // Called when a team wins a round
     GiveXP(client,playerHandle,GAME_WIN_XP*score, "winning the game");
 }
 
-public GiveMvpXP(client,Handle:playerHandle,place,points)
+GiveMvpXP(client,Handle:playerHandle,place,points)
 {
     new String:reason[64];
     Format(reason,sizeof(reason),"being MVP #%d with %d points",place, points);
     GiveXP(client,playerHandle,points*place*MVP_XP,reason);
 }
 
-public GiveXP(client,Handle:playerHandle, amount, const String:reason[])
+GiveXP(client,Handle:playerHandle, amount, const String:reason[])
 {
     if (GetRaceCount() >= 1)
     {
@@ -285,7 +285,7 @@ public GiveXP(client,Handle:playerHandle, amount, const String:reason[])
     }
 }
 
-public TakeXP(client,Handle:playerHandle, amount, const String:reason[])
+TakeXP(client,Handle:playerHandle, amount, const String:reason[])
 {
     if (GetRaceCount() >= 1)
     {

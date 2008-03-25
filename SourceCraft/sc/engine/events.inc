@@ -6,7 +6,7 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-public bool:HookEvents()
+bool:HookEvents()
 {
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))
     {
@@ -59,7 +59,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (m_FirstSpawn[index])
                 IntroMenu(index);
             else if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
+                UpgradeMenu(index, playerHandle);
         }
     }
 }
@@ -195,9 +195,9 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
                 {
                     GiveKillCredits(attacker_index,attacker_player);
-                    GiveKillXP(attacker_index,attacker_player,victim_index,
-                            victim_player,headshot,backstab,melee,
-                            attacker_dominated,attacker_revenge,false);
+                    GiveKillXP(attacker_index,attacker_player,
+                               victim_player,headshot,backstab,melee,
+                               attacker_dominated,attacker_revenge,false);
                 }
             }
             SaveHealth(attacker_index);
@@ -211,9 +211,9 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
                 {
                     GiveKillCredits(assister_index,assister_player);
-                    GiveKillXP(assister_index,assister_player,victim_index,
-                            victim_player,headshot,backstab,melee,
-                            assister_dominated,assister_revenge,true);
+                    GiveKillXP(assister_index,assister_player,
+                               victim_player,headshot,backstab,melee,
+                               assister_dominated,assister_revenge,true);
                 }
             }
             SaveHealth(assister_index);
@@ -226,7 +226,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 PendingCheck(victim_index,victim_player);
                 new race=GetRace(victim_player);
                 if(GetUpgradeLevelCount(victim_player,race)<GetLevel(victim_player,race))
-                    UpgradeMenu(victim_index, victim_player, INVALID_FUNCTION);
+                    UpgradeMenu(victim_index, victim_player);
             }
             SaveHealth(victim_index);
         }

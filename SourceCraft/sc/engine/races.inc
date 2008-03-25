@@ -27,14 +27,13 @@
 // A vector of race infomation
 new Handle:arrayRaces;
 
-new Function:gUpgradesInfoParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new bool:gUpgradesMenuMode[MAXPLAYERS+1];
 new gShowUpgradesTarget[MAXPLAYERS+1];
 new gRaceForUpgrades[MAXPLAYERS+1];
 
-public CreateRace(const String:name[],                  const String:short[],
-                  const String:switchmessage_instant[], const String:switchmessage_dead[],
-                  required_level)
+CreateRace(const String:name[],                  const String:short[],
+           const String:switchmessage_instant[], const String:switchmessage_dead[],
+           required_level)
 {
     new Handle:newRace=CreateArray();
 
@@ -60,7 +59,7 @@ public CreateRace(const String:name[],                  const String:short[],
     return PushArrayCell(arrayRaces,newRace); // return index.
 }
 
-public AddUpgrade(Handle:race, const String:name[], const String:desc[], bool:ultimate)
+AddUpgrade(Handle:race, const String:name[], const String:desc[], bool:ultimate)
 {
     new Handle:upgradeStringsHandle=GetArrayCell(race,RACE_UPGRADE_STRINGS);
     PushArrayString(upgradeStringsHandle,name);
@@ -70,7 +69,7 @@ public AddUpgrade(Handle:race, const String:name[], const String:desc[], bool:ul
     return PushArrayCell(upgradeFlagsHandle, ultimate); // return index
 }
 
-public bool:InitRaceArray()
+bool:InitRaceArray()
 {
     if (arrayRaces == INVALID_HANDLE)
         arrayRaces = CreateArray();
@@ -78,7 +77,7 @@ public bool:InitRaceArray()
     return bool:(arrayRaces != INVALID_HANDLE);
 }
 
-public ClearRaceArray()
+ClearRaceArray()
 {
     new raceCount = GetRaceCount();
     for(new x=0;x<raceCount;x++)
@@ -102,57 +101,57 @@ public ClearRaceArray()
     ClearArray(arrayRaces);
 }
 
-public Handle:GetRaceHandle(racenum)
+Handle:GetRaceHandle(racenum)
 {
     return GetArrayCell(arrayRaces,racenum);
 }
 
-public GetRaceIdent(Handle:raceHandle)
+GetRaceIdent(Handle:raceHandle)
 {
     return GetArrayCell(raceHandle,RACE_IDENT);
 }
 
-public GetRaceRequiredLevel(Handle:raceHandle)
+GetRaceRequiredLevel(Handle:raceHandle)
 {
     return GetArrayCell(raceHandle,RACE_REQUIRED_LEVEL);
 }
 
-public GetRaceName(Handle:raceHandle, String:name[], maxlength)
+GetRaceName(Handle:raceHandle, String:name[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     if (stringsHandle != INVALID_HANDLE)
         GetArrayString(stringsHandle,RACE_NAME,name,maxlength);
 }
 
-public GetRaceShortName(Handle:raceHandle, String:name[], maxlength)
+GetRaceShortName(Handle:raceHandle, String:name[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     if (stringsHandle != INVALID_HANDLE)
         GetArrayString(stringsHandle,RACE_SHORT_NAME,name,maxlength);
 }
 
-public GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength)
+GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     if (stringsHandle != INVALID_HANDLE)
         GetArrayString(stringsHandle,RACE_SWITCHMESSAGE,message,maxlength);
 }
 
-public GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength)
+GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength)
 {
     new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
     if (stringsHandle != INVALID_HANDLE)
         GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
 }
 
-public GetUpgradeName(Handle:raceHandle,upgrade, String:name[], maxlength)
+GetUpgradeName(Handle:raceHandle,upgrade, String:name[], maxlength)
 {
     new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
     if (upgradeStringsHandle != INVALID_HANDLE)
         GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT),name,maxlength);
 }
 
-public GetUpgradeDesc(Handle:raceHandle,upgrade, String:desc[], maxlength)
+stock GetUpgradeDesc(Handle:raceHandle,upgrade, String:desc[], maxlength)
 {
     new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
     if (upgradeStringsHandle != INVALID_HANDLE)
@@ -160,8 +159,8 @@ public GetUpgradeDesc(Handle:raceHandle,upgrade, String:desc[], maxlength)
                        desc,maxlength);
 }
 
-public GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
-                           String:desc[], maxDesc)
+GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
+                      String:desc[], maxDesc)
 {
     new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
     if (upgradeStringsHandle != INVALID_HANDLE)
@@ -172,7 +171,7 @@ public GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
     }
 }
 
-public bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
+bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
     if (upgradeFlagsHandle != INVALID_HANDLE)
@@ -181,7 +180,7 @@ public bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
         return false;
 }
 
-public GetUpgradeCount(Handle:raceHandle)
+GetUpgradeCount(Handle:raceHandle)
 {
     new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
     if (upgradeFlagsHandle != INVALID_HANDLE)
@@ -190,7 +189,7 @@ public GetUpgradeCount(Handle:raceHandle)
         return -1;
 }
 
-public FindRace(const String:name[])
+FindRace(const String:name[])
 {
     decl String:curName[64]="";
     new size = GetArraySize(arrayRaces);
@@ -203,7 +202,7 @@ public FindRace(const String:name[])
     return -1;
 }
 
-public FindRaceForIdent(ident)
+FindRaceForIdent(ident)
 {
     new size = GetArraySize(arrayRaces);
     for(new race=0;race<size;race++)
@@ -214,7 +213,7 @@ public FindRaceForIdent(ident)
     return -1;
 }
 
-public PendingCheck(client,Handle:playerHandle)
+PendingCheck(client,Handle:playerHandle)
 {
     new pendingrace=GetPendingRace(playerHandle);
     if(pendingrace>-1)
@@ -239,21 +238,19 @@ public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
     if(action==MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client],
-                   gUpgradesInfoParentMenuFunction[client]);
+        UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client],
-                       gUpgradesInfoParentMenuFunction[client]);
+            UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
         }
     }
 }
 
-public UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
+UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
 {
     decl String:name[64];
     decl String:desc[256];
@@ -269,13 +266,12 @@ public UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
-public UpgradesInfo(client,race,bool:change,Function:parentMenuFunction)
+UpgradesInfo(client,race,bool:change)
 {
     decl String:name[64];
 
     new Handle:menu=CreateMenu(UpgradesInfo_Selected);
     SetMenuExitButton(menu,true);
-    SetMenuExitBackButton(menu,(parentMenuFunction != INVALID_FUNCTION));
 
     new Handle:raceHandle=GetRaceHandle(race);
     GetRaceName(raceHandle, name, sizeof(name));
@@ -296,7 +292,6 @@ public UpgradesInfo(client,race,bool:change,Function:parentMenuFunction)
 
     gRaceForUpgrades[client] = race;
     gUpgradesMenuMode[client] = change;
-    gUpgradesInfoParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
@@ -334,28 +329,9 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             }
         }
     }
-    else if (action == MenuAction_Cancel)
-    {
-        new Function:backFn = gUpgradesInfoParentMenuFunction[client];
-        if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
-        {
-            decl result;
-            ClientCommand(client,"play buttons/button14.wav");
-            Call_StartFunction(INVALID_HANDLE, backFn);
-            Call_PushCell(client);
-
-            if (backFn == RaceMenu)
-                Call_PushCell(gUpgradesMenuMode[client]);
-            else
-                Call_PushCell(GetPlayerHandle(client));
-
-            Call_PushCell(INVALID_FUNCTION);
-            Call_Finish(result);
-        }
-    }
 }
 
-public ResetUpgrades(client,Handle:playerHandle)
+ResetUpgrades(client,Handle:playerHandle)
 {
     if(IsPlayerAlive(client))
     {
@@ -367,7 +343,7 @@ public ResetUpgrades(client,Handle:playerHandle)
         ResetUpgradesNow(client,playerHandle);
 }
 
-public ShowUpgrades(client,target,Handle:playerHandle,Function:parentMenuFunction)
+ShowUpgrades(client,target,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
     new Handle:raceHandle=GetRaceHandle(race);
@@ -398,28 +374,15 @@ public ShowUpgrades(client,target,Handle:playerHandle,Function:parentMenuFunctio
     DrawPanelItem(panel,"Close");
 
     gShowUpgradesTarget[client]=target;
-    gUpgradesInfoParentMenuFunction[client]=parentMenuFunction;
     SendPanelToClient(panel,client,ShowUpgrades_Selected,0);
     CloseHandle(panel);
 }
 
 public ShowUpgrades_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    /*
-    if (gUpgradesInfoParentMenuFunction[client] != INVALID_FUNCTION)
-    {
-        decl result;
-        ClientCommand(client,"play buttons/button14.wav");
-        Call_StartFunction(INVALID_HANDLE, gUpgradesInfoParentMenuFunction[client]);
-        Call_PushCell(client);
-        Call_PushCell(gShowUpgradesTarget[client]);
-        Call_PushCell(INVALID_FUNCTION);
-        Call_Finish(result);
-    }
-    */
 }
 
-public ResetUpgradesNow(client,Handle:playerHandle)
+ResetUpgradesNow(client,Handle:playerHandle)
 {
     new race=GetRace(playerHandle);
     SetActiveUltimate(playerHandle,race,-1);
@@ -432,5 +395,5 @@ public ResetUpgradesNow(client,Handle:playerHandle)
                 COLOR_GREEN,COLOR_DEFAULT);
 
     if(GetLevel(playerHandle,race) > 0)
-        UpgradeMenu(client, playerHandle, INVALID_FUNCTION);
+        UpgradeMenu(client, playerHandle);
 }

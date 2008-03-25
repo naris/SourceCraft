@@ -11,14 +11,12 @@
 new Handle:vecHelpCommands       = INVALID_HANDLE;
 new Handle:vecLevelConfiguration = INVALID_HANDLE;
 
-new Function:gHelpParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
-
-public Handle:HelpItem(command)
+Handle:HelpItem(command)
 {
     return GetArrayCell(vecHelpCommands,command);
 }
 
-public NewHelpCommand(String:name[],String:info[])
+NewHelpCommand(String:name[],String:info[])
 {
     new Handle:vec=CreateArray(ByteCountToCells(256));
     PushArrayString(vec,name);
@@ -26,13 +24,13 @@ public NewHelpCommand(String:name[],String:info[])
     return PushArrayCell(vecHelpCommands,vec);
 }
 
-public bool:InitiateHelpVector()
+bool:InitiateHelpVector()
 {
     vecHelpCommands=CreateArray();
     return true;
 }
 
-public InitHelpCommands()
+InitHelpCommands()
 {
     NewHelpCommand("say menu","Bring up the SourceCraft menu.");
     NewHelpCommand("say showxp","Show the current experience information for the current race.");
@@ -48,11 +46,10 @@ public InitHelpCommands()
     NewHelpCommand("sc_admin","Bring up the admin menu to modify player info.");
 }
 
-public Help(client,Function:parentMenuFunction)
+Help(client)
 {
     new Handle:helpMenu=CreateMenu(HelpMenu_Selected);
     SetMenuExitButton(helpMenu,true);
-    SetMenuExitBackButton(helpMenu,(parentMenuFunction != INVALID_FUNCTION));
     SetMenuTitle(helpMenu,"[SourceCraft] Select a command for more info.");
     decl String:commandname[64];
     decl String:helpbuf[4];
@@ -64,7 +61,6 @@ public Help(client,Function:parentMenuFunction)
         GetArrayString(commandHandle,0,commandname,63);
         AddMenuItem(helpMenu,helpbuf,commandname);
     }
-    gHelpParentMenuFunction[client]=parentMenuFunction;
     DisplayMenu(helpMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -80,24 +76,6 @@ public HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         new command=StringToInt(SelectionInfo);
         if(command>-1&&command<HELPCOMMAND_COUNT)
             HelpMenu_Command(client,command);
-    }
-    else if (action == MenuAction_Cancel)
-    {
-        if (selection == MenuCancel_ExitBack &&
-            gHelpParentMenuFunction[client] != INVALID_FUNCTION)
-        {
-            new Handle:playerHandle=GetPlayerHandle(client);
-            if (playerHandle != INVALID_HANDLE)
-            {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gHelpParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(playerHandle);
-                Call_PushCell(INVALID_FUNCTION);
-                Call_Finish(result);
-            }
-        }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
@@ -124,7 +102,7 @@ public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        Help(client,gHelpParentMenuFunction[client]);
+        Help(client);
     }
     else if (action == MenuAction_End)
     {
@@ -132,7 +110,7 @@ public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuEnd_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            Help(client,gHelpParentMenuFunction[client]);
+            Help(client);
         }
     }
     else if (action == MenuAction_End)

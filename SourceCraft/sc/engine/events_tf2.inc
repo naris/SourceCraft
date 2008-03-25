@@ -5,7 +5,7 @@
  * Author(s): Naris (Murray Wilson)
  */
 
-public bool:HookTFEvents()
+bool:HookTFEvents()
 {
     if(!HookEventEx("player_changeclass",PlayerChangeClass))
     {

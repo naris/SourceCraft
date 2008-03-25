@@ -10,16 +10,13 @@
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
-new Function:gShopMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
-new Function:gRaceMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
-new Function:gUpgradeMenuParentMenuFunction[MAXPLAYERS+1] = {INVALID_FUNCTION,...};
 new bool:gShopMenuMode[MAXPLAYERS+1];
 new bool:gRaceMenuMode[MAXPLAYERS+1];
 new gShowItemsTarget[MAXPLAYERS+1];
 
 new Handle:hTopAdminMenu = INVALID_HANDLE;
 
-public InitMenus()
+InitMenus()
 {
     /* Account for late loading */
     new Handle:topmenu;
@@ -66,7 +63,7 @@ public AdminTopMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_i
     }
 }
 
-public IntroMenu(client)
+IntroMenu(client)
 {
     new Handle:introMenu=CreateMenu(IntroMenu_Action);
     SetMenuExitButton(introMenu,false);
@@ -96,7 +93,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         (action == MenuAction_Cancel && param == MenuCancel_Timeout))
     {
         if (m_FirstSpawn[client] > 1 && GetRaceCount() >= 1)
-            RaceMenu(client, true, INVALID_FUNCTION);
+            RaceMenu(client, true);
         else
             m_FirstSpawn[client]=0;
     }
@@ -104,7 +101,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         CloseHandle(menu);
 }
 
-public MainMenu(client,Handle:playerHandle,Function:parentMenuFunction)
+MainMenu(client,Handle:playerHandle)
 {
     new Handle:scMenu=CreateMenu(Menu_Select);
     SetMenuExitButton(scMenu,true);
@@ -140,32 +137,32 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
             switch(selection)
             {
                 case 0: // shopmenu
-                    ShopMenu(client,playerHandle,true,MainMenu);
+                    ShopMenu(client,playerHandle,true);
                 case 1: // changerace
-                    RaceMenu(client,true,MainMenu);
+                    RaceMenu(client,true);
                 case 2: // upgradesinfo
-                    UpgradesInfo(client,GetRace(playerHandle),false,MainMenu);
+                    UpgradesInfo(client,GetRace(playerHandle),false);
                 case 3: // resetupgrades
                 {
                     ResetUpgrades(client,playerHandle);
-                    MainMenu(client,playerHandle,INVALID_FUNCTION);
+                    MainMenu(client,playerHandle);
                 }
                 case 4: // spendupgrades
                 {
                     new race=GetRace(playerHandle);
                     if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                        UpgradeMenu(client, playerHandle, MainMenu);
+                        UpgradeMenu(client, playerHandle);
                     else
                     {
                         PrintToChat(client, "%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT);
                     }
                 }
                 case 5: // showupgrades
-                    ShowUpgrades(client,client,playerHandle,MainMenu);
+                    ShowUpgrades(client,client,playerHandle);
                 case 6: // showitems
-                    ShopMenu(client,playerHandle,false,MainMenu);
+                    ShopMenu(client,playerHandle,false);
                 case 7: // help
-                    Help(client,MainMenu);
+                    Help(client);
             }
         }
         else
@@ -178,7 +175,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public RaceMenu(client,bool:change,Function:parentMenuFunction)
+RaceMenu(client,bool:change)
 {
     if (GetRaceCount() >= 1)
     {
@@ -190,7 +187,6 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
             SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
 
         SetMenuExitButton(crMenu,true);
-        //SetMenuExitBackButton(crMenu,(parentMenuFunction != INVALID_FUNCTION));
 
         // Iterate through the races and print them out
         new Handle:raceHandle;
@@ -215,7 +211,6 @@ public RaceMenu(client,bool:change,Function:parentMenuFunction)
                 AddMenuItem(crMenu,rbuf,rname);
         }
         gRaceMenuMode[client]=change;
-        gRaceMenuParentMenuFunction[client]=parentMenuFunction;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
     else
@@ -228,31 +223,13 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        UpgradesInfo(client,selection,gRaceMenuMode[client],RaceMenu);
-    }
-    else if (action == MenuAction_Cancel)
-    {
-        if (selection == MenuCancel_ExitBack &&
-            gRaceMenuParentMenuFunction[client] != INVALID_FUNCTION)
-        {
-            new Handle:playerHandle=GetPlayerHandle(client);
-            if (playerHandle != INVALID_HANDLE)
-            {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gRaceMenuParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(playerHandle);
-                Call_PushCell(INVALID_FUNCTION);
-                Call_Finish(result);
-            }
-        }
+        UpgradesInfo(client,selection,gRaceMenuMode[client]);
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
 }
 
-public UpgradeMenu(client, Handle:playerHandle, Function:parentMenuFunction)
+UpgradeMenu(client, Handle:playerHandle)
 {
     if (GetRaceCount() >= 1)
     {
@@ -261,7 +238,6 @@ public UpgradeMenu(client, Handle:playerHandle, Function:parentMenuFunction)
         new upgradecount=GetUpgradeLevelCount(playerHandle,race);
         new level=GetLevel(playerHandle,race);
         SetMenuExitButton(sMenu,true);
-        //SetMenuExitBackButton(sMenu,(parentMenuFunction != INVALID_FUNCTION));
         SetMenuTitle(sMenu,"[SourceCraft] Select your desired upgrade. (%d/%d)",upgradecount,level);
         decl String:upgradename[64];
         new upgradeLevel;
@@ -293,7 +269,6 @@ public UpgradeMenu(client, Handle:playerHandle, Function:parentMenuFunction)
                 AddMenuItem(sMenu,sbuf,buf,style);
             }
         }
-        gUpgradeMenuParentMenuFunction[client]=parentMenuFunction;
         DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
     }
     else
@@ -370,32 +345,18 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     }
 
                     if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                        UpgradeMenu(client,playerHandle,gUpgradeMenuParentMenuFunction[client]);
+                        UpgradeMenu(client,playerHandle);
                     else if (SAVE_ENABLED)
                         SavePlayerData(client,playerHandle,true,true);
                 }
             }
         }
     }
-    else if (action == MenuAction_Cancel)
-    {
-        new Function:backFn = gUpgradeMenuParentMenuFunction[client];
-        if (selection == MenuCancel_ExitBack && backFn != INVALID_FUNCTION)
-        {
-            decl result;
-            ClientCommand(client,"play buttons/button14.wav");
-            Call_StartFunction(INVALID_HANDLE, backFn);
-            Call_PushCell(client);
-            Call_PushCell(GetPlayerHandle(client));
-            Call_PushCell(INVALID_FUNCTION);
-            Call_Finish(result);
-        }
-    }
     else if (action == MenuAction_End)
         CloseHandle(menu);
 }
 
-public ShopMenu(client, Handle:playerHandle, bool:shopmenu, Function:parentMenuFunction)
+ShopMenu(client, Handle:playerHandle, bool:shopmenu)
 {
     new shopItemCount = GetArraySize(shopVector);
     if (shopItemCount >= 1)
@@ -403,7 +364,6 @@ public ShopMenu(client, Handle:playerHandle, bool:shopmenu, Function:parentMenuF
         new credits=GetCredits(playerHandle);
         new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
         SetMenuExitButton(shopMenu,true);
-        //SetMenuExitBackButton(shopMenu,(parentMenuFunction != INVALID_FUNCTION));
 
         if (shopmenu)
             SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
@@ -439,11 +399,10 @@ public ShopMenu(client, Handle:playerHandle, bool:shopmenu, Function:parentMenuF
         if (count)
         {
             gShopMenuMode[client] = shopmenu;
-            gShopMenuParentMenuFunction[client]=parentMenuFunction;
             DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
         }
         else
-            ShowItems(client,client,playerHandle,parentMenuFunction);
+            ShowItems(client,client,playerHandle);
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no items in the shopmenu!",
@@ -468,24 +427,6 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 ShopMenu_Item(client,playerHandle,item);
         }
     }
-    else if (action == MenuAction_Cancel)
-    {
-        if (selection == MenuCancel_ExitBack &&
-            gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
-        {
-            new Handle:playerHandle=GetPlayerHandle(client);
-            if (playerHandle != INVALID_HANDLE)
-            {
-                decl result;
-                ClientCommand(client,"play buttons/button14.wav");
-                Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
-                Call_PushCell(client);
-                Call_PushCell(playerHandle);
-                Call_PushCell(INVALID_FUNCTION);
-                Call_Finish(result);
-            }
-        }
-    }
     else if (action == MenuAction_End)
         CloseHandle(menu);
 }
@@ -495,7 +436,7 @@ public ShopMenu_Item(client,Handle:playerHandle,item)
     new credits=GetCredits(playerHandle);
     new Handle:shopMenu_Item=CreateMenu(ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
-    //SetMenuExitBackButton(shopMenu_Item,true);
+    SetMenuExitBackButton(shopMenu_Item,true);
     decl String:itemname[64];
     new Handle:itemHandle;
     itemHandle=ShopItem(item);
@@ -575,10 +516,7 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
                 }
             }
             else if(selection==1)
-            {
-                ShopMenu(client,playerHandle,gShopMenuMode[client],
-                         gShopMenuParentMenuFunction[client]);
-            }
+                ShopMenu(client,playerHandle,gShopMenuMode[client]);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -586,15 +524,14 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            ShopMenu(client,GetPlayerHandle(client),
-                     gShopMenuMode[client],gShopMenuParentMenuFunction[client]);
+            ShopMenu(client,GetPlayerHandle(client),gShopMenuMode[client]);
         }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
 }
 
-public ShowItems(client,target,Handle:playerHandle,Function:parentMenuFunction)
+ShowItems(client,target,Handle:playerHandle)
 {
     new Handle:panel=CreatePanel();
 
@@ -624,25 +561,12 @@ public ShowItems(client,target,Handle:playerHandle,Function:parentMenuFunction)
     DrawPanelItem(panel,"Close");
 
     gShowItemsTarget[client]=target;
-    gShopMenuParentMenuFunction[client]=parentMenuFunction;
     SendPanelToClient(panel,client,ShowItems_Selected,0);
     CloseHandle(panel);
 }
 
 public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    /*
-    if (gShopMenuParentMenuFunction[client] != INVALID_FUNCTION)
-    {
-        decl result;
-        ClientCommand(client,"play buttons/button14.wav");
-        Call_StartFunction(INVALID_HANDLE, gShopMenuParentMenuFunction[client]);
-        Call_PushCell(client);
-        Call_PushCell(gShowItemsTarget[client]);
-        Call_PushCell(INVALID_FUNCTION);
-        Call_Finish(result);
-    }
-    */
 }
 
 public Action:AdminMenu(client,args)
@@ -690,11 +614,11 @@ public Admin_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public Admin_Player(client,target)
+Admin_Player(client,target)
 {
     new Handle:adminMenu_Player=CreateMenu(Admin_Player_Select);
     SetMenuExitButton(adminMenu_Player,true);
-    //SetMenuExitBackButton(adminMenu_Player,true);
+    SetMenuExitBackButton(adminMenu_Player,true);
 
     new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
     new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
@@ -742,7 +666,7 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
                             SetUpgradeLevel(targetHandle,race,y,0);
 
                     if(GetUpgradeLevelCount(targetHandle,race)<GetLevel(targetHandle,race))
-                        UpgradeMenu(target, targetHandle, Admin_Player);
+                        UpgradeMenu(target, targetHandle);
 
                     PrintToChat(target, "%c[SourceCraft] %cAdmin \"%N\" reset your upgrades.",
                                 COLOR_GREEN,COLOR_DEFAULT,client);
@@ -805,7 +729,7 @@ public Admin_PlayerInfo(client,target)
     {
         new Handle:playerInfo=CreateMenu(Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
-        //SetMenuExitBackButton(playerInfo,true);
+        SetMenuExitBackButton(playerInfo,true);
 
         new race=GetRace(targetHandle);
         new xp=GetXP(targetHandle,race);
@@ -850,9 +774,9 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
             switch(selection)
             {
                 case 0: // upgrade levels
-                    ShowUpgrades(client,target,targetHandle,Admin_PlayerInfo);
+                    ShowUpgrades(client,target,targetHandle);
                 case 1: // shop items
-                    ShowItems(client,target,targetHandle,Admin_PlayerInfo);
+                    ShowItems(client,target,targetHandle);
                 default:
                     Admin_Player(client,target);
             }
@@ -893,14 +817,14 @@ Admin_Return(Handle:menu,client)
     }
 }
 
-public Admin_XP(client,target)
+Admin_XP(client,target)
 {
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
         new Handle:menu=CreateMenu(Admin_XP_Select);
         SetMenuExitButton(menu,true);
-        //SetMenuExitBackButton(menu,true);
+        SetMenuExitBackButton(menu,true);
         SetMenuTitle(menu,"[SourceCraft] Select an option for %N.",target);
 
         decl String:buf[11];
@@ -1002,14 +926,14 @@ public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public Admin_GiveShopItem(client,target)
+Admin_GiveShopItem(client,target)
 {
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
         new Handle:menu=CreateMenu(Admin_GSI_Select);
         SetMenuExitButton(menu,true);
-        //SetMenuExitBackButton(menu,true);
+        SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select an item to give to %N.", target);
 
@@ -1092,14 +1016,14 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public Admin_SetRace(client,target)
+Admin_SetRace(client,target)
 {
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
         new Handle:menu=CreateMenu(Admin_SetRace_Select);
         SetMenuExitButton(menu,true);
-        //SetMenuExitBackButton(menu,true);
+        SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select a race for %N.", target);
 
@@ -1163,14 +1087,14 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public Admin_Level(client,target)
+Admin_Level(client,target)
 {
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
         new Handle:menu=CreateMenu(Admin_Level_Select);
         SetMenuExitButton(menu,true);
-        //SetMenuExitBackButton(menu,true);
+        SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select an option for %N.", target);
 
@@ -1217,7 +1141,7 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
                 {
                     SetLevel(targetHandle,race,newlevel);
                     SetOverallLevel(targetHandle, GetOverallLevel(targetHandle)+1);
-                    UpgradeMenu(target, targetHandle, Admin_Level);
+                    UpgradeMenu(target, targetHandle);
 
                     PrintToChat(client, "%c[SourceCraft] %cYou gave player \"%N\" a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,target);
@@ -1250,7 +1174,7 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
                                 COLOR_GREEN,COLOR_DEFAULT,client);
 
                     if(newlevel>0)
-                        UpgradeMenu(target, targetHandle, Admin_Level);
+                        UpgradeMenu(target, targetHandle);
                 }
             }
             Admin_Level(client,target);
@@ -1271,14 +1195,14 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-public Admin_Credits(client,target)
+Admin_Credits(client,target)
 {
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
         new Handle:menu=CreateMenu(Admin_Credits_Select);
         SetMenuExitButton(menu,true);
-        //SetMenuExitBackButton(menu,true);
+        SetMenuExitBackButton(menu,true);
 
         SetMenuTitle(menu,"[SourceCraft] Select an option for %N.", target);
 

@@ -15,7 +15,7 @@ new Handle:DBIDB = INVALID_HANDLE;
 new bool:DBIsSQLite = false;
 new bool:g_AllPlayersSaved = false;
 
-public ConnectToDatabase()
+ConnectToDatabase()
 {
     decl String:error[256] = "";
     DBIDB = SQL_Connect("sourcecraft",true,error,sizeof(error));
@@ -36,7 +36,7 @@ public ConnectToDatabase()
     }
 }
 
-public SQL_CreateTables()
+SQL_CreateTables()
 {
     // Create the sc_races table, if it doesn't exist
     decl String:SQLString[512] = "";
@@ -180,7 +180,7 @@ public SQL_CreatePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[],
         LogError("Error in the creation of the sc_player_upgrades SQL table:%s", error);
 }
 
-public SaveRaceInfo(const String:shortName[], const String:raceName[])
+SaveRaceInfo(const String:shortName[], const String:raceName[])
 {
     new race_ident = -1;
     if(DBIDB)
@@ -244,7 +244,7 @@ public SaveRaceInfo(const String:shortName[], const String:raceName[])
     return race_ident;
 }
 
-public LoadPlayerData(client,Handle:playerHandle, bool:threaded)
+LoadPlayerData(client,Handle:playerHandle, bool:threaded)
 {
     new bool:fetch=false;
     //LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
@@ -427,7 +427,7 @@ ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
     }
 }
 
-public SaveAllPlayersData(bool:threaded)
+SaveAllPlayersData(bool:threaded)
 {
     new playerCount = GetMaxClients();
     //LogMessage("SaveAllPlayersData(), threaded=%d, playerCount=%d", threaded, playerCount);
@@ -440,7 +440,7 @@ public SaveAllPlayersData(bool:threaded)
     g_AllPlayersSaved = true;
 }
 
-public SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
+SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
 {
     //LogMessage("SavePlayerData(%N), threaded=%d, clone=%d, DBIDB=%d", client, threaded, cloneData, DBIDB);
     if(DBIDB)
@@ -738,7 +738,7 @@ public SQL_SelectLastPlayerIdent(Handle:owner, Handle:hndl, const String:error[]
     }
 }
 
-public SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
+SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
 {
     decl String:SQLString[512] = "";
     new raceCount = GetRaceCount();
@@ -835,7 +835,7 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
     }
 }
 
-public SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
+SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
                           raceId, race_ident, Handle:raceHandle,
                           bool:threaded, bool:last_race)
 {

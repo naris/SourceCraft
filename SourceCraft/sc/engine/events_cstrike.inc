@@ -6,7 +6,7 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-public bool:HookCStrikeEvents()
+bool:HookCStrikeEvents()
 {
     if(!HookEventEx("bomb_defused",BombDefusedEvent))
     {

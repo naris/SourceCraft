@@ -17,7 +17,7 @@
 #define GAME_WIN_CREDITS        2 // Multiplied by score
 #define MVP_CREDITS             1 // Multiplied by place * points
 
-public ShowCredits(client,Handle:playerHandle)
+ShowCredits(client,Handle:playerHandle)
 {
     if (GetShopItemCount() >= 1)
     {
@@ -28,50 +28,50 @@ public ShowCredits(client,Handle:playerHandle)
     }
 }
 
-public GiveKillCredits(client,Handle:playerHandle)
+GiveKillCredits(client,Handle:playerHandle)
 {
     new addcredits= (SAVE_ENABLED) ? KILL_CREDITS_LONGTERM : KILL_CREDITS_SHORTTERM;
     GiveCredits(client,playerHandle,addcredits,"getting a kill");
 }
 
-public GivePickedUpFlagCredits(client,Handle:playerHandle)
+GivePickedUpFlagCredits(client,Handle:playerHandle)
 {
     GiveCredits(client,playerHandle,FLAG_CREDITS,"picking up the intelligence");
 }
 
-public GivePointCapturedCredits(client,Handle:playerHandle)
+GivePointCapturedCredits(client,Handle:playerHandle)
 {
     GiveCredits(client,playerHandle,POINT_CREDITS,"capturing a point");
 }
 
-public GivePointTouchedCredits(client,Handle:playerHandle)
+GivePointTouchedCredits(client,Handle:playerHandle)
 {
     GiveCredits(client,playerHandle,TOUCH_CREDITS,"touching a point");
 }
 
-public GiveChargeDeployedCredits(client,Handle:playerHandle)
+GiveChargeDeployedCredits(client,Handle:playerHandle)
 {
     GiveCredits(client,playerHandle,CHARGE_CREDITS,"deploying Ubercharge");
 }
 
-public GiveRoundWinCredits(client,Handle:playerHandle)
+GiveRoundWinCredits(client,Handle:playerHandle)
 {
     GiveCredits(client,playerHandle,ROUND_WIN_CREDITS,"winning a round");
 }
 
-public GiveGameWinCredits(client,Handle:playerHandle,score)
+GiveGameWinCredits(client,Handle:playerHandle,score)
 {
     GiveCredits(client,playerHandle,GAME_WIN_CREDITS*score,"winning the game");
 }
 
-public GiveMvpCredits(client,Handle:playerHandle,place,points)
+GiveMvpCredits(client,Handle:playerHandle,place,points)
 {
     new String:reason[64];
     Format(reason,sizeof(reason),"being MVP #%d with %d points",place,points);
     GiveCredits(client,playerHandle,points*place*MVP_CREDITS,reason);
 }
 
-public GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
+GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
 {
     if (GetShopItemCount() >= 1)
     {

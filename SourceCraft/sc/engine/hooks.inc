@@ -8,7 +8,7 @@
 
 new bool:g_MapChanging = false;
  
-public bool:InitHooks()
+bool:InitHooks()
 {
     RegConsoleCmd("say",SayCommand);
     RegConsoleCmd("say_team",SayCommand);
@@ -20,7 +20,7 @@ public bool:InitHooks()
     return true;
 }
 
-public bool:CommandCheck(const String:compare[], const String:command[], maxlen)
+bool:CommandCheck(const String:compare[], const String:command[], maxlen)
 {
     decl String:command2[maxlen+1];
     decl String:command3[maxlen+1];
@@ -50,18 +50,18 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"changerace",63))
         {
-            RaceMenu(client,true,INVALID_FUNCTION);
+            RaceMenu(client,true);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"raceinfo",63))
         {
-            RaceMenu(client,false,INVALID_FUNCTION);
+            RaceMenu(client,false);
             return Plugin_Handled;
         }
         else if (CommandCheck(arg1,"upgradeinfo",63) ||
                  CommandCheck(arg1,"skillsinfo",63))
         {
-            UpgradesInfo(client,GetRace(playerHandle),false,INVALID_FUNCTION);
+            UpgradesInfo(client,GetRace(playerHandle),false);
             return Plugin_Handled;
         }
         else if (CommandCheck(arg1,"reset",63) ||
@@ -79,7 +79,7 @@ public Action:SayCommand(client,args)
         {
             new race=GetRace(playerHandle);
             if(GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                UpgradeMenu(client,playerHandle,INVALID_FUNCTION);
+                UpgradeMenu(client,playerHandle);
             else
             {
                 PrintToChat(client,"%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use reset.",COLOR_GREEN,COLOR_DEFAULT);
@@ -90,7 +90,7 @@ public Action:SayCommand(client,args)
                 CommandCheck(arg1,"showupgrades",63) ||
                 CommandCheck(arg1,"showskills",63))
         {
-            ShowUpgrades(client,client,playerHandle,INVALID_FUNCTION);
+            ShowUpgrades(client,client,playerHandle);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"crystals",63) || 
@@ -102,7 +102,7 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"shopmenu",63))
         {
-            ShopMenu(client,playerHandle,true,INVALID_FUNCTION);
+            ShopMenu(client,playerHandle,true);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showitems",63) ||
@@ -110,19 +110,19 @@ public Action:SayCommand(client,args)
                 CommandCheck(arg1,"inven",63) ||
                 CommandCheck(arg1,"inv",63))
         {
-            ShopMenu(client,playerHandle,false,INVALID_FUNCTION);
+            ShopMenu(client,playerHandle,false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"schelp",63) ||
                 CommandCheck(arg1,"help",63))
         {
-            Help(client,INVALID_FUNCTION);
+            Help(client);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"scmenu",63) ||
                 CommandCheck(arg1,"menu",63))
         {
-            MainMenu(client,playerHandle,INVALID_FUNCTION);
+            MainMenu(client,playerHandle);
             return Plugin_Handled;
         }
 	}
@@ -157,7 +157,7 @@ public Action:ShopMenuCommand(client,args)
     new Handle:playerHandle=GetPlayerHandle(client);
     if (playerHandle != INVALID_HANDLE)
     {
-        ShopMenu(client,playerHandle,true,INVALID_FUNCTION);
+        ShopMenu(client,playerHandle,true);
     }
     return Plugin_Handled;
 }
@@ -167,7 +167,7 @@ public Action:SCMenuCommand(client,args)
     new Handle:playerHandle=GetPlayerHandle(client);
     if (playerHandle != INVALID_HANDLE)
     {
-        MainMenu(client,playerHandle,INVALID_FUNCTION);
+        MainMenu(client,playerHandle);
     }
     return Plugin_Handled;
 }

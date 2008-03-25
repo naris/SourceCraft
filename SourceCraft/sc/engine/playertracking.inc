@@ -62,7 +62,7 @@ new bool:m_SpeedAltered[MAXPLAYERS+1];
 new bool:m_GravityAltered[MAXPLAYERS+1];
 new bool:m_VisibilityAltered[MAXPLAYERS+1];
 
-public Handle:CreatePlayer(client)
+Handle:CreatePlayer(client)
 {
     new Handle:newPlayer=CreateArray();
     if (newPlayer != INVALID_HANDLE)
@@ -121,7 +121,7 @@ public Handle:CreatePlayer(client)
     return newPlayer;
 }
 
-public Handle:ClonePlayer(Handle:oldPlayer)
+Handle:ClonePlayer(Handle:oldPlayer)
 {
     new Handle:newPlayer=CreateArray();
     if (newPlayer != INVALID_HANDLE)
@@ -164,7 +164,7 @@ public Handle:ClonePlayer(Handle:oldPlayer)
     return newPlayer;
 }
 
-public ClearPlayerArray()
+ClearPlayerArray()
 {
     for(new client=0;client<=MAXPLAYERS;client++)
     {
@@ -174,7 +174,7 @@ public ClearPlayerArray()
     }
 }
 
-public ClearPlayer(client,Handle:playerHandle)
+ClearPlayer(client,Handle:playerHandle)
 {
     if (playerHandle != INVALID_HANDLE)
     {
@@ -219,32 +219,32 @@ public ClearPlayer(client,Handle:playerHandle)
     }
 }
 
-public Handle:GetPlayerHandle(client)
+Handle:GetPlayerHandle(client)
 {
     return arrayPlayers[client];
 }
 
-public GetClientIndex(Handle:playerHandle)
+GetClientIndex(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
 }
 
-public GetDatabaseIdent(Handle:playerHandle)
+GetDatabaseIdent(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_DATABASE_IDENT);
 }
 
-public SetDatabaseIdent(Handle:playerHandle,ident)
+SetDatabaseIdent(Handle:playerHandle,ident)
 {
     SetArrayCell(playerHandle,INFO_DATABASE_IDENT,ident);
 }
 
-public GetRace(Handle:playerHandle)
+GetRace(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_RACE);
 }
 
-public SetRace(Handle:playerHandle,race)
+SetRace(Handle:playerHandle,race)
 {
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
     if (race != oldrace)
@@ -260,52 +260,52 @@ public SetRace(Handle:playerHandle,race)
     }
 }
 
-public GetPendingRace(Handle:playerHandle)
+GetPendingRace(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_PENDING_RACE);
 }
 
-public SetPendingRace(Handle:playerHandle,pend)
+SetPendingRace(Handle:playerHandle,pend)
 {
     SetArrayCell(playerHandle,INFO_PENDING_RACE,pend);
 }
 
-public GetPendingUpgradeReset(Handle:playerHandle)
+GetPendingUpgradeReset(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_PENDING_UPGRADE_RESET);
 }
 
-public SetPendingUpgradeReset(Handle:playerHandle,pend)
+SetPendingUpgradeReset(Handle:playerHandle,pend)
 {
     SetArrayCell(playerHandle,INFO_PENDING_UPGRADE_RESET,pend);
 }
 
-public GetCredits(Handle:playerHandle)
+GetCredits(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_CREDITS);
 }
 
-public SetCredits(Handle:playerHandle,credits)
+SetCredits(Handle:playerHandle,credits)
 {
     SetArrayCell(playerHandle,INFO_CREDITS,credits);
 }
 
-public GetOverallLevel(Handle:playerHandle)
+GetOverallLevel(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_OVERALL_LEVEL);
 }
 
-public SetOverallLevel(Handle:playerHandle,level)
+SetOverallLevel(Handle:playerHandle,level)
 {
     SetArrayCell(playerHandle,INFO_OVERALL_LEVEL,level);
 }
 
-public Handle:GetPropertyInfo(Handle:playerHandle)
+Handle:GetPropertyInfo(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_PROPERTIES);
 }
 
-public GetOwnsItem(Handle:playerHandle,item)
+GetOwnsItem(Handle:playerHandle,item)
 {
     if (GetShopItemCount() >= 1)
     {
@@ -316,7 +316,7 @@ public GetOwnsItem(Handle:playerHandle,item)
         return 0;
 }
 
-public SetOwnsItem(Handle:playerHandle,item,owns)
+SetOwnsItem(Handle:playerHandle,item,owns)
 {
     if (GetShopItemCount() >= 1)
     {
@@ -325,19 +325,19 @@ public SetOwnsItem(Handle:playerHandle,item,owns)
     }
 }
 
-public GetImmunity(Handle:playerHandle,immunity)
+GetImmunity(Handle:playerHandle,immunity)
 {
     new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
     return GetArrayCell(immunities,immunity);
 }
 
-public SetImmunity(Handle:playerHandle,immunity,imm_state)
+SetImmunity(Handle:playerHandle,immunity,imm_state)
 {
     new Handle:immunities=GetArrayCell(playerHandle,INFO_IMMUNITIES);
     SetArrayCell(immunities,immunity,imm_state);
 }
 
-public GetXP(Handle:playerHandle,race)
+GetXP(Handle:playerHandle,race)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -348,7 +348,7 @@ public GetXP(Handle:playerHandle,race)
         return 0;
 }
 
-public SetXP(Handle:playerHandle,race,xp)
+SetXP(Handle:playerHandle,race,xp)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -357,7 +357,7 @@ public SetXP(Handle:playerHandle,race,xp)
     }
 }
 
-public ResetXP(Handle:playerHandle,race,xp)
+ResetXP(Handle:playerHandle,race,xp)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -371,7 +371,7 @@ public ResetXP(Handle:playerHandle,race,xp)
     }
 }
 
-public GetLevel(Handle:playerHandle,race)
+GetLevel(Handle:playerHandle,race)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -382,7 +382,7 @@ public GetLevel(Handle:playerHandle,race)
         return 0;
 }
 
-public SetLevel(Handle:playerHandle,race,new_level)
+SetLevel(Handle:playerHandle,race,new_level)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -391,7 +391,7 @@ public SetLevel(Handle:playerHandle,race,new_level)
     }
 }
 
-public ResetLevel(Handle:playerHandle,race,new_level)
+ResetLevel(Handle:playerHandle,race,new_level)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -411,13 +411,13 @@ public ResetLevel(Handle:playerHandle,race,new_level)
             else // (difference > 0)
             {
                 UpgradeMenu(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
-                            playerHandle, INVALID_FUNCTION);
+                            playerHandle);
             }
         }
     }
 }
 
-public GetActiveUltimate(Handle:playerHandle,race)
+GetActiveUltimate(Handle:playerHandle,race)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -428,7 +428,7 @@ public GetActiveUltimate(Handle:playerHandle,race)
         return -1;
 }
 
-public SetActiveUltimate(Handle:playerHandle,race,upgrade)
+SetActiveUltimate(Handle:playerHandle,race,upgrade)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -437,7 +437,7 @@ public SetActiveUltimate(Handle:playerHandle,race,upgrade)
     }
 }
 
-public GetUpgradeLevel(Handle:playerHandle,race,upgrade)
+GetUpgradeLevel(Handle:playerHandle,race,upgrade)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -448,7 +448,7 @@ public GetUpgradeLevel(Handle:playerHandle,race,upgrade)
         return 0;
 }
 
-public SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
+SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -468,7 +468,7 @@ public SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
     }
 }
 
-public IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
+IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
 {
     if (race >= 0 && GetRaceCount() >= 1)
     {
@@ -492,7 +492,7 @@ public IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
     }
 }
 
-public GetUpgradeLevelCount(Handle:playerHandle,race)
+GetUpgradeLevelCount(Handle:playerHandle,race)
 {
     new ret=0;
     if (race >= 0 && GetRaceCount() >= 1)

@@ -11,7 +11,7 @@
 //#define ADMFLAG_SOURCECRAFT ADMFLAG_RCON
 #define ADMFLAG_SOURCECRAFT ADMFLAG_CUSTOM1
 
-public InitCVars()
+InitCVars()
 {
     CreateConVar("sc_version",VERSION,"SourceCraft version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_UNLOGGED|FCVAR_DONTRECORD);
 
@@ -34,7 +34,7 @@ public InitCVars()
     return true;
 }
 
-public PlayerParse(const String:matchstr[], &Handle:matchHandle)
+PlayerParse(const String:matchstr[], &Handle:matchHandle)
 {
     if(StrEqual(matchstr,"@all",false))
     {
@@ -256,7 +256,7 @@ public Action:CMD_SetLevel(client,args)
                 PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" set your level to %d, re-pick your upgrades.",
                             COLOR_GREEN,COLOR_DEFAULT,client,level);
                 if(level>0)
-                    UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
+                    UpgradeMenu(index, playerHandle);
             }
         }
         if(GetArraySize(matchHandle)==0)
@@ -292,7 +292,7 @@ public Action:CMD_GiveLevel(client,args)
                     PrintToConsole(client,"[SourceCraft] You just gave player \"%N\" a level.",index);
                     PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" gave you a level.",
                                 COLOR_GREEN,COLOR_DEFAULT,client);
-                    UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
+                    UpgradeMenu(index, playerHandle);
                 }
             }
         }
@@ -333,7 +333,7 @@ public Action:CMD_RemoveLevel(client,args)
                     PrintToChat(index, "%c[SourceCraft] %cAdmin \"%N\" removed a level from you, re-pick your upgrades.",
                                 COLOR_GREEN,COLOR_DEFAULT,client);
                     if(newlevel>0)
-                        UpgradeMenu(index, playerHandle, INVALID_FUNCTION);
+                        UpgradeMenu(index, playerHandle);
                 }
             }
         }

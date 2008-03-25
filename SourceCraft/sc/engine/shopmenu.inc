@@ -14,7 +14,7 @@
 // A vector of shopmenu infomation
 new Handle:shopVector;
 
-public Handle:CreateShopItem(const String:name[], const String:desc[], const String:cost[])
+Handle:CreateShopItem(const String:name[], const String:desc[], const String:cost[])
 {
     new Handle:ret=CreateArray(ByteCountToCells(256));
     PushArrayString(ret,name);
@@ -23,18 +23,18 @@ public Handle:CreateShopItem(const String:name[], const String:desc[], const Str
     return ret;
 }
 
-public bool:InitiateShopVector()
+bool:InitiateShopVector()
 {
     shopVector=CreateArray();
     return true;
 }
 
-public Handle:ShopItem(itemnum)
+Handle:ShopItem(itemnum)
 {
     return GetArrayCell(shopVector,itemnum);
 }
 
-public GetShopItem(const String:name[])
+GetShopItem(const String:name[])
 {
     decl String:curName[64]="";
     new size = GetShopItemCount();

@@ -833,7 +833,7 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
     }
 }
 
-public bool:InitNatives()
+bool:InitNatives()
 {
     CreateNative("CreateRace",Native_CreateRace);
     CreateNative("AddUpgrade",Native_AddUpgrade);
@@ -870,7 +870,7 @@ public bool:InitNatives()
     return true;
 }
 
-public bool:InitForwards()
+bool:InitForwards()
 {
     g_OnPlayerAuthedHandle=CreateGlobalForward("OnPlayerAuthed",ET_Ignore,Param_Cell,Param_Cell);
     g_OnUltimateCommandHandle=CreateGlobalForward("OnUltimateCommand",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
