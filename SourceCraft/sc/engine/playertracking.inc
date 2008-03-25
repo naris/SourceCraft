@@ -13,16 +13,17 @@
 
 #define INFO_CLIENT_INDEX               0
 #define INFO_DATABASE_IDENT             1
-#define INFO_RACE                       2
-#define INFO_PENDING_RACE               3
-#define INFO_PENDING_UPGRADE_RESET      4
-#define INFO_CREDITS                    5
-#define INFO_OVERALL_LEVEL              6
-#define INFO_PROPERTIES                 7
-#define INFO_SHOPITEMS                  8
-#define INFO_IMMUNITIES                 9
+#define INFO_DATABASE_SAVED             2
+#define INFO_RACE                       3
+#define INFO_PENDING_RACE               4
+#define INFO_PENDING_UPGRADE_RESET      5
+#define INFO_CREDITS                    6
+#define INFO_OVERALL_LEVEL              7
+#define INFO_PROPERTIES                 8
+#define INFO_SHOPITEMS                  9
+#define INFO_IMMUNITIES                10
 
-#define INFO_COUNT                     10
+#define INFO_COUNT                     11
 
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
@@ -69,6 +70,7 @@ Handle:CreatePlayer(client)
     {
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,-1); // Database Ident
+        PushArrayCell(newPlayer,0); // Saved to Database Flag
         PushArrayCell(newPlayer,0); // Player race
         PushArrayCell(newPlayer,-1); // Pending race
         PushArrayCell(newPlayer,0); // Pending upgrade reset
@@ -239,6 +241,16 @@ SetDatabaseIdent(Handle:playerHandle,ident)
     SetArrayCell(playerHandle,INFO_DATABASE_IDENT,ident);
 }
 
+GetDatabaseSaved(Handle:playerHandle)
+{
+    return GetArrayCell(playerHandle,INFO_DATABASE_SAVED);
+}
+
+SetDatabaseSaved(Handle:playerHandle,value)
+{
+    SetArrayCell(playerHandle,INFO_DATABASE_SAVED,value);
+}
+
 GetRace(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_RACE);
@@ -249,6 +261,7 @@ SetRace(Handle:playerHandle,race)
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
     if (race != oldrace)
     {
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         SetArrayCell(playerHandle,INFO_RACE,race);
         Call_StartForward(g_OnRaceSelectedHandle);
         Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
@@ -288,6 +301,7 @@ GetCredits(Handle:playerHandle)
 SetCredits(Handle:playerHandle,credits)
 {
     SetArrayCell(playerHandle,INFO_CREDITS,credits);
+    SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
 }
 
 GetOverallLevel(Handle:playerHandle)
@@ -298,6 +312,7 @@ GetOverallLevel(Handle:playerHandle)
 SetOverallLevel(Handle:playerHandle,level)
 {
     SetArrayCell(playerHandle,INFO_OVERALL_LEVEL,level);
+    SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
 }
 
 Handle:GetPropertyInfo(Handle:playerHandle)
@@ -354,6 +369,7 @@ SetXP(Handle:playerHandle,race,xp)
     {
         new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         SetArrayCell(raceinfo,RACEINFO_XP,xp);
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
     }
 }
 
@@ -363,6 +379,7 @@ ResetXP(Handle:playerHandle,race,xp)
     {
         new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         SetArrayCell(raceinfo,RACEINFO_XP,xp);
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         if (GetArrayCell(raceinfo,RACEINFO_LEVEL) < MAX_LEVELS)
         {
             DoLevelCheck(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
@@ -388,6 +405,7 @@ SetLevel(Handle:playerHandle,race,new_level)
     {
         new Handle:raceinfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         SetArrayCell(raceinfo,RACEINFO_LEVEL,new_level);
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
     }
 }
 
@@ -403,6 +421,7 @@ ResetLevel(Handle:playerHandle,race,new_level)
             SetArrayCell(raceinfo,RACEINFO_LEVEL,new_level);
             new overall_level = GetArrayCell(playerHandle,INFO_OVERALL_LEVEL);
             SetArrayCell(playerHandle,INFO_OVERALL_LEVEL,overall_level+difference);
+            SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
             if (difference < 0)
             {
                 ResetUpgradesNow(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
@@ -456,6 +475,7 @@ SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
         new num=RACEINFO_UPGRADES+upgrade;
         new old=GetArrayCell(raceinfo,num);
         SetArrayCell(raceinfo,num,level);
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         Call_StartForward(g_OnUpgradeLevelChangedHandle);
         Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
         Call_PushCell(playerHandle);
@@ -477,6 +497,7 @@ IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
         new old=GetArrayCell(raceinfo,num);
         new level=old+1;
         SetArrayCell(raceinfo,num,level);
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         if (isUltimate)
             SetArrayCell(raceinfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
 

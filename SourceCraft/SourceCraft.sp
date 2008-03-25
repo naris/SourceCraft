@@ -176,12 +176,9 @@ public OnMapEnd()
 
     if (SAVE_ENABLED)
     {
-        // Make sure all threaded DB transactions are complete!
+        // Wait for all threaded DB transactions to complete!
         SQL_LockDatabase(DBIDB);
         SQL_UnlockDatabase(DBIDB);
-
-        if (!g_AllPlayersSaved)
-            SaveAllPlayersData(true);
     }
 
     g_MapChanging = false;
@@ -225,11 +222,11 @@ public OnClientDisconnect(client)
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
-            if (SAVE_ENABLED)
+            if (SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
             {
                 // Don't use threaded saves when the map is changing!
                 new bool:threaded = !g_MapChanging;
-                SavePlayerData(client,playerHandle,threaded,threaded);
+                SavePlayerData(client,playerHandle,threaded,false);
                 if (!threaded)
                     ClearPlayer(client,playerHandle);
             }

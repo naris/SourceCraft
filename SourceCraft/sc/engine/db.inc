@@ -434,7 +434,7 @@ SaveAllPlayersData(bool:threaded)
     for(new client=1;client<=playerCount;client++)
     {
         new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE && IsClientInGame(client))
+        if (playerHandle != INVALID_HANDLE && IsClientInGame(client) && !GetDatabaseSaved(playerHandle))
             SavePlayerData(client,playerHandle,threaded,threaded);
     }
     g_AllPlayersSaved = true;
@@ -469,6 +469,8 @@ SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
 
                 if (threaded)
                 {
+                    SetDatabaseSaved(playerHandle,1);
+
                     //LogMessage("Starting thread to process:%s", SQLString);
                     // When threading, copy the data first so it can't
                     // get freed while we are using it!
@@ -486,7 +488,10 @@ SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
 
                     //LogMessage("Processing :%s", SQLString);
                     if (SQL_FastQuery(DBIDB,SQLString))
+                    {
+                        SetDatabaseSaved(playerHandle,1);
                         SavePlayerRaces(client, playerHandle, player_ident,threaded);
+                    }
                     else
                     {
                         SetDatabaseIdent(playerHandle,-1);
@@ -520,6 +525,7 @@ SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
                         {
                             player_ident = SQL_FetchInt(player_query,0);
                             SetDatabaseIdent(playerHandle,player_ident);
+                            SetDatabaseSaved(playerHandle,1);
                             CloseHandle(player_query);
 
                             if (threaded)
