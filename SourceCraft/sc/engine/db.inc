@@ -269,6 +269,7 @@ LoadPlayerData(client,Handle:playerHandle, bool:threaded)
                 {
                     new player_ident = SQL_FetchInt(query,0);
                     SetDatabaseIdent(playerHandle,player_ident);
+                    SetDatabaseSaved(playerHandle,1);
 
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
