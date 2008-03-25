@@ -84,6 +84,29 @@ bool:HookTFEvents()
         LogError("Could not hook the teamplay_win_panel event.");
         return false;
     }
+
+
+    if(!HookEventEx("tf_game_over",GameOver))
+    {
+        LogError("Could not hook the tf_game_over event.");
+        return false;
+    }
+
+    if(!HookEventEx("teamplay_game_over",GameOver))
+    {
+        LogError("Could not hook the teamplay_game_over event.");
+        return false;
+    }
+
+    if(!HookEventEx("teamplay_waiting_begins",LogEvent))
+    {
+        LogError("Could not hook the teamplay_game_over event.");
+    }
+
+    if(!HookEventEx("teamplay_waiting_ends",LogEvent))
+    {
+        LogError("Could not hook the teamplay_game_over event.");
+    }
    
     return true;
 }
@@ -344,3 +367,14 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         SaveAllPlayersData(!g_MapChanging);
 }
 
+public GameOver(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    LogMessage("GameOver(%s)", name);
+    g_RoundActive = false;
+    g_MapChanging = true;
+}
+
+public LogEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    LogMessage("LogEvent(%s)", name);
+}

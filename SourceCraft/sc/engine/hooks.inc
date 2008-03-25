@@ -174,6 +174,9 @@ public Action:SCMenuCommand(client,args)
 
 public Action:ChangelevelCommand(client,args)
 {
+    decl String:arg1[32];
+    GetCmdArg(1,arg1,sizeof(arg1));
+    LogMessage("ChangelevelCommand(%s)", arg1);
     g_MapChanging = true;
     return Plugin_Continue;
 }
