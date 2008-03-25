@@ -236,6 +236,8 @@ public OnClientDisconnect(client)
                     else
                         threaded = true;
                 }
+                LogMessage("call SavePlayerData(%N), threaded=%d", client, threaded);
+                threaded = false; // Force threaded off for now.
                 SavePlayerData(client,playerHandle,threaded,false);
                 if (!threaded)
                     ClearPlayer(client,playerHandle);
