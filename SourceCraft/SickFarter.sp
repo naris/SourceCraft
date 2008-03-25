@@ -266,7 +266,7 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
                                   0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
                 TE_SendToAll();
 
-                LogMessage("%N stole %d crystal(s) from %N", index, amount, victim_index);
+                LogToGame("%N stole %d crystal(s) from %N", index, amount, victim_index);
 
                 PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
                             COLOR_GREEN,COLOR_DEFAULT,amount,
