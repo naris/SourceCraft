@@ -330,6 +330,18 @@ public Native_SetLevel(Handle:plugin,numParams)
     }
 }
 
+public Native_ResetLevel(Handle:plugin,numParams)
+{
+    if (numParams==3)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        new race=GetNativeCell(2);
+        new newlevel=GetNativeCell(3);
+        if (player != INVALID_HANDLE && race != -1)
+            ResetLevel(player,race,newlevel);
+    }
+}
+
 public Native_GetUpgradeLevel(Handle:plugin,numParams)
 {
     if (numParams==3)
@@ -391,6 +403,21 @@ public Native_SetXP(Handle:plugin,numParams)
         if (player != INVALID_HANDLE && race != -1 && newxp != -1)
         {
             SetXP(player,race,newxp);
+            DoLevelCheck(GetClientIndex(player),player);
+        }
+    }
+}
+
+public Native_ResetXP(Handle:plugin,numParams)
+{
+    if (numParams==3)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        new race=GetNativeCell(2);
+        new newxp=GetNativeCell(3);
+        if (player != INVALID_HANDLE && race != -1 && newxp != -1)
+        {
+            ResetXP(player,race,newxp);
             DoLevelCheck(GetClientIndex(player),player);
         }
     }
@@ -821,11 +848,13 @@ public bool:InitNatives()
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
     CreateNative("SetLevel",Native_SetLevel);
+    CreateNative("ResetLevel",Native_ResetLevel);
     CreateNative("GetUpgradeLevel",Native_GetUpgradeLevel);
     CreateNative("SetUpgradeLevel",Native_SetUpgradeLevel);
     CreateNative("ResetUpgradeLevels",Native_ResetUpgradeLevels);
     CreateNative("GetXP",Native_GetXP);
     CreateNative("SetXP",Native_SetXP);
+    CreateNative("ResetXP",Native_ResetXP);
     CreateNative("GetCredits",Native_GetCredits);
     CreateNative("SetCredits",Native_SetCredits);
     CreateNative("GetOwnsItem",Native_GetOwnsItem);

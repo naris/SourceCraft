@@ -409,7 +409,7 @@ public Action:Negotiations(Handle:timer)
                                 case 7: // Grievance
                                 {
                                     new amount = GetRandomInt(1,10);
-                                    SetXP(player, raceID, GetXP(player, raceID)+amount);
+                                    ResetXP(player, raceID, GetXP(player, raceID)+amount);
                                     PrintToChat(client,"%c[SourceCraft]%c You have filed a %cGrievance%c and recieved %d experience!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
 
@@ -417,7 +417,7 @@ public Action:Negotiations(Handle:timer)
                                 case 8: // Shop Steward
                                 {
                                     new amount = GetRandomInt(1,10);
-                                    SetXP(player, raceID, GetXP(player, raceID)+amount);
+                                    ResetXP(player, raceID, GetXP(player, raceID)+amount);
                                     PrintToChat(client,"%c[SourceCraft]%c You have been made a %cShop Steward%c and recieved %d experience!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
 
@@ -425,7 +425,7 @@ public Action:Negotiations(Handle:timer)
                                 case 9: // Arbitration
                                 {
                                     new amount = GetRandomInt(1,10);
-                                    SetXP(player, raceID, GetXP(player, raceID)+amount);
+                                    ResetXP(player, raceID, GetXP(player, raceID)+amount);
                                     PrintToChat(client,"%c[SourceCraft]%c Due to %cArbitration%c, you have recieved %d experience!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
 
@@ -433,7 +433,7 @@ public Action:Negotiations(Handle:timer)
                                 case 10: // Collective Bargaining
                                 {
                                     new amount = GetRandomInt(1,10);
-                                    SetXP(player, raceID, GetXP(player, raceID)+amount);
+                                    ResetXP(player, raceID, GetXP(player, raceID)+amount);
                                     PrintToChat(client,"%c[SourceCraft]%c Due to %cCollective Bargaining%c, you have recieved %d experience!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
 
@@ -441,7 +441,7 @@ public Action:Negotiations(Handle:timer)
                                 case 11: // Fringe Benefits
                                 {
                                     new amount = GetRandomInt(1,10);
-                                    SetXP(player, raceID, GetXP(player, raceID)+amount);
+                                    ResetXP(player, raceID, GetXP(player, raceID)+amount);
                                     PrintToChat(client,"%c[SourceCraft]%c You are entitled to %cFringe Benefits%c of %d experience!",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,amount);
 
@@ -513,7 +513,7 @@ public Action:Negotiations(Handle:timer)
                                         new amount = GetRandomInt(100,1000);
                                         SetCredits(player, GetCredits(player)+amount);
 
-                                        new reduction = GetRandomInt(0,level-1);
+                                        new reduction = GetRandomInt(0,level) - (level/4);
                                         if (reduction > 0)
                                         {
                                             PrintToChat(client,"%c[SourceCraft]%c You have been forced to accept a %cBuyout%c for %d crystals and have been reduced by %d levels!",
@@ -533,7 +533,7 @@ public Action:Negotiations(Handle:timer)
                                         EmitSoundToAll(explodeWav,client);
                                         KillPlayer(client);
                                         if (reduction > 0)
-                                            SetLevel(player, raceID, level-reduction);
+                                            ResetLevel(player, raceID, level-reduction);
                                     }
                                 }
                                 case 18: // Bankruptcy
@@ -543,7 +543,7 @@ public Action:Negotiations(Handle:timer)
                                         client--; // Get a different Negotiation
                                     else
                                     {
-                                        new reduction = GetRandomInt(0,level/2);
+                                        new reduction = GetRandomInt(0,level) - (level/2);
                                         if (reduction > 0)
                                         {
                                             PrintToChat(client,"%c[SourceCraft]%c Your employer has gone into %cBankruptcy%c, you have been reduced by %d levels!",
@@ -564,7 +564,7 @@ public Action:Negotiations(Handle:timer)
                                         KillPlayer(client);
 
                                         if (reduction > 0)
-                                            SetLevel(player, raceID, level-reduction);
+                                            ResetLevel(player, raceID, level-reduction);
                                     }
                                 }
                                 case 19: // Union Dues

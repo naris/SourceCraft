@@ -124,6 +124,15 @@ native GetLevel(Handle:player,race);
 native SetLevel(Handle:player,race,newlevel);
 
 /**
+ * Resets the current level for the provided race, also adjusts Upgrade levels as required.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @param race: The race ID returned from CreateRace
+ * @param newlevel: The level you want to set to 
+ * @noreturn
+ */
+native ResetLevel(Handle:player,race,newlevel);
+
+/**
  * Gets the current race for the player.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @return The return value will be the race of the player, if -1 then it failed.
@@ -146,6 +155,15 @@ native GetXP(Handle:player,race);
  * @noreturn
  */
 native SetXP(Handle:player,race,newxp);
+
+/**
+ * Resets the XP for the provided race, also adjusts Levels and Upgrades as required.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @param race: The race ID returned from CreateRace
+ * @param newxp: The XP you want to set to 
+ * @noreturn
+ */
+native ResetXP(Handle:player,race,newxp);
 
 /**
  * Gets the current level for the upgrade for the provided race.

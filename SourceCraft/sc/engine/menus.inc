@@ -371,6 +371,8 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
                     if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                         UpgradeMenu(client,playerHandle,gUpgradeMenuParentMenuFunction[client]);
+                    else if (SAVE_ENABLED)
+                        SavePlayerData(client,playerHandle,true,true);
                 }
             }
         }
