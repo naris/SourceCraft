@@ -130,6 +130,7 @@ Handle:ClonePlayer(Handle:oldPlayer)
     {
         PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_CLIENT_INDEX)); // The first thing is client index
         PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_DATABASE_IDENT)); // Database Ident
+        PushArrayCell(newPlayer,0); // Database Save Flag
         PushArrayCell(newPlayer,GetArrayCell(oldPlayer,INFO_RACE)); // Player race
         PushArrayCell(newPlayer,-1); // Pending race
         PushArrayCell(newPlayer,0); // Pending upgrade reset
