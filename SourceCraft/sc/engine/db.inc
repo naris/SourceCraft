@@ -431,7 +431,7 @@ ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
 SaveAllPlayersData(bool:threaded)
 {
     new playerCount = GetMaxClients();
-    //LogMessage("SaveAllPlayersData(), threaded=%d, playerCount=%d", threaded, playerCount);
+    LogMessage("SaveAllPlayersData(), threaded=%d, playerCount=%d", threaded, playerCount);
     for(new client=1;client<=playerCount;client++)
     {
         new Handle:playerHandle=GetPlayerHandle(client);
@@ -443,7 +443,7 @@ SaveAllPlayersData(bool:threaded)
 
 SavePlayerData(client, Handle:playerHandle, bool:threaded, bool:cloneData)
 {
-    //LogMessage("SavePlayerData(%N), threaded=%d, clone=%d, DBIDB=%d", client, threaded, cloneData, DBIDB);
+    LogMessage("SavePlayerData(%N), threaded=%d, clone=%d, DBIDB=%d", client, threaded, cloneData, DBIDB);
     if(DBIDB)
     {
         decl String:steamid[64]="";
