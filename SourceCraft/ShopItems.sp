@@ -22,6 +22,10 @@
 #include "sc/weapons"
 #include "sc/log"
 
+new Handle:hGameConf      = INVALID_HANDLE;
+
+#include "sc/ammo"
+
 // Defines
 
 #define ITEM_ANKH             0 // Ankh of Reincarnation - Retrieve Equipment after death
@@ -35,25 +39,20 @@
 #define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
 #define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
 #define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
-#define ITEM_PACK            11 // Ammo Pack - Given HE Grenades or ammo or metal over time
-#define ITEM_SACK            12 // Sack of looting - Loot crystals from corpses.
-#define ITEM_LOCKBOX         13 // Lockbox - Keep crystals safe from theft.
-#define ITEM_RING            14 // Ring of Regeneration + 1 - Given extra health over time
-#define ITEM_MOLE            15 // Mole - Respawn in enemies spawn with cloak.
-#define ITEM_MOLE_PROTECTION 16 // Mole Protection - Reduce damage from a Mole.
-#define ITEM_MOLE_REFLECTION 17 // Mole Reflection - Reflects damage back to the Mole.
-#define ITEM_MOLE_RETENTION  18 // Mole Retention - Keep Mole Protection/Reflection until used.
-//#define ITEM_GOGGLES       19 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         20 // Purchase Admin on the Server
-#define MAXITEMS             19
+#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades or ammo or metal over time
+#define ITEM_PACK            12 // Ammo Pack - Given Grenades
+#define ITEM_SACK            13 // Sack of looting - Loot crystals from corpses.
+#define ITEM_LOCKBOX         14 // Lockbox - Keep crystals safe from theft.
+#define ITEM_RING            15 // Ring of Regeneration + 1 - Given extra health over time
+#define ITEM_MOLE            16 // Mole - Respawn in enemies spawn with cloak.
+#define ITEM_MOLE_PROTECTION 17 // Mole Protection - Reduce damage from a Mole.
+#define ITEM_MOLE_REFLECTION 18 // Mole Reflection - Reflects damage back to the Mole.
+#define ITEM_MOLE_RETENTION  19 // Mole Retention - Keep Mole Protection/Reflection until used.
+//#define ITEM_GOGGLES       20 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         21 // Purchase Admin on the Server
+#define MAXITEMS             20
  
 new myWepsOffset;
-new curWepOffset;
-new ammotypeOffset;
-new clipOffset;
-new ammoOffset; // Primary Ammo
-new ammo2Offset; // Secondary Ammo
-new metalOffset; // metal (3rd Ammo)
 
 new Handle:vecPlayerWeapons[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 new Float:spawnLoc[MAXPLAYERS+1][3];
@@ -64,11 +63,9 @@ new Float:gClawTime[MAXPLAYERS+1];
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
 
-new Handle:hGameConf      = INVALID_HANDLE;
 new Handle:hUTILRemove    = INVALID_HANDLE;
 new Handle:hGiveNamedItem = INVALID_HANDLE;
 new Handle:hWeaponDrop    = INVALID_HANDLE;
-new Handle:hGiveAmmo      = INVALID_HANDLE;
 new Handle:hSetModel      = INVALID_HANDLE;
 
 new shopItem[MAXITEMS+1];
@@ -97,7 +94,7 @@ public OnPluginStart()
     if (!HookEvent("player_spawn",PlayerSpawnEvent))
         SetFailState("Couldn't hook the player_spawn event.");
 
-    //CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
+    CreateTimer(10.0,AmmoPack,INVALID_HANDLE,TIMER_REPEAT);
     CreateTimer(1.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 
     if (GameType == cstrike)
@@ -106,28 +103,95 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation","If you die you will retrieve your equipment the following round.","40");
-    shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed","Allows you to move faster.","55");
-    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack","Up to an additional 8 hp will be removed from the enemy on every successful attack.","60");
-    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows","Makes you invisible when standing still AND holding the knife, shovel or other melee weapon.","45");
-    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death","You will receive health for every hit on the enemy.","10");
-    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity","You will be immune to enemy ultimates.","20");
-    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost","Slows your enemy down when you hit him.","35");
-    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health","Receive extra health.","50");
-    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience","Automatically gain experience, this item is used on purchase.","50");
-    shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning","You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.","15");
-    shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather","You will be able to jump higher.","45");
-    //shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack","You will be given ammo or metal every 10 seconds.","35");
-    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting","Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!","85");
-    shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox","A lockbox to keep your crystals safe from theft.","20");
-    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1","Gives 1 health every second, won't exceed your normal HP.","15");
-    shopItem[ITEM_MOLE]=CreateShopItem("Mole","Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.","75");
-    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection","Deflect some damage from the mole\nto give yourself a fighting chance.","15");
-    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection","Reflect some damage back to the mole\nto give yourself a fighting chance.","45");
-    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention","Keep your Mole Protection and/or Reflection\nafter you die until it is used.","15");
+    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation",
+                                       "If you die you will retrieve your equipment the following round.",
+                                       "40");
+
+    shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed",
+                                        "Allows you to move faster.",
+                                        "55");
+
+    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack",
+                                        "Up to an additional 8 hp will be removed from the enemy on every successful attack.",
+                                        "60");
+
+    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows",
+                                        "Makes you invisible when standing still AND holding the knife, shovel or other melee weapon.",
+                                        "45");
+
+    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death",
+                                       "You will receive health for every hit on the enemy.",
+                                       "10");
+
+    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity",
+                                           "You will be immune to enemy ultimates.",
+                                           "20");
+
+    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost",
+                                      "Slows your enemy down when you hit him.",
+                                      "35");
+
+    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health",
+                                          "Receive extra health.",
+                                          "50");
+
+    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience",
+                                       "Automatically gain experience, this item is used on purchase.",
+                                       "50");
+
+    shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning",
+                                         "You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.",
+                                         "15");
+
+    shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather",
+                                       "You will be able to jump higher.",
+                                       "45");
+
+    if (GameType == cstrike)
+    {
+        shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth",
+                                             "You will be given a grenade every 10 seconds.",
+                                             "35");
+    }
+    else
+        shopItem[ITEM_GLOVES]=-1;
+
+    shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack",
+                                       "You will be given ammo or metal every 10 seconds.",
+                                       "35");
+
+    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting",
+                                       "Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!",
+                                       "85");
+
+    shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox",
+                                          "A lockbox to keep your crystals safe from theft.",
+                                          "20");
+
+    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1",
+                                       "Gives 1 health every second, won't exceed your normal HP.",
+                                       "15");
+
+    shopItem[ITEM_MOLE]=CreateShopItem("Mole",
+                                       "Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.",
+                                       "75");
+
+    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection",
+                                                  "Deflect some damage from the mole\nto give yourself a fighting chance.",
+                                                  "15");
+
+    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection",
+                                                  "Reflect some damage back to the mole\nto give yourself a fighting chance.",
+                                                  "45");
+
+    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention",
+                                                 "Keep your Mole Protection and/or Reflection\nafter you die until it is used.",
+                                                 "15");
+
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     FindUberOffsets();
+    FindClipOffsets();
     LoadSDKToolStuff();
 }
 
@@ -135,67 +199,37 @@ public LoadSDKToolStuff()
 {
     hGameConf=LoadGameConfigFile("plugin.sourcecraft");
 
-    ammoOffset = FindSendPropOffs("CBasePlayer", "m_iAmmo");
-    if(curWepOffset==-1)
-        SetFailState("Couldn't find Ammo offset");
-
-    if (GameType == tf2)
+    if (GameType == cstrike)
     {
-        ammo2Offset = ammoOffset  + 4;
-        metalOffset = ammo2Offset + 4;
-    }
-    else
-    {
-        ammotypeOffset = FindSendPropOffs("CBaseCombatWeapon", "m_iPrimaryAmmoType");
-        if(curWepOffset==-1)
-            SetFailState("Couldn't find PrimaryAmmoType offset");
-
-        clipOffset = FindSendPropOffs("CBaseCombatWeapon", "m_iClip1");
-        if(curWepOffset==-1)
-            SetFailState("Couldn't find Clip offset");
-
-        curWepOffset=FindSendPropOffs("CAI_BaseNPC","m_hActiveWeapon");
-        if(curWepOffset==-1)
-            SetFailState("Couldn't find ActiveWeapon offset");
-
-        PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveAmmo");
-        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-        PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
-        hGiveAmmo=EndPrepSDKCall();
+        myWepsOffset = FindSendPropOffs("CAI_BaseNPC", "m_hMyWeapons");
 
         StartPrepSDKCall(SDKCall_Static);
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_SetModel");
         PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
         PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
         hSetModel=EndPrepSDKCall();
-    }
 
-    if (GameType == cstrike)
-    {
-        myWepsOffset = FindSendPropOffs("CAI_BaseNPC", "m_hMyWeapons");
-
+        StartPrepSDKCall(SDKCall_Static);
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_Remove");
         PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
         hUTILRemove=EndPrepSDKCall();
-        StartPrepSDKCall(SDKCall_Entity);
 
+        StartPrepSDKCall(SDKCall_Entity);
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"Weapon_Drop");
         PrepSDKCall_AddParameter(SDKType_CBaseEntity,SDKPass_Pointer);
         PrepSDKCall_AddParameter(SDKType_Vector,SDKPass_Pointer,VDECODE_FLAG_ALLOWNULL);
         PrepSDKCall_AddParameter(SDKType_Vector,SDKPass_Pointer,VDECODE_FLAG_ALLOWNULL);
         hWeaponDrop=EndPrepSDKCall();
-        StartPrepSDKCall(SDKCall_Entity);
     }
 
     if (GameType == cstrike || GameType == dod)
     {
+        StartPrepSDKCall(SDKCall_Player);
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"GiveNamedItem");
         PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity,SDKPass_Pointer);
         PrepSDKCall_AddParameter(SDKType_String,SDKPass_Pointer);
         PrepSDKCall_AddParameter(SDKType_PlainOldData,SDKPass_Plain);
         hGiveNamedItem=EndPrepSDKCall();
-        StartPrepSDKCall(SDKCall_Static);
     }
 }
 
@@ -206,6 +240,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
+    FindAmmoOffset(client);
     FindMaxHealthOffset(client);
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
@@ -329,8 +364,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                 LootCorpse(event, victim_index, victim_player, assister_index, assister_player);
         }
 
-        if (GameType == cstrike ||
-            !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
+        if (GameType == cstrike || !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
         {
             if(GetOwnsItem(victim_player,shopItem[ITEM_BOOTS]))
             {
@@ -364,6 +398,9 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_SOCK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_SOCK],false);
+
+            if(GetOwnsItem(victim_player,shopItem[ITEM_GLOVES]))
+                SetOwnsItem(victim_player,shopItem[ITEM_GLOVES],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_PACK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_PACK],false);
@@ -645,85 +682,94 @@ public Action:AmmoPack(Handle:timer)
         if(IsClientInGame(client) && IsPlayerAlive(client))
         {
             new Handle:player=GetPlayerHandle(client);
-            if (player != INVALID_HANDLE &&
-                GetOwnsItem(player,shopItem[ITEM_PACK]))
+            if (player != INVALID_HANDLE)
             {
-                if (GameType == cstrike)
+                if (shopItem[ITEM_GLOVES] >= 0 && GetOwnsItem(player,shopItem[ITEM_GLOVES]))
                 {
-                    GiveItem(client,"weapon_hegrenade");
-                }
-                else if (GameType == dod)
-                {
-                    new team=GetClientTeam(client);
-                    GiveItem(client,team == 2 ? "weapon_frag_us" : "weapon_frag_ger");
-                }
-                else if (GameType == tf2)
-                {
-                    switch (TF_GetClass(client))
+                    if (GameType == cstrike)
                     {
-                        case TF2_HEAVY: 
+                        GiveItem(client,"weapon_hegrenade");
+                    }
+                    else if (GameType == dod)
+                    {
+                        new team=GetClientTeam(client);
+                        GiveItem(client,team == 2 ? "weapon_frag_us" : "weapon_frag_ger");
+                    }
+                }
+
+                if (shopItem[ITEM_PACK] >= 0 && GetOwnsItem(player,shopItem[ITEM_PACK]))
+                {
+                    if (GameType == tf2)
+                    {
+                        switch (TF_GetClass(client))
                         {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 20;
-                            if (ammo < 400.0)
+                            case TF2_HEAVY: 
                             {
-                                SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cInfinite Ammo Pack%c.",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                new ammo = GetAmmo(client, Primary) + 20;
+                                if (ammo < 400.0)
+                                {
+                                    SetAmmo(client, Primary, ammo);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cInfinite Ammo Pack%c.",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                }
                             }
-                        }
-                        case TF2_PYRO: 
-                        {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 20;
-                            if (ammo < 400.0)
+                            case TF2_PYRO: 
                             {
-                                SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                new ammo = GetAmmo(client, Primary) + 20;
+                                if (ammo < 400.0)
+                                {
+                                    SetAmmo(client, Primary, ammo);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                }
                             }
-                        }
-                        case TF2_MEDIC: 
-                        {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 20;
-                            if (ammo < 300.0)
+                            case TF2_MEDIC: 
                             {
-                                SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                new ammo = GetAmmo(client, Primary) + 20;
+                                if (ammo < 300.0)
+                                {
+                                    SetAmmo(client, Primary, ammo);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                }
                             }
-                        }
-                        case TF2_ENG: // Gets Metal instead of Ammo
-                        {
-                            new metal = GetEntData(client, metalOffset, 4) + 20;
-                            if (metal < 400.0)
+                            case TF2_ENG: // Gets Metal instead of Ammo
                             {
-                                SetEntData(client, metalOffset, metal, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received metal from %cInfinite Ammo Pack%c.",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                new ammo = GetAmmo(client, Metal) + 20;
+                                if (ammo < 400.0)
+                                {
+                                    SetAmmo(client, Metal, ammo);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have received metal from %cInfinite Ammo Pack%c.",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                }
                             }
-                        }
-                        default:
-                        {
-                            new ammo = GetEntData(client, ammoOffset, 4) + 8;
-                            if (ammo < 60.0)
+                            default:
                             {
-                                SetEntData(client, ammoOffset, ammo, 4, true);
-                                PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                new ammo = GetAmmo(client, Primary) + 20;
+                                if (ammo < 60.0)
+                                {
+                                    SetAmmo(client, Primary, ammo);
+                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                }
                             }
                         }
                     }
-                }
-                else
-                {
-                    new ammoType  = 0;
-                    new curWeapon = GetEntDataEnt(client, curWepOffset);
-                    if (curWeapon > 0)
-                        ammoType  = GetAmmoType(curWeapon);
+                    else
+                    {
+                        new ammoType  = 0;
+                        new curWeapon = GetActiveWeapon(client);
+                        if (curWeapon > 0)
+                            ammoType  = GetAmmoType(curWeapon);
 
-                    if (ammoType > 0)
-                        GiveAmmo(client,ammoType,10,true);
-                    else if (clipOffset)
-                        SetEntData(curWeapon, clipOffset, 5, 4, true);
+                        if (ammoType > 0)
+                            GiveAmmo(client,ammoType,10,true);
+                        else
+                            SetClip(curWeapon, 5);
+
+                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                    }
                 }
             }
         }
@@ -895,12 +941,12 @@ stock RemoveEntity(entity)
     SDKCall(hUTILRemove,entity);
 }
 
-public GiveItem(client,const String:item[])
+stock GiveItem(client,const String:item[])
 {
     return SDKCall(hGiveNamedItem,client,item,0);
 }
 
-public DropWeapon(client,weapon)
+stock DropWeapon(client,weapon)
 {
     SDKCall(hWeaponDrop,client,weapon,NULL_VECTOR,NULL_VECTOR);
 }
@@ -908,16 +954,6 @@ public DropWeapon(client,weapon)
 stock SetModel(entity,const String:model[])
 {
     SDKCall(hSetModel,entity,model);
-}
-
-stock GetAmmoType(weapon)
-{
-    return GetEntData(weapon,ammotypeOffset);
-}
-
-stock GiveAmmo(client,ammotype,amount,bool:suppress)
-{
-    SDKCall(hGiveAmmo,client,amount,ammotype,suppress);
 }
 
 stock Handle:PlayersOnTeam(team)
