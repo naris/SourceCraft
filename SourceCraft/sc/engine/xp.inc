@@ -86,7 +86,7 @@ DoLevelCheck(client,Handle:playerHandle)
                     SetXP(playerHandle,race,curXP-reqXP);
 
                     if (SAVE_ENABLED)
-                        SavePlayerData(client,playerHandle,true,true);
+                        SavePlayerData(client,playerHandle,false);
                 }
                 else
                     m_Go=false;

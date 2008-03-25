@@ -292,7 +292,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
             decl String:SelectionDispText[256];
             new SelectionStyle;
             GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
-                    SelectionDispText,sizeof(SelectionDispText));
+                        SelectionDispText,sizeof(SelectionDispText));
             new upgrade=StringToInt(SelectionInfo);
             if (upgrade >= 0 && upgrade < upgradeCount)
             {
@@ -347,7 +347,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                     if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                         UpgradeMenu(client,playerHandle);
                     else if (SAVE_ENABLED)
-                        SavePlayerData(client,playerHandle,true,true);
+                        SavePlayerData(client,playerHandle,false);
                 }
             }
         }

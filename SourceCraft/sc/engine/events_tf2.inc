@@ -364,7 +364,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
     }
 
     if (SAVE_ENABLED)
-        SaveAllPlayersData(!g_MapChanging);
+        SaveAllPlayersData();
 }
 
 public GameOver(Handle:event,const String:name[],bool:dontBroadcast)

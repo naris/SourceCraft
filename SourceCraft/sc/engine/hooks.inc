@@ -6,8 +6,6 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-new bool:g_MapChanging = false;
- 
 bool:InitHooks()
 {
     RegConsoleCmd("say",SayCommand);

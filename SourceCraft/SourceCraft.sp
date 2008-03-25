@@ -218,32 +218,16 @@ public OnClientDisconnect(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        LogMessage("OnClientDisconnect(%N), g_MapChanging=%d", client, g_MapChanging);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
-            if (SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
-            {
-                // Don't use threaded saves when the map is changing!
-                new bool:threaded;
-                if (g_MapChanging)
-                    threaded = false;
-                else
-                {
-                    new timeleft = 0;
-                    if (GetMapTimeLeft(timeleft))
-                        threaded = (timeleft > 30);
-                    else
-                        threaded = true;
-                }
-                LogMessage("call SavePlayerData(%N), threaded=%d", client, threaded);
-                threaded = false; // Force threaded off for now.
-                SavePlayerData(client,playerHandle,threaded,false);
-                if (!threaded)
-                    ClearPlayer(client,playerHandle);
-            }
+            if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
+                SavePlayerData(client,playerHandle,true);
             else
+            {
+                LogMessage("OnClientDisconnect(), Skipping %N, g_MapChanging=%d", client, g_MapChanging);
                 ClearPlayer(client,playerHandle);
+            }
 
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;
