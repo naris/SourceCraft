@@ -443,7 +443,7 @@ SaveAllPlayersData()
     g_AllPlayersSaved = true;
 }
 
-SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
+SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 {
     decl String:steamid[64]="";
     if(GetClientAuthString(client,steamid,sizeof(steamid)))
@@ -458,6 +458,7 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
         new race_ident        = GetRaceIdent(raceHandle);
 
         // Don't use threaded saves when the map is changing!
+        // or when the player has disconnected!
         new timeleft = 0;
         new bool:threaded;
         if (g_MapChanging)
@@ -465,10 +466,10 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
         else if (GetMapTimeLeft(timeleft))
             threaded = (timeleft > 30);
         else
-            threaded = true;
+            threaded = !disconnected;
 
-        LogMessage("SavePlayerData(), Saving %N, g_MapChanging=%d, timeleft=%d, threaded=%d",
-                   client, g_MapChanging, timeleft, threaded);
+        LogMessage("SavePlayerData(), Saving %N, g_MapChanging=%d, timeleft=%d, disconnected=%d, threaded=%d",
+                   client, g_MapChanging, timeleft, disconnected, threaded);
 
         //LogMessage("Saving Player Data for %N, player_ident=%d", client, player_ident);
         if (player_ident > 0)
@@ -484,7 +485,7 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
                 // When threading, copy the data first so it can't
                 // get freed while we are using it!
                 new Handle:playerData;
-                if (freePlayer)
+                if (disconnected)
                     playerData = playerHandle;
                 else
                     playerData = ClonePlayer(playerHandle);
@@ -505,7 +506,7 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
                     SetDatabaseSaved(playerHandle,1);
-                    SavePlayerRaces(client, playerHandle, player_ident,threaded);
+                    SavePlayerRaces(client, playerHandle, player_ident, threaded);
                 }
                 else
                 {
@@ -551,7 +552,7 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
                         if (threaded)
                         {
                             new Handle:playerData;
-                            if (freePlayer)
+                            if (disconnected)
                                 playerData = playerHandle;
                             else
                                 playerData = ClonePlayer(playerHandle);
@@ -603,7 +604,7 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
 
                             CloseHandle(ident_query);
                             SetDatabaseIdent(playerHandle,player_ident);
-                            SavePlayerData(client,playerHandle,freePlayer);
+                            SavePlayerData(client,playerHandle,disconnected);
                         }
                     }
                     else
@@ -625,14 +626,14 @@ SavePlayerData(client, Handle:playerHandle, bool:freePlayer)
                 SQL_UnlockDatabase(DBIDB);
         }
 
-        if (freePlayer && !threaded)
+        if (disconnected && !threaded)
             ClearPlayer(client,playerHandle);
     }
     else
     {
         LogError("Unable to obtain steamid for %N", client);
 
-        if (freePlayer)
+        if (disconnected)
             ClearPlayer(client,playerHandle);
     }
 
