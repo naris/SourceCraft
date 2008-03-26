@@ -174,7 +174,7 @@ public OnMapEnd()
 {
     LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
 
-    if (SAVE_ENABLED)
+    if (DBIDB && SAVE_ENABLED)
     {
         // Wait for all threaded DB transactions to complete!
         SQL_LockDatabase(DBIDB);
@@ -200,7 +200,7 @@ public OnClientPutInServer(client)
             new res;
             Call_Finish(res);
 
-            if(SAVE_ENABLED)
+            if(DBIDB && SAVE_ENABLED)
                 m_FirstSpawn[client]=LoadPlayerData(client,playerHandle,false);
             else
                 m_FirstSpawn[client]=2;

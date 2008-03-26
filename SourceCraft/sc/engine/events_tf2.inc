@@ -261,6 +261,8 @@ public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 {
     g_RoundActive = false;
+    if (DBIDB && SAVE_ENABLED)
+        SaveAllPlayersData();
 }
 
 public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
@@ -302,6 +304,9 @@ public RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
+
+    if (DBIDB && SAVE_ENABLED)
+        SaveAllPlayersData();
 }
 
 public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
@@ -363,7 +368,7 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         }
     }
 
-    if (SAVE_ENABLED)
+    if (DBIDB && SAVE_ENABLED)
         SaveAllPlayersData();
 }
 

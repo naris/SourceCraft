@@ -233,7 +233,7 @@ UpgradeMenu(client, Handle:playerHandle)
 {
     if (GetRaceCount() >= 1)
     {
-        new Handle:sMenu=CreateMenu(SMenu_Selected);
+        new Handle:sMenu=CreateMenu(UpgradeMenu_Selected);
         new race=GetRace(playerHandle);
         new upgradecount=GetUpgradeLevelCount(playerHandle,race);
         new level=GetLevel(playerHandle,race);
@@ -276,7 +276,7 @@ UpgradeMenu(client, Handle:playerHandle)
                     COLOR_GREEN,COLOR_DEFAULT);
 }
 
-public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
@@ -324,8 +324,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                             {
                                 decl String:activename[64];
                                 GetUpgradeName(raceHandle, activeUltimate, activename, sizeof(activename));
-                                PrintToChat(client, "%c[SourceCraft] %cYou have already chosen \"%s\" as your ultimate, to reset your upgrades use resetupgrades.",
-                                            COLOR_GREEN,COLOR_DEFAULT,activename);
+                                PrintToChat(client, "%c[SourceCraft] %cYou have already chosen \"%s\" as your ultimate, to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT,activename);
                             }
                         }
                         else
@@ -346,7 +345,7 @@ public SMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
                     if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                         UpgradeMenu(client,playerHandle);
-                    else if (SAVE_ENABLED)
+                    else if (DBIDB && SAVE_ENABLED)
                         SavePlayerData(client,playerHandle,false);
                 }
             }

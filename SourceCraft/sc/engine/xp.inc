@@ -77,16 +77,13 @@ DoLevelCheck(client,Handle:playerHandle)
                     new oLevel = GetOverallLevel(playerHandle);
                     SetOverallLevel(playerHandle, ++oLevel);
                     SetLevel(playerHandle,race,level);
-                    UpgradeMenu(client, playerHandle);
 
                     decl String:raceName[64] = "";
                     GetRaceName(GetRaceHandle(race),raceName,sizeof(raceName));
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(playerHandle,race,curXP-reqXP);
-
-                    if (SAVE_ENABLED)
-                        SavePlayerData(client,playerHandle,false);
+                    UpgradeMenu(client, playerHandle);
                 }
                 else
                     m_Go=false;
