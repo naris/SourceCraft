@@ -44,13 +44,15 @@ new Handle:hGameConf      = INVALID_HANDLE;
 #define ITEM_SACK            13 // Sack of looting - Loot crystals from corpses.
 #define ITEM_LOCKBOX         14 // Lockbox - Keep crystals safe from theft.
 #define ITEM_RING            15 // Ring of Regeneration + 1 - Given extra health over time
-#define ITEM_MOLE            16 // Mole - Respawn in enemies spawn with cloak.
-#define ITEM_MOLE_PROTECTION 17 // Mole Protection - Reduce damage from a Mole.
-#define ITEM_MOLE_REFLECTION 18 // Mole Reflection - Reflects damage back to the Mole.
-#define ITEM_MOLE_RETENTION  19 // Mole Retention - Keep Mole Protection/Reflection until used.
-//#define ITEM_GOGGLES       20 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         21 // Purchase Admin on the Server
-#define MAXITEMS             20
+#define ITEM_RING3           16 // Ring of Regeneration + 3 - Given extra health over time
+#define ITEM_RING5           17 // Ring of Regeneration + 5 - Given extra health over time
+#define ITEM_MOLE            18 // Mole - Respawn in enemies spawn with cloak.
+#define ITEM_MOLE_PROTECTION 19 // Mole Protection - Reduce damage from a Mole.
+#define ITEM_MOLE_REFLECTION 20 // Mole Reflection - Reflects damage back to the Mole.
+#define ITEM_MOLE_RETENTION  21 // Mole Retention - Keep Mole Protection/Reflection until used.
+//#define ITEM_GOGGLES       22 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         23 // Purchase Admin on the Server
+#define MAXITEMS             22
  
 new myWepsOffset;
 
@@ -171,6 +173,14 @@ public OnPluginReady()
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1",
                                        "Gives 1 health every second, won't exceed your normal HP.",
                                        "15");
+
+    shopItem[ITEM_RING3]=CreateShopItem("Ring of Regeneration + 3",
+                                        "Gives 3 health every second, won't exceed your normal HP.",
+                                        "35");
+
+    shopItem[ITEM_RING5]=CreateShopItem("Ring of Regeneration + 5",
+                                        "Gives 5 health every second, won't exceed your normal HP.",
+                                        "55");
 
     shopItem[ITEM_MOLE]=CreateShopItem("Mole",
                                        "Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.",
@@ -417,6 +427,12 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             if(GetOwnsItem(victim_player,shopItem[ITEM_RING]))
                 SetOwnsItem(victim_player,shopItem[ITEM_RING],false);
 
+            if(GetOwnsItem(victim_player,shopItem[ITEM_RING3]))
+                SetOwnsItem(victim_player,shopItem[ITEM_RING3],false);
+
+            if(GetOwnsItem(victim_player,shopItem[ITEM_RING5]))
+                SetOwnsItem(victim_player,shopItem[ITEM_RING5],false);
+
             //if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
             //    SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
 
@@ -661,13 +677,23 @@ public Action:Regeneration(Handle:timer)
         if(IsClientInGame(x) && IsPlayerAlive(x))
         {
             new Handle:player=GetPlayerHandle(x);
-            if (player != INVALID_HANDLE &&
-                GetOwnsItem(player,shopItem[ITEM_RING]))
+            if (player != INVALID_HANDLE)
             {
-                new newhp=GetClientHealth(x)+1;
-                new maxhp=GetMaxHealth(x);
-                if(newhp<=maxhp)
-                    SetEntityHealth(x,newhp);
+                new addhp = 0;
+                if ( GetOwnsItem(player,shopItem[ITEM_RING]))
+                    addhp += 1;
+                if ( GetOwnsItem(player,shopItem[ITEM_RING3]))
+                    addhp += 3;
+                if ( GetOwnsItem(player,shopItem[ITEM_RING5]))
+                    addhp += 5;
+
+                if (addhp > 0)
+                {
+                    new newhp=GetClientHealth(x)+addhp;
+                    new maxhp=GetMaxHealth(x);
+                    if(newhp<=maxhp)
+                        SetEntityHealth(x,newhp);
+                }
             }
         }
     }
