@@ -74,7 +74,7 @@ public OnPluginStart()
     GetGameType();
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
-    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","0");
+    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
 
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))
         SetFailState("Could not hook the player_spawn event.");
@@ -454,8 +454,8 @@ MindControl(client,Handle:player)
                         else
                             obj = unknown;
 
-                        //if (obj != unknown)
-                        if (obj == sentrygun)
+                        //if (obj == sentrygun)
+                        if (obj != unknown)
                         {
                             //Check to see if the object is still being built
                             new building = GetEntDataEnt2(target, m_BuildingOffset[obj]);
