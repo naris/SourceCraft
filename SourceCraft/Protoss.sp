@@ -782,7 +782,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                             GetClientAbsOrigin(index, indexLoc);
                                             detect = TraceTarget(client, index, clientLoc, indexLoc);
                                         }
-                                        if (detect)
+                                        if (detect && !GetImmunity(player_check,Immunity_Uncloaking))
                                         {
                                             SetOverrideVisiblity(player_check, 255);
                                             if (TF_GetClass(index) == TF2_SPY)

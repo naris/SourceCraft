@@ -231,15 +231,22 @@ public OnClientDisconnect(client)
             if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                 freePlayer = SavePlayerData(client,playerHandle,true);
             else
-                LogMessage("OnClientDisconnect(), Skipping %N, g_MapChanging=%d", client, g_MapChanging);
+            {
+                LogMessage("OnClientDisconnect(), Skipping #%d %N, g_MapChanging=%d",
+                           client, client, g_MapChanging);
+            }
 
             if (freePlayer)
             {
-                LogMessage("Disconnect-Clearing Player #%d", client);
+                LogMessage("Disconnect-Clearing Player #%d (%x)",
+                           client, playerHandle);
                 ClearPlayer(playerHandle);
             }
             else
-                LogMessage("Disconnect-Leaving Player #%d for threaded cleanup", client);
+            {
+                LogMessage("Disconnect-Leaving Player #%d (%x) for threaded cleanup",
+                           client, playerHandle);
+            }
 
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;

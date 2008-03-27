@@ -118,8 +118,8 @@ public OnPluginReady()
                                         "60");
 
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows",
-                                        "Makes you invisible when standing still AND holding the knife, shovel or other melee weapon.",
-                                        "45");
+                                        "Makes you immune to uncloaking, also makes you invisible for 10 seconds\nwhen standing still AND holding a melee weapon.",
+                                        "55");
 
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death",
                                        "You will receive health for every hit on the enemy.",
@@ -142,7 +142,7 @@ public OnPluginReady()
                                        "50");
 
     shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning",
-                                         "You will respawn immediately after death?\n(Note: Scroll of Respawning\nCan only be purchased once on death\nand once on spawn, so you can get 2 per\nround.",
+                                         "You will respawn immediately after death.",
                                          "15");
 
     shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather",
@@ -264,7 +264,10 @@ public OnItemPurchase(client,Handle:player,item)
         EmitSoundToAll(bootsWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))        // Cloak of Shadows
+    {
         SetVisibility(player, 0, TimedMeleeInvisibility, 1.0, 10.0);
+        SetImmunity(player,Immunity_Uncloaking,true);
+    }
     else if(item==shopItem[ITEM_NECKLACE])                              // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
     else if(item==shopItem[ITEM_LOCKBOX])                               // Lockbox
@@ -386,7 +389,10 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                 SetOwnsItem(victim_player,shopItem[ITEM_CLAWS],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_CLOAK]))
+            {
                 SetOwnsItem(victim_player,shopItem[ITEM_CLOAK],false);
+                SetImmunity(victim_player,Immunity_Uncloaking,false);
+            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_MASK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_MASK],false);
