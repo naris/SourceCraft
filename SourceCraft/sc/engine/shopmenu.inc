@@ -12,7 +12,22 @@
 #define GetShopItemCount() GetArraySize(shopVector)
 
 // A vector of shopmenu infomation
-new Handle:shopVector;
+new Handle:shopVector = INVALID_HANDLE;
+
+bool:InitShopVector()
+{
+    if (shopVector == INVALID_HANDLE)
+        shopVector = CreateArray();
+
+    return (shopVector != INVALID_HANDLE);
+}
+
+ClearShopVector()
+{
+    ClearArray(shopVector);
+    CloseHandle(shopVector);
+    shopVector = INVALID_HANDLE;
+}
 
 Handle:CreateShopItem(const String:name[], const String:desc[], const String:cost[])
 {
@@ -21,12 +36,6 @@ Handle:CreateShopItem(const String:name[], const String:desc[], const String:cos
     PushArrayString(ret,desc);
     PushArrayString(ret,cost);
     return ret;
-}
-
-bool:InitiateShopVector()
-{
-    shopVector=CreateArray();
-    return true;
 }
 
 Handle:ShopItem(itemnum)

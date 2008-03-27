@@ -25,11 +25,48 @@
 #define GetRaceCount() GetArraySize(arrayRaces)
 
 // A vector of race infomation
-new Handle:arrayRaces;
+new Handle:arrayRaces = INVALID_HANDLE;
 
 new bool:gUpgradesMenuMode[MAXPLAYERS+1];
 new gShowUpgradesTarget[MAXPLAYERS+1];
 new gRaceForUpgrades[MAXPLAYERS+1];
+
+bool:InitRaceArray()
+{
+    if (arrayRaces == INVALID_HANDLE)
+        arrayRaces = CreateArray();
+
+    return bool:(arrayRaces != INVALID_HANDLE);
+}
+
+ClearRaceArray()
+{
+    if (arrayRaces == INVALID_HANDLE)
+    {
+        new raceCount = GetRaceCount();
+        for(new x=0;x<raceCount;x++)
+        {
+            new Handle:vec=GetArrayCell(arrayRaces,x);
+            new Handle:stringsHandle=GetArrayCell(vec,RACE_STRINGS);
+            ClearArray(stringsHandle);
+            CloseHandle(stringsHandle);
+
+            new Handle:upgradeFlagsHandle=GetArrayCell(vec,RACE_UPGRADE_FLAGS);
+            ClearArray(upgradeFlagsHandle);
+            CloseHandle(upgradeFlagsHandle);
+
+            new Handle:upgradeStringsHandle=GetArrayCell(vec,RACE_UPGRADE_STRINGS);
+            ClearArray(upgradeStringsHandle);
+            CloseHandle(upgradeStringsHandle);
+
+            ClearArray(vec);
+            CloseHandle(vec);
+        }
+        ClearArray(arrayRaces);
+        CloseHandle(arrayRaces);
+        arrayRaces = INVALID_HANDLE;
+    }
+}
 
 CreateRace(const String:name[],                  const String:short[],
            const String:switchmessage_instant[], const String:switchmessage_dead[],
@@ -67,38 +104,6 @@ AddUpgrade(Handle:race, const String:name[], const String:desc[], bool:ultimate)
 
     new Handle:upgradeFlagsHandle=GetArrayCell(race,RACE_UPGRADE_FLAGS);
     return PushArrayCell(upgradeFlagsHandle, ultimate); // return index
-}
-
-bool:InitRaceArray()
-{
-    if (arrayRaces == INVALID_HANDLE)
-        arrayRaces = CreateArray();
-
-    return bool:(arrayRaces != INVALID_HANDLE);
-}
-
-ClearRaceArray()
-{
-    new raceCount = GetRaceCount();
-    for(new x=0;x<raceCount;x++)
-    {
-        new Handle:vec=GetArrayCell(arrayRaces,x);
-        new Handle:stringsHandle=GetArrayCell(vec,RACE_STRINGS);
-        ClearArray(stringsHandle);
-        CloseHandle(stringsHandle);
-
-        new Handle:upgradeFlagsHandle=GetArrayCell(vec,RACE_UPGRADE_FLAGS);
-        ClearArray(upgradeFlagsHandle);
-        CloseHandle(upgradeFlagsHandle);
-
-        new Handle:upgradeStringsHandle=GetArrayCell(vec,RACE_UPGRADE_STRINGS);
-        ClearArray(upgradeStringsHandle);
-        CloseHandle(upgradeStringsHandle);
-
-        ClearArray(vec);
-        CloseHandle(vec);
-    }
-    ClearArray(arrayRaces);
 }
 
 Handle:GetRaceHandle(racenum)
@@ -333,7 +338,7 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 
 ResetUpgrades(client,Handle:playerHandle)
 {
-    if(IsPlayerAlive(client))
+    if (IsPlayerAlive(client))
     {
         SetPendingUpgradeReset(playerHandle,1);
         PrintToChat(client,"%c[SourceCraft] %cYour upgrades for your current race will be reset when you die or respawn.",

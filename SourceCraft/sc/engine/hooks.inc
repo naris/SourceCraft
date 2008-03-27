@@ -100,7 +100,7 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg1,"shopmenu",63))
         {
-            ShopMenu(client,playerHandle,true);
+            ShopMenu(client,true);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"showitems",63) ||
@@ -108,7 +108,7 @@ public Action:SayCommand(client,args)
                 CommandCheck(arg1,"inven",63) ||
                 CommandCheck(arg1,"inv",63))
         {
-            ShopMenu(client,playerHandle,false);
+            ShopMenu(client,false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg1,"schelp",63) ||
@@ -120,7 +120,7 @@ public Action:SayCommand(client,args)
         else if(CommandCheck(arg1,"scmenu",63) ||
                 CommandCheck(arg1,"menu",63))
         {
-            MainMenu(client,playerHandle);
+            MainMenu(client);
             return Plugin_Handled;
         }
 	}
@@ -152,21 +152,13 @@ public Action:UltimateCommand(client,args)
  
 public Action:ShopMenuCommand(client,args)
 {
-    new Handle:playerHandle=GetPlayerHandle(client);
-    if (playerHandle != INVALID_HANDLE)
-    {
-        ShopMenu(client,playerHandle,true);
-    }
+    ShopMenu(client,true);
     return Plugin_Handled;
 }
  
 public Action:SCMenuCommand(client,args)
 {
-    new Handle:playerHandle=GetPlayerHandle(client);
-    if (playerHandle != INVALID_HANDLE)
-    {
-        MainMenu(client,playerHandle);
-    }
+    MainMenu(client);
     return Plugin_Handled;
 }
 

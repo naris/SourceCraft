@@ -15,6 +15,8 @@ new bool:gRaceMenuMode[MAXPLAYERS+1];
 new gShowItemsTarget[MAXPLAYERS+1];
 
 new Handle:hTopAdminMenu = INVALID_HANDLE;
+new Handle:g_IntroMenu   = INVALID_HANDLE;
+new Handle:g_MainMenu    = INVALID_HANDLE;
 
 InitMenus()
 {
@@ -24,8 +26,22 @@ InitMenus()
     {
         OnAdminMenuReady(topmenu);
     }
-
     return true;
+}
+
+CleanupMenus()
+{
+    if (g_IntroMenu != INVALID_HANDLE)
+    {
+        CloseHandle(g_IntroMenu);
+        g_IntroMenu = INVALID_HANDLE;
+    }
+
+    if (g_MainMenu != INVALID_HANDLE)
+    {
+        CloseHandle(g_MainMenu);
+        g_MainMenu = INVALID_HANDLE;
+    }
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -65,26 +81,29 @@ public AdminTopMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_i
 
 IntroMenu(client)
 {
-    new Handle:introMenu=CreateMenu(IntroMenu_Action);
-    SetMenuExitButton(introMenu,false);
-    if (GetRaceCount() >= 1)
+    if (g_IntroMenu == INVALID_HANDLE)
     {
-        if (GetShopItemCount() >= 1)
+        g_IntroMenu=CreateMenu(IntroMenu_Action);
+        SetMenuExitButton(g_IntroMenu,false);
+        if (GetRaceCount() >= 1)
         {
-            SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+            if (GetShopItemCount() >= 1)
+            {
+                SetMenuTitle(g_IntroMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+            }
+            else
+            {
+                SetMenuTitle(g_IntroMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to level up. \nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+            }
         }
         else
         {
-            SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to level up. \nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+            SetMenuTitle(g_IntroMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Crystals for completing objectives.\nPurchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
         }
+        SetMenuExitButton(g_IntroMenu,true);
+        AddMenuItem(g_IntroMenu,"","Exit");
     }
-    else
-    {
-        SetMenuTitle(introMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Crystals for completing objectives.\nPurchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
-    }
-    SetMenuExitButton(introMenu,true);
-    AddMenuItem(introMenu,"","Exit");
-    DisplayMenu(introMenu,client, 20);
+    DisplayMenu(g_IntroMenu,client, 20);
 }
 
 public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
@@ -97,28 +116,27 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         else
             m_FirstSpawn[client]=0;
     }
-    else if (action == MenuAction_End)
-        CloseHandle(menu);
 }
 
-MainMenu(client,Handle:playerHandle)
+MainMenu(client)
 {
-    new Handle:scMenu=CreateMenu(Menu_Select);
-    SetMenuExitButton(scMenu,true);
-    SetMenuTitle(scMenu,"[SourceCraft] Choose a task.");
-    new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
-    new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
-    decl String:buf[11];
-    Format(buf,sizeof(buf),"%d",playerHandle);
-    AddMenuItem(scMenu,buf,"Bring up the shopmenu",shop_style);
-    AddMenuItem(scMenu,buf,"Change your race",race_style);
-    AddMenuItem(scMenu,buf,"View your race's upgrade information",race_style);
-    AddMenuItem(scMenu,buf,"Reset your upgrades",race_style);
-    AddMenuItem(scMenu,buf,"Spend unused upgrade points",race_style);
-    AddMenuItem(scMenu,buf,"Show current upgrade levels",race_style);
-    AddMenuItem(scMenu,buf,"Show current items owned",shop_style);
-    AddMenuItem(scMenu,buf,"View command list");
-    DisplayMenu(scMenu,client,MENU_TIME_FOREVER);
+    if (g_MainMenu == INVALID_HANDLE)
+    {
+        g_MainMenu=CreateMenu(Menu_Select);
+        SetMenuExitButton(g_MainMenu,true);
+        SetMenuTitle(g_MainMenu,"[SourceCraft] Choose a task.");
+        new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+        new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+        AddMenuItem(g_MainMenu,"0","Bring up the shopmenu",shop_style);
+        AddMenuItem(g_MainMenu,"1","Change your race",race_style);
+        AddMenuItem(g_MainMenu,"2","View your race's upgrade information",race_style);
+        AddMenuItem(g_MainMenu,"3","Reset your upgrades",race_style);
+        AddMenuItem(g_MainMenu,"4","Spend unused upgrade points",race_style);
+        AddMenuItem(g_MainMenu,"5","Show current upgrade levels",race_style);
+        AddMenuItem(g_MainMenu,"6","Show current items owned",shop_style);
+        AddMenuItem(g_MainMenu,"7","View command list");
+    }
+    DisplayMenu(g_MainMenu,client,MENU_TIME_FOREVER);
 }
 
 public Menu_Select(Handle:menu,MenuAction:action,client,selection)
@@ -126,53 +144,54 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
     if (action == MenuAction_Select)
     {
         ClientCommand(client,"play buttons/button14.wav");
-        decl String:SelectionInfo[11];
-        decl String:SelectionDispText[256];
-        new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
-                    SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
-        new Handle:playerHandle=Handle:StringToInt(SelectionInfo);
-        if (playerHandle == GetPlayerHandle(client))
+        switch(selection)
         {
-            switch(selection)
+            case 0: // shopmenu
+                ShopMenu(client,true);
+            case 1: // changerace
+                RaceMenu(client,true);
+            case 2: // upgradesinfo
             {
-                case 0: // shopmenu
-                    ShopMenu(client,playerHandle,true);
-                case 1: // changerace
-                    RaceMenu(client,true);
-                case 2: // upgradesinfo
+                new Handle:playerHandle=GetPlayerHandle(client);
+                if (playerHandle != INVALID_HANDLE)
+                {
                     UpgradesInfo(client,GetRace(playerHandle),false);
-                case 3: // resetupgrades
+                }
+            }
+            case 3: // resetupgrades
+            {
+                new Handle:playerHandle=GetPlayerHandle(client);
+                if (playerHandle != INVALID_HANDLE)
                 {
                     ResetUpgrades(client,playerHandle);
-                    MainMenu(client,playerHandle);
                 }
-                case 4: // spendupgrades
-                {
-                    new race=GetRace(playerHandle);
-                    if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                        UpgradeMenu(client, playerHandle);
-                    else
-                    {
-                        PrintToChat(client, "%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT);
-                    }
-                }
-                case 5: // showupgrades
-                    ShowUpgrades(client,client,playerHandle);
-                case 6: // showitems
-                    ShopMenu(client,playerHandle,false);
-                case 7: // help
-                    Help(client);
+                MainMenu(client);
             }
-        }
-        else
-        {
-            // Client must of quit!
-            CloseHandle(menu);
+            case 4: // spendupgrades
+            {
+                new Handle:playerHandle=GetPlayerHandle(client);
+                new race=GetRace(playerHandle);
+                if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                    UpgradeMenu(client, playerHandle);
+                else
+                {
+                    PrintToChat(client, "%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT);
+                }
+            }
+            case 5: // showupgrades
+            {
+                new Handle:playerHandle=GetPlayerHandle(client);
+                if (playerHandle != INVALID_HANDLE)
+                {
+                    ShowUpgrades(client,client,playerHandle);
+                }
+            }
+            case 6: // showitems
+                ShopMenu(client,false);
+            case 7: // help
+                Help(client);
         }
     }
-    else if (action == MenuAction_End)
-        CloseHandle(menu);
 }
 
 RaceMenu(client,bool:change)
@@ -355,57 +374,63 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-ShopMenu(client, Handle:playerHandle, bool:shopmenu)
+ShopMenu(client, bool:shopmenu)
 {
     new shopItemCount = GetArraySize(shopVector);
     if (shopItemCount >= 1)
     {
-        new credits=GetCredits(playerHandle);
-        new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
-        SetMenuExitButton(shopMenu,true);
-
-        if (shopmenu)
-            SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
-        else
-            SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
-
-        new Handle:itemHandle;
-        decl String:itemname[64];
-        decl String:itembuf[11];
-        decl String:linestr[96];
-        decl String:cost[8];
-
-        new count = 0;
-        for(new x=0;x<shopItemCount;x++)
+        new Handle:playerHandle=GetPlayerHandle(client);
+        if (playerHandle != INVALID_HANDLE)
         {
-            if (shopmenu || GetOwnsItem(playerHandle,x))
+            new credits=GetCredits(playerHandle);
+            new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
+            SetMenuExitButton(shopMenu,true);
+
+            if (shopmenu)
+                SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
+            else
+                SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
+
+            new Handle:itemHandle;
+            decl String:itemname[64];
+            decl String:itembuf[11];
+            decl String:linestr[96];
+            decl String:cost[8];
+
+            new count = 0;
+            for(new x=0;x<shopItemCount;x++)
             {
-                count++;
-                Format(itembuf,sizeof(itembuf),"%d",x);
-                itemHandle=ShopItem(x);
-                GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
-                if (shopmenu)
+                if (shopmenu || GetOwnsItem(playerHandle,x))
                 {
-                    GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-                    Format(linestr,sizeof(linestr),"%s - %s crystals",itemname,cost);
-                    AddMenuItem(shopMenu,itembuf,linestr);
+                    count++;
+                    Format(itembuf,sizeof(itembuf),"%d",x);
+                    itemHandle=ShopItem(x);
+                    GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+                    if (shopmenu)
+                    {
+                        GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
+                        Format(linestr,sizeof(linestr),"%s - %s crystals",itemname,cost);
+                        AddMenuItem(shopMenu,itembuf,linestr);
+                    }
+                    else
+                        AddMenuItem(shopMenu,itembuf,itemname);
                 }
-                else
-                    AddMenuItem(shopMenu,itembuf,itemname);
             }
-        }
 
-        if (count)
-        {
-            gShopMenuMode[client] = shopmenu;
-            DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+            if (count)
+            {
+                gShopMenuMode[client] = shopmenu;
+                DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+            }
+            else
+                ShowItems(client,client,playerHandle);
         }
         else
-            ShowItems(client,client,playerHandle);
+        {
+            PrintToChat(client, "%c[SourceCraft] %cThere are no items in the shopmenu!",
+                        COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
-    else
-        PrintToChat(client, "%c[SourceCraft] %cThere are no items in the shopmenu!",
-                    COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -515,7 +540,7 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
                 }
             }
             else if(selection==1)
-                ShopMenu(client,playerHandle,gShopMenuMode[client]);
+                ShopMenu(client,gShopMenuMode[client]);
         }
     }
     else if (action == MenuAction_Cancel)
@@ -523,7 +548,7 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
         if (selection == MenuCancel_ExitBack)
         {
             ClientCommand(client,"play buttons/button14.wav");
-            ShopMenu(client,GetPlayerHandle(client),gShopMenuMode[client]);
+            ShopMenu(client,gShopMenuMode[client]);
         }
     }
     else if (action == MenuAction_End)

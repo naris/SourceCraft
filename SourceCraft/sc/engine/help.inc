@@ -11,6 +11,24 @@
 new Handle:vecHelpCommands       = INVALID_HANDLE;
 new Handle:vecLevelConfiguration = INVALID_HANDLE;
 
+bool:InitHelpVector()
+{
+    if (vecHelpCommands == INVALID_HANDLE)
+        vecHelpCommands=CreateArray();
+
+    return (vecHelpCommands != INVALID_HANDLE);
+}
+
+ClearHelpVector()
+{
+    if (vecHelpCommands != INVALID_HANDLE)
+    {
+        ClearArray(vecHelpCommands);
+        CloseHandle(vecHelpCommands);
+        vecHelpCommands = INVALID_HANDLE;
+    }
+}
+
 Handle:HelpItem(command)
 {
     return GetArrayCell(vecHelpCommands,command);
@@ -22,12 +40,6 @@ NewHelpCommand(String:name[],String:info[])
     PushArrayString(vec,name);
     PushArrayString(vec,info);
     return PushArrayCell(vecHelpCommands,vec);
-}
-
-bool:InitiateHelpVector()
-{
-    vecHelpCommands=CreateArray();
-    return true;
 }
 
 InitHelpCommands()

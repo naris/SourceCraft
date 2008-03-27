@@ -10,6 +10,9 @@
  
 #pragma semicolon 1
 
+// Pump up the memory!
+#pragma dynamic 65536 
+
 #include <sourcemod>
 #include <keyvalues>
 #include <sdktools>
@@ -90,8 +93,8 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-    LogMessage("-------------------------------------------------------------------------\n[SourceCraft] Plugin loading...");
-    PrintToServer("-------------------------------------------------------------------------\n[SourceCraft] Plugin loading...");
+    LogMessage("[SourceCraft] Plugin loading...\n-------------------------------------------------------------------------");
+    PrintToServer("[SourceCraft] Plugin loading...\n-------------------------------------------------------------------------");
 
     GetGameType();
 
@@ -101,9 +104,9 @@ public OnPluginStart()
     if(!ConnectToDatabase())
         LogMessage("Saving DISABLED!");
     
-    if(!InitiateShopVector())
+    if(!InitShopVector())
         SetFailState("There was a failure in creating the shop vector.");
-    if(!InitiateHelpVector())
+    if(!InitHelpVector())
         SetFailState("There was a failure in creating the help vector.");
 
     if(!InitOffset())
@@ -156,7 +159,10 @@ public OnAllPluginsLoaded()
 public OnPluginEnd()
 {
     ClearPlayerArray();
+    ClearShopVector();
+    ClearHelpVector();
     ClearRaceArray();
+    CleanupMenus();
     LogMessage("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
     PrintToServer("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
 }
@@ -167,7 +173,6 @@ public OnMapStart()
     g_MapChanging = false;
     g_AllPlayersSaved = false;
     SetupSound(notEnoughWav,true,true);
-    ClearPlayerArray();
 }
 
 public OnMapEnd()
@@ -181,6 +186,7 @@ public OnMapEnd()
         SQL_UnlockDatabase(DBIDB);
     }
 
+    ClearPlayerArray();
     g_MapChanging = false;
 }
 
@@ -221,13 +227,19 @@ public OnClientDisconnect(client)
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
+            new bool:freePlayer = true;
             if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
-                SavePlayerData(client,playerHandle,true);
+                freePlayer = SavePlayerData(client,playerHandle,true);
             else
-            {
                 LogMessage("OnClientDisconnect(), Skipping %N, g_MapChanging=%d", client, g_MapChanging);
-                ClearPlayer(client,playerHandle);
+
+            if (freePlayer)
+            {
+                LogMessage("Disconnect-Clearing Player #%d", client);
+                ClearPlayer(playerHandle);
             }
+            else
+                LogMessage("Disconnect-Leaving Player #%d for threaded cleanup", client);
 
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;
