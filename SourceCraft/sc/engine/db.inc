@@ -14,7 +14,6 @@
 new Handle:DBIDB = INVALID_HANDLE;
 new bool:DBIsSQLite = false;
 
-new bool:g_AllPlayersSaved = false;
 new bool:g_MapChanging = false;
 
 ConnectToDatabase()
@@ -333,7 +332,7 @@ LoadPlayerData(client,Handle:playerHandle, bool:threaded)
             }
         }
         else
-            LogError("Unable to obtain steamid for %N!", client);
+            LogError("Unable to obtain steamid when loading %N!", client);
     }
 
     // Return 2 if not fetched so race selection menu will be displayed
@@ -440,7 +439,6 @@ SaveAllPlayersData()
         if (playerHandle != INVALID_HANDLE && IsClientInGame(client) && !GetDatabaseSaved(playerHandle))
             SavePlayerData(client,playerHandle,false);
     }
-    g_AllPlayersSaved = true;
 }
 
 bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
@@ -468,8 +466,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         else
             threaded = true;
 
-        LogMessage("SavePlayerData() Saving #%d %N, handle=%x, player_ident=%d, g_MapChanging=%d, timeleft=%d, disconnected=%d, threaded=%d",
-                   client, client, playerHandle, player_ident, g_MapChanging, timeleft, disconnected, threaded);
+        //LogMessage("SavePlayerData() Saving #%d %N, handle=%x, player_ident=%d, g_MapChanging=%d, timeleft=%d, disconnected=%d, threaded=%d",
+        //           client, client, playerHandle, player_ident, g_MapChanging, timeleft, disconnected, threaded);
 
         if (player_ident > 0)
         {
@@ -488,8 +486,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 else
                     playerData = ClonePlayer(playerHandle);
 
-                LogMessage("Starting thread to process %N #%d (%x) handle=%x:%s",
-                           client, client, playerHandle, playerData, SQLString);
+                //LogMessage("Starting thread to process %N #%d (%x) handle=%x:%s",
+                //           client, client, playerHandle, playerData, SQLString);
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
@@ -559,8 +557,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                             else
                                 playerData = ClonePlayer(playerHandle);
 
-                            LogMessage("Copying %N #%d (%x) to handle=%x",
-                                       client, client, playerHandle, playerData);
+                            //LogMessage("Copying %N #%d (%x) to handle=%x",
+                            //           client, client, playerHandle, playerData);
 
                             SQL_UnlockDatabase(DBIDB);
 
@@ -632,7 +630,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         }
     }
     else
-        LogError("Unable to obtain steamid for %N", client);
+        LogError("Unable to obtain steamid when saving %N", client);
 
     return true;
 }
@@ -656,8 +654,8 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
         }
         else
         {
-            LogMessage("Updated player data, client=%d, handle=%x, ident=%d",
-                       client, playerHandle, player_ident);
+            //LogMessage("Updated player data, client=%d, handle=%x, ident=%d",
+            //           client, playerHandle, player_ident);
 
             SavePlayerRaces(client, playerHandle, player_ident,true);
         }
@@ -701,8 +699,8 @@ SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
                 WritePackCell(dataPack, _:raceHandle);
                 WritePackCell(dataPack, _:(raceId == lastRace)); // Last Race Indicator
                 ResetPack(dataPack);
-                LogMessage("Starting thread to process player #%d (%x) race %d of %d, SQL:%s",
-                           client, playerHandle, raceId, lastRace, SQLString);
+                //LogMessage("Starting thread to process player #%d (%x) race %d of %d, SQL:%s",
+                //           client, playerHandle, raceId, lastRace, SQLString);
                 SQL_TQuery(DBIDB, SQL_SavePlayerRaces, SQLString, dataPack);
             }
             else
@@ -759,8 +757,8 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
         }
         else
         {
-            LogMessage("Updated race data, client=%d, handle=%x, ident=%d, race_ident=%d",
-                       client, playerHandle, player_ident, race_ident);
+            //LogMessage("Updated race data, client=%d, handle=%x, ident=%d, race_ident=%d",
+            //           client, playerHandle, player_ident, race_ident);
 
             SavePlayerUpgrades(client, playerHandle, player_ident, raceId, race_ident, raceHandle, true,last_race);
         }
@@ -795,8 +793,8 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
             WritePackCell(dataPack, _:(last_race && (upgrade == lastUpgrade)));
             ResetPack(dataPack);
 
-            LogMessage("Starting thread to process player #%d (%x) upgrade %d of %d, last_race=%d, SQL:%s",
-                       client, playerHandle, upgrade, lastUpgrade, last_race, SQLString);
+            //LogMessage("Starting thread to process player #%d (%x) upgrade %d of %d, last_race=%d, SQL:%s",
+            //           client, playerHandle, upgrade, lastUpgrade, last_race, SQLString);
 
             SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, dataPack);
         }
@@ -829,7 +827,7 @@ public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], a
 
         if (last_upgrade)
         {
-            LogMessage("Thread-Clearing Player #%d (%x)", client, playerHandle);
+            //LogMessage("Thread-Clearing Player #%d (%x)", client, playerHandle);
             ClearPlayer(playerHandle);
         }
     }

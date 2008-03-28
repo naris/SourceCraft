@@ -255,7 +255,6 @@ public EventCaptureBlocked(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
 {
     g_RoundActive = false;
-    g_AllPlayersSaved = false;
 }
 
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
@@ -268,7 +267,6 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 {
     g_RoundActive = true;
-    g_AllPlayersSaved = false;
 
     if (GameType == tf2)
     {

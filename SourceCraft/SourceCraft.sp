@@ -171,13 +171,12 @@ public OnMapStart()
 {
     LogMessage("OnMapStart()");
     g_MapChanging = false;
-    g_AllPlayersSaved = false;
     SetupSound(notEnoughWav,true,true);
 }
 
 public OnMapEnd()
 {
-    LogMessage("OnMapEnd(), g_AllPlayersSaved=%d, g_MapChanging=%d", g_AllPlayersSaved, g_MapChanging);
+    //LogMessage("OnMapEnd(), g_MapChanging=%d", g_MapChanging);
 
     if (DBIDB && SAVE_ENABLED)
     {
@@ -230,23 +229,23 @@ public OnClientDisconnect(client)
             new bool:freePlayer = true;
             if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                 freePlayer = SavePlayerData(client,playerHandle,true);
-            else
-            {
-                LogMessage("OnClientDisconnect(), Skipping #%d %N, g_MapChanging=%d",
-                           client, client, g_MapChanging);
-            }
+            //else
+            //{
+            //    LogMessage("OnClientDisconnect(), Skipping #%d %N, g_MapChanging=%d",
+            //               client, client, g_MapChanging);
+            //}
 
             if (freePlayer)
             {
-                LogMessage("Disconnect-Clearing Player #%d (%x)",
-                           client, playerHandle);
+                //LogMessage("Disconnect-Clearing Player #%d (%x)",
+                //           client, playerHandle);
                 ClearPlayer(playerHandle);
             }
-            else
-            {
-                LogMessage("Disconnect-Leaving Player #%d (%x) for threaded cleanup",
-                           client, playerHandle);
-            }
+            //else
+            //{
+            //    LogMessage("Disconnect-Leaving Player #%d (%x) for threaded cleanup",
+            //               client, playerHandle);
+            //}
 
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;
