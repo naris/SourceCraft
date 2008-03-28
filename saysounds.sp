@@ -146,6 +146,9 @@ Versions:
 	2.0.3 Mar 16, 2008
 		* Modified by -=|JFH|=-Naris
 		* Merged the last few saysounds changes with saysounds hybrid.
+	2.0.4 Mar 28, 2008
+		* Modified by -=|JFH|=-Naris
+		* Plugged the DataPack Handle Leak.
 
 
 Todo:
@@ -872,7 +875,6 @@ Send_Sound(client, const String:filelocation[], const String:name[])
 	/*##################*/
 	new Float:duration = KvGetFloat(listfile, "duration",0.0);
 	new Handle:pack;
-	CreateDataTimer(0.2,Command_Play_Sound,pack);
 	WritePackCell(pack, client);
 	WritePackCell(pack, adminonly);
 	WritePackCell(pack, singleonly);
@@ -882,12 +884,13 @@ Send_Sound(client, const String:filelocation[], const String:name[])
 	WritePackFloat(pack, duration);
 	WritePackString(pack, filelocation);
 	WritePackString(pack, name);
+	ResetPack(pack);
+	CreateDataTimer(0.2,Command_Play_Sound,pack);
 }
 
 public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:name[PLATFORM_MAX_PATH+1];
-	ResetPack(pack);
 	new client = ReadPackCell(pack);
 	new adminonly = ReadPackCell(pack);
 	new singleonly = ReadPackCell(pack);
@@ -897,6 +900,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 	new Float:duration = ReadPackFloat(pack);
 	ReadPackString(pack, filelocation, sizeof(filelocation));
 	ReadPackString(pack, name , sizeof(name));
+	CloseHandle(pack);
 
 	/*####FernFerret####*/
 	// Checks for Action Only sounds and messages user telling them why they can't play an action only sound
