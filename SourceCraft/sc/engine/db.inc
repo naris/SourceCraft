@@ -484,7 +484,11 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 if (disconnected)
                     playerData = playerHandle;
                 else
+                {
                     playerData = ClonePlayer(playerHandle);
+                    //LogMessage("Copying %N #%d (%x) to handle=%x",
+                    //           client, client, playerHandle, playerData);
+                }
 
                 //LogMessage("Starting thread to process %N #%d (%x) handle=%x:%s",
                 //           client, client, playerHandle, playerData, SQLString);
@@ -555,14 +559,16 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                             if (disconnected)
                                 playerData = playerHandle;
                             else
+                            {
                                 playerData = ClonePlayer(playerHandle);
-
-                            //LogMessage("Copying %N #%d (%x) to handle=%x",
-                            //           client, client, playerHandle, playerData);
+                                //LogMessage("Copying %N #%d (%x) to handle=%x",
+                                //           client, client, playerHandle, playerData);
+                            }
 
                             SQL_UnlockDatabase(DBIDB);
 
                             SavePlayerRaces(client, playerData, player_ident,threaded);
+                            return !disconnected;
                         }
                         else
                             SavePlayerRaces(client, playerHandle, player_ident,threaded);
