@@ -466,6 +466,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         else
             threaded = true;
 
+        threaded = true;  // Try threaded saves even when changing the map.
+
         //LogMessage("SavePlayerData() Saving #%d %N, handle=%x, player_ident=%d, g_MapChanging=%d, timeleft=%d, disconnected=%d, threaded=%d",
         //           client, client, playerHandle, player_ident, g_MapChanging, timeleft, disconnected, threaded);
 
