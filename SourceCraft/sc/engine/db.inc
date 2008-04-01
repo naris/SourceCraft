@@ -498,6 +498,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
+                WritePackCell(dataPack, _:playerHandle);
                 WritePackCell(dataPack, _:playerData);
                 WritePackCell(dataPack, player_ident);
                 ResetPack(dataPack);
@@ -515,7 +516,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
                     SetDatabaseSaved(playerHandle,1);
-                    SavePlayerRaces(client, playerHandle, player_ident, threaded);
+                    SavePlayerRaces(client, playerHandle, playerHandle, player_ident, threaded);
                 }
                 else
                 {
@@ -572,11 +573,11 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 
                             SQL_UnlockDatabase(DBIDB);
 
-                            SavePlayerRaces(client, playerData, player_ident,threaded);
+                            SavePlayerRaces(client, playerHandle, playerData, player_ident,threaded);
                             return !disconnected;
                         }
                         else
-                            SavePlayerRaces(client, playerHandle, player_ident,threaded);
+                            SavePlayerRaces(client, playerHandle, playerHandle, player_ident,threaded);
                     }
                     else
                     {
@@ -592,7 +593,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                     decl String:error[256] = "";
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to query %N's ident: %s\nSQL:%s",
-                            client, error, SQLString);
+                             client, error, SQLString);
                 }
             }
             else
@@ -600,7 +601,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to insert %N's player data, client=%d, handle=%x, ident=%d: %s\nSQL:%s",
-                        client, client, playerHandle, player_ident, error, SQLString);
+                         client, client, playerHandle, player_ident, error, SQLString);
 
                 Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
                         steamid);
@@ -625,7 +626,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                     {
                         SQL_GetError(DBIDB, error, sizeof(error));
                         LogError("Unable to fetch %N's ident: %s\nSQL:%s",
-                                client, error, SQLString);
+                                 client, error, SQLString);
                         CloseHandle(ident_query);
                     }
                 }
@@ -633,7 +634,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 {
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to query %N's ident: %s\nSQL:%s",
-                            client, error, SQLString);
+                             client, error, SQLString);
                 }
             }
             if (!threaded)
@@ -654,26 +655,27 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
     {
         new client = ReadPackCell(data); 
         new Handle:playerHandle = Handle:ReadPackCell(data); 
+        new Handle:playerData = Handle:ReadPackCell(data); 
         new player_ident = ReadPackCell(data); 
         CloseHandle(data);
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
         {
-            LogError("Unable to update player record, client=%d, handle=%x, ident=%d: %s",
-                     client, playerHandle, player_ident, error);
-            ClearPlayer(playerHandle);
+            LogError("Unable to update player record, client=%d, handle=%x, data=%x, ident=%d: %s",
+                     client, playerHandle, playerData, player_ident, error);
+            ClearPlayer(playerData);
         }
         else
         {
-            //LogMessage("Updated player data, client=%d, handle=%x, ident=%d",
+            //LogMessage("Updated player data, client=%d, handle=%x, data=%x, ident=%d",
             //           client, playerHandle, player_ident);
 
-            SavePlayerRaces(client, playerHandle, player_ident,true);
+            SavePlayerRaces(client, playerHandle, playerData, player_ident,true);
         }
     }
 }
 
-SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
+SavePlayerRaces(client, Handle:playerHandle, Handle:playerData, player_ident, bool:threaded)
 {
     decl String:SQLString[512] = "";
     new raceCount = GetRaceCount();
@@ -682,8 +684,8 @@ SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
     new lastRace;
     for(lastRace=raceCount - 1;lastRace>1;lastRace--)
     {
-        if (GetXP(playerHandle,lastRace) > 0 ||
-            GetLevel(playerHandle,lastRace) > 0)
+        if (GetXP(playerData,lastRace) > 0 ||
+            GetLevel(playerData,lastRace) > 0)
         {
             break;
         }
@@ -691,11 +693,11 @@ SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
 
     for(new raceId=0;raceId<raceCount;raceId++)
     {
-        new xp    = GetXP(playerHandle,raceId);
-        new level = GetLevel(playerHandle,raceId);
+        new xp    = GetXP(playerData,raceId);
+        new level = GetLevel(playerData,raceId);
 
         // Make sure to save the lastRace when threaded so the
-        // last_upgrade will get saved and free the playerHandle.
+        // last_upgrade will get saved and free the playerData.
         if (xp || level || (threaded && raceId == lastRace))
         {
             new Handle:raceHandle = GetRaceHandle(raceId);
@@ -715,6 +717,7 @@ SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
                 WritePackCell(dataPack, _:playerHandle);
+                WritePackCell(dataPack, _:playerData);
                 WritePackCell(dataPack, player_ident);
                 WritePackCell(dataPack, raceId);
                 WritePackCell(dataPack, race_ident);
@@ -724,19 +727,21 @@ SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
                 ResetPack(dataPack);
 
                 //LogMessage("Starting thread to process player #%d (%x) race %d of %d, SQL:%s",
-                //           client, playerHandle, raceId, lastRace, SQLString);
+                //           client, playerData, raceId, lastRace, SQLString);
 
                 SQL_TQuery(DBIDB, SQL_SavePlayerRaces, SQLString, dataPack);
             }
             else
             {
                 //LogMessage("Processing player #%d (%x) race %d of %d, SQL:%s",
-                //           client, playerHandle, raceId, lastRace, SQLString);
+                //           client, playerData, raceId, lastRace, SQLString);
 
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
-                    SetSavedXP(playerHandle,raceId,xp);
-                    SavePlayerUpgrades(client, playerHandle, player_ident,
+                    if (GetPlayerHandle(client) == playerHandle)
+                        SetSavedXP(playerHandle,raceId,xp);
+
+                    SavePlayerUpgrades(client, playerData, player_ident,
                                        raceId, race_ident, raceHandle,
                                        threaded, (raceId == lastRace));
                 }
@@ -746,10 +751,8 @@ SavePlayerRaces(client, Handle:playerHandle, player_ident, bool:threaded)
                     decl String:raceName[64] = "";
                     GetRaceShortName(raceHandle, raceName, sizeof(raceName));
                     SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to insert/replace/update %s data, client=%d, handle=%x : %s\nSQL:%s",
-                             raceName, client, playerHandle, error, SQLString);
-
-                    SetDatabaseIdent(playerHandle,-1); // Reset ident!
+                    LogError("Unable to insert/replace/update %s data, client=%d, handle=%x, data=%x : %s\nSQL:%s",
+                             raceName, client, playerHandle, playerData, error, SQLString);
                 }
             }
         }
@@ -764,6 +767,7 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
     {
         new client = ReadPackCell(data); 
         new Handle:playerHandle = Handle:ReadPackCell(data); 
+        new Handle:playerData = Handle:ReadPackCell(data); 
         new player_ident = ReadPackCell(data); 
         new raceId = ReadPackCell(data);
         new race_ident = ReadPackCell(data);
@@ -776,26 +780,26 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
         {
             decl String:raceName[64] = "";
             GetRaceShortName(raceHandle, raceName, sizeof(raceName));
-            LogError("Unable to insert/replace %s data, client=%d, handle=%x : %s",
-                     raceName, client, playerHandle, error);
-
-            SetDatabaseIdent(playerHandle,-1); // Reset ident!
+            LogError("Unable to insert/replace %s data, client=%d, handle=%x, data=%x : %s",
+                     raceName, client, playerHandle, playerData, error);
 
             if (last_race)
-                ClearPlayer(playerHandle);
+                ClearPlayer(playerData);
         }
         else
         {
-            //LogMessage("Updated race data, client=%d, handle=%x, ident=%d, race_ident=%d",
-            //           client, playerHandle, player_ident, race_ident);
+            //LogMessage("Updated race data, client=%d, handle=%x, data=%x, ident=%d, race_ident=%d",
+            //           client, playerHandle, playerData, player_ident, race_ident);
 
-            SetSavedXP(playerHandle,raceId,xp);
-            SavePlayerUpgrades(client, playerHandle, player_ident, raceId, race_ident, raceHandle, true,last_race);
+            if (GetPlayerHandle(client) == playerHandle)
+                SetSavedXP(playerHandle,raceId,xp);
+
+            SavePlayerUpgrades(client, playerData, player_ident, raceId, race_ident, raceHandle, true,last_race);
         }
     }
 }
 
-SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
+SavePlayerUpgrades(client, Handle:playerData, player_ident,
                    raceId, race_ident, Handle:raceHandle,
                    bool:threaded, bool:last_race)
 {
@@ -804,7 +808,7 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
     new lastUpgrade  = upgradeCount - 1;
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
-        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
+        new upgradeLevel = GetUpgradeLevel(playerData,raceId,upgrade);
 
         if (DBIsSQLite)
         {
@@ -819,26 +823,26 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
         {
             new Handle:dataPack = CreateDataPack();
             WritePackCell(dataPack, client);
-            WritePackCell(dataPack, _:playerHandle);
+            WritePackCell(dataPack, _:playerData);
             WritePackCell(dataPack, _:(last_race && (upgrade == lastUpgrade)));
             ResetPack(dataPack);
 
             //LogMessage("Starting thread to process player #%d (%x) upgrade %d of %d, last_race=%d, SQL:%s",
-            //           client, playerHandle, upgrade, lastUpgrade, last_race, SQLString);
+            //           client, playerData, upgrade, lastUpgrade, last_race, SQLString);
 
             SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, dataPack);
         }
         else
         {
             //LogMessage("Processing player #%d (%x) upgrade %d of %d, last_race=%d, SQL:%s",
-            //           client, playerHandle, upgrade, lastUpgrade, last_race, SQLString);
+            //           client, playerData, upgrade, lastUpgrade, last_race, SQLString);
 
             if (!SQL_FastQuery(DBIDB,SQLString))
             {
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to insert/replace upgrade data, client=%d, handle=%x : %s\nSQL:%s",
-                         client, playerHandle, error, SQLString);
+                         client, playerData, error, SQLString);
             }
         }
     }
@@ -851,16 +855,16 @@ public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], a
     else 
     {
         new client = ReadPackCell(data); 
-        new Handle:playerHandle = Handle:ReadPackCell(data); 
+        new Handle:playerData = Handle:ReadPackCell(data); 
         new bool:last_upgrade = bool:ReadPackCell(data);
         if (hndl == INVALID_HANDLE || error[0] != '\0')
             LogError("Unable to insert/replace one upgrade data, client=%d, handle=%x : %s",
-                     client, playerHandle, error);
+                     client, playerData, error);
 
         if (last_upgrade)
         {
-            //LogMessage("Thread-Clearing Player #%d (%x)", client, playerHandle);
-            ClearPlayer(playerHandle);
+            //LogMessage("Thread-Clearing Player #%d (%x)", client, playerData);
+            ClearPlayer(playerData);
         }
     }
 }
