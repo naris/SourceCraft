@@ -113,9 +113,8 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
     {
         if (m_FirstSpawn[client] > 1 && GetRaceCount() >= 1)
             RaceMenu(client, true);
-        else
-            m_FirstSpawn[client]=0;
     }
+    m_FirstSpawn[client]=0;
 }
 
 MainMenu(client)

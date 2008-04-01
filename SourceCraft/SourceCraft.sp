@@ -169,7 +169,7 @@ public OnPluginEnd()
 
 public OnMapStart()
 {
-    LogMessage("OnMapStart()");
+    //LogMessage("OnMapStart()");
     g_MapChanging = false;
     SetupSound(notEnoughWav,true,true);
 }
