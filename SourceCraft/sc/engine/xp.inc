@@ -86,7 +86,14 @@ DoLevelCheck(client,Handle:playerHandle)
                     UpgradeMenu(client, playerHandle);
                 }
                 else
+                {
                     m_Go=false;
+                    if ((curXP % 100) == 0)
+                    {
+                        if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
+                            SavePlayerData(client,playerHandle,false);
+                    }
+                }
             }
             else
                 m_Go=false;
