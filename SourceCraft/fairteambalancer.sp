@@ -359,6 +359,8 @@ void:PerformSwitch( client ){
 	else
 		ChangeClientTeam( client, 5 - biggerTeam );
 	
+	LogAction(0, client, "[SM] %N has been switched for team balance.", client );
+
 	if( game_is_tf2 ){
 		new Handle:event = CreateEvent( "teamplay_teambalanced_player" );
 		SetEventInt( event, "player", client         );
@@ -366,9 +368,6 @@ void:PerformSwitch( client ){
 		FireEvent( event );
 		}
 	else{
-		decl String:plName[40];
-		GetClientName( client, plName, sizeof(plName) );
-		
-		PrintToChatAll( "[SM] %s has been switched for team balance.", plName );
+		PrintToChatAll( "[SM] %N has been switched for team balance.", client );
 		}
 	}
