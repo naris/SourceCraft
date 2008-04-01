@@ -668,7 +668,7 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
         else
         {
             LogMessage("Updated player data, client=%d, handle=%x, data=%x, ident=%d",
-                       client, playerHandle, player_ident);
+                       client, playerHandle, playerData, player_ident);
 
             SavePlayerRaces(client, playerHandle, playerData, player_ident,true);
         }
