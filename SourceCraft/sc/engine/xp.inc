@@ -91,7 +91,7 @@ DoLevelCheck(client,Handle:playerHandle)
                     if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                     {
                         new savedXP = GetSavedXP(playerHandle, race);
-                        if (savedXP > curXP || curXP - savedXP > 1000)
+                        if (savedXP > curXP || curXP - savedXP > 400)
                             SavePlayerData(client,playerHandle,false);
                     }
                 }
