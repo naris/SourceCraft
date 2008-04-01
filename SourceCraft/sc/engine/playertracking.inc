@@ -29,6 +29,7 @@
 #define RACEINFO_LEVEL                  1
 #define RACEINFO_ACTIVE_ULTIMATE        2
 #define RACEINFO_UPGRADES               3
+#define RACEINFO_SAVED_XP               4
 
 #define TRACKING_PLUGIN_HANDLE          0
 #define TRACKING_OVERRIDE_SPEED         1
@@ -99,6 +100,7 @@ Handle:CreatePlayer(client)
             PushArrayCell(raceInfo,0); // Race's XP
             PushArrayCell(raceInfo,0); // Race's Level
             PushArrayCell(raceInfo,-1); // Race's Active Ultimate Upgrade 
+            PushArrayCell(raceInfo,0); // Race's Saved XP
             new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
                 PushArrayCell(raceInfo,0); // Upgrade level for each upgrade of the race
@@ -142,12 +144,14 @@ Handle:ClonePlayer(Handle:oldPlayer)
             new Handle:oldRaceinfo=GetArrayCell(oldPlayer,INFO_COUNT+race);
             new Handle:newRaceinfo=CreateArray(); // Player's races
             PushArrayCell(newPlayer,newRaceinfo);
-            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_XP)); // Race's XP
-            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_LEVEL)); // Race's Level
-            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_ACTIVE_ULTIMATE)); // Race's Active Ultimate Upgrade 
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_XP));
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_LEVEL));
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_ACTIVE_ULTIMATE));
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_SAVED_XP));
+
             new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-                PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_UPGRADES+upgrade)); // Upgrade level for each upgrade of the race
+                PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_UPGRADES+upgrade));
         }
 
         // Perform a sanity check.
@@ -384,6 +388,30 @@ ResetXP(Handle:playerHandle,race,xp)
         {
             DoLevelCheck(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
                          playerHandle);
+        }
+    }
+}
+
+GetSavedXP(Handle:playerHandle,race)
+{
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        if (raceInfo != INVALID_HANDLE)
+            return GetArrayCell(raceInfo,RACEINFO_SAVED_XP);
+    }
+    return 0;
+}
+
+SetSavedXP(Handle:playerHandle,race,xp)
+{
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        if (raceInfo != INVALID_HANDLE)
+        {
+            SetArrayCell(raceInfo,RACEINFO_SAVED_XP,xp);
+            SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         }
     }
 }
