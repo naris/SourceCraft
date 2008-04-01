@@ -308,10 +308,14 @@ public Native_GetRace(Handle:plugin,numParams)
 
 public Native_GetLevel(Handle:plugin,numParams)
 {
-    if (numParams==2)
+    if (numParams >= 1 && numParams <= 2)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
+
+        new race = (numParams >= 2) ? GetNativeCell(2) : -1;
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1)
             return GetLevel(player,race);
     }
@@ -323,8 +327,12 @@ public Native_SetLevel(Handle:plugin,numParams)
     if (numParams==3)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
         new newlevel=GetNativeCell(3);
+
+        new race=GetNativeCell(2);
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1)
             SetLevel(player,race,newlevel);
     }
@@ -335,8 +343,12 @@ public Native_ResetLevel(Handle:plugin,numParams)
     if (numParams==3)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
         new newlevel=GetNativeCell(3);
+
+        new race=GetNativeCell(2);
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1)
             ResetLevel(player,race,newlevel);
     }
@@ -347,8 +359,12 @@ public Native_GetUpgradeLevel(Handle:plugin,numParams)
     if (numParams==3)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
         new upgrade=GetNativeCell(3);
+
+        new race=GetNativeCell(2);
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1 && upgrade != -1)
             return GetUpgradeLevel(player,race,upgrade);
     }
@@ -360,9 +376,13 @@ public Native_SetUpgradeLevel(Handle:plugin,numParams)
     if (numParams==4)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
         new upgrade=GetNativeCell(3);
         new newlevel=GetNativeCell(4);
+
+        new race=GetNativeCell(2);
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1 && upgrade != -1)
             SetUpgradeLevel(player,race,upgrade,newlevel);
     }
@@ -383,10 +403,14 @@ public Native_ResetUpgradeLevels(Handle:plugin,numParams)
 
 public Native_GetXP(Handle:plugin,numParams)
 {
-    if (numParams==2)
+    if (numParams >= 1 && numParams <= 2)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
+
+        new race = (numParams >= 2) ? GetNativeCell(2) : -1;
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1)
             return GetXP(player,race);
     }
@@ -398,8 +422,12 @@ public Native_SetXP(Handle:plugin,numParams)
     if (numParams==3)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
         new newxp=GetNativeCell(3);
+
+        new race=GetNativeCell(2);
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1 && newxp != -1)
         {
             SetXP(player,race,newxp);
@@ -413,8 +441,12 @@ public Native_ResetXP(Handle:plugin,numParams)
     if (numParams==3)
     {
         new Handle:player=Handle:GetNativeCell(1);
-        new race=GetNativeCell(2);
         new newxp=GetNativeCell(3);
+
+        new race=GetNativeCell(2);
+        if (race == -1)
+            race = GetRace(player);
+
         if (player != INVALID_HANDLE && race != -1 && newxp != -1)
         {
             ResetXP(player,race,newxp);
@@ -442,6 +474,29 @@ public Native_SetCredits(Handle:plugin,numParams)
         new newcredits=GetNativeCell(2);
         if (player != INVALID_HANDLE)
             SetCredits(player,newcredits);
+    }
+}
+
+public Native_GetOverallLevel(Handle:plugin,numParams)
+{
+    if (numParams ==)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        if (player != INVALID_HANDLE)
+            return GetOverallLevel(player);
+    }
+    return -1;
+}
+
+public Native_SetOverallLevel(Handle:plugin,numParams)
+{
+    if (numParams==2)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        new newlevel=GetNativeCell(2);
+
+        if (player != INVALID_HANDLE)
+            SetOverallLevel(player,newlevel);
     }
 }
 
@@ -857,6 +912,8 @@ bool:InitNatives()
     CreateNative("ResetXP",Native_ResetXP);
     CreateNative("GetCredits",Native_GetCredits);
     CreateNative("SetCredits",Native_SetCredits);
+    CreateNative("GetOverallLevel",Native_GetOverallLevel);
+    CreateNative("SetOverallLevel",Native_SetOverallLevel);
     CreateNative("GetOwnsItem",Native_GetOwnsItem);
     CreateNative("SetOwnsItem",Native_SetOwnsItem);
     CreateNative("GetImmunity",Native_GetImmunity);

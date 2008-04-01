@@ -17,6 +17,7 @@
 #include "sc/util"
 #include "sc/uber"
 #include "sc/maxhealth"
+#include "sc/weapons"
 
 #include "sc/log" // for debugging
 
@@ -188,14 +189,14 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
     if (attacker_race == raceID && victim_index != attacker_index)
     {
-        changed |= U238Shells(damage, victim_index, victim_player,
-                                      attacker_index, attacker_player);
+        changed |= U238Shells(event, damage, victim_index, victim_player,
+                              attacker_index, attacker_player);
     }
 
     if (assister_race == raceID && victim_index != assister_index)
     {
-        changed |= U238Shells(damage, victim_index, victim_player,
-                                      assister_index, assister_player);
+        changed |= U238Shells(event, damage, victim_index, victim_player,
+                              assister_index, assister_player);
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
@@ -267,7 +268,7 @@ bool:Armor(damage, victim_index, Handle:victim_player)
     return false;
 }
 
-bool:U238Shells(damage, victim_index, Handle:victim_player, index, Handle:player)
+bool:U238Shells(Handle:event, damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new u238_level = GetUpgradeLevel(player,raceID,u238ID);
     if (u238_level > 0)
@@ -276,36 +277,41 @@ bool:U238Shells(damage, victim_index, Handle:victim_player, index, Handle:player
         {
             if(GetRandomInt(1,100)<=25)
             {
-                new Float:percent;
-                switch(u238_level)
+                decl String:weapon[64] = "";
+                new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
+                if (!IsMelee(weapon, is_equipment))
                 {
-                    case 1:
-                        percent=0.30;
-                    case 2:
-                        percent=0.50;
-                    case 3:
-                        percent=0.80;
-                    case 4:
-                        percent=1.00;
+                    new Float:percent;
+                    switch(u238_level)
+                    {
+                        case 1:
+                            percent=0.30;
+                        case 2:
+                            percent=0.50;
+                        case 3:
+                            percent=0.80;
+                        case 4:
+                            percent=1.00;
+                    }
+
+                    new health_take=RoundFloat(float(damage)*percent);
+                    new new_health=GetClientHealth(victim_index)-health_take;
+                    if (new_health <= 0)
+                    {
+                        new_health=0;
+                        LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
+                    }
+                    else
+                        LogDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
+
+                    SetEntityHealth(victim_index,new_health);
+
+                    new color[4] = { 100, 255, 55, 255 };
+                    TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
+                            0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+                    TE_SendToAll();
+                    return true;
                 }
-
-                new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetClientHealth(victim_index)-health_take;
-                if (new_health <= 0)
-                {
-                    new_health=0;
-                    LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
-                }
-                else
-                    LogDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
-
-                SetEntityHealth(victim_index,new_health);
-
-                new color[4] = { 100, 255, 55, 255 };
-                TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                        0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-                TE_SendToAll();
-                return true;
             }
         }
     }
@@ -356,23 +362,23 @@ Jetpack(client, level)
         {
             case 1:
             {
-                fuel=60;
+                fuel=40;
                 refueling_time=45.0;
             }
             case 2:
             {
-                fuel=90;
-                refueling_time=30.0;
+                fuel=50;
+                refueling_time=35.0;
             }
             case 3:
             {
-                fuel=120;
-                refueling_time=20.0;
+                fuel=70;
+                refueling_time=25.0;
             }
             case 4:
             {
-                fuel=150;
-                refueling_time=10.0;
+                fuel=90;
+                refueling_time=15.0;
             }
         }
         GiveJetpack(client, fuel, refueling_time);

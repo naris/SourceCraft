@@ -109,15 +109,15 @@ native Handle:GetPlayerHandle(client);
 /**
  * Gets the current level for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @return The return value will be the level, if -1 then it failed.
  */
-native GetLevel(Handle:player,race);
+native GetLevel(Handle:player,race=-1);
 
 /**
  * Sets the current level for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @param newlevel: The level you want to set to 
  * @noreturn
  */
@@ -126,7 +126,7 @@ native SetLevel(Handle:player,race,newlevel);
 /**
  * Resets the current level for the provided race, also adjusts Upgrade levels as required.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @param newlevel: The level you want to set to 
  * @noreturn
  */
@@ -142,15 +142,15 @@ native GetRace(Handle:player);
 /**
  * Gets the XP for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @return The return value will be the xp, if -1 then it failed.
  */
-native GetXP(Handle:player,race);
+native GetXP(Handle:player,race=-1);
 
 /**
  * Sets the XP for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @param newxp: The XP you want to set to 
  * @noreturn
  */
@@ -159,7 +159,7 @@ native SetXP(Handle:player,race,newxp);
 /**
  * Resets the XP for the provided race, also adjusts Levels and Upgrades as required.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @param newxp: The XP you want to set to 
  * @noreturn
  */
@@ -168,7 +168,7 @@ native ResetXP(Handle:player,race,newxp);
 /**
  * Gets the current level for the upgrade for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @param upgrade: The upgrade you want to lookup with, (0==upgrade1,1==upgrade2,2==upgrade3,3==ultimate) 
  * @return The return value will be the upgrade level, if -1 then it failed.
  */
@@ -177,7 +177,7 @@ native GetUpgradeLevel(Handle:player,race,upgrade);
 /**
  * Sets the current level for the upgrade for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace
+ * @param race: The race ID returned from CreateRace or -1 for current race
  * @param upgrade: The upgrade you want to lookup with, (0==upgrade1,1==upgrade2,2==upgrade3,3==ultimate) 
  * @param newlevel: The level you want to set to 
  * @noreturn
@@ -205,6 +205,21 @@ native GetCredits(Handle:player);
  * @noreturn
  */
 native SetCredits(Handle:player,newcredits);
+
+/**
+ * Gets the player's current overall level. (Total level of all races)
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @return The return value will be the overall level, if -1 then it failed.
+ */
+native GetOverallLevel(Handle:player);
+
+/**
+ * Sets the player's overall level.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @param newlevel: The level you want to set to 
+ * @noreturn
+ */
+native SetOverallLevel(Handle:player,newlevel);
 
 /**
  * Gets if the player owns a specific item.
@@ -427,3 +442,56 @@ forward Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player
                                   assister_index,Handle:assister_player,assister_race,
                                   damage,const String:weapon[],bool:is_equipment,
                                   customkill,bool:headshot,bool:backstab,bool:melee);
+
+
+/**
+ * Do not edit below this line!
+ */
+public Extension:__pl_sourcecraft = 
+{
+	name = "sourcecraft",
+	file = "sourcecraft.smx",
+	autoload = 0,
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_sourcecraft_SetNTVOptional()
+{
+	MarkNativeAsOptional("CreateRace");
+	MarkNativeAsOptional("AddUpgrade");
+	MarkNativeAsOptional("CreateShopItem");
+	MarkNativeAsOptional("CreateHelpCommand");
+	MarkNativeAsOptional("GetShopItem");
+	MarkNativeAsOptional("KillPlayer");
+	MarkNativeAsOptional("HurtPlayer");
+	MarkNativeAsOptional("HealPlayer");
+	MarkNativeAsOptional("GetClass");
+	MarkNativeAsOptional("GetPlayerHandle");
+	MarkNativeAsOptional("GetLevel");
+	MarkNativeAsOptional("SetLevel");
+	MarkNativeAsOptional("ResetLevel");
+	MarkNativeAsOptional("GetRace");
+	MarkNativeAsOptional("GetXP");
+	MarkNativeAsOptional("SetXP");
+	MarkNativeAsOptional("ResetXP");
+	MarkNativeAsOptional("GetUpgradeLevel");
+	MarkNativeAsOptional("SetUpgradeLevel");
+	MarkNativeAsOptional("ResetSetUpgradeLevels");
+	MarkNativeAsOptional("SetCredits");
+	MarkNativeAsOptional("GetOwnsItem");
+	MarkNativeAsOptional("SetOwnsItem");
+	MarkNativeAsOptional("GetImmunity");
+	MarkNativeAsOptional("SetImmunity");
+	MarkNativeAsOptional("SetSpeed");
+	MarkNativeAsOptional("SetGravity");
+	MarkNativeAsOptional("SetVisibility");
+	MarkNativeAsOptional("SetOverrideSpeed");
+	MarkNativeAsOptional("SetOverrideGravity");
+	MarkNativeAsOptional("SetOverrideVisiblity");
+}
+#endif
