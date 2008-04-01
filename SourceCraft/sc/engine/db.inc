@@ -462,11 +462,9 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         if (g_MapChanging) // || disconnected)
             threaded = false;
         else if (GetMapTimeLeft(timeleft))
-            threaded = (timeleft > 30);
+            threaded = (timeleft > 60);
         else
             threaded = true;
-
-        threaded = true;  // Try threaded saves even when changing the map.
 
         LogMessage("SavePlayerData() Saving #%d %N, handle=%x, player_ident=%d, g_MapChanging=%d, timeleft=%d, disconnected=%d, threaded=%d",
                    client, client, playerHandle, player_ident, g_MapChanging, timeleft, disconnected, threaded);
@@ -474,7 +472,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         if (player_ident > 0)
         {
             Format(SQLString,sizeof(SQLString),
-                   "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp WHERE player_ident = %d", race_ident, credits, overall_level, player_ident);
+                   "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp WHERE player_ident = %d",
+                   race_ident, credits, overall_level, player_ident);
 
             if (threaded)
             {

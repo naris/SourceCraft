@@ -123,10 +123,29 @@ public Action:SayCommand(client,args)
             MainMenu(client);
             return Plugin_Handled;
         }
-	}
+        else if(CommandCheck(arg1,"scsave",63) ||
+                CommandCheck(arg1,"save",63))
+        {
+            if (!GetDatabaseSaved(playerHandle))
+            {
+                if (SavePlayerData(client, playerHandle, false))
+                    PrintToChat(client,"%c[SourceCraft] %cSaved data to Database.",
+                                COLOR_GREEN,COLOR_DEFAULT);
+                else
+                    PrintToChat(client,"%c[SourceCraft] %cSaving data to Database.",
+                                COLOR_GREEN,COLOR_DEFAULT);
+            }
+            else 
+            {
+                PrintToChat(client,"%c[SourceCraft] %cData already saved.",
+                        COLOR_GREEN,COLOR_DEFAULT);
+            }
+            return Plugin_Handled;
+        }
+    }
     return Plugin_Continue;
 }
- 
+
 public Action:UltimateCommand(client,args)
 {
     decl String:command[32];
