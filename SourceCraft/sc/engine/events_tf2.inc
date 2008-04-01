@@ -366,8 +366,8 @@ public GameWin(Handle:event,const String:name[],bool:dontBroadcast)
         }
     }
 
-    if (DBIDB && SAVE_ENABLED)
-        SaveAllPlayersData();
+    //if (DBIDB && SAVE_ENABLED)
+    //    SaveAllPlayersData();
 }
 
 public GameOver(Handle:event,const String:name[],bool:dontBroadcast)
