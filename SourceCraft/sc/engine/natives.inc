@@ -479,7 +479,7 @@ public Native_SetCredits(Handle:plugin,numParams)
 
 public Native_GetOverallLevel(Handle:plugin,numParams)
 {
-    if (numParams ==)
+    if (numParams == 1)
     {
         new Handle:player=Handle:GetNativeCell(1);
         if (player != INVALID_HANDLE)
