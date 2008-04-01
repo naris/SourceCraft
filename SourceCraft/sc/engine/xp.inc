@@ -88,15 +88,16 @@ DoLevelCheck(client,Handle:playerHandle)
                 else
                 {
                     m_Go=false;
-                    if ((curXP % 100) == 0)
+                    if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                     {
-                        if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
+                        new savedXP = GetSavedXP(playerHandle, race);
+                        if (savedXP > curXP || curXP - savedXP > 1000)
                             SavePlayerData(client,playerHandle,false);
                     }
                 }
             }
             else
-                m_Go=false;
+            m_Go=false;
         }
     }
 }

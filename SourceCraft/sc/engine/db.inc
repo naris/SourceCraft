@@ -680,28 +680,37 @@ SavePlayerRaces(client, Handle:playerHandle, Handle:playerData, player_ident, bo
     decl String:SQLString[512] = "";
     new raceCount = GetRaceCount();
 
-    // Find the last race that has been used.
+    // Find the last race that has changed.
     new lastRace;
-    for(lastRace=raceCount - 1;lastRace>1;lastRace--)
+    for(lastRace=raceCount - 1;lastRace>=0;lastRace--)
     {
-        if (GetXP(playerData,lastRace) > 0 ||
-            GetLevel(playerData,lastRace) > 0)
-        {
+        //if (GetXP(playerData,lastRace) > 0 ||
+        //    GetLevel(playerData,lastRace) > 0)
+        if (GetXP(playerData,lastRace) != GetSavedXP(playerData,lastRace))
             break;
-        }
+    }
+
+    if (lastRace < 0)
+    {
+        // Race data has not changed.
+        //LogMessage("Race data has not changed, Thread-Clearing Player #%d (%x)", client, playerData);
+        ClearPlayer(playerData);
+        return;
     }
 
     for(new raceId=0;raceId<raceCount;raceId++)
     {
-        new xp    = GetXP(playerData,raceId);
-        new level = GetLevel(playerData,raceId);
+        new xp      = GetXP(playerData,raceId);
+        new savedXP = GetSavedXP(playerData,raceId);
 
         // Make sure to save the lastRace when threaded so the
         // last_upgrade will get saved and free the playerData.
-        if (xp || level || (threaded && raceId == lastRace))
+        //if (xp || level || (threaded && raceId == lastRace))
+        if (xp != savedXP)
         {
             new Handle:raceHandle = GetRaceHandle(raceId);
             new race_ident = GetRaceIdent(raceHandle);
+            new level = GetLevel(playerData,raceId);
 
             if (DBIsSQLite)
             {
@@ -738,7 +747,7 @@ SavePlayerRaces(client, Handle:playerHandle, Handle:playerData, player_ident, bo
 
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
-                    if (GetPlayerHandle(client) == playerHandle)
+                    if (playerHandle == GetPlayerHandle(client))
                         SetSavedXP(playerHandle,raceId,xp);
 
                     SavePlayerUpgrades(client, playerData, player_ident,
@@ -791,7 +800,7 @@ public SQL_SavePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:
             //LogMessage("Updated race data, client=%d, handle=%x, data=%x, ident=%d, race_ident=%d",
             //           client, playerHandle, playerData, player_ident, race_ident);
 
-            if (GetPlayerHandle(client) == playerHandle)
+            if (playerHandle == GetPlayerHandle(client))
                 SetSavedXP(playerHandle,raceId,xp);
 
             SavePlayerUpgrades(client, playerData, player_ident, raceId, race_ident, raceHandle, true,last_race);
