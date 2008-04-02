@@ -169,22 +169,12 @@ public OnPluginEnd()
 
 public OnMapStart()
 {
-    //LogMessage("OnMapStart()");
     g_MapChanging = false;
     SetupSound(notEnoughWav,true,true);
 }
 
 public OnMapEnd()
 {
-    //LogMessage("OnMapEnd(), g_MapChanging=%d", g_MapChanging);
-
-    if (DBIDB && SAVE_ENABLED)
-    {
-        // Wait for all threaded DB transactions to complete!
-        SQL_LockDatabase(DBIDB);
-        SQL_UnlockDatabase(DBIDB);
-    }
-
     ClearPlayerArray();
     g_MapChanging = false;
 }
@@ -193,7 +183,6 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        //LogMessage("OnClientPutInServer(%N)", client);
         m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
         new Handle:playerHandle=CreatePlayer(client);
