@@ -88,6 +88,7 @@ DoLevelCheck(client,Handle:playerHandle)
                 else
                 {
                     m_Go=false;
+                    /*
                     if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                     {
                         new savedXP = GetSavedXP(playerHandle, race);
@@ -97,6 +98,7 @@ DoLevelCheck(client,Handle:playerHandle)
                             SavePlayerData(client,playerHandle,false);
                         }
                     }
+                    */
                 }
             }
             else
