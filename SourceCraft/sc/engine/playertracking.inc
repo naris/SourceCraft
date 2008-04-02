@@ -63,6 +63,9 @@ new bool:m_SpeedAltered[MAXPLAYERS+1];
 new bool:m_GravityAltered[MAXPLAYERS+1];
 new bool:m_VisibilityAltered[MAXPLAYERS+1];
 
+// Function called from db.inc
+SavePlayer(Handle:playerHandle);
+
 Handle:CreatePlayer(client)
 {
     new Handle:newPlayer=CreateArray();
@@ -253,6 +256,7 @@ SetRace(Handle:playerHandle,race)
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
     if (race != oldrace)
     {
+        SavePlayer(Handle:playerHandle);
         SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         SetArrayCell(playerHandle,INFO_RACE,race);
         Call_StartForward(g_OnRaceSelectedHandle);
