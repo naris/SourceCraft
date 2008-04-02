@@ -28,8 +28,8 @@
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
 #define RACEINFO_ACTIVE_ULTIMATE        2
-#define RACEINFO_UPGRADES               3
-#define RACEINFO_SAVED_XP               4
+#define RACEINFO_SAVED_XP               3
+#define RACEINFO_UPGRADES               4
 
 #define TRACKING_PLUGIN_HANDLE          0
 #define TRACKING_OVERRIDE_SPEED         1
