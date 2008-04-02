@@ -92,7 +92,10 @@ DoLevelCheck(client,Handle:playerHandle)
                     {
                         new savedXP = GetSavedXP(playerHandle, race);
                         if (savedXP > curXP || curXP - savedXP > 1000)
+                        {
+                            SetSavedXP(playerHandle,race,curXP);
                             SavePlayerData(client,playerHandle,false);
+                        }
                     }
                 }
             }

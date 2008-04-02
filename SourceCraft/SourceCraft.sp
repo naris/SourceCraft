@@ -175,7 +175,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-    ClearPlayerArray();
+    //ClearPlayerArray();
     g_MapChanging = false;
 }
 
