@@ -425,7 +425,9 @@ ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
 {
     while (SQL_FetchRow(hndl))
     {
-        SetUpgradeLevel(playerHandle,raceId, SQL_FetchInt(hndl,0), SQL_FetchInt(hndl,1));
+        LoadUpgradeLevel(playerHandle, raceId,
+                         SQL_FetchInt(hndl,0),
+                         SQL_FetchInt(hndl,1));
     }
 }
 
@@ -486,8 +488,6 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 
             if (threaded)
             {
-                SetDatabaseSaved(playerHandle,1);
-
                 // When threading, copy the data first so it can't
                 // get freed while we are using it!
                 new Handle:playerData;
@@ -509,6 +509,16 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 WritePackCell(dataPack, player_ident);
                 ResetPack(dataPack);
                 SQL_TQuery(DBIDB, SQL_UpdatePlayer, SQLString, dataPack);
+
+                // Assume save will work and mark playerHandle data saved.
+                new raceId = GetRace(playerHandle);
+                new upgradeCount = GetUpgradeCount(raceHandle);
+                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                {
+                    new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
+                    SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                }
+                SetDatabaseSaved(playerHandle,1);
                 return false;
             }
             else
@@ -521,8 +531,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
-                    SetDatabaseSaved(playerHandle,1);
                     SavePlayerRaceData(client, playerHandle, player_ident, threaded);
+                    SetDatabaseSaved(playerHandle,1);
                 }
                 else
                 {
@@ -562,7 +572,6 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                     {
                         player_ident = SQL_FetchInt(player_query,0);
                         SetDatabaseIdent(playerHandle,player_ident);
-                        SetDatabaseSaved(playerHandle,1);
                         CloseHandle(player_query);
 
                         if (threaded)
@@ -580,10 +589,23 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                             SQL_UnlockDatabase(DBIDB);
 
                             SavePlayerRaceData(client, playerData, player_ident,threaded);
+
+                            // Assume save will work and mark playerHandle data saved.
+                            new raceId = GetRace(playerHandle);
+                            new upgradeCount = GetUpgradeCount(raceHandle);
+                            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                            {
+                                new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
+                                SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                            }
+                            SetDatabaseSaved(playerHandle,1);
                             return !disconnected;
                         }
                         else
+                        {
                             SavePlayerRaceData(client, playerHandle, player_ident,threaded);
+                            SetDatabaseSaved(playerHandle,1);
+                        }
                     }
                     else
                     {
@@ -780,47 +802,62 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
                    bool:threaded)
 {
     decl String:SQLString[512] = "";
-    new upgradeCount = GetUpgradeCount(raceHandle);
-    new lastUpgrade  = upgradeCount - 1;
+    new bool:dataWritten = false;
+    new upgradeCount     = GetUpgradeCount(raceHandle);
+    new lastUpgrade      = upgradeCount - 1;
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
+        new bool:last_upgrade = (upgrade == lastUpgrade);
         new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
 
-        if (DBIsSQLite)
+        if (upgradeLevel != GetSavedUpgradeLevel(playerHandle,raceId,upgrade) ||
+            (threaded && last_upgrade && dataWritten))
         {
-            Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_upgrades (player_ident,race,upgrade,upgrade_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, upgrade, upgradeLevel);
-        }
-        else
-        {
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_upgrades (player_ident,race_ident,upgrade,upgrade_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE upgrade_level=%d", player_ident, race_ident, upgrade, upgradeLevel, upgradeLevel);
-        }
-
-        if (threaded)
-        {
-            new Handle:dataPack = CreateDataPack();
-            WritePackCell(dataPack, client);
-            WritePackCell(dataPack, _:playerHandle);
-            WritePackCell(dataPack, _:(upgrade == lastUpgrade));
-            ResetPack(dataPack);
-
-            //LogMessage("Starting thread to process player #%d (%x) upgrade %d of %d, SQL:%s",
-            //           client, playerHandle, upgrade, lastUpgrade, SQLString);
-
-            SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, dataPack);
-        }
-        else
-        {
-            //LogMessage("Processing player #%d (%x) upgrade %d of %d, SQL:%s",
-            //           client, playerHandle, upgrade, lastUpgrade, SQLString);
-
-            if (!SQL_FastQuery(DBIDB,SQLString))
+            dataWritten = true;
+            if (DBIsSQLite)
             {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to insert/replace upgrade data, client=%d, handle=%x : %s\nSQL:%s",
-                         client, playerHandle, error, SQLString);
+                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_upgrades (player_ident,race,upgrade,upgrade_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, upgrade, upgradeLevel);
+            }
+            else
+            {
+                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_upgrades (player_ident,race_ident,upgrade,upgrade_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE upgrade_level=%d", player_ident, race_ident, upgrade, upgradeLevel, upgradeLevel);
+            }
+
+            if (threaded)
+            {
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, client);
+                WritePackCell(dataPack, _:playerHandle);
+                WritePackCell(dataPack, _:last_upgrade);
+                ResetPack(dataPack);
+
+                //LogMessage("Starting thread to process player #%d (%x) upgrade %d of %d, SQL:%s",
+                //           client, playerHandle, upgrade, lastUpgrade, SQLString);
+
+                SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, dataPack);
+            }
+            else
+            {
+                //LogMessage("Processing player #%d (%x) upgrade %d of %d, SQL:%s",
+                //           client, playerHandle, upgrade, lastUpgrade, SQLString);
+
+                if (SQL_FastQuery(DBIDB,SQLString))
+                    SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to insert/replace upgrade data, client=%d, handle=%x : %s\nSQL:%s",
+                             client, playerHandle, error, SQLString);
+                }
             }
         }
+    }
+
+    if (threaded && !dataWritten)
+    {
+        //LogMessage("No Upgrades updated, Thread-Clearing Player #%d (%x)", client, playerHandle);
+        ClearPlayer(playerHandle);
     }
 }
 
