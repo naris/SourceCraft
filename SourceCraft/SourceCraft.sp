@@ -195,7 +195,7 @@ public OnClientPutInServer(client)
             Call_Finish(res);
 
             if(DBIDB && SAVE_ENABLED)
-                m_FirstSpawn[client]=LoadPlayerData(client,playerHandle,false);
+                m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
             else
                 m_FirstSpawn[client]=2;
 

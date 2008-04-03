@@ -268,11 +268,20 @@ SetRace(Handle:playerHandle,race)
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
     if (race != oldrace)
     {
-        SavePlayer(Handle:playerHandle);
+        SavePlayer(playerHandle);
         SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
         SetArrayCell(playerHandle,INFO_RACE,race);
+
+        new client = GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
+
+        if (GetLevel(playerHandle,race) < 0 ||
+            GetXP(playerHandle,race) < 0)
+        {
+            LoadPlayerRaceData(client, playerHandle, race);
+        }
+
         Call_StartForward(g_OnRaceSelectedHandle);
-        Call_PushCell(GetArrayCell(playerHandle,INFO_CLIENT_INDEX));
+        Call_PushCell(client);
         Call_PushCell(playerHandle);
         Call_PushCell(oldrace);
         Call_PushCell(race);

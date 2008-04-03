@@ -245,7 +245,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
     return race_ident;
 }
 
-LoadPlayerData(client,Handle:playerHandle, bool:threaded)
+LoadPlayerData(client,Handle:playerHandle)
 {
     new bool:fetch=false;
     //LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
@@ -272,54 +272,28 @@ LoadPlayerData(client,Handle:playerHandle, bool:threaded)
                     SetDatabaseIdent(playerHandle,player_ident);
                     SetDatabaseSaved(playerHandle,1);
 
+                    SetCredits(playerHandle,SQL_FetchInt(query,2));
+                    SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
+
+                    // Mark all race info as not loaded
+                    new raceCount = GetRaceCount();
+                    for(new raceId=0;raceId<raceCount;raceId++)
+                    {
+                        SetXP(playerHandle,raceId,-1);
+                        SetLevel(playerHandle,raceId,-1);
+                    }
+
+                    // Load the current Race.
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
                     if (raceId >= 0)
                         SetRace(playerHandle,raceId);
-
-                    SetCredits(playerHandle,SQL_FetchInt(query,2));
-                    SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
-
-                    CloseHandle(query);
-
-                    Format(SQLString,sizeof(SQLString), "SELECT race_ident, xp, level FROM sc_player_races WHERE player_ident = %d", player_ident);
-
-                    if (threaded)
-                    {
-                        SQL_UnlockDatabase(DBIDB);
-
-                        new Handle:dataPack = CreateDataPack();
-                        WritePackCell(dataPack, client);
-                        WritePackCell(dataPack, _:playerHandle);
-                        WritePackCell(dataPack, player_ident);
-                        ResetPack(dataPack);
-                        SQL_TQuery(DBIDB, SQL_LoadRaces, SQLString, dataPack);
-                    }
                     else
-                    {
-                        new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
-                        if(raceQuery)
-                        {
-                            if (SQL_HasResultSet(raceQuery))
-                                ReadPlayerRaces(raceQuery, client, playerHandle, player_ident, threaded);
-                        }
-                        else
-                        {
-                            decl String:error[256] = "";
-                            SQL_GetError(DBIDB, error, sizeof(error));
-                            LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
-                                     client, steamid, error, SQLString);
-                        }
-                        CloseHandle(raceQuery);
+                        raceId = GetRace(playerHandle);
 
-                        SQL_UnlockDatabase(DBIDB);
-                    }
+                    LoadPlayerRaceData(client, playerHandle, raceId);
                 }
-                else
-                {
-                    CloseHandle(query);
-                    SQL_UnlockDatabase(DBIDB);
-                }
+                CloseHandle(query);
             }
             else
             {
@@ -327,9 +301,8 @@ LoadPlayerData(client,Handle:playerHandle, bool:threaded)
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
                          client, steamid, error, SQLString);
-
-                SQL_UnlockDatabase(DBIDB);
             }
+            SQL_UnlockDatabase(DBIDB);
         }
         else
             LogError("Unable to obtain steamid when loading %N!", client);
@@ -339,95 +312,63 @@ LoadPlayerData(client,Handle:playerHandle, bool:threaded)
     return (fetch) ? 1 : 2;
 }
 
-public SQL_LoadRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-    if (data == INVALID_HANDLE)
-        LogError("Invalid Datapack Passed to SQL_LoadRaces!");
-    else 
-    {
-        new client = ReadPackCell(data); 
-        new Handle:playerHandle = Handle:ReadPackCell(data); 
-        new player_ident = ReadPackCell(data);
-        CloseHandle(data);
-
-        if (hndl == INVALID_HANDLE || error[0] != '\0')
-            LogError("Unable to query %N's race data: %s", client, error);
-        else if (SQL_HasResultSet(hndl))
-            ReadPlayerRaces(hndl, client, playerHandle, player_ident, true);
-    }
-}
-
-ReadPlayerRaces(Handle:hndl, client, Handle:playerHandle, player_ident, bool:threaded)
+LoadPlayerRaceData(client, Handle:playerHandle, raceId)
 {
     decl String:SQLString[512] = "";
 
-    while (SQL_FetchRow(hndl))
+    new player_ident      = GetDatabaseIdent(playerHandle);
+    new Handle:raceHandle = GetRaceHandle(raceId);
+    new race_ident        = GetRaceIdent(raceHandle);
+
+    Format(SQLString,sizeof(SQLString), "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d", player_ident, race_ident);
+
+    new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
+    if (raceQuery)
     {
-        new race_ident = SQL_FetchInt(hndl,0);
-        new raceId = FindRaceForIdent(race_ident);
-
-        if (raceId >= 0)
+        if (SQL_HasResultSet(raceQuery) && SQL_FetchRow(raceQuery))
         {
-            SetXP(playerHandle,raceId,SQL_FetchInt(hndl,1));
-            SetLevel(playerHandle,raceId,SQL_FetchInt(hndl,2));
+            SetXP(playerHandle,raceId,SQL_FetchInt(raceQuery,0));
+            SetLevel(playerHandle,raceId,SQL_FetchInt(raceQuery,1));
 
-            Format(SQLString,sizeof(SQLString), "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d and race_ident = %d", player_ident,race_ident);
+            Format(SQLString,sizeof(SQLString), "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d", player_ident,race_ident);
 
-            if (threaded)
+            new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
+            if (upgradeQuery)
             {
-                new Handle:dataPack = CreateDataPack();
-                WritePackCell(dataPack, client);
-                WritePackCell(dataPack, _:playerHandle);
-                WritePackCell(dataPack, raceId);
-                ResetPack(dataPack);
-                SQL_TQuery(DBIDB, SQL_LoadUpgrades, SQLString, dataPack);
-            }
-            else
-            {
-                new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
-                if(upgradeQuery)
+                if (SQL_HasResultSet(upgradeQuery))
                 {
-                    if (SQL_HasResultSet(upgradeQuery))
-                        ReadPlayerUpgrades(upgradeQuery, playerHandle, raceId);
-                }
-                else
-                {
-                    decl String:error[256] = "";
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to query %N's player data: %s\nSQL:%s",
-                             client, error, SQLString);
+                    while (SQL_FetchRow(upgradeQuery))
+                    {
+                        LoadUpgradeLevel(playerHandle, raceId,
+                                         SQL_FetchInt(upgradeQuery,0),
+                                         SQL_FetchInt(upgradeQuery,1));
+                    }
                 }
                 CloseHandle(upgradeQuery);
             }
+            else
+            {
+                decl String:error[256] = "";
+                SQL_GetError(DBIDB, error, sizeof(error));
+                LogError("Unable to query %N's player data: %s\nSQL:%s",
+                         client, error, SQLString);
+            }
         }
+        else
+        {
+            SetXP(playerHandle,raceId,0);
+            SetLevel(playerHandle,raceId,0);
+        }
+        CloseHandle(raceQuery);
     }
-}
-
-public SQL_LoadUpgrades(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-    if (data == INVALID_HANDLE)
-        LogError("Invalid Datapack Passed to SQL_LoadUpgrades!");
-    else 
+    else
     {
-        new client = ReadPackCell(data); 
-        new Handle:playerHandle = Handle:ReadPackCell(data); 
-        new raceId = ReadPackCell(data);
-        CloseHandle(data);
-
-        if (hndl == INVALID_HANDLE || error[0] != '\0')
-            LogError("Unable to query %N's upgrade data: %s", client, error);
-        else if (SQL_HasResultSet(hndl))
-            ReadPlayerUpgrades(hndl, playerHandle, raceId);
-    }
-}
-
-ReadPlayerUpgrades(Handle:hndl, Handle:playerHandle, raceId)
-{
-    while (SQL_FetchRow(hndl))
-    {
-        LoadUpgradeLevel(playerHandle, raceId,
-                         SQL_FetchInt(hndl,0),
-                         SQL_FetchInt(hndl,1));
+        decl String:error[256] = "";
+        SetXP(playerHandle,raceId,0);
+        SetLevel(playerHandle,raceId,0);
+        SQL_GetError(DBIDB, error, sizeof(error));
+        LogError("Unable to query %N's race data: %s\nSQL:%s",
+                 client, error, SQLString);
     }
 }
 
