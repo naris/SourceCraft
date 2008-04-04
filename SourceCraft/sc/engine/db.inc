@@ -248,7 +248,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
 LoadPlayerData(client,Handle:playerHandle)
 {
     new bool:fetch=false;
-    //LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
+    LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
     if(DBIDB)
     {
         decl String:steamid[64] = "";
@@ -258,10 +258,15 @@ LoadPlayerData(client,Handle:playerHandle)
 
             // Process this query in the main thread (NOT a worker thread)
             // since we have to return the result to the caller!
+            LogMessage("Lock Database");
             SQL_LockDatabase(DBIDB);
 
-            Format(SQLString,sizeof(SQLString), "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'", steamid);
+            Format(SQLString,sizeof(SQLString),
+                   "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'",
+                   steamid);
 
+            LogMessage("Processing  %N #%d (%x) SQL:%s",
+                       client, client, playerHandle, SQLString);
             new Handle:query=SQL_Query(DBIDB,SQLString);
             if(query)
             {
@@ -286,19 +291,23 @@ LoadPlayerData(client,Handle:playerHandle)
                     // Load the current Race.
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
+
+                    CloseHandle(query);
+                    LogMessage("Unlock Database");
+                    SQL_UnlockDatabase(DBIDB);
+
                     if (raceId >= 0)
                         SetRace(playerHandle,raceId);
                     else
+                    {
                         raceId = GetRace(playerHandle);
-
-                    CloseHandle(query);
-                    SQL_UnlockDatabase(DBIDB);
-
-                    LoadPlayerRaceData(client, playerHandle, raceId);
+                        //LoadPlayerRaceData(client, playerHandle, raceId);
+                    }
                 }
                 else
                 {
                     CloseHandle(query);
+                    LogMessage("Unlock Database");
                     SQL_UnlockDatabase(DBIDB);
                 }
             }
@@ -309,6 +318,7 @@ LoadPlayerData(client,Handle:playerHandle)
                 LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
                          client, steamid, error, SQLString);
 
+                LogMessage("Unlock Database");
                 SQL_UnlockDatabase(DBIDB);
             }
         }
@@ -324,65 +334,80 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
 {
     decl String:SQLString[512] = "";
 
-    new player_ident      = GetDatabaseIdent(playerHandle);
-    new Handle:raceHandle = GetRaceHandle(raceId);
-    new race_ident        = GetRaceIdent(raceHandle);
+    LogMessage("LoadPlayerRaceData(%N), DBIDB=%d", client, DBIDB);
 
-    // Process this query in the main thread (NOT a worker thread)
-    SQL_LockDatabase(DBIDB);
-
-    Format(SQLString,sizeof(SQLString), "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d", player_ident, race_ident);
-
-    new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
-    if (raceQuery)
+    if(DBIDB)
     {
-        if (SQL_HasResultSet(raceQuery) && SQL_FetchRow(raceQuery))
+        new player_ident      = GetDatabaseIdent(playerHandle);
+        new Handle:raceHandle = GetRaceHandle(raceId);
+        new race_ident        = GetRaceIdent(raceHandle);
+
+        // Process this query in the main thread (NOT a worker thread)
+        LogMessage("Lock Database");
+        SQL_LockDatabase(DBIDB);
+
+        Format(SQLString,sizeof(SQLString),
+               "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d",
+               player_ident, race_ident);
+
+        LogMessage("Processing  %N #%d (%x) SQL:%s",
+                   client, client, playerHandle, SQLString);
+        new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
+        if (raceQuery)
         {
-            SetXP(playerHandle,raceId,SQL_FetchInt(raceQuery,0));
-            SetLevel(playerHandle,raceId,SQL_FetchInt(raceQuery,1));
-
-            Format(SQLString,sizeof(SQLString), "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d", player_ident,race_ident);
-
-            new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
-            if (upgradeQuery)
+            if (SQL_HasResultSet(raceQuery) && SQL_FetchRow(raceQuery))
             {
-                if (SQL_HasResultSet(upgradeQuery))
+                SetXP(playerHandle,raceId,SQL_FetchInt(raceQuery,0));
+                SetLevel(playerHandle,raceId,SQL_FetchInt(raceQuery,1));
+
+                Format(SQLString,sizeof(SQLString),
+                       "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d",
+                       player_ident,race_ident);
+
+                LogMessage("Processing  %N #%d (%x) SQL:%s",
+                           client, client, playerHandle, SQLString);
+                new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
+                if (upgradeQuery)
                 {
-                    while (SQL_FetchRow(upgradeQuery))
+                    if (SQL_HasResultSet(upgradeQuery))
                     {
-                        LoadUpgradeLevel(playerHandle, raceId,
-                                         SQL_FetchInt(upgradeQuery,0),
-                                         SQL_FetchInt(upgradeQuery,1));
+                        while (SQL_FetchRow(upgradeQuery))
+                        {
+                            LoadUpgradeLevel(playerHandle, raceId,
+                                             SQL_FetchInt(upgradeQuery,0),
+                                             SQL_FetchInt(upgradeQuery,1));
+                        }
                     }
+                    CloseHandle(upgradeQuery);
                 }
-                CloseHandle(upgradeQuery);
+                else
+                {
+                    decl String:error[256] = "";
+                    SQL_GetError(DBIDB, error, sizeof(error));
+                    LogError("Unable to query %N's player data: %s\nSQL:%s",
+                             client, error, SQLString);
+                }
             }
             else
             {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query %N's player data: %s\nSQL:%s",
-                         client, error, SQLString);
+                SetXP(playerHandle,raceId,0);
+                SetLevel(playerHandle,raceId,0);
             }
+            CloseHandle(raceQuery);
         }
         else
         {
+            decl String:error[256] = "";
             SetXP(playerHandle,raceId,0);
             SetLevel(playerHandle,raceId,0);
+            SQL_GetError(DBIDB, error, sizeof(error));
+            LogError("Unable to query %N's race data: %s\nSQL:%s",
+                    client, error, SQLString);
         }
-        CloseHandle(raceQuery);
-    }
-    else
-    {
-        decl String:error[256] = "";
-        SetXP(playerHandle,raceId,0);
-        SetLevel(playerHandle,raceId,0);
-        SQL_GetError(DBIDB, error, sizeof(error));
-        LogError("Unable to query %N's race data: %s\nSQL:%s",
-                 client, error, SQLString);
-    }
 
-    SQL_UnlockDatabase(DBIDB);
+        LogMessage("Unlock Database");
+        SQL_UnlockDatabase(DBIDB);
+    }
 }
 
 stock SaveAllPlayersData()
