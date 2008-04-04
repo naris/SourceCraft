@@ -313,8 +313,10 @@ public Fart(Handle:player,client,ultlevel)
     maxLoc[2] = clientLoc[2] + 256.0;
 
     TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, 256.0,50,2.0);
+    TE_SendToAll();
 
-    //TE_SetupBubbleTrail(clientLoc, maxLoc,g_bubbleModel,0.0,20,8.0);
+    TE_SetupBubbleTrail(clientLoc, maxLoc,g_bubbleModel,0.0,20,8.0);
+    TE_SendToAll();
 
     TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
     TE_SendToAll();
@@ -377,7 +379,7 @@ public Fart(Handle:player,client,ultlevel)
             }
         }
     }
-    new Float:cooldown = GetConVarFloat(cvarFartCooldown);
+    new Float:cooldown = 0.0; //GetConVarFloat(cvarFartCooldown);
 
     if (count)
     {
