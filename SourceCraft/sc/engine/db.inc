@@ -297,7 +297,10 @@ LoadPlayerData(client,Handle:playerHandle)
                     SQL_UnlockDatabase(DBIDB);
 
                     if (raceId >= 0)
-                        SetRace(playerHandle,raceId);
+                    {
+                        if (!SetRace(playerHandle,raceId))
+                            LoadPlayerRaceData(client, playerHandle, raceId);
+                    }
                     else
                         raceId = GetRace(playerHandle);
                 }

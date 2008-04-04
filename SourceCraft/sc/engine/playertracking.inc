@@ -263,7 +263,7 @@ GetRace(Handle:playerHandle)
     return GetArrayCell(playerHandle,INFO_RACE);
 }
 
-SetRace(Handle:playerHandle,race)
+bool:SetRace(Handle:playerHandle,race)
 {
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
     if (race != oldrace)
@@ -287,7 +287,9 @@ SetRace(Handle:playerHandle,race)
         Call_PushCell(race);
         new result;
         Call_Finish(result);
+        return true;
     }
+    return false;
 }
 
 GetPendingRace(Handle:playerHandle)
