@@ -150,7 +150,7 @@ syntax match	cCommentStartError display "/\*"me=e-1 contained
 
 syn keyword	cOperator	sizeof tagof state defined char
 
-syn keyword	cTag 		any bool Fixed Float String Function
+syn keyword	cTag 		any bool Fixed Float String Function functag funcenum
 
 syn keyword	cStructure	enum
 syn keyword	cStorageClass	static const stock native forward
@@ -174,6 +174,14 @@ syn keyword 	cConstant 	AdminFlags_TOTAL INVALID_GROUP_ID INVALID_ADMIN_ID
 syn keyword 	cConstant 	Override_Command Override_CommandGroup Command_Deny Command_Allow Immunity_Default Immunity_Global
 syn keyword 	cConstant 	Access_Real Access_Effective AdminCache_Overrides AdminCache_Groups AdminCache_Admins
 "
+" commandfilters.inc
+" ------
+syn keyword 	cConstant 	MAX_TARGET_LENGTH COMMAND_FILTER_ALIVE COMMAND_FILTER_DEAD COMMAND_FILTER_CONNECTED
+syn keyword 	cConstant 	COMMAND_FILTER_NO_IMMUNITY COMMAND_FILTER_NO_MULTI COMMAND_FILTER_NO_BOTS
+syn keyword 	cConstant 	COMMAND_TARGET_NONE COMMAND_TARGET_NOT_ALIVE COMMAND_TARGET_NOT_DEAD
+syn keyword 	cConstant 	COMMAND_TARGET_NOT_IN_GAME COMMAND_TARGET_IMMUNE COMMAND_TARGET_EMPTY_FILTER
+syn keyword 	cConstant 	COMMAND_TARGET_NOT_HUMAN COMMAND_TARGET_AMBIGUOUS
+"
 " console.inc
 " ------
 syn keyword 	cConstant 	FCVAR_NONE FCVAR_UNREGISTERED FCVAR_LAUNCHER FCVAR_GAMEDLL FCVAR_CLIENTDLL FCVAR_MATERIAL_SYSTEM
@@ -181,11 +189,23 @@ syn keyword 	cConstant 	FCVAR_PROTECTED FCVAR_SPONLY FCVAR_ARCHIVE FCVAR_NOTIFY 
 syn keyword 	cConstant 	FCVAR_UNLOGGED FCVAR_NEVER_AS_STRING FCVAR_REPLICATED FCVAR_CHEAT FCVAR_STUDIORENDER FCVAR_DEMO
 syn keyword 	cConstant 	FCVAR_DONTRECORD FCVAR_PLUGIN FCVAR_DATACACHE FCVAR_TOOLSYSTEM FCVAR_FILESYSTEM FCVAR_NOT_CONNECTED
 syn keyword 	cConstant 	FCVAR_SOUNDSYSTEM FCVAR_ARCHIVE_XBOX FCVAR_INPUTSYSTEM FCVAR_NETWORKSYSTEM FCVAR_VPHYSICS
+syn keyword 	cConstant 	INVALID_FCVAR_FLAGS QUERYCOOKIE_FAILED SM_REPLY_TO_CONSOLE SM_REPLY_TO_CHAT
+syn keyword 	cConstant 	ConVarBound_Upper ConVarBound_Lower ConVarQuery_Okay ConVarQuery_NotFound
+syn keyword 	cConstant 	ConVarQuery_NotValid ConVarQuery_Protected
 "
 " core.inc
 " ------
-syn keyword 	cConstant 	__version Plugin_Continue Plugin_Handled Plugin_Stop
+syn keyword 	cConstant 	__version Plugin_Continue Plugin_Handled Plugin_Stop Plugin_Changed
+syn keyword 	cConstant 	Plugin_Running Plugin_Paused Plugin_Error Plugin_Loaded Plugin_Failed
+syn keyword 	cConstant 	Plugin_Created Plugin_Uncompiled Plugin_BadLoad PlInfo_Name PlInfo_Author
+syn keyword 	cConstant 	PlInfo_Description PlInfo_Version PlInfo_URL Identity_Core Identity_Extension Identity_Plugin
+syn keyword 	cConstant 	NULL_VECTOR NULL_STRING INVALID_FUNCTION SOURCEMOD_VERSION SOURCEMOD_PLUGINAPI_VERSION
 "
+" cstrike.inc
+" ------
+"
+syn keyword 	cConstant	CS_TEAM_NONE CS_TEAM_SPECTATOR CS_TEAM_T CS_TEAM_CT CS_SLOT_PRIMARY	
+syn keyword 	cConstant	CS_SLOT_SECONDARY CS_SLOT_GRENADE CS_SLOT_C4
 " files.inc
 " ------
 syn keyword 	cConstant 	FileType_Unknown FileType_Directory FileType_File
@@ -202,6 +222,17 @@ syn keyword 	cConstant 	INVALID_HANDLE
 " sourcemod.inc
 " ------
 syn keyword 	cConstant 	myinfo
+syn keyword 	cConstant 	MAPLIST_FLAG_MAPSFOLDER MAPLIST_FLAG_CLEARARRAY MAPLIST_FLAG_NO_DEFAULT
+"
+" client.inc
+" ------
+syn keyword 	cConstant 	NetFlow_Outgoing NetFlow_Incoming NetFlow_Both
+syn keyword 	cConstant 	MAXPLAYERS MAX_NAME_LENGTH
+"
+" dbi.inc
+" ------
+syn keyword 	cConstant 	DBVal_Error DBVal_TypeMismatch DBVal_Null DBVal_Data DBBind_Int
+syn keyword 	cConstant 	DBBind_Float DBBind_String DBPrio_High DBPrio_Normal DBPrio_Low
 "
 " textparse.inc
 " ------
@@ -222,17 +253,90 @@ syn keyword 	cFunction 	GetAdmGroupCmdOverride RegisterAuthIdentType CreateAdmin
 syn keyword 	cFunction 	SetAdminFlag GetAdminFlag GetAdminFlags AdminInheritGroup GetAdminGroupCount GetAdminGroup
 syn keyword 	cFunction 	SetAdminPassword GetAdminPassword FindAdminByIdentity RemoveAdmin FlagBitsToBitArray FlagBitArrayToBits
 syn keyword 	cFunction 	FlagArrayToBits FlagBitsToArray FlagToBit BitToFlag
+syn keyword 	cFunction 	FindFlagByName FindFlagByChar ReadFlagString CanAdminTarget
+syn keyword 	cFunction 	CreateAuthMethod SetAdmGroupImmunityLevel GetAdmGroupImmunityLevel
+syn keyword 	cFunction 	SetAdminImmunityLevel GetAdminImmunityLevel
+"
+" adminmenu.inc
+" ------
+syn keyword 	cFunction 	GetAdminTopMenu AddTargetsToMenu AddTargetsToMenu2 RedisplayAdminMenu
+"
+" adt_array.inc
+" ------
+syn keyword 	cFunction 	ByteCountToCells CreateArray ClearArray CloneArray ResizeArray GetArraySize
+syn keyword 	cFunction 	PushArrayCell PushArrayString PushArrayArray GetArrayCell GetArrayString
+syn keyword 	cFunction 	GetArrayArray SetArrayCell SetArrayString SetArrayArray ShiftArrayUp
+syn keyword 	cFunction 	RemoveFromArray SwapArrayItems FindStringInArray FindValueInArray
+"
+" adt_trie.inc
+" ------
+syn keyword 	cFunction 	CreateTrie SetTrieValue SetTrieArray SetTrieString GetTrieValue
+syn keyword 	cFunction 	GetTrieArray GetTrieString RemoveFromTrie ClearTrie GetTrieSize
+"
+" banning.inc
+" ------
+syn keyword 	cFunction 	BanClient BanIdentity RemoveBan
+"
+" bitbuffer.inc
+" ------
+syn keyword 	cFunction 	BfWriteBool BfWriteByte BfWriteChar BfWriteShort BfWriteWord BfWriteNum
+syn keyword 	cFunction 	BfWriteFloat BfWriteString BfWriteEntity BfWriteAngle BfWriteCoord BfWriteVecCoord
+syn keyword 	cFunction 	BfWriteVecNormal BfWriteAngles BfGetNumBytesLeft
+syn keyword 	cFunction 	BfReadBool BfReadByte BfReadChar BfReadShort BfReadWord BfReadNum
+syn keyword 	cFunction 	BfReadFloat BfReadString BfReadEntity BfReadAngle BfReadCoord BfReadVecCoord
+syn keyword 	cFunction 	BfReadVecNormal BfReadAngles
+"
+" client.inc
+" ------
+syn keyword 	cFunction 	GetMaxClients GetClientCount GetClientName GetClientIP GetClientAuthString GetClientUserId
+syn keyword 	cFunction 	GetUserAdmin AddUserFlags RemoveUserFlags SetUserFlagBits GetUserFlagBits
+syn keyword 	cFunction 	IsClientConnected IsClientInGame IsClientAuthorized IsFakeClient GetClientInfo SetUserAdmin
+syn keyword 	cFunction 	IsClientInKickQueue IsClientObserver IsPlayerAlive GetClientTeam
+syn keyword 	cFunction 	CanUserTarget RunAdminCacheChecks NotifyPostAdminCheck CreateFakeClient
+syn keyword 	cFunction 	SetFakeClientConVar GetClientHealth GetClientModel GetClientWeapon
+syn keyword 	cFunction 	GetClientMaxs GetClientMins GetClientAbsAngles GetClientAbsOrigin
+syn keyword 	cFunction 	GetClientArmor GetClientDeaths GetClientFrags GetClientDataRate
+syn keyword 	cFunction 	IsClientTimingOut GetClientTime GetClientLatency GetClientAvgLatency
+syn keyword 	cFunction 	GetClientAvgLoss GetClientAvgChoke GetClientAvgData GetClientAvgPackets
+syn keyword 	cFunction 	GetClientOfUserId KickClient ChangeClientTeam
+"
+" commandfilters.inc
+" ------
+syn keyword 	cFunction 	ProcessTargetString ReplyToTargetError
 "
 " console.inc
 " ------
 syn keyword 	cFunction 	PrintToServer PrintToConsole CreateConVar FindConVar HookConVarChange UnhookConVarChange GetConVarBool
 syn keyword 	cFunction 	SetConVarBool GetConVarInt SetConVarInt GetConVarFloat SetConVarFloat GetConVarString SetConVarString
 syn keyword 	cFunction 	GetConVarFlags SetConVarFlags GetConVarName GetConVarMin GetConVarMax ResetConVar
+syn keyword 	cFunction 	ServerCommand InsertServerCommand ServerExecute ClientCommand
+syn keyword 	cFunction 	FakeClientCommand FakeClientCommandEx ReplyToCommand GetCmdReplySource
+syn keyword 	cFunction 	SetCmdReplySource IsChatTrigger ShowActivity ShowActivity2 ShowActivityEx
+syn keyword 	cFunction 	RegServerCmd RegConsoleCmd RegAdminCmd GetCmdArgs GetCmdArg GetCmdArgString
+syn keyword 	cFunction 	GetConVarBounds SetConVarBounds QueryClientConVar GetCommandIterator
+syn keyword 	cFunction 	ReadCommandIterator CheckCommandAccess IsValidConVarChar GetCommandFlags
+syn keyword 	cFunction 	SetCommandFlags FindFirstConCommand FindNextConCommand SendConVarValue
+"
+" cstrike.inc
+" ------
+syn keyword 	cFunction 	CS_RespawnPlayer CS_SwitchTeam
 "
 " datapack.inc
 " ------
 syn keyword 	cFunction 	CreateDataPack WritePackCell WritePackFloat WritePackString ReadPackCell ReadPackFloat ReadPackString
 syn keyword 	cFunction 	ResetPack GetPackPosition SetPackPosition IsPackReadable
+"
+" dbi.inc
+" ------
+syn keyword 	cFunction 	SQL_Connect SQL_DefConnect SQL_ConnectEx SQL_CheckConfig SQL_GetDriver
+syn keyword 	cFunction 	SQL_ReadDriver SQL_GetDriverIdent SQL_GetDriverProduct SQL_GetAffectedRows
+syn keyword 	cFunction 	SQL_GetInsertId SQL_GetError SQL_EscapeString SQL_QuoteString
+syn keyword 	cFunction 	SQL_FastQuery SQL_Query SQL_PrepareQuery SQL_FetchMoreResults
+syn keyword 	cFunction 	SQL_HasResultSet SQL_GetRowCount SQL_GetFieldCount SQL_FieldNumToName
+syn keyword 	cFunction 	SQL_FieldNameToNum SQL_FetchRow SQL_MoreRows SQL_Rewind SQL_FetchString
+syn keyword 	cFunction 	SQL_FetchFloat SQL_FetchInt SQL_IsFieldNull SQL_FetchSize SQL_BindParamInt
+syn keyword 	cFunction 	SQL_BindParamFloat SQL_BindParamString SQL_Execute SQL_LockDatabase
+syn keyword 	cFunction 	SQL_UnlockDatabase SQL_IsSameConnection SQL_TConnect SQL_TQuery
 "
 " files.inc
 " ------
@@ -262,10 +366,15 @@ syn keyword 	cFunction 	LoadTranslations
 "
 " sourcemod.inc
 " ------
-syn keyword 	cFunction 	GetMaxClients GetClientCount GetClientName GetClientIP GetClientAuthString GetClientUserId
-syn keyword 	cFunction 	IsPlayerConnected IsPlayerInGame IsPlayerAuthorized IsPlayerFakeClient GetClientInfo SetUserAdmin
-syn keyword 	cFunction 	GetUserAdmin AddUserFlags RemoveUserFlags SetUserFlagBits GetUserFlagBits LogToGame
-syn keyword 	cFunction 	LogMessage LogError
+syn keyword 	cFunction 	GetMyHandle GetPluginIterator MorePlugins ReadPlugin GetPlugin GetPluginFilename
+syn keyword 	cFunction 	IsPluginDebugging GetPluginInfo FindPluginByNumber GameConfGetOffset GameConfGetKeyValue
+syn keyword 	cFunction 	GetTime FormatTime LoadGameConfigFile GetSysTickCount AutoExecConfig MarkNativeAsOptional
+syn keyword 	cFunction 	RegPluginLibrary LibraryExists GetExtensionFileStatus ReadMapList SetMapListCompatBind
+syn keyword 	cFunction 	SetFailState ThrowError
+"
+" logging.inc
+" ------
+syn keyword 	cFunction 	LogToGame LogMessage LogMessageEx LogError LogAction LogToFile LogToFileEx AddGameLogHook RemoveGameLogHook
 "
 " string.inc
 " ------
@@ -285,14 +394,39 @@ syn keyword 	cFunction 	SMC_SetParseEnd SMC_SetReaders SMC_SetRawLine
 " ------
 syn keyword 	cForward  	OnRebuildAdminCache
 "
+" adminmenu.inc
+" ------
+syn keyword 	cForward  	OnAdminMenuCreated OnAdminMenuReady
+"
+" banning.inc
+" ------
+syn keyword 	cForward  	OnBanClient OnBanIdentity OnRemoveBan
+"
 " sourcemod.inc
 " ------
 syn keyword 	cForward  	OnPluginStart AskPluginLoad OnPluginEnd OnPluginPauseChange OnClientConnect
+syn keyword 	cForward  	OnConfigsExecuted OnAllPluginsLoaded OnLibraryAdded OnLibraryRemoved
+syn keyword 	cForward  	OnGameFrame OnMapStart OnMapEnd OnClientFloodCheck OnClientFloodResult
+"
+" client.inc
+" ------
 syn keyword 	cForward  	OnClientPutInServer OnClientDisconnect OnClientDisconnect_Post OnClientCommand
-syn keyword 	cForward  	OnClientSettingsChanged OnClientAuthorized
-
+syn keyword 	cForward  	OnClientSettingsChanged OnClientAuthorized OnClientPreAdminCheck OnClientPostAdminFilter OnClientPostAdminCheck
+"
+" logging.inc
+" ------
+syn keyword 	cForward  	OnLogAction
+"
+" console.inc
+" ------
+syn keyword	cForward 	OnConVarChanged
+"
 " Tags/types
 " ======
+"
+" logging.inc
+" ------
+syn keyword	cTag 		GameLogHook
 "
 " admin.inc
 " ------
@@ -301,11 +435,16 @@ syn keyword	cTag 		GroupId AdminId AdmAccessMode AdminCachePart
 "
 " console.inc
 " ------
-syn keyword	cTag 		OnConVarChanged
+syn keyword	cTag 		ConVarBounds QueryCookie ReplySource ConVarQueryResult
+syn keyword	cTag 		ConVarQueryFinished ConVarChanged ConCmd SrvCmd
 "
 " core.inc
 " ------
-syn keyword	cTag 		Extension Result PlVers
+syn keyword	cTag 		Extension Result PlVers Action Identity PluginStatus PluginInfo SharedPlugin
+"
+" dbi.inc
+" ------
+syn keyword	cTag 		DBResult DBBindType DBPriority SQLTCallback
 "
 " files.inc
 " ------
@@ -322,6 +461,10 @@ syn keyword	cTag 		Handle
 " sourcemod.inc
 " ------
 syn keyword	cTag 		Plugin
+"
+" client.inc
+" ------
+syn keyword	cTag 		NetFlow
 "
 " textparse.inc
 " ------
