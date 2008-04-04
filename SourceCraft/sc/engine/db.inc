@@ -526,12 +526,12 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         }
         else
         {
-            decl String:name[64];
+            decl String:name[MAX_NAME_LENGTH];
+            decl String:escName[MAX_NAME_LENGTH*2];
             GetClientName(client,name,sizeof(name));
-            ReplaceString(name,sizeof(name),"\\","\\\\");
-            ReplaceString(name,sizeof(name),"'","''");
+            SQL_EscapeString(DBIDB, name, escName, sizeof(escName));
 
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, name, race_ident, credits, overall_level);
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, escName, race_ident, credits, overall_level);
 
             // Process this query in the main thread
             SQL_LockDatabase(DBIDB);
@@ -539,68 +539,43 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
             //LogMessage("Processing :%s", SQLString);
             if (SQL_FastQuery(DBIDB,SQLString))
             {
-                if (DBIsSQLite)
-                    strcopy(SQLString,sizeof(SQLString), "SELECT last_insert_rowid()");
-                else
-                    strcopy(SQLString,sizeof(SQLString), "SELECT last_insert_id()");
+                player_ident = SQL_GetInsertId(DBIDB);
+                SetDatabaseIdent(playerHandle,player_ident);
 
-                new Handle:player_query=SQL_Query(DBIDB,SQLString);
-                if (player_query)
+                LogMessage("Inserted %N #%d (%x) player_ident=%d",
+                           client, client, playerHandle, player_ident);
+
+                if (threaded)
                 {
-                    if(SQL_FetchRow(player_query))
-                    {
-                        player_ident = SQL_FetchInt(player_query,0);
-                        SetDatabaseIdent(playerHandle,player_ident);
-                        CloseHandle(player_query);
-
-                        if (threaded)
-                        {
-                            new Handle:playerData;
-                            if (disconnected)
-                                playerData = playerHandle;
-                            else
-                            {
-                                playerData = ClonePlayer(playerHandle);
-                                //LogMessage("Copying %N #%d (%x) to handle=%x",
-                                //           client, client, playerHandle, playerData);
-                            }
-
-                            SQL_UnlockDatabase(DBIDB);
-
-                            SavePlayerRaceData(client, playerData, player_ident,threaded);
-
-                            // Assume save will work and mark playerHandle data saved.
-                            new raceId = GetRace(playerHandle);
-                            new upgradeCount = GetUpgradeCount(raceHandle);
-                            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-                            {
-                                new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
-                                SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
-                            }
-                            SetDatabaseSaved(playerHandle,1);
-                            return !disconnected;
-                        }
-                        else
-                        {
-                            SavePlayerRaceData(client, playerHandle, player_ident,threaded);
-                            SetDatabaseSaved(playerHandle,1);
-                        }
-                    }
+                    new Handle:playerData;
+                    if (disconnected)
+                        playerData = playerHandle;
                     else
                     {
-                        decl String:error[256] = "";
-                        SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to fetch %N's ident: %s\nSQL:%s",
-                                 client, error, SQLString);
-                        CloseHandle(player_query);
+                        playerData = ClonePlayer(playerHandle);
+                        //LogMessage("Copying %N #%d (%x) to handle=%x",
+                        //           client, client, playerHandle, playerData);
                     }
+
+                    SQL_UnlockDatabase(DBIDB);
+
+                    SavePlayerRaceData(client, playerData, player_ident,threaded);
+
+                    // Assume save will work and mark playerHandle data saved.
+                    new raceId = GetRace(playerHandle);
+                    new upgradeCount = GetUpgradeCount(raceHandle);
+                    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                    {
+                        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
+                        SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                    }
+                    SetDatabaseSaved(playerHandle,1);
+                    return !disconnected;
                 }
                 else
                 {
-                    decl String:error[256] = "";
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to query %N's ident: %s\nSQL:%s",
-                             client, error, SQLString);
+                    SavePlayerRaceData(client, playerHandle, player_ident,threaded);
+                    SetDatabaseSaved(playerHandle,1);
                 }
             }
             else
@@ -608,10 +583,10 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 decl String:error[256] = "";
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to insert %N's player data, client=%d, handle=%x, ident=%d: %s\nSQL:%s",
-                         client, client, playerHandle, player_ident, error, SQLString);
+                        client, client, playerHandle, player_ident, error, SQLString);
 
                 Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
-                        steamid);
+                       steamid);
 
                 new Handle:ident_query=SQL_Query(DBIDB,SQLString);
                 if(ident_query)
