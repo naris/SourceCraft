@@ -291,9 +291,16 @@ LoadPlayerData(client,Handle:playerHandle)
                     else
                         raceId = GetRace(playerHandle);
 
+                    CloseHandle(query);
+                    SQL_UnlockDatabase(DBIDB);
+
                     LoadPlayerRaceData(client, playerHandle, raceId);
                 }
-                CloseHandle(query);
+                else
+                {
+                    CloseHandle(query);
+                    SQL_UnlockDatabase(DBIDB);
+                }
             }
             else
             {
@@ -301,8 +308,9 @@ LoadPlayerData(client,Handle:playerHandle)
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
                          client, steamid, error, SQLString);
+
+                SQL_UnlockDatabase(DBIDB);
             }
-            SQL_UnlockDatabase(DBIDB);
         }
         else
             LogError("Unable to obtain steamid when loading %N!", client);
@@ -319,6 +327,9 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
     new player_ident      = GetDatabaseIdent(playerHandle);
     new Handle:raceHandle = GetRaceHandle(raceId);
     new race_ident        = GetRaceIdent(raceHandle);
+
+    // Process this query in the main thread (NOT a worker thread)
+    SQL_LockDatabase(DBIDB);
 
     Format(SQLString,sizeof(SQLString), "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d", player_ident, race_ident);
 
@@ -370,6 +381,8 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
         LogError("Unable to query %N's race data: %s\nSQL:%s",
                  client, error, SQLString);
     }
+
+    SQL_UnlockDatabase(DBIDB);
 }
 
 stock SaveAllPlayersData()
