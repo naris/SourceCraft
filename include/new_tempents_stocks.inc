@@ -84,7 +84,7 @@ stock TE_SetupBubbles(const Float:vecMins[3], const Float:vecMaxs[3], ModelIndex
 {
 	TE_Start("Bubbles");
 	TE_WriteVector("m_vecMins",vecMins);
-	TE_WriteVector("m_vecMaxs",vecMaxs)
+	TE_WriteVector("m_vecMaxs",vecMaxs);
 	TE_WriteNum("m_nModelIndex",ModelIndex);
 	TE_WriteFloat("m_fHeight",fHeight);
 	TE_WriteNum("m_nCount",nCount);
@@ -107,7 +107,7 @@ stock TE_SetupBubbleTrail(const Float:vecMins[3], const Float:vecMaxs[3],ModelIn
 {
 	TE_Start("Bubble Trail");
 	TE_WriteVector("m_vecMins",vecMins);
-	TE_WriteVector("m_vecMaxs",vecMaxs)
+	TE_WriteVector("m_vecMaxs",vecMaxs);
 	TE_WriteNum("m_nModelIndex",ModelIndex);
 	TE_WriteFloat("m_flWaterZ",fWaterZ);
 	TE_WriteNum("m_nCount",count);

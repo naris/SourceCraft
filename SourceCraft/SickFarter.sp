@@ -9,6 +9,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <new_tempents_stocks>
 
 #include "sc/SourceCraft"
 
@@ -82,7 +83,7 @@ public OnPluginReady()
 
 public OnMapStart()
 {
-    g_bubbleModel = SetupModel("effects/bubbles/bubble.vmt", true);
+    g_bubbleModel = SetupModel("materials/effects/bubbles/bubble.vmt", true);
     if (g_bubbleModel == -1)
         SetFailState("Couldn't find bubble Model");
 
@@ -306,30 +307,14 @@ public Fart(Handle:player,client,ultlevel)
     //gFartLoc[client][1] = clientLoc[1];
     //gFartLoc[client][2] = clientLoc[2];
 
-    /*
     new Float:maxLoc[3];
     maxLoc[0] = clientLoc[0] + 256.0;
     maxLoc[1] = clientLoc[1] + 256.0;
     maxLoc[2] = clientLoc[2] + 256.0;
 
-    TE_Start("Bubbles");
-    TE_WriteVector("m_vecMins", clientLoc);
-    TE_WriteVector("m_vecMaxs", maxLoc);
-    TE_WriteNum("m_nModelIndex", g_bubbleModel);
-    TE_WriteFloat("m_fHeight", 256.0);
-    TE_WriteNum("m_nCount", 50);
-    TE_WriteFloat("m_fSpeed", 2.0);
-    TE_SendToAll();
+    TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, 256.0,50,2.0);
 
-    TE_Start("Bubble Trail");
-    TE_WriteVector("m_vecMins", clientLoc);
-    TE_WriteVector("m_vecMaxs", maxLoc);
-    TE_WriteNum("m_nModelIndex", g_bubbleModel);
-    TE_WriteFloat("m_flWaterZ", 0.0);
-    TE_WriteNum("m_nCount", 20);
-    TE_WriteFloat("m_fSpeed", 8.0);
-    TE_SendToAll();
-    */
+    //TE_SetupBubbleTrail(clientLoc, maxLoc,g_bubbleModel,0.0,20,8.0);
 
     TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
     TE_SendToAll();
