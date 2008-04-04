@@ -248,8 +248,8 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
 LoadPlayerData(client,Handle:playerHandle)
 {
     new bool:fetch=false;
-    LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
-    if(DBIDB)
+    //LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
+    if (DBIDB)
     {
         decl String:steamid[64] = "";
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
@@ -258,15 +258,15 @@ LoadPlayerData(client,Handle:playerHandle)
 
             // Process this query in the main thread (NOT a worker thread)
             // since we have to return the result to the caller!
-            LogMessage("Lock Database");
+            //LogMessage("Lock Database");
             SQL_LockDatabase(DBIDB);
 
             Format(SQLString,sizeof(SQLString),
                    "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
-            LogMessage("Processing  %N #%d (%x) SQL:%s",
-                       client, client, playerHandle, SQLString);
+            //LogMessage("Processing  %N #%d (%x) SQL:%s",
+            //           client, client, playerHandle, SQLString);
             new Handle:query=SQL_Query(DBIDB,SQLString);
             if(query)
             {
@@ -293,21 +293,18 @@ LoadPlayerData(client,Handle:playerHandle)
                     new raceId = FindRaceForIdent(race_ident);
 
                     CloseHandle(query);
-                    LogMessage("Unlock Database");
+                    //LogMessage("Unlock Database");
                     SQL_UnlockDatabase(DBIDB);
 
                     if (raceId >= 0)
                         SetRace(playerHandle,raceId);
                     else
-                    {
                         raceId = GetRace(playerHandle);
-                        //LoadPlayerRaceData(client, playerHandle, raceId);
-                    }
                 }
                 else
                 {
                     CloseHandle(query);
-                    LogMessage("Unlock Database");
+                    //LogMessage("Unlock Database");
                     SQL_UnlockDatabase(DBIDB);
                 }
             }
@@ -318,7 +315,7 @@ LoadPlayerData(client,Handle:playerHandle)
                 LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
                          client, steamid, error, SQLString);
 
-                LogMessage("Unlock Database");
+                //LogMessage("Unlock Database");
                 SQL_UnlockDatabase(DBIDB);
             }
         }
@@ -334,7 +331,7 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
 {
     decl String:SQLString[512] = "";
 
-    LogMessage("LoadPlayerRaceData(%N), DBIDB=%d", client, DBIDB);
+    //LogMessage("LoadPlayerRaceData(%N), DBIDB=%d", client, DBIDB);
 
     if(DBIDB)
     {
@@ -343,15 +340,15 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
         new race_ident        = GetRaceIdent(raceHandle);
 
         // Process this query in the main thread (NOT a worker thread)
-        LogMessage("Lock Database");
+        //LogMessage("Lock Database");
         SQL_LockDatabase(DBIDB);
 
         Format(SQLString,sizeof(SQLString),
                "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d",
                player_ident, race_ident);
 
-        LogMessage("Processing  %N #%d (%x) SQL:%s",
-                   client, client, playerHandle, SQLString);
+        //LogMessage("Processing  %N #%d (%x) SQL:%s",
+        //           client, client, playerHandle, SQLString);
         new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
         if (raceQuery)
         {
@@ -364,8 +361,8 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
                        "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d",
                        player_ident,race_ident);
 
-                LogMessage("Processing  %N #%d (%x) SQL:%s",
-                           client, client, playerHandle, SQLString);
+                //LogMessage("Processing  %N #%d (%x) SQL:%s",
+                //           client, client, playerHandle, SQLString);
                 new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
                 if (upgradeQuery)
                 {
@@ -405,7 +402,7 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
                     client, error, SQLString);
         }
 
-        LogMessage("Unlock Database");
+        //LogMessage("Unlock Database");
         SQL_UnlockDatabase(DBIDB);
     }
 }
