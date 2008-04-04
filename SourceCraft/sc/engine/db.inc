@@ -542,8 +542,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 player_ident = SQL_GetInsertId(DBIDB);
                 SetDatabaseIdent(playerHandle,player_ident);
 
-                LogMessage("Inserted %N #%d (%x) player_ident=%d",
-                           client, client, playerHandle, player_ident);
+                //LogMessage("Inserted %N #%d (%x) player_ident=%d",
+                //           client, client, playerHandle, player_ident);
 
                 if (threaded)
                 {
