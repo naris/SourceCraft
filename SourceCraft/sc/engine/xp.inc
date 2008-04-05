@@ -135,7 +135,7 @@ ShowXP(client,Handle:playerHandle)
 }
 
 GiveKillXP(index,Handle:playerHandle,Handle:victim_player,bool:headshot,
-                  bool:backstab,bool:melee,bool:dominated,bool:revenge,bool:assist)
+           bool:backstab,bool:melee,bool:dominated,bool:revenge,bool:assist)
 {
     if (GetRaceCount() >= 1)
     {

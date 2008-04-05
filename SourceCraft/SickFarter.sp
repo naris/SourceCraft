@@ -337,10 +337,12 @@ public Action:PersistFart(Handle:timer,any:client)
         TE_SetupDust(clientLoc,dir,range,100.0);
         TE_SendToAll();
 
-        TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, range, RoundToNearest(range/4.0), 2.0);
+        new bubble_count = RoundToNearest(range/4.0);
+
+        TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, range, bubble_count, 2.0);
         TE_SendToAll();
 
-        TE_SetupBubbleTrail(clientLoc, maxLoc, g_bubbleModel, range, RoundToNearest(range/4.0), 8.0);
+        TE_SetupBubbleTrail(clientLoc, maxLoc, g_bubbleModel, range, bubble_count, 8.0);
         TE_SendToAll();
 
         TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
@@ -354,6 +356,7 @@ public Action:PersistFart(Handle:timer,any:client)
             if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
                 GetClientTeam(client) != GetClientTeam(index))
             {
+                LogMessage("Fart on %N?", index);
                 new Handle:player_check=GetPlayerHandle(index);
                 if (player_check != INVALID_HANDLE)
                 {
@@ -366,6 +369,7 @@ public Action:PersistFart(Handle:timer,any:client)
                             GetClientAbsOrigin(client, indexLoc);
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
+                                LogMessage("Farting on %d->%N!", index, index);
                                 new new_health=GetClientHealth(index)-40;
                                 if (new_health <= 0)
                                 {
@@ -375,11 +379,13 @@ public Action:PersistFart(Handle:timer,any:client)
                                     new newxp=GetXP(player,raceID)+addxp;
                                     SetXP(player,raceID,newxp);
 
+                                    LogMessage("Fart killed %d->%N!", index, index);
                                     LogKill(client, index, "flatulence", "Flatulence", 40);
                                     KillPlayer(index,client,"flatulence");
                                 }
                                 else
                                 {
+                                    LogMessage("Fart damaged %d->%N!", index, index);
                                     LogDamage(client, index, "flatulence", "Flatulence", 40);
                                     HurtPlayer(index,40,client,"flatulence");
                                 }
@@ -387,10 +393,20 @@ public Action:PersistFart(Handle:timer,any:client)
                                 if (++count > num)
                                     break;
                             }
+                            else
+                                LogMessage("%d->%N is UnTraceable!", index, index);
                         }
+                        else
+                            LogMessage("%d->%N is out of range!", index, index);
                     }
+                    else
+                        LogMessage("%d->%N is immune or ubered!", index, index);
                 }
+                else
+                    LogMessage("%d has no player!", index);
             }
+            else
+                LogMessage("%d is UnFartable!", index);
         }
         if (--gFartDuration[client] > 0)
         {

@@ -28,7 +28,8 @@
 #define RACEINFO_XP                     0
 #define RACEINFO_LEVEL                  1
 #define RACEINFO_ACTIVE_ULTIMATE        2
-#define RACEINFO_UPGRADES               3
+#define RACEINFO_DATABASE_LOADED        3
+#define RACEINFO_UPGRADES               4
 
 #define UPGRADEINFO_LEVEL               0
 #define UPGRADEINFO_SAVED_LEVEL         1
@@ -105,6 +106,7 @@ Handle:CreatePlayer(client)
             PushArrayCell(newPlayer,raceInfo);
             PushArrayCell(raceInfo,0); // Race's XP
             PushArrayCell(raceInfo,0); // Race's Level
+            PushArrayCell(raceInfo,0); // Race Loaded
             PushArrayCell(raceInfo,-1); // Race's Active Ultimate Upgrade 
             new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
@@ -155,6 +157,7 @@ Handle:ClonePlayer(Handle:oldPlayer)
             PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_XP));
             PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_LEVEL));
             PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_ACTIVE_ULTIMATE));
+            PushArrayCell(newRaceinfo,GetArrayCell(oldRaceinfo,RACEINFO_DATABASE_LOADED));
 
             new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
@@ -253,9 +256,9 @@ GetDatabaseSaved(Handle:playerHandle)
     return GetArrayCell(playerHandle,INFO_DATABASE_SAVED);
 }
 
-SetDatabaseSaved(Handle:playerHandle,value)
+SetDatabaseSaved(Handle:playerHandle,saved)
 {
-    SetArrayCell(playerHandle,INFO_DATABASE_SAVED,value);
+    SetArrayCell(playerHandle,INFO_DATABASE_SAVED,saved);
 }
 
 GetRace(Handle:playerHandle)
@@ -274,11 +277,8 @@ bool:SetRace(Handle:playerHandle,race)
 
         new client = GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
 
-        if (GetLevel(playerHandle,race) < 0 ||
-            GetXP(playerHandle,race) < 0)
-        {
+        if (GetRaceLoaded(playerHandle,race) <= 0)
             LoadPlayerRaceData(client, playerHandle, race);
-        }
 
         Call_StartForward(g_OnRaceSelectedHandle);
         Call_PushCell(client);
@@ -487,6 +487,27 @@ SetActiveUltimate(Handle:playerHandle,race,upgrade)
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
             SetArrayCell(raceInfo,RACEINFO_ACTIVE_ULTIMATE,upgrade);
+    }
+}
+
+GetRaceLoaded(Handle:playerHandle,race)
+{
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        if (raceInfo != INVALID_HANDLE)
+            return GetArrayCell(raceInfo,RACEINFO_DATABASE_LOADED);
+    }
+    return -1;
+}
+
+SetRaceLoaded(Handle:playerHandle,race,loaded)
+{
+    if (race >= 0 && GetRaceCount() >= 1)
+    {
+        new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
+        if (raceInfo != INVALID_HANDLE)
+            SetArrayCell(raceInfo,RACEINFO_DATABASE_LOADED,loaded);
     }
 }
 

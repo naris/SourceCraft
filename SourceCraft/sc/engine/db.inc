@@ -280,14 +280,6 @@ LoadPlayerData(client,Handle:playerHandle)
                     SetCredits(playerHandle,SQL_FetchInt(query,2));
                     SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
 
-                    // Mark all race info as not loaded
-                    new raceCount = GetRaceCount();
-                    for(new raceId=0;raceId<raceCount;raceId++)
-                    {
-                        SetXP(playerHandle,raceId,-1);
-                        SetLevel(playerHandle,raceId,-1);
-                    }
-
                     // Load the current Race.
                     new race_ident = SQL_FetchInt(query,1);
                     new raceId = FindRaceForIdent(race_ident);
@@ -388,23 +380,16 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
                              client, error, SQLString);
                 }
             }
-            else
-            {
-                SetXP(playerHandle,raceId,0);
-                SetLevel(playerHandle,raceId,0);
-            }
+            SetRaceLoaded(playerHandle,raceId,1);
             CloseHandle(raceQuery);
         }
         else
         {
             decl String:error[256] = "";
-            SetXP(playerHandle,raceId,0);
-            SetLevel(playerHandle,raceId,0);
             SQL_GetError(DBIDB, error, sizeof(error));
             LogError("Unable to query %N's race data: %s\nSQL:%s",
                     client, error, SQLString);
         }
-
         //LogMessage("Unlock Database");
         SQL_UnlockDatabase(DBIDB);
     }
@@ -417,8 +402,12 @@ stock SaveAllPlayersData()
     for(new client=1;client<=playerCount;client++)
     {
         new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE && IsClientInGame(client) && !GetDatabaseSaved(playerHandle))
+        if (playerHandle != INVALID_HANDLE &&
+            IsClientInGame(client) &&
+            !GetDatabaseSaved(playerHandle))
+        {
             SavePlayerData(client,playerHandle,false);
+        }
     }
 }
 
