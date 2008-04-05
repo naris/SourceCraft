@@ -337,10 +337,10 @@ public Action:PersistFart(Handle:timer,any:client)
         TE_SetupDust(clientLoc,dir,range,100.0);
         TE_SendToAll();
 
-        TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, range, RoundToNearest(range/2.0), 2.0);
+        TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, range, RoundToNearest(range/4.0), 2.0);
         TE_SendToAll();
 
-        TE_SetupBubbleTrail(clientLoc, maxLoc, g_bubbleModel, range, RoundToNearest(range/2.0), 8.0);
+        TE_SetupBubbleTrail(clientLoc, maxLoc, g_bubbleModel, range, RoundToNearest(range/4.0), 8.0);
         TE_SendToAll();
 
         TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
@@ -375,13 +375,13 @@ public Action:PersistFart(Handle:timer,any:client)
                                     new newxp=GetXP(player,raceID)+addxp;
                                     SetXP(player,raceID,newxp);
 
-                                    //LogKill(client, index, "flatulence", "Flatulence", 40, addxp);
-                                    KillPlayer(index);
+                                    LogKill(client, index, "flatulence", "Flatulence", 40);
+                                    KillPlayer(index,client,"flatulence");
                                 }
                                 else
                                 {
                                     LogDamage(client, index, "flatulence", "Flatulence", 40);
-                                    HurtPlayer(index, 40, client, "flatulence");
+                                    HurtPlayer(index,40,client,"flatulence");
                                 }
 
                                 if (++count > num)
