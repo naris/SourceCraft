@@ -375,7 +375,7 @@ public Zerg_Tentacles(client, Handle:player, level)
             }
             case 4:
             {
-                duration=60;
+                duration=20;
                 range=3500.0; //1500.0;
             }
         }
