@@ -27,8 +27,7 @@
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:fart1Wav[] = "sourcecraft/fart.wav";
 new String:fart2Wav[] = "sourcecraft/fart3.wav";
-new String:fart3Wav[] = "sourcecraft/fart5.wav";
-new String:fart4Wav[] = "sourcecraft/poot.wav";
+new String:fart3Wav[] = "sourcecraft/poot.mp3";
 
 new raceID, festerID, pickPocketID, revulsionID, fartID;
 
@@ -104,7 +103,6 @@ public OnMapStart()
     SetupSound(fart1Wav, true, true);
     SetupSound(fart2Wav, true, true);
     SetupSound(fart3Wav, true, true);
-    SetupSound(fart4Wav, true, true);
 }
 
 public OnPlayerAuthed(client,Handle:player)
@@ -317,12 +315,11 @@ public Action:PersistFart(Handle:timer,any:client)
             case 4: range=1000.0;
         }
 
-        switch(GetRandomInt(0,4))
+        switch(GetRandomInt(1,3))
         {
             case 1: EmitSoundToAll(fart1Wav,client);
             case 2: EmitSoundToAll(fart2Wav,client);
             case 3: EmitSoundToAll(fart3Wav,client);
-            case 4: EmitSoundToAll(fart4Wav,client);
         }
 
         new Float:clientLoc[3];
