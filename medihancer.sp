@@ -32,9 +32,9 @@ public Plugin:myinfo =
 }
 
 // Charged sounds
-new String:Charged[3][] = { "vo/medic_autochargeready01",
-                            "vo/medic_autochargeready02",
-                            "vo/medic_autochargeready03"};
+new String:Charged[3][] = { "vo/medic_autochargeready01.wav",
+                            "vo/medic_autochargeready02.wav",
+                            "vo/medic_autochargeready03.wav"};
 
 // Basic color arrays for temp entities
 new redColor[4] = {255, 75, 75, 255};
