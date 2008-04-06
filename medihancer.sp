@@ -224,7 +224,7 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 {
     new MedihancerOn = GetConVarInt(g_IsMedihancerOn);
     if (MedihancerOn)
-        PrintToChatAll("[SM] Medic Enhancer is enabled");
+        PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
 }
 
 stock FindResourceObject()
