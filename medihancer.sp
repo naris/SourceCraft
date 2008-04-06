@@ -110,7 +110,7 @@ public Action:Medic_Timer(Handle:timer)
             if (class == TF_MEDIC)
             {
                 new String:classname[64];
-                TF_GetCurrentWeaponClass(client, classname, 64);
+                TF_GetCurrentWeaponClass(client, classname, sizeof(classname));
                 if(StrEqual(classname, "CWeaponMedigun"))
                 {
                     new UberCharge = TF_GetUberLevel(client);
