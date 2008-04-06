@@ -71,7 +71,7 @@ public OnPluginStart()
     HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
     HookEvent("teamplay_round_active", Event_RoundStart);
 
-    CreateTimer(2.0, Medic_Timer, _, TIMER_REPEAT);
+    CreateTimer(5.0, Medic_Timer, _, TIMER_REPEAT);
 }
 
 public OnMapStart()
@@ -104,16 +104,21 @@ public Action:Medic_Timer(Handle:timer)
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
     {
-        if (IsClientInGame(client))
+        if (IsClientInGame(client) && IsPlayerAlive(client))
         {
             new class = TF_GetClass(client);
             if (class == TF_MEDIC)
             {
-                new UberCharge = TF_GetUberLevel(client);
-                if (UberCharge < 100)
+                new String:classname[64];
+                TF_GetCurrentWeaponClass(client, classname, 64);
+                if(StrEqual(classname, "CWeaponMedigun"))
                 {
-                    TF_SetUberLevel(client, UberCharge+2);
-                    BeaconPing(client);
+                    new UberCharge = TF_GetUberLevel(client);
+                    if (UberCharge < 100)
+                    {
+                        TF_SetUberLevel(client, UberCharge+5);
+                        BeaconPing(client);
+                    }
                 }
             }
         }
