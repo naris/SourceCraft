@@ -261,13 +261,13 @@ public Native_KillPlayer(Handle:plugin,numParams)
             attacker = GetNativeCell(2);
             if (numParams >= 3)
             {
-                    GetNativeString(3,weapon_name,sizeof(weapon_name));
-                    if (numParams >= 4)
-                    {
-                        GetNativeString(4,weapon_desc,sizeof(weapon_desc));
-                        if (numParams >= 5)
-                            xp = GetNativeCell(5);
-                    }
+                GetNativeString(3,weapon_name,sizeof(weapon_name));
+                if (numParams >= 4)
+                {
+                    GetNativeString(4,weapon_desc,sizeof(weapon_desc));
+                    if (numParams >= 5)
+                        xp = GetNativeCell(5);
+                }
             }
         }
 
