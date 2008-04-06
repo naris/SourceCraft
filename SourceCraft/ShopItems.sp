@@ -168,7 +168,7 @@ public OnPluginReady()
 
     shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox",
                                           "A lockbox to keep your crystals safe from theft.",
-                                          "20");
+                                          "10");
 
     shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1",
                                        "Gives 1 health every second, won't exceed your normal HP.",

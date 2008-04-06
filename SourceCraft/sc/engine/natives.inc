@@ -211,33 +211,39 @@ public Native_HurtPlayer(Handle:plugin,numParams)
         new victim = GetNativeCell(1);
         new damage = GetNativeCell(2);
         new health = GetClientHealth(victim) - damage;
-        SetEntityHealth(victim,health);
-        new Handle:event = CreateEvent("player_hurt");
-        if (event != INVALID_HANDLE)
+        if (health > 0)
         {
-            new attacker = 0;
-            new assister = 0;
-            decl String:weapon[64] = "";
-            if (numParams >= 3)
+            SetEntityHealth(victim,health);
+            new Handle:event = CreateEvent("player_hurt");
+            if (event != INVALID_HANDLE)
             {
-                attacker = GetNativeCell(3);
-                if (numParams >= 4)
+                new attacker = 0;
+                new assister = 0;
+                decl String:weapon[64] = "";
+                if (numParams >= 3)
                 {
-                    GetNativeString(4,weapon,sizeof(weapon));
-                    if (numParams >= 5)
-                        assister = GetNativeCell(5);
+                    attacker = GetNativeCell(3);
+                    if (numParams >= 4)
+                    {
+                        GetNativeString(4,weapon,sizeof(weapon));
+                        if (numParams >= 5)
+                            assister = GetNativeCell(5);
+                    }
                 }
-            }
 
-            SetEventInt(event, "userid", GetClientUserId(victim));
-            SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
-            SetEventInt(event, "health", health);
-            SetEventInt(event, "damage", damage);
-            SetEventString(event, "weapon", weapon);
-            SetEventInt(event, "assister", (assister) ? GetClientUserId(assister) : 0);
-            SetEventBool(event, "from_sourcecraft", true);
-            FireEvent(event);
+                SetEventInt(event, "userid", GetClientUserId(victim));
+                SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
+                SetEventInt(event, "health", health);
+                SetEventInt(event, "damage", damage);
+                SetEventString(event, "weapon", weapon);
+                SetEventInt(event, "assister", (assister) ? GetClientUserId(assister) : 0);
+                SetEventBool(event, "from_sourcecraft", true);
+                FireEvent(event);
+            }
         }
+        else
+            ForcePlayerSuicide(victim);
+
         SaveHealth(victim);
         return health;
     }

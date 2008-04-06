@@ -345,8 +345,8 @@ public Action:PersistFart(Handle:timer,any:client)
 
         new count=0;
         new num=fart_level*3;
-        new minDmg=fart_level*4;
-        new maxDmg=fart_level*8;
+        new minDmg=fart_level*2;
+        new maxDmg=fart_level*4;
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
@@ -366,24 +366,20 @@ public Action:PersistFart(Handle:timer,any:client)
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 LogMessage("Farting on %d->%N!", index, index);
-                                new new_health=GetClientHealth(index)-GetRandomInt(minDmg,maxDmg);
-                                if (new_health <= 0)
+                                new amt=GetRandomInt(minDmg,maxDmg);
+                                if (HurtPlayer(index,amt,client,"flatulence") <= 0)
                                 {
-                                    new_health=0;
-
                                     new addxp=5+fart_level;
                                     new newxp=GetXP(player,raceID)+addxp;
                                     SetXP(player,raceID,newxp);
 
                                     LogMessage("Fart killed %d->%N!", index, index);
-                                    LogKill(client, index, "flatulence", "Flatulence", 40);
-                                    KillPlayer(index,client,"flatulence");
+                                    LogKill(client, index, "flatulence", "Flatulence", amt);
                                 }
                                 else
                                 {
                                     LogMessage("Fart damaged %d->%N!", index, index);
-                                    LogDamage(client, index, "flatulence", "Flatulence", 40);
-                                    HurtPlayer(index,40,client,"flatulence");
+                                    LogDamage(client, index, "flatulence", "Flatulence", amt);
                                 }
 
                                 if (++count > num)
@@ -414,9 +410,12 @@ public Action:PersistFart(Handle:timer,any:client)
 
 public Action:AllowFart(Handle:timer,any:index)
 {
-    EmitSoundToClient(index, rechargeWav);
-    PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
-                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+    if (IsClientInGame(index))
+    {
+        EmitSoundToClient(index, rechargeWav);
+        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
+                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+    }
     m_AllowFart[index]=true;
     return Plugin_Stop;
 }
