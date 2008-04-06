@@ -364,7 +364,7 @@ public Action:PersistFart(Handle:timer,any:client)
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 LogMessage("Farting on %d->%N!", index, index);
-                                new new_health=GetClientHealth(index)-40;
+                                new new_health=GetClientHealth(index)-GetRandomInt(fart_level*5,fart_level*10);
                                 if (new_health <= 0)
                                 {
                                     new_health=0;
