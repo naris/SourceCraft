@@ -169,13 +169,15 @@ public Action:Medic_Timer(Handle:timer)
                                 new count = GetConVarInt(g_PingCount);
                                 if (count > 0)
                                 {
-                                    if (++g_BeaconCount[client] >= count)
+                                    new value = ++g_BeaconCount[client];
+                                    if (value == 1)
                                     {
                                         new Float:vec[3];
                                         GetClientEyePosition(client, vec);
                                         EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
-                                        g_BeaconCount[client] = 0;
                                     }
+                                    else if (value >= count)
+                                        g_BeaconCount[client] = 0;
                                 }
                             }
                         }
