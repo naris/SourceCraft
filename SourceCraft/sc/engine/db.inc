@@ -550,15 +550,18 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 
                     SavePlayerRaceData(client, playerData, player_ident,threaded);
 
-                    // Assume save will work and mark playerHandle data saved.
-                    new raceId = GetRace(playerHandle);
-                    new upgradeCount = GetUpgradeCount(raceHandle);
-                    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                    if (playerData != playerHandle)
                     {
-                        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
-                        SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                        // Assume save will work and mark playerHandle data saved.
+                        new raceId = GetRace(playerHandle);
+                        new upgradeCount = GetUpgradeCount(raceHandle);
+                        for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                        {
+                            new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
+                            SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                        }
+                        SetDatabaseSaved(playerHandle,1);
                     }
-                    SetDatabaseSaved(playerHandle,1);
                     return !disconnected;
                 }
                 else

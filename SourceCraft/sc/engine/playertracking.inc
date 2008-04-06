@@ -457,12 +457,12 @@ ResetLevel(Handle:playerHandle,race,new_level)
                 if (difference < 0)
                 {
                     ResetUpgradesNow(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
-                            playerHandle);
+                                     playerHandle);
                 }
                 else // (difference > 0)
                 {
                     UpgradeMenu(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
-                            playerHandle);
+                                playerHandle);
                 }
             }
         }
