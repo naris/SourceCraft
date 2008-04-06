@@ -71,7 +71,7 @@ public OnPluginStart()
     HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
     HookEvent("teamplay_round_active", Event_RoundStart);
 
-    CreateTimer(3.5, Medic_Timer, _, TIMER_REPEAT);
+    CreateTimer(3.0, Medic_Timer, _, TIMER_REPEAT);
 }
 
 public OnMapStart()
