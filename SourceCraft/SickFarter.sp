@@ -281,8 +281,6 @@ public Fart(Handle:player,client,ultlevel)
 {
     gFartDuration[client] = ultlevel*3;
 
-    LogMessage("%N Farted, Duration=%d", client, gFartDuration[client]);
-
     new Handle:FartTimer = CreateTimer(0.4, PersistFart, client,TIMER_REPEAT);
     TriggerTimer(FartTimer, true);
 
@@ -299,9 +297,6 @@ public Fart(Handle:player,client,ultlevel)
 
 public Action:PersistFart(Handle:timer,any:client)
 {
-    LogMessage("PersistFart for %N, Duration=%d",
-               client, gFartDuration[client]);
-
     new Handle:player=GetPlayerHandle(client);
     if (player != INVALID_HANDLE)
     {
@@ -356,7 +351,6 @@ public Action:PersistFart(Handle:timer,any:client)
             if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
                 GetClientTeam(client) != GetClientTeam(index))
             {
-                LogMessage("Fart on %N?", index);
                 new Handle:player_check=GetPlayerHandle(index);
                 if (player_check != INVALID_HANDLE)
                 {
@@ -366,7 +360,7 @@ public Action:PersistFart(Handle:timer,any:client)
                         if ( IsInRange(client,index,range))
                         {
                             new Float:indexLoc[3];
-                            GetClientAbsOrigin(client, indexLoc);
+                            GetClientAbsOrigin(index, indexLoc);
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 LogMessage("Farting on %d->%N!", index, index);
@@ -396,25 +390,15 @@ public Action:PersistFart(Handle:timer,any:client)
                             else
                                 LogMessage("%d->%N is UnTraceable!", index, index);
                         }
-                        else
-                            LogMessage("%d->%N is out of range!", index, index);
                     }
-                    else
-                        LogMessage("%d->%N is immune or ubered!", index, index);
                 }
-                else
-                    LogMessage("%d has no player!", index);
             }
-            else
-                LogMessage("%d is UnFartable!", index);
         }
         if (--gFartDuration[client] > 0)
         {
-            LogMessage("Continue Fart");
             return Plugin_Continue;
         }
     }
-    LogMessage("Stop Fart");
     return Plugin_Stop;
 }
 
