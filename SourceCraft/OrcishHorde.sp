@@ -476,10 +476,10 @@ ChainLightning(client,ultlevel)
             }
         }
     }
+    EmitSoundToAll(thunderWav,client);
     new Float:cooldown = GetConVarFloat(cvarChainCooldown);
     if (count)
     {
-        EmitSoundToAll(thunderWav,client);
         PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
     }
     else
