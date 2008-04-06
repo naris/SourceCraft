@@ -106,8 +106,8 @@ Handle:CreatePlayer(client)
             PushArrayCell(newPlayer,raceInfo);
             PushArrayCell(raceInfo,0); // Race's XP
             PushArrayCell(raceInfo,0); // Race's Level
-            PushArrayCell(raceInfo,0); // Race Loaded
             PushArrayCell(raceInfo,-1); // Race's Active Ultimate Upgrade 
+            PushArrayCell(raceInfo,0); // Race Loaded
             new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
             {
