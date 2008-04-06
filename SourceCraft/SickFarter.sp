@@ -325,12 +325,12 @@ public Action:PersistFart(Handle:timer,any:client)
         maxLoc[1] = clientLoc[1] + 256.0;
         maxLoc[2] = clientLoc[2] + 256.0;
 
-        new Float:dir[3];
-        dir[0] = 0.0;
-        dir[1] = 0.0;
-        dir[2] = 2.0;
-        TE_SetupDust(clientLoc,dir,range,100.0);
-        TE_SendToAll();
+        //new Float:dir[3];
+        //dir[0] = 0.0;
+        //dir[1] = 0.0;
+        //dir[2] = 2.0;
+        //TE_SetupDust(clientLoc,dir,range,100.0);
+        //TE_SendToAll();
 
         new bubble_count = RoundToNearest(range/4.0);
 
@@ -345,6 +345,8 @@ public Action:PersistFart(Handle:timer,any:client)
 
         new count=0;
         new num=fart_level*3;
+        new minDmg=fart_level*4;
+        new maxDmg=fart_level*8;
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
@@ -364,7 +366,7 @@ public Action:PersistFart(Handle:timer,any:client)
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 LogMessage("Farting on %d->%N!", index, index);
-                                new new_health=GetClientHealth(index)-GetRandomInt(fart_level*4,fart_level*8);
+                                new new_health=GetClientHealth(index)-GetRandomInt(minDmg,maxDmg);
                                 if (new_health <= 0)
                                 {
                                     new_health=0;
@@ -390,9 +392,17 @@ public Action:PersistFart(Handle:timer,any:client)
                             else
                                 LogMessage("%d->%N is UnTraceable!", index, index);
                         }
+                        else
+                            LogMessage("%d->%N is out of range!", index, index);
                     }
+                    else
+                        LogMessage("%d->%N is immune or ubered!", index, index);
                 }
+                else
+                    LogMessage("%d has no player!", index);
             }
+            else
+                LogMessage("%d is UnFartable!", index);
         }
         if (--gFartDuration[client] > 0)
         {
