@@ -89,7 +89,7 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 {
     if (StringToInt(newValue) > 0)
     {
-        PrintToChatAll("[SM] Medic Enhancer is enabled");
+        PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
         if (StringToInt(newValue) != StringToInt(oldValue))
             g_ResourceEnt = FindResourceObject();
     }
