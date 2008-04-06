@@ -28,7 +28,7 @@ stock Fail(String:message[])
     SetFailState(message);
 }
 
-stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
+stock LogDamage(client, victim, String:weapon[], String:description[], hp)
 {
     decl String:steamID[64];
     GetClientAuthString(client,steamID,63);
@@ -42,10 +42,10 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
     decl String:victimTeam[64];
     GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[SourceCraft] %N %chas damaged you for %d with a %c%s%c",
+    PrintToChat(victim, "%c[SourceCraft] %N %chas damaged you for %d with %c%s%c",
                 COLOR_GREEN,client,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
 
-    PrintToChat(client, "%c[SourceCraft] %cYou damaged %N for %d hp with a %c%s%c.",
+    PrintToChat(client, "%c[SourceCraft] %cYou damaged %N for %d hp with %c%s%c.",
                 COLOR_GREEN,COLOR_DEFAULT,victim, hp, COLOR_TEAM,description,COLOR_DEFAULT);
 
     PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
@@ -58,7 +58,7 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp, xp=0)
               client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 }
 
-stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
+stock LogKill(client, victim, String:weapon[], String:description[], xp=0)
 {
     decl String:steamID[64];
     GetClientAuthString(client,steamID,63);
@@ -72,12 +72,12 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
     decl String:victimTeam[64];
     GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[SourceCraft] %N %c killed you with a %c%s%c",
+    PrintToChat(victim, "%c[SourceCraft] %N %c killed you with %c%s%c",
                 COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
 
     if (xp)
     {
-        PrintToChat(client, "%c[SourceCraft] %cYou gained %d XP for killing %N with a %c%s%c.",
+        PrintToChat(client, "%c[SourceCraft] %cYou gained %d XP for killing %N with %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,xp,victim, COLOR_TEAM,description,COLOR_DEFAULT);
 
         PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
@@ -91,7 +91,7 @@ stock LogKill(client, victim, String:weapon[], String:description[], hp=0, xp=0)
     }
     else
     {
-        PrintToChat(client, "%c[SourceCraft] %cYou killed %N with a %c%s%c.",
+        PrintToChat(client, "%c[SourceCraft] %cYou killed %N with %c%s%c.",
                     COLOR_GREEN,COLOR_DEFAULT,victim, COLOR_TEAM,description,COLOR_DEFAULT);
 
         PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",

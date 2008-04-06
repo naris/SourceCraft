@@ -105,7 +105,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         {
             new ult_level = GetUpgradeLevel(player,race,suicideID);
             if (ult_level)
-                SuicideBomber(client,player,ult_level,false);
+                SuicideBomber(client,ult_level,false);
         }
     }
 }
@@ -202,7 +202,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     {
         new suicide_level=GetUpgradeLevel(victim_player,raceID,suicideID);
         if (suicide_level)
-            SuicideBomber(victim_index,victim_player,suicide_level,true);
+            SuicideBomber(victim_index,suicide_level,true);
     }
     return Plugin_Continue;
 }
@@ -368,7 +368,7 @@ bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_play
     return false;
 }
 
-SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
+SuicideBomber(client,ult_level,bool:ondeath)
 {
     if (!ondeath)
     {
@@ -430,22 +430,8 @@ SuicideBomber(client,Handle:player,ult_level,bool:ondeath)
                     {
                         if (TraceTarget(client, index, client_location, check_location))
                         {
-                            new newhealth = GetClientHealth(index)-hp;
-                            if (newhealth <= 0)
-                            {
-                                newhealth=0;
-                                new addxp=5+ult_level;
-                                new newxp=GetXP(player,raceID)+addxp;
-                                SetXP(player,raceID,newxp);
-
-                                LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                KillPlayer(index,client,"flaming_wrath");
-                            }
-                            else
-                            {
-                                LogDamage(client, index, "suicide_bomb", "Suicide Bomb", hp);
-                                HurtPlayer(index,hp,client,"suicide_bomb");
-                            }
+                            HurtPlayer(index,hp,client,"suicide_bomb",
+                                       "Suicide Bomb", 5+ult_level);
                         }
                     }
                 }

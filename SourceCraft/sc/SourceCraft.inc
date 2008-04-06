@@ -61,27 +61,6 @@ native CreateHelpCommand(String:name[],String:desc[]);
 native GetShopItem(String:name[]);
 
 /**
- * Kill a player.
- * @param client: The client's index you want.
- * @param weapon: The weapon used to deal the damage to the client.
- * @param attacker: The index of the attacker.
- * @param attacker: The index of the assister.
- * @noreturn
- */
-native KillPlayer(client, attacker=0, const String:weapon[]="", assister=0);
-
-/**
- * Take health from (damage) a player
- * @param client: The client's index you want.
- * @param damage: The amount to damage to deal to the client.
- * @param weapon: The weapon used to deal the damage to the client.
- * @param attacker: The index of the attacker.
- * @param attacker: The index of the assister.
- * @noreturn
- */
-native HurtPlayer(client, damage, attacker=0, const String:weapon[]="", assister=0);
-
-/**
  * Give health to (heal) a player
  * @param client: The client's index you want.
  * @param amount: The amount of health to give to the client.
@@ -91,6 +70,31 @@ native HurtPlayer(client, damage, attacker=0, const String:weapon[]="", assister
  * native HealPlayer(client, amount,health=-1,max=-1);
  */
 native HealPlayer(client, amount,health=-1,max=-1);
+
+/**
+ * Take health from (damage) a player
+ * @param victim: The victim's index you want.
+ * @param damage: The amount to damage to deal to the victim.
+ * @param attacker: The index of the attacker.
+ * @param weapon_name: The name of the weapon used to deal the damage to the client.
+ * @param weapon_desc: The description of the weapon used to deal the damage to the client.
+ * @param xp: Amount of extra xp for a kill.
+ * @noreturn
+ */
+native HurtPlayer(victim, damage, attacker=0, const String:weapon_name[]="",
+                  const String:weapon_desc[]="", xp=0);
+
+/**
+ * Kill a player.
+ * @param victim: The victim's index.
+ * @param attacker: The index of the attacker.
+ * @param weapon_name: The name of the weapon used to deal the damage to the client.
+ * @param weapon_desc: The description of the weapon used to deal the damage to the client.
+ * @param xp: Amount of extra xp for a kill.
+ * @noreturn
+ */
+native KillPlayer(victim, attacker=0, const String:weapon_name[]="",
+                  const String:weapon_desc[]="", xp=0);
 
 /**
  * Get a Player's TF2 class

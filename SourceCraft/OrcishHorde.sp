@@ -163,7 +163,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         new lightning_level = GetUpgradeLevel(player,race,lightningID);
         if (lightning_level)
-            ChainLightning(player,client,lightning_level);
+            ChainLightning(client,lightning_level);
     }
 }
 
@@ -413,7 +413,7 @@ bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:play
     return false;
 }
 
-ChainLightning(Handle:player,client,ultlevel)
+ChainLightning(client,ultlevel)
 {
     new dmg;
     new Float:range;
@@ -468,24 +468,7 @@ ChainLightning(Handle:player,client,ultlevel)
                                               0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
                             TE_SendToAll();
 
-                            new new_health=GetClientHealth(index)-dmg;
-                            if (new_health <= 0)
-                            {
-                                new_health=0;
-
-                                new addxp=5+ultlevel;
-                                new newxp=GetXP(player,raceID)+addxp;
-                                SetXP(player,raceID,newxp);
-
-                                LogKill(client, index, "chain_lightning", "Chain Lightning", 40, addxp);
-                                KillPlayer(index);
-                            }
-                            else
-                            {
-                                LogDamage(client, index, "chain_lightning", "Chain Lightning", 40);
-                                HurtPlayer(index, dmg, client, "chain_lightning");
-                            }
-
+                            HurtPlayer(index,dmg,client,"chain_lightning", "Chain Lightning", 5+ultlevel);
                             last=index;
                         }
                     }

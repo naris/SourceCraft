@@ -402,30 +402,10 @@ public Bomber(client,Handle:player,level,bool:ondeath)
                     {
                         if (TraceTarget(client, index, client_location, check_location))
                         {
-                            new newhealth = GetClientHealth(index)-hp;
-                            if (newhealth <= 0)
-                            {
-                                newhealth=0;
-                                new addxp=5+level;
-                                new newxp=GetXP(player,raceID)+addxp;
-                                SetXP(player,raceID,newxp);
-
-                                if (ondeath)
-                                    LogKill(client, index, "suicide_bomb", "Suicide Bomb", hp, addxp);
-                                else
-                                    LogKill(client, index, "mad_bomber", "Mad Bomber", hp, addxp);
-
-                                KillPlayer(index);
-                            }
+                            if (ondeath)
+                                HurtPlayer(index,hp,client,"suicide_bomb", "Suicide Bomb", 5+level);
                             else
-                            {
-                                if (ondeath)
-                                    LogDamage(client, index, "suicide_bomb", "Suicide Bomb", hp);
-                                else
-                                    LogDamage(client, index, "mad_bomber", "Mad Bomber", hp);
-
-                                SetEntityHealth(index,newhealth);
-                            }
+                                HurtPlayer(index,hp,client,"mad_bomber", "Mad Bomber", 5+level);
                         }
                     }
                 }

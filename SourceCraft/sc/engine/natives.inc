@@ -143,115 +143,6 @@ public Native_GetShopItem(Handle:plugin,numParams)
 }
 
 /**
- * Kill a player.
- * @param client: The client's index you want.
- * @param attacker: The index of the attacker.
- * @param weapon: The weapon used to deal the damage to the client.
- * @param assister: The index of the assister.
- * @noreturn
- *
- * native KillPlayer(client, attacker=0, const String:weapon[]="", assister=0);
- */
-public Native_KillPlayer(Handle:plugin,numParams)
-{
-    if (numParams >= 1 && numParams <= 4)
-    {
-        new client = GetNativeCell(1);
-        ForcePlayerSuicide(client);
-
-        /*
-        new Handle:event = CreateEvent("player_death");
-        if (event != INVALID_HANDLE)
-        {
-            new attacker = 0;
-            new assister = 0;
-            decl String:weapon[64] = "";
-            if (numParams >= 2)
-            {
-                attacker = GetNativeCell(2);
-                if (numParams >= 3)
-                {
-                    GetNativeString(3,weapon,sizeof(weapon));
-                    if (numParams >= 4)
-                        assister = GetNativeCell(4);
-                }
-            }
-
-            SetEventInt(event, "userid", GetClientUserId(client));
-            SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
-            SetEventString(event, "weapon", weapon);
-            SetEventInt(event, "assister", (assister) ? GetClientUserId(assister) : 0);
-            SetEventBool(event, "from_sourcecraft", true);
-            FireEvent(event);
-        }
-        */
-
-        SaveHealth(client);
-        return 0;
-    }
-    else
-        return -1;
-} 
-
-/**
- * Take health from (damage) a player
- * @param client: The client's index you want.
- * @param damage: The amount to damage to deal to the client.
- * @param attacker: The index of the attacker.
- * @param weapon: The weapon used to deal the damage to the client.
- * @param assister: The index of the assister.
- * @noreturn
- *
- * native HurtPlayer(client, damage, attacker=0, const String:weapon[]="", assister=0);
- */
-public Native_HurtPlayer(Handle:plugin,numParams)
-{
-    if (numParams >= 2 && numParams <= 5)
-    {
-        new victim = GetNativeCell(1);
-        new damage = GetNativeCell(2);
-        new health = GetClientHealth(victim) - damage;
-        if (health > 0)
-        {
-            SetEntityHealth(victim,health);
-            new Handle:event = CreateEvent("player_hurt");
-            if (event != INVALID_HANDLE)
-            {
-                new attacker = 0;
-                new assister = 0;
-                decl String:weapon[64] = "";
-                if (numParams >= 3)
-                {
-                    attacker = GetNativeCell(3);
-                    if (numParams >= 4)
-                    {
-                        GetNativeString(4,weapon,sizeof(weapon));
-                        if (numParams >= 5)
-                            assister = GetNativeCell(5);
-                    }
-                }
-
-                SetEventInt(event, "userid", GetClientUserId(victim));
-                SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
-                SetEventInt(event, "health", health);
-                SetEventInt(event, "damage", damage);
-                SetEventString(event, "weapon", weapon);
-                SetEventInt(event, "assister", (assister) ? GetClientUserId(assister) : 0);
-                SetEventBool(event, "from_sourcecraft", true);
-                FireEvent(event);
-            }
-        }
-        else
-            ForcePlayerSuicide(victim);
-
-        SaveHealth(victim);
-        return health;
-    }
-    else
-        return -1;
-}
-
-/**
  * Give health to (heal) a player
  * @param client: The client's index you want.
  * @param amount: The amount of health to give to the client.
@@ -278,6 +169,127 @@ public Native_HealPlayer(Handle:plugin,numParams)
     }
     else
         return -1;
+}
+
+/**
+ * Take health from (damage) a player
+ * @param victim: The victim's index you want.
+ * @param damage: The amount to damage to deal to the client.
+ * @param attacker: The index of the attacker.
+ * @param weapon_name: The name of the weapon used to deal the damage to the client.
+ * @param weapon_desc: The description of the weapon used to deal the damage to the client.
+ * @param xp: Amount of extra xp for a kill.
+ * @noreturn
+ * native HurtPlayer(victim, damage, attacker=0, const String:weapon_name[]="",
+ *                   const String:weapon_desc[]="", xp=0);
+ */
+public Native_HurtPlayer(Handle:plugin,numParams)
+{
+    if (numParams >= 2 && numParams <= 6)
+    {
+        new victim = GetNativeCell(1);
+        new damage = GetNativeCell(2);
+        new attacker = 0;
+        new xp = 0;
+        decl String:weapon_name[64] = "";
+        decl String:weapon_desc[64] = "";
+        if (numParams >= 3)
+        {
+            attacker = GetNativeCell(3);
+            if (numParams >= 4)
+            {
+                GetNativeString(4,weapon_name,sizeof(weapon_name));
+                if (numParams >= 5)
+                {
+                    GetNativeString(5,weapon_desc,sizeof(weapon_desc));
+                    if (numParams >= 6)
+                        xp = GetNativeCell(6);
+                }
+            }
+        }
+
+        new health = GetClientHealth(victim) - damage;
+        if (health > 0)
+        {
+            SetEntityHealth(victim,health);
+            new Handle:event = CreateEvent("player_hurt");
+            if (event != INVALID_HANDLE)
+            {
+                LogDamage(attacker, victim, weapon_name, weapon_desc, damage);
+
+                SetEventInt(event, "userid", GetClientUserId(victim));
+                SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
+                SetEventInt(event, "health", health);
+                SetEventInt(event, "damage", damage);
+                SetEventString(event, "weapon", weapon_name);
+                SetEventBool(event, "from_sourcecraft", true);
+                FireEvent(event);
+            }
+        }
+        else
+            KillPlayer(victim, attacker, weapon_name, weapon_desc, xp);
+
+        SaveHealth(victim);
+        return health;
+    }
+    else
+        return -1;
+}
+
+/**
+ * Kill a player.
+ * @param victim: The victim's index.
+ * @param attacker: The index of the attacker.
+ * @param weapon_name: The name of the weapon used to deal the damage to the client.
+ * @param weapon_desc: The description of the weapon used to deal the damage to the client.
+ * @param xp: Amount of extra xp for a kill.
+ * @noreturn
+ * native KillPlayer(victim, attacker=0, const String:weapon_name[]="",
+ *                   const String:weapon_desc[]="", xp=0);
+ */
+public Native_KillPlayer(Handle:plugin,numParams)
+{
+    if (numParams >= 1 && numParams <= 5)
+    {
+        new victim = GetNativeCell(1);
+        new attacker = 0;
+        new xp = 0;
+        decl String:weapon_name[64] = "";
+        decl String:weapon_desc[64] = "";
+        if (numParams >= 2)
+        {
+            attacker = GetNativeCell(2);
+            if (numParams >= 3)
+            {
+                    GetNativeString(3,weapon_name,sizeof(weapon_name));
+                    if (numParams >= 4)
+                    {
+                        GetNativeString(4,weapon_desc,sizeof(weapon_desc));
+                        if (numParams >= 5)
+                            xp = GetNativeCell(5);
+                    }
+            }
+        }
+
+        KillPlayer(attacker, victim, weapon_name, weapon_desc, xp);
+        SaveHealth(victim);
+        return 0;
+    }
+    else
+        return -1;
+} 
+
+KillPlayer(victim, attacker, String:weapon_name[], String:weapon_desc[], xp)
+{
+    ForcePlayerSuicide(victim);
+    if (xp && attacker)
+    {
+        new Handle:attacker_player = GetPlayerHandle(attacker);
+        new race=GetRace(attacker_player);
+        new newxp=GetXP(attacker_player,race)+xp;
+        SetXP(attacker_player,race,newxp);
+    }
+    LogKill(attacker, victim, weapon_name, weapon_desc, xp);
 }
 
 /**

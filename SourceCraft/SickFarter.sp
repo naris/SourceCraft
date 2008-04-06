@@ -367,20 +367,10 @@ public Action:PersistFart(Handle:timer,any:client)
                             {
                                 LogMessage("Farting on %d->%N!", index, index);
                                 new amt=GetRandomInt(minDmg,maxDmg);
-                                if (HurtPlayer(index,amt,client,"flatulence") <= 0)
-                                {
-                                    new addxp=5+fart_level;
-                                    new newxp=GetXP(player,raceID)+addxp;
-                                    SetXP(player,raceID,newxp);
-
+                                if (HurtPlayer(index,amt,client,"flatulence", "Flatulence", 5+fart_level) <= 0)
                                     LogMessage("Fart killed %d->%N!", index, index);
-                                    LogKill(client, index, "flatulence", "Flatulence", amt);
-                                }
                                 else
-                                {
                                     LogMessage("Fart damaged %d->%N!", index, index);
-                                    LogDamage(client, index, "flatulence", "Flatulence", amt);
-                                }
 
                                 if (++count > num)
                                     break;
