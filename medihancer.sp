@@ -41,10 +41,12 @@ new greenColor[4] = {75, 255, 75, 255};
 new blueColor[4] = {75, 75, 255, 255};
 new greyColor[4] = {128, 128, 128, 255};
 
-//new bool:g_BeaconCount[MAXPLAYERS+1];
+new g_BeaconCount[MAXPLAYERS+1];
 
 new Handle:g_IsMedihancerOn = INVALID_HANDLE;
+new Handle:g_EnableBeacon = INVALID_HANDLE;
 new Handle:g_BeaconRadius = INVALID_HANDLE;
+new Handle:g_PingCount = INVALID_HANDLE;
 new g_TF_ClassOffsets, g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
     g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
 
@@ -52,7 +54,9 @@ public OnPluginStart()
 {
     CreateConVar("sm_tf_medihancer", PL_VERSION, "Medihancer", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     g_IsMedihancerOn = CreateConVar("sm_medihancer","3","Enable/Disable medihancer");
+    g_EnableBeacon = CreateConVar("sm_medihancer_beacon","3","Enable/Disable medihancer beacon");
     g_BeaconRadius = CreateConVar("sm_medihancer_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.", 0, true, 50.0, true, 1500.0);
+    g_PingCount = CreateConVar("sm_medihancer_ping_count", "4", "Sets the number of beacon pulses inbetween pings for medihancer.");
 
     g_TF_ClassOffsets = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");
     g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
@@ -123,7 +127,31 @@ public Action:Medic_Timer(Handle:timer)
                         if (UberCharge < 100)
                         {
                             TF_SetUberLevel(client, UberCharge+3);
-                            BeaconPing(client, (UberCharge % 2) > 0);
+                            if (GetConVarInt(g_EnableBeacon))
+                            {
+                                new count = GetConVarInt(g_PingCount);
+                                if (count > 0)
+                                {
+                                    new bool:ping = (++g_BeaconCount[client] >= count);
+                                    BeaconPing(client, ping);
+                                    if (ping)
+                                        g_BeaconCount[client] = 0;
+                                }
+                            }
+                            else
+                            {
+                                new count = GetConVarInt(g_PingCount);
+                                if (count > 0)
+                                {
+                                    if (++g_BeaconCount[client] >= count)
+                                    {
+                                        new Float:vec[3];
+                                        GetClientEyePosition(client, vec);
+                                        EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
+                                        g_BeaconCount[client] = 0;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
