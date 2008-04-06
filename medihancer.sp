@@ -41,9 +41,12 @@ new greenColor[4] = {75, 255, 75, 255};
 new blueColor[4] = {75, 75, 255, 255};
 new greyColor[4] = {128, 128, 128, 255};
 
+//new bool:g_BeaconCount[MAXPLAYERS+1];
+
 new Handle:g_IsMedihancerOn = INVALID_HANDLE;
 new Handle:g_BeaconRadius = INVALID_HANDLE;
-new g_TF_ClassOffsets, g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
+new g_TF_ClassOffsets, g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
+    g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
 
 public OnPluginStart()
 {
@@ -120,7 +123,7 @@ public Action:Medic_Timer(Handle:timer)
                         if (UberCharge < 100)
                         {
                             TF_SetUberLevel(client, UberCharge+3);
-                            BeaconPing(client);
+                            BeaconPing(client, (UberCharge % 2) > 0);
                         }
                     }
                 }
@@ -129,7 +132,7 @@ public Action:Medic_Timer(Handle:timer)
     }
 }
 
-BeaconPing(client)
+BeaconPing(client,bool:ping)
 {
     new team = GetClientTeam(client);
 
@@ -156,7 +159,9 @@ BeaconPing(client)
     TE_SendToAll();
 
     GetClientEyePosition(client, vec);
-    EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
+
+    if (ping)
+        EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
 }
 
 public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
