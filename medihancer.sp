@@ -31,15 +31,20 @@ public Plugin:myinfo =
     url = "http://www.jigglysfunhouse.net/"
 }
 
-// Following are model indexes for temp entities
-new g_BeamSprite;
-new g_HaloSprite;
+// Charged sounds
+new String:Charged[3][] = { "vo/medic_autochargeready01",
+                            "vo/medic_autochargeready02",
+                            "vo/medic_autochargeready03"};
 
 // Basic color arrays for temp entities
 new redColor[4] = {255, 75, 75, 255};
 new greenColor[4] = {75, 255, 75, 255};
 new blueColor[4] = {75, 75, 255, 255};
 new greyColor[4] = {128, 128, 128, 255};
+
+// Following are model indexes for temp entities
+new g_BeamSprite;
+new g_HaloSprite;
 
 new g_BeaconCount[MAXPLAYERS+1];
 
@@ -86,6 +91,9 @@ public OnMapStart()
     g_ResourceEnt = FindResourceObject();
 
     PrecacheSound(SOUND_BLIP, true);
+    PrecacheSound(Charged[0], true);
+    PrecacheSound(Charged[1], true);
+    PrecacheSound(Charged[2], true);
 
     g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
     g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
@@ -126,6 +134,11 @@ public Action:Medic_Timer(Handle:timer)
                         new UberCharge = TF_GetUberLevel(client);
                         if (UberCharge < 100)
                         {
+                            if (UberCharge >= 100)
+                            {
+                                UberCharge = 100;
+                                EmitSoundToAll(Charged[GetRandomInt(0,2)],client);
+                            }
                             TF_SetUberLevel(client, UberCharge+3);
                             if (GetConVarInt(g_EnableBeacon))
                             {
