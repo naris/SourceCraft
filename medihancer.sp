@@ -51,39 +51,50 @@ new g_BeaconCount[MAXPLAYERS+1];
 new Handle:g_IsMedihancerOn = INVALID_HANDLE;
 new Handle:g_EnableBeacon = INVALID_HANDLE;
 new Handle:g_BeaconRadius = INVALID_HANDLE;
+new Handle:g_ChargeAmount = INVALID_HANDLE;
+new Handle:g_ChargeTimer = INVALID_HANDLE;
 new Handle:g_PingCount = INVALID_HANDLE;
 new g_TF_ClassOffsets, g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
     g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
 
 public OnPluginStart()
 {
-    CreateConVar("sm_tf_medihancer", PL_VERSION, "Medihancer", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     g_IsMedihancerOn = CreateConVar("sm_medihancer","3","Enable/Disable medihancer");
     g_EnableBeacon = CreateConVar("sm_medihancer_beacon","3","Enable/Disable medihancer beacon");
     g_BeaconRadius = CreateConVar("sm_medihancer_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.", 0, true, 50.0, true, 1500.0);
     g_PingCount = CreateConVar("sm_medihancer_ping_count", "4", "Sets the number of beacon pulses inbetween pings for medihancer.");
+    g_ChargeAmount = CreateConVar("sm_medihancer_charge_amount", "3", "Sets the amount of uber charge to add time for medihancer.");
+    g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "3.0", "Sets the time iinterval for medihancer.");
+
+    // Execute the config file
+    AutoExecConfig(true, "sm_medihancer");
+
+    CreateConVar("sm_tf_medihancer", PL_VERSION, "Medihancer", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
     g_TF_ClassOffsets = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");
-    g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
-    g_TF_ChargeReleaseOffset = FindSendPropOffs("CWeaponMedigun", "m_bChargeRelease");
-    g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
-    g_TF_TeamNumOffset = FindSendPropOffs("CTFItem", "m_iTeamNum");
-
     if (g_TF_ClassOffsets == -1)
         SetFailState("Cannot find TF2 m_iPlayerClass offset!");
+
+    g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
     if (g_TF_ChargeLevelOffset == -1)
         SetFailState("Cannot find TF2 m_flChargeLevel offset!");
+
+    g_TF_ChargeReleaseOffset = FindSendPropOffs("CWeaponMedigun", "m_bChargeRelease");
     if (g_TF_ChargeReleaseOffset == -1)
         SetFailState("Cannot find TF2 m_bChargeRelease offset!");
+
+    g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
     if (g_TF_CurrentOffset == -1)
         SetFailState("Cannot find TF2 m_hActiveWeapon offset!");
+
+    g_TF_TeamNumOffset = FindSendPropOffs("CTFItem", "m_iTeamNum");
     if (g_TF_TeamNumOffset == -1)
         SetFailState("Cannot find TF2 m_iTeamNum offset!");
 
     HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
     HookEvent("teamplay_round_active", Event_RoundStart);
 
-    CreateTimer(3.0, Medic_Timer, _, TIMER_REPEAT);
+    CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
 }
 
 public OnMapStart()
@@ -134,12 +145,14 @@ public Action:Medic_Timer(Handle:timer)
                         new UberCharge = TF_GetUberLevel(client);
                         if (UberCharge < 100)
                         {
+                            UberCharge += GetConVarInt(g_ChargeAmount);
                             if (UberCharge >= 100)
                             {
                                 UberCharge = 100;
-                                EmitSoundToAll(Charged[GetRandomInt(0,2)],client);
+                                new num=GetRandomInt(0,2);
+                                EmitSoundToAll(Charged[num],client);
                             }
-                            TF_SetUberLevel(client, UberCharge+3);
+                            TF_SetUberLevel(client, UberCharge);
                             if (GetConVarInt(g_EnableBeacon))
                             {
                                 new count = GetConVarInt(g_PingCount);
