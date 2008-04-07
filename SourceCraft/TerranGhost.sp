@@ -624,7 +624,7 @@ public Action:NuclearLockOn(Handle:timer,any:client)
 
 public Action:NuclearExplosion(Handle:timer,any:client)
 {
-    new num    = 0;
+    new num = 0;
     if (m_NuclearLaunchLockedOn[client])
     {
         new Handle:player = GetPlayerHandle(client);
@@ -697,22 +697,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                             {
                                 if (TraceTarget(client, index, m_nuclearAimPos[client], check_location))
                                 {
-                                    new newhealth = GetClientHealth(index)-hp;
-                                    if (newhealth <= 0)
-                                    {
-                                        newhealth=0;
-                                        new addxp=5+ult_level;
-                                        new newxp=GetXP(player,raceID)+addxp;
-                                        SetXP(player,raceID,newxp);
-
-                                        //LogKill(client, index, "nuclear_launch", "Nuclear Launch", hp, addxp);
-                                        KillPlayer(index,client,"nuclear_launch");
-                                    }
-                                    else
-                                    {
-                                        LogDamage(client, index, "nuclear_launch", "Nuclear Launch", hp);
-                                        HurtPlayer(index,hp,client,"nuclear_launch");
-                                    }
+                                    HurtPlayer(index,hp,client,"nuclear_launch", "Nuclear Launch", 5+ult_level);
                                     num++;
                                 }
                             }
