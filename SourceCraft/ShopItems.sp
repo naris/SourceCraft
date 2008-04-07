@@ -10,7 +10,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <tf2>
+#include <tf2_nican>
 
 #include "sc/SourceCraft"
 
