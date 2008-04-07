@@ -1,13 +1,19 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: shopmenu.inc
- * Description: The root of all shopmenu specific stuff.
- * Author(s): Anthony Iacono  
+ * File: shopitem.inc
+ * Description: Defines the Shop Item Data.
+ * Author(s): -=|JFH|=-Naris
  */
 
-#define SHOPITEM_NAME   0
-#define SHOPITEM_DESC   1
-#define SHOPITEM_COST   2
+#define ITEM_STRINGS        0
+#define ITEM_COST           1
+#define ITEM_REQUIRED_LEVEL 2
+#define ITEM_DATA_COUNT     3
+
+#define ITEM_NAME           0
+#define ITEM_SHORT_NAME     1
+#define ITEM_DESC           2
+#define ITEM_STRING_COUNT   3
 
 #define GetShopItemCount() GetArraySize(shopVector)
 
@@ -29,28 +35,66 @@ ClearShopVector()
     shopVector = INVALID_HANDLE;
 }
 
-Handle:CreateShopItem(const String:name[], const String:desc[], const String:cost[])
+CreateShopItem(const String:name[], const String:short[],
+               const String:desc[], cost, required_level)
 {
-    new Handle:ret=CreateArray(ByteCountToCells(256));
-    PushArrayString(ret,name);
-    PushArrayString(ret,desc);
-    PushArrayString(ret,cost);
-    return ret;
+    new Handle:newItem=CreateArray();
+
+    new Handle:stringsHandle=CreateArray(ByteCountToCells(192));
+    PushArrayString(stringsHandle,name);
+    PushArrayString(stringsHandle,short);
+    PushArrayString(stringsHandle,desc);
+
+    PushArrayCell(newItem,stringsHandle);
+    PushArrayCell(newItem,cost);
+    PushArrayCell(newItem,required_level);
+    return PushArrayCell(shopVector,newItem); // return index.
 }
 
-Handle:ShopItem(itemnum)
+Handle:GetShopItemHandle(itemnum)
 {
     return GetArrayCell(shopVector,itemnum);
 }
 
-GetShopItem(const String:name[])
+GetItemName(Handle:itemHandle, String:name[], maxlength)
+{
+    new Handle:stringsHandle=GetArrayCell(itemHandle,ITEM_STRINGS);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,ITEM_NAME,name,maxlength);
+}
+
+stock GetItemShortName(Handle:itemHandle, String:name[], maxlength)
+{
+    new Handle:stringsHandle=GetArrayCell(itemHandle,ITEM_STRINGS);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,ITEM_SHORT_NAME,name,maxlength);
+}
+
+GetItemDescription(Handle:itemHandle, String:desc[], maxlength)
+{
+    new Handle:stringsHandle=GetArrayCell(itemHandle,ITEM_STRINGS);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,ITEM_DESC,desc,maxlength);
+}
+
+stock GetItemRequiredLevel(Handle:itemHandle)
+{
+    return GetArrayCell(itemHandle,ITEM_REQUIRED_LEVEL);
+}
+
+GetItemCost(Handle:itemHandle)
+{
+    return GetArrayCell(itemHandle,ITEM_COST);
+}
+
+FindShopItem(const String:name[])
 {
     decl String:curName[64]="";
     new size = GetShopItemCount();
     for(new x=0;x<size;x++)
     {
-        new Handle:item=GetArrayCell(shopVector,x);
-        GetArrayString(item,SHOPITEM_NAME,curName,sizeof(curName));
+        new Handle:itemHandle=GetArrayCell(shopVector,x);
+        GetArrayString(itemHandle,ITEM_SHORT_NAME,curName,sizeof(curName));
         if(!StrEqual(name,curName,false))
             return x;
     }

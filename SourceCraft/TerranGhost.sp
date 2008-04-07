@@ -329,7 +329,7 @@ bool:Cloak(client, Handle:player, level)
     /* If the Player also has the Cloak of Shadows,
      * Decrease the delay and Increase the duration.
      */
-    new cloak = GetShopItem("Cloak of Shadows");
+    new cloak = FindShopItem("Cloak of Shadows");
     if (cloak != -1 && GetOwnsItem(player,cloak))
     {
         alpha    *= 0.90;

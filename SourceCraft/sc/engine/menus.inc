@@ -399,7 +399,7 @@ ShopMenu(client, bool:shopmenu)
             decl String:itemname[64];
             decl String:itembuf[11];
             decl String:linestr[96];
-            decl String:cost[8];
+            decl cost;
 
             new count = 0;
             for(new x=0;x<shopItemCount;x++)
@@ -408,12 +408,12 @@ ShopMenu(client, bool:shopmenu)
                 {
                     count++;
                     Format(itembuf,sizeof(itembuf),"%d",x);
-                    itemHandle=ShopItem(x);
-                    GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+                    itemHandle=GetShopItemHandle(x);
+                    GetItemName(itemHandle, itemname, sizeof(itemname));
                     if (shopmenu)
                     {
-                        GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-                        Format(linestr,sizeof(linestr),"%s - %s crystals",itemname,cost);
+                        cost = GetItemCost(itemHandle);
+                        Format(linestr,sizeof(linestr),"%s - %d crystals",itemname,cost);
                         AddMenuItem(shopMenu,itembuf,linestr);
                     }
                     else
@@ -465,17 +465,14 @@ public ShopMenu_Item(client,Handle:playerHandle,item)
     new Handle:shopMenu_Item=CreateMenu(ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
     SetMenuExitBackButton(shopMenu_Item,true);
+    new Handle:itemHandle=GetShopItemHandle(item);
     decl String:itemname[64];
-    new Handle:itemHandle;
-    itemHandle=ShopItem(item);
-    GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+    GetItemName(itemHandle, itemname, sizeof(itemname));
     decl String:desc[300];
-    GetArrayString(itemHandle,SHOPITEM_DESC,desc,sizeof(desc));
+    GetItemDescription(itemHandle, desc, sizeof(desc));
     Format(desc,sizeof(desc),"Description: %s",desc);
-    decl String:cost[32];
-    GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-    Format(cost,sizeof(cost),"Cost: %s crystals",cost);
-    SetMenuTitle(shopMenu_Item,"[SourceCraft] Shop Item - %s - You have %d %s\n%s\n%s",
+    new cost = GetItemCost(itemHandle);
+    SetMenuTitle(shopMenu_Item,"[SourceCraft] Shop Item - %s - You have %d %s\n%s\nCost: %d crystals",
                  itemname,credits,(credits == 1) ? "crystal" : "crystals",desc,cost);
     decl String:buf[11];
     Format(buf,sizeof(buf),"%d",item);
@@ -505,19 +502,17 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
             {
                 // Purchase
                 new credits=GetCredits(playerHandle);
-                decl String:cost[11];
-                new Handle:itemHandle=ShopItem(item);
+                new Handle:itemHandle=GetShopItemHandle(item);
 
                 decl String:itemname[64];
-                GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+                GetItemName(itemHandle, itemname, sizeof(itemname));
 
-                GetArrayString(itemHandle,SHOPITEM_COST,cost,sizeof(cost));
-                new cost_num=StringToInt(cost);
-                if(credits>=cost_num)
+                new cost = GetItemCost(itemHandle);
+                if(credits>=cost)
                 {
                     if(!GetOwnsItem(playerHandle,item))
                     {
-                        new newcredits=credits-cost_num;
+                        new newcredits=credits-cost;
                         SetCredits(playerHandle,newcredits);
                         SetOwnsItem(playerHandle,item,1);
                         Call_StartForward(g_OnItemPurchaseHandle);
@@ -580,8 +575,8 @@ ShowItems(client,target,Handle:playerHandle)
     {
         if (GetOwnsItem(playerHandle,x))
         {
-            itemHandle=ShopItem(x);
-            GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+            itemHandle=GetShopItemHandle(x);
+            GetItemName(itemHandle, itemname, sizeof(itemname));
             DrawPanelText(panel,itemname);
         }
     }
@@ -973,8 +968,8 @@ Admin_GiveShopItem(client,target)
         new shopItemCount = GetArraySize(shopVector);
         for(new x=0;x<shopItemCount;x++)
         {
-            itemHandle=ShopItem(x);
-            GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+            itemHandle=GetShopItemHandle(x);
+            GetItemName(itemHandle, itemname, sizeof(itemname));
             AddMenuItem(menu,buf,itemname);
         }
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
@@ -1010,9 +1005,9 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
                 Call_PushCell(item);
                 new result;
                 Call_Finish(result);
-                new Handle:itemHandle=ShopItem(item);
+                new Handle:itemHandle=GetShopItemHandle(item);
                 decl String:itemname[64];
-                GetArrayString(itemHandle,SHOPITEM_NAME,itemname,sizeof(itemname));
+                GetItemName(itemHandle, itemname, sizeof(itemname));
 
                 PrintToChat(client, "%c[SourceCraft] %cYou gave \"%N\" a %s.",
                             COLOR_GREEN,COLOR_DEFAULT,target,itemname);

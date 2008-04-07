@@ -19,7 +19,7 @@ new Handle:g_OnPlayerDeathEventHandle = INVALID_HANDLE;
 /**
  * Registers a race with the SourceCraft plugin
  * @param name: The name of the race. (max 64)
- * @param short: The shortname used for SQL stuff. (max 16) 
+ * @param short: The short name of the race. (max 16) 
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
  * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
  * @param required_level: The overeall level the player must obtain before changing to this race.
@@ -81,22 +81,25 @@ public Native_AddUpgrade(Handle:plugin,numParams)
 /**
  * Registers a shop item with the SourceCraft plugin
  * @param name: The name of the item. (max 64)
- * @param desc: The description of the item. (max 256) 
- * @param cost: The cost of the item as a string for vector reasons. (max 4 chars)
+ * @param short: The short name of the item. (max 16) 
+ * @param desc: The description of the item. (max 192) 
+ * @param cost: The cost of the item.
+ * @param required_level: The overall level the player must obtain before buying this item.
  * @return The return value will be the item index or -1 if there was a problem.
  *
  * native CreateShopItem(String:name[],String:desc[],String:cost[]);
  */         
 public Native_CreateShopItem(Handle:plugin,numParams)
 {
-    if(numParams==3)
+    if (numParams >= 4 && numParams <= 5)
     {
-        decl String:name[64],String:desc[256],String:cost[4];
+        decl String:name[64],String:short[16],String:desc[192];
         GetNativeString(1,name,sizeof(name));
-        GetNativeString(2,desc,sizeof(desc));
-        GetNativeString(3,cost,sizeof(cost));
-        new Handle:item=CreateShopItem(name,desc,cost);
-        return PushArrayCell(shopVector,item);
+        GetNativeString(2,short,sizeof(short));
+        GetNativeString(3,desc,sizeof(desc));
+        new cost = GetNativeCell(4);
+        new required_level = (numParams >= 5) ? GetNativeCell(5) : 0;
+        return CreateShopItem(name,short,desc,cost,required_level);
     }
     else
         return -1;
@@ -124,19 +127,19 @@ public Native_CreateHelpCommand(Handle:plugin,numParams)
 }
 
 /**
- * Get the ShopItem ID of a shop item
+ * Find the ShopItem ID of a shop item
  * @param name: The name of the item. (max 64)
  * @return The return value will be the item index or -1 if there was a problem.
  *
- * native GetShopItem(String:name[]);
+ * native FindShopItem(String:name[]);
  */         
-public Native_GetShopItem(Handle:plugin,numParams)
+public Native_FindShopItem(Handle:plugin,numParams)
 {
     if(numParams==1)
     {
         decl String:name[64];
         GetNativeString(1,name,sizeof(name));
-        return GetShopItem(name);
+        return FindShopItem(name);
     }
     else
         return -1;
@@ -912,7 +915,7 @@ bool:InitNatives()
     CreateNative("AddUpgrade",Native_AddUpgrade);
     CreateNative("CreateShopItem",Native_CreateShopItem);
     CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
-    CreateNative("GetShopItem",Native_GetShopItem);
+    CreateNative("FindShopItem",Native_FindShopItem);
     CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("HurtPlayer",Native_HurtPlayer);
     CreateNative("HealPlayer",Native_HealPlayer);

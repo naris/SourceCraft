@@ -54,11 +54,11 @@ native CreateShopItem(String:name[],String:desc[],String:cost[]);
 native CreateHelpCommand(String:name[],String:desc[]);
 
 /**
- * Get the ShopItem ID of a shop item
+ * Find the ShopItem ID of a shop item
  * @param name: The name of the item. (max 64)
  * @return The return value will be the item index or -1 if there was a problem.
  */         
-native GetShopItem(String:name[]);
+native FindShopItem(String:name[]);
 
 /**
  * Give health to (heal) a player
