@@ -44,7 +44,7 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/engine/offsets"
 #include "sc/engine/damage"
 #include "sc/engine/races"
-#include "sc/engine/shopmenu"
+#include "sc/engine/shopitems"
 #include "sc/engine/playertracking"
 #include "sc/engine/db"
 #include "sc/engine/natives"
