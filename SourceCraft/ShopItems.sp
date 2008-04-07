@@ -842,7 +842,7 @@ public Action:Ankh(Handle:timer,any:args)
 {
     if (GameType == cstrike)
     {
-        decl String:auth[64] = "";
+        decl String:auth[64];
         GetArrayString(args,AUTHINFO_ID,auth,sizeof(auth));
         new client=PlayerOfAuthString(auth);
         if(client)
@@ -934,7 +934,7 @@ UsePeriapt(client)
 
 LootCorpse(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
-    decl String:weapon[64] = "";
+    decl String:weapon[64];
     new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
     new bool:is_melee=IsMelee(weapon, is_equipment);
     new bool:backstab=GetEventInt(event, "customkill") == 2;

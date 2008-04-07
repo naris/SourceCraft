@@ -78,7 +78,7 @@ DoLevelCheck(client,Handle:playerHandle)
                     SetOverallLevel(playerHandle, ++oLevel);
                     SetLevel(playerHandle,race,level);
 
-                    decl String:raceName[64] = "";
+                    decl String:raceName[64];
                     GetRaceName(GetRaceHandle(race),raceName,sizeof(raceName));
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);

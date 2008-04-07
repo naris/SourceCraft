@@ -196,7 +196,7 @@ GetUpgradeCount(Handle:raceHandle)
 
 FindRace(const String:name[])
 {
-    decl String:curName[64]="";
+    decl String:curName[64];
     new size = GetArraySize(arrayRaces);
     for(new race=0;race<size;race++)
     {

@@ -18,7 +18,7 @@ new bool:g_MapChanging = false;
 
 ConnectToDatabase()
 {
-    decl String:error[256] = "";
+    decl String:error[256];
     DBIDB = SQL_Connect("sourcecraft",true,error,sizeof(error));
     if (DBIDB == INVALID_HANDLE || error[0] != '\0')
     {
@@ -40,7 +40,7 @@ ConnectToDatabase()
 SQL_CreateTables()
 {
     // Create the sc_races table, if it doesn't exist
-    decl String:SQLString[512] = "";
+    decl String:SQLString[512];
     Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
             "CREATE TABLE IF NOT EXISTS sc_races ",
             "(race_ident int not null auto_increment,",
@@ -97,7 +97,7 @@ public SQL_CreatePlayers(Handle:owner, Handle:hndl, const String:error[], any:da
     else
     {
         // Create the sc_player_races table, if it doesn't exist
-        decl String:SQLString[2560] = "";
+        decl String:SQLString[2560];
 
         if (DBIsSQLite)
         {
@@ -138,7 +138,7 @@ public SQL_CreatePlayerRaces(Handle:owner, Handle:hndl, const String:error[], an
     else
     {
         // Create the sc_player_upgrades table, if it doesn't exist
-        decl String:SQLString[2048] = "";
+        decl String:SQLString[2048];
 
         if (DBIsSQLite)
         {
@@ -186,7 +186,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
     new race_ident = -1;
     if(DBIDB)
     {
-        decl String:SQLString[512] = "";
+        decl String:SQLString[512];
 
         // Process this query in the main thread (NOT a worker thread)
         // since we have to return the result to the caller!
@@ -217,7 +217,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
                         race_ident = SQL_FetchInt(race_query,0);
                     else
                     {
-                        decl String:error[256] = "";
+                        decl String:error[256];
                         SQL_GetError(DBIDB, error, sizeof(error));
                         LogError("Unable to fetch race_ident for %s: %s",
                                  shortName, error);
@@ -226,7 +226,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
                 }
                 else
                 {
-                    decl String:error[256] = "";
+                    decl String:error[256];
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to query race_ident for %s: %s",
                              shortName, error);
@@ -234,7 +234,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
             }
             else
             {
-                decl String:error[256] = "";
+                decl String:error[256];
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to insert race %s: %s\nSQL:%s",
                          shortName, error, SQLString);
@@ -251,10 +251,10 @@ LoadPlayerData(client,Handle:playerHandle)
     //LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
     if (DBIDB)
     {
-        decl String:steamid[64] = "";
+        decl String:steamid[64];
         if(GetClientAuthString(client,steamid,sizeof(steamid)))
         {
-            decl String:SQLString[512] = "";
+            decl String:SQLString[512];
 
             // Process this query in the main thread (NOT a worker thread)
             // since we have to return the result to the caller!
@@ -305,7 +305,7 @@ LoadPlayerData(client,Handle:playerHandle)
             }
             else
             {
-                decl String:error[256] = "";
+                decl String:error[256];
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
                          client, steamid, error, SQLString);
@@ -324,7 +324,7 @@ LoadPlayerData(client,Handle:playerHandle)
 
 LoadPlayerRaceData(client, Handle:playerHandle, raceId)
 {
-    decl String:SQLString[512] = "";
+    decl String:SQLString[512];
 
     //LogMessage("LoadPlayerRaceData(%N), DBIDB=%d", client, DBIDB);
 
@@ -374,7 +374,7 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
                 }
                 else
                 {
-                    decl String:error[256] = "";
+                    decl String:error[256];
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to query %N's player data: %s\nSQL:%s",
                              client, error, SQLString);
@@ -422,10 +422,10 @@ SavePlayer(Handle:playerHandle)
 
 bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
 {
-    decl String:steamid[64]="";
+    decl String:steamid[64];
     if(GetClientAuthString(client,steamid,sizeof(steamid)))
     {
-        decl String:SQLString[512] = "";
+        decl String:SQLString[512];
 
         new credits           = GetCredits(playerHandle);
         new overall_level     = GetOverallLevel(playerHandle);
@@ -505,7 +505,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 else
                 {
                     SetDatabaseIdent(playerHandle,-1);
-                    decl String:error[256] = "";
+                    decl String:error[256];
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to update %N's player record, client=%d, handle=%x, ident=%d: %s\nSQL:%s",
                              client, client, playerHandle, player_ident, error, SQLString);
@@ -572,7 +572,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
             }
             else
             {
-                decl String:error[256] = "";
+                decl String:error[256];
                 SQL_GetError(DBIDB, error, sizeof(error));
                 LogError("Unable to insert %N's player data, client=%d, handle=%x, ident=%d: %s\nSQL:%s",
                         client, client, playerHandle, player_ident, error, SQLString);
@@ -650,7 +650,7 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
 
 SavePlayerRaceData(client, Handle:playerHandle, player_ident, bool:threaded)
 {
-    decl String:SQLString[512] = "";
+    decl String:SQLString[512];
 
     new raceId            = GetRace(playerHandle);
     new Handle:raceHandle = GetRaceHandle(raceId);
@@ -697,8 +697,8 @@ SavePlayerRaceData(client, Handle:playerHandle, player_ident, bool:threaded)
         }
         else
         {
-            decl String:error[256] = "";
-            decl String:raceName[64] = "";
+            decl String:error[256];
+            decl String:raceName[64];
             GetRaceShortName(raceHandle, raceName, sizeof(raceName));
             SQL_GetError(DBIDB, error, sizeof(error));
             LogError("Unable to insert/replace/update %s data, client=%d, handle=%x : %s\nSQL:%s",
@@ -725,7 +725,7 @@ public SQL_SavePlayerRace(Handle:owner, Handle:hndl, const String:error[], any:d
 
         if (hndl == INVALID_HANDLE || error[0] != '\0')
         {
-            decl String:raceName[64] = "";
+            decl String:raceName[64];
             GetRaceShortName(raceHandle, raceName, sizeof(raceName));
             LogError("Unable to insert/replace %s data, client=%d, handle=%x : %s",
                      raceName, client, playerHandle, error);
@@ -747,7 +747,7 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
                    raceId, race_ident, Handle:raceHandle,
                    bool:threaded)
 {
-    decl String:SQLString[512] = "";
+    decl String:SQLString[512];
     new bool:dataWritten = false;
     new upgradeCount     = GetUpgradeCount(raceHandle);
     new lastUpgrade      = upgradeCount - 1;
@@ -791,7 +791,7 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
                     SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
                 else
                 {
-                    decl String:error[256] = "";
+                    decl String:error[256];
                     SQL_GetError(DBIDB, error, sizeof(error));
                     LogError("Unable to insert/replace upgrade data, client=%d, handle=%x : %s\nSQL:%s",
                              client, playerHandle, error, SQLString);

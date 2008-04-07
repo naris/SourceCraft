@@ -142,7 +142,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         new bool:assister_revenge=bool:GetEventInt(event,"assister_revenge");
 
         new bool:is_equipment;
-        decl String:weapon[64]  = "";
+        decl String:weapon[64];
         GetWeapon(event, attacker_index, weapon, sizeof(weapon));
 
         if (GameType == cstrike)

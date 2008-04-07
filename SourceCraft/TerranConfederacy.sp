@@ -277,7 +277,7 @@ bool:U238Shells(Handle:event, damage, victim_index, Handle:victim_player, index,
         {
             if(GetRandomInt(1,100)<=25)
             {
-                decl String:weapon[64] = "";
+                decl String:weapon[64];
                 new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
                 if (!IsMelee(weapon, is_equipment))
                 {

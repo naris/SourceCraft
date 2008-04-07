@@ -669,7 +669,7 @@ public Action:PlayerProperties(Handle:timer)
                     new RenderFx:fx=RenderFx:-1;
                     new visibilityRank=-1;
 
-                    decl String:wepName[128] = "";
+                    decl String:wepName[128];
                     GetClientWeapon(client, wepName, 127);
 
                     new bool:isStill = IsStill(client);
@@ -960,7 +960,7 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
             {
                 if (GetEntDataEnt2(obj,m_OwnerOffset) == client)
                 {
-                    decl String:name[32] = "";
+                    decl String:name[32];
                     if (!GetEntityNetClass(obj,name,sizeof(name)) ||
                         (!StrEqual(name, "CCaptureFlag") &&
                          !StrEqual(name, "CSniperDot")))
@@ -970,7 +970,7 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
                         SetEntityRenderFx(obj,fx);
                     }
                     /*
-                       decl String:clsname[128] = "";
+                       decl String:clsname[128];
                        GetEdictClassname(obj, clsname, sizeof(clsname));
 
                     LogMessage("%N has %s(%s)", client, name, clsname);

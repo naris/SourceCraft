@@ -441,7 +441,7 @@ MindControl(client,Handle:player)
                 new Float:distance=DistanceBetween(clientLoc,targetLoc);
                 if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
                 {
-                    decl String:class[32] = "";
+                    decl String:class[32];
                     if (GetEntityNetClass(target,class,sizeof(class)))
                     {
                         new objects:obj;
@@ -521,7 +521,7 @@ MindControl(client,Handle:player)
                                             splashDir[2] = 100.0;
                                             TE_SetupEnergySplash(targetLoc, splashDir, true);
 
-                                            decl String:object[32] = "";
+                                            decl String:object[32];
                                             strcopy(object, sizeof(object), class[7]);
 
                                             new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
@@ -602,7 +602,7 @@ ResetMindControledObjects(client, bool:endRound)
             new target = GetArrayCell(m_StolenObjectList[client], index);
             if (IsValidEntity(target))
             {
-                decl String:class[32] = "";
+                decl String:class[32];
                 if (GetEntityNetClass(target,class,sizeof(class)))
                 {
                     new objects:obj2;

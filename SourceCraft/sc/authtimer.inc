@@ -14,7 +14,7 @@
 
 stock AuthTimer(Float:delay,index,Timer:func)
 {
-    decl String:auth[64] = "";
+    decl String:auth[64];
     GetClientAuthString(index,auth,sizeof(auth));
 
     new Handle:arg=CreateArray(ByteCountToCells(64));
@@ -26,7 +26,7 @@ stock PlayerOfAuthString(const String:auth[])
 {
     new index = 0;
     new max=GetMaxClients();
-    decl String:authStr[64] = "";
+    decl String:authStr[64];
     for (new x=1;x<=max;x++)
     {
         if (IsClientInGame(x))

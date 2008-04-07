@@ -139,7 +139,7 @@ public Native_FindShopItem(Handle:plugin,numParams)
 {
     if(numParams==1)
     {
-        decl String:name[64];
+        decl String:name[16];
         GetNativeString(1,name,sizeof(name));
         return FindShopItem(name);
     }
@@ -196,8 +196,8 @@ public Native_HurtPlayer(Handle:plugin,numParams)
         new damage = GetNativeCell(2);
         new attacker = 0;
         new xp = 0;
-        decl String:weapon_name[64] = "";
-        decl String:weapon_desc[64] = "";
+        decl String:weapon_name[64];
+        decl String:weapon_desc[64];
         if (numParams >= 3)
         {
             attacker = GetNativeCell(3);
@@ -209,7 +209,19 @@ public Native_HurtPlayer(Handle:plugin,numParams)
                     GetNativeString(5,weapon_desc,sizeof(weapon_desc));
                     if (numParams >= 6)
                         xp = GetNativeCell(6);
+                    else
+                        weapon_desc[0] = 0;
                 }
+                else
+                {
+                    weapon_name[0] = 0;
+                    weapon_desc[0] = 0;
+                }
+            }
+            else
+            {
+                weapon_name[0] = 0;
+                weapon_desc[0] = 0;
             }
         }
 
@@ -259,8 +271,8 @@ public Native_KillPlayer(Handle:plugin,numParams)
         new victim = GetNativeCell(1);
         new attacker = 0;
         new xp = 0;
-        decl String:weapon_name[64] = "";
-        decl String:weapon_desc[64] = "";
+        decl String:weapon_name[64];
+        decl String:weapon_desc[64];
         if (numParams >= 2)
         {
             attacker = GetNativeCell(2);
@@ -273,7 +285,19 @@ public Native_KillPlayer(Handle:plugin,numParams)
                     if (numParams >= 5)
                         xp = GetNativeCell(5);
                 }
+                else
+                    weapon_desc[0] = 0;
             }
+            else
+            {
+                weapon_name[0] = 0;
+                weapon_desc[0] = 0;
+            }
+        }
+        else
+        {
+            weapon_name[0] = 0;
+            weapon_desc[0] = 0;
         }
 
         KillPlayer(attacker, victim, weapon_name, weapon_desc, xp);

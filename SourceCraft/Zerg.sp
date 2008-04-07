@@ -279,7 +279,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 {
     new bool:changed=false;
 
-    decl String:weapon[64] = "";
+    decl String:weapon[64];
     new bool:is_equipment=GetWeapon(event,attacker_index,weapon,sizeof(weapon));
     if (IsMelee(weapon, is_equipment))
     {

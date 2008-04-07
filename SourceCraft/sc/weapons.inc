@@ -22,8 +22,10 @@ stock bool:GetWeapon(Handle:event, attacker_index,
         is_equipment = true;
     }
     else
+    {
+        buffer[0] = 0;
         is_equipment = false;
-
+    }
     return is_equipment;
 }
 

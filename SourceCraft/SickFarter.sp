@@ -226,7 +226,7 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
     new pp_level = GetUpgradeLevel(player,raceID,pickPocketID);
     if (pp_level > 0)
     {
-        decl String:weapon[64] = "";
+        decl String:weapon[64];
         new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
         new bool:is_melee=IsMelee(weapon, is_equipment);
 

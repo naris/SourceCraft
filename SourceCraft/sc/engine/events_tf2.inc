@@ -186,7 +186,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
             GiveObjectDestroyedXP(assister_index,assister_player);
     }
 
-    //decl String:weapon[64] = "";
+    //decl String:weapon[64];
     //GetEventString(event, "weapon", weapon, sizeof(weapon));
     //LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, index,
     //           GetEventInt(event,"objecttype"), weapon);
@@ -215,7 +215,7 @@ public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public EventPointCapture(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    decl String:cappers[MAXPLAYERS+1] = "";
+    decl String:cappers[MAXPLAYERS+1];
     if (GetEventString(event,"cappers", cappers, MAXPLAYERS)>0)
     {
         new bool:captured = StrEqual(name, "teamplay_point_captured");

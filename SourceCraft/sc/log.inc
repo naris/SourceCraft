@@ -126,9 +126,9 @@ stock LogEventDamage(Handle:event,damage,const String:source[], race_id)
         race_id == assister_race || race_id < 0)
     {
         new health=0;
-        decl String:team[64] = "";
-        decl String:steamID[64] = "";
-        decl String:attacker_weapon[64] = "";
+        decl String:team[64];
+        decl String:steamID[64];
+        decl String:attacker_weapon[64];
         if (attacker)
         {
             GetClientAuthString(attacker,steamID,sizeof(steamID));
@@ -137,7 +137,11 @@ stock LogEventDamage(Handle:event,damage,const String:source[], race_id)
             health=GetClientHealth(attacker);
         }
         else
+        {
+            team[0]=0;
+            attacker_weapon[0]=0;
             strcopy(steamID,sizeof(steamID), "World");
+        }
 
         decl String:victimID[64];
         GetClientAuthString(victim,victimID,sizeof(victimID));
