@@ -19,7 +19,7 @@
 #include <tf2>
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION     "2.0.3 $Revision$ beta"
+#define VERSION     "2.1.0 $Revision$ beta"
 
 // ConVar definitions
 new Handle:m_SaveXPConVar         = INVALID_HANDLE;
