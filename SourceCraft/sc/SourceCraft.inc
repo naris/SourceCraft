@@ -39,11 +39,14 @@ native AddUpgrade(race,String:name[],String:desc[],bool:ultimate=false);
 /**
  * Registers a shop item with the SourceCraft plugin
  * @param name: The name of the item. (max 64)
+ * @param short: The short name of the item. (max 16) 
  * @param desc: The description of the item. (max 256) 
- * @param cost: The cost of the item as a string for vector reasons. (max 4 chars)
+ * @param cost: The cost of the item.
+ * @param max: The maximum number of this item that the player can own.
+ * @param required_level: The overall level the player must obtain before buying this item.
  * @return The return value will be the item index or -1 if there was a problem.
  */         
-native CreateShopItem(String:name[],String:desc[],String:cost[]);
+native CreateShopItem(String:name[],String:short[],String:desc[],cost,max=1,required_level=0);
 
 /**
  * Registers a help command with the SourceCraft plugin for help

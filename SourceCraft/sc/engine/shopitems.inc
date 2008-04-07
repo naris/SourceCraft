@@ -7,8 +7,9 @@
 
 #define ITEM_STRINGS        0
 #define ITEM_COST           1
-#define ITEM_REQUIRED_LEVEL 2
-#define ITEM_DATA_COUNT     3
+#define ITEM_MAX            2
+#define ITEM_REQUIRED_LEVEL 3
+#define ITEM_DATA_COUNT     4
 
 #define ITEM_NAME           0
 #define ITEM_SHORT_NAME     1
@@ -36,7 +37,7 @@ ClearShopVector()
 }
 
 CreateShopItem(const String:name[], const String:short[],
-               const String:desc[], cost, required_level)
+               const String:desc[], cost, max, required_level)
 {
     new Handle:newItem=CreateArray();
 
@@ -47,6 +48,7 @@ CreateShopItem(const String:name[], const String:short[],
 
     PushArrayCell(newItem,stringsHandle);
     PushArrayCell(newItem,cost);
+    PushArrayCell(newItem,max);
     PushArrayCell(newItem,required_level);
     return PushArrayCell(shopVector,newItem); // return index.
 }
@@ -77,14 +79,19 @@ GetItemDescription(Handle:itemHandle, String:desc[], maxlength)
         GetArrayString(stringsHandle,ITEM_DESC,desc,maxlength);
 }
 
-stock GetItemRequiredLevel(Handle:itemHandle)
-{
-    return GetArrayCell(itemHandle,ITEM_REQUIRED_LEVEL);
-}
-
 GetItemCost(Handle:itemHandle)
 {
     return GetArrayCell(itemHandle,ITEM_COST);
+}
+
+stock GetItemMax(Handle:itemHandle)
+{
+    return GetArrayCell(itemHandle,ITEM_MAX);
+}
+
+stock GetItemRequiredLevel(Handle:itemHandle)
+{
+    return GetArrayCell(itemHandle,ITEM_REQUIRED_LEVEL);
 }
 
 FindShopItem(const String:name[])

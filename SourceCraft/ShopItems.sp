@@ -105,98 +105,98 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation",
+    shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation", "ankh",
                                        "If you die you will retrieve your equipment the following round.",
-                                       "40");
+                                       40);
 
-    shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed",
+    shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed", "boots", 
                                         "Allows you to move faster.",
-                                        "55");
+                                        55);
 
-    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack",
+    shopItem[ITEM_CLAWS]=CreateShopItem("Claws of Attack", "claws", 
                                         "Up to an additional 8 hp will be removed from the enemy on every successful attack.",
-                                        "60");
+                                        60);
 
-    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows",
+    shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows", "cloak", 
                                         "Makes you immune to uncloaking, also makes you invisible for 10 seconds\nwhen standing still AND holding a melee weapon.",
-                                        "55");
+                                        55);
 
-    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death",
+    shopItem[ITEM_MASK]=CreateShopItem("Mask of Death", "mask", 
                                        "You will receive health for every hit on the enemy.",
-                                       "10");
+                                       10);
 
-    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity",
+    shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity", "necklace", 
                                            "You will be immune to enemy ultimates.",
-                                           "20");
+                                           20);
 
-    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost",
+    shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost", "orb", 
                                       "Slows your enemy down when you hit him.",
-                                      "35");
+                                      35);
 
-    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health",
+    shopItem[ITEM_PERIAPT]=CreateShopItem("Periapt of Health", " periapt",
                                           "Receive extra health.",
-                                          "50");
+                                          50);
 
-    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience",
+    shopItem[ITEM_TOME]=CreateShopItem("Tome of Experience", "tome", 
                                        "Automatically gain experience, this item is used on purchase.",
-                                       "50");
+                                       50);
 
-    shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning",
+    shopItem[ITEM_SCROLL]=CreateShopItem("Scroll of Respawning", "scroll",
                                          "You will respawn immediately after death.",
-                                         "15");
+                                         15);
 
-    shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather",
+    shopItem[ITEM_SOCK]=CreateShopItem("Sock of the Feather", "sock", 
                                        "You will be able to jump higher.",
-                                       "45");
+                                       45);
 
     if (GameType == cstrike)
     {
-        shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth",
+        shopItem[ITEM_GLOVES]=CreateShopItem("Flaming Gloves of Warmth", "gloves", 
                                              "You will be given a grenade every 10 seconds.",
-                                             "35");
+                                             35);
     }
     else
         shopItem[ITEM_GLOVES]=-1;
 
-    shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack",
+    shopItem[ITEM_PACK]=CreateShopItem("Infinite Ammo Pack", "ammo", 
                                        "You will be given ammo or metal every 10 seconds.",
-                                       "35");
+                                       35);
 
-    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting",
+    shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting", "sack", 
                                        "Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!",
-                                       "85");
+                                       85);
 
-    shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox",
+    shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox", "lockbox", 
                                           "A lockbox to keep your crystals safe from theft.",
-                                          "10");
+                                          10);
 
-    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1",
+    shopItem[ITEM_RING]=CreateShopItem("Ring of Regeneration + 1", "ring+1",
                                        "Gives 1 health every second, won't exceed your normal HP.",
-                                       "15");
+                                       15);
 
-    shopItem[ITEM_RING3]=CreateShopItem("Ring of Regeneration + 3",
+    shopItem[ITEM_RING3]=CreateShopItem("Ring of Regeneration + 3", "ring+3",
                                         "Gives 3 health every second, won't exceed your normal HP.",
-                                        "35");
+                                        35);
 
-    shopItem[ITEM_RING5]=CreateShopItem("Ring of Regeneration + 5",
+    shopItem[ITEM_RING5]=CreateShopItem("Ring of Regeneration + 5", "ring+5",
                                         "Gives 5 health every second, won't exceed your normal HP.",
-                                        "55");
+                                        55);
 
-    shopItem[ITEM_MOLE]=CreateShopItem("Mole",
+    shopItem[ITEM_MOLE]=CreateShopItem("Mole", "mole",
                                        "Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.",
-                                       "75");
+                                       75);
 
-    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection",
+    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection", "mole_protection",
                                                   "Deflect some damage from the mole\nto give yourself a fighting chance.",
-                                                  "15");
+                                                  15);
 
-    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection",
+    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection", "mole_reflection",
                                                   "Reflect some damage back to the mole\nto give yourself a fighting chance.",
-                                                  "45");
+                                                  45);
 
-    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention",
+    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention", "mole_retrntion",
                                                  "Keep your Mole Protection and/or Reflection\nafter you die until it is used.",
-                                                 "15");
+                                                 15);
 
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 

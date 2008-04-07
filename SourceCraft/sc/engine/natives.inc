@@ -84,22 +84,24 @@ public Native_AddUpgrade(Handle:plugin,numParams)
  * @param short: The short name of the item. (max 16) 
  * @param desc: The description of the item. (max 192) 
  * @param cost: The cost of the item.
+ * @param max: The maximum number of this item that the player can own.
  * @param required_level: The overall level the player must obtain before buying this item.
  * @return The return value will be the item index or -1 if there was a problem.
  *
- * native CreateShopItem(String:name[],String:desc[],String:cost[]);
+ * native CreateShopItem(String:name[],String:short[],String:desc[],cost,max=1,required_level=0);
  */         
 public Native_CreateShopItem(Handle:plugin,numParams)
 {
-    if (numParams >= 4 && numParams <= 5)
+    if (numParams >= 4 && numParams <= 6)
     {
         decl String:name[64],String:short[16],String:desc[192];
         GetNativeString(1,name,sizeof(name));
         GetNativeString(2,short,sizeof(short));
         GetNativeString(3,desc,sizeof(desc));
         new cost = GetNativeCell(4);
-        new required_level = (numParams >= 5) ? GetNativeCell(5) : 0;
-        return CreateShopItem(name,short,desc,cost,required_level);
+        new max = (numParams >= 5) ? GetNativeCell(5) : 0;
+        new required_level = (numParams >= 6) ? GetNativeCell(6) : 0;
+        return CreateShopItem(name,short,desc,cost,max,required_level);
     }
     else
         return -1;
