@@ -31,6 +31,20 @@ bool:InitShopVector()
 
 ClearShopVector()
 {
+    if (shopVector == INVALID_HANDLE)
+    {
+        new itemCount = GetShopItemCount();
+        for(new x=0;x<itemCount;x++)
+        {
+            new Handle:vec=GetArrayCell(shopVector,x);
+            new Handle:stringsHandle=GetArrayCell(vec,ITEM_STRINGS);
+            ClearArray(stringsHandle);
+            CloseHandle(stringsHandle);
+            ClearArray(vec);
+            CloseHandle(vec);
+        }
+    }
+
     ClearArray(shopVector);
     CloseHandle(shopVector);
     shopVector = INVALID_HANDLE;
@@ -96,7 +110,7 @@ stock GetItemRequiredLevel(Handle:itemHandle)
 
 FindShopItem(const String:name[])
 {
-    decl String:curName[64]="";
+    decl String:curName[64];
     new size = GetShopItemCount();
     for(new x=0;x<size;x++)
     {
