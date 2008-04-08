@@ -31,6 +31,7 @@ new String:fart3Wav[] = "sourcecraft/poot.mp3";
 
 new raceID, festerID, pickPocketID, revulsionID, fartID;
 
+new Float:gPickPocketTime[MAXPLAYERS+1];
 new bool:m_AllowFart[MAXPLAYERS+1];
 new gFartDuration[MAXPLAYERS+1];
 
@@ -246,7 +247,9 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
 
         if( GetRandomInt(1,100)<=chance &&
             !GetImmunity(victim_player,Immunity_Theft) &&
-            !IsUber(victim_index))
+            !IsUber(victim_index) &&
+            (!gPickPocketTime[index] ||
+             GetGameTime() - gPickPocketTime[index] > 0.5))
         {
             new victim_cash=GetCredits(victim_player);
             if (victim_cash > 0)
@@ -257,6 +260,7 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
 
                 SetCredits(victim_player,victim_cash-amount);
                 SetCredits(player,cash+amount);
+                gPickPocketTime[index] = GetGameTime();
 
                 new color[4] = { 100, 255, 55, 255 };
                 TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
