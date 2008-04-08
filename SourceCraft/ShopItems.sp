@@ -321,8 +321,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         PushArrayString(args,wepName);
                     }
                     CreateTimer(0.2,Ankh,args);
+                    SetOwnsItem(player,shopItem[ITEM_ANKH],false);
                 }
-                SetOwnsItem(player,shopItem[ITEM_ANKH],false);
             }
 
             if(GetOwnsItem(player,shopItem[ITEM_BOOTS]))                           // Boots of Speed
@@ -462,8 +462,10 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                     SetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION],false);
             }
         }
+        else if (GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
+            SetOwnsItem(victim_player,shopItem[ITEM_ANKH],false);
 
-        if(GetOwnsItem(victim_player,shopItem[ITEM_PERIAPT]))
+        if(GetOwnsItem(victim_player,shopItem[ITEM_PERIAPT]) && usedPeriapt[victim_index])
             SetOwnsItem(victim_player,shopItem[ITEM_PERIAPT],false);
 
         // Reset player speed/gravity/visibility attributes when they doe
