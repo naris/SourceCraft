@@ -147,7 +147,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         switch(selection)
         {
             case 0: // shopmenu
@@ -216,7 +216,7 @@ RaceMenu(client,bool:change)
         decl String:rbuf[11];
         decl String:rname[64];
         decl String:uname[64];
-        decl String:ritem[192];
+        decl String:ritem[512];
         new reqLevel, level, style;
         new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
@@ -265,7 +265,7 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         UpgradesInfo(client,selection,gRaceMenuMode[client]);
     }
     else if (action == MenuAction_End)
@@ -323,7 +323,7 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
@@ -461,7 +461,7 @@ public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
@@ -508,7 +508,7 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
@@ -566,7 +566,7 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
     {
         if (selection == MenuCancel_ExitBack)
         {
-            ClientCommand(client,"play buttons/button14.wav");
+            EmitSoundToClient(client,buttonWav);
             ShopMenu(client,gShopMenuMode[client]);
         }
     }
@@ -637,7 +637,7 @@ public Admin_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -682,7 +682,7 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -757,7 +757,7 @@ public Admin_Player_Select(Handle:menu,MenuAction:action,client,selection)
     {
         if (selection == MenuCancel_ExitBack)
         {
-            ClientCommand(client,"play buttons/button14.wav");
+            EmitSoundToClient(client,buttonWav);
             AdminMenu(client,0);
         }
     }
@@ -804,7 +804,7 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -842,7 +842,7 @@ public Admin_PI_Select(Handle:menu,MenuAction:action,client,selection)
 
 Admin_Return(Handle:menu,client)
 {
-    ClientCommand(client,"play buttons/button14.wav");
+    EmitSoundToClient(client,buttonWav);
     decl String:SelectionInfo[11];
     decl String:SelectionDispText[256];
     new SelectionStyle;
@@ -893,7 +893,7 @@ public Admin_XP_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -1005,7 +1005,7 @@ public Admin_GSI_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -1094,7 +1094,7 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -1160,7 +1160,7 @@ public Admin_Level_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -1273,7 +1273,7 @@ public Admin_Credits_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
         decl String:SelectionDispText[256];
         new SelectionStyle;

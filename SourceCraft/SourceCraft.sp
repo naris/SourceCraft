@@ -26,6 +26,8 @@ new Handle:m_SaveXPConVar         = INVALID_HANDLE;
 new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
 new Handle:m_MaxCredits           = INVALID_HANDLE;
 
+// Sound Files
+new String:buttonWav[] = "play buttons/button14.wav";
 new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 
 #define SAVE_ENABLED       (GetConVarInt(m_SaveXPConVar)==1 && GetRaceCount() > 0)
@@ -170,7 +172,9 @@ public OnPluginEnd()
 public OnMapStart()
 {
     g_MapChanging = false;
+    SetupSound(buttonWav,true,true);
     SetupSound(notEnoughWav,true,true);
+    SetupLevelUpEffect();
 }
 
 public OnMapEnd()

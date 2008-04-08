@@ -80,7 +80,7 @@ public HelpMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[4];
         decl String:SelectionDispText[256];
         new SelectionStyle;
@@ -113,7 +113,7 @@ public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         Help(client);
     }
     else if (action == MenuAction_End)
@@ -121,7 +121,7 @@ public HM_Command_Select(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
         if (selection == MenuEnd_ExitBack)
         {
-            ClientCommand(client,"play buttons/button14.wav");
+            EmitSoundToClient(client,buttonWav);
             Help(client);
         }
     }

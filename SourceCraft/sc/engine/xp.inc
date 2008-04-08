@@ -31,6 +31,16 @@
 #define GAME_WIN_XP         10 // Multiplied by score
 #define MVP_XP               5 // Multiplied by place * points
 
+new String:levelUpWav[] = "ambient/machines/teleport1.wav";
+new String:levelUpSpriteVmt[] = "sprites/steam1.vmt";
+new g_levelUpSprite;
+
+SetupLevelUpEffect()
+{
+    SetupSound(levelUpWav,true,true);
+    g_levelUpSprite = PrecacheModel(levelUpSpriteVmt);
+}
+
 KillXP(level)
 {
     new Handle:temp;
@@ -83,6 +93,14 @@ DoLevelCheck(client,Handle:playerHandle)
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(playerHandle,race,curXP-reqXP);
+
+                    new Float:vec[3];
+                    GetClientAbsOrigin(client, vec);
+                    vec[2] += 50;
+                    new color[4] = {255, 200, 0, 200};
+                    TE_SetupBeamRingPoint(vec, 20.0, 50.0, g_levelUpSprite, g_levelUpSprite, 0, 15, 3.0, 20.0, 0.0, color, 1, 0);
+                    EmitSoundToClient(client,levelUpWav);
+
                     UpgradeMenu(client, playerHandle);
                 }
                 else

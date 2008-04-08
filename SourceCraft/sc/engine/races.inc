@@ -253,14 +253,14 @@ public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
-            ClientCommand(client,"play buttons/button14.wav");
+            EmitSoundToClient(client,buttonWav);
             UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
         }
     }
@@ -315,7 +315,7 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if(action==MenuAction_Select)
     {
-        ClientCommand(client,"play buttons/button14.wav");
+        EmitSoundToClient(client,buttonWav);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
