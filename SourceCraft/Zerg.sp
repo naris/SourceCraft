@@ -55,10 +55,10 @@ public OnPluginReady()
                                  "You will be part of the Zerg when you die or respawn.",
                                  32);
 
-    glandsID        = AddUpgrade(raceID,"Adrenal Glands", "Increases Melee Attack Damage");
-    regenerationID  = AddUpgrade(raceID,"Regeneration", "Regenerates your Health.");
-    healingID       = AddUpgrade(raceID,"Healing Aura", "Regenerates Health of all teammates in range (It does NOT heal you).");
-    tentacleID      = AddUpgrade(raceID,"Tentacles", "Reach out and grab an opponent.", true); // Ultimate
+    glandsID        = AddUpgrade(raceID,"Adrenal Glands", "adrenal_glands", "Increases Melee Attack Damage");
+    regenerationID  = AddUpgrade(raceID,"Regeneration", "regeneration", "Regenerates your Health.");
+    healingID       = AddUpgrade(raceID,"Healing Aura", "healing", "Heals all of your teammates in range (It does NOT heal you).");
+    tentacleID      = AddUpgrade(raceID,"Tentacles", "tentacles", "Reach out and grab an opponent.", true); // Ultimate
 
     FindUberOffsets();
 

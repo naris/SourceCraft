@@ -94,16 +94,16 @@ public OnPluginReady()
                         "You will be an Al-Qaeda when you die or respawn.",
                         16);
 
-    reincarnationID  = AddUpgrade(raceID,"Reincarnation",
+    reincarnationID  = AddUpgrade(raceID,"Reincarnation", "reincarnation",
                                   "Gives you a 15-80% chance of immediately respawning where you died.");
 
-    wrathID     = AddUpgrade(raceID,"Flaming Wrath",
+    wrathID     = AddUpgrade(raceID,"Flaming Wrath", "wrath",
                              "You cause damage to opponents around you.");
 
-    suicideID   = AddUpgrade(raceID,"Suicide Bomber",
+    suicideID   = AddUpgrade(raceID,"Suicide Bomber", "suicide_bomb",
                              "You explode when you die, causing great damage to opponents around you");
 
-    bomberID    = AddUpgrade(raceID,"Mad Bomber",
+    bomberID    = AddUpgrade(raceID,"Mad Bomber", "mad_bomber",
                              "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!", true); // Ultimate
 
     FindUberOffsets();

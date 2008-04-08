@@ -59,20 +59,21 @@ public Native_CreateRace(Handle:plugin,numParams)
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
 {
-    if (numParams >=3 && numParams <= 4)
+    if (numParams >=4 && numParams <= 5)
     {
         new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
         if (raceHandle != INVALID_HANDLE)
         {
-            decl String:name[64],String:desc[192];
+            decl String:name[64],String:short[16],String:desc[192];
             GetNativeString(2,name,sizeof(name));
-            GetNativeString(3,desc,sizeof(desc));
+            GetNativeString(3,short,sizeof(short));
+            GetNativeString(4,desc,sizeof(desc));
 
             new bool:ultimate = false;
-            if (numParams >= 4)
+            if (numParams >= 5)
                 ultimate = bool:GetNativeCell(4);
 
-            return AddUpgrade(raceHandle, name, desc, ultimate);
+            return AddUpgrade(raceHandle, name, short, desc, ultimate);
         }
     }
     return -1;

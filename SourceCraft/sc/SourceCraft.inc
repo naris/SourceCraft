@@ -17,7 +17,7 @@
 /**
  * Registers a race with the SourceCraft plugin
  * @param name: The name of the race. (max 64)
- * @param short: The shortname used for SQL stuff. (max 16) 
+ * @param short: The short name of the race. (max 16) 
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
  * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
  * @param required_level: The overeall level the player must obtain before changing to this race.
@@ -30,11 +30,12 @@ native CreateRace(String:name[],String:short[],String:switchmessage_instant[],St
  * Adds an upgrade to a race
  * @param race: The race ID returned from CreateRace
  * @param name: The name of the upgrade. (max 64)
+ * @param short: The short name of the upgrade. (max 16) 
  * @param desc: The description of the upgrade. (max 192)
  * @param ultimate: Set to true to indicate upgrade is an ultimate.
  * @return The return value will be the upgrade index or -1 if there was a problem.
  */         
-native AddUpgrade(race,String:name[],String:desc[],bool:ultimate=false);
+native AddUpgrade(race,String:name[],String:short[],String:desc[],bool:ultimate=false);
 
 /**
  * Registers a shop item with the SourceCraft plugin

@@ -19,8 +19,9 @@
 #define RACE_STRING_COUNT       4
 
 #define UPGRADE_NAME            0
-#define UPGRADE_DESC            1
-#define UPGRADE_DATA_COUNT      2
+#define UPGRADE_SHORT_NAME      1
+#define UPGRADE_DESC            2
+#define UPGRADE_DATA_COUNT      3
 
 #define GetRaceCount() GetArraySize(arrayRaces)
 
@@ -96,10 +97,11 @@ CreateRace(const String:name[],                  const String:short[],
     return PushArrayCell(arrayRaces,newRace); // return index.
 }
 
-AddUpgrade(Handle:race, const String:name[], const String:desc[], bool:ultimate)
+AddUpgrade(Handle:race, const String:name[], const String:short[], const String:desc[], bool:ultimate)
 {
     new Handle:upgradeStringsHandle=GetArrayCell(race,RACE_UPGRADE_STRINGS);
     PushArrayString(upgradeStringsHandle,name);
+    PushArrayString(upgradeStringsHandle,short);
     PushArrayString(upgradeStringsHandle,desc);
 
     new Handle:upgradeFlagsHandle=GetArrayCell(race,RACE_UPGRADE_FLAGS);
@@ -153,7 +155,16 @@ GetUpgradeName(Handle:raceHandle,upgrade, String:name[], maxlength)
 {
     new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
     if (upgradeStringsHandle != INVALID_HANDLE)
-        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT),name,maxlength);
+        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT) /* +UPGRADE_NAME */,
+                       name,maxlength);
+}
+
+stock GetUpgradeShortName(Handle:raceHandle,upgrade, String:name[], maxlength)
+{
+    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
+    if (upgradeStringsHandle != INVALID_HANDLE)
+        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT)+UPGRADE_SHORT_NAME,
+                       name,maxlength);
 }
 
 stock GetUpgradeDesc(Handle:raceHandle,upgrade, String:desc[], maxlength)

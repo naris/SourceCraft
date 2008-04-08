@@ -94,16 +94,16 @@ public OnPluginReady()
                                  "You are now an Orcish Horde.",
                                  "You will be an Orcish Horde when you die or respawn.");
 
-    strikeID        = AddUpgrade(raceID,"Acute Strike",
+    strikeID        = AddUpgrade(raceID,"Acute Strike", "acute_strike",
                                  "Gives you a 25% chance of doing\n40-120% more damage.");
 
-    grenadeID       = AddUpgrade(raceID,"Acute Grenade",
+    grenadeID       = AddUpgrade(raceID,"Acute Grenade", "acute_grenade",
                                  "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.");
 
-    reincarnationID = AddUpgrade(raceID,"Reincarnation",
+    reincarnationID = AddUpgrade(raceID,"Reincarnation", "reincarnation",
                                  "Gives you a 15-80% chance of respawning\nonce.");
 
-    lightningID     = AddUpgrade(raceID,"Chain Lightning",
+    lightningID     = AddUpgrade(raceID,"Chain Lightning", "lightning",
                                  "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.", true); // Ultimate
 
     FindUberOffsets();

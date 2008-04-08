@@ -57,16 +57,16 @@ public OnPluginReady()
                              "You are now a Night Elf.",
                              "You will be a Night Elf when you die or respawn.");
 
-    evasionID   = AddUpgrade(raceID,"Evasion",
+    evasionID   = AddUpgrade(raceID,"Evasion", "evasion",
                              "Gives you 5-30% chance of evading a shot.");
 
-    thornsID    = AddUpgrade(raceID,"Thorns Aura",
+    thornsID    = AddUpgrade(raceID,"Thorns Aura", "thorns",
                              "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.");
 
-    trueshotID  = AddUpgrade(raceID,"Trueshot Aura",
+    trueshotID  = AddUpgrade(raceID,"Trueshot Aura", "trueshot", 
                              "Does 20-80% extra damage to the \nenemy, chance is 30-60%.");
 
-    rootsID     = AddUpgrade(raceID,"Entangled Roots",
+    rootsID     = AddUpgrade(raceID,"Entangled Roots", "roots", 
                              "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.",
                              true); // Ultimate
 

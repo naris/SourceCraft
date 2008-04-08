@@ -107,16 +107,16 @@ public OnPluginReady()
                            "You will be part of the Protoss when you die or respawn.",
                            32);
 
-    scarabID  = AddUpgrade(raceID,"Reaver Scarabs",
+    scarabID  = AddUpgrade(raceID,"Reaver Scarabs", "scarabs",
                            "Explode upon contact with enemies, causing increased damage. (Disabled)");
 
-    cloakID   = AddUpgrade(raceID,"Arbiter Reality-Warping Field",
+    cloakID   = AddUpgrade(raceID,"Arbiter Reality-Warping Field", "arbiter",
                            "Cloaks all friendly units within range");
 
-    sensorID  = AddUpgrade(raceID,"Observer Sensors",
+    sensorID  = AddUpgrade(raceID,"Observer Sensors", "sensors",
                            "Reveals enemy invisible units within range");
 
-    controlID = AddUpgrade(raceID,"Dark Archon Mind Control",
+    controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
                            "Allows you to control an object from the opposite team.",
                            true); // Ultimate
 

@@ -215,30 +215,50 @@ RaceMenu(client,bool:change)
         new Handle:raceHandle;
         decl String:rbuf[11];
         decl String:rname[64];
-        decl String:ritem[96];
+        decl String:uname[64];
+        decl String:ritem[192];
+        new reqLevel, level, style;
         new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
         {
             raceHandle=GetRaceHandle(race);
-            Format(rbuf,sizeof(rbuf),"%d",race);
-            GetRaceName(raceHandle,rname,sizeof(rname));
-            new reqLevel = GetRaceRequiredLevel(raceHandle);
+            reqLevel = GetRaceRequiredLevel(raceHandle);
             if (reqLevel)
             {
-                new level = GetOverallLevel(GetPlayerHandle(client));
-                new style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                level = GetOverallLevel(GetPlayerHandle(client));
+                style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                GetRaceName(raceHandle,rname,sizeof(rname));
                 Format(ritem,sizeof(ritem),"%s (overall level must be >= %d)",rname, reqLevel);
-                AddMenuItem(crMenu,rbuf,ritem,style);
             }
             else
-                AddMenuItem(crMenu,rbuf,rname);
+            {
+                style = ITEMDRAW_DEFAULT;
+                GetRaceName(raceHandle,ritem,sizeof(ritem));
+            }
+
+            new upgradeCount = GetUpgradeCount(raceHandle);
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            {
+                if (upgrade == 0)
+                    StrCat(ritem,sizeof(ritem),"\n   (");
+                else
+                    StrCat(ritem,sizeof(ritem),",");
+
+                GetUpgradeName(raceHandle, upgrade, uname, sizeof(uname));
+                StrCat(ritem,sizeof(ritem),uname);
+                if (IsUpgradeUltimate(raceHandle, upgrade))
+                    StrCat(ritem,sizeof(ritem),"[U]");
+            }
+            StrCat(ritem,sizeof(ritem),")");
+            Format(rbuf,sizeof(rbuf),"%d",race);
+            AddMenuItem(crMenu,rbuf,ritem,style);
         }
         gRaceMenuMode[client]=change;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                    COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -268,10 +288,10 @@ UpgradeMenu(client, Handle:playerHandle)
         decl String:sbuf[11];
         decl String:buf[192];
         new style = ITEMDRAW_DEFAULT;
-        new upgradeCount = GetUpgradeCount(raceHandle);
-        new raceLevel = GetLevel(playerHandle,race);
         new minLevel = MIN_ULTIMATE_LEVEL;
+        new raceLevel = GetLevel(playerHandle,race);
         new activeUltimate = GetActiveUltimate(playerHandle,race);
+        new upgradeCount = GetUpgradeCount(raceHandle);
         for(new upgrade=0;upgrade<upgradeCount;upgrade++)
         {
             GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
