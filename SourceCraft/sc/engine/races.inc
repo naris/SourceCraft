@@ -249,37 +249,52 @@ PendingCheck(client,Handle:playerHandle)
     }
 }
 
-public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
+ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle)
 {
-    if(action==MenuAction_Select)
+    if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
     {
-        EmitSoundToClient(client,buttonWav);
-        UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
+        SetPendingRace(playerHandle,race);
+        decl String:buf[192];
+        GetRaceSwitchMessageDead(raceHandle, buf,sizeof(buf));
+        PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
-    else if (action == MenuAction_Cancel)
+    else
     {
-        if (selection == MenuCancel_ExitBack)
-        {
-            EmitSoundToClient(client,buttonWav);
-            UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
-        }
+        SetPendingRace(playerHandle,-1);
+        SetRace(playerHandle,race);
+        decl String:buf[192];
+        GetRaceSwitchMessage(raceHandle, buf,sizeof(buf));
+        PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
+        m_FirstSpawn[client]=0;
     }
 }
 
-UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
+ResetUpgrades(client,Handle:playerHandle)
 {
-    decl String:name[64];
-    decl String:desc[256];
+    if (IsPlayerAlive(client))
+    {
+        SetPendingUpgradeReset(playerHandle,1);
+        PrintToChat(client,"%c[SourceCraft] %cYour upgrades for your current race will be reset when you die or respawn.",
+                    COLOR_GREEN,COLOR_DEFAULT);
+    }
+    else
+        ResetUpgradesNow(client,playerHandle);
+}
 
-    new Handle:menu=CreateMenu(UpgradesInfo_Back);
-    SetMenuExitButton(menu,true);
-    SetMenuExitBackButton(menu,true);
+ResetUpgradesNow(client,Handle:playerHandle)
+{
+    new race=GetRace(playerHandle);
+    SetActiveUltimate(playerHandle,race,-1);
 
-    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc));
+    new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
+    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+        SetUpgradeLevel(playerHandle,race,upgrade,0);
 
-    SetMenuTitle(menu,"Upgrade information for %s\nDescription: %s",name,desc);
-    AddMenuItem(menu,"","Back to the upgrades");
-    DisplayMenu(menu,client,MENU_TIME_FOREVER);
+    PrintToChat(client,"%c[SourceCraft] %cYour upgrades have been reset for your current race.",
+                COLOR_GREEN,COLOR_DEFAULT);
+
+    if(GetLevel(playerHandle,race) > 0)
+        UpgradeMenu(client, playerHandle);
 }
 
 UpgradesInfo(client,race,bool:change)
@@ -291,7 +306,7 @@ UpgradesInfo(client,race,bool:change)
 
     new Handle:raceHandle=GetRaceHandle(race);
     GetRaceName(raceHandle, name, sizeof(name));
-    SetMenuTitle(menu,"[%s] Select a upgrade for more info.", name);
+    SetMenuTitle(menu,"[%s] Select an upgrade for more info.", name);
 
     new upgradeCount = GetUpgradeCount(raceHandle);
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
@@ -323,40 +338,43 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
             new Handle:raceHandle=GetRaceHandle(race);
             if (selection < GetUpgradeCount(raceHandle))
                 UpgradesInfo_Upgrade(client,raceHandle,selection);
-            else
-            {
-                // They decided to change to this race.
-                if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
-                {
-                    SetPendingRace(playerHandle,race);
-                    decl String:buf[192];
-                    GetRaceSwitchMessageDead(raceHandle, buf,sizeof(buf));
-                    PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
-                }
-                else
-                {
-                    SetPendingRace(playerHandle,-1);
-                    SetRace(playerHandle,race);
-                    decl String:buf[192];
-                    GetRaceSwitchMessage(raceHandle, buf,sizeof(buf));
-                    PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
-                }
-                m_FirstSpawn[client]=0;
-            }
+            else // They decided to change to this race.
+                ChangeRace(client, playerHandle, race, raceHandle);
         }
     }
 }
 
-ResetUpgrades(client,Handle:playerHandle)
+public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
 {
-    if (IsPlayerAlive(client))
+    if(action==MenuAction_Select)
     {
-        SetPendingUpgradeReset(playerHandle,1);
-        PrintToChat(client,"%c[SourceCraft] %cYour upgrades for your current race will be reset when you die or respawn.",
-                    COLOR_GREEN,COLOR_DEFAULT);
+        EmitSoundToClient(client,buttonWav);
+        UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
     }
-    else
-        ResetUpgradesNow(client,playerHandle);
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+        {
+            EmitSoundToClient(client,buttonWav);
+            UpgradesInfo(client,gRaceForUpgrades[client],gUpgradesMenuMode[client]);
+        }
+    }
+}
+
+UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
+{
+    decl String:name[64];
+    decl String:desc[256];
+
+    new Handle:menu=CreateMenu(UpgradesInfo_Back);
+    SetMenuExitButton(menu,true);
+    SetMenuExitBackButton(menu,true);
+
+    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc));
+
+    SetMenuTitle(menu,"Upgrade information for %s\nDescription: %s",name,desc);
+    AddMenuItem(menu,"","Back to the upgrades");
+    DisplayMenu(menu,client,MENU_TIME_FOREVER);
 }
 
 ShowUpgrades(client,target,Handle:playerHandle)
@@ -398,18 +416,3 @@ public ShowUpgrades_Selected(Handle:menu,MenuAction:action,client,selection)
 {
 }
 
-ResetUpgradesNow(client,Handle:playerHandle)
-{
-    new race=GetRace(playerHandle);
-    SetActiveUltimate(playerHandle,race,-1);
-
-    new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
-    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-        SetUpgradeLevel(playerHandle,race,upgrade,0);
-
-    PrintToChat(client,"%c[SourceCraft] %cYour upgrades have been reset for your current race.",
-                COLOR_GREEN,COLOR_DEFAULT);
-
-    if(GetLevel(playerHandle,race) > 0)
-        UpgradeMenu(client, playerHandle);
-}
