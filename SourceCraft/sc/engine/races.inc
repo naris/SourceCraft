@@ -187,11 +187,11 @@ GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
     }
 }
 
-bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
+IsUpgradeUltimate(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
     if (upgradeFlagsHandle != INVALID_HANDLE)
-        return bool:GetArrayCell(upgradeFlagsHandle, upgrade);
+        return GetArrayCell(upgradeFlagsHandle, upgrade);
     else
         return false;
 }

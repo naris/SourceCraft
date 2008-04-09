@@ -216,7 +216,7 @@ RaceMenu(client,bool:change)
         decl String:rbuf[11];
         decl String:rname[64];
         decl String:uname[64];
-        decl String:ritem[512];
+        decl String:ritem[256];
         new reqLevel, level, style;
         new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
@@ -235,23 +235,26 @@ RaceMenu(client,bool:change)
                 style = ITEMDRAW_DEFAULT;
                 GetRaceName(raceHandle,ritem,sizeof(ritem));
             }
+            AddMenuItem(crMenu,rbuf,ritem,style);
 
+            /*
             new upgradeCount = GetUpgradeCount(raceHandle);
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
             {
                 if (upgrade == 0)
-                    StrCat(ritem,sizeof(ritem),"\n   (");
+                    strcopy(ritem,sizeof(ritem),"   (");
                 else
                     StrCat(ritem,sizeof(ritem),",");
 
                 GetUpgradeName(raceHandle, upgrade, uname, sizeof(uname));
                 StrCat(ritem,sizeof(ritem),uname);
-                if (IsUpgradeUltimate(raceHandle, upgrade))
+                if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
                     StrCat(ritem,sizeof(ritem),"[U]");
             }
             StrCat(ritem,sizeof(ritem),")");
             Format(rbuf,sizeof(rbuf),"%d",race);
-            AddMenuItem(crMenu,rbuf,ritem,style);
+            AddMenuItem(crMenu,rbuf,ritem,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
+            */
         }
         gRaceMenuMode[client]=change;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
