@@ -10,7 +10,6 @@
 new Handle:g_OnPluginReadyHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerAuthedHandle = INVALID_HANDLE;
 new Handle:g_OnUltimateCommandHandle = INVALID_HANDLE;
-new Handle:g_OnItemPurchaseHandle = INVALID_HANDLE;
 new Handle:g_OnCreditsGivenHandle = INVALID_HANDLE;
 new Handle:g_OnXPGivenHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerHurtEventHandle = INVALID_HANDLE;

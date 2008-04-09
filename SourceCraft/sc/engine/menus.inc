@@ -214,9 +214,8 @@ RaceMenu(client,bool:change)
         // Iterate through the races and print them out
         new Handle:raceHandle;
         decl String:rbuf[11];
-        decl String:rname[64];
-        decl String:uname[64];
-        decl String:ritem[256];
+        decl String:name[64];
+        decl String:item[256];
         new reqLevel, level, style;
         new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
@@ -227,33 +226,33 @@ RaceMenu(client,bool:change)
             {
                 level = GetOverallLevel(GetPlayerHandle(client));
                 style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                GetRaceName(raceHandle,rname,sizeof(rname));
-                Format(ritem,sizeof(ritem),"%s (overall level must be >= %d)",rname, reqLevel);
+                GetRaceName(raceHandle,name,sizeof(name));
+                Format(item,sizeof(item),"%s (overall level must be >= %d)",name, reqLevel);
             }
             else
             {
                 style = ITEMDRAW_DEFAULT;
-                GetRaceName(raceHandle,ritem,sizeof(ritem));
+                GetRaceName(raceHandle,item,sizeof(item));
             }
-            AddMenuItem(crMenu,rbuf,ritem,style);
+            AddMenuItem(crMenu,rbuf,item,style);
 
             /*
             new upgradeCount = GetUpgradeCount(raceHandle);
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
             {
                 if (upgrade == 0)
-                    strcopy(ritem,sizeof(ritem),"   (");
+                    strcopy(item,sizeof(item),"   (");
                 else
-                    StrCat(ritem,sizeof(ritem),",");
+                    StrCat(item,sizeof(item),",");
 
-                GetUpgradeName(raceHandle, upgrade, uname, sizeof(uname));
-                StrCat(ritem,sizeof(ritem),uname);
+                GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
+                StrCat(item,sizeof(item),name);
                 if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
-                    StrCat(ritem,sizeof(ritem),"[U]");
+                    StrCat(item,sizeof(item),"[U]");
             }
-            StrCat(ritem,sizeof(ritem),")");
+            StrCat(item,sizeof(item),")");
             Format(rbuf,sizeof(rbuf),"%d",race);
-            AddMenuItem(crMenu,rbuf,ritem,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
+            AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
             */
         }
         gRaceMenuMode[client]=change;
@@ -511,55 +510,19 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        EmitSoundToClient(client,buttonWav);
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
-            decl String:SelectionInfo[11];
-            decl String:SelectionDispText[256];
-            new SelectionStyle;
-            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
-                        SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
-            new item=StringToInt(SelectionInfo);
+            EmitSoundToClient(client,buttonWav);
             if(selection==0)
             {
-                // Purchase
-                new credits=GetCredits(playerHandle);
-                new Handle:itemHandle=GetShopItemHandle(item);
+                new SelectionStyle;
+                decl String:SelectionInfo[11];
+                decl String:SelectionDispText[256];
+                GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
+                            SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
 
-                decl String:itemname[64];
-                GetItemName(itemHandle, itemname, sizeof(itemname));
-
-                new cost = GetItemCost(itemHandle);
-                if(credits>=cost)
-                {
-                    if(!GetOwnsItem(playerHandle,item))
-                    {
-                        new newcredits=credits-cost;
-                        SetCredits(playerHandle,newcredits);
-                        SetOwnsItem(playerHandle,item,1);
-                        Call_StartForward(g_OnItemPurchaseHandle);
-                        Call_PushCell(client);
-                        Call_PushCell(playerHandle);
-                        Call_PushCell(item);
-                        new result;
-                        Call_Finish(result);
-
-                        PrintToChat(client, "%c[SourceCraft] %cYou have successfully purchased the %s.",
-                                    COLOR_GREEN,COLOR_DEFAULT,itemname);
-                    }
-                    else
-                    {
-                        PrintToChat(client, "%c[SourceCraft] %cYou already own the %s.",
-                                    COLOR_GREEN,COLOR_DEFAULT, itemname);
-                    }
-                }
-                else
-                {
-                    EmitSoundToClient(client,notEnoughWav);
-                    PrintToChat(client, "%c[SourceCraft] %cYou can not afford the %s.",
-                                COLOR_GREEN,COLOR_DEFAULT,itemname);
-                }
+                PurchaseShopItem(client, playerHandle, StringToInt(SelectionInfo));
             }
             else if(selection==1)
                 ShopMenu(client,gShopMenuMode[client]);

@@ -18,6 +18,8 @@
 
 #define GetShopItemCount() GetArraySize(shopVector)
 
+new Handle:g_OnItemPurchaseHandle = INVALID_HANDLE;
+
 // A vector of shopmenu infomation
 new Handle:shopVector = INVALID_HANDLE;
 
@@ -120,4 +122,64 @@ FindShopItem(const String:name[])
             return x;
     }
     return -1;
+}
+
+PurchaseShopItem(client,Handle:playerHandle,item)
+{
+    // Purchase
+    new credits=GetCredits(playerHandle);
+    new Handle:itemHandle=GetShopItemHandle(item);
+    if (itemHandle != INVALID_HANDLE)
+    {
+        decl String:itemname[64];
+        GetItemName(itemHandle, itemname, sizeof(itemname));
+
+        new cost = GetItemCost(itemHandle);
+        if(credits>=cost)
+        {
+            new num = GetOwnsItem(playerHandle,item);
+            if (num < GetItemMax(itemHandle))
+            {
+                new result;
+                new newcredits=credits-cost;
+                SetCredits(playerHandle,newcredits);
+                SetOwnsItem(playerHandle,item,++num);
+                Call_StartForward(g_OnItemPurchaseHandle);
+                Call_PushCell(client);
+                Call_PushCell(playerHandle);
+                Call_PushCell(item);
+                Call_Finish(result);
+
+                if (num > 1)
+                {
+                    PrintToChat(client, "%c[SourceCraft] %cYou have successfully purchased another %s, you now have %d.",
+                                COLOR_GREEN,COLOR_DEFAULT,itemname, num);
+                }
+                else
+                {
+                    PrintToChat(client, "%c[SourceCraft] %cYou have successfully purchased the %s.",
+                                COLOR_GREEN,COLOR_DEFAULT,itemname);
+                }
+            }
+            else
+            {
+                if (num > 1)
+                {
+                    PrintToChat(client, "%c[SourceCraft] %cYou already own the maximum allowed %d %ss.",
+                                COLOR_GREEN,COLOR_DEFAULT, num, itemname);
+                }
+                else
+                {
+                    PrintToChat(client, "%c[SourceCraft] %cYou already own the %s.",
+                                COLOR_GREEN,COLOR_DEFAULT, itemname);
+                }
+            }
+        }
+        else
+        {
+            EmitSoundToClient(client,notEnoughWav);
+            PrintToChat(client, "%c[SourceCraft] %cYou can not afford the %s.",
+                        COLOR_GREEN,COLOR_DEFAULT,itemname);
+        }
+    }
 }
