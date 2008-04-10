@@ -15,7 +15,7 @@ bool:InitHooks()
     RegConsoleCmd("sc_menu",SCMenuCommand,"use SourceCraft menu to change race, reset upgrades, etc...");
     RegConsoleCmd("sc_shopmenu",BuyCommand,"use SourceCraft shopmenu to purchase shop items");
     RegConsoleCmd("sc_buy",BuyCommand,"Purchase a SourceCraft Item");
-    RegConsoleCmd("sc_changerace",BuyCommand,"SourceCraft command to change race.");
+    RegConsoleCmd("sc_changerace",ChangeRaceCommand,"SourceCraft command to change race.");
 
     RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
@@ -42,20 +42,22 @@ public Action:SayCommand(client,args)
     new Handle:playerHandle=GetPlayerHandle(client);
     if (playerHandle != INVALID_HANDLE)
     {
-        decl String:arg[64];
-        GetCmdArg(1,arg,sizeof(arg));
-        if(CommandCheck(arg,"showexperience") ||
-           CommandCheck(arg,"showxp"))
+        decl String:command[128];
+        GetCmdArg(1,command,sizeof(command));
+        LogMessage("Say command=%s", command);
+        decl String:arg[2][64];
+        ExplodeString(command, " ", arg, 2, 64);
+        if(CommandCheck(arg[0],"showexperience") ||
+           CommandCheck(arg[0],"showxp"))
         {
             ShowXP(client,playerHandle);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"changerace"))
+        else if(CommandCheck(arg[0],"changerace"))
         {
-            GetCmdArg(2,arg,sizeof(arg));
-            if (strlen(arg) > 0)
+            if (strlen(arg[1]) > 0)
             {
-                new race = FindRace(arg);
+                new race = FindRace(arg[1]);
                 if (race >= 0)
                 {
                     new Handle:raceHandle=GetRaceHandle(race);
@@ -72,29 +74,29 @@ public Action:SayCommand(client,args)
 
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"raceinfo"))
+        else if(CommandCheck(arg[0],"raceinfo"))
         {
             RaceMenu(client,false);
             return Plugin_Handled;
         }
-        else if (CommandCheck(arg,"upgradeinfo") ||
-                 CommandCheck(arg,"skillsinfo"))
+        else if (CommandCheck(arg[0],"upgradeinfo") ||
+                 CommandCheck(arg[0],"skillsinfo"))
         {
             UpgradesInfo(client,GetRace(playerHandle),false);
             return Plugin_Handled;
         }
-        else if (CommandCheck(arg,"reset") ||
-                 CommandCheck(arg,"resetupgrade") ||
-                 CommandCheck(arg,"resetupgrades") ||
-                 CommandCheck(arg,"resetskills"))
+        else if (CommandCheck(arg[0],"reset") ||
+                 CommandCheck(arg[0],"resetupgrade") ||
+                 CommandCheck(arg[0],"resetupgrades") ||
+                 CommandCheck(arg[0],"resetskills"))
         {
             ResetUpgrades(client,playerHandle);
             return Plugin_Handled;
         }
-        else if (CommandCheck(arg,"upgrade") ||
-                 CommandCheck(arg,"spendupgrade") ||
-                 CommandCheck(arg,"spendupgrades") ||
-                 CommandCheck(arg,"spendskills"))
+        else if (CommandCheck(arg[0],"upgrade") ||
+                 CommandCheck(arg[0],"spendupgrade") ||
+                 CommandCheck(arg[0],"spendupgrades") ||
+                 CommandCheck(arg[0],"spendskills"))
         {
             new race=GetRace(playerHandle);
             if(GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
@@ -105,28 +107,27 @@ public Action:SayCommand(client,args)
             }
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"showupgrade") ||
-                CommandCheck(arg,"showupgrades") ||
-                CommandCheck(arg,"showskills"))
+        else if(CommandCheck(arg[0],"showupgrade") ||
+                CommandCheck(arg[0],"showupgrades") ||
+                CommandCheck(arg[0],"showskills"))
         {
             ShowUpgrades(client,client,playerHandle);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"crystals") || 
-                CommandCheck(arg,"showcrystals") ||
-                CommandCheck(arg,"showcredits"))
+        else if(CommandCheck(arg[0],"crystals") || 
+                CommandCheck(arg[0],"showcrystals") ||
+                CommandCheck(arg[0],"showcredits"))
         {
             ShowCredits(client,playerHandle);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"shopmenu") ||
-                CommandCheck(arg,"scbuy") ||
-                CommandCheck(arg,"buy"))
+        else if(CommandCheck(arg[0],"shopmenu") ||
+                CommandCheck(arg[0],"scbuy") ||
+                CommandCheck(arg[0],"buy"))
         {
-            GetCmdArg(2,arg,sizeof(arg));
-            if (strlen(arg) > 0)
+            if (strlen(arg[1]) > 0)
             {
-                new item = FindShopItem(arg);
+                new item = FindShopItem(arg[1]);
                 if (item >= 0)
                     PurchaseShopItem(client, playerHandle, item);
                 else
@@ -136,28 +137,28 @@ public Action:SayCommand(client,args)
                 ShopMenu(client,true);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"showitems") ||
-                CommandCheck(arg,"inventory") ||
-                CommandCheck(arg,"inven") ||
-                CommandCheck(arg,"inv"))
+        else if(CommandCheck(arg[0],"showitems") ||
+                CommandCheck(arg[0],"inventory") ||
+                CommandCheck(arg[0],"inven") ||
+                CommandCheck(arg[0],"inv"))
         {
             ShopMenu(client,false);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"schelp") ||
-                CommandCheck(arg,"help"))
+        else if(CommandCheck(arg[0],"schelp") ||
+                CommandCheck(arg[0],"help"))
         {
             Help(client);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"scmenu") ||
-                CommandCheck(arg,"menu"))
+        else if(CommandCheck(arg[0],"scmenu") ||
+                CommandCheck(arg[0],"menu"))
         {
             MainMenu(client);
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg,"scsave") ||
-                CommandCheck(arg,"save"))
+        else if(CommandCheck(arg[0],"scsave") ||
+                CommandCheck(arg[0],"save"))
         {
             if (SavePlayerData(client, playerHandle, false))
                 PrintToChat(client,"%c[SourceCraft] %cSaved data to Database.",
@@ -173,14 +174,15 @@ public Action:SayCommand(client,args)
 
 public Action:UltimateCommand(client,args)
 {
-    decl String:command[32];
-    GetCmdArg(0,command,32);
     new Handle:playerHandle=GetPlayerHandle(client);
     if (playerHandle != INVALID_HANDLE)
     {
         new result;
         new race=GetRace(playerHandle);
         new bool:pressed=false;
+
+        decl String:command[32];
+        GetCmdArg(0,command,sizeof(command));
         if(!strcmp(command,"+ultimate"))
             pressed=true;
 
@@ -207,8 +209,9 @@ public Action:BuyCommand(client,args)
     {
         decl String:arg[64];
         GetCmdArg(1,arg,sizeof(arg));
+        LogMessage("Buy arg1=%s", arg);
         new item = FindShopItem(arg);
-        if (item > -1)
+        if (item >= 0)
             PurchaseShopItem(client, playerHandle, item);
         else
             ShopMenu(client,true);
@@ -223,6 +226,7 @@ public Action:ChangeRaceCommand(client,args)
     {
         decl String:arg[64];
         GetCmdArg(1,arg,sizeof(arg));
+        LogMessage("Changerace arg1=%s", arg);
         if (strlen(arg) > 0)
         {
             new race = FindRace(arg);

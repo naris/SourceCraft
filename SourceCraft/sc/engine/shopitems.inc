@@ -117,9 +117,15 @@ FindShopItem(const String:name[])
     for(new x=0;x<size;x++)
     {
         new Handle:itemHandle=GetArrayCell(shopVector,x);
-        GetArrayString(itemHandle,ITEM_SHORT_NAME,curName,sizeof(curName));
-        if(!StrEqual(name,curName,false))
+        new Handle:stringsHandle=GetArrayCell(itemHandle,ITEM_STRINGS);
+        GetArrayString(stringsHandle,ITEM_SHORT_NAME,curName,sizeof(curName));
+        if (StrEqual(name,curName,false))
+        {
+            LogMessage("%s==%s(%d)",name,curName,x);
             return x;
+        }
+        else
+            LogMessage("%s!=%s(%d)",name,curName,x);
     }
     return -1;
 }
