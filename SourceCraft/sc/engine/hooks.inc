@@ -44,9 +44,10 @@ public Action:SayCommand(client,args)
     {
         decl String:command[128];
         GetCmdArg(1,command,sizeof(command));
-        LogMessage("Say command=%s", command);
+
         decl String:arg[2][64];
         ExplodeString(command, " ", arg, 2, 64);
+
         if(CommandCheck(arg[0],"showexperience") ||
            CommandCheck(arg[0],"showxp"))
         {
@@ -208,11 +209,14 @@ public Action:BuyCommand(client,args)
     if (playerHandle != INVALID_HANDLE)
     {
         decl String:arg[64];
-        GetCmdArg(1,arg,sizeof(arg));
-        LogMessage("Buy arg1=%s", arg);
-        new item = FindShopItem(arg);
-        if (item >= 0)
-            PurchaseShopItem(client, playerHandle, item);
+        if (GetCmdArg(1,arg,sizeof(arg)) > 0)
+        {
+            new item = FindShopItem(arg);
+            if (item >= 0)
+                PurchaseShopItem(client, playerHandle, item);
+            else
+                ShopMenu(client,true);
+        }
         else
             ShopMenu(client,true);
     }
@@ -225,9 +229,7 @@ public Action:ChangeRaceCommand(client,args)
     if (playerHandle != INVALID_HANDLE)
     {
         decl String:arg[64];
-        GetCmdArg(1,arg,sizeof(arg));
-        LogMessage("Changerace arg1=%s", arg);
-        if (strlen(arg) > 0)
+        if (GetCmdArg(1,arg,sizeof(arg)) > 0)
         {
             new race = FindRace(arg);
             if (race >= 0)

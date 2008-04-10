@@ -120,12 +120,7 @@ FindShopItem(const String:name[])
         new Handle:stringsHandle=GetArrayCell(itemHandle,ITEM_STRINGS);
         GetArrayString(stringsHandle,ITEM_SHORT_NAME,curName,sizeof(curName));
         if (StrEqual(name,curName,false))
-        {
-            LogMessage("%s==%s(%d)",name,curName,x);
             return x;
-        }
-        else
-            LogMessage("%s!=%s(%d)",name,curName,x);
     }
     return -1;
 }
