@@ -165,13 +165,9 @@ GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength)
 
 GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength)
 {
-    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
-    if (upgradeListHandle != INVALID_HANDLE)
-    {
-        new Handle:upgradeStringHandle=GetArrayCell(upgradeListHandle,UPGRADE_STRINGS);
-        if (upgradeStringHandle != INVALID_HANDLE)
-            GetArrayString(upgradeStringHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
-    }
+    new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
+    if (stringsHandle != INVALID_HANDLE)
+        GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
 }
 
 GetUpgradeName(Handle:raceHandle,upgrade, String:name[], maxlength)
