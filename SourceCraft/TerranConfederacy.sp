@@ -134,7 +134,7 @@ public OnItemPurchase(client,Handle:player,item)
     new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
     {
-        new boots = FindShopItem("Boots of Speed");
+        new boots = FindShopItem("boots");
         if (boots == item)
         {
             new level=GetUpgradeLevel(player,race,stimpackID);
@@ -336,7 +336,7 @@ Stimpacks(client, Handle:player, level)
     /* If the Player also has the Boots of Speed,
      * Increase the speed further
      */
-    new boots = FindShopItem("Boots of Speed");
+    new boots = FindShopItem("boots");
     if (boots != -1 && GetOwnsItem(player,boots))
     {
         speed *= 1.1;

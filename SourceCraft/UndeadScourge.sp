@@ -129,7 +129,7 @@ public OnItemPurchase(client,Handle:player,item)
     new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
     {
-        new boots = FindShopItem("Boots of Speed");
+        new boots = FindShopItem("boots");
         if (boots == item)
         {
             new unholy_level = GetUpgradeLevel(player,race,unholyID);
@@ -137,7 +137,7 @@ public OnItemPurchase(client,Handle:player,item)
         }
         else
         {
-            new sock = FindShopItem("Sock of the Feather");
+            new sock = FindShopItem("sock");
             if (sock == item)
             {
                 new levitation_level = GetUpgradeLevel(player,race,levitationID);
@@ -248,7 +248,7 @@ UnholyAura(client, Handle:player, level)
     /* If the Player also has the Boots of Speed,
      * Increase the speed further
      */
-    new boots = FindShopItem("Boots of Speed");
+    new boots = FindShopItem("boots");
     if (boots != -1 && GetOwnsItem(player,boots))
     {
         speed *= 1.1;
@@ -283,7 +283,7 @@ Levitation(client, Handle:player, level)
     /* If the Player also has the Sock of the Feather,
      * Decrease the gravity further.
      */
-    new sock = FindShopItem("Sock of the Feather");
+    new sock = FindShopItem("sock");
     if (sock != -1 && GetOwnsItem(player,sock))
     {
         gravity *= 0.8;

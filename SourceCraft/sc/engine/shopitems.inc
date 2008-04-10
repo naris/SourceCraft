@@ -121,6 +121,12 @@ FindShopItem(const String:name[])
         GetArrayString(stringsHandle,ITEM_SHORT_NAME,curName,sizeof(curName));
         if (StrEqual(name,curName,false))
             return x;
+        else
+        {
+            GetArrayString(stringsHandle,ITEM_NAME,curName,sizeof(curName));
+            if (StrEqual(name,curName,false))
+                return x;
+        }
     }
     return -1;
 }
