@@ -77,8 +77,9 @@ DoLevelCheck(client,Handle:playerHandle)
         while(m_Go)
         {
             new race = GetRace(playerHandle);
+            new Handle:raceHandle=GetRaceHandle(race);
             new level = GetLevel(playerHandle,race);
-            if (level < MAX_LEVELS)
+            if (level < GetRaceMaxLevel(raceHandle))
             {
                 new curXP = GetXP(playerHandle,race);
                 new reqXP = ReqLevelXP(++level);
@@ -89,7 +90,7 @@ DoLevelCheck(client,Handle:playerHandle)
                     SetLevel(playerHandle,race,level);
 
                     decl String:raceName[64];
-                    GetRaceName(GetRaceHandle(race),raceName,sizeof(raceName));
+                    GetRaceName(raceHandle,raceName,sizeof(raceName));
                     PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
                                 COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
                     SetXP(playerHandle,race,curXP-reqXP);
@@ -122,7 +123,7 @@ DoLevelCheck(client,Handle:playerHandle)
                 }
             }
             else
-            m_Go=false;
+                m_Go=false;
         }
     }
 }
@@ -134,21 +135,25 @@ ShowXP(client,Handle:playerHandle)
         new race=GetRace(playerHandle);
         if (race >= 0)
         {
-            new level=GetLevel(playerHandle,race);
-            decl String:racename[64];
-            GetRaceName(GetRaceHandle(race),racename,sizeof(racename));
-            if (level<MAX_LEVELS)
+            new Handle:raceHandle=GetRaceHandle(race);
+            if (raceHandle != INVALID_HANDLE)
             {
-                PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d / %d. (Overall Level %d)",
-                            COLOR_GREEN,COLOR_DEFAULT,racename,level,
-                            GetXP(playerHandle,race),ReqLevelXP(level+1),
-                            GetOverallLevel(playerHandle));
-            }
-            else
-            {
-                PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d. (Overall Level %d)",
-                            COLOR_GREEN,COLOR_DEFAULT,racename,level,
-                            GetXP(playerHandle,race),GetOverallLevel(playerHandle));
+                new level=GetLevel(playerHandle,race);
+                decl String:racename[64];
+                GetRaceName(raceHandle,racename,sizeof(racename));
+                if (level<GetRaceMaxLevel(raceHandle))
+                {
+                    PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d / %d. (Overall Level %d)",
+                                COLOR_GREEN,COLOR_DEFAULT,racename,level,
+                                GetXP(playerHandle,race),ReqLevelXP(level+1),
+                                GetOverallLevel(playerHandle));
+                }
+                else
+                {
+                    PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d. (Overall Level %d)",
+                                COLOR_GREEN,COLOR_DEFAULT,racename,level,
+                                GetXP(playerHandle,race),GetOverallLevel(playerHandle));
+                }
             }
         }
     }
@@ -336,7 +341,9 @@ TakeXP(client,Handle:playerHandle, amount, const String:reason[])
             LogToGame("%N lost %d experience for %s", client, amount, reason);
             PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
                         COLOR_GREEN,COLOR_DEFAULT,amount, reason);
-            if(GetLevel(playerHandle,race)<MAX_LEVELS)
+
+            new Handle:raceHandle=GetRaceHandle(race);
+            if(GetLevel(playerHandle,race)<GetRaceMaxLevel(raceHandle))
                 DoLevelCheck(client,playerHandle);
         }
     }

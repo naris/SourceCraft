@@ -5,11 +5,11 @@
  * Author(s): Anthony Iacono  
  */
 
-#define RACE_IDENT              0
-#define RACE_REQUIRED_LEVEL     1
-#define RACE_STRINGS            2
-#define RACE_UPGRADE_FLAGS      3
-#define RACE_UPGRADE_STRINGS    4
+#define RACE_STRINGS            0
+#define RACE_UPGRADES           1
+#define RACE_IDENT              2
+#define RACE_REQUIRED_LEVEL     3
+#define RACE_MAX_LEVEL          4
 #define RACE_DATA_COUNT         5
 
 #define RACE_NAME               0
@@ -18,10 +18,16 @@
 #define RACE_SWITCHMESSAGE_DEAD 3
 #define RACE_STRING_COUNT       4
 
+#define UPGRADE_STRINGS         0
+#define UPGRADE_REQUIRED_LEVEL  1
+#define UPGRADE_MAX_LEVEL       2
+#define UPGRADE_ULTIMATE        3
+#define UPGRADE_DATA_COUNT      4
+
 #define UPGRADE_NAME            0
 #define UPGRADE_SHORT_NAME      1
 #define UPGRADE_DESC            2
-#define UPGRADE_DATA_COUNT      3
+#define UPGRADE_STRING_COUNT    3
 
 #define GetRaceCount() GetArraySize(arrayRaces)
 
@@ -52,13 +58,14 @@ ClearRaceArray()
             ClearArray(stringsHandle);
             CloseHandle(stringsHandle);
 
-            new Handle:upgradeFlagsHandle=GetArrayCell(vec,RACE_UPGRADE_FLAGS);
-            ClearArray(upgradeFlagsHandle);
-            CloseHandle(upgradeFlagsHandle);
+            new Handle:upgradeDataHandle=GetArrayCell(vec,RACE_UPGRADES);
 
-            new Handle:upgradeStringsHandle=GetArrayCell(vec,RACE_UPGRADE_STRINGS);
+            new Handle:upgradeStringsHandle=GetArrayCell(upgradeDataHandle,UPGRADE_STRINGS);
             ClearArray(upgradeStringsHandle);
             CloseHandle(upgradeStringsHandle);
+
+            ClearArray(upgradeDataHandle);
+            CloseHandle(upgradeDataHandle);
 
             ClearArray(vec);
             CloseHandle(vec);
@@ -71,10 +78,8 @@ ClearRaceArray()
 
 CreateRace(const String:name[],                  const String:short[],
            const String:switchmessage_instant[], const String:switchmessage_dead[],
-           required_level)
+           required_level, max_level)
 {
-    new Handle:newRace=CreateArray();
-
     // Setup Race Strings.
     new Handle:stringsHandle=CreateArray(ByteCountToCells(192));
     PushArrayString(stringsHandle,name);
@@ -82,30 +87,39 @@ CreateRace(const String:name[],                  const String:short[],
     PushArrayString(stringsHandle,switchmessage_instant);
     PushArrayString(stringsHandle,switchmessage_dead);
 
-    // Setup Race Upgrade arrays.
-    new Handle:upgradeStringsHandle=CreateArray(ByteCountToCells(192));
-    new Handle:upgradeFlagsHandle=CreateArray();
+    // Setup Race Upgrade array.
+    new Handle:upgradeListHandle=CreateArray();
 
     // Setup Race Data.
+    new Handle:newRace=CreateArray();
+    PushArrayCell(newRace,stringsHandle);
+    PushArrayCell(newRace,upgradeListHandle);
     PushArrayCell(newRace,SaveRaceInfo(short,name)); // ident from the Database
     PushArrayCell(newRace,required_level);
-    PushArrayCell(newRace,stringsHandle);
-    PushArrayCell(newRace,upgradeFlagsHandle);
-    PushArrayCell(newRace,upgradeStringsHandle);
+    PushArrayCell(newRace,max_level);
 
     // Add new Race Data into Race Array.
     return PushArrayCell(arrayRaces,newRace); // return index.
 }
 
-AddUpgrade(Handle:race, const String:name[], const String:short[], const String:desc[], bool:ultimate)
+AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const String:desc[],
+           bool:ultimate, required_level, max_level)
 {
-    new Handle:upgradeStringsHandle=GetArrayCell(race,RACE_UPGRADE_STRINGS);
-    PushArrayString(upgradeStringsHandle,name);
-    PushArrayString(upgradeStringsHandle,short);
-    PushArrayString(upgradeStringsHandle,desc);
+    new Handle:upgradeStringHandle=CreateArray(ByteCountToCells(192));
+    PushArrayString(upgradeStringHandle,name);
+    PushArrayString(upgradeStringHandle,short);
+    PushArrayString(upgradeStringHandle,desc);
 
-    new Handle:upgradeFlagsHandle=GetArrayCell(race,RACE_UPGRADE_FLAGS);
-    return PushArrayCell(upgradeFlagsHandle, ultimate); // return index
+    new Handle:upgradeHandle=CreateArray();
+    PushArrayCell(upgradeHandle,upgradeStringHandle);
+    PushArrayCell(upgradeHandle,ultimate);
+    PushArrayCell(upgradeHandle,((required_level >= 0) ? required_level
+                                                       : (ultimate ? MIN_ULTIMATE_LEVEL
+                                                                   : 0)));
+    PushArrayCell(upgradeHandle,max_level);
+
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    return PushArrayCell(upgradeListHandle, upgradeHandle); // return index
 }
 
 Handle:GetRaceHandle(racenum)
@@ -121,6 +135,11 @@ GetRaceIdent(Handle:raceHandle)
 GetRaceRequiredLevel(Handle:raceHandle)
 {
     return GetArrayCell(raceHandle,RACE_REQUIRED_LEVEL);
+}
+
+GetRaceMaxLevel(Handle:raceHandle)
+{
+    return GetArrayCell(raceHandle,RACE_MAX_LEVEL);
 }
 
 GetRaceName(Handle:raceHandle, String:name[], maxlength)
@@ -146,61 +165,108 @@ GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength)
 
 GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength)
 {
-    new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
-    if (stringsHandle != INVALID_HANDLE)
-        GetArrayString(stringsHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeStringHandle=GetArrayCell(upgradeListHandle,UPGRADE_STRINGS);
+        if (upgradeStringHandle != INVALID_HANDLE)
+            GetArrayString(upgradeStringHandle,RACE_SWITCHMESSAGE_DEAD,message,maxlength);
+    }
 }
 
 GetUpgradeName(Handle:raceHandle,upgrade, String:name[], maxlength)
 {
-    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
-    if (upgradeStringsHandle != INVALID_HANDLE)
-        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT) /* +UPGRADE_NAME */,
-                       name,maxlength);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+        {
+            new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
+            if (upgradeStringHandle != INVALID_HANDLE)
+                GetArrayString(upgradeStringHandle,UPGRADE_NAME, name,maxlength);
+        }
+    }
 }
 
 stock GetUpgradeShortName(Handle:raceHandle,upgrade, String:name[], maxlength)
 {
-    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
-    if (upgradeStringsHandle != INVALID_HANDLE)
-        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT)+UPGRADE_SHORT_NAME,
-                       name,maxlength);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+        {
+            new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
+            if (upgradeStringHandle != INVALID_HANDLE)
+                GetArrayString(upgradeStringHandle,UPGRADE_SHORT_NAME, name,maxlength);
+        }
+    }
 }
 
 stock GetUpgradeDesc(Handle:raceHandle,upgrade, String:desc[], maxlength)
 {
-    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
-    if (upgradeStringsHandle != INVALID_HANDLE)
-        GetArrayString(upgradeStringsHandle,(upgrade*UPGRADE_DATA_COUNT)+UPGRADE_DESC,
-                       desc,maxlength);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+        {
+            new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
+            if (upgradeStringHandle != INVALID_HANDLE)
+                GetArrayString(upgradeStringHandle,UPGRADE_DESC, name,maxlength);
+        }
+    }
 }
 
 GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
                       String:desc[], maxDesc)
 {
-    new Handle:upgradeStringsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_STRINGS);
-    if (upgradeStringsHandle != INVALID_HANDLE)
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
     {
-        new index = (upgrade*UPGRADE_DATA_COUNT);
-        GetArrayString(upgradeStringsHandle,index,name,maxName);
-        GetArrayString(upgradeStringsHandle,index+UPGRADE_DESC,desc,maxDesc);
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+        {
+            new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
+            if (upgradeStringHandle != INVALID_HANDLE)
+            {
+                GetArrayString(upgradeStringHandle, UPGRADE_NAME, name, maxName);
+                GetArrayString(upgradeStringHandle, UPGRADE_DESC, desc, maxDesc);
+            }
+        }
     }
+}
+
+stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
+{
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+            return GetArrayCell(upgradeHandle, UPGRADE_MAX_LEVEL);
+    }
+    return false;
 }
 
 IsUpgradeUltimate(Handle:raceHandle,upgrade)
 {
-    new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
-    if (upgradeFlagsHandle != INVALID_HANDLE)
-        return GetArrayCell(upgradeFlagsHandle, upgrade);
-    else
-        return false;
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+            return GetArrayCell(upgradeHandle, UPGRADE_ULTIMATE);
+    }
+    return false;
 }
 
 GetUpgradeCount(Handle:raceHandle)
 {
-    new Handle:upgradeFlagsHandle=GetArrayCell(raceHandle,RACE_UPGRADE_FLAGS);
-    if (upgradeFlagsHandle != INVALID_HANDLE)
-        return GetArraySize(upgradeFlagsHandle);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+        return GetArraySize(upgradeListHandle);
     else
         return -1;
 }
@@ -288,7 +354,10 @@ ResetUpgradesNow(client,Handle:playerHandle)
 
     new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+    {
         SetUpgradeLevel(playerHandle,race,upgrade,0);
+        SetSavedUpgradeLevel(playerHandle,race,upgrade,-1);
+    }
 
     PrintToChat(client,"%c[SourceCraft] %cYour upgrades have been reset for your current race.",
                 COLOR_GREEN,COLOR_DEFAULT);

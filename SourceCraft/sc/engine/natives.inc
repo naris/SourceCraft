@@ -22,14 +22,15 @@ new Handle:g_OnPlayerDeathEventHandle = INVALID_HANDLE;
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
  * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
  * @param required_level: The overeall level the player must obtain before changing to this race.
+ * @param max_level: The maximum level the race can attain. (default is 16)
  * @return The return value will be the race index or -1 if there was a problem.
  *
  * native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
- *                   required_level=0);
+ *                   required_level=0,max_level=16);
  */         
 public Native_CreateRace(Handle:plugin,numParams)
 {
-    if (numParams >=4 && numParams <= 5)
+    if (numParams >=4 && numParams <= 6)
     {
         decl String:name[64],String:short[16];
         decl String:switchmessage_instant[192];
@@ -39,9 +40,11 @@ public Native_CreateRace(Handle:plugin,numParams)
         GetNativeString(3,switchmessage_instant,sizeof(switchmessage_instant));
         GetNativeString(4,switchmessage_dead,sizeof(switchmessage_dead));
 
-        new required_level = (numParams >= 5) ? GetNativeCell(5) : 0;
+        new required_level  = (numParams >= 5) ? GetNativeCell(5) : 0;
+        new max_level       = (numParams >= 6) ? GetNativeCell(6) : MAX_LEVELS;
 
-        return CreateRace(name,short,switchmessage_instant,switchmessage_dead,required_level);
+        return CreateRace(name,short,switchmessage_instant,switchmessage_dead,
+                          required_level,max_level);
     }
     return -1;
 }
@@ -50,15 +53,19 @@ public Native_CreateRace(Handle:plugin,numParams)
  * Adds an upgrade to a race
  * @param race: The race ID returned from CreateRace
  * @param name: The name of the upgrade. (max 64)
+ * @param short: The short name of the upgrade. (max 16) 
  * @param desc: The description of the upgrade. (max 192)
- * @param ultimate: Set to true to indicate upgrade is an ultimate.
+ * @param ultimate: Set to true to indicate upgrade is an ultimate. (default is false)
+ * @param required_level: The race level required before this upgrade becomes available.
+ *                        (default is the minumum ultimate level {usually 8} and 0 for all others)
+ * @param max_level: The maximum level the upgrade can attain. (default is 4)
  * @return The return value will be the upgrade index or -1 if there was a problem.
- *
- * native AddUpgrade(race, String:name[],String:desc[],bool:ultimate=false);
+ * native AddUpgrade(race,String:name[],String:short[],String:desc[],
+                     bool:ultimate=false,required_level=-1,max_level=4);
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
 {
-    if (numParams >=4 && numParams <= 5)
+    if (numParams >=4 && numParams <= 7)
     {
         new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
         if (raceHandle != INVALID_HANDLE)
@@ -67,12 +74,11 @@ public Native_AddUpgrade(Handle:plugin,numParams)
             GetNativeString(2,name,sizeof(name));
             GetNativeString(3,short,sizeof(short));
             GetNativeString(4,desc,sizeof(desc));
-
-            new bool:ultimate = false;
-            if (numParams >= 5)
-                ultimate = bool:GetNativeCell(4);
-
-            return AddUpgrade(raceHandle, name, short, desc, ultimate);
+            new bool:ultimate   = bool:(numParams >= 5) ? GetNativeCell(5) : false;
+            new required_level  = (numParams >= 6) ? GetNativeCell(6) : -1;
+            new max_level       = (numParams >= 7) ? GetNativeCell(7) : 4;
+            return AddUpgrade(raceHandle, name, short, desc,
+                              ultimate, required_level, max_level);
         }
     }
     return -1;

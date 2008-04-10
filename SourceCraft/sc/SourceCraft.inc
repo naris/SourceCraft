@@ -20,11 +20,12 @@
  * @param short: The short name of the race. (max 16) 
  * @param switchmessage_instant: The message displayed to the player when they are switched to a new race. (max 192)
  * @param switchmessage_dead: The message displayed to the play when they try to switch to the race, but they are alive so they need to wait until they die or the new round. (max 192)
- * @param required_level: The overeall level the player must obtain before changing to this race.
+ * @param required_level: The overeall level the player must obtain before changing to this race. (default is 0)
+ * @param max_level: The maximum level the race can attain. (default is 16)
  * @return The return value will be the race index or -1 if there was a problem.
  */         
 native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
-                  required_level=0);
+                  required_level=0,max_level=16);
 
 /**
  * Adds an upgrade to a race
@@ -32,10 +33,14 @@ native CreateRace(String:name[],String:short[],String:switchmessage_instant[],St
  * @param name: The name of the upgrade. (max 64)
  * @param short: The short name of the upgrade. (max 16) 
  * @param desc: The description of the upgrade. (max 192)
- * @param ultimate: Set to true to indicate upgrade is an ultimate.
+ * @param ultimate: Set to true to indicate upgrade is an ultimate. (default is false)
+ * @param required_level: The race level required before this upgrade becomes available.
+ *                        (default is the minumum ultimate level {usually 8} and 0 for all others)
+ * @param max_level: The maximum level the upgrade can attain. (default is 4)
  * @return The return value will be the upgrade index or -1 if there was a problem.
  */         
-native AddUpgrade(race,String:name[],String:short[],String:desc[],bool:ultimate=false);
+native AddUpgrade(race,String:name[],String:short[],String:desc[],
+                  bool:ultimate=false,required_level=-1,max_level=4);
 
 /**
  * Registers a shop item with the SourceCraft plugin
