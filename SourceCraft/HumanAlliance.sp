@@ -214,6 +214,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                 new devotion_level=GetUpgradeLevel(player,race,devotionID);
                 if (devotion_level)
                     AuthTimer(0.1,client,DoDevotionAura);
+
+                LogMessage("Spawned Human %N, race=%d", client, raceID);
             }
         }
     }

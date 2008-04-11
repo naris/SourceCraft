@@ -95,20 +95,27 @@ CreateRace(const String:name[],                  const String:short[],
     new Handle:upgradeListHandle=CreateArray();
 
     // Setup Race Data.
-    new Handle:newRace=CreateArray();
-    PushArrayCell(newRace,stringsHandle);
-    PushArrayCell(newRace,upgradeListHandle);
-    PushArrayCell(newRace,LoadRaceIdent(short, name)); // from the Database
-    PushArrayCell(newRace,required_level);
-    PushArrayCell(newRace,max_level);
+    new Handle:raceHandle=CreateArray();
+    PushArrayCell(raceHandle,stringsHandle);
+    PushArrayCell(raceHandle,upgradeListHandle);
+    PushArrayCell(raceHandle,LoadRaceIdent(short, name)); // from the Database
+    PushArrayCell(raceHandle,required_level);
+    PushArrayCell(raceHandle,max_level);
 
     // Add new Race Data into Race Array.
-    return PushArrayCell(arrayRaces,newRace); // return index.
+    new raceId = PushArrayCell(arrayRaces,raceHandle); // return index.
+    LogMessage("Created race #%d(%x) = %s, req=%d,max=%d",
+               raceId, raceHandle, name, required_level, max_level);
+    return raceId;
 }
 
 AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const String:desc[],
            bool:ultimate, required_level, max_level)
 {
+    new req_level = required_level;
+    if (required_level < 0)
+        required_level = (ultimate ? MIN_ULTIMATE_LEVEL : 0);
+
     new Handle:upgradeStringHandle=CreateArray(ByteCountToCells(192));
     PushArrayString(upgradeStringHandle,name);
     PushArrayString(upgradeStringHandle,short);
@@ -117,13 +124,14 @@ AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const S
     new Handle:upgradeHandle=CreateArray();
     PushArrayCell(upgradeHandle,upgradeStringHandle);
     PushArrayCell(upgradeHandle,ultimate);
-    PushArrayCell(upgradeHandle,((required_level >= 0) ? required_level
-                                                       : (ultimate ? MIN_ULTIMATE_LEVEL
-                                                                   : 0)));
+    PushArrayCell(upgradeHandle,required_level);
     PushArrayCell(upgradeHandle,max_level);
 
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
-    return PushArrayCell(upgradeListHandle, upgradeHandle); // return index
+    new upgradeId = PushArrayCell(upgradeListHandle, upgradeHandle); // return index
+    LogMessage("Created race(%x) upgrade #%d = %s, ult=%d, req=%d(%d), max=%d",
+               raceHandle, upgradeId, name, ultimate, required_level, req_level, max_level);
+    return upgradeId;
 }
 
 Handle:GetRaceHandle(racenum)
