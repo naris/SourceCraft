@@ -4,6 +4,8 @@
 #endif
 #define _tf2_nican_included
 
+#include <tf2_stocks>
+
 /*
 OMG! same as TFC
 1= scout
@@ -57,7 +59,14 @@ native TF_EyeTurret(client);
  * @param index 		Client index
  * @return				Max health
  */
-native TF_GetMaxHealth(client);
+stock TF_GetMaxHealth(client)
+{
+    if(IsClientConnected(client))
+	return TF2_GetPlayerResourceData(client, TFResource_MaxHealth);
+    else
+        return -1;
+}
+
 
 /**
  * Get client total score
@@ -65,11 +74,10 @@ native TF_GetMaxHealth(client);
  * @param index 		Client index
  * @return				Total score	
  */
-native TF_TotalScore(client);
-
-/**
- * Return the CTFPlayerResource id
- *
- * @return				CTFPlayerResource id
- */
-native TF_GetResource(client);
+stock TF_TotalScore(client)
+{
+    if(IsClientConnected(client))
+    	return TF2_GetPlayerResourceData(client, TFResource_TotalScore);
+    else
+        return -1;
+}

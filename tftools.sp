@@ -4,8 +4,9 @@
  
 #include <sourcemod>
 #include <sdktools>
+#include <tf2>
 
-#define PL_VERSION "1.2"
+#define PL_VERSION "1.2.1"
 
 public Plugin:myinfo = 
 {
@@ -16,11 +17,9 @@ public Plugin:myinfo =
   url = "http://sourcemod.net/"
 };       
 
-new maxents, maxplayers;
 new SentryModel[4];
 new SentryShells[4] = {0, 100, 120, 144};
 new Handle:hGameConf, Handle:OffsetSentryModel;
-new ResourceEnt;
 
 new TF_TRoffsets[8];
 #define TURRET_LEVEL 0
@@ -68,41 +67,13 @@ public OnPluginStart(){
 
 public OnMapStart(){
 	SentryModel[0] = 0;
-	
-	maxplayers = GetMaxClients();
-	maxents = GetMaxEntities();
-	ResourceEnt = FindResourceObject();
-	
-	if(ResourceEnt == 0)
-		LogMessage("Attetion! Server could not find player data table");
 }
-
-stock FindResourceObject(){
-	new i, String:classname[64];
-	
-	//Isen't there a easier way?
-	for(i = maxplayers; i <= maxents; i++){
-	 	if(IsValidEntity(i)){
-			GetEntityNetClass(i, classname, 64);
-			if(StrEqual(classname, "CTFPlayerResource")){
-					return i;
-			}
-		}
-	}
-	return 0;
-}
-
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:Error[])
 {
   // General
   CreateNative("TF_TurretLevel", SetTurretLevel);
   CreateNative("TF_EyeTurret", GetPlayerEyes);
-  
-  CreateNative("TF_GetMaxHealth", GetClientMaxHealth);
-  CreateNative("TF_TotalScore", GetClientTotalScore);
-  
-  CreateNative("TF_GetResource", GetResource);
 
   return true;
 }
@@ -113,7 +84,7 @@ public SetTurretLevel(Handle:plugin,argc){
 		index = GetNativeCell(1);
 		
 		//Oh uh... Find sentry if player index is giving
-		if(index <= maxplayers){
+		if(index <= GetMaxClients()){
 		 	//LogMessage("B");
 			if(!IsClientInGame(index))
 				return 5;
@@ -191,7 +162,8 @@ stock FindSentryByOwner(index){
 	new i, String:classname[64];
 	
 	//Isen't there a easier way?
-	for(i = maxplayers; i <= maxents; i++){
+	new maxents = GetMaxEntities();
+	for(i = GetMaxClients(); i <= maxents; i++){
 	 	if(IsValidEntity(i)){
 			GetEntityNetClass(i, classname, 64);
 			if(StrEqual(classname, "CObjectSentrygun")){
@@ -229,37 +201,4 @@ public bool:TraceEntityFilterSentry(entity, contentsMask){
  	new String:classname[64];
  	GetEntityNetClass(entity, classname, 64);
  	return StrEqual(classname, "CObjectSentrygun");
-}
-
-stock GetPlayerMaxHealth(client){
-	return GetEntData(ResourceEnt, TF_Resourceoffsets[RESOURCES_MAXHEALTH] + (client*4), 4);
-}
-
-public GetClientMaxHealth(Handle:plugin,argc){
-	if(argc == 1){
-	 	new client = GetNativeCell(1);
-	 	if(IsClientConnected(client))
-			return GetPlayerMaxHealth(client);	
-	}
-	return -1; 
-}
-
-stock GetPlayerTotalScore(client){
-	return GetEntData(ResourceEnt, TF_Resourceoffsets[RESOURCES_TLSCORE] + (client*4), 4);
-}
-
-public GetClientTotalScore(Handle:plugin,argc){
-	if(argc == 1){
-	 	new client = GetNativeCell(1);
-	 	if(IsClientConnected(client))
-			return GetPlayerTotalScore(client);	
-	}
-	return -1; 
-}
-
-public GetResource(Handle:plugin,argc){
-	if(argc == 0){
-	 	return ResourceEnt;
-	}
-	return -1; 
 }
