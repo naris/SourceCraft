@@ -247,7 +247,7 @@ GetUpgradeRequiredLevel(Handle:raceHandle,upgrade)
     {
         new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
         if (upgradeHandle != INVALID_HANDLE)
-            return GetArrayCell(upgradeHandle, RACE_REQUIRED_LEVEL);
+            return GetArrayCell(upgradeHandle, UPGRADE_REQUIRED_LEVEL);
     }
     return -1;
 }

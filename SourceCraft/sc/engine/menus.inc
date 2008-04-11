@@ -297,9 +297,6 @@ UpgradeMenu(client, Handle:playerHandle)
         new upgradeCount = GetUpgradeCount(raceHandle);
         for(new upgrade=0;upgrade<upgradeCount;upgrade++)
         {
-            GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
-            Format(sbuf,sizeof(sbuf),"%d",upgrade);
-
             upgradeLevel=GetUpgradeLevel(playerHandle,race,upgrade);
 
             requiredLevel=GetUpgradeRequiredLevel(raceHandle,upgrade);
@@ -331,8 +328,9 @@ UpgradeMenu(client, Handle:playerHandle)
             else
                 toLevel[0] = 0;
 
+            GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
             Format(buf,sizeof(buf),"%s%s%s%s",ult,upgradename,minLevel,toLevel);
-
+            Format(sbuf,sizeof(sbuf),"%d",upgrade);
             AddMenuItem(sMenu,sbuf,buf,style);
         }
         DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
