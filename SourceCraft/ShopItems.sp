@@ -14,12 +14,11 @@
 #undef REQUIRE_EXTENSIONS
 #include <cstrike>
 #include <tf2_stocks>
+#include <tf2_player>
+#include <tftools>
 #define REQUIRE_EXTENSIONS
 
-#include <tftools>
-
 #include "sc/SourceCraft"
-#include "sc/tf2_player"
 #include "sc/util"
 #include "sc/authtimer"
 #include "sc/maxhealth"

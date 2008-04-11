@@ -10,8 +10,12 @@
 #include <sourcemod>
 #include <sdktools>
 
+#undef REQUIRE_EXTENSIONS
+#include <cstrike>
+#include <tf2_player>
+#define REQUIRE_EXTENSIONS
+
 #include "sc/SourceCraft"
-#include "sc/tf2_player"
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"

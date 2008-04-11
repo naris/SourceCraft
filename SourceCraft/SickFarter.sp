@@ -11,16 +11,18 @@
 #include <sdktools>
 #include <new_tempents_stocks>
 
+#undef REQUIRE_EXTENSIONS
+#include <tf2_stocks>
+#include <tf2_player>
+#define REQUIRE_EXTENSIONS
+
 #include "sc/SourceCraft"
-#include "sc/tf2_player"
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
 #include "sc/maxhealth"
-#include "sc/respawn"
 #include "sc/weapons"
-#include "sc/respawn"
 #include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";

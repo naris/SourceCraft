@@ -1,14 +1,17 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: uber.inc
- * Description: Function to determine if Player is Ubered.
+ * File: tf2_player.inc
+ * Description: Functions to return information about TF2 players.
  * Author(s): Naris (Murray Wilson)
  */
  
-#if defined _uber_included
+#if defined _tf2_player_included
  #endinput
 #endif
-#define _uber_included
+#define _tf2_player_included
+
+#include <tf2>
+#include <sdktools>
 
 #define TF2_PLAYER_SLOWED       (1 << 0)    // 1
 #define TF2_PLAYER_ZOOMED       (1 << 1)    // 2
