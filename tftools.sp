@@ -31,10 +31,6 @@ new TF_TRoffsets[8];
 #define TURRET_OWNED 6
 #define TURRET_MODEL 7
 
-new TF_Resourceoffsets[3];
-#define RESOURCES_MAXHEALTH 0
-#define RESOURCES_TLSCORE 1
-
 public OnPluginStart(){
 	CreateConVar("sm_tf_tools", PL_VERSION, "TF2 tools", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
@@ -48,9 +44,6 @@ public OnPluginStart(){
 	TF_TRoffsets[TURRET_HEALTH] = FindSendPropOffs("CObjectSentrygun", "m_iMaxHealth");
 	TF_TRoffsets[TURRET_OWNED] = FindSendPropOffs("CObjectSentrygun", "m_hBuilder");
 	TF_TRoffsets[TURRET_MODEL] = FindSendPropOffs("CObjectSentrygun", "m_nModelIndex");
-	
-	TF_Resourceoffsets[RESOURCES_MAXHEALTH] = FindSendPropOffs("CTFPlayerResource", "m_iHealth");	
-	TF_Resourceoffsets[RESOURCES_TLSCORE] = FindSendPropOffs("CTFPlayerResource", "m_iTotalScore");	
 	
 	for(i = TURRET_LEVEL; i<= TURRET_MODEL; i++){
 		if(TF_TRoffsets[i] == -1)
