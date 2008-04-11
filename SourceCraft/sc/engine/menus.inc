@@ -285,11 +285,12 @@ UpgradeMenu(client, Handle:playerHandle)
         new level=GetLevel(playerHandle,race);
         SetMenuExitButton(sMenu,true);
         SetMenuTitle(sMenu,"[SourceCraft] Select your desired upgrade. (%d/%d)",upgradecount,level);
-        new upgradeLevel, requiredLevel, style, bool:ultimate, maxLevel;
+        new upgradeLevel, requiredLevel, style, bool:ultimate;
         decl String:sbuf[11];
         decl String:buf[192];
-        decl String:buf2[192];
+        decl String:ult[] = "Ultimate:";
         decl String:minLevel[64];
+        decl String:toLevel[64];
         decl String:upgradename[64];
         new raceLevel = GetLevel(playerHandle,race);
         new activeUltimate = GetActiveUltimate(playerHandle,race);
@@ -299,46 +300,40 @@ UpgradeMenu(client, Handle:playerHandle)
             GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
             Format(sbuf,sizeof(sbuf),"%d",upgrade);
 
-            requiredLevel = GetUpgradeRequiredLevel(raceHandle,upgrade);
-            if (raceLevel < requiredLevel)
-            {
-                upgradeLevel = 0;
-                maxLevel = 0;
-                style = ITEMDRAW_DISABLED;
-            }
-            else
-            {
-                upgradeLevel=GetUpgradeLevel(playerHandle,race,upgrade);
-                maxLevel=GetUpgradeMaxLevel(raceHandle,upgrade);
-                if (upgradeLevel >= maxLevel)
-                    style = ITEMDRAW_DISABLED;
-                else
-                    style = ITEMDRAW_DEFAULT;
-            }
+            upgradeLevel=GetUpgradeLevel(playerHandle,race,upgrade);
 
-            ultimate = IsUpgradeUltimate(raceHandle, upgrade);
+            requiredLevel=GetUpgradeRequiredLevel(raceHandle,upgrade);
+            ultimate=IsUpgradeUltimate(raceHandle, upgrade);
+
+            if (raceLevel < requiredLevel)
+                style = ITEMDRAW_DISABLED;
+            else if (upgradeLevel >= GetUpgradeMaxLevel(raceHandle,upgrade))
+                style = ITEMDRAW_DISABLED;
+            else
+                style = ITEMDRAW_DEFAULT;
+
             if (ultimate)
             {
+                ult[0] = 'U';
                 if (activeUltimate >= 0 && activeUltimate != upgrade)
                     style = ITEMDRAW_DISABLED;
             }
-
-            Format(buf,sizeof(buf),"%s%s", (ultimate ? "Ultimate:" : ""), upgradename);
+            else
+                ult[0] = 0;
 
             if (requiredLevel > 0)
-                Format(minLevel,sizeof(minLevel)," (Minimum Level %d)", requiredLevel);
+                Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
             else
-                minLevel = "";
+                minLevel[0] = 0;
 
             if (style == ITEMDRAW_DEFAULT)
-                Format(buf2,sizeof(buf2),"%s%s (Upgrade Level %d)",buf,minLevel,upgradeLevel+1);
+                Format(toLevel,sizeof(toLevel)," (Upgrade Level %d)",buf,minLevel,upgradeLevel+1);
             else
-                Format(buf2,sizeof(buf2),"%s%s",buf,minLevel);
+                toLevel[0] = 0;
 
-            LogMessage("%n's Upgrade #%d(%s), ult=%d,req=%d,max=%d",
-                       client,upgrade,upgradename,ultimate,requiredLevel,maxLevel);
+            Format(buf,sizeof(buf),"%s%s%s%s",ult,upgradename,minLevel,toLevel);
 
-            AddMenuItem(sMenu,sbuf,buf2,style);
+            AddMenuItem(sMenu,sbuf,buf,style);
         }
         DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
     }

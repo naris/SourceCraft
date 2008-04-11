@@ -104,15 +104,12 @@ CreateRace(const String:name[],                  const String:short[],
 
     // Add new Race Data into Race Array.
     new raceId = PushArrayCell(arrayRaces,raceHandle); // return index.
-    LogMessage("Created race #%d(%x) = %s, req=%d,max=%d",
-               raceId, raceHandle, name, required_level, max_level);
     return raceId;
 }
 
 AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const String:desc[],
            bool:ultimate, required_level, max_level)
 {
-    new req_level = required_level;
     if (required_level < 0)
         required_level = (ultimate ? MIN_ULTIMATE_LEVEL : 0);
 
@@ -128,10 +125,7 @@ AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const S
     PushArrayCell(upgradeHandle,ultimate);
 
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
-    new upgradeId = PushArrayCell(upgradeListHandle, upgradeHandle); // return index
-    LogMessage("Created race(%x) upgrade #%d = %s, ult=%d, req=%d(%d), max=%d",
-               raceHandle, upgradeId, name, ultimate, required_level, req_level, max_level);
-    return upgradeId;
+    return PushArrayCell(upgradeListHandle, upgradeHandle); // return index
 }
 
 Handle:GetRaceHandle(racenum)
@@ -255,7 +249,7 @@ stock GetUpgradeRequiredLevel(Handle:raceHandle,upgrade)
         if (upgradeHandle != INVALID_HANDLE)
             return GetArrayCell(upgradeHandle, RACE_REQUIRED_LEVEL);
     }
-    return false;
+    return -1;
 }
 
 stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
@@ -267,7 +261,7 @@ stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
         if (upgradeHandle != INVALID_HANDLE)
             return GetArrayCell(upgradeHandle, UPGRADE_MAX_LEVEL);
     }
-    return false;
+    return -1;
 }
 
 stock bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
@@ -277,17 +271,8 @@ stock bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
     {
         new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
         if (upgradeHandle != INVALID_HANDLE)
-        {
-            new bool:value = bool:GetArrayCell(upgradeHandle, UPGRADE_ULTIMATE);
-            LogMessage("IsUlt(%x,%d)=%d",raceHandle,upgrade,value);
-            return value;
-        }
-        else
-            LogMessage("IsUlt(%x,%x{%d})=failed!",raceHandle,upgradeHandle,upgrade);
+            return bool:GetArrayCell(upgradeHandle, UPGRADE_ULTIMATE);
     }
-    else
-        LogMessage("IsUlt(%x,%d)=failed!",raceHandle,upgrade);
-
     return false;
 }
 
