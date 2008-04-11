@@ -5,6 +5,18 @@
 #define _tf2_nican_included
 
 /*
+OMG! same as TFC
+1= scout
+2=sniper
+3=soldier
+4=demoman
+5=medic
+6=HW
+7=pyro
+8=spy
+9=Eng	
+*/
+/*
 #define TF2_SCOUT 1
 #define TF2_SNIPER 2
 #define TF2_SOLDIER 3 
@@ -38,14 +50,6 @@ native TF_TurretLevel(index, level);
  */
 native TF_EyeTurret(client);
 
-
-/**
- * Get the class of the player
- *
- * @param index 		Client index
- * @return				class number	
-native TF_GetClass(client);
- */
 
 /**
  * Get the max health of the player

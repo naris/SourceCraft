@@ -33,9 +33,8 @@ new TF_TRoffsets[8];
 #define TURRET_MODEL 7
 
 new TF_Resourceoffsets[3];
-#define RESOURCES_CLASS 0
-#define RESOURCES_MAXHEALTH 1
-#define RESOURCES_TLSCORE 2
+#define RESOURCES_MAXHEALTH 0
+#define RESOURCES_TLSCORE 1
 
 public OnPluginStart(){
 	CreateConVar("sm_tf_tools", PL_VERSION, "TF2 tools", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
@@ -51,7 +50,6 @@ public OnPluginStart(){
 	TF_TRoffsets[TURRET_OWNED] = FindSendPropOffs("CObjectSentrygun", "m_hBuilder");
 	TF_TRoffsets[TURRET_MODEL] = FindSendPropOffs("CObjectSentrygun", "m_nModelIndex");
 	
-	TF_Resourceoffsets[RESOURCES_CLASS] = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");	
 	TF_Resourceoffsets[RESOURCES_MAXHEALTH] = FindSendPropOffs("CTFPlayerResource", "m_iHealth");	
 	TF_Resourceoffsets[RESOURCES_TLSCORE] = FindSendPropOffs("CTFPlayerResource", "m_iTotalScore");	
 	
@@ -101,7 +99,6 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:Error[])
   CreateNative("TF_TurretLevel", SetTurretLevel);
   CreateNative("TF_EyeTurret", GetPlayerEyes);
   
-  //CreateNative("TF_GetClass", GetClientClass);
   CreateNative("TF_GetMaxHealth", GetClientMaxHealth);
   CreateNative("TF_TotalScore", GetClientTotalScore);
   
@@ -233,33 +230,6 @@ public bool:TraceEntityFilterSentry(entity, contentsMask){
  	GetEntityNetClass(entity, classname, 64);
  	return StrEqual(classname, "CObjectSentrygun");
 }
-
-	/*
-	OMG! same as TFC
-	1= scout
-	2=sniper
-	3=soldier
-	4=demoman
-	5=medic
-	6=HW
-	7=pyro
-	8=spy
-	9=Eng	
-	*/
-/*
-stock GetPlayerClass(client){
-	return GetEntData(ResourceEnt, TF_Resourceoffsets[RESOURCES_CLASS] + (client*4), 4);
-}
-
-public GetClientClass(Handle:plugin,argc){
-	if(argc == 1){
-	 	new client = GetNativeCell(1);
-	 	if(IsClientConnected(client))
-			return GetPlayerClass(client);	
-	}
-	return -1; 
-}
-*/
 
 stock GetPlayerMaxHealth(client){
 	return GetEntData(ResourceEnt, TF_Resourceoffsets[RESOURCES_MAXHEALTH] + (client*4), 4);
