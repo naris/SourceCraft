@@ -123,9 +123,9 @@ AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const S
 
     new Handle:upgradeHandle=CreateArray();
     PushArrayCell(upgradeHandle,upgradeStringHandle);
-    PushArrayCell(upgradeHandle,ultimate);
     PushArrayCell(upgradeHandle,required_level);
     PushArrayCell(upgradeHandle,max_level);
+    PushArrayCell(upgradeHandle,ultimate);
 
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
     new upgradeId = PushArrayCell(upgradeListHandle, upgradeHandle); // return index
@@ -246,6 +246,18 @@ GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
     }
 }
 
+stock GetUpgradeRequiredLevel(Handle:raceHandle,upgrade)
+{
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    if (upgradeListHandle != INVALID_HANDLE)
+    {
+        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+        if (upgradeHandle != INVALID_HANDLE)
+            return GetArrayCell(upgradeHandle, RACE_REQUIRED_LEVEL);
+    }
+    return false;
+}
+
 stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
@@ -258,15 +270,24 @@ stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
     return false;
 }
 
-IsUpgradeUltimate(Handle:raceHandle,upgrade)
+stock bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
     if (upgradeListHandle != INVALID_HANDLE)
     {
         new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
         if (upgradeHandle != INVALID_HANDLE)
-            return GetArrayCell(upgradeHandle, UPGRADE_ULTIMATE);
+        {
+            new bool:value = bool:GetArrayCell(upgradeHandle, UPGRADE_ULTIMATE);
+            LogMessage("IsUlt(%x,%d)=%d",raceHandle,upgrade,value);
+            return value;
+        }
+        else
+            LogMessage("IsUlt(%x,%x{%d})=failed!",raceHandle,upgradeHandle,upgrade);
     }
+    else
+        LogMessage("IsUlt(%x,%d)=failed!",raceHandle,upgrade);
+
     return false;
 }
 
