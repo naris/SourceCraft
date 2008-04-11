@@ -319,7 +319,7 @@ Cloak(client, Handle:player, level)
             }
             case 4:
             {
-                alpha = 200;
+                alpha = 100;
                 delay = 0.5;
                 duration = 20.0;
                 fx=RENDERFX_HOLOGRAM;
@@ -329,7 +329,7 @@ Cloak(client, Handle:player, level)
         /* If the Player also has the Cloak of Shadows,
          * Decrease the delay and Increase the duration.
          */
-        new cloak = FindShopItem("Cloak of Shadows");
+        new cloak = FindShopItem("cloak");
         if (cloak != -1 && GetOwnsItem(player,cloak))
         {
             alpha    *= 0.90;
