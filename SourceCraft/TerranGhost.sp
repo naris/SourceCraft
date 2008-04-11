@@ -9,8 +9,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-
-#include <tf2_nican>
+#include <tf2_stocks>
 
 #include "sc/SourceCraft"
 
@@ -442,24 +441,18 @@ public Action:OcularImplants(Handle:timer)
                                         if (detect && !GetImmunity(player_check,Immunity_Uncloaking))
                                         {
                                             SetOverrideVisiblity(player_check, 255);
-                                            if (TF_GetClass(index) == TF2_SPY)
+                                            if (TF2_GetPlayerClass(index) == TFClass_Spy)
                                             {
-                                                // Set the disguise(8) and cloak(16) bits to 0.
+                                                TF2_RemovePlayerDisguise(index);
+
+                                                // Set the cloak(16) bit to 0.
                                                 new playerCond = GetEntData(index,m_OffsetPlayerCond);
-                                                SetEntData(index,m_OffsetPlayerCond,playerCond & (~24));
+                                                SetEntData(index,m_OffsetPlayerCond,playerCond & (~16));
 
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
                                                 {
                                                     SetEntDataFloat(index,m_OffsetCloakMeter, 0.0);
-                                                }
-
-                                                new disguiseTeam = GetEntData(index,m_OffsetDisguiseTeam);
-                                                if (disguiseTeam != 0)
-                                                {
-                                                    SetEntData(index,m_OffsetDisguiseTeam, 0);
-                                                    SetEntData(index,m_OffsetDisguiseClass, 0);
-                                                    SetEntData(index,m_OffsetDisguiseHealth, 0);
                                                 }
                                             }
                                             m_Detected[client][index] = true;

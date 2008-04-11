@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include <tf2_nican>
+#include <tftools>
 
 new m_OffsetCloakMeter;
 new m_OffsetDisguiseTeam;

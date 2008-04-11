@@ -9,7 +9,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <tf2_nican>
+#include <tftools>
 
 #include "SourceCraft/sc/util"
 #include "SourceCraft/sc/maxhealth"

@@ -101,7 +101,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:Error[])
   CreateNative("TF_TurretLevel", SetTurretLevel);
   CreateNative("TF_EyeTurret", GetPlayerEyes);
   
-  CreateNative("TF_GetClass", GetClientClass);
+  //CreateNative("TF_GetClass", GetClientClass);
   CreateNative("TF_GetMaxHealth", GetClientMaxHealth);
   CreateNative("TF_TotalScore", GetClientTotalScore);
   
@@ -246,7 +246,7 @@ public bool:TraceEntityFilterSentry(entity, contentsMask){
 	8=spy
 	9=Eng	
 	*/
-
+/*
 stock GetPlayerClass(client){
 	return GetEntData(ResourceEnt, TF_Resourceoffsets[RESOURCES_CLASS] + (client*4), 4);
 }
@@ -259,6 +259,7 @@ public GetClientClass(Handle:plugin,argc){
 	}
 	return -1; 
 }
+*/
 
 stock GetPlayerMaxHealth(client){
 	return GetEntData(ResourceEnt, TF_Resourceoffsets[RESOURCES_MAXHEALTH] + (client*4), 4);

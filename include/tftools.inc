@@ -4,6 +4,7 @@
 #endif
 #define _tf2_nican_included
 
+/*
 #define TF2_SCOUT 1
 #define TF2_SNIPER 2
 #define TF2_SOLDIER 3 
@@ -13,7 +14,7 @@
 #define TF2_PYRO 7
 #define TF2_SPY 8
 #define TF2_ENG 9
-
+*/
 
 /**
  * Changes the level of a turret, the sentry has to be build
@@ -43,8 +44,8 @@ native TF_EyeTurret(client);
  *
  * @param index 		Client index
  * @return				class number	
- */
 native TF_GetClass(client);
+ */
 
 /**
  * Get the max health of the player
