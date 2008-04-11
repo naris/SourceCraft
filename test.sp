@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include <tftools>
+#include <tf2_stocks>
 
 new m_OffsetCloakMeter;
 new m_OffsetDisguiseTeam;
@@ -83,7 +83,7 @@ public Action:TrackVariables(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new tfClass = TF_GetClass(client);
+                new TFClassType:tfClass = TF2_GetPlayerClass(client);
                 new class = m_OffsetClass>0 ? GetEntData(client,m_OffsetClass) : -99;
                 new Float:cloakMeter = m_OffsetCloakMeter>0 ? GetEntDataFloat(client,m_OffsetCloakMeter) : -99.9;
                 new disguiseTeam = m_OffsetDisguiseTeam>0 ? GetEntData(client,m_OffsetDisguiseTeam) : -99;

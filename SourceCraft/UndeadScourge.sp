@@ -12,9 +12,8 @@
 #include <sdktools>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/log"
@@ -66,9 +65,6 @@ public OnPluginReady()
 
     suicideID    = AddUpgrade(raceID,"Suicide Bomber", "suicide_bomb",
                               "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nwill automatically activate on death.", true); // Ultimate
-
-    FindUberOffsets();
-
 }
 
 public OnMapStart()
@@ -315,7 +311,7 @@ bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_play
     new level = GetUpgradeLevel(player,raceID,vampiricID);
     if (level > 0 && GetRandomInt(1,10) <= 6 &&
         !GetImmunity(victim_player, Immunity_HealthTake) &&
-        !IsUber(victim_index))
+        !TF2_IsPlayerInvuln(victim_index))
     {
         new Float:percent_health;
         switch(level)
@@ -433,7 +429,7 @@ SuicideBomber(client,ult_level,bool:ondeath)
             {
                 if (!GetImmunity(check_player,Immunity_Ultimates) &&
                     !GetImmunity(check_player,Immunity_Explosion) &&
-                    !IsUber(index))
+                    !TF2_IsPlayerInvuln(index))
                 {
                     new Float:check_location[3];
                     GetClientAbsOrigin(index,check_location);

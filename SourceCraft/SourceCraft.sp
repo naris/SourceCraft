@@ -16,7 +16,14 @@
 #include <sourcemod>
 #include <keyvalues>
 #include <sdktools>
-#include <tf2_nican>
+
+#undef REQUIRE_EXTENSIONS
+#include <cstrike>
+#include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
+
+#include <tftools>
+#include "sc/tf2_player"
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
 #define VERSION     "2.1.0 $Revision$ beta"

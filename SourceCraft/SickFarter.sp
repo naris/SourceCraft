@@ -12,9 +12,8 @@
 #include <new_tempents_stocks>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -79,8 +78,6 @@ public OnPluginReady()
     fartID       = AddUpgrade(raceID,"Flatulence", "fart", 
                               "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
                               true); // Ultimate
-
-    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -171,7 +168,8 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
     new fa_level = GetUpgradeLevel(player,raceID,festerID);
     if (fa_level > 0)
     {
-        if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
+        if (!GetImmunity(player,Immunity_HealthTake) &&
+            !TF2_IsPlayerInvuln(index))
         {
             new chance;
             switch(fa_level)
@@ -247,7 +245,7 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
 
         if( GetRandomInt(1,100)<=chance &&
             !GetImmunity(victim_player,Immunity_Theft) &&
-            !IsUber(victim_index) &&
+            !TF2_IsPlayerInvuln(victim_index) &&
             (!gPickPocketTime[index] ||
              GetGameTime() - gPickPocketTime[index] > 0.5))
         {
@@ -362,7 +360,8 @@ public Action:PersistFart(Handle:timer,any:client)
                 if (player_check != INVALID_HANDLE)
                 {
                     if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                        !GetImmunity(player_check,Immunity_HealthTake) && !IsUber(index))
+                        !GetImmunity(player_check,Immunity_HealthTake) &&
+                        !TF2_IsPlayerInvuln(index))
                     {
                         if ( IsInRange(client,index,range))
                         {

@@ -827,7 +827,8 @@ bool:IsStill(client)
                                           IN_MOVERIGHT|IN_SPEED|IN_JUMP|
                                           IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
         {
-            if (!(GetPlayerCond(client) & 1))
+            if (!TF2_IsPlayerSlowed(client) &&
+                !TF2_IsPlayerZoomed(client))
             {
                 if (m_StoppedMoving[client] == 0.0)
                     m_StoppedMoving[client] = GetGameTime();

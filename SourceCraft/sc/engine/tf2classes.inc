@@ -1,41 +1,28 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: tf2classes.inc
+ * File: tf2_class.inc
  * Description: Functions to return infomation about TF2 classes.
  * Author(s): Naris (Murray Wilson)
  */
 
-#if defined _tf2classes_included
+#if defined _tf2_class_included
  #endinput
 #endif
-#define _tf2classes_included
-
-stock GetClass(client)
-{
-    return GetEntData(client,m_OffsetClass);
-}
-
-stock GetPlayerCond(client)
-{
-    return GetEntData(client,m_OffsetPlayerCond);
-}
+#define _tf2_class_included
 
 stock Float:GetClassSpeed(client)
 {
-    if (GameType == tf2)
+    switch (TF2_GetPlayerClass(client))
     {
-        switch (GetClass(client))
-        {
-            case TF2_SCOUT:     return 400.0;
-            case TF2_SOLDIER:   return 240.0;
-            case TF2_DEMOMAN:   return 280.0;
-            case TF2_MEDIC:     return 320.0;
-            case TF2_PYRO:      return 300.0;
-            case TF2_SPY:       return 300.0;
-            case TF2_ENG:       return 300.0;
-            case TF2_SNIPER:    return (GetPlayerCond(client) & 1) ? 80.0 : 300.0;
-            case TF2_HEAVY:     return (GetPlayerCond(client) & 1) ? 80.0 : 230.0;
-        }
+        case TFClass_Scout:     return 400.0;
+        case TFClass_Soldier:   return 240.0;
+        case TFClass_DemoMan:   return 280.0;
+        case TFClass_Medic:     return 320.0;
+        case TFClass_Pyro:      return 300.0;
+        case TFClass_Spy:       return 300.0;
+        case TFClass_Engineer:  return 300.0;
+        case TFClass_Sniper:    return TF2_IsPlayerSlowed(client) ? 80.0 : 300.0;
+        case TFClass_Heavy:     return TF2_IsPlayerSlowed(client) ? 80.0 : 230.0;
     }
     return 0.0;
 }

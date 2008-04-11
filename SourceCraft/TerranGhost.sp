@@ -12,9 +12,8 @@
 #include <tf2_stocks>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -97,8 +96,6 @@ public OnPluginReady()
     nukeID      = AddUpgrade(raceID,"Nuclear Launch", "nuke", 
                              "Launches a Nuclear Device that does extreme damage to all players in the area.",
                              true); // Ultimate
-
-    FindUberOffsets();
 
     if (GameType == tf2)
     {
@@ -444,10 +441,7 @@ public Action:OcularImplants(Handle:timer)
                                             if (TF2_GetPlayerClass(index) == TFClass_Spy)
                                             {
                                                 TF2_RemovePlayerDisguise(index);
-
-                                                // Set the cloak(16) bit to 0.
-                                                new playerCond = GetEntData(index,m_OffsetPlayerCond);
-                                                SetEntData(index,m_OffsetPlayerCond,playerCond & (~16));
+                                                TF2_SetPlayerCloak(client, false);
 
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
@@ -690,7 +684,7 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                     {
                         if (!GetImmunity(check_player,Immunity_Ultimates) &&
                             !GetImmunity(check_player,Immunity_Explosion) &&
-                            !IsUber(index))
+                            !TF2_IsPlayerInvuln(index))
                         {
                             new Float:check_location[3];
                             GetClientAbsOrigin(index,check_location);

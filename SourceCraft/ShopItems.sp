@@ -10,12 +10,17 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <tf2_nican>
+
+#undef REQUIRE_EXTENSIONS
+#include <cstrike>
+#include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
+
+#include <tftools>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/respawn"
@@ -200,7 +205,6 @@ public OnPluginReady()
 
     //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
-    FindUberOffsets();
     FindClipOffsets();
     LoadSDKToolStuff();
 }
@@ -520,7 +524,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                         if (reflection)
                         {
                             if(!GetImmunity(attacker_player,Immunity_ShopItems) &&
-                               !GetImmunity(attacker_player,Immunity_HealthTake) && !IsUber(attacker_index))
+                               !GetImmunity(attacker_player,Immunity_HealthTake) &&
+                               !TF2_IsPlayerInvuln(attacker_index))
                             {
                                 new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
                                 new newhp=GetClientHealth(attacker_index)-reflect;
@@ -565,7 +570,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
             if(!GetImmunity(victim_player,Immunity_ShopItems))
             {
-                if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
+                if (!GetImmunity(victim_player,Immunity_HealthTake) &&
+                    !TF2_IsPlayerInvuln(victim_index))
                 {
                     if (GetOwnsItem(attacker_player,shopItem[ITEM_CLAWS]) &&
                         (!gClawTime[attacker_index] ||
@@ -735,9 +741,9 @@ public Action:AmmoPack(Handle:timer)
                 {
                     if (GameType == tf2)
                     {
-                        switch (TF_GetClass(client))
+                        switch (TF2_GetPlayerClass(client))
                         {
-                            case TF2_HEAVY: 
+                            case TFClass_Heavy: 
                             {
                                 new ammo = GetAmmo(client, Primary) + 20;
                                 if (ammo < 400.0)
@@ -747,7 +753,7 @@ public Action:AmmoPack(Handle:timer)
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
-                            case TF2_PYRO: 
+                            case TFClass_Pyro: 
                             {
                                 new ammo = GetAmmo(client, Primary) + 20;
                                 if (ammo < 400.0)
@@ -757,7 +763,7 @@ public Action:AmmoPack(Handle:timer)
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
-                            case TF2_MEDIC: 
+                            case TFClass_Medic: 
                             {
                                 new ammo = GetAmmo(client, Primary) + 20;
                                 if (ammo < 300.0)
@@ -767,7 +773,7 @@ public Action:AmmoPack(Handle:timer)
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
-                            case TF2_ENG: // Gets Metal instead of Ammo
+                            case TFClass_Engineer: // Gets Metal instead of Ammo
                             {
                                 new ammo = GetAmmo(client, Metal) + 20;
                                 if (ammo < 400.0)

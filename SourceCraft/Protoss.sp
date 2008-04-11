@@ -12,9 +12,8 @@
 #include <tf2_stocks>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/log"
@@ -119,8 +118,6 @@ public OnPluginReady()
     controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
                            "Allows you to control an object from the opposite team.",
                            true); // Ultimate
-
-    FindUberOffsets();
 
     if (GameType == tf2)
     {
@@ -351,7 +348,8 @@ bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:play
             }
         }
 
-        if (!GetImmunity(victim_player,Immunity_Explosion) && !IsUber(victim_index) &&
+        if (!GetImmunity(victim_player,Immunity_Explosion) &&
+            !TF2_IsPlayerInvuln(victim_index) &&
             GetRandomInt(1,100) <= chance &&
             (!gReaverScarabTime[index] ||
              GetGameTime() - gReaverScarabTime[index] > 0.5))
@@ -628,7 +626,7 @@ ResetMindControledObjects(client, bool:endRound)
                             {
                                 // Is the original builser still around?
                                 new builder = GetArrayCell(m_StolenBuilderList[client], index);
-                                if (IsClientInGame(builder) && TF2_GetClass(builder) == TFClass_Engineer)
+                                if (IsClientInGame(builder) && TF2_GetPlayerClass(builder) == TFClass_Engineer)
                                 {
                                     // Give it back.
                                     new team = GetClientTeam(builder);
@@ -788,10 +786,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                             if (TF2_GetPlayerClass(index) == TFClass_Spy)
                                             {
                                                 TF2_RemovePlayerDisguise(index);
-
-                                                // Set cloak(16) bit to 0.
-                                                new playerCond = GetEntData(index,m_OffsetPlayerCond);
-                                                SetEntData(index,m_OffsetPlayerCond,playerCond & (~16));
+                                                TF2_SetPlayerCloak(client, false);
 
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)

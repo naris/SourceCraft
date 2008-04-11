@@ -12,9 +12,8 @@
 #include <sdktools>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -69,8 +68,6 @@ public OnPluginReady()
     rootsID     = AddUpgrade(raceID,"Entangled Roots", "roots", 
                              "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.",
                              true); // Ultimate
-
-    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -215,7 +212,8 @@ public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:play
     new thorns_level = GetUpgradeLevel(victim_player,raceID,thornsID);
     if (thorns_level)
     {
-        if (!GetImmunity(player,Immunity_HealthTake) && !IsUber(index))
+        if (!GetImmunity(player,Immunity_HealthTake) &&
+             !TF2_IsPlayerInvuln(index))
         {
             new chance;
             switch(thorns_level)
@@ -262,7 +260,7 @@ public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:pl
     new trueshot_level=GetUpgradeLevel(player,raceID,trueshotID);
     if (trueshot_level &&
         !GetImmunity(victim_player,Immunity_HealthTake) &&
-        !IsUber(victim_index))
+        !TF2_IsPlayerInvuln(victim_index))
     {
         if (GetRandomInt(1,100) <= GetRandomInt(30,60))
         {

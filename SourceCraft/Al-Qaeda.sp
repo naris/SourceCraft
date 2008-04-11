@@ -11,9 +11,8 @@
 #include <sdktools>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -105,8 +104,6 @@ public OnPluginReady()
 
     bomberID    = AddUpgrade(raceID,"Mad Bomber", "mad_bomber",
                              "Use your ultimate bind to explode\nand damage the surrounding players extremely,\nyou might even live trough it!", true); // Ultimate
-
-    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -397,7 +394,8 @@ public Bomber(client,Handle:player,level,bool:ondeath)
     for(new index=1;index<=clientCount;index++)
     {
         if (index != client && IsClientInGame(index) && IsPlayerAlive(index) &&
-            GetClientTeam(index) != GetClientTeam(client) && !IsUber(index))
+            GetClientTeam(index) != GetClientTeam(client) &&
+            !TF2_IsPlayerInvuln(index))
         {
             new Handle:check_player=GetPlayerHandle(index);
             if (check_player != INVALID_HANDLE)
@@ -462,7 +460,7 @@ public Action:FlamingWrath(Handle:timer)
                             {
                                 if (IsPlayerAlive(index) &&
                                     GetClientTeam(index) != GetClientTeam(client) &&
-                                    !IsUber(index))
+                                    !TF2_IsPlayerInvuln(index))
                                 {
                                     new Handle:player_check=GetPlayerHandle(index);
                                     if (player_check != INVALID_HANDLE)

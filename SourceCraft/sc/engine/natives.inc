@@ -327,19 +327,6 @@ KillPlayer(victim, attacker, String:weapon_name[], String:weapon_desc[], xp)
     LogKill(attacker, victim, weapon_name, weapon_desc, xp);
 }
 
-/**
- * Get a Player's TF2 class
- * @param client: The client's index you want.
- * @return The player's class
- */
-public Native_GetClass(Handle:plugin,numParams)
-{
-    if (numParams == 1 && GameType == tf2)
-        return GetClass(GetNativeCell(1));
-    else
-        return -1;
-}
-
 public Native_GetPlayerHandle(Handle:plugin,numParams)
 {
     if (numParams == 1)
@@ -951,7 +938,6 @@ bool:InitNatives()
     CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("HurtPlayer",Native_HurtPlayer);
     CreateNative("HealPlayer",Native_HealPlayer);
-    CreateNative("GetClass",Native_GetRace);
     CreateNative("GetPlayerHandle",Native_GetPlayerHandle);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);

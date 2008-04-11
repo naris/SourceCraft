@@ -12,9 +12,8 @@
 #include <sdktools>
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/authtimer"
@@ -105,8 +104,6 @@ public OnPluginReady()
 
     lightningID     = AddUpgrade(raceID,"Chain Lightning", "lightning",
                                  "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.", true); // Ultimate
-
-    FindUberOffsets();
 }
 
 public OnMapStart()
@@ -320,7 +317,7 @@ bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:playe
 {
     new strike_level = GetUpgradeLevel(player,raceID,strikeID);
     if (strike_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
-                     && !IsUber(victim_index))
+                         && !TF2_IsPlayerInvuln(victim_index))
     {
         if(GetRandomInt(1,100)<=25)
         {
@@ -373,7 +370,7 @@ bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:play
     {
         new grenade_level = GetUpgradeLevel(player,raceID,grenadeID);
         if (grenade_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
-                              && !IsUber(victim_index))
+                              && !TF2_IsPlayerInvuln(victim_index))
         {
             if(GetRandomInt(1,100)<=15)
             {
@@ -457,7 +454,7 @@ ChainLightning(client,ultlevel)
             {
                 if (!GetImmunity(player_check,Immunity_Ultimates) &&
                     !GetImmunity(player_check,Immunity_HealthTake) &&
-                    !IsUber(index))
+                    !TF2_IsPlayerInvuln(index))
                 {
                     if (IsInRange(client,index,range))
                     {

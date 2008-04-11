@@ -106,13 +106,6 @@ native KillPlayer(victim, attacker=0, const String:weapon_name[]="",
                   const String:weapon_desc[]="", xp=0);
 
 /**
- * Get a Player's TF2 class
- * @param client: The client's index you want.
- * @return The player's class or -1 if it failed
- */
-native GetClass(client);
-
-/**
  * Gets the Player Handle used for the rest of the interface natives.
  * @param client: The client's index you want.
  * @return The return value will be the Player Handle, INVALID_HANDLE on failure.

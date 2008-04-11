@@ -13,9 +13,8 @@
 #include "jetpack.inc"
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/maxhealth"
 #include "sc/weapons"
 
@@ -56,8 +55,6 @@ public OnPluginReady()
     armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", "Reduces damage.");
     stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 8-36% faster.");
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
-
-    FindUberOffsets();
 
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
@@ -274,7 +271,8 @@ bool:U238Shells(Handle:event, damage, victim_index, Handle:victim_player, index,
     new u238_level = GetUpgradeLevel(player,raceID,u238ID);
     if (u238_level > 0)
     {
-        if (!GetImmunity(victim_player,Immunity_HealthTake) && !IsUber(victim_index))
+        if (!GetImmunity(victim_player,Immunity_HealthTake) &&
+            !TF2_IsPlayerInvuln(victim_index))
         {
             if(GetRandomInt(1,100)<=25)
             {

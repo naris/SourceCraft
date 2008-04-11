@@ -13,9 +13,8 @@
 #include "hgrsource.inc"
 
 #include "sc/SourceCraft"
-
+#include "sc/tf2_player"
 #include "sc/util"
-#include "sc/uber"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/weapons"
@@ -59,8 +58,6 @@ public OnPluginReady()
     regenerationID  = AddUpgrade(raceID,"Regeneration", "regeneration", "Regenerates your Health.");
     healingID       = AddUpgrade(raceID,"Healing Aura", "healing", "Heals all of your teammates in range (It does NOT heal you).");
     tentacleID      = AddUpgrade(raceID,"Tentacles", "tentacles", "Reach out and grab an opponent.", true); // Ultimate
-
-    FindUberOffsets();
 
     ControlHookGrabRope(true);
 }
@@ -299,7 +296,8 @@ public bool:AdrenalGlands(damage, victim_index, Handle:victim_player, index, Han
     if (adrenal_glands_level)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) &&
-            !IsUber(victim_index) && IsInRange(index,victim_index,100.0))
+            !TF2_IsPlayerInvuln(victim_index) &&
+            IsInRange(index,victim_index,100.0))
         {
             new Float:percent;
             switch(adrenal_glands_level)
