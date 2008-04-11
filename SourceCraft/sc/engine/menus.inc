@@ -327,7 +327,7 @@ UpgradeMenu(client, Handle:playerHandle)
                 minLevel[0] = 0;
 
             if (style == ITEMDRAW_DEFAULT)
-                Format(toLevel,sizeof(toLevel)," (Upgrade Level %d)",buf,minLevel,upgradeLevel+1);
+                Format(toLevel,sizeof(toLevel)," (Upgrade Level %d)", upgradeLevel+1);
             else
                 toLevel[0] = 0;
 

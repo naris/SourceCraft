@@ -240,7 +240,7 @@ GetUpgradeNameAndDesc(Handle:raceHandle,upgrade, String:name[], maxName,
     }
 }
 
-stock GetUpgradeRequiredLevel(Handle:raceHandle,upgrade)
+GetUpgradeRequiredLevel(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
     if (upgradeListHandle != INVALID_HANDLE)
@@ -252,7 +252,7 @@ stock GetUpgradeRequiredLevel(Handle:raceHandle,upgrade)
     return -1;
 }
 
-stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
+GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
     if (upgradeListHandle != INVALID_HANDLE)
@@ -264,7 +264,7 @@ stock GetUpgradeMaxLevel(Handle:raceHandle,upgrade)
     return -1;
 }
 
-stock bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
+bool:IsUpgradeUltimate(Handle:raceHandle,upgrade)
 {
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
     if (upgradeListHandle != INVALID_HANDLE)
