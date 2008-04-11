@@ -212,14 +212,14 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                 {
                     m_IsRespawning[client]=false;
 
-                    if (GameType != cstrike)
-                        TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+                    TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
 
                     TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
 
-                    if (GameType == tf2)
+                    //if (GameType == tf2)
                     {
+                        LogMessage("Setting %N Invulnerable", client);
                         TF2_SetPlayerInvuln(client, true);
                         AuthTimer(1.0,client,ResetUber);
                     }

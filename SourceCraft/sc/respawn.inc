@@ -49,7 +49,10 @@ public Action:ResetUber(Handle:timer,any:arg)
 {
     new client=PlayerOfAuthTimer(arg);
     if(client)
+    {
+        LogMessage("Reset %N Vulnerable", client);
         TF2_SetPlayerInvuln(client, false);
+    }
     return Plugin_Stop;
 }
 
