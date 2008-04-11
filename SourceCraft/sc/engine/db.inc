@@ -181,7 +181,7 @@ public SQL_CreatePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[],
         LogError("Error in the creation of the sc_player_upgrades SQL table:%s", error);
 }
 
-SaveRaceInfo(const String:shortName[], const String:raceName[])
+LoadRaceIdent(const String:shortName[], const String:raceName[])
 {
     new race_ident = -1;
     if(DBIDB)
@@ -204,34 +204,7 @@ SaveRaceInfo(const String:shortName[], const String:raceName[])
 
             Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (race_name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
             if (SQL_FastQuery(DBIDB,SQLString))
-            {
-                if (DBIsSQLite)
-                    strcopy(SQLString,sizeof(SQLString), "SELECT last_insert_rowid()");
-                else
-                    strcopy(SQLString,sizeof(SQLString), "SELECT last_insert_id()");
-
-                new Handle:race_query=SQL_Query(DBIDB,SQLString);
-                if (race_query)
-                {
-                    if (SQL_FetchRow(race_query))
-                        race_ident = SQL_FetchInt(race_query,0);
-                    else
-                    {
-                        decl String:error[256];
-                        SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to fetch race_ident for %s: %s",
-                                 shortName, error);
-                    }
-                    CloseHandle(race_query);
-                }
-                else
-                {
-                    decl String:error[256];
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to query race_ident for %s: %s",
-                             shortName, error);
-                }
-            }
+                race_ident = SQL_GetInsertId(DBIDB);
             else
             {
                 decl String:error[256];

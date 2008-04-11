@@ -51,21 +51,25 @@ ClearRaceArray()
     if (arrayRaces == INVALID_HANDLE)
     {
         new raceCount = GetRaceCount();
-        for(new x=0;x<raceCount;x++)
+        for(new race=0;race<raceCount;race++)
         {
-            new Handle:vec=GetArrayCell(arrayRaces,x);
+            new Handle:vec=GetArrayCell(arrayRaces,race);
             new Handle:stringsHandle=GetArrayCell(vec,RACE_STRINGS);
             ClearArray(stringsHandle);
             CloseHandle(stringsHandle);
 
-            new Handle:upgradeDataHandle=GetArrayCell(vec,RACE_UPGRADES);
+            new Handle:upgradeListHandle=GetArrayCell(vec,RACE_UPGRADES);
 
-            new Handle:upgradeStringsHandle=GetArrayCell(upgradeDataHandle,UPGRADE_STRINGS);
-            ClearArray(upgradeStringsHandle);
-            CloseHandle(upgradeStringsHandle);
+            new upgradeCount = GetArraySize(upgradeListHandle);
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            {
+                new Handle:upgradeStringsHandle=GetArrayCell(upgradeListHandle,UPGRADE_STRINGS);
+                ClearArray(upgradeStringsHandle);
+                CloseHandle(upgradeStringsHandle);
+            }
 
-            ClearArray(upgradeDataHandle);
-            CloseHandle(upgradeDataHandle);
+            ClearArray(upgradeListHandle);
+            CloseHandle(upgradeListHandle);
 
             ClearArray(vec);
             CloseHandle(vec);
@@ -94,7 +98,7 @@ CreateRace(const String:name[],                  const String:short[],
     new Handle:newRace=CreateArray();
     PushArrayCell(newRace,stringsHandle);
     PushArrayCell(newRace,upgradeListHandle);
-    PushArrayCell(newRace,SaveRaceInfo(short,name)); // ident from the Database
+    PushArrayCell(newRace,LoadRaceIdent(short, name)); // from the Database
     PushArrayCell(newRace,required_level);
     PushArrayCell(newRace,max_level);
 
