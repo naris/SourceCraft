@@ -24,6 +24,7 @@
 
 #include <tftools>
 #include "sc/tf2_player"
+#include "sc/engine/tf2_class"
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
 #define VERSION     "2.1.0 $Revision$ beta"
@@ -61,7 +62,6 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/engine/xp"
 #include "sc/engine/hooks"
 #include "sc/engine/console"
-#include "sc/engine/tf2classes"
 #include "sc/engine/menus"
 #include "sc/engine/events"
 #include "sc/engine/events_tf2"
