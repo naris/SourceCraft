@@ -118,7 +118,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 
 public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    if (race == raceID && GetRace(player) == raceID)
     {
         if (upgrade==1)
             SetupArmor(client, new_level);
@@ -206,6 +206,7 @@ SetupArmor(client, level)
 {
     switch (level)
     {
+        case 0: m_Armor[client] = 0;
         case 1: m_Armor[client] = GetMaxHealth(client);
         case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
         case 3: m_Armor[client] = GetMaxHealth(client)*2;
@@ -320,42 +321,47 @@ bool:U238Shells(Handle:event, damage, victim_index, Handle:victim_player, index,
 
 Stimpacks(client, Handle:player, level)
 {
-    new Float:speed=1.0;
-    switch (level)
+    if (level > 0)
     {
-        case 1:
-            speed=1.10;
-        case 2:
-            speed=1.15;
-        case 3:
-            speed=1.20;
-        case 4:
-            speed=1.25;
+        new Float:speed=1.0;
+        switch (level)
+        {
+            case 1:
+                speed=1.10;
+            case 2:
+                speed=1.15;
+            case 3:
+                speed=1.20;
+            case 4:
+                speed=1.25;
+        }
+
+        /* If the Player also has the Boots of Speed,
+         * Increase the speed further
+         */
+        new boots = FindShopItem("boots");
+        if (boots != -1 && GetOwnsItem(player,boots))
+        {
+            speed *= 1.1;
+        }
+
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
+
+        new color[4] = { 255, 100, 0, 255 };
+        TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
+                0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
+        TE_SendToAll();
+
+        SetSpeed(player,speed);
     }
-
-    /* If the Player also has the Boots of Speed,
-     * Increase the speed further
-     */
-    new boots = FindShopItem("boots");
-    if (boots != -1 && GetOwnsItem(player,boots))
-    {
-        speed *= 1.1;
-    }
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new color[4] = { 255, 100, 0, 255 };
-    TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
-                          0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
-    TE_SendToAll();
-
-    SetSpeed(player,speed);
+    else
+        SetSpeed(player,-1.0);
 }
 
 Jetpack(client, level)
 {
-    if (level)
+    if (level > 0)
     {
         new fuel,Float:refueling_time;
         switch(level)
@@ -383,4 +389,6 @@ Jetpack(client, level)
         }
         GiveJetpack(client, fuel, refueling_time);
     }
+    else
+        TakeJetpack(client);
 }

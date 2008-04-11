@@ -300,19 +300,16 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         {
             m_JobsBank[client]=false;
             m_TeleportOnSpawn[client]=false;
-
-            new work_rules_level=GetUpgradeLevel(player,race,workID);
-            if (work_rules_level)
-                WorkRules(client, player, work_rules_level);
+            WorkRules(client, player, GetUpgradeLevel(player,race,workID));
         }
     }
 }
 
 public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if(race == raceID && new_level > 0 && GetRace(player) == raceID && IsPlayerAlive(client))
+    if(race == raceID && GetRace(player) == raceID)
     {
-        if (upgrade==3)
+        if (upgrade==3 && (new_level <= 0 || IsPlayerAlive(client)))
             WorkRules(client, player, new_level);
     }
 }
@@ -349,10 +346,10 @@ public WorkRules(client, Handle:player, level)
                 cooldown=5.0;
             }
         }
-        LogMessage("Give a a hook to %N, level=%d, duration=%d, range=%f, cooldown=%f",
-                   client, level, duration, range, cooldown);
         GiveHook(client,duration,range,cooldown,0);
     }
+    else
+        TakeHook(client);
 }
 
 public Action:Negotiations(Handle:timer)
@@ -393,7 +390,7 @@ public Action:Negotiations(Handle:timer)
                              * Bankruptcy (you die & lose level & XP)
                              */
                             // No monetary limit on UAW Money!
-                            switch(GetRandomInt(1,30))
+                            switch(GetRandomInt(1,41) % 30)
                             {
                                 case 1: // Overtime
                                     AddCredits(client, player, GetRandomInt(1,10), "Overtime");

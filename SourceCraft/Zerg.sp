@@ -86,11 +86,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         if (oldrace == raceID)
             TakeGrab(client);
         else if (race == raceID)
-        {
-            new tentacles_level=GetUpgradeLevel(player,race,tentacleID);
-            if (tentacles_level)
-                Zerg_Tentacles(client, player, tentacles_level);
-        }
+            Tentacles(client, player, GetUpgradeLevel(player,race,tentacleID));
     }
 }
 
@@ -241,13 +237,10 @@ public Action:OnDrop(client, target)
 
 public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    if (race == raceID && GetRace(player) == raceID)
     {
-        if (IsPlayerAlive(client))
-        {
-            if (upgrade==3)
-                Zerg_Tentacles(client, player, new_level);
-        }
+        if (upgrade==3 && (new_level <= 0 || IsPlayerAlive(client)))
+            Tentacles(client, player, new_level);
     }
 }
 
@@ -261,13 +254,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new race = GetRace(player);
-            if (race == raceID)
-            {
-                new tentacles_level=GetUpgradeLevel(player,race,tentacleID);
-                if (tentacles_level)
-                    Zerg_Tentacles(client, player, tentacles_level);
-            }
+            if (GetRace(player) == raceID)
+                Tentacles(client, player, GetUpgradeLevel(player,raceID,tentacleID));
         }
     }
 }
@@ -285,7 +273,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     {
         if (attacker_race == raceID && attacker_index != victim_index)
         {
-            if (Zerg_AdrenalGlands(damage, victim_index, victim_player,
+            if (AdrenalGlands(damage, victim_index, victim_player,
                                    attacker_index, attacker_player))
             {
                 changed = true;
@@ -294,7 +282,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
         if (assister_race == raceID && assister_index != victim_index)
         {
-            if (Zerg_AdrenalGlands(damage, victim_index, victim_player,
+            if (AdrenalGlands(damage, victim_index, victim_player,
                                    assister_index, assister_player))
             {
                 changed = true;
@@ -305,7 +293,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 }
 
 
-public bool:Zerg_AdrenalGlands(damage, victim_index, Handle:victim_player, index, Handle:player)
+public bool:AdrenalGlands(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new adrenal_glands_level=GetUpgradeLevel(player,raceID,glandsID);
     if (adrenal_glands_level)
@@ -351,9 +339,9 @@ public bool:Zerg_AdrenalGlands(damage, victim_index, Handle:victim_player, index
     return false;
 }
 
-public Zerg_Tentacles(client, Handle:player, level)
+public Tentacles(client, Handle:player, level)
 {
-    if (level)
+    if (level > 0)
     {
         new duration, Float:range;
         switch(level)
@@ -381,4 +369,6 @@ public Zerg_Tentacles(client, Handle:player, level)
         }
         GiveGrab(client,duration,range,0.0,1);
     }
+    else
+        TakeGrab(client);
 }

@@ -11,6 +11,7 @@
 #define _respawn_included
 
 #undef REQUIRE_EXTENSIONS
+#include <tf2>
 #include <cstrike>
 #define REQUIRE_EXTENSIONS
 
@@ -30,6 +31,8 @@ stock RespawnPlayer(client)
 {
     if (GameType == cstrike)
         CS_RespawnPlayer(client);
+    else if (GameType == tf2)
+        TF2_RespawnPlayer(client);
     else
         DispatchSpawn(client);
 }
@@ -46,7 +49,7 @@ public Action:ResetUber(Handle:timer,any:arg)
 {
     new client=PlayerOfAuthTimer(arg);
     if(client)
-        UnUberEntity(client);
+        TF2_SetPlayerInvuln(client, false);
     return Plugin_Stop;
 }
 

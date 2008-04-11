@@ -204,8 +204,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new race=GetRace(player);
-            if (race==raceID)
+            if (GetRace(player)==raceID)
             {
                 if (m_IsChangingClass[client])
                     m_IsChangingClass[client] = false;
@@ -219,8 +218,11 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                     TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
 
-                    //SetUber(client);
-                    //AuthTimer(1.0,client,ResetUber);
+                    if (GameType == tf2)
+                    {
+                        TF2_SetPlayerInvuln(client, true);
+                        AuthTimer(1.0,client,ResetUber);
+                    }
                 }
             }
         }

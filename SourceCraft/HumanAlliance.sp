@@ -201,21 +201,18 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            new race = GetRace(player);
-            if (race == raceID)
+            if (GetRace(player) == raceID)
             {
                 GetClientAbsOrigin(client,spawnLoc[client]);
                 m_TeleportCount[client]=0;
 
-                new immunity_level=GetUpgradeLevel(player,race,immunityID);
+                new immunity_level=GetUpgradeLevel(player,raceID,immunityID);
                 if (immunity_level)
                     DoImmunity(client, player, immunity_level,true);
 
-                new devotion_level=GetUpgradeLevel(player,race,devotionID);
+                new devotion_level=GetUpgradeLevel(player,raceID,devotionID);
                 if (devotion_level)
                     AuthTimer(0.1,client,DoDevotionAura);
-
-                LogMessage("Spawned Human %N, race=%d", client, raceID);
             }
         }
     }

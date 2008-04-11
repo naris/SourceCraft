@@ -232,72 +232,82 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
 UnholyAura(client, Handle:player, level)
 {
-    new Float:speed=1.0;
-    switch (level)
+    if (level > 0)
     {
-        case 1:
-            speed=1.05;
-        case 2:
-            speed=1.10;
-        case 3:
-            speed=1.15;
-        case 4:
-            speed=1.20;
+        new Float:speed=1.0;
+        switch (level)
+        {
+            case 1:
+                speed=1.05;
+            case 2:
+                speed=1.10;
+            case 3:
+                speed=1.15;
+            case 4:
+                speed=1.20;
+        }
+
+        /* If the Player also has the Boots of Speed,
+         * Increase the speed further
+         */
+        new boots = FindShopItem("boots");
+        if (boots != -1 && GetOwnsItem(player,boots))
+        {
+            speed *= 1.1;
+        }
+
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
+
+        new color[4] = { 255, 100, 0, 255 };
+        TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
+                0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
+        TE_SendToAll();
+
+        SetSpeed(player,speed);
     }
-
-    /* If the Player also has the Boots of Speed,
-     * Increase the speed further
-     */
-    new boots = FindShopItem("boots");
-    if (boots != -1 && GetOwnsItem(player,boots))
-    {
-        speed *= 1.1;
-    }
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new color[4] = { 255, 100, 0, 255 };
-    TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
-                          0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
-    TE_SendToAll();
-
-    SetSpeed(player,speed);
+    else
+        SetSpeed(player,-1.0);
 }
 
 Levitation(client, Handle:player, level)
 {
-    new Float:gravity=1.0;
-    switch (level)
+    if (level > 0)
     {
-        case 1:
-            gravity=0.92;
-        case 2:
-            gravity=0.733;
-        case 3:
-            gravity=0.5466;
-        case 4:
-            gravity=0.36;
+        new Float:gravity=1.0;
+        switch (level)
+        {
+            case 1:
+                gravity=0.92;
+            case 2:
+                gravity=0.733;
+            case 3:
+                gravity=0.5466;
+            case 4:
+                gravity=0.36;
+        }
+
+        /* If the Player also has the Sock of the Feather,
+         * Decrease the gravity further.
+         */
+        new sock = FindShopItem("sock");
+        if (sock != -1 && GetOwnsItem(player,sock))
+        {
+            gravity *= 0.8;
+        }
+
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
+
+        new color[4] = { 0, 20, 100, 255 };
+        TE_SetupBeamRingPoint(start,20.0,50.0,g_lightningSprite,g_lightningSprite,
+                0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
+        TE_SendToAll();
+
+        SetGravity(player,gravity);
     }
-
-    /* If the Player also has the Sock of the Feather,
-     * Decrease the gravity further.
-     */
-    new sock = FindShopItem("sock");
-    if (sock != -1 && GetOwnsItem(player,sock))
-    {
-        gravity *= 0.8;
-    }
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new color[4] = { 0, 20, 100, 255 };
-    TE_SetupBeamRingPoint(start,20.0,50.0,g_lightningSprite,g_lightningSprite,
-                          0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
-    TE_SendToAll();
-
-    SetGravity(player,gravity);
+    else
+        SetGravity(player,-1.0);
 }
 
 bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_player)

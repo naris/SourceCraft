@@ -111,7 +111,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     if (victim_race == raceID)
     {
         changed |= Evasion(damage, victim_index, victim_player,
-                attacker_index, assister_index);
+                           attacker_index, assister_index);
     }
 
     if (attacker_index && attacker_index != victim_index)
@@ -121,7 +121,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         if (attacker_race == raceID)
         {
             amount = TrueshotAura(damage, victim_index, victim_player,
-                    attacker_index, attacker_player);
+                                  attacker_index, attacker_player);
             if (amount)
                 changed = true;
         }
@@ -129,7 +129,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         if (victim_race == raceID)
         {
             amount += ThornsAura(damage, victim_index, victim_player,
-                    attacker_index, attacker_player);
+                                 attacker_index, attacker_player);
         }
 
         if (amount)
@@ -142,13 +142,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         if (assister_race == raceID)
         {
             amount = TrueshotAura(damage, victim_index, victim_player,
-                    assister_index, assister_player);
+                                  assister_index, assister_player);
         }
 
         if (victim_race == raceID)
         {
             amount += ThornsAura(damage, victim_index, victim_player,
-                    assister_index, assister_player);
+                                 assister_index, assister_player);
         }
 
         if (amount)

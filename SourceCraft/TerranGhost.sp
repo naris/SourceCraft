@@ -34,6 +34,7 @@ new m_OffsetDisguiseTeam;
 new m_OffsetDisguiseClass;
 new m_OffsetDisguiseHealth;
 
+new Handle:cvarNuclearLaunchEnable = INVALID_HANDLE;
 new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
 new Handle:cvarNuclearCooldown = INVALID_HANDLE;
@@ -68,6 +69,7 @@ public OnPluginStart()
 {
     GetGameType();
 
+    cvarNuclearLaunchEnable=CreateConVar("sc_nuclearlaunchenable","0");
     cvarNuclearLaunchTime=CreateConVar("sc_nuclearlaunchtime","20");
     cvarNuclearLockTime=CreateConVar("sc_nuclearlocktime","5");
     cvarNuclearCooldown=CreateConVar("sc_nuclearlaunchcooldown","300");
@@ -166,11 +168,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             m_AllowNuclearLaunch[client]=true;
         }
         else if (race == raceID)
-        {
-            new cloak_level=GetUpgradeLevel(player,race,cloakID);
-            if (cloak_level)
-                Cloak(client, player, cloak_level);
-        }
+            Cloak(client, player, GetUpgradeLevel(player,race,cloakID));
     }
 }
 
@@ -192,7 +190,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 
 public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    if (race == raceID && GetRace(player) == raceID)
     {
         if (upgrade==0)
             Cloak(client, player, new_level);
@@ -291,62 +289,67 @@ enum RenderFx
 	RENDERFX_MAX
 };
 */
-bool:Cloak(client, Handle:player, level)
+Cloak(client, Handle:player, level)
 {
-    new alpha, Float:delay, Float:duration, RenderFx:fx;
-    switch(level)
+    if (level > 0)
     {
-        case 1:
+        new alpha, Float:delay, Float:duration, RenderFx:fx;
+        switch(level)
         {
-            alpha = 255;
-            delay = 2.0;
-            duration = 5.0;
-            fx=RENDERFX_PULSE_SLOW;
+            case 1:
+            {
+                alpha = 255;
+                delay = 2.0;
+                duration = 5.0;
+                fx=RENDERFX_PULSE_SLOW;
+            }
+            case 2:
+            {
+                alpha = 235;
+                delay = 1.5;
+                duration = 10.0;
+                fx=RENDERFX_PULSE_FAST;
+            }
+            case 3:
+            {
+                alpha = 215;
+                delay = 1.0;
+                duration = 15.0;
+                fx=RENDERFX_FLICKER_SLOW;
+            }
+            case 4:
+            {
+                alpha = 200;
+                delay = 0.5;
+                duration = 20.0;
+                fx=RENDERFX_HOLOGRAM;
+            }
         }
-        case 2:
+
+        /* If the Player also has the Cloak of Shadows,
+         * Decrease the delay and Increase the duration.
+         */
+        new cloak = FindShopItem("Cloak of Shadows");
+        if (cloak != -1 && GetOwnsItem(player,cloak))
         {
-            alpha = 235;
-            delay = 1.5;
-            duration = 10.0;
-            fx=RENDERFX_PULSE_FAST;
+            alpha    *= 0.90;
+            delay    *= 0.90;
+            duration *= 1.10;
         }
-        case 3:
-        {
-            alpha = 215;
-            delay = 1.0;
-            duration = 15.0;
-            fx=RENDERFX_FLICKER_SLOW;
-        }
-        case 4:
-        {
-            alpha = 200;
-            delay = 0.5;
-            duration = 20.0;
-            fx=RENDERFX_HOLOGRAM;
-        }
+
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
+
+        new color[4] = { 0, 255, 50, 128 };
+        TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
+                0, 1, 2.0, 10.0, 0.0, color, 10, 0);
+        TE_SendToAll();
+
+        SetVisibility(player, alpha, TimedMeleeInvisibility, delay, duration,
+                      RENDER_TRANSTEXTURE, fx);
     }
-
-    /* If the Player also has the Cloak of Shadows,
-     * Decrease the delay and Increase the duration.
-     */
-    new cloak = FindShopItem("Cloak of Shadows");
-    if (cloak != -1 && GetOwnsItem(player,cloak))
-    {
-        alpha    *= 0.90;
-        delay    *= 0.90;
-        duration *= 1.10;
-    }
-
-    new Float:start[3];
-    GetClientAbsOrigin(client, start);
-
-    new color[4] = { 0, 255, 50, 128 };
-    TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                          0, 1, 2.0, 10.0, 0.0, color, 10, 0);
-    TE_SendToAll();
-
-    SetVisibility(player, alpha, TimedMeleeInvisibility, delay, duration,
-                  RENDER_TRANSTEXTURE, fx);
+    else
+        SetVisibility(player, -1);
 }
 
 Lockdown(victim_index, Handle:player)
@@ -497,6 +500,13 @@ ResetOcularImplants(client)
 
 TargetNuclearDevice(client)
 {
+    if (!GetConVarBool(cvarNuclearLaunchEnable))
+    {
+        PrintToChat(client,"%c[SourceCraft] %c Sorry, NuclearLaunch has been disabled for testing purposes!",
+                    COLOR_GREEN,COLOR_DEFAULT);
+        return;
+    }
+
     EmitSoundToAll(targetWav,client);
     TraceAimPosition(client, m_nuclearAimPos[client], true);
 

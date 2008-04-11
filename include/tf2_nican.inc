@@ -1,8 +1,8 @@
 
-#if defined _tf2_included
+#if defined _tf2_nican_included
  #endinput
 #endif
-#define _tf2_included
+#define _tf2_nican_included
 
 #define TF2_SCOUT 1
 #define TF2_SNIPER 2

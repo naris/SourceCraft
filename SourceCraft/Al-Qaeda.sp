@@ -208,17 +208,27 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
-        if (m_IsChangingClass[client])
-            m_IsChangingClass[client] = false;
-        else if (m_IsRespawning[client])
+        new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
         {
-            m_IsRespawning[client]=false;
-            TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
-            TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
-            TE_SendToAll();
+            if (GetRace(player) == raceID)
+            {
+                if (m_IsChangingClass[client])
+                    m_IsChangingClass[client] = false;
+                else if (m_IsRespawning[client])
+                {
+                    m_IsRespawning[client]=false;
+                    TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
+                    TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
+                    TE_SendToAll();
 
-            //SetUber(client);
-            //AuthTimer(1.0,client,ResetUber);
+                    if (GameType == tf2)
+                    {
+                        TF2_SetPlayerInvuln(client, true);
+                        AuthTimer(1.0,client,ResetUber);
+                    }
+                }
+            }
         }
     }
     return Plugin_Continue;
