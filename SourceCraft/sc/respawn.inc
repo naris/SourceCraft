@@ -37,17 +37,31 @@ stock RespawnPlayer(client)
         DispatchSpawn(client);
 }
 
-public Action:RespawnPlayerHandle(Handle:timer,any:arg)
+public Action:RespawnPlayerHandle(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
         RespawnPlayer(client);
     return Plugin_Stop;
 }
 
-public Action:ResetUber(Handle:timer,any:arg)
+public Action:SetInvuln(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
+    if(client)
+    {
+        LogMessage("Setting %N Invulnerable", client);
+        TF2_SetPlayerInvuln(client, true);
+        new Float:duration = ReadPackFloat(pack);
+        if (duration > 0.0)
+            AuthTimer(duration,client,ResetInvuln);
+    }
+    return Plugin_Stop;
+}
+
+public Action:ResetInvuln(Handle:timer,Handle:pack)
+{
+    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         LogMessage("Reset %N Vulnerable", client);

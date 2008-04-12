@@ -20,9 +20,9 @@ stock UnFreezeEntity(entity)
     SetEntityMoveType(entity,MOVETYPE_WALK); // Unfreeze client
 }
 
-public Action:UnfreezePlayer(Handle:timer,any:arg)
+public Action:UnfreezePlayer(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
         UnFreezeEntity(client);
     return Plugin_Stop;

@@ -311,19 +311,14 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (GameType == cstrike)
                 {
                     decl String:wepName[128];
-                    decl String:auth[64];
-                    GetClientAuthString(client,auth,sizeof(auth));
-
-                    new Handle:args=CreateArray(ByteCountToCells(128));
-                    PushArrayString(args,auth);
-
+                    new Handle:pack = AuthTimer(0.2,client,Ankh);
                     new size=GetArraySize(vecPlayerWeapons[client]);
+                    WritePackCell(pack, size);
                     for(new x=0;x<size;x++)
                     {
                         GetArrayString(vecPlayerWeapons[client],x,wepName,sizeof(wepName));
-                        PushArrayString(args,wepName);
+                        WritePackString(pack, wepName);
                     }
-                    CreateTimer(0.2,Ankh,args);
                     SetOwnsItem(player,shopItem[ITEM_ANKH],false);
                 }
             }
@@ -670,9 +665,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 }
 
 // Item specific
-public Action:RestoreSpeed(Handle:timer,any:arg)
+public Action:RestoreSpeed(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         new Handle:player=GetPlayerHandle(client);
@@ -845,13 +840,11 @@ public Action:TrackWeapons(Handle:timer)
     return Plugin_Continue;
 }
 
-public Action:Ankh(Handle:timer,any:args)
+public Action:Ankh(Handle:timer,Handle:pack)
 {
     if (GameType == cstrike)
     {
-        decl String:auth[64];
-        GetArrayString(args,AUTHINFO_ID,auth,sizeof(auth));
-        new client=PlayerOfAuthString(auth);
+        new client=ClientOfAuthTimer(pack);
         if(client)
         {
             decl String:wepName[128];
@@ -873,24 +866,23 @@ public Action:Ankh(Handle:timer,any:args)
                 }
                 iter+=4;
             }
-            for(new x=1;x<GetArraySize(args);x++)
+            new size = ReadPackCell(pack);
+            for(new x=1;x<size;x++)
             {
-                GetArrayString(args,x,wepName,sizeof(wepName));
+                ReadPackString(pack, wepName,sizeof(wepName));
                 new ent=GiveItem(client,wepName);
                 new ammotype=GetAmmoType(ent);
                 if(ammotype!=-1)
                     GiveAmmo(client,ammotype,1000,true);
             }
         }
-        ClearArray(args);
-        CloseHandle(args);
     }
     return Plugin_Stop;
 }
 
-public Action:DoMole(Handle:timer,any:arg)
+public Action:DoMole(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if (client)
     {
         new team=GetClientTeam(client);
@@ -922,9 +914,9 @@ public Action:DoMole(Handle:timer,any:arg)
     return Plugin_Stop;
 }
 
-public Action:DoPeriapt(Handle:timer,any:arg)
+public Action:DoPeriapt(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         SaveMaxHealth(client);

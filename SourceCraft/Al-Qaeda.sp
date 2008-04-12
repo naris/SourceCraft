@@ -225,9 +225,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
 
                     if (GameType == tf2)
                     {
-                        LogMessage("Setting %N Invulnerable", client);
-                        TF2_SetPlayerInvuln(client, true);
-                        AuthTimer(2.0,client,ResetUber);
+                        new Handle:pack = AuthTimer(0.1,client,SetInvuln);
+                        WritePackFloat(pack, 2.0);
                     }
                 }
             }
@@ -300,9 +299,9 @@ public OnRaceSelected(client,Handle:player,oldrace,newrace)
     }
 }
 
-public Action:MadBomber(Handle:timer,any:arg)
+public Action:MadBomber(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         new Handle:player = GetPlayerHandle(client);
@@ -337,9 +336,9 @@ public Action:MadBomber(Handle:timer,any:arg)
     return Plugin_Stop;
 }
 
-public Action:Kaboom(Handle:timer,any:arg)
+public Action:Kaboom(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         new Handle:player = GetPlayerHandle(client);

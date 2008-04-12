@@ -219,9 +219,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     return Plugin_Continue;
 }
 
-public Action:DoDevotionAura(Handle:timer,any:arg)
+public Action:DoDevotionAura(Handle:timer,Handle:pack)
 {
-    new client=PlayerOfAuthTimer(arg);
+    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         SaveMaxHealth(client);

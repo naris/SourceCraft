@@ -12,17 +12,19 @@
 
 #define AUTHINFO_ID 0
 
-stock AuthTimer(Float:delay,index,Timer:func)
+stock Handle:AuthTimer(Float:delay,index,Timer:func)
 {
     decl String:auth[64];
     GetClientAuthString(index,auth,sizeof(auth));
 
-    new Handle:arg=CreateArray(ByteCountToCells(64));
-    PushArrayString(arg,auth);
-    CreateTimer(delay,func,arg);
+    new Handle:pack;
+    CreateDataTimer(delay,func,pack);
+    WritePackCell(pack, index);
+    WritePackString(pack, auth);
+    return pack;
 }
 
-stock PlayerOfAuthString(const String:auth[])
+stock ClientOfAuthString(const String:auth[])
 {
     new index = 0;
     new max=GetMaxClients();
@@ -42,16 +44,37 @@ stock PlayerOfAuthString(const String:auth[])
     return index;
 }
 
-stock PlayerOfAuthTimer(Handle:arg)
+stock ClientOfAuthTimer(Handle:pack)
 {
     new index = 0;
-    if (arg != INVALID_HANDLE)
+    new old_index = 0;
+    if (pack != INVALID_HANDLE)
     {
         decl String:auth[64];
-        GetArrayString(arg,AUTHINFO_ID,auth,sizeof(auth));
-        index = PlayerOfAuthString(auth);
-        ClearArray(arg);
-        CloseHandle(arg);
+
+        ResetPack(pack);
+        index = ReadPackCell(pack);
+        old_index = index;
+        ReadPackString(pack, auth, sizeof(auth));
+
+        if (IsClientInGame(index))
+        {
+            decl String:authStr[64];
+            GetClientAuthString(index,authStr,sizeof(authStr));
+            if (!StrEqual(auth,authStr))
+                index = 0;
+        }
+        if (index <= 0)
+        {
+            index = ClientOfAuthString(auth);
+            if (index > 0)
+            {
+                // I assumed this doesn't happen in other code,
+                // so get my attention so I know I have to fix a bunch of stuff!
+                LogError("Player %N moved from %d to %d",
+                         index, old_index, index);
+            }
+        }
     }
     return index;
 }

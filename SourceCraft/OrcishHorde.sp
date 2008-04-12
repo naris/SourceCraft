@@ -220,9 +220,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
 
                     if (GameType == tf2)
                     {
-                        LogMessage("Setting %N Invulnerable", client);
-                        TF2_SetPlayerInvuln(client, true);
-                        AuthTimer(2.0,client,ResetUber);
+                        new Handle:pack = AuthTimer(0.1,client,SetInvuln);
+                        WritePackFloat(pack, 2.0);
                     }
                 }
             }
