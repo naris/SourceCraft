@@ -15,29 +15,13 @@
 
 #define TF2_PLAYER_SLOWED       (1 << 0)    // 1
 #define TF2_PLAYER_ZOOMED       (1 << 1)    // 2
-//#define TF2_PLAYER	        (1 << 2)    // 4
+#define TF2_PLAYER_DISGUISING   (1 << 2)    // 4
 #define TF2_PLAYER_DISGUISED	(1 << 3)    // 8
 #define TF2_PLAYER_CLOAKED      (1 << 4)    // 16
 #define TF2_PLAYER_INVULN       (1 << 5)    // 32
-//#define TF2_PLAYER	        (1 << 6)
-//#define TF2_PLAYER		    (1 << 7)
-//#define TF2_PLAYER	        (1 << 8)
-//#define TF2_PLAYER	        (1 << 9)
-//#define TF2_PLAYER	        (1 << 10)
-//#define TF2_PLAYER	        (1 << 11)
-//#define TF2_PLAYER		    (1 << 12)
-//#define TF2_PLAYER	        (1 << 13)
-//#define TF2_PLAYER		    (1 << 14)
-//#define TF2_PLAYER		    (1 << 15)
-//#define TF2_PLAYER	        (1 << 16)  	// 
-//#define TF2_PLAYER	        (1 << 17)	// 
-//#define TF2_PLAYER		    (1 << 18)	// 
-//#define TF2_PLAYER		    (1 << 19)	// 
-//#define TF2_PLAYER	        (1 << 20)	// 
-//#define TF2_PLAYER		    (1 << 21)	// 
-//#define TF2_PLAYER		    (1 << 22)
-//#define TF2_PLAYER		    (1 << 23)	// 
-//#define TF2_PLAYER		    (1 << 24)	// 
+#define TF2_PLAYER_HEALING	    (1 << 6)    // 64
+#define TF2_PLAYER_TAUNTING	    (1 << 7)    // 128
+//#define TF2_PLAYER	        (1 << 8)    // 256
 
 stock tf2_PlayerCondOffset;
 stock bool:tf2_PlayerCondSet = false;
