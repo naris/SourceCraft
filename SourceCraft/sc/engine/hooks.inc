@@ -13,9 +13,9 @@ bool:InitHooks()
     RegConsoleCmd("changelevel",ChangelevelCommand);
 
     RegConsoleCmd("sc_menu",SCMenuCommand,"use SourceCraft menu to change race, reset upgrades, etc...");
-    RegConsoleCmd("sc_shopmenu",BuyCommand,"use SourceCraft shopmenu to purchase shop items");
     RegConsoleCmd("sc_buy",BuyCommand,"Purchase a SourceCraft Item");
-    RegConsoleCmd("sc_changerace",ChangeRaceCommand,"SourceCraft command to change race.");
+    RegConsoleCmd("shopmenu",BuyCommand,"use SourceCraft shopmenu to purchase shop items");
+    RegConsoleCmd("changerace",ChangeRaceCommand,"SourceCraft command to change race.");
 
     RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
