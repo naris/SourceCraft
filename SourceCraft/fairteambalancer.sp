@@ -5,6 +5,9 @@
  *	Keeps teams the same size and strength
  * 
  * Versions:
+ *	2.7.1
+ *		* Added support for SourceMod.
+ *		* Attempts to balance levels in addition to frags.
  *	2.7
  *		* Plugins waits 15 minutes before a player is switched again
  *	2.6
@@ -60,7 +63,7 @@
 // Admin level that makes players immune
 #define ADMINFLAG Admin_Cheats
 
-#define PLUGIN_VERSION "2.7"
+#define PLUGIN_VERSION "2.7.1"
 
 // Wait time before a player is switched again
 #define SWITCH_WAIT_TIME (60*15)
