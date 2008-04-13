@@ -1,3 +1,20 @@
+Ok, since the crashing issues are solved for now (we went 8 hrs straight with 0 crashes until the spy config got removed last night) I figured I'd put out a list of the major bugs in order of importance.
+
+1. Human Alliance levels do not save. At the start of each new map human alliance players lose all of their levels but their overall level saves, not only does this make it a pain in the ass to play as human but it also creates a leveling exploit.
+
+2. The disappearance of the xp bonus for melee kills. For some reason the xp bonus for melee kills is gone, however all the other xp bonuses are still in the mod.
+
+3. Protoss ultimate is disabled.
+
+4. Reaver scarabs and lockdown sometimes stop working during the map and will not work for the next 40 minutes or so. For reaver scarabs this usually happens at the beginning of the map after the player has used this ability for more than 2 maps in a row, reaver scarabs will usually come back at the end of the map. I honestly don't know any of the symptoms for lockdown stopping, since I personally have not used them.
+
+5. Zerg adrenal glands will work on any weapon if the player dies before their shot hits. For example, I shoot a pipe bomb and as its in the air I die, adrenal glands will work on that pipe bomb if it hits someone.
+
+6. Nuclear missile works, however it randomly hits a spot on the map no matter where its launched from. It does kill people.
+
+You for got one , the never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
+
+
 Recorded on 3-PG's Server. This was a bug in attempt be able to attach sentrys to moving objects.(ie trains, cars, ect.)
 
 Below are the mods on their servers:
