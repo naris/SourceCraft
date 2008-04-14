@@ -755,6 +755,7 @@ public Admin_PlayerInfo(client,target)
     new Handle:targetHandle=GetPlayerHandle(target);
     if (targetHandle != INVALID_HANDLE)
     {
+        decl String:raceName[64];
         new Handle:playerInfo=CreateMenu(Admin_PI_Select);
         SetMenuExitButton(playerInfo,true);
         SetMenuExitBackButton(playerInfo,true);
@@ -764,8 +765,10 @@ public Admin_PlayerInfo(client,target)
         new level=GetLevel(targetHandle,race);
         new credits=GetCredits(targetHandle);
 
-        decl String:raceName[64];
-        GetRaceName(GetRaceHandle(race), raceName, sizeof(raceName));
+        if (race >= 0)
+            GetRaceName(GetRaceHandle(race), raceName, sizeof(raceName));
+        else
+            strcopy(raceName, sizeof(raceName), "none");
 
         SetMenuTitle(playerInfo,"[SourceCraft] Info for %N.\nRace: %s\nCrystals: %d\nXP: %d\nLevel: %d",
                      target,raceName,credits,xp,level);

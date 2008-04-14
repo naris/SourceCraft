@@ -195,6 +195,7 @@ public OnClientPutInServer(client)
     {
         m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
+        LogMessage("Create Player for %N", client);
         new Handle:playerHandle=CreatePlayer(client);
         if (playerHandle != INVALID_HANDLE)
         {
@@ -204,14 +205,29 @@ public OnClientPutInServer(client)
             new res;
             Call_Finish(res);
 
-            if(DBIDB && SAVE_ENABLED)
-                m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
+            if (GetRaceCount() > 0)
+            {
+                if(DBIDB && GetConVarInt(m_SaveXPConVar)==1)
+                {
+                    LogMessage("Loading %N", client);
+                    m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
+                }
+                else
+                    m_FirstSpawn[client]=2;
+
+                // Default race to human for new players.
+                if (GetRace(playerHandle) < 0)
+                {
+                    new race = FindRace("human");
+                    SetRace(playerHandle, (race >= 0) ? race : 0);
+                    LogMessage("Set race to Human, race=%d(%d)",
+                               race, GetRace(playerHandle));
+                }
+                else
+                    LogMessage("Loaded player data, race =%d", GetRace(playerHandle));
+            }
             else
                 m_FirstSpawn[client]=2;
-
-            // Default race to human for new players.
-            if (m_FirstSpawn[client] == 2)
-                SetRace(playerHandle, FindRace("human"));
         }
         else
             SetFailState("There was a failure processing client %d-%N.", client, client);

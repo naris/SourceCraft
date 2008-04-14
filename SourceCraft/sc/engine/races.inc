@@ -130,12 +130,12 @@ AddUpgrade(Handle:raceHandle, const String:name[], const String:short[], const S
 
 Handle:GetRaceHandle(racenum)
 {
-    return GetArrayCell(arrayRaces,racenum);
+    return (racenum >= 0) ? GetArrayCell(arrayRaces,racenum) : INVALID_HANDLE;
 }
 
 GetRaceIdent(Handle:raceHandle)
 {
-    return GetArrayCell(raceHandle,RACE_IDENT);
+    return (raceHandle != INVALID_HANDLE) ? GetArrayCell(raceHandle,RACE_IDENT) : 0;
 }
 
 GetRaceRequiredLevel(Handle:raceHandle)
@@ -312,12 +312,12 @@ FindRaceForIdent(ident)
 PendingCheck(client,Handle:playerHandle)
 {
     new pendingrace=GetPendingRace(playerHandle);
-    if(pendingrace>-1)
+    if (pendingrace > -1)
     {
+        decl String:buf[192];
         SetPendingRace(playerHandle,-1);
         SetRace(playerHandle,pendingrace);
-        decl String:buf[192];
-        new Handle:raceHandle=GetRaceHandle(GetRace(playerHandle));
+        new Handle:raceHandle=GetRaceHandle(pendingrace);
         GetRaceSwitchMessage(raceHandle, buf,sizeof(buf));
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
@@ -331,10 +331,10 @@ PendingCheck(client,Handle:playerHandle)
 
 ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle)
 {
+    decl String:buf[192];
     if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
     {
         SetPendingRace(playerHandle,race);
-        decl String:buf[192];
         GetRaceSwitchMessageDead(raceHandle, buf,sizeof(buf));
         PrintToChat(client,"%c[SourceCraft] %c%s",COLOR_GREEN,COLOR_DEFAULT,buf);
     }
@@ -342,7 +342,6 @@ ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle)
     {
         SetPendingRace(playerHandle,-1);
         SetRace(playerHandle,race);
-        decl String:buf[192];
         GetRaceSwitchMessage(raceHandle, buf,sizeof(buf));
         PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
         m_FirstSpawn[client]=0;

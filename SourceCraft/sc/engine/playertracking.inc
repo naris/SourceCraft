@@ -79,7 +79,7 @@ Handle:CreatePlayer(client)
         PushArrayCell(newPlayer,client); // The first thing is client index
         PushArrayCell(newPlayer,-1); // Database Ident
         PushArrayCell(newPlayer,0); // Saved to Database Flag
-        PushArrayCell(newPlayer,0); // Player race
+        PushArrayCell(newPlayer,-1); // Player race
         PushArrayCell(newPlayer,-1); // Pending race
         PushArrayCell(newPlayer,0); // Pending upgrade reset
         PushArrayCell(newPlayer,0); // Credits
@@ -269,16 +269,24 @@ GetRace(Handle:playerHandle)
 bool:SetRace(Handle:playerHandle,race)
 {
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
+    LogMessage("Set %x's race to %d, oldrace was %s", playerHandle, race, oldrace);
     if (race != oldrace)
     {
-        SavePlayer(playerHandle);
-        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
+        if (oldrace >= 0)
+        {
+            LogMessage("Save %x's data", playerHandle);
+            SavePlayer(playerHandle);
+            SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
+        }
         SetArrayCell(playerHandle,INFO_RACE,race);
 
         new client = GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
 
         if (GetRaceLoaded(playerHandle,race) <= 0)
+        {
+            LogMessage("Load %N's race %d data", client, race);
             LoadPlayerRaceData(client, playerHandle, race);
+        }
 
         Call_StartForward(g_OnRaceSelectedHandle);
         Call_PushCell(client);
