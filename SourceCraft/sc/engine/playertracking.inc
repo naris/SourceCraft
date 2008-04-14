@@ -186,7 +186,6 @@ ClearPlayerArray()
         new Handle:playerHandle=arrayPlayers[client];
         if (playerHandle != INVALID_HANDLE)
         {
-            LogMessage("ClearPlayerArray-Clearing Player #%d", client);
             ClearPlayer(playerHandle);
             arrayPlayers[client] = INVALID_HANDLE;
         }
@@ -269,24 +268,18 @@ GetRace(Handle:playerHandle)
 bool:SetRace(Handle:playerHandle,race)
 {
     new oldrace=GetArrayCell(playerHandle,INFO_RACE);
-    LogMessage("Set %x's race to %d, oldrace was %s", playerHandle, race, oldrace);
     if (race != oldrace)
     {
         if (oldrace >= 0)
-        {
-            LogMessage("Save %x's data", playerHandle);
             SavePlayer(playerHandle);
-            SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
-        }
+
         SetArrayCell(playerHandle,INFO_RACE,race);
+        SetArrayCell(playerHandle,INFO_DATABASE_SAVED,0);
 
         new client = GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
 
         if (GetRaceLoaded(playerHandle,race) <= 0)
-        {
-            LogMessage("Load %N's race %d data", client, race);
             LoadPlayerRaceData(client, playerHandle, race);
-        }
 
         Call_StartForward(g_OnRaceSelectedHandle);
         Call_PushCell(client);

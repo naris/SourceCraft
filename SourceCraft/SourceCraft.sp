@@ -183,35 +183,25 @@ public OnMapStart()
     SetupLevelUpEffect();
 }
 
-public OnMapEnd()
-{
-    //ClearPlayerArray();
-    g_MapChanging = false;
-}
-
 public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
         m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
 
-        LogMessage("Create Player for %N", client);
         new Handle:playerHandle=CreatePlayer(client);
         if (playerHandle != INVALID_HANDLE)
         {
+            new res;
             Call_StartForward(g_OnPlayerAuthedHandle);
             Call_PushCell(client);
             Call_PushCell(playerHandle);
-            new res;
             Call_Finish(res);
 
             if (GetRaceCount() > 0)
             {
                 if(DBIDB && GetConVarInt(m_SaveXPConVar)==1)
-                {
-                    LogMessage("Loading %N", client);
                     m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
-                }
                 else
                     m_FirstSpawn[client]=2;
 
@@ -220,11 +210,7 @@ public OnClientPutInServer(client)
                 {
                     new race = FindRace("human");
                     SetRace(playerHandle, (race >= 0) ? race : 0);
-                    LogMessage("Set race to Human, race=%d(%d)",
-                               race, GetRace(playerHandle));
                 }
-                else
-                    LogMessage("Loaded player data, race =%d", GetRace(playerHandle));
             }
             else
                 m_FirstSpawn[client]=2;
@@ -244,23 +230,9 @@ public OnClientDisconnect(client)
             new bool:freePlayer = true;
             if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                 freePlayer = SavePlayerData(client,playerHandle,true);
-            //else
-            //{
-            //    LogMessage("OnClientDisconnect(), Skipping #%d %N, g_MapChanging=%d",
-            //               client, client, g_MapChanging);
-            //}
 
             if (freePlayer)
-            {
-                //LogMessage("Disconnect-Clearing Player #%d (%x)",
-                //           client, playerHandle);
                 ClearPlayer(playerHandle);
-            }
-            //else
-            //{
-            //    LogMessage("Disconnect-Leaving Player #%d (%x) for threaded cleanup",
-            //               client, playerHandle);
-            //}
 
             arrayPlayers[client] = INVALID_HANDLE;
             m_FirstSpawn[client] = 2;
