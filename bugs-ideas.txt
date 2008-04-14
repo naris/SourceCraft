@@ -1,6 +1,4 @@
-Ok, since the crashing issues are solved for now (we went 8 hrs straight with 0 crashes until the spy config got removed last night) I figured I'd put out a list of the major bugs in order of importance.
-
-1. Human Alliance levels do not save. At the start of each new map human alliance players lose all of their levels but their overall level saves, not only does this make it a pain in the ass to play as human but it also creates a leveling exploit.
+Bugs:
 
 2. The disappearance of the xp bonus for melee kills. For some reason the xp bonus for melee kills is gone, however all the other xp bonuses are still in the mod.
 
@@ -12,7 +10,7 @@ Ok, since the crashing issues are solved for now (we went 8 hrs straight with 0 
 
 6. Nuclear missile works, however it randomly hits a spot on the map no matter where its launched from. It does kill people.
 
-You for got one , the never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
+7. never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
 
 
 Recorded on 3-PG's Server. This was a bug in attempt be able to attach sentrys to moving objects.(ie trains, cars, ect.)
@@ -30,7 +28,7 @@ Change Log
 
 Rules
 
-Sky walking is allowed as long as you are able to shoot and be shot at. If there is only a 1 way wall that allows you to shoot through but blocks in-comming bullets/rockets then it is not allowed.
+Sky walking is allowed as long as you are able to shoot and be shot at. If there is only a 1 way wall that allows you to shoot through but blocks n-comming bullets/rockets then it is not allowed.
 
 Anti Exploits/CheatsCurrently blocking certain cvars that allow a player to see a cloak spy.
 
@@ -116,4 +114,7 @@ I would run the command like this
 dtwatchent 12
 
 It will fill the console with all the changes and names of variables. You can use source mod to modify those variables.
+
+bugs:
+*Fixed*1. Human Alliance levels do not save. At the start of each new map human alliance players lose all of their levels but their overall level saves, not only does this make it a pain in the ass to play as human but it also creates a leveling exploit.
 
