@@ -20,7 +20,7 @@
 #include "sc/maxhealth"
 #include "sc/freeze"
 
-new String:teleportWav[] = "beams/beamstart5.wav";
+new String:teleportWav[] = "ambient/machines/teleport1.wav"; //"beams/beamstart5.wav";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
 new raceID, immunityID, devotionID, bashID, teleportID;
