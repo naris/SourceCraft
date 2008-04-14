@@ -10,7 +10,9 @@ Bugs:
 
 6. Nuclear missile works, however it randomly hits a spot on the map no matter where its launched from. It does kill people.
 
-7. never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
+7.  Fix/Remove the autostacker.
+
+8. never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
 
 
 Recorded on 3-PG's Server. This was a bug in attempt be able to attach sentrys to moving objects.(ie trains, cars, ect.)

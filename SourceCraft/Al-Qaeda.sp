@@ -226,7 +226,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                     if (GameType == tf2)
                     {
                         new Handle:pack = AuthTimer(0.1,client,SetInvuln);
-                        WritePackFloat(pack, 2.0);
+                        WritePackFloat(pack, 0.4);
                     }
                 }
             }
@@ -283,7 +283,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                     m_IsRespawning[victim_index]=true;
                     m_ReincarnationCount[victim_index]++;
                     GetClientAbsOrigin(victim_index,m_DeathLoc[victim_index]);
-                    AuthTimer(0.5,victim_index,RespawnPlayerHandle);
+                    AuthTimer(0.1,victim_index,RespawnPlayerHandle);
                     return Plugin_Continue;
                 }
                 else
