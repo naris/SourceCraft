@@ -12,7 +12,7 @@
 
 #include "sc/range"
 
-stock bool:GetWeapon(Handle:event, attacker_index,
+stock bool:GetWeapon(Handle:event, index,
                      String:buffer[], buffersize)
 {
     new bool:is_equipment;
@@ -20,11 +20,11 @@ stock bool:GetWeapon(Handle:event, attacker_index,
     GetEventString(event, "weapon", buffer, buffersize);
     if (buffer[0])
         is_equipment = false;
-    else
+    else if (IsPlayerAlive(index))
     {
         is_equipment = true;
-        if (attacker_index)
-            GetClientWeapon(attacker_index, buffer, buffersize);
+        if (index)
+            GetClientWeapon(index, buffer, buffersize);
         else
             buffer[0] = 0;
     }
