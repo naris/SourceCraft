@@ -141,9 +141,9 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         new bool:assister_dominated=bool:GetEventInt(event,"assister_dominated");
         new bool:assister_revenge=bool:GetEventInt(event,"assister_revenge");
 
-        new bool:is_equipment;
         decl String:weapon[64];
-        GetWeapon(event, attacker_index, weapon, sizeof(weapon));
+        new bool:is_equipment = GetWeapon(event, attacker_index,
+                                          weapon, sizeof(weapon));
 
         if (GameType == cstrike)
         {
@@ -164,8 +164,9 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
             backstab   = (customkill == 2);
         }
 
-        new bool:melee = IsMelee(weapon, is_equipment);
         new damage     = GetDamage(event, victim_index);
+        new bool:melee = backstab || IsMelee(weapon, is_equipment,
+                                             attacker_index, victim_index);
 
         Call_StartForward(g_OnPlayerDeathEventHandle);
         Call_PushCell(event);

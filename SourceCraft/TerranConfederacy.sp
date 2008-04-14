@@ -281,7 +281,7 @@ bool:U238Shells(Handle:event, damage, victim_index, Handle:victim_player, index,
             {
                 decl String:weapon[64];
                 new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-                if (!IsMelee(weapon, is_equipment))
+                if (!IsMelee(weapon, is_equipment,index,victim_index))
                 {
                     new Float:percent;
                     switch(u238_level)

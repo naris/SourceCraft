@@ -10,21 +10,23 @@
 #endif
 #define _weapons_included
 
+#include "sc/range"
+
 stock bool:GetWeapon(Handle:event, attacker_index,
                      String:buffer[], buffersize)
 {
     new bool:is_equipment;
 
     GetEventString(event, "weapon", buffer, buffersize);
-    if (attacker_index && !buffer[0])
-    {
-        GetClientWeapon(attacker_index, buffer, buffersize);
-        is_equipment = true;
-    }
+    if (buffer[0])
+        is_equipment = false;
     else
     {
-        buffer[0] = 0;
-        is_equipment = false;
+        is_equipment = true;
+        if (attacker_index)
+            GetClientWeapon(attacker_index, buffer, buffersize);
+        else
+            buffer[0] = 0;
     }
     return is_equipment;
 }
@@ -91,7 +93,15 @@ stock bool:IsDamageFromMelee(const String:wepName[])
     return false;
 }
 
-stock bool:IsMelee(const String:wepName[], bool:is_equipment)
+stock bool:IsMelee(const String:wepName[], bool:is_equipment, index, victim)
 {
-    return is_equipment ? IsEquipmentMelee(wepName) : IsDamageFromMelee(wepName);
+    if (is_equipment)
+    {
+        if (IsEquipmentMelee(wepName))
+            return IsInRange(index,victim,100.0);
+        else
+            return false;
+    }
+    else
+        return IsDamageFromMelee(wepName);
 }

@@ -230,7 +230,7 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
     {
         decl String:weapon[64];
         new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-        new bool:is_melee=IsMelee(weapon, is_equipment);
+        new bool:is_melee=IsMelee(weapon, is_equipment,index,victim_index);
 
         new chance;
         switch(pp_level)

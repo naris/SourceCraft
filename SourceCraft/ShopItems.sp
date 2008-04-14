@@ -934,9 +934,10 @@ UsePeriapt(client)
 LootCorpse(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
 {
     decl String:weapon[64];
-    new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-    new bool:is_melee=IsMelee(weapon, is_equipment);
-    new bool:backstab=GetEventInt(event, "customkill") == 2;
+    new bool:is_equipment = GetWeapon(event,index,weapon,sizeof(weapon));
+    new bool:backstab     = GetEventInt(event, "customkill") == 2;
+    new bool:is_melee     = backstab || IsMelee(weapon, is_equipment,
+                                                index, victim_index);
 
     new chance=backstab ? 85 : (is_melee ? 75 : 55);
     if( GetRandomInt(1,100)<=chance && !GetImmunity(victim_player,Immunity_Theft))
