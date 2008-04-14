@@ -109,15 +109,13 @@ IntroMenu(client)
 public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
 {
     if (action == MenuAction_Select ||
-        (action == MenuAction_Cancel && param == MenuCancel_Timeout))
+       (action == MenuAction_Cancel
+        && (param == MenuCancel_Timeout ||
+            param == MenuCancel_Exit)))
     {
         if (m_FirstSpawn[client] > 1 && GetRaceCount() >= 1)
             RaceMenu(client, true);
 
-        m_FirstSpawn[client]=0;
-    }
-    else if (action == MenuAction_Cancel)
-    {
         m_FirstSpawn[client]=0;
     }
 }

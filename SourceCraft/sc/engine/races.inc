@@ -345,6 +345,7 @@ ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle)
         GetRaceSwitchMessage(raceHandle, buf,sizeof(buf));
         PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
         m_FirstSpawn[client]=0;
+        LogMessage("Reset Firstspawn in ChangeRace()");
     }
 }
 

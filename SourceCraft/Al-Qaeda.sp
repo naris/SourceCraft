@@ -253,20 +253,32 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             new reincarnation_level=GetUpgradeLevel(victim_player,victim_race,reincarnationID);
             if (reincarnation_level)
             {
-                new percent;
+                new percent, times;
                 switch (reincarnation_level)
                 {
                     case 1:
+                    {
                         percent=9;
+                        times=2;
+                    }
                     case 2:
+                    {
                         percent=22;
+                        times=3;
+                    }
                     case 3:
+                    {
                         percent=36;
+                        times=4;
+                    }
                     case 4:
+                    {
                         percent=53;
+                        times=5;
+                    }
                 }
                 if (GetRandomInt(1,100)<=percent &&
-                    m_ReincarnationCount[victim_index] < 2*reincarnation_level)
+                    m_ReincarnationCount[victim_index] < times)
                 {
                     m_IsRespawning[victim_index]=true;
                     m_ReincarnationCount[victim_index]++;

@@ -221,7 +221,6 @@ LoadRaceIdent(const String:shortName[], const String:raceName[])
 LoadPlayerData(client,Handle:playerHandle)
 {
     new bool:fetch=false;
-    //LogMessage("LoadPlayerData(%N), DBIDB=%d", client, DBIDB);
     if (DBIDB)
     {
         decl String:steamid[64];
@@ -237,8 +236,6 @@ LoadPlayerData(client,Handle:playerHandle)
                    "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
-            LogMessage("Processing  %N #%d (%x) SQL:%s",
-                       client, client, playerHandle, SQLString);
             new Handle:query=SQL_Query(DBIDB,SQLString);
             if(query)
             {
@@ -295,8 +292,6 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
 {
     decl String:SQLString[512];
 
-    LogMessage("LoadPlayerRaceData(%N), DBIDB=%d", client, DBIDB);
-
     if(DBIDB)
     {
         new player_ident      = GetDatabaseIdent(playerHandle);
@@ -304,15 +299,12 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
         new race_ident        = GetRaceIdent(raceHandle);
 
         // Process this query in the main thread (NOT a worker thread)
-        //LogMessage("Lock Database");
         SQL_LockDatabase(DBIDB);
 
         Format(SQLString,sizeof(SQLString),
                "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d",
                player_ident, race_ident);
 
-        LogMessage("Processing  %N #%d (%x) SQL:%s",
-                   client, client, playerHandle, SQLString);
         new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
         if (raceQuery)
         {
@@ -325,8 +317,6 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
                        "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d",
                        player_ident,race_ident);
 
-                LogMessage("Processing  %N #%d (%x) SQL:%s",
-                           client, client, playerHandle, SQLString);
                 new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
                 if (upgradeQuery)
                 {
@@ -412,9 +402,6 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         else
             threaded = true;
 
-        LogMessage("SavePlayerData() Saving #%d %N, handle=%x, player_ident=%d, g_MapChanging=%d, timeleft=%d, disconnected=%d, threaded=%d",
-                   client, client, playerHandle, player_ident, g_MapChanging, timeleft, disconnected, threaded);
-
         if (player_ident > 0)
         {
             Format(SQLString,sizeof(SQLString),
@@ -429,14 +416,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 if (disconnected)
                     playerData = playerHandle;
                 else
-                {
                     playerData = ClonePlayer(playerHandle);
-                    //LogMessage("Copying %N #%d (%x) to handle=%x",
-                    //           client, client, playerHandle, playerData);
-                }
-
-                LogMessage("Starting thread to process %N #%d (%x) handle=%x, SQL:%s",
-                           client, client, playerHandle, playerData, SQLString);
 
                 new Handle:dataPack = CreateDataPack();
                 WritePackCell(dataPack, client);
@@ -460,9 +440,6 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
             {
                 // Process this query in the main thread
                 SQL_LockDatabase(DBIDB);
-
-                LogMessage("Processing  %N #%d (%x) SQL:%s",
-                           client, client, playerHandle, SQLString);
 
                 if (SQL_FastQuery(DBIDB,SQLString))
                 {
@@ -492,14 +469,10 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
             // Process this query in the main thread
             SQL_LockDatabase(DBIDB);
 
-            //LogMessage("Processing :%s", SQLString);
             if (SQL_FastQuery(DBIDB,SQLString))
             {
                 player_ident = SQL_GetInsertId(DBIDB);
                 SetDatabaseIdent(playerHandle,player_ident);
-
-                LogMessage("Inserted %N #%d (%x) player_ident=%d",
-                           client, client, playerHandle, player_ident);
 
                 if (threaded)
                 {
@@ -507,11 +480,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                     if (disconnected)
                         playerData = playerHandle;
                     else
-                    {
                         playerData = ClonePlayer(playerHandle);
-                        LogMessage("Copying %N #%d (%x) to handle=%x",
-                                   client, client, playerHandle, playerData);
-                    }
 
                     SQL_UnlockDatabase(DBIDB);
 
@@ -555,9 +524,6 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                         player_ident = SQL_FetchInt(ident_query,0);
                         if (player_ident > 0)
                         {
-                            LogMessage("Found %N's player_ident=%d, retrying save...",
-                                       client, player_ident);
-
                             CloseHandle(ident_query);
                             SetDatabaseIdent(playerHandle,player_ident);
                             SavePlayerData(client,playerHandle,disconnected);
@@ -606,12 +572,7 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
             ClearPlayer(playerHandle);
         }
         else
-        {
-            LogMessage("Updated player data, client=%d, handle=%x, ident=%d",
-                       client, playerHandle, player_ident);
-
             SavePlayerRaceData(client, playerHandle, player_ident,true);
-        }
     }
 }
 
@@ -646,16 +607,10 @@ SavePlayerRaceData(client, Handle:playerHandle, player_ident, bool:threaded)
         WritePackCell(dataPack, _:raceHandle);
         ResetPack(dataPack);
 
-        LogMessage("Starting thread to process player #%d (%x) race %d, SQL:%s",
-                   client, playerHandle, raceId, SQLString);
-
         SQL_TQuery(DBIDB, SQL_SavePlayerRace, SQLString, dataPack);
     }
     else
     {
-        LogMessage("Processing player #%d (%x) race %d, SQL:%s",
-                   client, playerHandle, raceId, SQLString);
-
         if (SQL_FastQuery(DBIDB,SQLString))
         {
             SavePlayerUpgrades(client, playerHandle, player_ident,
@@ -701,9 +656,6 @@ public SQL_SavePlayerRace(Handle:owner, Handle:hndl, const String:error[], any:d
         }
         else
         {
-            LogMessage("Updated race data, client=%d, handle=%x, ident=%d, race_ident=%d",
-                       client, playerHandle, player_ident, race_ident);
-
             SavePlayerUpgrades(client, playerHandle, player_ident, raceId,
                                race_ident, raceHandle, true);
         }
@@ -744,16 +696,10 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
                 WritePackCell(dataPack, _:last_upgrade);
                 ResetPack(dataPack);
 
-                LogMessage("Starting thread to process player #%d (%x) upgrade %d of %d, SQL:%s",
-                           client, playerHandle, upgrade, lastUpgrade, SQLString);
-
                 SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, dataPack);
             }
             else
             {
-                LogMessage("Processing player #%d (%x) upgrade %d of %d, SQL:%s",
-                           client, playerHandle, upgrade, lastUpgrade, SQLString);
-
                 if (SQL_FastQuery(DBIDB,SQLString))
                     SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
                 else
@@ -768,10 +714,7 @@ SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
     }
 
     if (threaded && !dataWritten)
-    {
-        //LogMessage("No Upgrades updated, Thread-Clearing Player #%d (%x)", client, playerHandle);
         ClearPlayer(playerHandle);
-    }
 }
 
 public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -788,9 +731,6 @@ public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], a
                      client, playerHandle, error);
 
         if (last_upgrade)
-        {
-            //LogMessage("Thread-Clearing Player #%d (%x)", client, playerHandle);
             ClearPlayer(playerHandle);
-        }
     }
 }

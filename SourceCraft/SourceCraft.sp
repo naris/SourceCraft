@@ -208,8 +208,11 @@ public OnClientPutInServer(client)
                 // Default race to human for new players.
                 if (GetRace(playerHandle) < 0)
                 {
+                    new firstSpawn = m_FirstSpawn[client];
                     new race = FindRace("human");
                     SetRace(playerHandle, (race >= 0) ? race : 0);
+                    m_FirstSpawn[client] = firstSpawn;
+                    LogMessage("Restore Firstspawn to %d in PutInServer()", firstSpawn);
                 }
             }
             else
