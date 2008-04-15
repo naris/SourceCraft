@@ -95,8 +95,9 @@ new Handle:cvarEnabled		    = INVALID_HANDLE,
     Handle:cvarLevelThreshold	= INVALID_HANDLE,
     biggerTeam			        = 0,
     dCount			            = 0,
-    bool:game_is_tf2		    = false,
     switches_pending		    = 0,
+    bool:game_is_tf2		    = false,
+    bool:tf2ExtAvail	        = false,
     bool:cstrikeExtAvail	    = false,
     bool:sourcecraftModAvail	= false,
     clientLastSwitched[MAXPLAYERS],
@@ -152,15 +153,24 @@ public OnPluginStart()
 
     game_is_tf2 = StrEqual( theFolder, "tf" );
 
-    // Death event is always needed in order for the actual switching to happen
-    HookEvent( "player_death",			Event_PlayerDeath );
-
-    // Check for cstrike extension - if available, CS_SwitchTeam is used
+    // Check for cstrike extension - if available, CS_SwitchTeam() is used
     cstrikeExtAvail = ( GetExtensionFileStatus( "game.cstrike.ext" ) == 1 );
 
-    // Check for sourcecraft mod.
+    // Check for tf2 extension - if available, TF2_GetPlayerResourceData() is used.
+    tf2ExtAvail = ( GetExtensionFileStatus( "game.tf2.ext" ) == 1 );
+
+    // Check for sourcecraft mod - if available, GetOverallLevel() is used.
     sourcecraftModAvail = LibraryExists( "sourcecraft" );
 
+    // Death event is always needed in order for the actual switching to happen
+    HookEvent( "player_death", Event_PlayerDeath );
+
+    if (game_is_tf2)
+    {
+        HookEventEx("teamplay_round_win",Event_RoundWin);
+        HookEventEx("teamplay_round_stalemate",Event_RoundOver);
+        HookEventEx("teamplay_win_panel",Event_GameWin);
+    }
 }
 
 public Action:Command_Teams( client, args )
@@ -209,7 +219,7 @@ void:PerformTeamCheck( bool:switchImmed = false )
                 if (tFragsHi[t] < pFrags[i])
                     tFragsHi[t] = i;
 
-                if (game_is_tf2)
+                if (tf2ExtAvail)
                 {
                     tScore[t] += (pScore[i] = TF2_GetPlayerResourceData(i,TFResource_Score));
                     if (tScoreLo[t] > pFrags[i])
@@ -345,7 +355,8 @@ void:PerformTeamCheck( bool:switchImmed = false )
     }
 }
 
-public Event_PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast ){
+public Event_PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast )
+{
     // If we are disabled - exit
     if (!GetConVarBool(cvarEnabled))
         return;
@@ -383,7 +394,7 @@ public Event_PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast 
                 new t =cTeam-2;
                 tPlayers[t]++;
                 tFrags[t] += (pFrags[i] = GetClientFrags(i));
-                if (game_is_tf2)
+                if (tf2ExtAvail)
                     tScore[t] += (pScore[i] = TF2_GetPlayerResourceData(i,TFResource_Score));
                 if( sourcecraftModAvail )
                 {
@@ -492,3 +503,39 @@ void:PerformSwitch( client )
         PrintToChatAll( "[SM] %N has been switched for team balance.", client );
     }
 }
+
+public Event_RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    LogMessage("RoundOver(%s)", name);
+}
+
+public Event_RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new team  = GetEventInt(event,"team");
+    new caps  = GetEventInt(event,"flagcaplimit");
+    new lose  = GetEventInt(event,"losing_team_num_caps");
+    new death = GetEventInt(event,"was_sudden_death");
+    LogMessage("RoundWin(%s) winner=%d, caps=%d, loser_caps=%d, sudden_death=%d",
+               name, team, caps, lose, death);
+}
+
+public Event_GameWin(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new team   = GetEventInt(event,"winning_team");
+    new score0 = GetEventInt(event,"blue_score");
+    new score1 = GetEventInt(event,"red_score");
+    new prev0  = GetEventInt(event,"blue_score_prev");
+    new prev1  = GetEventInt(event,"red_score_prev");
+
+    new index1 = GetEventInt(event, "player_1");
+    new index2 = GetEventInt(event, "player_2");
+    new index3 = GetEventInt(event, "player_3");
+    LogMessage("GameWin(%s) winner=%d, blue=%d[%d], red=%d[%d], MVP1=%N,2=%N,3=%N",
+               name, team, score0, prev0, score1, prev1, index1, index2, index3);
+}
+
+public Event_GameOver(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    LogMessage("GameOver(%s)", name);
+}
+

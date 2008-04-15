@@ -31,6 +31,12 @@ bool:HookTFEvents()
         return false;
     }
 
+    if(!HookEvent("building_info_changed", EventObjectChanged))
+    {
+        LogError("Could not hook the building_info_changed event.");
+        return false;
+    }
+
     if(!HookEvent("teamplay_flag_event", EventFlagEvent))
     {
         LogError("Could not hook the teamplay_flag_event.");
@@ -155,6 +161,10 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (playerHandle != INVALID_HANDLE)
             GiveObjectBuiltXP(index,playerHandle);
     }
+
+    new object = GetEventInt(event,"object");
+    LogMessage("player_objectbuilt: userid=%d, object=%d",
+               userid, object);
 }
 
 public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
@@ -186,10 +196,20 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
             GiveObjectDestroyedXP(assister_index,assister_player);
     }
 
-    //decl String:weapon[64];
-    //GetEventString(event, "weapon", weapon, sizeof(weapon));
-    //LogMessage("%d+%d destroyed %N's %d with %s", attacker, assister, index,
-    //           GetEventInt(event,"objecttype"), weapon);
+    decl String:weapon[64];
+    GetEventString(event, "weapon", weapon, sizeof(weapon));
+    new object = GetEventInt(event,"objecttype");
+    LogMessage("object_destroyed: %d+%d destroyed %N's %d with %s",
+               attacker, assister, index, object, weapon);
+}
+
+public EventObjectChanged(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new building_type = GetEventInt(event,"building_type");
+    new remove = GetEventInt(event,"remove");
+    new userid = GetEventInt(event,"userid");
+    LogMessage("object_changed: building_type=%d, remove=%d, userid=%d",
+               building_type, remove, userid);
 }
 
 public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
