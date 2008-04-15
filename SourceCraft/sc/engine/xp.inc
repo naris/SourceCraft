@@ -290,7 +290,7 @@ GiveMvpXP(client,Handle:playerHandle,place,points)
 {
     new String:reason[64];
     Format(reason,sizeof(reason),"being MVP #%d with %d points",place, points);
-    GiveXP(client,playerHandle,points*place*MVP_XP,reason);
+    GiveXP(client,playerHandle,points*(4-place)*MVP_XP,reason);
 }
 
 GiveXP(client,Handle:playerHandle, amount, const String:reason[])
