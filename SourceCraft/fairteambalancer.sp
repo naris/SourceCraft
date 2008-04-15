@@ -1,4 +1,5 @@
 /*
+ * vim: set ai et ts=4 sw=4 :
  * fairteambalancer.sp
  * 
  * Description:
@@ -51,6 +52,7 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <cstrike>
+#include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
@@ -79,298 +81,414 @@ stock min( a,b ) return ( a < b  ? a :  b );
 // Plugin definitions
 public Plugin:myinfo =
 {
-	name			= "Fair Team Balancer",
-	author			= "MistaGee",
-	description		= "Keeps teams the same size and strength",
-	version			= PLUGIN_VERSION,
-	url			= "http://forums.alliedmods.net"
+    name			= "Fair Team Balancer",
+    author			= "MistaGee",
+    description		= "Keeps teams the same size and strength",
+    version			= PLUGIN_VERSION,
+    url			= "http://forums.alliedmods.net"
 };
 
-new Handle:cvarEnabled		= INVALID_HANDLE,
-    Handle:cvarThreshold	= INVALID_HANDLE,
+new Handle:cvarEnabled		    = INVALID_HANDLE,
+    Handle:cvarAdminsImmune	    = INVALID_HANDLE,
+    Handle:cvarThreshold	    = INVALID_HANDLE,
+    Handle:cvarScoreThreshold	= INVALID_HANDLE,
     Handle:cvarLevelThreshold	= INVALID_HANDLE,
-    biggerTeam			= 0,
-    clientLastSwitched[MAXPLAYERS],
-    dCount			= 0,
-    bool:game_is_tf2		= false,
-    switches_pending		= 0,
-    bool:cstrikeExtAvail	= false,
+    biggerTeam			        = 0,
+    dCount			            = 0,
+    bool:game_is_tf2		    = false,
+    switches_pending		    = 0,
+    bool:cstrikeExtAvail	    = false,
     bool:sourcecraftModAvail	= false,
+    clientLastSwitched[MAXPLAYERS],
     plID[MAXPLAYERS];				// Player IDs of players to be switched
 
 
-public OnPluginStart(){
-	cvarEnabled = CreateConVar(
-		"sm_team_balancer_enable",
-		"1",
-		"Enables the Team Balancer plugin"
-		);
+public OnPluginStart()
+{
+    cvarEnabled = CreateConVar(
+            "sm_team_balancer_enable",
+            "1",
+            "Enables the Team Balancer plugin"
+            );
 
-	CreateConVar(
-		"sm_team_balancer_version",
-		PLUGIN_VERSION,
-		"Team Balancer Version",
-		FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
-		);
-	
-	cvarThreshold = CreateConVar(
-		"sm_team_balancer_threshold",
-		"3",
-		"Maximum score difference for players to be switched",
-		FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
-		);
-	
-	cvarLevelThreshold = CreateConVar(
-		"sm_team_balancer_level_threshold",
-		"3",
-		"Maximum level difference for players to be switched",
-		FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
-		);
-	
-	RegAdminCmd( "sm_teams", Command_Teams, ADMFLAG_KICK, "Balance teams" );
-	
-	decl String:theFolder[40];
-	GetGameFolderName( theFolder, sizeof(theFolder) );
-	
-	game_is_tf2 = StrEqual( theFolder, "tf" );
-	
-	// Death event is always needed in order for the actual switching to happen
-	HookEvent( "player_death",			Event_PlayerDeath );
-	
-	// Check for cstrike extension - if available, CS_SwitchTeam is used
-	cstrikeExtAvail = ( GetExtensionFileStatus( "game.cstrike.ext" ) == 1 );
+    CreateConVar(
+            "sm_team_balancer_version",
+            PLUGIN_VERSION,
+            "Team Balancer Version",
+            FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
+            );
 
-	// Check for sourcecraft mod.
-	sourcecraftModAvail = LibraryExists( "sourcecraft" );
-	
-	}
+    cvarAdminsImmune = CreateConVar(
+            "sm_team_balancer_admins_immune",
+            "0",
+            "Set true to make admins immune ot balancing"
+            );
 
-public Action:Command_Teams( client, args ){
-	PerformTeamCheck( true );
-	return Plugin_Handled;
-	}
+    cvarThreshold = CreateConVar(
+            "sm_team_balancer_threshold",
+            "3",
+            "Maximum frag difference for players to be switched",
+            FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
+            );
 
-void:PerformTeamCheck( bool:switchImmed = false ){
-	// If we are disabled - exit
-	if( !GetConVarBool(cvarEnabled) )
-		return;
-	
-	// Count the size and frags of each team
-	new tPlayers[2] = { 0, 0 },
-	    tFrags[2]   = { 0, 0 },
-	    tLevels[2]  = { 0, 0 },
-	    mc          = GetMaxClients(),
-	    Handle:pHandle,
-	    cTeam;
-	
-	for( new i = 1; i < mc; i++ ){
-		if( IsClientInGame(i) ){
-			cTeam = GetClientTeam(i);
-			// Thanks to lambdacore for the hint
-			if( cTeam < 2 ){
-				continue;
-				}
-			tPlayers[ cTeam-2 ]++;
-			tFrags[ cTeam-2 ] += GetClientFrags(i);
-			if( sourcecraftModAvail ){
-				pHandle = GetPlayerHandle(i);
-				if (pHandle != INVALID_HANDLE){
-					tLevels[ cTeam-2] += GetOverallLevel(pHandle);
-					}
-				}
-			}
-		}
-	
-	// Calc score difference, div by player count difference
-	// eg: if T1 has 6 players and 12 Frags, and T2 has 8 players and 16 frags,
-	// player diff is 2 and frag diff is 4. That means, we need to switch 1 player (diff/2),
-	// who has 2 frags ((diff/2)/players).
-	
-	dCount = abs(tPlayers[0]-tPlayers[1]) / 2;
-	new dScore = ( abs(tFrags[0]-tFrags[1]) / 2 ) / max( dCount, 1 );
-	new dLevel = ( abs(tLevels[0]-tLevels[1]) / 2 ) / max( dCount, 1 );
-	
-	if( dCount == 0  && dLevel == 0 ){
-		return;
-		}
-	
-	// Purge the ID array
-	for( new n = 0; n < MAXPLAYERS; n++ ){
-		plID[n] = 0;
-		}
-	
-	biggerTeam = ( tPlayers[0] > tPlayers[1] ? TEAM_1 : TEAM_2 );
-	
-	// Find the player(s) who fit best for team change
-	// these are those n who come closest to the needed frag count
-	
-	new plScoreDelta[MAXPLAYERS],	// Difference of players' score to dScore
-	    plLevelDelta[MAXPLAYERS],	// Difference of players' level to dLevel
-	    plFragDelta,
-	    plLvlDelta,
-	    AdminId:plAdminID;
-	
-	for( new i = 1; i < mc; i++ ){
-		if( IsClientInGame(i) &&
-		    GetClientTeam(i) == biggerTeam &&		// Switch people from bigger team
-		    ( ( plAdminID = GetUserAdmin(i) ) == INVALID_ADMIN_ID ||// Who are not admins or...
-		      !GetAdminFlag( plAdminID, ADMINFLAG )	// ...not immune
-		    )
-		  ){
-			plFragDelta = abs( GetClientFrags(i) - dScore );
-			if( sourcecraftModAvail ){
-				pHandle = GetPlayerHandle(i);
-				if (pHandle != INVALID_HANDLE){
-					plLvlDelta = abs( GetOverallLevel(pHandle) - dLevel );
-					}
-				}
+    cvarScoreThreshold = CreateConVar(
+            "sm_team_balancer_score_threshold",
+            "5",
+            "Maximum score difference for players to be switched",
+            FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
+            );
 
-			// Iterate through first n slots of array
-			for( new s = 0; s < dCount; s++ ){
-				// if no player found or difference bigger
-				if( plID[s] == 0 || plScoreDelta[s] > plFragDelta  || plLevelDelta[s] > plLvlDelta  ){
-					plID[s] = i;
-					plScoreDelta[s] = plFragDelta;
-					plLevelDelta[s] = plLvlDelta;
-					}
-				}
-			}
-		}
-	
-	PrintToChatAll( "[SM] Balancing teams in size and strength, switching %d players.", dCount );
-	
-	// Now we found the players to switch, so maybe do it
-	if( switchImmed ){
-		for( new s = 0; s < dCount; s++ ){
-			PerformSwitch( plID[s] );
-			plID[s] = 0;
-			}
-		PrintToServer(  "[SM] Teams have been balanced." );
-		}
-	else{
-		// We're not to switch immediately, but maybe some of the players we want to
-		// switch are already dead, so don't wait for them to die again
-		for( new s = 0; s < dCount; s++ ){
-			if( IsPlayerAlive( plID[s] ) )
-				continue;
-			
-			PerformSwitch( plID[s] );
-			plID[s] = 0;
-			}
-		}
-	}
+    cvarLevelThreshold = CreateConVar(
+            "sm_team_balancer_level_threshold",
+            "8",
+            "Maximum level difference for players to be switched",
+            FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY
+            );
+
+    RegAdminCmd( "sm_teams", Command_Teams, ADMFLAG_KICK, "Balance teams" );
+
+    decl String:theFolder[40];
+    GetGameFolderName( theFolder, sizeof(theFolder) );
+
+    game_is_tf2 = StrEqual( theFolder, "tf" );
+
+    // Death event is always needed in order for the actual switching to happen
+    HookEvent( "player_death",			Event_PlayerDeath );
+
+    // Check for cstrike extension - if available, CS_SwitchTeam is used
+    cstrikeExtAvail = ( GetExtensionFileStatus( "game.cstrike.ext" ) == 1 );
+
+    // Check for sourcecraft mod.
+    sourcecraftModAvail = LibraryExists( "sourcecraft" );
+
+}
+
+public Action:Command_Teams( client, args )
+{
+    PerformTeamCheck( true );
+    return Plugin_Handled;
+}
+
+void:PerformTeamCheck( bool:switchImmed = false )
+{
+    // If we are disabled - exit
+    if( !GetConVarBool(cvarEnabled) )
+        return;
+
+    // Count the size and frags of each team
+    new tPlayers[2] = { 0, 0 },
+        tFrags[2]   = { 0, 0 },
+        tScore[2]   = { 0, 0 },
+        tLevels[2]  = { 0, 0 },
+        tFragsLo[2] = { 0, 0 },
+        tFragsHi[2] = { 0, 0 },
+        tScoreLo[2] = { 0, 0 },
+        tScoreHi[2] = { 0, 0 },
+        tLevelLo[2] = { 0, 0 },
+        tLevelHi[2] = { 0, 0 },
+        pFrags[MAXPLAYERS] = { 0, ... },
+        pScore[MAXPLAYERS] = { 0, ... },
+        pLevel[MAXPLAYERS] = { 0, ... },
+        mc          = GetMaxClients(),
+        Handle:pHandle,
+        cTeam;
+
+    for( new i = 1; i < mc; i++ )
+    {
+        if( IsClientInGame(i) )
+        {
+            cTeam = GetClientTeam(i);
+            // Thanks to lambdacore for the hint
+            if( cTeam >= 2 )
+            {
+                new t =cTeam-2;
+                tPlayers[t]++;
+                tFrags[t] += (pFrags[i] = GetClientFrags(i));
+                if (tFragsLo[t] > pFrags[i])
+                    tFragsLo[t] = i;
+                if (tFragsHi[t] < pFrags[i])
+                    tFragsHi[t] = i;
+
+                if (game_is_tf2)
+                {
+                    tScore[t] += (pScore[i] = TF2_GetPlayerResourceData(i,TFResource_Score));
+                    if (tScoreLo[t] > pFrags[i])
+                        tScoreLo[t] = i;
+                    if (tScoreHi[t] < pFrags[i])
+                        tScoreHi[t] = i;
+                }
+
+                if (sourcecraftModAvail)
+                {
+                    pHandle = GetPlayerHandle(i);
+                    if (pHandle != INVALID_HANDLE)
+                    {
+                        tLevels[t] += (pLevel[i] = GetOverallLevel(pHandle));
+                        if (tLevelLo[t] > pLevel[i])
+                            tLevelLo[t] = i;
+                        if (tLevelHi[t] < pLevel[i])
+                            tLevelHi[t] = i;
+                    }
+                }
+            }
+        }
+    }
+
+    // Calc score difference, div by player count difference
+    // eg: if T1 has 6 players and 12 Frags, and T2 has 8 players and 16 frags,
+    // player diff is 2 and frag diff is 4. That means, we need to switch 1 player (diff/2),
+    // who has 2 frags ((diff/2)/players).
+
+    dCount = abs(tPlayers[0]-tPlayers[1]) / 2;
+    new dFrags = ( abs(tFrags[0]-tFrags[1]) / 2 ) / max( dCount, 1 );
+    new dScore = ( abs(tScore[0]-tScore[1]) / 2 ) / max( dCount, 1 );
+    new dLevel = ( abs(tLevels[0]-tLevels[1]) / 2 ) / max( dCount, 1 );
+
+    if( dCount == 0  && dFrags == 0 && dScore == 0 && dLevel == 0 )
+        return;
+
+    // Purge the ID array
+    for( new n = 0; n < MAXPLAYERS; n++ )
+        plID[n] = 0;
+
+    // Check team sizes and comparative score/levels/frags
+    if (tPlayers[0] == tPlayers[1])
+    {
+        if (tScore[0] == tScore[1])
+        {
+            if (tLevels[0] == tLevels[1])
+            {
+                if (tFrags[0] == tFrags[1])
+                    return;
+                else
+                    biggerTeam = ( tFrags[0] > tFrags[1] ? TEAM_1 : TEAM_2 );
+            }
+            else
+                biggerTeam = ( tLevels[0] > tLevels[1] ? TEAM_1 : TEAM_2 );
+        }
+        else
+            biggerTeam = ( tScore[0] > tScore[1] ? TEAM_1 : TEAM_2 );
+    }
+    else
+        biggerTeam = ( tPlayers[0] > tPlayers[1] ? TEAM_1 : TEAM_2 );
+
+    // Find the player(s) who fit best for team change
+    // these are those n who come closest to the needed frag count
+
+    new plFragDelta[MAXPLAYERS],	// Difference of players' frags to dFrags
+        plScoreDelta[MAXPLAYERS],	// Difference of players' level to dScore
+        plLevelDelta[MAXPLAYERS],	// Difference of players' level to dLevel
+        fragDelta,
+        scoreDelta,
+        levelDelta,
+        AdminId:plAdminID;
+
+    for( new i = 1; i < mc; i++ )
+    {
+
+        // Switch people from bigger team
+        if (IsClientInGame(i) && GetClientTeam(i) == biggerTeam)
+        {
+            // Skip Admins if they are immune
+            if (GetConVarBool(cvarAdminsImmune) &&
+                plAdminID != INVALID_ADMIN_ID &&
+                GetAdminFlag(plAdminID, ADMINFLAG))
+            {
+                continue;
+            }
+
+            fragDelta  = abs( pFrags[i] - dFrags );
+            scoreDelta = abs( pScore[i] - dScore );
+            levelDelta = abs( pLevel[i] - dLevel );
+
+            // Iterate through first n slots of array
+            for (new s = 0; s < dCount; s++ )
+            {
+                // if no player found or difference bigger
+                if (plID[s] == 0 || (plFragDelta[s] > fragDelta &&
+                                     plScoreDelta[s] > scoreDelta &&
+                                     plLevelDelta[s] > levelDelta))
+                {
+                    plID[s] = i;
+                    plFragDelta[s]  = fragDelta;
+                    plScoreDelta[s] = scoreDelta;
+                    plLevelDelta[s] = levelDelta;
+                }
+            }
+        }
+    }
+
+    PrintToChatAll( "[SM] Balancing teams in size and strength, switching %d players.", dCount );
+
+    // Now we found the players to switch, so maybe do it
+    if( switchImmed )
+    {
+        for( new s = 0; s < dCount; s++ )
+        {
+            PerformSwitch( plID[s] );
+            plID[s] = 0;
+        }
+        PrintToServer(  "[SM] Teams have been balanced." );
+    }
+    else
+    {
+        // We're not to switch immediately, but maybe some of the players we want to
+        // switch are already dead, so don't wait for them to die again
+        for( new s = 0; s < dCount; s++ )
+        {
+            if( !IsPlayerAlive( plID[s] ) )
+            {
+                PerformSwitch( plID[s] );
+                plID[s] = 0;
+            }
+        }
+    }
+}
 
 public Event_PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast ){
-	// If we are disabled - exit
-	new client = GetClientOfUserId( GetEventInt( event, "userid" ) ),
-	    AdminId:plAdminID = GetUserAdmin(client);
-	
-	if( !GetConVarBool(cvarEnabled) ||
-	    ( plAdminID != INVALID_ADMIN_ID && GetAdminFlag( plAdminID, ADMINFLAG ) )
-	  )
-		return;
-	
-	// Count the size and frags of each team
-	new tPlayers[2] = { 0, 0 },
-	    tFrags[2]   = { 0, 0 },
-	    tLevels[2]  = { 0, 0 },
-	    mc          = GetMaxClients(),
-	    plLvlDelta	= -1,
-	    Handle:pHandle,
-	    cTeam;
-	
-	for( new i = 1; i < mc; i++ ){
-		if( IsClientInGame(i) ){
-			cTeam = GetClientTeam(i);
-			// Thanks to lambdacore for the hint
-			if( cTeam < 2 )
-				continue;
-			tPlayers[ cTeam-2 ]++;
-			tFrags[ cTeam-2 ] += GetClientFrags(i);
-			if( sourcecraftModAvail ){
-				pHandle = GetPlayerHandle(i);
-				if (pHandle != INVALID_HANDLE){
-					tLevels[ cTeam-2] += GetOverallLevel(pHandle);
-					}
-				}
-			}
-		}
-	
-	// Calc score difference, div by player count difference
-	// eg: if T1 has 6 players and 12 Frags, and T2 has 8 players and 16 frags,
-	// player diff is 2 and frag diff is 4. That means, we need to switch 1 player (diff/2),
-	// who has 2 frags ((diff/2)/players).
-	
-	dCount = max( ( abs(tPlayers[0]-tPlayers[1]) / 2 ) - switches_pending, 0 );
-	new dScore = ( abs(tFrags[0]-tFrags[1]) / 2 ) / max( dCount, 1 );
-	new dLevel = ( abs(tLevels[0]-tLevels[1]) / 2 ) / max( dCount, 1 );
-	
-	if( dCount == 0  && dLevel == 0 ){
-		return;
-		}
-	
-	biggerTeam = ( tPlayers[0] > tPlayers[1] ? TEAM_1 : TEAM_2 );
-	
-	// Check for correct Team and last time user was switched
-	if( GetClientTeam(client) != biggerTeam ||
-	    GetTime() - clientLastSwitched[client] < SWITCH_WAIT_TIME
-	  )
-		return;
+    // If we are disabled - exit
+    if (!GetConVarBool(cvarEnabled))
+        return;
 
-	// Get the player's level for sourcecraft
-	if( sourcecraftModAvail ){
-		pHandle = GetPlayerHandle(client);
-		if (pHandle != INVALID_HANDLE){
-			plLvlDelta = abs( GetOverallLevel(pHandle) - dLevel );
-			}
-		}
+    new client = GetClientOfUserId( GetEventInt( event, "userid" ) ),
+        AdminId:plAdminID = GetUserAdmin(client);
 
-	// If the guy has the score or level we need, switch them and be done
-	if( abs( GetClientFrags(client) - dScore ) <= GetConVarInt(cvarThreshold) ||
-	    (plLvlDelta >= 0 && plLvlDelta <= GetConVarInt(cvarLevelThreshold))){
-		PerformTimedSwitch( client );
-		clientLastSwitched[client] = GetTime();
-		}
-	}
+    if (GetConVarBool(cvarAdminsImmune) &&
+        plAdminID != INVALID_ADMIN_ID &&
+        GetAdminFlag(plAdminID, ADMINFLAG))
+    {
+        return;
+    }
 
-public OnClientDisconnect_Post( client ){
-	clientLastSwitched[client] = 0;
-	}
+    // Count the size and frags of each team
+    new tPlayers[2] = { 0, 0 },
+        tFrags[2]   = { 0, 0 },
+        tLevels[2]  = { 0, 0 },
+        tScore[2]  = { 0, 0 },
+        pFrags[MAXPLAYERS] = { 0, ... },
+        pScore[MAXPLAYERS] = { 0, ... },
+        pLevel[MAXPLAYERS] = { 0, ... },
+        mc          = GetMaxClients(),
+        Handle:pHandle,
+        cTeam;
 
-void:PerformTimedSwitch( client ){
-	CreateTimer( 0.5, Timer_TeamSwitch, client );
-	switches_pending++;
-	}
+    for( new i = 1; i < mc; i++ )
+    {
+        if( IsClientInGame(i) )
+        {
+            cTeam = GetClientTeam(i);
+            // Thanks to lambdacore for the hint
+            if( cTeam >= 2 )
+            {
+                new t =cTeam-2;
+                tPlayers[t]++;
+                tFrags[t] += (pFrags[i] = GetClientFrags(i));
+                if (game_is_tf2)
+                    tScore[t] += (pScore[i] = TF2_GetPlayerResourceData(i,TFResource_Score));
+                if( sourcecraftModAvail )
+                {
+                    pHandle = GetPlayerHandle(i);
+                    if (pHandle != INVALID_HANDLE)
+                        tLevels[t] += (pLevel[i] = GetOverallLevel(pHandle));
+                }
+            }
+        }
+    }
 
-public Action:Timer_TeamSwitch( Handle:timer, any:client ){
-	if( !IsClientInGame( client ) )
-		return Plugin_Stop;
-	
-	switches_pending--;
-	
-	// Maybe the player already switched?
-	if( GetClientTeam( client ) == biggerTeam ){
-		PerformSwitch( client );
-		}
-	
-	return Plugin_Stop;
-	}
+    // Calc score difference, div by player count difference
+    // eg: if T1 has 6 players and 12 Frags, and T2 has 8 players and 16 frags,
+    // player diff is 2 and frag diff is 4. That means, we need to switch 1 player (diff/2),
+    // who has 2 frags ((diff/2)/players).
 
-void:PerformSwitch( client ){
-	if( cstrikeExtAvail )
-		CS_SwitchTeam( client, 5 - biggerTeam );
-	else
-		ChangeClientTeam( client, 5 - biggerTeam );
-	
-	LogAction(0, client, "[SM] %N has been switched for team balance.", client );
+    dCount = max( ( abs(tPlayers[0]-tPlayers[1]) / 2 ) - switches_pending, 0 );
+    new dFrags = ( abs(tFrags[0]-tFrags[1]) / 2 ) / max( dCount, 1 );
+    new dScore = ( abs(tScore[0]-tScore[1]) / 2 ) / max( dCount, 1 );
+    new dLevel = ( abs(tLevels[0]-tLevels[1]) / 2 ) / max( dCount, 1 );
 
-	if( game_is_tf2 ){
-		new Handle:event = CreateEvent( "teamplay_teambalanced_player" );
-		SetEventInt( event, "player", client         );
-		SetEventInt( event, "team",   5 - biggerTeam );
-		FireEvent( event );
-		}
-	else{
-		PrintToChatAll( "[SM] %N has been switched for team balance.", client );
-		}
-	}
+    if( dCount == 0  && dFrags == 0 && dScore == 0 && dLevel == 0 )
+        return;
+
+    // Check team sizes and comparative score/levels/frags
+    if (tPlayers[0] == tPlayers[1])
+    {
+        if (tScore[0] == tScore[1])
+        {
+            if (tLevels[0] == tLevels[1])
+            {
+                if (tFrags[0] == tFrags[1])
+                    return;
+                else
+                    biggerTeam = ( tFrags[0] > tFrags[1] ? TEAM_1 : TEAM_2 );
+            }
+            else
+                biggerTeam = ( tLevels[0] > tLevels[1] ? TEAM_1 : TEAM_2 );
+        }
+        else
+            biggerTeam = ( tScore[0] > tScore[1] ? TEAM_1 : TEAM_2 );
+    }
+    else
+        biggerTeam = ( tPlayers[0] > tPlayers[1] ? TEAM_1 : TEAM_2 );
+
+    // Check for correct Team and last time user was switched
+    if (GetClientTeam(client) != biggerTeam ||
+        GetTime() - clientLastSwitched[client] < SWITCH_WAIT_TIME)
+    {
+        return;
+    }
+
+    // If the guy has the score and level we need, switch them and be done
+    if (abs( pFrags[client] - dFrags ) <= GetConVarInt(cvarThreshold) &&
+        abs( pScore[client] - dScore ) <= GetConVarInt(cvarScoreThreshold) &&
+        abs( pLevel[client] - dLevel ) <= GetConVarInt(cvarLevelThreshold))
+    {
+        PerformTimedSwitch( client );
+        clientLastSwitched[client] = GetTime();
+    }
+}
+
+public OnClientDisconnect_Post( client )
+{
+    clientLastSwitched[client] = 0;
+}
+
+void:PerformTimedSwitch( client )
+{
+    CreateTimer( 0.5, Timer_TeamSwitch, client );
+    switches_pending++;
+}
+
+public Action:Timer_TeamSwitch( Handle:timer, any:client )
+{
+    if( !IsClientInGame( client ) )
+        return Plugin_Stop;
+
+    switches_pending--;
+
+    // Maybe the player already switched?
+    if( GetClientTeam( client ) == biggerTeam )
+        PerformSwitch( client );
+
+    return Plugin_Stop;
+}
+
+void:PerformSwitch( client )
+{
+    if( cstrikeExtAvail )
+        CS_SwitchTeam( client, 5 - biggerTeam );
+    else
+        ChangeClientTeam( client, 5 - biggerTeam );
+
+    LogAction(0, client, "[SM] %N has been switched for team balance.", client );
+
+    if( game_is_tf2 )
+    {
+        new Handle:event = CreateEvent( "teamplay_teambalanced_player" );
+        SetEventInt( event, "player", client         );
+        SetEventInt( event, "team",   5 - biggerTeam );
+        FireEvent( event );
+    }
+    else
+    {
+        PrintToChatAll( "[SM] %N has been switched for team balance.", client );
+    }
+}
