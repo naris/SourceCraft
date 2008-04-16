@@ -32,7 +32,10 @@ stock RespawnPlayer(client)
     if (GameType == cstrike)
         CS_RespawnPlayer(client);
     else if (GameType == tf2)
+    {
+        SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0);
         TF2_RespawnPlayer(client);
+    }
     else
         DispatchSpawn(client);
 }
@@ -50,7 +53,6 @@ public Action:SetInvuln(Handle:timer,Handle:pack)
     new client=ClientOfAuthTimer(pack);
     if(client)
     {
-        LogMessage("Setting %N Invulnerable", client);
         TF2_SetPlayerInvuln(client, true);
         new Float:duration = ReadPackFloat(pack);
         if (duration > 0.0)
@@ -63,10 +65,8 @@ public Action:ResetInvuln(Handle:timer,Handle:pack)
 {
     new client=ClientOfAuthTimer(pack);
     if(client)
-    {
-        LogMessage("Reset %N Vulnerable", client);
         TF2_SetPlayerInvuln(client, false);
-    }
+
     return Plugin_Stop;
 }
 

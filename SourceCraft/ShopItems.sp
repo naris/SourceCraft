@@ -286,10 +286,7 @@ public OnItemPurchase(client,Handle:player,item)
     else if(item==shopItem[ITEM_SCROLL] && !IsPlayerAlive(client))      // Scroll of Respawning 
     {
         SetOwnsItem(player,shopItem[ITEM_SCROLL],false);
-        if (GameType == tf2)
-            SetEntPropFloat(client, Prop_Send, "m_flDeathTime", 0.0);
-        else
-            RespawnPlayer(client);
+        RespawnPlayer(client);
     }
     else if(item==shopItem[ITEM_SOCK])                                  // Sock of the Feather
         SetGravity(player,0.5);
