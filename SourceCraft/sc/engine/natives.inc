@@ -199,24 +199,32 @@ public Native_HurtPlayer(Handle:plugin,numParams)
     if (numParams >= 2 && numParams <= 6)
     {
         new victim = GetNativeCell(1);
-        new damage = GetNativeCell(2);
-        new attacker = 0;
-        new xp = 0;
-        decl String:weapon_name[64];
-        decl String:weapon_desc[64];
-        if (numParams >= 3)
+        if (victim)
         {
-            attacker = GetNativeCell(3);
-            if (numParams >= 4)
+            new damage = GetNativeCell(2);
+            new attacker = 0;
+            new xp = 0;
+            decl String:weapon_name[64];
+            decl String:weapon_desc[64];
+            if (numParams >= 3)
             {
-                GetNativeString(4,weapon_name,sizeof(weapon_name));
-                if (numParams >= 5)
+                attacker = GetNativeCell(3);
+                if (numParams >= 4)
                 {
-                    GetNativeString(5,weapon_desc,sizeof(weapon_desc));
-                    if (numParams >= 6)
-                        xp = GetNativeCell(6);
+                    GetNativeString(4,weapon_name,sizeof(weapon_name));
+                    if (numParams >= 5)
+                    {
+                        GetNativeString(5,weapon_desc,sizeof(weapon_desc));
+                        if (numParams >= 6)
+                            xp = GetNativeCell(6);
+                        else
+                            weapon_desc[0] = 0;
+                    }
                     else
+                    {
+                        weapon_name[0] = 0;
                         weapon_desc[0] = 0;
+                    }
                 }
                 else
                 {
@@ -224,39 +232,33 @@ public Native_HurtPlayer(Handle:plugin,numParams)
                     weapon_desc[0] = 0;
                 }
             }
+
+            new health = GetClientHealth(victim) - damage;
+            if (health > 0)
+            {
+                SetEntityHealth(victim,health);
+                new Handle:event = CreateEvent("player_hurt");
+                if (event != INVALID_HANDLE)
+                {
+                    LogDamage(attacker, victim, weapon_name, weapon_desc, damage);
+
+                    SetEventInt(event, "userid", GetClientUserId(victim));
+                    SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
+                    SetEventInt(event, "health", health);
+                    SetEventInt(event, "damage", damage);
+                    SetEventString(event, "weapon", weapon_name);
+                    SetEventBool(event, "from_sourcecraft", true);
+                    FireEvent(event);
+                }
+            }
             else
-            {
-                weapon_name[0] = 0;
-                weapon_desc[0] = 0;
-            }
+                KillPlayer(victim, attacker, weapon_name, weapon_desc, xp);
+
+            SaveHealth(victim);
+            return health;
         }
-
-        new health = GetClientHealth(victim) - damage;
-        if (health > 0)
-        {
-            SetEntityHealth(victim,health);
-            new Handle:event = CreateEvent("player_hurt");
-            if (event != INVALID_HANDLE)
-            {
-                LogDamage(attacker, victim, weapon_name, weapon_desc, damage);
-
-                SetEventInt(event, "userid", GetClientUserId(victim));
-                SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
-                SetEventInt(event, "health", health);
-                SetEventInt(event, "damage", damage);
-                SetEventString(event, "weapon", weapon_name);
-                SetEventBool(event, "from_sourcecraft", true);
-                FireEvent(event);
-            }
-        }
-        else
-            KillPlayer(victim, attacker, weapon_name, weapon_desc, xp);
-
-        SaveHealth(victim);
-        return health;
     }
-    else
-        return -1;
+    return -1;
 }
 
 /**
@@ -275,56 +277,61 @@ public Native_KillPlayer(Handle:plugin,numParams)
     if (numParams >= 1 && numParams <= 5)
     {
         new victim = GetNativeCell(1);
-        new attacker = 0;
-        new xp = 0;
-        decl String:weapon_name[64];
-        decl String:weapon_desc[64];
-        if (numParams >= 2)
+        if (victim)
         {
-            attacker = GetNativeCell(2);
-            if (numParams >= 3)
+            new attacker = 0;
+            new xp = 0;
+            decl String:weapon_name[64];
+            decl String:weapon_desc[64];
+            if (numParams >= 2)
             {
-                GetNativeString(3,weapon_name,sizeof(weapon_name));
-                if (numParams >= 4)
+                attacker = GetNativeCell(2);
+                if (numParams >= 3)
                 {
-                    GetNativeString(4,weapon_desc,sizeof(weapon_desc));
-                    if (numParams >= 5)
-                        xp = GetNativeCell(5);
+                    GetNativeString(3,weapon_name,sizeof(weapon_name));
+                    if (numParams >= 4)
+                    {
+                        GetNativeString(4,weapon_desc,sizeof(weapon_desc));
+                        if (numParams >= 5)
+                            xp = GetNativeCell(5);
+                    }
+                    else
+                        weapon_desc[0] = 0;
                 }
                 else
+                {
+                    weapon_name[0] = 0;
                     weapon_desc[0] = 0;
+                }
             }
             else
             {
                 weapon_name[0] = 0;
                 weapon_desc[0] = 0;
             }
-        }
-        else
-        {
-            weapon_name[0] = 0;
-            weapon_desc[0] = 0;
-        }
 
-        KillPlayer(attacker, victim, weapon_name, weapon_desc, xp);
-        SaveHealth(victim);
-        return 0;
+            KillPlayer(attacker, victim, weapon_name, weapon_desc, xp);
+            SaveHealth(victim);
+            return 0;
+        }
     }
-    else
-        return -1;
+    return -1;
 } 
 
 KillPlayer(victim, attacker, String:weapon_name[], String:weapon_desc[], xp)
 {
-    ForcePlayerSuicide(victim);
-    if (xp && attacker)
+    if (victim)
     {
-        new Handle:attacker_player = GetPlayerHandle(attacker);
-        new race=GetRace(attacker_player);
-        new newxp=GetXP(attacker_player,race)+xp;
-        SetXP(attacker_player,race,newxp);
+        ForcePlayerSuicide(victim);
+        if (xp && attacker)
+        {
+            new Handle:attacker_player = GetPlayerHandle(attacker);
+            new race=GetRace(attacker_player);
+            new newxp=GetXP(attacker_player,race)+xp;
+            SetXP(attacker_player,race,newxp);
+        }
+        LogKill(attacker, victim, weapon_name, weapon_desc, xp);
     }
-    LogKill(attacker, victim, weapon_name, weapon_desc, xp);
 }
 
 public Native_GetPlayerHandle(Handle:plugin,numParams)

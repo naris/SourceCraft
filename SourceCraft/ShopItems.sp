@@ -123,7 +123,7 @@ public OnPluginReady()
 
     shopItem[ITEM_CLOAK]=CreateShopItem("Cloak of Shadows", "cloak", 
                                         "Makes you immune to uncloaking, also makes you invisible for 10 seconds\nwhen standing still AND holding a melee weapon.",
-                                        55);
+                                        30);
 
     shopItem[ITEM_MASK]=CreateShopItem("Mask of Death", "mask", 
                                        "You will receive health for every hit on the enemy.",
@@ -494,7 +494,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     {
         if (victim_player != INVALID_HANDLE && attacker_player != INVALID_HANDLE)
         {
-            if (isMole[attacker_index])
+            if (attacker_index && isMole[attacker_index])
             {
                 new reflection = GetOwnsItem(victim_player,shopItem[ITEM_MOLE_REFLECTION]);
                 new protection = GetOwnsItem(victim_player,shopItem[ITEM_MOLE_PROTECTION]);
@@ -522,18 +522,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                !TF2_IsPlayerInvuln(attacker_index))
                             {
                                 new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
-                                new newhp=GetClientHealth(attacker_index)-reflect;
-                                if (newhp <= 0)
-                                {
-                                    newhp=0;
-                                    LogKill(victim_index, attacker_index, "mole_reflection", "Mole Reflection", reflect);
-                                    KillPlayer(victim_index);
-                                }
-                                else
-                                {
-                                    LogDamage(victim_index, attacker_index, "mole_reflection", "Mole Reflection", reflect);
-                                    SetEntityHealth(attacker_index,newhp);
-                                }
+                                HurtPlayer(attacker_index,reflect,victim_index,"mole_reflection", "Mole Reflection", 10);
 
                                 if (amount < reflect)
                                 {
