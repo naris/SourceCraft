@@ -148,7 +148,8 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                 if (m_TeleportCount[client] < 2)
                 {
                     new bool:toSpawn = false;
-                    if (m_TeleportCount[client] >= 1)
+                    new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
+                    if (time_pressed > 0.2 && m_TeleportCount[client] >= 1)
                     {
                         // Check to see if player got stuck with 1st teleport
                         new Float:origin[3];
@@ -168,7 +169,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                             return;
                         }
                     }
-                    Teleport(client,ult_level, toSpawn, GetGameTime() - m_UltimatePressed[client]);
+                    Teleport(client,ult_level, toSpawn, time_pressed);
                 }
                 else
                 {
@@ -369,11 +370,7 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
 
     new Float:destloc[3];
     if (to_spawn)
-    {
-        destloc[0]=spawnLoc[client][0];
-        destloc[1]=spawnLoc[client][1];
-        destloc[2]=spawnLoc[client][2];
-    }
+        destloc=spawnLoc[client];
     else
     {
         if (time_pressed > 2.0 || time_pressed <= 0.0)
@@ -395,7 +392,19 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
         GetClientEyeAngles(client,clientang);
-        TR_TraceRayFilterEx(clientloc,clientang,MASK_SHOT,RayType_Infinite,TraceRayTryToHit);
+
+        if (range > 0.0)
+        {
+            new Float:dir[3],Float:endloc[3];
+            GetAngleVectors(clientang,dir,NULL_VECTOR,NULL_VECTOR);
+            ScaleVector(dir, range);
+            AddVectors(clientloc, dir, endloc);
+            LogMessage("Trace To %f,%f,%f, range=%f, time=%f", endloc[0],endloc[1], endloc[2], range, time_pressed);
+            TR_TraceRayFilter(clientloc,endloc,MASK_PLAYERSOLID_BRUSHONLY,RayType_EndPoint,TraceRayTryToHit);
+        }
+        else
+            TR_TraceRayFilter(clientloc,clientang,MASK_PLAYERSOLID_BRUSHONLY,RayType_Infinite,TraceRayTryToHit);
+
         TR_GetEndPosition(destloc);
 
         new Float:size[3];
@@ -426,91 +435,16 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
             destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
             destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
             */
-        }
 
-        if (range > 0.0 && DistanceBetween(clientloc,destloc) > range)
-        {
-            // Limit the teleport location to remain within the range
-            destloc[1] = (clientloc[1] + (range * Sine(DegToRad(clientang[1]))));
-            destloc[0] = (clientloc[0] + (range * Cosine(DegToRad(clientang[1]))));
+            //Check ceiling
             /*
-            new Float:distance[3];
-            distance[0] = destloc[0]-clientloc[0];
-            distance[1] = destloc[1]-clientloc[1];
-            distance[2] = destloc[2]-clientloc[2];
-            if (distance[0] < 0)
-                distance[0] *= -1;
-            if (distance[1] < 0)
-                distance[1] *= -1;
-            if (distance[2] < 0)
-                distance[2] *= -1;
-            for (new i = 0; i<=2; i++)
-            {
-                if (distance[i] > range)
-                {
-                    if (clientloc[i] >= 0)
-                    {
-                        if (destloc[i] >= 0)
-                        {
-                            if (clientloc[i] <= destloc[i])
-                                destloc[i] = clientloc[i] + range;
-                            if (clientloc[i] > destloc[i])
-                                destloc[i] = clientloc[i] - range;
-                        }
-                        else
-                            destloc[i] = clientloc[i] - range;
-                    }
-                    else
-                    {
-                        if (destloc[i] < 0)
-                        {
-                            if (clientloc[i] <= destloc[i])
-                                destloc[i] = clientloc[i] + range;
-                            if (clientloc[i] > destloc[i])
-                                destloc[i] = clientloc[i] - range;
-                        }
-                        else
-                            destloc[i] = clientloc[i] + range;
-                    }
-                }
-            }
+            decl Float:ceiling[3];
+            ceiling = destloc;
+            ceiling[2] -= size[2];
+            if(TR_GetPointContents(ceiling) == 0)
+                destloc[2] = ceiling[2];
             */
-
-            // Check if new coordinates get you stuck!
-            TR_TraceRayFilter(clientloc,destloc,MASK_SHOT,RayType_EndPoint,TraceRayTryToHit);
-            if (TR_DidHit())
-            {
-                TR_GetEndPosition(destloc);
-
-                if (destloc[0] > clientloc[0])
-                    destloc[0] -= size[0];
-                else
-                    destloc[0] += size[0];
-
-                if (destloc[1] > clientloc[1])
-                    destloc[1] -= size[1];
-                else
-                    destloc[1] += size[1];
-
-                if (destloc[2] > clientloc[2])
-                    destloc[2] -= size[2];
-                else
-                    destloc[2] += size[2];
-
-                /*
-                new Float:dist = (GetVectorDistance(clientloc, destloc) - size[1]);
-                destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
-                destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
-                */
-            }
         }
-
-        //Check ceiling
-        decl Float:ceiling[3];
-        ceiling = destloc;
-        ceiling[2] -= size[2];
-        if(TR_GetPointContents(ceiling) == 0)
-            destloc[2] = ceiling[2];
 
         // Save teleport location for stuck comparison later
         teleportLoc[client][0] = destloc[0];
@@ -526,14 +460,17 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
 
     m_TeleportCount[client]++;
 
-    new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
-    PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",
-                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-
     if (!to_spawn)
     {
+        new Float:cooldown = 0.0 * GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
         if (cooldown > 0.0)
+        {
+            PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
             CreateTimer(cooldown,AllowTeleport,client);
+        }
+        else
+            m_TeleportCount[client]=0;
     }
 }
 

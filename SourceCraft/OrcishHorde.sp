@@ -236,38 +236,34 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                 damage)
 {
     new bool:changed=false;
-
-    decl String:weapon[64];
-    GetWeapon(event, attacker_index, weapon, sizeof(weapon));
-
-    if (attacker_race == raceID && victim_index != attacker_index)
+    if (attacker_index)
     {
-        if (AcuteGrenade(damage, victim_index, victim_player,
-                         attacker_index, attacker_player, weapon))
+        if (attacker_race == raceID && victim_index != attacker_index)
         {
-            changed = true;
+            decl String:weapon[64];
+            GetWeapon(event, attacker_index, weapon, sizeof(weapon));
+
+            if (AcuteGrenade(damage, victim_index, victim_player,
+                             attacker_index, attacker_player, weapon))
+            {
+                changed = true;
+            }
+            else if (AcuteStrike(damage, victim_index, victim_player,
+                                 attacker_index, attacker_player))
+            {
+                changed = true;
+            }
         }
-        else if (AcuteStrike(damage, victim_index, victim_player,
-                             attacker_index, attacker_player))
+
+        if (assister_race == raceID && victim_index != assister_index)
         {
-            changed = true;
+            if (AcuteStrike(damage, victim_index, victim_player,
+                            assister_index, assister_player))
+            {
+                changed = true;
+            }
         }
     }
-
-    if (assister_race == raceID && victim_index != assister_index)
-    {
-        if (AcuteGrenade(damage, victim_index, victim_player,
-                         assister_index, assister_player, weapon))
-        {
-            changed = true;
-        }
-        else if (AcuteStrike(damage, victim_index, victim_player,
-                             assister_index, assister_player))
-        {
-            changed = true;
-        }
-    }
-
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 

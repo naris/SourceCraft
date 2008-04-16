@@ -266,24 +266,14 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                 damage)
 {
     new bool:changed=false;
-
-    decl String:weapon[64];
-    new bool:is_equipment=GetWeapon(event,attacker_index,weapon,sizeof(weapon));
-    if (IsMelee(weapon, is_equipment, attacker_index, victim_index))
+    if (attacker_index && attacker_race == raceID && attacker_index != victim_index)
     {
-        if (attacker_race == raceID && attacker_index != victim_index)
+        decl String:weapon[64];
+        new bool:is_equipment=GetWeapon(event,attacker_index,weapon,sizeof(weapon));
+        if (IsMelee(weapon, is_equipment, attacker_index, victim_index))
         {
             if (AdrenalGlands(damage, victim_index, victim_player,
                               attacker_index, attacker_player))
-            {
-                changed = true;
-            }
-        }
-
-        if (assister_race == raceID && assister_index != victim_index)
-        {
-            if (AdrenalGlands(damage, victim_index, victim_player,
-                              assister_index, assister_player))
             {
                 changed = true;
             }
