@@ -444,7 +444,7 @@ public Action:OcularImplants(Handle:timer)
                                             if (TF2_GetPlayerClass(index) == TFClass_Spy)
                                             {
                                                 TF2_RemovePlayerDisguise(index);
-                                                TF2_SetPlayerCloak(client, false);
+                                                TF2_SetPlayerCloak(index, false);
 
                                                 new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)

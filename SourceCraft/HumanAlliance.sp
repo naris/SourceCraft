@@ -401,7 +401,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
             GetAngleVectors(clientang,dir,NULL_VECTOR,NULL_VECTOR);
             ScaleVector(dir, range);
             AddVectors(clientloc, dir, endloc);
-            LogMessage("Trace To %f,%f,%f, range=%f, time=%f", endloc[0],endloc[1], endloc[2], range, time_pressed);
             TR_TraceRayFilter(clientloc,endloc,MASK_PLAYERSOLID_BRUSHONLY,RayType_EndPoint,TraceRayTryToHit);
         }
         else
