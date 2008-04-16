@@ -500,8 +500,11 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         }
 
         //Check ceiling
-        if(TR_GetPointContents(destloc) == 0)
-            destloc[2] -= size[2];
+        decl Float:ceiling[3];
+        ceiling = destloc;
+        ceiling[2] -= size[2] + 5.0;
+        if(TR_GetPointContents(ceiling) == 0)
+            destloc[2] = ceiling[2];
 
         // Save teleport location for stuck comparison later
         teleportLoc[client][0] = destloc[0];
