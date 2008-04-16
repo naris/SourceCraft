@@ -400,33 +400,40 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
 
         new Float:size[3];
         GetClientMaxs(client, size);
+        size[0] += 5.0;
+        size[1] += 5.0;
+        size[2] += 5.0;
 
         if (TR_DidHit())
         {
-            /*
             if (destloc[0] > clientloc[0])
-                destloc[0] -= size[0] + 5.0;
+                destloc[0] -= size[0];
             else
-                destloc[0] += size[0] + 5.0;
+                destloc[0] += size[0];
 
             if (destloc[1] > clientloc[1])
-                destloc[1] -= size[1] + 5.0;
+                destloc[1] -= size[1];
             else
-                destloc[1] += size[1] + 5.0;
+                destloc[1] += size[1];
 
             if (destloc[2] > clientloc[2])
-                destloc[2] -= size[2] + 5.0;
+                destloc[2] -= size[2];
             else
-                destloc[2] += size[2] + 5.0;
-             */
+                destloc[2] += size[2];
 
+            /*
             new Float:dist = (GetVectorDistance(clientloc, destloc) - size[1]);
             destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
             destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
+            */
         }
 
-        if (range > 0.0 && GetVectorDistance(clientloc,destloc) > range)
+        if (range > 0.0 && DistanceBetween(clientloc,destloc) > range)
         {
+            // Limit the teleport location to remain within the range
+            destloc[1] = (clientloc[1] + (range * Sine(DegToRad(clientang[1]))));
+            destloc[0] = (clientloc[0] + (range * Cosine(DegToRad(clientang[1]))));
+            /*
             new Float:distance[3];
             distance[0] = destloc[0]-clientloc[0];
             distance[1] = destloc[1]-clientloc[1];
@@ -437,8 +444,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                 distance[1] *= -1;
             if (distance[2] < 0)
                 distance[2] *= -1;
-
-            // Limit the teleport location to remain within the range
             for (new i = 0; i<=2; i++)
             {
                 if (distance[i] > range)
@@ -469,6 +474,7 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                     }
                 }
             }
+            */
 
             // Check if new coordinates get you stuck!
             TR_TraceRayFilter(clientloc,destloc,MASK_SHOT,RayType_EndPoint,TraceRayTryToHit);
@@ -476,33 +482,33 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
             {
                 TR_GetEndPosition(destloc);
 
-                /*
                 if (destloc[0] > clientloc[0])
-                    destloc[0] -= size[0] + 5.0;
+                    destloc[0] -= size[0];
                 else
-                    destloc[0] += size[0] + 5.0;
+                    destloc[0] += size[0];
 
                 if (destloc[1] > clientloc[1])
-                    destloc[1] -= size[1] + 5.0;
+                    destloc[1] -= size[1];
                 else
-                    destloc[1] += size[1] + 5.0;
+                    destloc[1] += size[1];
 
                 if (destloc[2] > clientloc[2])
-                    destloc[2] -= size[2] + 5.0;
+                    destloc[2] -= size[2];
                 else
-                    destloc[2] += size[2] + 5.0;
-                 */
+                    destloc[2] += size[2];
 
+                /*
                 new Float:dist = (GetVectorDistance(clientloc, destloc) - size[1]);
                 destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
                 destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
+                */
             }
         }
 
         //Check ceiling
         decl Float:ceiling[3];
         ceiling = destloc;
-        ceiling[2] -= size[2] + 5.0;
+        ceiling[2] -= size[2];
         if(TR_GetPointContents(ceiling) == 0)
             destloc[2] = ceiling[2];
 
