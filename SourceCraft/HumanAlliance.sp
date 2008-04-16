@@ -395,14 +395,15 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(client,clientloc);
         GetClientEyeAngles(client,clientang);
-        TR_TraceRayFilter(clientloc,clientang,MASK_SOLID,RayType_Infinite,TraceRayTryToHit);
+        TR_TraceRayFilterEx(clientloc,clientang,MASK_SHOT,RayType_Infinite,TraceRayTryToHit);
         TR_GetEndPosition(destloc);
+
+        new Float:size[3];
+        GetClientMaxs(client, size);
 
         if (TR_DidHit())
         {
-            new Float:size[3];
-            GetClientMaxs(client, size);
-
+            /*
             if (destloc[0] > clientloc[0])
                 destloc[0] -= size[0] + 5.0;
             else
@@ -417,9 +418,14 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                 destloc[2] -= size[2] + 5.0;
             else
                 destloc[2] += size[2] + 5.0;
+             */
+
+            new Float:dist = (GetVectorDistance(clientloc, destloc) - size[1]);
+            destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
+            destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
         }
 
-        if (range > 0.0 && DistanceBetween(clientloc,destloc) > range)
+        if (range > 0.0 && GetVectorDistance(clientloc,destloc) > range)
         {
             new Float:distance[3];
             distance[0] = destloc[0]-clientloc[0];
@@ -465,14 +471,12 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
             }
 
             // Check if new coordinates get you stuck!
-            TR_TraceRayFilter(clientloc,destloc,MASK_SOLID,RayType_EndPoint,TraceRayTryToHit);
+            TR_TraceRayFilter(clientloc,destloc,MASK_SHOT,RayType_EndPoint,TraceRayTryToHit);
             if (TR_DidHit())
             {
                 TR_GetEndPosition(destloc);
 
-                new Float:size[3];
-                GetClientMaxs(client, size);
-
+                /*
                 if (destloc[0] > clientloc[0])
                     destloc[0] -= size[0] + 5.0;
                 else
@@ -487,9 +491,17 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                     destloc[2] -= size[2] + 5.0;
                 else
                     destloc[2] += size[2] + 5.0;
-            }
+                 */
 
+                new Float:dist = (GetVectorDistance(clientloc, destloc) - size[1]);
+                destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
+                destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
+            }
         }
+
+        //Check ceiling
+        if(TR_GetPointContents(destloc) == 0)
+            destloc[2] -= size[2];
 
         // Save teleport location for stuck comparison later
         teleportLoc[client][0] = destloc[0];

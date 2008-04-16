@@ -439,7 +439,7 @@ MindControl(client,Handle:player)
 
             if (IsPointInRange(clientLoc,targetLoc,range))
             {
-                new Float:distance=DistanceBetween(clientLoc,targetLoc);
+                new Float:distance=GetVectorDistance(clientLoc,targetLoc);
                 if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
                 {
                     decl String:class[32];
