@@ -149,6 +149,8 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                 {
                     new bool:toSpawn = false;
                     new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
+                    // Allow short teleports so players can attempt to get unstuck
+                    // without having to return to spawn.
                     if (time_pressed > 0.2 && m_TeleportCount[client] >= 1)
                     {
                         // Check to see if player got stuck with 1st teleport
@@ -462,7 +464,7 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
 
     if (!to_spawn)
     {
-        new Float:cooldown = 0.0 * GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
+        new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
         if (cooldown > 0.0)
         {
             PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",

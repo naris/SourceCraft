@@ -489,7 +489,7 @@ void:PerformSwitch( client )
     else
         ChangeClientTeam( client, 5 - biggerTeam );
 
-    LogAction(0, client, "[SM] %N has been switched for team balance.", client );
+    LogAction(0, client, "[SM] %N has been switched for team balance {last_switch=%d}.", client, GetTime() - clientLastSwitched[client] );
 
     if( game_is_tf2 )
     {
@@ -499,9 +499,7 @@ void:PerformSwitch( client )
         FireEvent( event );
     }
     else
-    {
         PrintToChatAll( "[SM] %N has been switched for team balance.", client );
-    }
 }
 
 public Event_RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
