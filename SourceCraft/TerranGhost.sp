@@ -803,12 +803,18 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                 {
                                     if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
                                     {
-                                        amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
+                                        new pwr = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
+                                        amt = pwr;
                                         if (amt <= minDmg)
                                             amt = GetRandomInt(minDmg,maxDmg);
+
+                                        LogMessage("Nuke %N, who is traceable, pwr=%d, amt=%d", index, pwr, amt);
                                     }
                                     else
+                                    {
                                         amt = GetRandomInt(minDmg,maxDmg);
+                                        LogMessage("Nuke %N, who is NOT traceable, amt=%d", index, amt);
+                                    }
 
                                     if (HurtPlayer(index,amt,client,"nuclear_launch", "Nuclear Launch", 5+ult_level) <= 0)
                                         LogMessage("Nuclear Launch killed %d->%N!", index, index);
