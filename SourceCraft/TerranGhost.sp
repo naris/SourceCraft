@@ -161,6 +161,7 @@ public OnMapStart()
     SetupSound(readyWav, true, true);
     SetupSound(targetWav, true, true);
     SetupSound(launchWav, true, true);
+    SetupSound(airRaidWav, true, true);
     SetupSound(explode1Wav, true, true);
     SetupSound(explode2Wav, true, true);
     SetupSound(explode3Wav, true, true);
@@ -706,7 +707,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                 }
 
-                switch (iteration % 4)
+                switch (iteration % 8)
                 {
                     case 1:
                     {
@@ -742,6 +743,10 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                         Fade(600, 600 , color);
                         explodeall(m_NuclearAimPos[client]);
                     }
+                    case 4:
+                    {
+                        Shake(0, 14.0, 10.0, 150.0);
+                    }
                     default:
                     {
                         LogMessage("NuclearExplosion, effect=default");
@@ -754,8 +759,6 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                         dir[2] = 2.0;
                         TE_SetupDust(m_NuclearAimPos[client],dir,radius,100.0);
                         TE_SendToAll();
-
-                        Shake(0, 14.0, 10.0, 150.0);
                     }
                 }
 
@@ -778,8 +781,8 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
 
                 new count=0;
                 new num=iteration*2;
-                new minDmg=iteration*2;
-                new maxDmg=iteration*4;
+                new minDmg=iteration*5;
+                new maxDmg=iteration*20;
                 new maxplayers=GetMaxClients();
                 for(new index=1;index<=maxplayers;index++)
                 {
@@ -800,7 +803,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                     if (TraceTarget(client, index, m_NuclearAimPos[client], indexLoc))
                                     {
                                         new amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
-                                        if (amt <= iteration)
+                                        if (amt <= minDmg)
                                             amt = GetRandomInt(minDmg,maxDmg);
 
                                         if (HurtPlayer(index,amt,client,"nuclear_launch", "Nuclear Launch", 5+ult_level) <= 0)
@@ -823,6 +826,8 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
         }
         else
             LogMessage("iterations expired");
+
+        Shake(1, 0.0, 0.0, 0.0);
 
         if (IsClientInGame(client))
         {
