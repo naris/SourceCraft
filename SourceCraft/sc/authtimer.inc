@@ -14,10 +14,16 @@
 
 stock Handle:AuthTimer(Float:delay,index,Timer:func, flags=0)
 {
+    new Handle:pack;
+    AuthTimerEx(delay, index, func, pack, flags);
+    return pack;
+}
+
+stock Handle:AuthTimerEx(Float:delay,index,Timer:func, &Handle:pack, flags=0)
+{
     decl String:auth[64];
     GetClientAuthString(index,auth,sizeof(auth));
 
-    new Handle:pack;
     new Handle:timer = CreateDataTimer(delay,func,pack, flags);
     if (timer != INVALID_HANDLE && pack != INVALID_HANDLE)
     {

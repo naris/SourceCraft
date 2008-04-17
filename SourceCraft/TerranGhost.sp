@@ -525,7 +525,9 @@ TargetNuclearDevice(client)
     }
 
     EmitSoundToAll(targetWav,client);
-    new Handle:TrackTimer = AuthTimer(0.2,client,TrackNuclearTarget,TIMER_REPEAT); // Create aiming loop
+
+    new Handle:pack;
+    new Handle:TrackTimer = AuthTimerEx(0.2,client,TrackNuclearTarget,pack,TIMER_REPEAT);
     m_NuclearTimer[client] = TrackTimer;
     m_NuclearLaunchStatus[client] = Tracking;
     TriggerTimer(TrackTimer, true);
