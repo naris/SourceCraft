@@ -20,7 +20,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/weapons"
 #include "sc/log"

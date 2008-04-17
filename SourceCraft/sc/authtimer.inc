@@ -12,16 +12,19 @@
 
 #define AUTHINFO_ID 0
 
-stock Handle:AuthTimer(Float:delay,index,Timer:func)
+stock Handle:AuthTimer(Float:delay,index,Timer:func, flags=0)
 {
     decl String:auth[64];
     GetClientAuthString(index,auth,sizeof(auth));
 
     new Handle:pack;
-    CreateDataTimer(delay,func,pack);
-    WritePackCell(pack, index);
-    WritePackString(pack, auth);
-    return pack;
+    new Handle:timer = CreateDataTimer(delay,func,pack, flags);
+    if (timer != INVALID_HANDLE && pack != INVALID_HANDLE)
+    {
+        WritePackCell(pack, index);
+        WritePackString(pack, auth);
+    }
+    return timer;
 }
 
 stock ClientOfAuthString(const String:auth[])

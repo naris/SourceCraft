@@ -301,11 +301,18 @@ UpgradeMenu(client, Handle:playerHandle)
             ultimate=IsUpgradeUltimate(raceHandle, upgrade);
 
             if (raceLevel < requiredLevel)
+            {
                 style = ITEMDRAW_DISABLED;
-            else if (upgradeLevel >= GetUpgradeMaxLevel(raceHandle,upgrade))
-                style = ITEMDRAW_DISABLED;
+                Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
+            }
             else
-                style = ITEMDRAW_DEFAULT;
+            {
+                minLevel[0] = 0;
+                if (upgradeLevel >= GetUpgradeMaxLevel(raceHandle,upgrade))
+                    style = ITEMDRAW_DISABLED;
+                else
+                    style = ITEMDRAW_DEFAULT;
+            }
 
             if (ultimate)
             {
@@ -315,11 +322,6 @@ UpgradeMenu(client, Handle:playerHandle)
             }
             else
                 ult[0] = 0;
-
-            if (requiredLevel > 0)
-                Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
-            else
-                minLevel[0] = 0;
 
             if (style == ITEMDRAW_DEFAULT)
                 Format(toLevel,sizeof(toLevel)," (Upgrade Level %d)", upgradeLevel+1);
