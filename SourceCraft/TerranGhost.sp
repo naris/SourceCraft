@@ -40,7 +40,6 @@ new g_explosionModel;
 
 new m_OffsetCloakMeter;
 
-new Handle:cvarNuclearLaunchEnable = INVALID_HANDLE;
 new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
 new Handle:cvarNuclearCooldown = INVALID_HANDLE;
@@ -82,7 +81,6 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarNuclearLaunchEnable=CreateConVar("sc_nuclearlaunchenable","1");
     cvarNuclearLaunchTime=CreateConVar("sc_nuclearlaunchtime","20");
     cvarNuclearLockTime=CreateConVar("sc_nuclearlocktime","5");
     cvarNuclearCooldown=CreateConVar("sc_nuclearlaunchcooldown","300");
@@ -517,13 +515,6 @@ ResetOcularImplants(client)
 
 TargetNuclearDevice(client)
 {
-    if (!GetConVarBool(cvarNuclearLaunchEnable))
-    {
-        PrintToChat(client,"%c[SourceCraft] %c Sorry, NuclearLaunch has been disabled for testing purposes!",
-                    COLOR_GREEN,COLOR_DEFAULT);
-        return;
-    }
-
     EmitSoundToAll(targetWav,client);
 
     new Handle:pack;
