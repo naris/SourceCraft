@@ -58,8 +58,16 @@ new String:readyWav[] = "sourcecraft/tadupd07.wav";
 new String:targetWav[] = "sourcecraft/tghlas00.wav";
 new String:launchWav[] = "sourcecraft/tnsfir00.wav";
 new String:detectedWav[] = "sourcecraft/tadupd04.wav";
-new String:explodeWav[] = "sourcecraft/tnshit00.wav";
 new String:lockdownWav[] = "sourcecraft/tghlkd00.wav";
+new String:airRaidWav[] = "sourcecraft/air_raid.wav";
+new String:explode1Wav[] = "sourcecraft/tnshit00.wav";
+new String:explode2Wav[] = "ambient/explosions/explode_8.wav";
+new String:explode3Wav[] = "sourcecraft/boom2.wav";
+new String:explode4Wav[] = "sourcecraft/war01.mp3";
+new String:explode5Wav[] = "sourcecraft/inferno.wav";
+new String:explode6Wav[] = "sourcecraft/explosions_sparks.wav";
+new String:explode7Wav[] = "sourcecraft/usat_bomb.wav";
+
 
 public Plugin:myinfo = 
 {
@@ -153,7 +161,13 @@ public OnMapStart()
     SetupSound(readyWav, true, true);
     SetupSound(targetWav, true, true);
     SetupSound(launchWav, true, true);
-    SetupSound(explodeWav, true, true);
+    SetupSound(explode1Wav, true, true);
+    SetupSound(explode2Wav, true, true);
+    SetupSound(explode3Wav, true, true);
+    SetupSound(explode4Wav, true, true);
+    SetupSound(explode5Wav, true, true);
+    SetupSound(explode6Wav, true, true);
+    SetupSound(explode7Wav, true, true);
     SetupSound(detectedWav, true, true);
     SetupSound(lockdownWav, true, true);
 }
@@ -531,7 +545,7 @@ LaunchNuclearDevice(client,Handle:player)
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %2.0f seconds for the missle to lock on.",
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
 
     AuthTimer(launchTime,client,NuclearLockOn);
@@ -586,8 +600,16 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
             EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
 
             new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
-            PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %2.0f seconds to evacuate.",
+            PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %3.1f seconds to evacuate.",
                         COLOR_GREEN,COLOR_DEFAULT, lockTime);
+
+            if (GetRandomInt(1,10) > 5)
+            {
+                EmitSoundToAll(airRaidWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
+                               SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
+                               SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
+                               NULL_VECTOR,true,0.0);
+            }
 
             new Handle:NuclearPack;
             if (CreateDataTimer(lockTime,NuclearImpact,NuclearPack)
@@ -603,7 +625,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
     else
     {
         new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
         CreateTimer(cooldown,AllowNuclearLaunch,client);
     }
 }
@@ -641,7 +663,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
         new ult_level=ReadPackCell(pack);
         new iteration = (--m_NuclearDuration[client]);
         LogMessage("NuclearExplosion, client=%d, iteration=%d", client, iteration);
-        if (iteration < 0)
+        if (iteration > 0)
         {
             new Handle:player=GetPlayerHandle(client);
             if (player != INVALID_HANDLE)
@@ -684,25 +706,9 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                 }
 
-                switch (iteration % 5)
+                switch (iteration % 4)
                 {
                     case 1:
-                    {
-                        LogMessage("NuclearExplosion, effect=1");
-                        new Float:origin[3];
-                        new maxpl = GetMaxClients();
-                        for(new a=1; a<=maxpl; a++)
-                        {
-                            if(IsClientConnected(a) && IsClientInGame(a) )
-                            {
-                                GetClientAbsOrigin(a, origin);
-                                origin[2] = origin[2] - 26;
-                                Shake(1, 0.0, 0.0, 0.0);
-                                explode(origin);
-                            }
-                        }
-                    }
-                    case 2:
                     {
                         LogMessage("NuclearExplosion, effect=2");
                         new Float:rorigin[3],sb;
@@ -723,13 +729,13 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                             explodeall(rorigin);
                         }
                     }
-                    case 3:
+                    case 2:
                     {
                         LogMessage("NuclearExplosion, effect=3");
                         Shake(0, 14.0, 10.0, 150.0);
                         explodeall(m_NuclearAimPos[client]);
                     }
-                    case 4:
+                    case 3:
                     {
                         LogMessage("NuclearExplosion, effect=4");
                         new color[4]={250,250,250,255};
@@ -739,7 +745,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     default:
                     {
                         LogMessage("NuclearExplosion, effect=default");
-                        TE_SetupTFExplosion(m_NuclearAimPos[client],g_explosionModel,scale,1,0,r_int,magnitude);
+                        TE_SetupExplosion(m_NuclearAimPos[client],g_explosionModel,scale,1,0,r_int,magnitude);
                         TE_SendToAll();
 
                         new Float:dir[3];
@@ -749,14 +755,26 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                         TE_SetupDust(m_NuclearAimPos[client],dir,radius,100.0);
                         TE_SendToAll();
 
-                        EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
-                                       SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
-                                       SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
-                                       NULL_VECTOR,true,0.0);
-
                         Shake(0, 14.0, 10.0, 150.0);
                     }
                 }
+
+                new String:explosion[64];
+                switch(GetRandomInt(1,8))
+                {
+                    case 1: strcopy(explosion, sizeof(explosion), explode1Wav);
+                    case 2: strcopy(explosion, sizeof(explosion), explode2Wav);
+                    case 3: strcopy(explosion, sizeof(explosion), explode3Wav);
+                    case 4: strcopy(explosion, sizeof(explosion), explode4Wav);
+                    case 5: strcopy(explosion, sizeof(explosion), explode5Wav);
+                    case 6: strcopy(explosion, sizeof(explosion), explode6Wav);
+                    case 7: strcopy(explosion, sizeof(explosion), explode7Wav);
+                }
+
+                EmitSoundToAll(explosion,SOUND_FROM_WORLD,SNDCHAN_AUTO,
+                               SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
+                               SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
+                               NULL_VECTOR,true,0.0);
 
                 new count=0;
                 new num=iteration*2;
@@ -810,7 +828,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
         {
             new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
 
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
 
             m_NuclearLaunchStatus[client]=Quiescent;
             CreateTimer(cooldown,AllowNuclearLaunch,client);
@@ -831,34 +849,6 @@ public Action:AllowNuclearLaunch(Handle:timer,any:index)
         EmitSoundToClient(index,readyWav);
 
     return Plugin_Stop;
-}
-
-/**
- * Sets up a TF2 explosion effect.
- *
- * @param pos			Explosion position.
- * @param Model			Precached model index.
- * @param Scale			Explosion scale.
- * @param Framerate		Explosion frame rate.
- * @param Flags			Explosion flags.
- * @param Radius		Explosion radius.
- * @param Magnitude		Explosion size.
- * @param normal		Normal vector to the explosion.
- * @param MaterialType		Exploded material type.
- * @noreturn
- */
-stock TE_SetupTFExplosion(const Float:pos[3], Model, Float:Scale, Framerate, Flags, Radius, Magnitude, const Float:normal[3]={0.0, 0.0, 1.0}, MaterialType='C')
-{
-	TE_Start("TFExplosion");
-	TE_WriteVector("m_vecOrigin[0]", pos);
-	TE_WriteVector("m_vecNormal", normal);
-	TE_WriteNum("m_nModelIndex", Model);
-	TE_WriteFloat("m_fScale", Scale);
-	TE_WriteNum("m_nFrameRate", Framerate);
-	TE_WriteNum("m_nFlags", Flags);
-	TE_WriteNum("m_nRadius", Radius);
-	TE_WriteNum("m_nMagnitude", Magnitude);
-	TE_WriteNum("m_chMaterialType", MaterialType);
 }
 
 public explodeall(Float:vec1[3])
