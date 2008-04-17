@@ -21,6 +21,7 @@
 #include "sc/trace"
 #include "sc/authtimer"
 #include "sc/freeze"
+#include "sc/screen"
 
 #include "sc/log" // for debugging
 
@@ -28,10 +29,14 @@ enum NuclearStatus { Quiescent, Ready, Tracking, LaunchInitiated, LockedOn, Expl
 
 new raceID, cloakID, lockdownID, detectorID, nukeID;
 
-new explosionModel;
+new g_HaloSprite;
+new g_fireSprite;
+new g_fire2Sprite;
+new g_whiteSprite;
 new g_laserSprite;
 new g_smokeSprite;
 new g_lightningSprite;
+new g_explosionModel;
 
 new m_OffsetCloakMeter;
 
@@ -40,6 +45,7 @@ new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
 new Handle:cvarNuclearCooldown = INVALID_HANDLE;
 
+new m_NuclearDuration[MAXPLAYERS+1];
 new Handle:m_NuclearTimer[MAXPLAYERS+1];
 new Float:m_NuclearAimPos[MAXPLAYERS+1][3];
 new NuclearStatus:m_NuclearLaunchStatus[MAXPLAYERS+1];
@@ -108,24 +114,40 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");
+    if (g_HaloSprite == -1)
+        SetFailState("Couldn't find halo Model");
+
+    g_fireSprite = PrecacheModel("sprites/sprite_fire01.vmt");
+    if (g_fireSprite == -1)
+        SetFailState("Couldn't find fire Model");
+
+    g_fire2Sprite = PrecacheModel("materials/sprites/fire2.vmt");
+    if (g_fire2Sprite == -1)
+        SetFailState("Couldn't find fire2 Model");
+
+    g_whiteSprite = PrecacheModel("materials/sprites/white.vmt");
+    if (g_whiteSprite == -1)
+        SetFailState("Couldn't find white Model");
+
     g_laserSprite = PrecacheModel("materials/sprites/laser.vmt");
     if (g_laserSprite == -1)
         SetFailState("Couldn't find laser Model");
 
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
+    g_smokeSprite = PrecacheModel("materials/sprites/smoke.vmt");
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
+    g_lightningSprite = PrecacheModel("materials/sprites/lgtning.vmt");
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
     if (GameType == tf2)
-        explosionModel=SetupModel("materials/particles/explosion/explosionfiresmoke.vmt", true);
+        g_explosionModel=PrecacheModel("materials/particles/explosion/explosionfiresmoke.vmt");
     else
-        explosionModel=SetupModel("materials/sprites/zerogxplode.vmt", true);
+        g_explosionModel=PrecacheModel("materials/sprites/zerogxplode.vmt");
 
-    if (explosionModel == -1)
+    if (g_explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
     SetupSound(readyWav, true, true);
@@ -551,18 +573,20 @@ public Action:NuclearLockOn(Handle:timer,any:client)
     if (m_NuclearLaunchStatus[client] == LaunchInitiated)
     {
         m_NuclearLaunchStatus[client] = LockedOn;
-        EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
-
-        new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
-        PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %2.0f seconds to evacuate.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
-
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
             SetVisibility(player, -1);
             SetOverrideSpeed(player, -1.0);
         }
-        CreateTimer(lockTime,NuclearExplosion,client);
+
+        EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
+
+        new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
+        PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %2.0f seconds to evacuate.",
+                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
+
+        CreateTimer(lockTime,NuclearImpact,client);
     }
     else
     {
@@ -572,14 +596,29 @@ public Action:NuclearLockOn(Handle:timer,any:client)
     }
 }
 
-public Action:NuclearExplosion(Handle:timer,any:client)
+public Action:NuclearImpact(Handle:timer,any:client)
 {
-    new num = 0;
     if (m_NuclearLaunchStatus[client] == LockedOn)
     {
         m_NuclearLaunchStatus[client] = Exploding;
 
         new Handle:player = GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
+        {
+            new ult_level=GetUpgradeLevel(player,raceID,nukeID);
+            m_NuclearDuration[client] = ult_level*3;
+            new Handle:NuclearTimer = CreateTimer(0.4, NuclearExplosion, client,TIMER_REPEAT);
+            TriggerTimer(NuclearTimer, true);
+        }
+    }
+}
+
+public Action:NuclearExplosion(Handle:timer,any:client)
+{
+    new iteration = (--m_NuclearDuration[client]);
+    if (iteration < 0)
+    {
+        new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
             new Float:radius, Float:scale;
@@ -621,57 +660,141 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                 }
             }
 
-            TE_SetupExplosion(m_NuclearAimPos[client],explosionModel,scale,1,0,r_int,magnitude);
-            TE_SendToAll();
+            switch (iteration % 5)
+            {
+                case 1:
+                {
+                    new Float:origin[3];
+                    new maxpl = GetMaxClients();
+                    for(new a=1; a<=maxpl; a++)
+                    {
+                        if(IsClientConnected(a) && IsClientInGame(a) )
+                        {
+                            GetClientAbsOrigin(a, origin);
+                            origin[2] = origin[2] - 26;
+                            Shake(1, 0.0, 0.0, 0.0);
+                            explode(origin);
+                        }
+                    }
+                }
+                case 2:
+                {
+                    new Float:rorigin[3],sb;
+                    for(new i = 1 ;i < 50; ++i)
+                    {
+                        rorigin[0] = GetRandomFloat(0.0,3000.0);
+                        rorigin[1] = GetRandomFloat(0.0,3000.0);
+                        rorigin[2] = GetRandomFloat(0.0,2000.0);
+                        sb = GetRandomInt(0,2);
+                        if(sb == 0)
+                            rorigin[0] = rorigin[0] * -1;
+                        sb = GetRandomInt(0,2);
+                        if(sb == 0)
+                            rorigin[1] = rorigin[1] * -1;
+                        sb = GetRandomInt(0,2);
+                        if(sb == 0)
+                            rorigin[2] = rorigin[2] * -1;
+                        explodeall(rorigin);
+                    }
+                }
+                case 3:
+                {
+                    Shake(0, 14.0, 10.0, 150.0);
+                    explodeall(m_NuclearAimPos[client]);
+                }
+                case 4:
+                {
+                    new color[4]={250,250,250,255};
+                    Fade(600, 600 , color);
+                    explodeall(m_NuclearAimPos[client]);
+                }
+                default:
+                {
+                    TE_SetupTFExplosion(m_NuclearAimPos[client],g_explosionModel,scale,1,0,r_int,magnitude);
+                    TE_SendToAll();
 
-            EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
-                           SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
-                           SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
-                           NULL_VECTOR,true,0.0);
+                    new Float:dir[3];
+                    dir[0] = 0.0;
+                    dir[1] = 0.0;
+                    dir[2] = 2.0;
+                    TE_SetupDust(m_NuclearAimPos[client],dir,radius,100.0);
+                    TE_SendToAll();
 
-            new count = GetClientCount();
-            for(new index=1;index<=count;index++)
+                    EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
+                                   SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
+                                   SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
+                                   NULL_VECTOR,true,0.0);
+
+                    Shake(0, 14.0, 10.0, 150.0);
+                }
+            }
+
+            /*
+            switch(GetRandomInt(1,3))
+            {
+                case 1: EmitSoundToAll(fart1Wav,client);
+                case 2: EmitSoundToAll(fart2Wav,client);
+                case 3: EmitSoundToAll(fart3Wav,client);
+            }
+             */
+
+            new count=0;
+            new num=iteration*2;
+            new minDmg=iteration*2;
+            new maxDmg=iteration*4;
+            new maxplayers=GetMaxClients();
+            for(new index=1;index<=maxplayers;index++)
             {
                 if (IsClientInGame(index) && IsPlayerAlive(index))
                 {
-                    new Handle:check_player=GetPlayerHandle(index);
-                    if (check_player != INVALID_HANDLE)
+                    new Handle:player_check=GetPlayerHandle(index);
+                    if (player_check != INVALID_HANDLE)
                     {
-                        if (!GetImmunity(check_player,Immunity_Ultimates) &&
-                            !GetImmunity(check_player,Immunity_Explosion) &&
+                        if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                            !GetImmunity(player_check,Immunity_Explosion) &&
+                            !GetImmunity(player_check,Immunity_HealthTake) &&
                             !TF2_IsPlayerInvuln(index))
                         {
-                            new Float:check_location[3];
-                            GetClientAbsOrigin(index,check_location);
-
-                            new hp=PowerOfRange(m_NuclearAimPos[client],radius,check_location,damage,0.5,false);
-                            if (hp)
+                            if ( IsInRange(client,index,radius))
                             {
-                                if (TraceTarget(client, index, m_NuclearAimPos[client], check_location))
+                                new Float:indexLoc[3];
+                                GetClientAbsOrigin(index, indexLoc);
+                                if (TraceTarget(client, index, m_NuclearAimPos[client], indexLoc))
                                 {
-                                    HurtPlayer(index,hp,client,"nuclear_launch", "Nuclear Launch", 5+ult_level);
-                                    num++;
+                                    new amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
+                                    if (amt <= iteration)
+                                        amt = GetRandomInt(minDmg,maxDmg);
+
+                                    if (HurtPlayer(index,amt,client,"nuclear_launch", "Nuclear Launch", 5+ult_level) <= 0)
+                                        LogMessage("Nuclear Launch killed %d->%N!", index, index);
+                                    else
+                                        LogMessage("Nuclear Launch damaged %d->%N!", index, index);
+
+                                    if (++count > num)
+                                        break;
                                 }
                             }
                         }
                     }
                 }
             }
+            return Plugin_Continue;
         }
     }
-    new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
 
-    if (num)
+    if (IsClientInGame(client))
     {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, num, cooldown);
+        new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
+
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+
+        m_NuclearLaunchStatus[client]=Quiescent;
+        CreateTimer(cooldown,AllowNuclearLaunch,client);
     }
     else
-    {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-    }
+        m_NuclearLaunchStatus[client] = Ready;
 
-    m_NuclearLaunchStatus[client]=Quiescent;
-    CreateTimer(cooldown,AllowNuclearLaunch,client);
+    return Plugin_Stop;
 }
 
 public Action:AllowNuclearLaunch(Handle:timer,any:index)
@@ -711,3 +834,30 @@ stock TE_SetupTFExplosion(const Float:pos[3], Model, Float:Scale, Framerate, Fla
 	TE_WriteNum("m_chMaterialType", MaterialType);
 }
 
+public explodeall(Float:vec1[3])
+{
+	vec1[2] += 10.0;
+	new color[4]={188,220,255,255};
+	EmitSoundFromOrigin("ambient/explosions/explode_8.wav", vec1);
+	EmitSoundFromOrigin("ambient/explosions/explode_8.wav", vec1);
+	TE_SetupExplosion(vec1, g_fire2Sprite, 10.0, 1, 0, 0, 5000); // 600
+	TE_SendToAll();
+	TE_SetupBeamRingPoint(vec1, 10.0, 1500.0, g_fireSprite, g_HaloSprite, 0, 66, 6.0, 128.0, 0.2, color, 25, 0);
+  	TE_SendToAll();
+}
+
+public explode(Float:vec1[3])
+{
+	new color[4]={188,220,255,200};
+	EmitSoundFromOrigin("ambient/explosions/explode_8.wav", vec1);
+	EmitSoundFromOrigin("ambient/explosions/explode_8.wav", vec1);
+	TE_SetupExplosion(vec1, g_fire2Sprite, 10.0, 1, 0, 0, 5000); // 600
+	TE_SendToAll();
+	TE_SetupBeamRingPoint(vec1, 10.0, 500.0, g_whiteSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, color, 10, 0);
+  	TE_SendToAll();
+}
+
+public EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
+{
+	EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,NULL_VECTOR,true,0.0);
+}

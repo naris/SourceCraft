@@ -330,13 +330,6 @@ public Action:PersistFart(Handle:timer,any:client)
         maxLoc[1] = clientLoc[1] + 256.0;
         maxLoc[2] = clientLoc[2] + 256.0;
 
-        //new Float:dir[3];
-        //dir[0] = 0.0;
-        //dir[1] = 0.0;
-        //dir[2] = 2.0;
-        //TE_SetupDust(clientLoc,dir,range,100.0);
-        //TE_SendToAll();
-
         new bubble_count = RoundToNearest(range/4.0);
 
         TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, range, bubble_count, 2.0);
@@ -371,7 +364,6 @@ public Action:PersistFart(Handle:timer,any:client)
                             GetClientAbsOrigin(index, indexLoc);
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
-                                LogMessage("Farting on %d->%N!", index, index);
                                 new amt=GetRandomInt(minDmg,maxDmg);
                                 if (HurtPlayer(index,amt,client,"flatulence", "Flatulence", 5+fart_level) <= 0)
                                     LogMessage("Fart killed %d->%N!", index, index);
@@ -381,20 +373,10 @@ public Action:PersistFart(Handle:timer,any:client)
                                 if (++count > num)
                                     break;
                             }
-                            else
-                                LogMessage("%d->%N is UnTraceable!", index, index);
                         }
-                        else
-                            LogMessage("%d->%N is out of range!", index, index);
                     }
-                    else
-                        LogMessage("%d->%N is immune or ubered!", index, index);
                 }
-                else
-                    LogMessage("%d has no player!", index);
             }
-            else
-                LogMessage("%d is UnFartable!", index);
         }
         if (--gFartDuration[client] > 0)
         {
