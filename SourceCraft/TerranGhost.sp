@@ -671,6 +671,8 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
             new Handle:player=GetPlayerHandle(client);
             if (player != INVALID_HANDLE)
             {
+                new amt;
+                new Float:indexLoc[3];
                 new Float:radius, Float:scale;
                 new r_int, magnitude, damage;
                 switch(ult_level)
@@ -781,10 +783,8 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
                                NULL_VECTOR,true,0.0);
 
-                new count=0;
-                new num=iteration*2;
-                new minDmg=iteration*5;
-                new maxDmg=iteration*20;
+                new minDmg=iteration*ult_level;
+                new maxDmg=minDmg*5;
                 new maxplayers=GetMaxClients();
                 for(new index=1;index<=maxplayers;index++)
                 {
@@ -798,28 +798,34 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                 !GetImmunity(player_check,Immunity_HealthTake) &&
                                 !TF2_IsPlayerInvuln(index))
                             {
-                                new Float:indexLoc[3];
                                 GetClientAbsOrigin(index, indexLoc);
                                 if ( IsPointInRange(m_NuclearAimPos[client],indexLoc,radius))
                                 {
                                     if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
                                     {
-                                        new amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
+                                        amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
                                         if (amt <= minDmg)
                                             amt = GetRandomInt(minDmg,maxDmg);
-
-                                        if (HurtPlayer(index,amt,client,"nuclear_launch", "Nuclear Launch", 5+ult_level) <= 0)
-                                            LogMessage("Nuclear Launch killed %d->%N!", index, index);
-                                        else
-                                            LogMessage("Nuclear Launch damaged %d->%N!", index, index);
-
-                                        if (++count > num)
-                                            break;
                                     }
+                                    else
+                                        amt = GetRandomInt(minDmg,maxDmg);
+
+                                    if (HurtPlayer(index,amt,client,"nuclear_launch", "Nuclear Launch", 5+ult_level) <= 0)
+                                        LogMessage("Nuclear Launch killed %d->%N!", index, index);
+                                    else
+                                        LogMessage("Nuclear Launch damaged %d->%N!", index, index);
                                 }
+                                else
+                                    LogMessage("Nuclear Launch missed #%d(%N), out of range", index, index);
                             }
+                            else
+                                LogMessage("Nuclear Launch missed #%d(%N), immune", index, index);
                         }
+                        else
+                            LogMessage("Nuclear Launch missed #%d, invalid player", index);
                     }
+                    else
+                        LogMessage("Nuclear Launch missed #%d, not ingame or not alive", index);
                 }
                 return Plugin_Continue;
             }

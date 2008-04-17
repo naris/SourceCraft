@@ -364,11 +364,7 @@ public Action:PersistFart(Handle:timer,any:client)
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 new amt=GetRandomInt(minDmg,maxDmg);
-                                if (HurtPlayer(index,amt,client,"flatulence", "Flatulence", 5+fart_level) <= 0)
-                                    LogMessage("Fart killed %d->%N!", index, index);
-                                else
-                                    LogMessage("Fart damaged %d->%N!", index, index);
-
+                                HurtPlayer(index,amt,client,"flatulence", "Flatulence", 5+fart_level);
                                 if (++count > num)
                                     break;
                             }
