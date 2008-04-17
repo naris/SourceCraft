@@ -796,11 +796,11 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                 !GetImmunity(player_check,Immunity_HealthTake) &&
                                 !TF2_IsPlayerInvuln(index))
                             {
-                                if ( IsInRange(client,index,radius))
+                                new Float:indexLoc[3];
+                                GetClientAbsOrigin(index, indexLoc);
+                                if ( IsPointInRange(m_NuclearAimPos[client],indexLoc,radius))
                                 {
-                                    new Float:indexLoc[3];
-                                    GetClientAbsOrigin(index, indexLoc);
-                                    if (TraceTarget(client, index, m_NuclearAimPos[client], indexLoc))
+                                    if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
                                     {
                                         new amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
                                         if (amt <= minDmg)
