@@ -531,7 +531,9 @@ LaunchNuclearDevice(client,Handle:player)
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.0f seconds for the missle to lock on.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %2.0f seconds for the missle to lock on.",
+                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
+
     AuthTimer(launchTime,client,NuclearLockOn);
 }
 
@@ -585,7 +587,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
 
             new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
             PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %2.0f seconds to evacuate.",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, lockTime);
+                        COLOR_GREEN,COLOR_DEFAULT, lockTime);
 
             new Handle:NuclearPack;
             if (CreateDataTimer(lockTime,NuclearImpact,NuclearPack)
