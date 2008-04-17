@@ -24,27 +24,25 @@
 
 #include "sc/log" // for debugging
 
+enum NuclearStatus { Quiescent, Ready, Tracking, LaunchInitiated, LockedOn, Exploding};
+
 new raceID, cloakID, lockdownID, detectorID, nukeID;
 
 new explosionModel;
+new g_laserSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
 new m_OffsetCloakMeter;
-new m_OffsetDisguiseTeam;
-new m_OffsetDisguiseClass;
-new m_OffsetDisguiseHealth;
 
 new Handle:cvarNuclearLaunchEnable = INVALID_HANDLE;
 new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
 new Handle:cvarNuclearCooldown = INVALID_HANDLE;
 
-new m_nuclearAimDot[MAXPLAYERS+1];
-new Float:m_nuclearAimPos[MAXPLAYERS+1][3];
-new bool:m_AllowNuclearLaunch[MAXPLAYERS+1];
-new bool:m_NuclearLaunchInitiated[MAXPLAYERS+1];
-new bool:m_NuclearLaunchLockedOn[MAXPLAYERS+1];
+new Handle:m_NuclearTimer[MAXPLAYERS+1];
+new Float:m_NuclearAimPos[MAXPLAYERS+1][3];
+new NuclearStatus:m_NuclearLaunchStatus[MAXPLAYERS+1];
 
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 
@@ -70,7 +68,7 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarNuclearLaunchEnable=CreateConVar("sc_nuclearlaunchenable","0");
+    cvarNuclearLaunchEnable=CreateConVar("sc_nuclearlaunchenable","1");
     cvarNuclearLaunchTime=CreateConVar("sc_nuclearlaunchtime","20");
     cvarNuclearLockTime=CreateConVar("sc_nuclearlocktime","5");
     cvarNuclearCooldown=CreateConVar("sc_nuclearlaunchcooldown","300");
@@ -105,23 +103,15 @@ public OnPluginReady()
         m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
         if (m_OffsetCloakMeter == -1)
             SetFailState("Couldn't find CloakMeter Offset");
-
-        m_OffsetDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDisguiseTeam");
-        if (m_OffsetDisguiseTeam == -1)
-            SetFailState("Couldn't find DisguiseTeam Offset");
-
-        m_OffsetDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDisguiseClass");
-        if (m_OffsetDisguiseClass == -1)
-            SetFailState("Couldn't find DisguiseClass Offset");
-
-        m_OffsetDisguiseHealth=FindSendPropInfo("CTFPlayer","m_iDisguiseHealth");
-        if (m_OffsetDisguiseHealth == -1)
-            SetFailState("Couldn't find DisguiseHealth Offset");
     }
 }
 
 public OnMapStart()
 {
+    g_laserSprite = PrecacheModel("materials/sprites/laser.vmt");
+    if (g_laserSprite == -1)
+        SetFailState("Couldn't find laser Model");
+
     g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
     if (g_smokeSprite == -1)
         SetFailState("Couldn't find smoke Model");
@@ -148,7 +138,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    m_AllowNuclearLaunch[client]=true;
+    m_NuclearLaunchStatus[client] = Ready;
 }
 
 public OnClientDisconnect(client)
@@ -164,7 +154,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         {
             SetVisibility(player, -1);
             ResetOcularImplants(client);
-            m_AllowNuclearLaunch[client]=true;
         }
         else if (race == raceID)
             Cloak(client, player, GetUpgradeLevel(player,race,cloakID));
@@ -173,11 +162,12 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
-    if (race==raceID && m_AllowNuclearLaunch[client] &&
-        IsPlayerAlive(client))
+    if (race==raceID && m_NuclearLaunchStatus[client] >= Ready
+                     && m_NuclearLaunchStatus[client] <= Tracking
+                     && IsPlayerAlive(client))
     {
         new ult_level=GetUpgradeLevel(player,race,nukeID);
-        if(ult_level)
+        if (ult_level)
         {
             if (pressed)
                 TargetNuclearDevice(client);
@@ -226,12 +216,12 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     if (victim_player != INVALID_HANDLE && victim_race == raceID)
     {
         SetVisibility(victim_player, -1);
+        SetOverrideSpeed(victim_player, -1.0);
 
-        if (m_NuclearLaunchInitiated[victim_index])
-        {
-            m_NuclearLaunchInitiated[victim_index]=false;
-            SetOverrideSpeed(victim_player, -1.0);
-        }
+        if (m_NuclearLaunchStatus[victim_index] == Tracking)
+            m_NuclearLaunchStatus[victim_index] = Ready;
+        else if (m_NuclearLaunchStatus[victim_index] >= LaunchInitiated)
+            m_NuclearLaunchStatus[victim_index] = Quiescent;
     }
 }
 
@@ -498,108 +488,69 @@ TargetNuclearDevice(client)
     }
 
     EmitSoundToAll(targetWav,client);
-    TraceAimPosition(client, m_nuclearAimPos[client], true);
-
-    new ent = CreateEntityByName("env_sniperdot");
-    if (ent)
-    {
-        SetEntDataVector(ent, FindSendPropOffs("CSniperDot","m_vecOrigin") , m_nuclearAimPos[client]);
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_flSimulationTime"), GetGameTime(), 1); // (bits 8)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_nModelIndex"), -65536, 2); // (bits 11)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_nRenderFX"), 0, 1); // (bits 8)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_nRenderMode"), -16777216, 1); // (bits 8)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_fEffects"), 16, 2); // (bits 10)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_clrRender"), -1, 4); // (bits 32)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_iTeamNum"), GetClientTeam(client), 1); // (bits 6)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_CollisionGroup"), 0, 1); // (bits 5)
-        SetEntDataFloat(ent, FindSendPropInfo("CSniperDot","m_flElasticity"), 1.0);
-        SetEntDataFloat(ent, FindSendPropInfo("CSniperDot","m_flShadowCastDistance"), 0.0); // (bits 12)
-        SetEntDataEnt2(ent, FindSendPropInfo("CSniperDot","m_hOwnerEntity"), client); // (bits 21)
-        //SetEntDataEnt2(ent, FindSendPropInfo("CSniperDot","m_hEffectEntity"), -1); // (bits 21)
-        //SetEntDataEnt2(ent, FindSendPropInfo("CSniperDot","moveparent"), -1); // (bits 21)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","m_iParentAttachment"), -16777216, 1); // (bits 6)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","movetype"), -65536); // (bits 4)
-        SetEntData(ent, FindSendPropInfo("CSniperDot","movecollide"), -256); // (bits 3)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_angRotation"), 0); // (bits 13)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_iTextureFrameIndex"), 0); // (bits 8)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bSimulatedEveryTick"), 0);
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bAnimatedEveryTick"), 0);
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bAlternateSorting"), 0);
-        //SetEntDataFloat(ent, FindSendPropInfo("CSniperDot","m_flChargeStartTime"), GetGameTime());
-
-    //   Sub-Class Table (3 Deep): DT_AnimTimeMustBeFirst
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_flAnimTime"), 0); // (bits 8)
-
-    //   Sub-Class Table (3 Deep): DT_CollisionProperty
-        //new Float:m_vecMins[3];
-        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecMins"), m_vecMins);
-
-        //new Float:m_vecMaxs[3];
-        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecMaxs"), m_vecMaxs);
-
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_nSolidType"), 0); // (bits 3)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_usSolidFlags"), 119341060); // (bits 10)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_nSurroundType"), 0); // (bits 3)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_triggerBloat"), 0); // (bits 8)
-
-        //new Float:m_vecSpecifiedSurroundingMins[3] = { 0.0, 0.0, 0.0 };
-        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecSpecifiedSurroundingMins"), m_vecSpecifiedSurroundingMins);
-
-        //new Float:m_vecSpecifiedSurroundingMaxs[3] = { 0.0, 0.0, 0.0 };
-        //SetEntDataVector(ent, FindSendPropInfo("CSniperDot","m_vecSpecifiedSurroundingMaxs"), m_vecSpecifiedSurroundingMaxs);
-
-    //   Sub-Class Table (3 Deep): DT_PredictableId
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_PredictableID"), 0); // (bits 31)
-        //SetEntData(ent, FindSendPropInfo("CSniperDot","m_bIsPlayerSimulated"), 0);
-
-        DispatchSpawn(ent);
-        TeleportEntity(ent, m_nuclearAimPos[client], NULL_VECTOR, NULL_VECTOR);
-
-        m_nuclearAimDot[client] = ent;
-        CreateTimer(0.1,TrackNuclearTarget,client,TIMER_REPEAT); // Create aiming loop
-    }
+    new Handle:TrackTimer = CreateTimer(0.2,TrackNuclearTarget,client,TIMER_REPEAT); // Create aiming loop
+    m_NuclearTimer[client] = TrackTimer;
+    m_NuclearLaunchStatus[client] = Tracking;
+    TriggerTimer(TrackTimer, true);
 }
 
 public Action:TrackNuclearTarget(Handle:timer,any:index)
 {
-    if (m_nuclearAimDot[index])
+    if (m_NuclearLaunchStatus[index]  == Tracking &&
+        IsClientInGame(index) && IsPlayerAlive(index))
     {
-        if (IsClientInGame(index) && IsPlayerAlive(index) &&
-            !m_NuclearLaunchLockedOn[index])
-        {
-            TraceAimPosition(index, m_nuclearAimPos[index], true);
-            TeleportEntity(m_nuclearAimDot[index], m_nuclearAimPos[index],
-                           NULL_VECTOR, NULL_VECTOR);
-            return Plugin_Handled;
-        }
+        new Float:indexLoc[3], Float:targetLoc[3];
+        GetClientEyePosition(index, indexLoc);
+        TraceAimPosition(index, targetLoc, true);
+
+        new color[4] = { 0, 0, 0, 150 };
+        new team = GetClientTeam(index);
+        if (team == 3)
+            color[2] = 255; // Blue
         else
-        {
-            RemoveEdict(m_nuclearAimDot[index]);
-            m_nuclearAimDot[index] = 0;
-        }
+            color[0] = 255; // Red
+
+        indexLoc[2] -= 30;
+        TE_SetupBeamPoints(indexLoc, targetLoc, g_laserSprite, 0,
+                           0, 0, 0.2, 3.0, 3.0, 1, 0.0, color, 0);
+
+        TE_SendToClient(index);
+        m_NuclearAimPos[index] = targetLoc;
+        return Plugin_Handled;
     }
-    return Plugin_Stop;
+    else
+    {
+        if (m_NuclearTimer[index] == timer)
+            m_NuclearTimer[index] = INVALID_HANDLE;
+
+        return Plugin_Stop;
+    }
 }
 
 LaunchNuclearDevice(client,Handle:player)
 {
+    if (m_NuclearTimer[client] != INVALID_HANDLE)
+    {
+        KillTimer(m_NuclearTimer[client]);
+        m_NuclearTimer[client] = INVALID_HANDLE;
+    }
+
+    m_NuclearLaunchStatus[client]=LaunchInitiated;
+
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
     SetVisibility(player, 100, TimedInvisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
     SetOverrideSpeed(player, 0.0);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %2.0f seconds for the missle to lock on.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
-    m_AllowNuclearLaunch[client]=false;
-    m_NuclearLaunchInitiated[client]=true;
     CreateTimer(launchTime,NuclearLockOn,client);
 }
 
 public Action:NuclearLockOn(Handle:timer,any:client)
 {
-    if (m_NuclearLaunchInitiated[client])
+    if (m_NuclearLaunchStatus[client] == LaunchInitiated)
     {
-        m_NuclearLaunchInitiated[client]=false;
-        m_NuclearLaunchLockedOn[client]=true;
+        m_NuclearLaunchStatus[client] = LockedOn;
         EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
 
         new Float:lockTime = GetConVarFloat(cvarNuclearLockTime);
@@ -611,7 +562,6 @@ public Action:NuclearLockOn(Handle:timer,any:client)
             SetVisibility(player, -1);
             SetOverrideSpeed(player, -1.0);
         }
-
         CreateTimer(lockTime,NuclearExplosion,client);
     }
     else
@@ -625,8 +575,10 @@ public Action:NuclearLockOn(Handle:timer,any:client)
 public Action:NuclearExplosion(Handle:timer,any:client)
 {
     new num = 0;
-    if (m_NuclearLaunchLockedOn[client])
+    if (m_NuclearLaunchStatus[client] == LockedOn)
     {
+        m_NuclearLaunchStatus[client] = Exploding;
+
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
@@ -669,12 +621,12 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                 }
             }
 
-            TE_SetupExplosion(m_nuclearAimPos[client],explosionModel,scale,1,0,r_int,magnitude);
+            TE_SetupExplosion(m_NuclearAimPos[client],explosionModel,scale,1,0,r_int,magnitude);
             TE_SendToAll();
 
             EmitSoundToAll(explodeWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
                            SNDLEVEL_NORMAL,SND_NOFLAGS,SNDVOL_NORMAL,
-                           SNDPITCH_NORMAL,-1,m_nuclearAimPos[client],
+                           SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
                            NULL_VECTOR,true,0.0);
 
             new count = GetClientCount();
@@ -692,10 +644,10 @@ public Action:NuclearExplosion(Handle:timer,any:client)
                             new Float:check_location[3];
                             GetClientAbsOrigin(index,check_location);
 
-                            new hp=PowerOfRange(m_nuclearAimPos[client],radius,check_location,damage,0.5,false);
+                            new hp=PowerOfRange(m_NuclearAimPos[client],radius,check_location,damage,0.5,false);
                             if (hp)
                             {
-                                if (TraceTarget(client, index, m_nuclearAimPos[client], check_location))
+                                if (TraceTarget(client, index, m_NuclearAimPos[client], check_location))
                                 {
                                     HurtPlayer(index,hp,client,"nuclear_launch", "Nuclear Launch", 5+ult_level);
                                     num++;
@@ -718,20 +670,16 @@ public Action:NuclearExplosion(Handle:timer,any:client)
         PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
     }
 
+    m_NuclearLaunchStatus[client]=Quiescent;
     CreateTimer(cooldown,AllowNuclearLaunch,client);
-    m_NuclearLaunchLockedOn[client]=false;
 }
 
 public Action:AllowNuclearLaunch(Handle:timer,any:index)
 {
-    if (IsClientInGame(index))
-    {
-        if (IsPlayerAlive(index))
-        {
-            EmitSoundToClient(index,readyWav);
-            m_AllowNuclearLaunch[index]=true;
-        }
-    }
+    m_NuclearLaunchStatus[index] = Ready;
+    if (IsClientInGame(index) && IsPlayerAlive(index))
+        EmitSoundToClient(index,readyWav);
+
     return Plugin_Stop;
 }
 

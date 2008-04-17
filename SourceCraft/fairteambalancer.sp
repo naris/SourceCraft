@@ -108,7 +108,7 @@ public OnPluginStart()
 {
     cvarEnabled = CreateConVar(
             "sm_team_balancer_enable",
-            "1",
+            "0",
             "Enables the Team Balancer plugin"
             );
 
@@ -421,22 +421,7 @@ public Event_PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast 
 
     // Check team sizes and comparative score/levels/frags
     if (tPlayers[0] == tPlayers[1])
-    {
-        if (tScore[0] == tScore[1])
-        {
-            if (tLevels[0] == tLevels[1])
-            {
-                if (tFrags[0] == tFrags[1])
-                    return;
-                else
-                    biggerTeam = ( tFrags[0] > tFrags[1] ? TEAM_1 : TEAM_2 );
-            }
-            else
-                biggerTeam = ( tLevels[0] > tLevels[1] ? TEAM_1 : TEAM_2 );
-        }
-        else
-            biggerTeam = ( tScore[0] > tScore[1] ? TEAM_1 : TEAM_2 );
-    }
+        return;
     else
         biggerTeam = ( tPlayers[0] > tPlayers[1] ? TEAM_1 : TEAM_2 );
 

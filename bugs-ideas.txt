@@ -13,8 +13,26 @@ Bugs:
 7.  Fix/Remove the autostacker.
 
 8. never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
+-----------------------------------------------------------------------
+I have a few item suggestions:
+1) Armor-piercing ammo (20-30 crystals) -- Reduces the benefit of Terran's Heavy Armor (could apply to other future classes with armor).
+2) Sentry jammer (~75-100 crystals) -- Allows the owner to walk by enemy sentries without them firing upon them.
+3) Flak Jacket (20-30 crystals) -- Reduces the damage received from 'explosions' (suicide bomber, mad bomber, reaver scarabs)
+4) Flame retardant suit (75-100 crystals) -- Reduces fire damage and/or makes you as flammable as a normal pyro (ie, you burn, but you don't continue to burn).
+5) ***Reduction in cost for Cloak of Shadows, 55 crystals is too high to prevent decloak, 20-30 crystals seems reasonable
+
+I could add a few to that although I don't know if some of these are possible:
+Instant Sentry (100 crystals), allows a level 3 Sentry Gun to be build in front of who ever buys it, no matter if they are an engi or not.
+
+Instant Uber (100 crystals), allows a medic to have a full charge uber upon purchasing this item.
+
+Super sappers (50-65 crystals) gives the spy sappers a supercharge, allowing them to destroy engineer equipment 2x as fast.
+Unstable Mana Potion (80 Crystals) - You lose 2% of your health every second but your attacks do 100% more damage
+
+Orb of Fire (35 Crystals) - If you manage to hit the enemy, they catch on fire for 3 seconds
 
 
+-----------------------------------------------
 Recorded on 3-PG's Server. This was a bug in attempt be able to attach sentrys to moving objects.(ie trains, cars, ect.)
 
 Below are the mods on their servers:
