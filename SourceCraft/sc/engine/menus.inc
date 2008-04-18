@@ -224,8 +224,14 @@ RaceMenu(client,bool:change)
             {
                 level = GetOverallLevel(GetPlayerHandle(client));
                 style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                GetRaceName(raceHandle,name,sizeof(name));
-                Format(item,sizeof(item),"%s (overall level must be >= %d)",name, reqLevel);
+                if (!change || level < reqLevel)
+                {
+                    GetRaceName(raceHandle,name,sizeof(name));
+                    Format(item,sizeof(item),"%s (overall level must be >= %d)",
+                           name, reqLevel);
+                }
+                else
+                    GetRaceName(raceHandle,item,sizeof(item));
             }
             else
             {
@@ -258,7 +264,7 @@ RaceMenu(client,bool:change)
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
@@ -438,6 +444,7 @@ ShopMenu(client, bool:shopmenu)
 
             new Handle:itemHandle;
             decl String:itemname[64];
+            decl String:shortname[16];
             decl String:itembuf[11];
             decl String:linestr[96];
             decl cost;
@@ -454,7 +461,9 @@ ShopMenu(client, bool:shopmenu)
                     if (shopmenu)
                     {
                         cost = GetItemCost(itemHandle);
-                        Format(linestr,sizeof(linestr),"%s - %d crystals",itemname,cost);
+                        GetItemShortName(itemHandle, shortname, sizeof(shortname));
+                        Format(linestr,sizeof(linestr),"%s (%s) - %d crystals",
+                               itemname,shortname,cost);
                         AddMenuItem(shopMenu,itembuf,linestr);
                     }
                     else
