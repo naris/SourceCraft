@@ -668,34 +668,34 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                 {
                     case 1:
                     {
-                        damage = 600;
-                        radius = 600.0;
-                        r_int  = 600;
+                        damage = 500;
+                        radius = 400.0;
+                        r_int  = 400;
                         magnitude = 600;
                         scale = 100.0;
                     }
                     case 2:
                     {
                         damage = 700;
-                        radius = 1000.0;
-                        r_int  = 1000;
+                        radius = 800.0;
+                        r_int  = 800;
                         magnitude = 1000;
                         scale = 100.0;
                     }
                     case 3:
                     {
                         damage = 800;
-                        radius = 2000.0;
-                        r_int  = 2000;
-                        magnitude = 2000;
+                        radius = 1000.0;
+                        r_int  = 1000;
+                        magnitude = 1500;
                         scale = 100.0;
                     }
                     case 4:
                     {
                         damage = 1000;
-                        radius = 3000.0;
-                        r_int  = 3000;
-                        magnitude = 3000;
+                        radius = 1500.0;
+                        r_int  = 1500;
+                        magnitude = 2000;
                         scale = 100.0;
                     }
                 }
@@ -768,8 +768,8 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
                                NULL_VECTOR,true,0.0);
 
-                new minDmg=iteration*ult_level;
-                new maxDmg=minDmg*5;
+                new minDmg=iteration;
+                new maxDmg=iteration*ult_level;
                 new maxplayers=GetMaxClients();
                 for(new index=1;index<=maxplayers;index++)
                 {
@@ -789,19 +789,13 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                            m_NuclearAimPos[client][0],m_NuclearAimPos[client][1],m_NuclearAimPos[client][2],
                                            indexLoc[0], indexLoc[1], indexLoc[2], radius, dist);
 
-                                if ( IsPointInRange(m_NuclearAimPos[client],indexLoc,radius))
-                                {
-                                    if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
-                                    {
-                                        amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
-                                        LogMessage("Nuke %N, who is traceable, amt=%d", index, amt);
-                                    }
-                                    else
-                                    {
-                                        amt = GetRandomInt(minDmg,maxDmg);
-                                        LogMessage("Nuke %N, who is NOT traceable, amt=%d", index, amt);
-                                    }
+                                if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
+                                    amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
+                                else if ( IsPointInRange(m_NuclearAimPos[client],indexLoc,radius))
+                                    amt = GetRandomInt(minDmg,maxDmg)-ult_level;
 
+                                if (amt > 0)
+                                {
                                     if (HurtPlayer(index,amt,client,"nuclear_launch", "Nuclear Launch", 5+ult_level) <= 0)
                                         LogMessage("Nuclear Launch killed %d->%N!", index, index);
                                     else
