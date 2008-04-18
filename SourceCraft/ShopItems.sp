@@ -38,25 +38,26 @@ new Handle:hGameConf      = INVALID_HANDLE;
 #define ITEM_CLOAK            3 // Cloak of Shadows - Invisibility
 #define ITEM_MASK             4 // Mask of Death - Recieve Health for Hits
 #define ITEM_NECKLACE         5 // Necklace of Immunity - Immune to Ultimates
-#define ITEM_ORB              6 // Orb of Frost - Slow Enemy
-#define ITEM_PERIAPT          7 // Periapt of Health - Get Extra Health when Purchased
-#define ITEM_TOME             8 // Tome of Experience - Get Extra Experience when Purchased
-#define ITEM_SCROLL           9 // Scroll of Respawning - Respawn after death.
-#define ITEM_SOCK            10 // Sock of the Feather - Jump Higher
-#define ITEM_GLOVES          11 // Flaming Gloves of Warmth - Given HE Grenades or ammo or metal over time
-#define ITEM_PACK            12 // Ammo Pack - Given Grenades
-#define ITEM_SACK            13 // Sack of looting - Loot crystals from corpses.
-#define ITEM_LOCKBOX         14 // Lockbox - Keep crystals safe from theft.
-#define ITEM_RING            15 // Ring of Regeneration + 1 - Given extra health over time
-#define ITEM_RING3           16 // Ring of Regeneration + 3 - Given extra health over time
-#define ITEM_RING5           17 // Ring of Regeneration + 5 - Given extra health over time
-#define ITEM_MOLE            18 // Mole - Respawn in enemies spawn with cloak.
-#define ITEM_MOLE_PROTECTION 19 // Mole Protection - Reduce damage from a Mole.
-#define ITEM_MOLE_REFLECTION 20 // Mole Reflection - Reflects damage back to the Mole.
-#define ITEM_MOLE_RETENTION  21 // Mole Retention - Keep Mole Protection/Reflection until used.
-//#define ITEM_GOGGLES       22 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         23 // Purchase Admin on the Server
-#define MAXITEMS             22
+#define ITEM_LUBE             6 // Lubricant - Immune to MotionTaking
+#define ITEM_ORB              7 // Orb of Frost - Slow Enemy
+#define ITEM_PERIAPT          8 // Periapt of Health - Get Extra Health when Purchased
+#define ITEM_TOME             9 // Tome of Experience - Get Extra Experience when Purchased
+#define ITEM_SCROLL          10 // Scroll of Respawning - Respawn after death.
+#define ITEM_SOCK            11 // Sock of the Feather - Jump Higher
+#define ITEM_GLOVES          12 // Flaming Gloves of Warmth - Given HE Grenades or ammo or metal over time
+#define ITEM_PACK            13 // Ammo Pack - Given Grenades
+#define ITEM_SACK            14 // Sack of looting - Loot crystals from corpses.
+#define ITEM_LOCKBOX         15 // Lockbox - Keep crystals safe from theft.
+#define ITEM_RING            16 // Ring of Regeneration + 1 - Given extra health over time
+#define ITEM_RING3           17 // Ring of Regeneration + 3 - Given extra health over time
+#define ITEM_RING5           18 // Ring of Regeneration + 5 - Given extra health over time
+#define ITEM_MOLE            19 // Mole - Respawn in enemies spawn with cloak.
+#define ITEM_MOLE_PROTECTION 20 // Mole Protection - Reduce damage from a Mole.
+#define ITEM_MOLE_REFLECTION 21 // Mole Reflection - Reflects damage back to the Mole.
+#define ITEM_MOLE_RETENTION  22 // Mole Retention - Keep Mole Protection/Reflection until used.
+//#define ITEM_GOGGLES       23 // The Goggles - They do nothing!
+//#define ITEM_ADMIN         24 // Purchase Admin on the Server
+#define MAXITEMS             23
  
 new myWepsOffset;
 
@@ -132,6 +133,10 @@ public OnPluginReady()
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity", "necklace", 
                                            "You will be immune to enemy ultimates.",
                                            20);
+
+    shopItem[ITEM_LUBE]=CreateShopItem("Lubricant", "lube", 
+                                       "Ensures you are able to move freely about.",
+                                       40);
 
     shopItem[ITEM_ORB]=CreateShopItem("Orb of Frost", "orb", 
                                       "Slows your enemy down when you hit him.",
@@ -273,6 +278,8 @@ public OnItemPurchase(client,Handle:player,item)
     }
     else if(item==shopItem[ITEM_NECKLACE])                              // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
+    else if(item==shopItem[ITEM_LUBE])                                  // Lubricant
+        SetImmunity(player,Immunity_MotionTake,true);
     else if(item==shopItem[ITEM_LOCKBOX])                               // Lockbox
         SetImmunity(player,Immunity_Theft,true);
     else if(item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))      // Periapt of Health
@@ -396,6 +403,12 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             {
                 SetOwnsItem(victim_player,shopItem[ITEM_NECKLACE],false);
                 SetImmunity(victim_player,Immunity_Ultimates,false);
+            }
+
+            if(GetOwnsItem(victim_player,shopItem[ITEM_LUBE]))
+            {
+                SetOwnsItem(victim_player,shopItem[ITEM_LUBE],false);
+                SetImmunity(victim_player,Immunity_MotionTake,false);
             }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_ORB]))
