@@ -631,7 +631,6 @@ public Action:NuclearImpact(Handle:timer,Handle:pack)
         ResetPack(pack);
         new client = ReadPackCell(pack);
         new ult_level=ReadPackCell(pack);
-        LogMessage("NuclearImpact, client=%d", client);
         if (m_NuclearLaunchStatus[client] == LockedOn)
         {
             m_NuclearLaunchStatus[client] = Exploding;
@@ -656,7 +655,6 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
         new client = ReadPackCell(pack);
         new ult_level=ReadPackCell(pack);
         new iteration = (--m_NuclearDuration[client]);
-        LogMessage("NuclearExplosion, client=%d, iteration=%d", client, iteration);
         if (iteration > 0)
         {
             new Handle:player=GetPlayerHandle(client);
@@ -706,7 +704,6 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                 {
                     case 1:
                     {
-                        LogMessage("NuclearExplosion, effect=2");
                         new Float:rorigin[3],sb;
                         for(new i = 1 ;i < 50; ++i)
                         {
@@ -727,13 +724,11 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                     case 2:
                     {
-                        LogMessage("NuclearExplosion, effect=3");
                         Shake(0, 14.0, 10.0, 150.0);
                         explodeall(m_NuclearAimPos[client]);
                     }
                     case 3:
                     {
-                        LogMessage("NuclearExplosion, effect=4");
                         new color[4]={250,250,250,255};
                         Fade(600, 600 , color);
                         explodeall(m_NuclearAimPos[client]);
@@ -744,7 +739,6 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                     default:
                     {
-                        LogMessage("NuclearExplosion, effect=default");
                         TE_SetupExplosion(m_NuclearAimPos[client],g_explosionModel,scale,1,0,r_int,magnitude);
                         TE_SendToAll();
 
@@ -813,25 +807,13 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                     else
                                         LogMessage("Nuclear Launch damaged %d->%N!", index, index);
                                 }
-                                else
-                                    LogMessage("Nuclear Launch missed #%d(%N), out of range", index, index);
                             }
-                            else
-                                LogMessage("Nuclear Launch missed #%d(%N), immune", index, index);
                         }
-                        else
-                            LogMessage("Nuclear Launch missed #%d, invalid player", index);
                     }
-                    else
-                        LogMessage("Nuclear Launch missed #%d, not ingame or not alive", index);
                 }
                 return Plugin_Continue;
             }
-            else
-                LogMessage("Invalid Player Handle");
         }
-        else
-            LogMessage("iterations expired");
 
         Shake(1, 0.0, 0.0, 0.0);
 
@@ -847,8 +829,6 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
         else
             m_NuclearLaunchStatus[client] = Ready;
     }
-    else
-        LogMessage("invalid pack");
 
     return Plugin_Stop;
 }
