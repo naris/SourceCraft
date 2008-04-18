@@ -188,5 +188,6 @@ PurchaseShopItem(client,Handle:playerHandle,item)
             PrintToChat(client, "%c[SourceCraft] %cYou can not afford the %s.",
                         COLOR_GREEN,COLOR_DEFAULT,itemname);
         }
+        ShowCredits(client,playerHandle);
     }
 }
