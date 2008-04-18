@@ -695,7 +695,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     case 4:
                     {
                         damage = 1000;
-                        radius = 0.0;
+                        radius = 3000.0;
                         r_int  = 3000;
                         magnitude = 3000;
                         scale = 100.0;
@@ -790,16 +790,17 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                 !TF2_IsPlayerInvuln(index))
                             {
                                 GetClientAbsOrigin(index, indexLoc);
+                                new Float:dist=DistanceBetween(m_NuclearAimPos[client],indexLoc);
+                                LogMessage("Check Target=%f,%f,%f; index=%f,%f,%f; range=%f; dist=%f",
+                                           m_NuclearAimPos[client][0],m_NuclearAimPos[client][1],m_NuclearAimPos[client][2],
+                                           indexLoc[0], indexLoc[1], indexLoc[2], radius, dist);
+
                                 if ( IsPointInRange(m_NuclearAimPos[client],indexLoc,radius))
                                 {
                                     if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
                                     {
-                                        new pwr = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
-                                        amt = pwr;
-                                        if (amt <= minDmg)
-                                            amt = GetRandomInt(minDmg,maxDmg);
-
-                                        LogMessage("Nuke %N, who is traceable, pwr=%d, amt=%d", index, pwr, amt);
+                                        amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
+                                        LogMessage("Nuke %N, who is traceable, amt=%d", index, amt);
                                     }
                                     else
                                     {
