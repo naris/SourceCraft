@@ -33,6 +33,9 @@ new m_OffsetBonusProgress;
 new m_OffsetBonusChallenge;
 new m_OffsetAirDash;
 new m_OffsetMaxspeed;
+new m_OffsetMyWepons;
+
+new Handle:cvarTrack = INVALID_HANDLE;
 
 public Plugin:myinfo = 
 {
@@ -45,33 +48,36 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    CreateTimer(1.0,TrackVariables,INVALID_HANDLE,TIMER_REPEAT);
+    cvarTrack=CreateConVar("sm_track_tf2","0");
+    if (GetConVarBool(cvarTrack))
+        CreateTimer(1.0,TrackVariables,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 // Events
 public OnMapStart()
 {
-        m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
-        m_OffsetDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDisguiseTeam");
-        m_OffsetDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDisguiseClass");
-        m_OffsetDisguiseHealth=FindSendPropInfo("CTFPlayer","m_iDisguiseHealth");
-        m_OffsetDisguiseTargetIndex=FindSendPropInfo("CTFPlayer","m_iDisguiseTargetIndex");
-        m_OffsetDesiredDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDesiredDisguiseTeam");
-        m_OffsetDesiredDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDesiredDisguiseClass");
-        m_OffsetInvisChangeCompleteTime=FindSendPropInfo("CTFPlayer","m_flInvisChangeCompleteTime");
-        m_OffsetCritMult=FindSendPropInfo("CTFPlayer","m_iCritMult");
-        m_OffsetStealthNoAttackExpire=FindSendPropInfo("CTFPlayer","m_flStealthNoAttackExpire");
-        m_OffsetStealthNextChangeTime=FindSendPropInfo("CTFPlayer","m_flStealthNextChangeTime");
-        m_OffsetPlayerState=FindSendPropInfo("CTFPlayer","m_nPlayerState");
-        m_OffsetNumHealers=FindSendPropInfo("CTFPlayer","m_nNumHealers");
-        m_OffsetPlayerCond=FindSendPropInfo("CTFPlayer","m_nPlayerCond");
-        m_OffsetClass=FindSendPropInfo("CTFPlayer","m_iClass");
-        m_OffsetPoisoned=FindSendPropInfo("CTFPlayer","m_bPoisoned");
-        m_OffsetWearingSuit=FindSendPropInfo("CTFPlayer","m_bWearingSuit");
-        m_OffsetBonusProgress=FindSendPropInfo("CTFPlayer","m_iBonusProgress");
-        m_OffsetBonusChallenge=FindSendPropInfo("CTFPlayer","m_iBonusChallenge");
-        m_OffsetAirDash=FindSendPropInfo("CTFPlayer","m_bAirDash");
-        m_OffsetMaxspeed=FindSendPropInfo("CTFPlayer","m_flMaxspeed");
+    m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
+    m_OffsetDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDisguiseTeam");
+    m_OffsetDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDisguiseClass");
+    m_OffsetDisguiseHealth=FindSendPropInfo("CTFPlayer","m_iDisguiseHealth");
+    m_OffsetDisguiseTargetIndex=FindSendPropInfo("CTFPlayer","m_iDisguiseTargetIndex");
+    m_OffsetDesiredDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDesiredDisguiseTeam");
+    m_OffsetDesiredDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDesiredDisguiseClass");
+    m_OffsetInvisChangeCompleteTime=FindSendPropInfo("CTFPlayer","m_flInvisChangeCompleteTime");
+    m_OffsetCritMult=FindSendPropInfo("CTFPlayer","m_iCritMult");
+    m_OffsetStealthNoAttackExpire=FindSendPropInfo("CTFPlayer","m_flStealthNoAttackExpire");
+    m_OffsetStealthNextChangeTime=FindSendPropInfo("CTFPlayer","m_flStealthNextChangeTime");
+    m_OffsetPlayerState=FindSendPropInfo("CTFPlayer","m_nPlayerState");
+    m_OffsetNumHealers=FindSendPropInfo("CTFPlayer","m_nNumHealers");
+    m_OffsetPlayerCond=FindSendPropInfo("CTFPlayer","m_nPlayerCond");
+    m_OffsetClass=FindSendPropInfo("CTFPlayer","m_iClass");
+    m_OffsetPoisoned=FindSendPropInfo("CTFPlayer","m_bPoisoned");
+    m_OffsetWearingSuit=FindSendPropInfo("CTFPlayer","m_bWearingSuit");
+    m_OffsetBonusProgress=FindSendPropInfo("CTFPlayer","m_iBonusProgress");
+    m_OffsetBonusChallenge=FindSendPropInfo("CTFPlayer","m_iBonusChallenge");
+    m_OffsetAirDash=FindSendPropInfo("CTFPlayer","m_bAirDash");
+    m_OffsetMaxspeed=FindSendPropInfo("CTFPlayer","m_flMaxspeed");
+    m_OffsetMyWepons=FindSendPropOffs("CTFPlayer", "m_hMyWeapons");
 }
 
 public Action:TrackVariables(Handle:timer)
@@ -118,10 +124,18 @@ public OnUltimateCommand(client,player,race,bool:pressed)
 {
     if (IsPlayerAlive(client))
     {
-        SetEntDataFloat(client,m_OffsetCloakMeter, 0.0);
-        SetEntData(client,m_OffsetDisguiseTeam, 0);
-        SetEntData(client,m_OffsetDisguiseClass, 0);
-        SetEntData(client,m_OffsetDisguiseHealth, 0);
+        decl String:wepName[128];
+        new iterOffset=m_OffsetMyWepons;
+        for(new y=0;y<48;y++)
+        {
+            new wepEnt=GetEntDataEnt(client,iterOffset);
+            if(wepEnt>0&&IsValidEdict(wepEnt))
+            {
+                GetEdictClassname(wepEnt,wepName,sizeof(wepName));
+                PrintToChat(client, wepName);
+            }
+            iterOffset+=4;
+        }
     }
 }
 
