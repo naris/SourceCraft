@@ -1,6 +1,22 @@
-Bugs:
+Terran Medic
+1) MedicPack [1 level]
+2) UberCharge (medihancer)
+3) Infect
+4) Armor
+Ult) JetPack?
 
-2. The disappearance of the xp bonus for melee kills. For some reason the xp bonus for melee kills is gone, however all the other xp bonuses are still in the mod.
+Terran SCV:
+1) AmmoPack [1 level]
+2) Metal Regen
+3) Immunity
+4) Armor
+Ult) BuildExtra
+	Lvl1: 2nd Dispenser
+	Lvl2: 2nd Teleport (entry&exit)
+	Lvl3: 2nd SG
+	Lvl4: 3rd SG & Dispenser
+
+Bugs:
 
 3. Protoss ultimate is disabled.
 
@@ -135,6 +151,9 @@ dtwatchent 12
 
 It will fill the console with all the changes and names of variables. You can use source mod to modify those variables.
 
-bugs:
+Fixed bugs:
+
 *Fixed*1. Human Alliance levels do not save. At the start of each new map human alliance players lose all of their levels but their overall level saves, not only does this make it a pain in the ass to play as human but it also creates a leveling exploit.
+
+*FIXED*2. The disappearance of the xp bonus for melee kills. For some reason the xp bonus for melee kills is gone, however all the other xp bonuses are still in the mod.
 

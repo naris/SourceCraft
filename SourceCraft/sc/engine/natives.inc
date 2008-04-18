@@ -323,12 +323,17 @@ KillPlayer(victim, attacker, String:weapon_name[], String:weapon_desc[], xp)
     if (victim)
     {
         ForcePlayerSuicide(victim);
-        if (xp && attacker)
+        if (xp && attacker && victim != attacker)
         {
-            new Handle:attacker_player = GetPlayerHandle(attacker);
-            new race=GetRace(attacker_player);
-            new newxp=GetXP(attacker_player,race)+xp;
-            SetXP(attacker_player,race,newxp);
+            if (GetClientTeam(attacker) == GetClientTeam(victim))
+                xp = 0; // No points for Team kills!
+            else
+            {
+                new Handle:attacker_player = GetPlayerHandle(attacker);
+                new race=GetRace(attacker_player);
+                new newxp=GetXP(attacker_player,race)+xp;
+                SetXP(attacker_player,race,newxp);
+            }
         }
         LogKill(attacker, victim, weapon_name, weapon_desc, xp);
     }

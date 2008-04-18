@@ -64,7 +64,18 @@ ReqLevelXP(level)
         temp=GetArrayCell(vecLevelConfiguration,2);
 
     if(GetArraySize(temp)==MAX_LEVELS+1)
-        return GetArrayCell(temp,level);
+    {
+        if (level <= MAX_LEVELS)
+            return GetArrayCell(temp,level);
+        else
+        {
+            // Calculate XP required for levels
+            // beyond the configuration table.
+            new maxReq = GetArrayCell(temp,MAX_LEVELS);
+            new delta  = maxReq - GetArrayCell(temp,MAX_LEVELS-1);
+            return maxReq + ((level-MAX_LEVELS) * delta);
+        }
+    }
     else
         return 0;
 }

@@ -30,78 +30,109 @@ stock Fail(String:message[])
 
 stock LogDamage(client, victim, String:weapon[], String:description[], hp)
 {
-    decl String:steamID[64];
-    GetClientAuthString(client,steamID,63);
+    if (victim)
+    {
+        decl String:steamID[64];
+        decl String:team[64];
 
-    decl String:team[64];
-    GetTeamName(GetClientTeam(client), team, sizeof(team));
+        if (client)
+        {
+            GetClientAuthString(client,steamID,63);
+            GetTeamName(GetClientTeam(client), team, sizeof(team));
+        }
+        else
+        {
+            steamID[0] = 0;
+            team[0] = 0;
+        }
 
-    decl String:victimID[64];
-    GetClientAuthString(victim,victimID,63);
+        decl String:victimID[64];
+        GetClientAuthString(victim,victimID,63);
 
-    decl String:victimTeam[64];
-    GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
+        decl String:victimTeam[64];
+        GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-    PrintToChat(victim, "%c[SourceCraft] %N %chas damaged you for %d with %c%s%c",
-                COLOR_GREEN,client,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
+        PrintToChat(victim, "%c[SourceCraft] %N %chas damaged you for %d with %c%s%c",
+                    COLOR_GREEN,client,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
 
-    PrintToChat(client, "%c[SourceCraft] %cYou damaged %N for %d hp with %c%s%c.",
-                COLOR_GREEN,COLOR_DEFAULT,victim, hp, COLOR_TEAM,description,COLOR_DEFAULT);
+        if (client)
+        {
+            PrintToChat(client, "%c[SourceCraft] %cYou damaged %N for %d hp with %c%s%c.",
+                        COLOR_GREEN,COLOR_DEFAULT,victim, hp, COLOR_TEAM,description,COLOR_DEFAULT);
+        }
 
-    PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
-                   client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
+        PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+                       client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
-                   client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
+        PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+                       client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
 
-    LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
-              client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
+        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" damaged \"%N<%d><%s><%s>\" for %d with %s\n",
+                  client, client, steamID, team, victim, victim, victimID, victimTeam, hp, weapon);
+    }
 }
 
 stock LogKill(client, victim, String:weapon[], String:description[], xp=0)
 {
-    decl String:steamID[64];
-    GetClientAuthString(client,steamID,63);
-
-    decl String:team[64];
-    GetTeamName(GetClientTeam(client), team, sizeof(team));
-
-    decl String:victimID[64];
-    GetClientAuthString(victim,victimID,63);
-
-    decl String:victimTeam[64];
-    GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
-
-    PrintToChat(victim, "%c[SourceCraft] %N %c killed you with %c%s%c",
-                COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
-
-    if (xp)
+    if (victim)
     {
-        PrintToChat(client, "%c[SourceCraft] %cYou gained %d XP for killing %N with %c%s%c.",
-                    COLOR_GREEN,COLOR_DEFAULT,xp,victim, COLOR_TEAM,description,COLOR_DEFAULT);
+        decl String:steamID[64];
+        decl String:team[64];
 
-        PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
-                       client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
+        if (client)
+        {
+            GetClientAuthString(client,steamID,63);
+            GetTeamName(GetClientTeam(client), team, sizeof(team));
+        }
+        else
+        {
+            steamID[0] = 0;
+            team[0] = 0;
+        }
 
-        PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
-                       client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
+        decl String:victimID[64];
+        GetClientAuthString(victim,victimID,63);
 
-        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" fatally injured \"%N<%d><%s><%s>\" with %s (%d XP)\n",
-                  client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
-    }
-    else
-    {
-        PrintToChat(client, "%c[SourceCraft] %cYou killed %N with %c%s%c.",
-                    COLOR_GREEN,COLOR_DEFAULT,victim, COLOR_TEAM,description,COLOR_DEFAULT);
+        decl String:victimTeam[64];
+        GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
 
-        PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
-                       client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+        PrintToChat(victim, "%c[SourceCraft] %N %c killed you with %c%s%c",
+                    COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
 
-        PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
-                       client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+        if (xp)
+        {
+            if (client)
+            {
+                PrintToChat(client, "%c[SourceCraft] %cYou gained %d XP for killing %N with %c%s%c.",
+                            COLOR_GREEN,COLOR_DEFAULT,xp,victim, COLOR_TEAM,description,COLOR_DEFAULT);
+            }
 
-        LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" fatally injured \"%N<%d><%s><%s>\" with %s\n",
-                  client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+            PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+                           client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
+
+            PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+                           client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
+
+            LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" fatally injured \"%N<%d><%s><%s>\" with %s (%d XP)\n",
+                      client, client, steamID, team, victim, victim, victimID, victimTeam, weapon,  xp);
+        }
+        else
+        {
+            if (client)
+            {
+                PrintToChat(client, "%c[SourceCraft] %cYou killed %N with %c%s%c.",
+                            COLOR_GREEN,COLOR_DEFAULT,victim, COLOR_TEAM,description,COLOR_DEFAULT);
+            }
+
+            PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+                           client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+
+            PrintToConsole(victim, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
+                           client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+
+            LogToGame("[SourceCraft] \"%N<%d><%s><%s>\" fatally injured \"%N<%d><%s><%s>\" with %s\n",
+                      client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);
+        }
     }
 }
 

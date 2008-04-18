@@ -191,7 +191,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         if (attacker_index)
         {
             if (attacker_player != INVALID_HANDLE &&
-                    attacker_userid != victim_userid)
+                attacker_userid != victim_userid)
             {
                 if (GetClientTeam(attacker_index) != GetClientTeam(victim_index))
                 {
@@ -207,7 +207,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         if (assister_index)
         {
             if (assister_player != INVALID_HANDLE &&
-                    assister_userid != victim_userid)
+                assister_userid != victim_userid)
             {
                 if (GetClientTeam(assister_index) != GetClientTeam(victim_index))
                 {
