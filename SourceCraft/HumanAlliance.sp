@@ -254,13 +254,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     if (attacker_index && attacker_index != victim_index)
     {
         if (attacker_race == raceID)
-            Bash(victim_index, attacker_player);
+            Bash(victim_index, victim_player, attacker_player);
     }
 
     if (assister_index && assister_index != victim_index)
     {
         if (assister_race == raceID)
-            Bash(victim_index, assister_player);
+            Bash(victim_index, victim_player, assister_player);
     }
     return Plugin_Continue;
 }
@@ -330,35 +330,38 @@ DevotionAura(client, level)
     }
 }
 
-Bash(victim_index, Handle:player)
+Bash(victim_index, Handle:victim_player, Handle:player)
 {
-    new upgrade_bash=GetUpgradeLevel(player,raceID,bashID);
-    if (upgrade_bash)
+    if (!GetImmunity(victim_player,Immunity_MotionTake))
     {
-        // Bash
-        new percent;
-        switch(upgrade_bash)
+        new upgrade_bash=GetUpgradeLevel(player,raceID,bashID);
+        if (upgrade_bash)
         {
-            case 1:
-                percent=15;
-            case 2:
-                percent=21;
-            case 3:
-                percent=27;
-            case 4:
-                percent=32;
-        }
-        if (GetRandomInt(1,100)<=percent &&
-            (!gBashTime[victim_index] ||
-             GetGameTime() - gBashTime[victim_index] > 2.0))
-        {
-            new Float:Origin[3];
-            GetClientAbsOrigin(victim_index, Origin);
-            TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
+            // Bash
+            new percent;
+            switch(upgrade_bash)
+            {
+                case 1:
+                    percent=15;
+                case 2:
+                    percent=21;
+                case 3:
+                    percent=27;
+                case 4:
+                    percent=32;
+            }
+            if (GetRandomInt(1,100)<=percent &&
+                (!gBashTime[victim_index] ||
+                 GetGameTime() - gBashTime[victim_index] > 2.0))
+            {
+                new Float:Origin[3];
+                GetClientAbsOrigin(victim_index, Origin);
+                TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
 
-            gBashTime[victim_index] = GetGameTime();
-            FreezeEntity(victim_index);
-            AuthTimer(1.0,victim_index,UnfreezePlayer);
+                gBashTime[victim_index] = GetGameTime();
+                FreezeEntity(victim_index);
+                AuthTimer(1.0,victim_index,UnfreezePlayer);
+            }
         }
     }
 }

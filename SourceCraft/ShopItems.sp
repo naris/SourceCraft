@@ -627,6 +627,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                 if (GetOwnsItem(attacker_player,shopItem[ITEM_ORB]) ||
                     (assister_player != INVALID_HANDLE &&
                      GetOwnsItem(assister_player,shopItem[ITEM_ORB])) &&
+                     !GetImmunity(victim_player,Immunity_MotionTake) &&
                      !GetImmunity(victim_player,Immunity_Freezing))
                 {
                     SetOverrideSpeed(victim_player,0.5);
