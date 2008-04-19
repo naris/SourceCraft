@@ -14,6 +14,7 @@ new Handle:g_OnCreditsGivenHandle = INVALID_HANDLE;
 new Handle:g_OnXPGivenHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerHurtEventHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerDeathEventHandle = INVALID_HANDLE;
+new Handle:g_OnObjectKilledHandle = INVALID_HANDLE;
 
 /**
  * Registers a race with the SourceCraft plugin
@@ -990,5 +991,6 @@ bool:InitForwards()
     g_OnCreditsGivenHandle=CreateGlobalForward("OnCreditsGiven",ET_Hook,Param_Cell,Param_Cell,Param_CellByRef,Param_Cell);
     g_OnPlayerHurtEventHandle=CreateGlobalForward("OnPlayerHurtEvent",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_String,Param_Cell);
     g_OnPlayerDeathEventHandle=CreateGlobalForward("OnPlayerDeathEvent",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_String,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
+    g_OnObjectKilledHandle = CreateGlobalForward("OnObjectKilled",ET_Ignore,Param_Cell,Param_Cell,Param_String);
     return true;
 }

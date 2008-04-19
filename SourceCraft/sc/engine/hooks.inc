@@ -19,7 +19,6 @@ bool:InitHooks()
 
     RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
-    return true;
 }
 
 bool:CommandCheck(const String:compare[], const String:command[])

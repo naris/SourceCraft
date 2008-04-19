@@ -49,11 +49,6 @@ new m_OffsetDisguiseTeam;
 new m_OffsetDisguiseClass;
 new m_OffsetDisguiseHealth;
 
-// Arrays to keep track of stolen objects
-new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
-new Handle:m_StolenBuilderList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
-new Handle:m_StolenClassList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
-
 new g_redGlow;
 new g_blueGlow;
 new g_haloSprite;
@@ -217,10 +212,7 @@ public OnMapEnd()
 {
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
-    {
         ResetCloakingAndDetector(index);
-        ResetMindControledObjects(index, true);
-    }
 }
 
 public OnPlayerAuthed(client,Handle:player)
@@ -231,16 +223,12 @@ public OnPlayerAuthed(client,Handle:player)
 public OnClientDisconnect(client)
 {
     ResetCloakingAndDetector(client);
-    ResetMindControledObjects(client, false);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace && oldrace == raceID)
-    {
         ResetCloakingAndDetector(client);
-        ResetMindControledObjects(client, false);
-    }
 }
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
@@ -250,6 +238,10 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         MindControl(client,player);
     }
+}
+
+public OnObjectKilled(attacker, builder, const String:object[])
+{
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -303,10 +295,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
                                  customkill,bool:headshot,bool:backstab,bool:melee)
 {
     if (victim_index && victim_race == raceID)
-    {
         ResetCloakingAndDetector(victim_index);
-        ResetMindControledObjects(victim_index, false);
-    }
 }
 
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
@@ -315,10 +304,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
-    {
         ResetCloakingAndDetector(index);
-        ResetMindControledObjects(index, true);
-    }
 }
 
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
@@ -455,7 +441,6 @@ MindControl(client,Handle:player)
                         else
                             obj = unknown;
 
-                        //if (obj == sentrygun)
                         if (obj != unknown)
                         {
                             //Check to see if the object is still being built
@@ -473,20 +458,6 @@ MindControl(client,Handle:player)
                                         new team = GetClientTeam(client);
                                         if (builderTeam != team)
                                         {
-                                            if (m_StolenObjectList[client] == INVALID_HANDLE)
-                                                m_StolenObjectList[client] = CreateArray();
-
-                                            if (m_StolenBuilderList[client] == INVALID_HANDLE)
-                                                m_StolenBuilderList[client] = CreateArray();
-
-                                            if (m_StolenClassList[client] == INVALID_HANDLE)
-                                                m_StolenClassList[client] = CreateArray();
-
-                                            // Keep a list of stolen object and thier original owners.
-                                            PushArrayCell(m_StolenObjectList[client], target);
-                                            PushArrayCell(m_StolenBuilderList[client], builder);
-                                            PushArrayCell(m_StolenClassList[client], obj);
-
                                             SetEntDataEnt2(target, m_BuilderOffset[obj], client, true); // Change the builder to client
 
                                             SetEntData(target, m_SkinOffset[obj], (team==3)?1:0, 1, true); //paint red or blue
@@ -592,75 +563,6 @@ MindControl(client,Handle:player)
     else
         EmitSoundToClient(client,deniedWav);
 }
-
-ResetMindControledObjects(client, bool:endRound)
-{
-    if (m_StolenObjectList[client] != INVALID_HANDLE)
-    {
-        new size = GetArraySize(m_StolenObjectList[client]);
-        for (new index = 0; index < size; index++)
-        {
-            new target = GetArrayCell(m_StolenObjectList[client], index);
-            if (IsValidEntity(target))
-            {
-                decl String:class[32];
-                if (GetEntityNetClass(target,class,sizeof(class)))
-                {
-                    new objects:obj2;
-                    if (StrEqual(class, "CObjectSentrygun", false))
-                        obj2 = sentrygun;
-                    else if (StrEqual(class, "CObjectDispenser", false))
-                        obj2 = dispenser;
-                    else if (StrEqual(class, "CObjectTeleporter", false))
-                        obj2 = teleporter;
-                    else
-                        obj2 = unknown;
-
-                    // Is the object still what we stole?
-                    new objects:obj = objects:GetArrayCell(m_StolenClassList[client], index);
-                    if (obj == obj2)
-                    {
-                        // Do we still own it?
-                        if (GetEntDataEnt2(target, m_BuilderOffset[obj]) == client)
-                        {
-                            if (endRound)
-                                RemoveEdict(target); // Remove the object.
-                            else
-                            {
-                                // Is the original builser still around?
-                                new builder = GetArrayCell(m_StolenBuilderList[client], index);
-                                if (IsClientInGame(builder) && TF2_GetPlayerClass(builder) == TFClass_Engineer)
-                                {
-                                    // Give it back.
-                                    new team = GetClientTeam(builder);
-                                    SetEntDataEnt2(target, m_BuilderOffset[obj], builder, true); // Change the builder back
-
-                                    SetEntData(target, m_SkinOffset[obj], (team==3)?1:0, 1, true); //paint red or blue
-
-                                    SetVariantInt(team); //Prep the value for the call below
-                                    AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                                    SetVariantInt(team); //Same thing again but we are changing SetTeam
-                                    AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-                                }
-                                else
-                                {
-                                    // Zap it.
-                                    //SetEntityHealth(target, 0); // Kill the object.
-                                    RemoveEdict(target); // Remove the object.
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        ClearArray(m_StolenObjectList[client]);
-        ClearArray(m_StolenBuilderList[client]);
-        ClearArray(m_StolenClassList[client]);
-    }
-}
-
 
 public Action:AllowMindControl(Handle:timer,any:index)
 {

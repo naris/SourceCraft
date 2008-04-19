@@ -5,6 +5,8 @@
  * Author(s): Naris (Murray Wilson)
  */
 
+new Handle:m_ObjectKilledRegex = INVALID_HANDLE;
+
 bool:HookTFEvents()
 {
     if(!HookEventEx("player_changeclass",PlayerChangeClass))
@@ -114,6 +116,8 @@ bool:HookTFEvents()
         LogError("Could not hook the teamplay_game_over event.");
     }
    
+    AddGameLogHook(LogScanner);
+
     return true;
 }
 
@@ -400,4 +404,45 @@ public GameOver(Handle:event,const String:name[],bool:dontBroadcast)
 public LogEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     LogMessage("LogEvent(%s)", name);
+}
+
+public Action:LogScanner(const String:message[])
+{
+    decl String:buffer[5];
+    decl String:object[64];
+
+    new attacker = 0;
+    new builder = 0;
+    new result;
+
+    if (m_ObjectKilledRegex == INVALID_HANDLE)
+        m_ObjectKilledRegex = CompileRegex("\".+<([0-9]+)><.+><.+>.*\".* triggered \"killedobject\" .object \"([[:word:]]+)\". .*objectowner \".+<([0-9]+)><.+>\"");
+
+    if (MatchRegex(m_ObjectKilledRegex, message))
+    {
+        if (GetRegexSubString(m_ObjectKilledRegex, 1, buffer, sizeof(buffer)))
+        {
+            attacker = GetClientOfUserId(StringToInt(buffer));
+            if (GetRegexSubString(m_ObjectKilledRegex, 2, object, sizeof(object)))
+            {
+                if (GetRegexSubString(m_ObjectKilledRegex, 3, buffer, sizeof(buffer)))
+                    builder = GetClientOfUserId(StringToInt(buffer));
+            }
+            else
+                object[0] = 0;
+        }
+
+        if (attacker && attacker == builder)
+        {
+            new Handle:playerHandle=GetPlayerHandle(builder);
+            if (playerHandle != INVALID_HANDLE)
+                TakeObjectBuiltXP(builder, playerHandle);
+        }
+
+        Call_StartForward(g_OnObjectKilledHandle);
+        Call_PushCell(attacker);
+        Call_PushCell(builder);
+        Call_PushString(object);
+        Call_Finish(result);
+    }
 }

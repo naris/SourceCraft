@@ -16,6 +16,7 @@
 #include <sourcemod>
 #include <keyvalues>
 #include <sdktools>
+#include <regex>
 
 #undef REQUIRE_EXTENSIONS
 #include <cstrike>
@@ -139,10 +140,10 @@ public OnPluginStart()
         SetFailState("There was a failure in initiating console variables.");
     if(!InitMenus())
         SetFailState("There was a failure in initiating menus.");
-    if(!InitHooks())
-        SetFailState("There was a failure in initiating the hooks.");
     if(!ParseSettings())
         SetFailState("There was a failure in parsing the configuration file.");
+
+    InitHooks();
 
     // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
     CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);

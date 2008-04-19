@@ -9,8 +9,8 @@
 
 #include <sourcemod>
 #include <sdktools>
-
 #include <tf2_stocks>
+#include <regex>
 
 new m_OffsetCloakMeter;
 new m_OffsetDisguiseTeam;
@@ -49,6 +49,8 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     cvarTrack=CreateConVar("sm_track_tf2","0");
+    RegConsoleCmd("ent_remove",EntityRemoved);
+    AddGameLogHook(InterceptLog);
     if (GetConVarBool(cvarTrack))
         CreateTimer(1.0,TrackVariables,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -122,7 +124,7 @@ public Action:TrackVariables(Handle:timer)
 
 public OnUltimateCommand(client,player,race,bool:pressed)
 {
-    if (IsPlayerAlive(client))
+    if (pressed && IsPlayerAlive(client))
     {
         decl String:wepName[128];
         new iterOffset=m_OffsetMyWepons;
@@ -139,4 +141,56 @@ public OnUltimateCommand(client,player,race,bool:pressed)
     }
 }
 
+public Action:EntityRemoved(client,args)
+{
+    decl String:arg[64];
+    if (GetCmdArg(1,arg,sizeof(arg)) > 0)
+    {
+        if (IsPlayerAlive(client))
+            PrintToChat(client, "ent_remove %s", arg);
+    }
+    return Plugin_Continue;
+}
 
+//19:26:28 L 04/18/2008 - 19:26:32: "-=|JFH|=-Naris<3><STEAM_0:1:5037159><Red>" triggered "killedobject" (object "OBJ_SENTRYGUN") (weapon "pda_engineer") (objectowner "-=|JFH|=-Naris<3><STEAM_0:1:5037159><Red>") (attacker_position "2100 2848 -847")
+
+public Action:InterceptLog(const String:message[])
+{
+    if (StrContains(message, "killedobject", true) >= 0)
+    {
+        new attacker = 0;
+        new builder = 0;
+        //decl String:buffer[5];
+        decl String:object[64];
+        decl String:a[64];
+        decl String:b[64];
+        //new Handle:re = CompileRegex("\".+<([0-9]+)><.+><.+>.*\" triggered \"killedobject\" \\(object \"([A-Z_])\"\\) .*\\(objectowner \".+<([0-9]+)><.+>\"\\)");
+        new Handle:re = CompileRegex("\".+<([0-9]+)><.+><.+>.*\".* triggered \"killedobject\" .object \"([[:word:]]+)\". .*objectowner \".+<([0-9]+)><.+>\"");
+        if (re != INVALID_HANDLE)
+        {
+            if (MatchRegex(re, message))
+            {
+                if (GetRegexSubString(re, 1, a, sizeof(a)))
+                {
+                    attacker = StringToInt(a);
+                    if (GetRegexSubString(re, 2, object, sizeof(object)))
+                    {
+                        if (GetRegexSubString(re, 3, b, sizeof(b)))
+                            builder = StringToInt(b);
+                    }
+                    else
+                        object[0] = 0;
+                }
+                LogMessage("===> %d(%s) destroyed %d(%s)'s %s!", attacker, a, builder, b, object);
+                //PrintToChat(attacker, "%d (%N) destroyed %d(%N)'s  %s!", attacker, attacker, builder, builder, object);
+                //PrintToChat(builder, "%d (%N) destroyed %d(%N)'s  %s!", attacker, attacker, builder, builder, object);
+            }
+            else
+                LogMessage("NO MATCH:%s", message);
+
+            CloseHandle(re);
+        }
+        else
+            LogMessage("Invalid Regex!");
+    }
+}

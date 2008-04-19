@@ -449,6 +449,15 @@ forward Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player
                                   damage,const String:weapon[],bool:is_equipment,
                                   customkill,bool:headshot,bool:backstab,bool:melee);
 
+/**
+ * Gets called when an object is killed (destroyed).
+ * @param attacker: The attacker's index.
+ * @param builder: The builder's index.
+ * @param player: The player handle of the client.
+ * @param object: The object.   
+ */
+forward OnObjectKilled(attacker, builder,const String:object[]);
+
 
 /**
  * Do not edit below this line!
