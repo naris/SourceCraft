@@ -37,6 +37,10 @@ new m_OffsetMyWepons;
 
 new Handle:cvarTrack = INVALID_HANDLE;
 
+enum objects { unknown, sentrygun, dispenser, teleporter_entry, teleporter_exit };
+
+new m_ObjectList[MAXPLAYERS+1][objects];
+
 public Plugin:myinfo = 
 {
     name = "Test Module",
@@ -51,6 +55,10 @@ public OnPluginStart()
     cvarTrack=CreateConVar("sm_track_tf2","0");
     RegConsoleCmd("ent_remove",EntityRemoved);
     AddGameLogHook(InterceptLog);
+
+    if(!HookEvent("player_builtobject", PlayerBuiltObject))
+        SetFailState("Could not hook the player_builtobject event.");
+
     if (GetConVarBool(cvarTrack))
         CreateTimer(1.0,TrackVariables,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -194,3 +202,52 @@ public Action:InterceptLog(const String:message[])
             LogMessage("Invalid Regex!");
     }
 }
+
+public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new userid = GetEventInt(event,"userid");
+    if (userid > 0)
+    {
+        new index=GetClientOfUserId(userid);
+
+        new objects:type = unknown;
+        new object = GetEventInt(event,"object");
+
+        decl String:class[32];
+        if (GetEntityNetClass(object,class,sizeof(class)))
+        {
+            if (StrEqual(class, "CObjectSentrygun", false))
+                type = sentrygun;
+            else if (StrEqual(class, "CObjectDispenser", false))
+                type = dispenser;
+            else if (StrEqual(class, "CObjectTeleporter", false))
+                type = teleporter_entry;
+        }
+        else
+            class[0] = 0;
+
+        m_ObjectList[index][type] = object;
+
+        LogMessage("player_objectbuilt: userid=%d(%d), object=%d(%s)",
+                   userid, index, object, class);
+    }
+}
+
+public OnObjectKilled(attacker, builder,const String:object[])
+{
+    new objects:type = unknown;
+    if (StrEqual(object, "OBJ_SENTRYGUN", false))
+        type = sentrygun;
+    else if (StrEqual(object, "OBJ_DISPENSER", false))
+        type = dispenser;
+    else if (StrEqual(object, "TELEPORTER_ENTRY", false))
+        type = teleporter_entry;
+    else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
+        type = teleporter_exit;
+
+    LogMessage("objectkilled: builder=%d, object=%d(%s)",
+               builder, m_ObjectList[builder][type], object);
+
+    m_ObjectList[builder][type] = 0;
+}
+
