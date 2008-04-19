@@ -49,6 +49,8 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
+    return; // Disable until it's done
+
     raceID      = CreateRace("Terran Medic", "medic",
                              "You are now part of the Terran Medic.",
                              "You will be part of the Terran Medic when you die or respawn.",
@@ -271,7 +273,7 @@ bool:Armor(damage, victim_index, Handle:victim_player)
 
 bool:Infect(Handle:event, damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    new infect_level = GetUpgradeLevel(player,raceID,u238ID);
+    new infect_level = GetUpgradeLevel(player,raceID,infectID);
     if (infect_level > 0)
     {
         if (!GetImmunity(victim_player,Immunity_HealthTake) &&
