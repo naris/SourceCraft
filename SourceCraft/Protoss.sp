@@ -312,7 +312,7 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
-            MindControlledObjectReplaced(index, type);
+            UpdateMindControlledObject(-1, index, type, false);
             m_ObjectAlive[index][type] = true;
         }
     }
@@ -334,7 +334,7 @@ public OnObjectKilled(attacker, builder, const String:object[])
 
     LogMessage("objectkilled: builder=%d, object=%s", builder, object);
 
-    MindControlledObjectKilled(builder, type);
+    UpdateMindControlledObject(-1, builder, type, true);
     m_ObjectAlive[builder][type] = false;
 }
 
@@ -494,14 +494,20 @@ MindControl(client,Handle:player)
                                         new team = GetClientTeam(client);
                                         if (builderTeam != team)
                                         {
-                                            SetEntDataEnt2(target, m_BuilderOffset, client, true); // Change the builder to client
+                                            // Check to see if this target has already been controlled.
+                                            builder = UpdateMindControlledObject(target, builder, type, true);
+                                            // Change the builder to client
+                                            SetEntDataEnt2(target, m_BuilderOffset, client, true);
 
-                                            SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true); //paint red or blue
+                                            //paint red or blue
+                                            SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
 
-                                            SetVariantInt(team); //Prep the value for the call below
-                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+                                            //Change TeamNum
+                                            SetVariantInt(team);
+                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0);
 
-                                            SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                            //Same thing again but we are changing SetTeam
+                                            SetVariantInt(team);
                                             AcceptEntityInput(target, "SetTeam", -1, -1, 0);
 
                                             EmitSoundToAll(controlWav,target);
@@ -789,9 +795,10 @@ ResetCloakingAndDetector(client)
     }
 }
 
-MindControlledObjectReplaced(builder, objects:obj)
+UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
 {
-    if (builder > 0)
+    new bindex = builder;
+    if (object > 0 || builder > 0)
     {
         new maxplayers=GetMaxClients();
         for (new client=1;client<=maxplayers;client++)
@@ -805,65 +812,41 @@ MindControlledObjectReplaced(builder, objects:obj)
                     if (pack != INVALID_HANDLE)
                     {
                         ResetPack(pack);
-                        new bindex = ReadPackCell(pack);
-                        if (builder == bindex)
+                        bindex           = ReadPackCell(pack);
+                        new objects:type = objects:ReadPackCell(pack);
+                        new target       = ReadPackCell(pack);
+
+                        new bool:found;
+                        if (object > 0)
+                            found = (object == target);
+                        else
+                            found = (builder == bindex && obj == type);
+
+                        if (found)
                         {
-                            new objects:type = objects:ReadPackCell(pack);
-                            if (obj == type)
-                            {
-                                CloseHandle(pack);
+                            CloseHandle(pack);
+
+                            if (remove)
                                 RemoveFromArray(m_StolenObjectList[client], index);
-                                client = maxplayers+1;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-MindControlledObjectKilled(builder, objects:obj)
-{
-    if (builder > 0)
-    {
-        new maxplayers=GetMaxClients();
-        for (new client=1;client<=maxplayers;client++)
-        {
-            if (m_StolenObjectList[client] != INVALID_HANDLE)
-            {
-                new size = GetArraySize(m_StolenObjectList[client]);
-                for (new index = 0; index < size; index++)
-                {
-                    new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
-                    if (pack != INVALID_HANDLE)
-                    {
-                        ResetPack(pack);
-                        new bindex = ReadPackCell(pack);
-                        if (builder == bindex)
-                        {
-                            new objects:type = objects:ReadPackCell(pack);
-                            if (obj == type)
+                            else
                             {
-                                new target = ReadPackCell(pack);
-                                CloseHandle(pack);
-
+                                // Update the tracking package
                                 pack = CreateDataPack();
                                 WritePackCell(pack, -1);
                                 WritePackCell(pack, type);
                                 WritePackCell(pack, target);
                                 SetArrayCell(m_StolenObjectList[client], index, pack);
-
-                                client = maxplayers+1;
-                                break;
                             }
+
+                            client = maxplayers+1;
+                            break;
                         }
                     }
                 }
             }
         }
     }
+    return bindex;
 }
 
 ResetMindControlledObjects(client, bool:endRound)
@@ -893,7 +876,8 @@ ResetMindControlledObjects(client, bool:endRound)
                             current_type = dispenser;
                         else if (StrEqual(class, "CObjectTeleporter", false))
                         {
-                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset); // Get the Object Type
+                            // Get the Object Type
+                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset);
                             LogMessage("ObjectType for %s is %d", class, otype);
                             current_type = (otype == 1) ? teleporter_entry : teleporter_exit;
                         }
@@ -906,31 +890,32 @@ ResetMindControlledObjects(client, bool:endRound)
                             // Do we still own it?
                             if (GetEntDataEnt2(target, m_BuilderOffset) == client)
                             {
-                                // Is the builder valid?
-                                if (builder > 0)
+                                // Is the round not ending and the builder valid?
+                                if (!endRound && builder > 0)
                                 {
-                                    if (endRound)
-                                        RemoveEdict(target); // Remove the object.
-                                    else
+                                    // Is the original builder still around and still an engie?
+                                    if (IsClientInGame(builder) &&
+                                        TF2_GetPlayerClass(builder) == TFClass_Engineer)
                                     {
-                                        // Is the original builder still around?
-                                        if (IsClientInGame(builder) && TF2_GetPlayerClass(builder) == TFClass_Engineer)
-                                        {
-                                            // Give it back.
-                                            new team = GetClientTeam(builder);
-                                            SetEntDataEnt2(target, m_BuilderOffset, builder, true); // Change the builder back
+                                        // Give it back.
+                                        new team = GetClientTeam(builder);
 
-                                            SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true); //paint red or blue
+                                        // Change the builder back
+                                        SetEntDataEnt2(target, m_BuilderOffset, builder, true);
 
-                                            SetVariantInt(team); //Prep the value for the call below
-                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+                                        //paint red or blue
+                                        SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
 
-                                            SetVariantInt(team); //Same thing again but we are changing SetTeam
-                                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-                                        }
-                                        else // Zap it.
-                                            RemoveEdict(target); // Remove the object.
+                                        //Change TeamNum
+                                        SetVariantInt(team);
+                                        AcceptEntityInput(target, "TeamNum", -1, -1, 0);
+
+                                        //Same thing again but we are changing SetTeam
+                                        SetVariantInt(team);
+                                        AcceptEntityInput(target, "SetTeam", -1, -1, 0);
                                     }
+                                    else // Zap it.
+                                        RemoveEdict(target); // Remove the object.
                                 }
                                 else // Zap it.
                                     RemoveEdict(target); // Remove the object.
