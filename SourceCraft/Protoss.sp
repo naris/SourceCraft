@@ -413,14 +413,12 @@ MindControl(client,Handle:player)
     new ult_level=GetUpgradeLevel(player,raceID,controlID);
     if(ult_level)
     {
-        /*
         if (!GetConVarBool(cvarMindControlEnable))
         {
             PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
                         COLOR_GREEN,COLOR_DEFAULT);
             return;
         }
-         */
 
         new Float:range, percent;
         switch(ult_level)
