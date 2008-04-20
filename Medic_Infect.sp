@@ -21,9 +21,13 @@ new Handle:Cvar_DmgTime = INVALID_HANDLE;
 new Handle:Cvar_SpreadAll = INVALID_HANDLE;
 new Handle:Cvar_SpreadSameTeam = INVALID_HANDLE;
 new Handle:Cvar_SpreadOpposingTeam = INVALID_HANDLE;
+new Handle:Cvar_SpreadRange = INVALID_HANDLE;
 
 new Handle:Cvar_InfectSameTeam = INVALID_HANDLE;
 new Handle:Cvar_InfectOpposingTeam = INVALID_HANDLE;
+
+new Handle:Cvar_InfectWithMedigun = INVALID_HANDLE;
+new Handle:Cvar_InfectWithSyringegun = INVALID_HANDLE;
 
 new Handle:CvarEnable = INVALID_HANDLE;
 new Handle:CvarRed = INVALID_HANDLE;
@@ -45,14 +49,19 @@ public OnPluginStart()
 	Cvar_SpreadAll = CreateConVar("sv_medic_infect_spread_all", "0", "Allow medical infections to run rampant",FCVAR_PLUGIN);
 	Cvar_SpreadSameTeam = CreateConVar("sv_medic_infect_spread_friendly", "1", "Allow medical infections to run rampant inside a team",FCVAR_PLUGIN);
 	Cvar_SpreadOpposingTeam = CreateConVar("sv_medic_infect_spread_enemy", "0", "Allow medical infections to run rampant between teams",FCVAR_PLUGIN);		
+	Cvar_SpreadRange = CreateConVar("sv_medic_infect_spread_range", "1000.0", "Range at which medical infections spreads",FCVAR_PLUGIN);
 
 	Cvar_InfectSameTeam = CreateConVar("sv_medic_infect_friendly", "1", "Allow medics to infect friends",FCVAR_PLUGIN);
 	Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies",FCVAR_PLUGIN);
+
+	Cvar_InfectWithMedigun = CreateConVar("sv_medic_infect_with_medigun", "1", "Allow medics to infect with thier medigun",FCVAR_PLUGIN);
+	Cvar_InfectWithSyringegun = CreateConVar("sv_medic_infect_with_syringegun", "1", "Allow medics to infect with thier syringegun",FCVAR_PLUGIN);
 	
 	RegConsoleCmd("infect", InfectCommand);
 	
-	CreateTimer(1.0, HandleInfection);
+	CreateTimer(1.0, HandleInfection)
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
+	HookEventEx("player_hurt", MedicHurt);
 }
 
 public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
@@ -69,6 +78,33 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	SetEventString(event,"weapon","infection");
 	SetEventInt(event,"customkill",1);
 	
+	return Plugin_Continue;
+}
+
+public Action:MedicHurt(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(GetConVarInt(Cvar_InfectWithSyringegun))
+	{
+		new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
+		if (attacker > 0)
+		{
+			if (TF2_GetPlayerClass(attacker) == TFClass_Medic)
+			{
+				new weaponent = GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon");
+
+				decl String:classname[32];
+				if (GetEdictClassname(weaponent, classname , sizeof(classname)) )
+				{
+					if (StrEqual(classname, "tf_weapon_syringegun_medic") )
+					{
+						new id = GetClientOfUserId(GetEventInt(event,"userid"));
+						if (id > 0)
+							Infect(attacker,id,0);
+					}
+				}
+			}
+		}
+	}
 	return Plugin_Continue;
 }
 
@@ -102,6 +138,12 @@ public Action:HandleInfection(Handle:timer)
 		new hp = GetClientHealth(a);
 		hp -= GetConVarInt(Cvar_DmgAmount);
 		SetEntityHealth(a,hp);
+
+		if (hp <= 0)
+		{
+			PrintToChat(a, "You have died from infection");
+			ForcePlayerSuicide(a);
+		}
 	}
 }
 
@@ -110,21 +152,25 @@ public OnGameFrame()
 	if(!GetConVarInt(CvarEnable)) return;
 	new i = 1;
 	decl Float:ori1[3], Float:ori2[3];
+	new Float:range = GetConVarFloat(Cvar_SpreadRange);
 	
 	new maxplayers = GetMaxClients();
 	for(; i <= maxplayers; i++)
 	{
 		if(!IsClientInGame(i) || !IsPlayerAlive(i)) continue;
 
-		if(ClientInfected[i] == 0) continue;
+		if(GetConVarInt(Cvar_InfectWithMedigun))
+			InfectCommand(i,0);
 		
+		if(ClientInfected[i] == 0) continue;
+
 		GetClientAbsOrigin(i, ori1);
 		for(new a = 1; a <= maxplayers; a++)
 		{
 			if(!IsClientInGame(a) || !IsPlayerAlive(a)) continue;
 			
 			GetClientAbsOrigin(a, ori2);
-			if( (GetVectorDistance(ori1, ori2, true) < 1000.0) && (TF2_GetPlayerClass(a) != TFClass_Medic) )
+			if( (GetVectorDistance(ori1, ori2, true) < range) && (TF2_GetPlayerClass(a) != TFClass_Medic) )
 			{
 				SpreadInfection(i,a);
 			}
@@ -134,7 +180,8 @@ public OnGameFrame()
 
 public Action:InfectCommand(i, args)
 {
-	if(TF2_GetPlayerClass(i) == TFClass_Medic)
+	new buttons = GetClientButtons(i);
+	if((buttons & (IN_ATTACK|IN_RELOAD)) && (TF2_GetPlayerClass(i) == TFClass_Medic))
 	{
 		new weaponent = GetEntPropEnt(i, Prop_Send, "m_hActiveWeapon");
 			
@@ -143,7 +190,7 @@ public Action:InfectCommand(i, args)
 		{
 			if(StrEqual(classname, "tf_weapon_medigun") )
 			{
-				if(GetClientButtons(i) & IN_ATTACK)
+				if(buttons & IN_ATTACK)
 				{
 					new target = GetClientAimTarget(i);
 					if(target > 0) 
@@ -151,7 +198,7 @@ public Action:InfectCommand(i, args)
 						if(CheckIfShouldSpread(i,target) ) Infect(i,target,0);
 					}
 				}
-				else if(GetClientButtons(i) & IN_RELOAD)
+				else if(buttons & IN_RELOAD)
 				{
 					new target = GetClientAimTarget(i);
 					if(target > 0) 
@@ -169,11 +216,12 @@ public Action:InfectCommand(i, args)
 stock CheckIfShouldSpread(a,b)
 {
 	decl Float:ori1[3], Float:ori2[3];
+	new Float:range = GetConVarFloat(Cvar_SpreadRange);
 	
 	GetClientAbsOrigin(a, ori1);
 	GetClientAbsOrigin(b, ori2);
 	
-	if( (GetVectorDistance(ori1, ori2, true) < 1000.0) && (TF2_GetPlayerClass(b) != TFClass_Medic) )
+	if( (GetVectorDistance(ori1, ori2, true) < range) && (TF2_GetPlayerClass(b) != TFClass_Medic) )
 	{
 		return 1;
 	}
