@@ -39,8 +39,6 @@ new Handle:cvarTrack = INVALID_HANDLE;
 
 enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
 
-new m_ObjectList[MAXPLAYERS+1][objects];
-
 public Plugin:myinfo = 
 {
     name = "Test Module",
@@ -93,11 +91,11 @@ public OnMapStart()
 public Action:TrackVariables(Handle:timer)
 {
     new maxplayers=GetMaxClients();
-    for(new client=1;client<=maxplayers;client++)
+    for (new client=1;client<=maxplayers;client++)
     {
-        if(IsClientInGame(client))
+        if (IsClientInGame(client))
         {
-            if(IsPlayerAlive(client))
+            if (IsPlayerAlive(client))
             {
                 new TFClassType:tfClass = TF2_GetPlayerClass(client);
                 new class = m_OffsetClass>0 ? GetEntData(client,m_OffsetClass) : -99;
@@ -213,8 +211,6 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         //new objects:type = unknown;
         new object = GetEventInt(event,"object");
 
-        m_ObjectList[index][type] = 1;
-
         LogMessage("player_objectbuilt: userid=%d(%d), object=%d",
                    userid, index, object);
     }
@@ -232,8 +228,7 @@ public OnObjectKilled(attacker, builder,const String:object[])
     else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
         type = teleporter_exit;
 
-    LogMessage("objectkilled: builder=%d, object=%d", builder, object);
-
-    m_ObjectList[builder][type] = 0;
+    LogMessage("objectkilled: builder=%d, type=%d, object=%s",
+               builder, type, object);
 }
 

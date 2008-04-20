@@ -41,12 +41,12 @@ new Float:gReaverScarabTime[MAXPLAYERS+1];
 
 enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
 
-new m_SkinOffset[objects];
-new m_BuilderOffset[objects];
-new m_BuildingOffset[objects];
-new m_ObjectTypeOffset[objects];
+new m_SkinOffset;
+new m_BuilderOffset;
+new m_BuildingOffset;
+new m_ObjectTypeOffset;
 
-new m_ObjectList[MAXPLAYERS+1][objects];
+new bool:m_ObjectAlive[MAXPLAYERS+1][objects];
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
@@ -144,77 +144,21 @@ public OnPluginReady()
         if (m_OffsetDisguiseHealth == -1)
             SetFailState("Couldn't find DisguiseHealth Offset");
 
-        m_SkinOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_nSkin");
-        if(m_SkinOffset[sentrygun] == -1)
+        m_SkinOffset = FindSendPropOffs("CObjectSentrygun","m_nSkin");
+        if(m_SkinOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Skin offset.");
-        else
-            LogMessage("Offset for CObjectSentrygun.m_nSkin=%x", m_SkinOffset[sentrygun]);
 
-        m_BuilderOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
-        if(m_BuilderOffset[sentrygun] == -1)
+        m_BuilderOffset = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
+        if(m_BuilderOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
-        else
-            LogMessage("Offset for CObjectSentrygun.m_hBuilder=%x", m_BuilderOffset[sentrygun]);
 
-        m_BuildingOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
-        if(m_BuildingOffset[sentrygun] == -1)
+        m_BuildingOffset = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
+        if(m_BuildingOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
-        else
-            LogMessage("Offset for CObjectSentrygun.m_bBuilding=%x", m_BuildingOffset[sentrygun]);
 
-        m_ObjectTypeOffset[sentrygun] = m_ObjectTypeOffset[sentrygun] = FindSendPropOffs("CObjectSentrygun","m_iObjectType");
-        if(m_ObjectTypeOffset[sentrygun] == -1)
+        m_ObjectTypeOffset = FindSendPropOffs("CObjectSentrygun","m_iObjectType");
+        if(m_ObjectTypeOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
-        else
-            LogMessage("Offset for CObjectSentrygun.m_iObjectType=%x", m_ObjectTypeOffset[sentrygun]);
-
-        m_SkinOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_nSkin");
-        if(m_SkinOffset[dispenser] == -1)
-            SetFailState("[SourceCraft] Error finding Dispenser Skin offset.");
-        else
-            LogMessage("Offset for CObjectDispenser.m_nSkin=%x", m_SkinOffset[dispenser]);
-
-        m_BuilderOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_hBuilder");
-        if(m_BuilderOffset[dispenser] == -1)
-            SetFailState("[SourceCraft] Error finding Dispenser Builder offset.");
-        else
-            LogMessage("Offset for CObjectDispenser.m_hBuilder=%x", m_BuilderOffset[dispenser]);
-
-        m_ObjectTypeOffset[dispenser] = m_ObjectTypeOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_iObjectType");
-        if(m_ObjectTypeOffset[dispenser] == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
-        else
-            LogMessage("Offset for CObjectSentrygun.m_iObjectType=%x", m_ObjectTypeOffset[dispenser]);
-
-        m_BuildingOffset[dispenser] = FindSendPropOffs("CObjectDispenser","m_bBuilding");
-        if(m_BuildingOffset[dispenser] == -1)
-            SetFailState("[SourceCraft] Error finding Dispenser Building offset.");
-        else
-            LogMessage("Offset for CObjectDispenser.m_bBuilding=%x", m_BuildingOffset[dispenser]);
-
-        m_SkinOffset[teleporter_entry] = m_SkinOffset[teleporter_exit] = FindSendPropOffs("CObjectTeleporter","m_nSkin");
-        if(m_SkinOffset[teleporter_entry] == -1)
-            SetFailState("[SourceCraft] Error finding Teleporter Skin offset.");
-        else
-            LogMessage("Offset for CObjectTeleporter.m_nSkin=%x", m_SkinOffset[teleporter_entry]);
-
-        m_BuilderOffset[teleporter_entry] = m_BuilderOffset[teleporter_exit] = FindSendPropOffs("CObjectTeleporter","m_hBuilder");
-        if(m_BuilderOffset[teleporter_entry] == -1)
-            SetFailState("[SourceCraft] Error finding Teleporter Builder offset.");
-        else
-            LogMessage("Offset for CObjectTeleporter.m_hBuilder=%x", m_BuilderOffset[teleporter_entry]);
-
-        m_BuildingOffset[teleporter_entry] = m_BuildingOffset[teleporter_exit] = FindSendPropOffs("CObjectTeleporter","m_bBuilding");
-        if(m_BuildingOffset[teleporter_entry] == -1)
-            SetFailState("[SourceCraft] Error finding Teleporter Building offset.");
-        else
-            LogMessage("Offset for CObjectTeleporter.m_bBuilding=%x", m_BuildingOffset[teleporter_entry]);
-
-        m_ObjectTypeOffset[teleporter_entry] = m_ObjectTypeOffset[teleporter_exit] = FindSendPropOffs("CObjectTeleporter","m_iObjectType");
-        if(m_ObjectTypeOffset[teleporter_entry] == -1)
-            SetFailState("[SourceCraft] Error finding Teleporter ObjectType offset.");
-        else
-            LogMessage("Offset for CObjectTeleporter.m_iObjectType=%x", m_ObjectTypeOffset[teleporter_entry]);
     }
 }
 
@@ -259,7 +203,7 @@ public OnMapEnd()
     for (new index=1;index<=maxplayers;index++)
     {
         ResetCloakingAndDetector(index);
-        ResetMindControledObjects(index, true);
+        ResetMindControlledObjects(index, true);
     }
 }
 
@@ -271,7 +215,7 @@ public OnPlayerAuthed(client,Handle:player)
 public OnClientDisconnect(client)
 {
     ResetCloakingAndDetector(client);
-    ResetMindControledObjects(client, false);
+    ResetMindControlledObjects(client, false);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -279,7 +223,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     if (race != oldrace && oldrace == raceID)
     {
         ResetCloakingAndDetector(client);
-        ResetMindControledObjects(client, false);
+        ResetMindControlledObjects(client, false);
     }
 }
 
@@ -345,7 +289,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     if (victim_index && victim_race == raceID)
     {
         ResetCloakingAndDetector(victim_index);
-        ResetMindControledObjects(victim_index, false);
+        ResetMindControlledObjects(victim_index, false);
     }
 }
 
@@ -355,7 +299,7 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     for (new index=1;index<=maxplayers;index++)
     {
         ResetCloakingAndDetector(index);
-        ResetMindControledObjects(index, true);
+        ResetMindControlledObjects(index, true);
     }
 }
 
@@ -366,7 +310,11 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
     {
         new index = GetClientOfUserId(userid);
         if (index > 0)
-            m_ObjectList[index][objects:GetEventInt(event,"object")] = 1;
+        {
+            new objects:type = objects:GetEventInt(event,"object");
+            MindControlledObjectReplaced(index, type);
+            m_ObjectAlive[index][type] = true;
+        }
     }
 }
 
@@ -386,8 +334,8 @@ public OnObjectKilled(attacker, builder, const String:object[])
 
     LogMessage("objectkilled: builder=%d, object=%d", builder, object);
 
-    MindControledObjectKilled(builder, type);
-    m_ObjectList[builder][type] = 0;
+    MindControlledObjectKilled(builder, type);
+    m_ObjectAlive[builder][type] = false;
 }
 
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
@@ -465,12 +413,14 @@ MindControl(client,Handle:player)
     new ult_level=GetUpgradeLevel(player,raceID,controlID);
     if(ult_level)
     {
+        /*
         if (!GetConVarBool(cvarMindControlEnable))
         {
             PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
                         COLOR_GREEN,COLOR_DEFAULT);
             return;
         }
+         */
 
         new Float:range, percent;
         switch(ult_level)
@@ -522,8 +472,9 @@ MindControl(client,Handle:player)
                         else if (StrEqual(class, "CObjectTeleporter", false))
                         {
                             type = teleporter_entry;
-                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset[type]); // Get the Object Type
-                            PrintToChat(client, "Target ObjectType=%d", otype);
+                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset); // Get the Object Type
+                            LogMessage("Target ObjectType=%d, Class=%s", otype, class);
+                            PrintToChat(client, "Target ObjectType=%d, Class=%s", otype, class);
                         }
                         else
                             type = unknown;
@@ -531,11 +482,11 @@ MindControl(client,Handle:player)
                         if (type != unknown)
                         {
                             //Check to see if the object is still being built
-                            new building = GetEntDataEnt2(target, m_BuildingOffset[type]);
+                            new building = GetEntDataEnt2(target, m_BuildingOffset);
                             if (building != 1)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                                new builder = GetEntDataEnt2(target, m_BuilderOffset[type]); // Get the current owner of the object.
+                                new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
                                 new Handle:player_check=GetPlayerHandle(builder);
                                 if (player_check != INVALID_HANDLE)
                                 {
@@ -545,9 +496,9 @@ MindControl(client,Handle:player)
                                         new team = GetClientTeam(client);
                                         if (builderTeam != team)
                                         {
-                                            SetEntDataEnt2(target, m_BuilderOffset[type], client, true); // Change the builder to client
+                                            SetEntDataEnt2(target, m_BuilderOffset, client, true); // Change the builder to client
 
-                                            SetEntData(target, m_SkinOffset[type], (team==3)?1:0, 1, true); //paint red or blue
+                                            SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true); //paint red or blue
 
                                             SetVariantInt(team); //Prep the value for the call below
                                             AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
@@ -840,7 +791,7 @@ ResetCloakingAndDetector(client)
     }
 }
 
-MindControledObjectKilled(builder, objects:obj)
+MindControlledObjectReplaced(builder, objects:obj)
 {
     if (builder > 0)
     {
@@ -875,7 +826,49 @@ MindControledObjectKilled(builder, objects:obj)
     }
 }
 
-ResetMindControledObjects(client, bool:endRound)
+MindControlledObjectKilled(builder, objects:obj)
+{
+    if (builder > 0)
+    {
+        new maxplayers=GetMaxClients();
+        for (new client=1;client<=maxplayers;client++)
+        {
+            if (m_StolenObjectList[client] != INVALID_HANDLE)
+            {
+                new size = GetArraySize(m_StolenObjectList[client]);
+                for (new index = 0; index < size; index++)
+                {
+                    new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
+                    if (pack != INVALID_HANDLE)
+                    {
+                        ResetPack(pack);
+                        new bindex = ReadPackCell(pack);
+                        if (builder == bindex)
+                        {
+                            new objects:type = objects:ReadPackCell(pack);
+                            if (obj == type)
+                            {
+                                new target = ReadPackCell(pack);
+                                CloseHandle(pack);
+
+                                pack = CreateDataPack();
+                                WritePackCell(pack, -1);
+                                WritePackCell(pack, type);
+                                WritePackCell(pack, target);
+                                SetArrayCell(m_StolenObjectList[client], index, pack);
+
+                                client = maxplayers+1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+ResetMindControlledObjects(client, bool:endRound)
 {
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
@@ -902,7 +895,8 @@ ResetMindControledObjects(client, bool:endRound)
                             current_type = dispenser;
                         else if (StrEqual(class, "CObjectTeleporter", false))
                         {
-                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset[teleporter_entry]); // Get the Object Type
+                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset); // Get the Object Type
+                            LogMessage("ObjectType for %s is %d", class, otype);
                             current_type = (otype == 1) ? teleporter_entry : teleporter_exit;
                         }
                         else
@@ -912,34 +906,41 @@ ResetMindControledObjects(client, bool:endRound)
                         if (current_type == type)
                         {
                             // Do we still own it?
-                            if (GetEntDataEnt2(target, m_BuilderOffset[type]) == client)
+                            if (GetEntDataEnt2(target, m_BuilderOffset) == client)
                             {
-                                if (endRound)
-                                    RemoveEdict(target); // Remove the object.
-                                else
+                                // Is the builder valid?
+                                if (builder > 0)
                                 {
-                                    // Is the original builder still around?
-                                    if (IsClientInGame(builder) && TF2_GetPlayerClass(builder) == TFClass_Engineer)
-                                    {
-                                        // Give it back.
-                                        new team = GetClientTeam(builder);
-                                        SetEntDataEnt2(target, m_BuilderOffset[type], builder, true); // Change the builder back
-
-                                        SetEntData(target, m_SkinOffset[type], (team==3)?1:0, 1, true); //paint red or blue
-
-                                        SetVariantInt(team); //Prep the value for the call below
-                                        AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
-
-                                        SetVariantInt(team); //Same thing again but we are changing SetTeam
-                                        AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-                                    }
-                                    else // Zap it.
+                                    if (endRound)
                                         RemoveEdict(target); // Remove the object.
+                                    else
+                                    {
+                                        // Is the original builder still around?
+                                        if (IsClientInGame(builder) && TF2_GetPlayerClass(builder) == TFClass_Engineer)
+                                        {
+                                            // Give it back.
+                                            new team = GetClientTeam(builder);
+                                            SetEntDataEnt2(target, m_BuilderOffset, builder, true); // Change the builder back
+
+                                            SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true); //paint red or blue
+
+                                            SetVariantInt(team); //Prep the value for the call below
+                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0); //Change TeamNum
+
+                                            SetVariantInt(team); //Same thing again but we are changing SetTeam
+                                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                                        }
+                                        else // Zap it.
+                                            RemoveEdict(target); // Remove the object.
+                                    }
                                 }
+                                else // Zap it.
+                                    RemoveEdict(target); // Remove the object.
                             }
                         }
                     }
                 }
+
                 CloseHandle(pack);
                 //SetArrayCell(m_StolenObjectList[client], index, INVALID_HANDLE);
             }
