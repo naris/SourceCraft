@@ -18,5 +18,5 @@ enum Immunity
 	Immunity_Burning     // Immune from burning (does NOT include pyro's)
 };
 
-#define IMMUNITY_COUNT 6
+#define IMMUNITY_COUNT 9
 

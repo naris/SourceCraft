@@ -332,7 +332,7 @@ public OnObjectKilled(attacker, builder, const String:object[])
     else if (StrEqual(object, "OBJ_SAPPER", false))
         type = teleporter_exit;
 
-    LogMessage("objectkilled: builder=%d, object=%d", builder, object);
+    LogMessage("objectkilled: builder=%d, object=%s", builder, object);
 
     MindControlledObjectKilled(builder, type);
     m_ObjectAlive[builder][type] = false;
