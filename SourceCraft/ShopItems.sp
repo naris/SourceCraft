@@ -643,7 +643,10 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                      !GetImmunity(victim_player,Immunity_MotionTake) &&
                      !GetImmunity(victim_player,Immunity_Freezing))
                 {
-                    SetOverrideSpeed(victim_player,0.5);
+                    SetOverrideSpeed(victim_player, 0.5);
+                    SetVisibility(victim_player, 192, BasicVisibility,
+                                  -1.0, -1.0, RenderMode:-1, RenderFx:-1,
+                                  0, 128, 255);
                     AuthTimer(5.0,victim_index,RestoreSpeed);
 
                     decl String:aname[128];
@@ -672,7 +675,11 @@ public Action:RestoreSpeed(Handle:timer,Handle:pack)
     {
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
+        {
             SetOverrideSpeed(player,-1.0);
+            SetVisibility(player, -1, BasicVisibility, -1.0, -1.0, 
+                          RenderMode:-1, RenderFx:-1, -1, -1, -1);
+        }
     }
     return Plugin_Stop;
 }
