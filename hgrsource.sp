@@ -464,8 +464,8 @@ public Native_GiveHook(Handle:plugin,numParams)
                 cooldown = Float:GetNativeCell(4);
             if (numParams >= 5)
                 flags = GetNativeCell(5);
-            ClientAccess(client,Give,Hook,duration,range,cooldown,flags);
-            g_iNativeHooks++;
+            if (!ClientAccess(client,Give,Hook,duration,range,cooldown,flags))
+                g_iNativeHooks++;
         }
     }
 }
@@ -477,8 +477,8 @@ public Native_TakeHook(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            ClientAccess(client,Take,Hook,0,0.0,0.0,0);
-            g_iNativeHooks--;
+            if (ClientAccess(client,Take,Hook,0,0.0,0.0,0))
+                g_iNativeHooks--;
         }
     }
 }
@@ -499,8 +499,8 @@ public Native_GiveGrab(Handle:plugin,numParams)
                 cooldown = Float:GetNativeCell(4);
             if (numParams >= 5)
                 flags = GetNativeCell(5);
-            ClientAccess(client,Give,Grab,duration,range,cooldown,flags);
-            g_iNativeGrabs++;
+            if (!ClientAccess(client,Give,Grab,duration,range,cooldown,flags))
+                g_iNativeGrabs++;
         }
     }
 }
@@ -512,8 +512,8 @@ public Native_TakeGrab(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            ClientAccess(client,Take,Grab,0,0.0,0.0,0);
-            g_iNativeGrabs--;
+            if (ClientAccess(client,Take,Grab,0,0.0,0.0,0))
+                g_iNativeGrabs--;
         }
     }
 }
@@ -534,8 +534,8 @@ public Native_GiveRope(Handle:plugin,numParams)
                 cooldown = Float:GetNativeCell(4);
             if (numParams >= 5)
                 flags = GetNativeCell(5);
-            ClientAccess(client,Give,Rope,duration,range,cooldown,flags);
-            g_iNativeRopes++;
+            if (!ClientAccess(client,Give,Rope,duration,range,cooldown,flags))
+                g_iNativeRopes++;
         }
     }
 }
@@ -547,8 +547,8 @@ public Native_TakeRope(Handle:plugin,numParams)
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
         {
-            ClientAccess(client,Take,Rope,0,0.0,0.0,0);
-            g_iNativeRopes--;
+            if (ClientAccess(client,Take,Rope,0,0.0,0.0,0))
+                g_iNativeRopes--;
         }
     }
 }
@@ -756,12 +756,14 @@ public Access(const String:target[],HGRSourceAccess:access,HGRSourceAction:actio
     return count;
 }
 
-public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duration,Float:range,Float:cooldown,flags)
+public bool:ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duration,Float:range,Float:cooldown,flags)
 {
+    new bool:prevState = false;
     if(access==Give)
     {
         if(action==Hook)
         {
+            prevState = gAllowedClients[client][ACTION_HOOK];
             gAllowedClients[client][ACTION_HOOK]=true;
             gAllowedDuration[client][ACTION_HOOK]=duration;
             gAllowedRange[client][ACTION_HOOK]=range;
@@ -770,6 +772,7 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duratio
         }
         else if(action==Grab)
         {
+            prevState = gAllowedClients[client][ACTION_GRAB];
             gAllowedClients[client][ACTION_GRAB]=true;
             gAllowedDuration[client][ACTION_GRAB]=duration;
             gAllowedRange[client][ACTION_GRAB]=range;
@@ -778,6 +781,7 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duratio
         }
         else if(action==Rope)
         {
+            prevState = gAllowedClients[client][ACTION_ROPE];
             gAllowedClients[client][ACTION_ROPE]=true;
             gAllowedDuration[client][ACTION_ROPE]=duration;
             gAllowedRange[client][ACTION_ROPE]=range;
@@ -788,12 +792,22 @@ public ClientAccess(client,HGRSourceAccess:access,HGRSourceAction:action,duratio
     else if(access==Take)
     {
         if(action==Hook)
+        {
+            prevState = gAllowedClients[client][ACTION_HOOK];
             gAllowedClients[client][ACTION_HOOK]=false;
+        }
         else if(action==Grab)
+        {
+            prevState = gAllowedClients[client][ACTION_GRAB];
             gAllowedClients[client][ACTION_GRAB]=false;
+        }
         else if(action==Rope)
+        {
+            prevState = gAllowedClients[client][ACTION_ROPE];
             gAllowedClients[client][ACTION_ROPE]=false;
+        }
     }
+    return prevState;
 }
 
 public bool:HasAccess(client,HGRSourceAction:action)

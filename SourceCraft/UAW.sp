@@ -27,7 +27,7 @@
 
 new String:explodeWav[] = "weapons/explode5.wav";
 
-new raceID, wageID, seniorityID, negotiationID, workID;
+new raceID, wageID, seniorityID, negotiationID, hookID, ropeID;
 
 new explosionModel;
 new g_purpleGlow;
@@ -75,8 +75,12 @@ public OnPluginReady()
     negotiationID = AddUpgrade(raceID,"Negotiations", "negotiations",
                                "Various good and not so good things happen at random intervals\nYou might get or lose money or experience, you might also die\n (However, you will no longer ever lose levels or XP)!");
 
-    workID        = AddUpgrade(raceID,"Work Rules", "hook",
+    hookID        = AddUpgrade(raceID,"Work Rules", "hook",
                                "Use your ultimate bind to hook a line to a wall and traverse it.",
+                               true); // Ultimate
+
+    ropeID        = AddUpgrade(raceID,"Swing Shift", "rope",
+                               "Use your ultimate swing from a rope.",
                                true); // Ultimate
 
     ControlHookGrabRope(true);
@@ -158,9 +162,19 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && IsPlayerAlive(client))
     {
         if (pressed)
-            Hook(client);
+        {
+            if (GetUpgradeLevel(player,race,hookID))
+                Hook(client);
+            else if (GetUpgradeLevel(player,race,ropeID))
+                Rope(client);
+        }
         else
-            UnHook(client);
+        {
+            if (GetUpgradeLevel(player,race,hookID))
+                UnHook(client);
+            else if (GetUpgradeLevel(player,race,ropeID))
+                Detach(client);
+        }
     }
 }
 
@@ -176,9 +190,15 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
-                new work_rules_level=GetUpgradeLevel(player,race,workID);
-                if (work_rules_level)
-                    WorkRules(client, player, work_rules_level);
+                new hook_level=GetUpgradeLevel(player,race,hookID);
+                if (hook_level)
+                    SetupHook(client, player, hook_level);
+                else
+                {
+                    new rope_level=GetUpgradeLevel(player,race,ropeID);
+                    if (rope_level)
+                        SetupRope(client, player, rope_level);
+                }
 
                 if (m_TeleportOnSpawn[client])
                 {
@@ -297,26 +317,40 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     if (race != oldrace)
     {
         if (oldrace == raceID)
+        {
             TakeHook(client);
+            TakeRope(client);
+        }
         else if (race == raceID)
         {
             m_JobsBank[client]=false;
             m_TeleportOnSpawn[client]=false;
-            WorkRules(client, player, GetUpgradeLevel(player,race,workID));
+
+            new hook_level=GetUpgradeLevel(player,race,hookID);
+            if (hook_level)
+                SetupHook(client, player, hook_level);
+            else
+            {
+                new rope_level=GetUpgradeLevel(player,race,ropeID);
+                if (rope_level)
+                    SetupRope(client, player, rope_level);
+            }
         }
     }
 }
 
 public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if(race == raceID && GetRace(player) == raceID)
+    if (race == raceID && GetRace(player) == raceID)
     {
-        if (upgrade==3 && (new_level <= 0 || IsPlayerAlive(client)))
-            WorkRules(client, player, new_level);
+        if (upgrade==hookID)
+            SetupHook(client, player, new_level);
+        else if (upgrade==ropeID)
+            SetupRope(client, player, new_level);
     }
 }
 
-public WorkRules(client, Handle:player, level)
+public SetupHook(client, Handle:player, level)
 {
     if (level)
     {
@@ -348,10 +382,50 @@ public WorkRules(client, Handle:player, level)
                 cooldown=5.0;
             }
         }
+        TakeRope(client);
         GiveHook(client,duration,range,cooldown,0);
     }
     else
         TakeHook(client);
+}
+
+public SetupRope(client, Handle:player, level)
+{
+    if (level)
+    {
+        new duration, Float:range, Float:cooldown;
+        switch(level)
+        {
+            case 1:
+            {
+                duration=5;
+                range=150.0;
+                cooldown=20.0;
+            }
+            case 2:
+            {
+                duration=10;
+                range=300.0;
+                cooldown=15.0;
+            }
+            case 3:
+            {
+                duration=20;
+                range=450.0;
+                cooldown=10.0;
+            }
+            case 4:
+            {
+                duration=30;
+                range=0.0;
+                cooldown=5.0;
+            }
+        }
+        TakeHook(client);
+        GiveRope(client,duration,range,cooldown,0);
+    }
+    else
+        TakeRope(client);
 }
 
 public Action:Negotiations(Handle:timer)
