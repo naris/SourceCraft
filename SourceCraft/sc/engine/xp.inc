@@ -15,8 +15,8 @@
 #define DOMINATED_XP        15
 #define REVENGE_XP          15
 
-#define BUILD_XP             5
-#define DESTROY_XP           5
+#define BUILD_XP            15
+#define DESTROY_XP          15
 #define CHARGE_XP           30
 
 #define DEFUSE_XP           20
