@@ -37,7 +37,7 @@ new m_OffsetMyWepons;
 
 new Handle:cvarTrack = INVALID_HANDLE;
 
-enum objects { unknown, sentrygun, dispenser, teleporter_entry, teleporter_exit };
+enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
 
 new m_ObjectList[MAXPLAYERS+1][objects];
 
@@ -210,26 +210,13 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
     {
         new index=GetClientOfUserId(userid);
 
-        new objects:type = unknown;
+        //new objects:type = unknown;
         new object = GetEventInt(event,"object");
 
-        decl String:class[32];
-        if (GetEntityNetClass(object,class,sizeof(class)))
-        {
-            if (StrEqual(class, "CObjectSentrygun", false))
-                type = sentrygun;
-            else if (StrEqual(class, "CObjectDispenser", false))
-                type = dispenser;
-            else if (StrEqual(class, "CObjectTeleporter", false))
-                type = teleporter_entry;
-        }
-        else
-            class[0] = 0;
+        m_ObjectList[index][type] = 1;
 
-        m_ObjectList[index][type] = object;
-
-        LogMessage("player_objectbuilt: userid=%d(%d), object=%d(%s)",
-                   userid, index, object, class);
+        LogMessage("player_objectbuilt: userid=%d(%d), object=%d",
+                   userid, index, object);
     }
 }
 
@@ -240,13 +227,12 @@ public OnObjectKilled(attacker, builder,const String:object[])
         type = sentrygun;
     else if (StrEqual(object, "OBJ_DISPENSER", false))
         type = dispenser;
-    else if (StrEqual(object, "TELEPORTER_ENTRY", false))
+    else if (StrEqual(object, "OBJ_TELEPORTER_ENTRANCE", false))
         type = teleporter_entry;
     else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
         type = teleporter_exit;
 
-    LogMessage("objectkilled: builder=%d, object=%d(%s)",
-               builder, m_ObjectList[builder][type], object);
+    LogMessage("objectkilled: builder=%d, object=%d", builder, object);
 
     m_ObjectList[builder][type] = 0;
 }

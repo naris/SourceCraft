@@ -16,6 +16,9 @@ Ult) BuildExtra
 	Lvl3: 2nd SG
 	Lvl4: 3rd SG & Dispenser
 
+
+I had an idea for the medic class. Since the Medic is german, the Wehrmacht.  Abilities: Blitzkrieg (Speed boost), War Hardened (Armor), Veteran (Faster uber chargeup). Ultimate: V1 rocket (same as nuke, basically). Of course, this has nothing to do with Warcraft or Starcract >.<
+
 Bugs:
 
 3. Protoss ultimate is disabled.

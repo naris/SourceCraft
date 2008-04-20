@@ -39,7 +39,7 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new bool:m_AllowMindControl[MAXPLAYERS+1];
 new Float:gReaverScarabTime[MAXPLAYERS+1];
 
-enum objects { unknown, sentrygun, dispenser, teleporter_entry, teleporter_exit };
+enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
 
 new m_SkinOffset[objects];
 new m_BuilderOffset[objects];
@@ -364,53 +364,29 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
     new userid = GetEventInt(event,"userid");
     if (userid > 0)
     {
-        new index=GetClientOfUserId(userid);
-
-        new objects:type = unknown;
-        new object = GetEventInt(event,"object");
-
-        decl String:class[32];
-        if (GetEntityNetClass(object,class,sizeof(class)))
-        {
-            if (StrEqual(class, "CObjectSentrygun", false))
-                type = sentrygun;
-            else if (StrEqual(class, "CObjectDispenser", false))
-                type = dispenser;
-            else if (StrEqual(class, "CObjectTeleporter", false))
-            {
-                type = teleporter_entry;
-                new otype = GetEntDataEnt2(object, m_ObjectTypeOffset[type]); // Get the Object Type
-                PrintToChat(index, "Built ObjectType=%d", otype);
-            }
-        }
-        else
-            class[0] = 0;
-
-        m_ObjectList[index][type] = object;
-
-        LogMessage("player_objectbuilt: userid=%d(%d), object=%d(%s)",
-                    userid, index, object, class);
+        new index = GetClientOfUserId(userid);
+        if (index > 0)
+            m_ObjectList[index][objects:GetEventInt(event,"object")] = 1;
     }
 }
 
-public OnObjectKilled(attacker, builder,const String:object[])
+public OnObjectKilled(attacker, builder, const String:object[])
 {
     new objects:type = unknown;
     if (StrEqual(object, "OBJ_SENTRYGUN", false))
         type = sentrygun;
     else if (StrEqual(object, "OBJ_DISPENSER", false))
         type = dispenser;
-    else if (StrEqual(object, "TELEPORTER_ENTRY", false))
+    else if (StrEqual(object, "OBJ_TELEPORTER_ENTRANCE", false))
         type = teleporter_entry;
     else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
         type = teleporter_exit;
+    else if (StrEqual(object, "OBJ_SAPPER", false))
+        type = teleporter_exit;
 
-    new entity = m_ObjectList[builder][type];
-    LogMessage("objectkilled: builder=%d, object=%d(%s)",
-               builder, entity, object);
+    LogMessage("objectkilled: builder=%d, object=%d", builder, object);
 
-    MindControledObjectKilled(entity);
-
+    MindControledObjectKilled(builder, type);
     m_ObjectList[builder][type] = 0;
 }
 
@@ -622,9 +598,9 @@ MindControl(client,Handle:player)
 
                                             // Create the Tracking Package
                                             new Handle:pack = CreateDataPack();
-                                            WritePackCell(pack, target);
                                             WritePackCell(pack, builder);
                                             WritePackCell(pack, type);
+                                            WritePackCell(pack, target);
 
                                             // And add it to the list
                                             if (m_StolenObjectList[client] == INVALID_HANDLE)
@@ -864,9 +840,9 @@ ResetCloakingAndDetector(client)
     }
 }
 
-MindControledObjectKilled(object)
+MindControledObjectKilled(builder, objects:obj)
 {
-    if (object > 0)
+    if (builder > 0)
     {
         new maxplayers=GetMaxClients();
         for (new client=1;client<=maxplayers;client++)
@@ -880,13 +856,17 @@ MindControledObjectKilled(object)
                     if (pack != INVALID_HANDLE)
                     {
                         ResetPack(pack);
-                        new target = ReadPackCell(pack);
-                        if (target == object)
+                        new bindex = ReadPackCell(pack);
+                        if (builder == bindex)
                         {
-                            CloseHandle(pack);
-                            RemoveFromArray(m_StolenObjectList[client], index);
-                            client = maxplayers+1;
-                            break;
+                            new objects:type = objects:ReadPackCell(pack);
+                            if (obj == type)
+                            {
+                                CloseHandle(pack);
+                                RemoveFromArray(m_StolenObjectList[client], index);
+                                client = maxplayers+1;
+                                break;
+                            }
                         }
                     }
                 }
@@ -906,9 +886,9 @@ ResetMindControledObjects(client, bool:endRound)
             if (pack != INVALID_HANDLE)
             {
                 ResetPack(pack);
-                new target = ReadPackCell(pack);
                 new builder = ReadPackCell(pack);
                 new objects:type = objects:ReadPackCell(pack);
+                new target = ReadPackCell(pack);
 
                 if (IsValidEntity(target))
                 {
