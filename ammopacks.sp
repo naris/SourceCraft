@@ -25,7 +25,7 @@
 #include <sdktools>
 #include <tf2_stocks>
 
-#define PL_VERSION "1.0.4"
+#define PL_VERSION "1.1.0"
 #define SOUND_A "weapons/smg_clip_out.wav"
 #define SOUND_B "items/spawn_item.wav"
 #define SOUND_C "ui/hint.wav"
@@ -50,6 +50,8 @@ new Handle:g_AmmopacksSmall = INVALID_HANDLE;
 new Handle:g_AmmopacksMedium = INVALID_HANDLE;
 new Handle:g_AmmopacksFull = INVALID_HANDLE;
 new Handle:g_AmmopacksKeep = INVALID_HANDLE;
+new Handle:g_AmmopacksLimit = INVALID_HANDLE;
+new g_AmmopacksCount = 0;
 new g_FilteredEntity = -1;
 new g_TF_MetalAmmo = 3;
 new g_TF_ClassOffsets, g_TF_MetalOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset;
@@ -65,6 +67,7 @@ public OnPluginStart()
 	g_AmmopacksMedium = CreateConVar("sm_ammopacks_medium","100","Metal required for medium Ammopacks");
 	g_AmmopacksFull = CreateConVar("sm_ammopacks_full","200","Metal required for full Ammopacks");
 	g_AmmopacksKeep = CreateConVar("sm_ammopacks_keep","60","Time to keep Ammopacks on map. (0 = off | >0 = seconds)");
+	g_AmmopacksLimit = CreateConVar("sm_ammopacks_limit","100","Maximum number of extra Ammopacks on map at a time. (<1 = unlimited)");
 	
 	g_TF_MetalOffset = FindSendPropOffs("CTFPlayer", "m_iAmmo");
 	g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
@@ -254,23 +257,32 @@ public Action:Timer_Caching(Handle:timer)
 		}
 	}
 	new AmmopacksKeep = GetConVarInt(g_AmmopacksKeep)
-	if (AmmopacksKeep > 0)
+	new AmmopacksLimit = GetConVarInt(g_AmmopacksLimit);
+	if (AmmopacksKeep > 0 || AmmopacksLimit)
 	{
 		new time = GetTime() - AmmopacksKeep;
 		for (new c = 0; c < 2048; c++)
 		{
-			if (g_AmmopacksTime[c] != 0 && g_AmmopacksTime[c] < time)
+			if (g_AmmopacksTime[c] != 0)
 			{
-				g_AmmopacksTime[c] = 0;
 				if (IsValidEntity(c))
 				{
-					new String:classname[64];
-					GetEntityNetClass(c, classname, 64);
-					if(StrEqual(classname, "CBaseAnimating"))
+					if (g_AmmopacksTime[c] < time)
 					{
-						EmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
-						RemoveEdict(c);
+						new String:classname[64];
+						GetEntityNetClass(c, classname, 64);
+						if(StrEqual(classname, "CBaseAnimating"))
+						{
+							EmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
+							RemoveEdict(c);
+							g_AmmopacksCount--;
+						}
 					}
+				}
+				else
+				{
+					g_AmmopacksTime[c] = 0;
+					g_AmmopacksCount--;
 				}
 			}
 		}
@@ -355,7 +367,10 @@ stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
 	else
 		PlayerPosition = g_EngiPosition[client];
 		
-	if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 && PlayerPosition[2] != 0.0 && IsEntLimitReached() == false)
+	new AmmopacksLimit = GetConVarInt(g_AmmopacksLimit);
+	if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 && PlayerPosition[2] != 0.0 &&
+	    (AmmopacksLimit <= 0 || g_AmmopacksCount <  AmmopacksLimit) &&
+	    IsEntLimitReached() == false)
 	{
 		PlayerPosition[2] += 4;
 		g_FilteredEntity = client;

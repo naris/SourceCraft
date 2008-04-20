@@ -52,7 +52,7 @@ new Handle:g_MedipacksFull = INVALID_HANDLE;
 new Handle:g_MedipacksKeep = INVALID_HANDLE;
 new Handle:g_MedipacksLimit = INVALID_HANDLE;
 new Handle:g_DefUberCharge = INVALID_HANDLE;
-new g_MedipackCount = 0;
+new g_MedipacksCount = 0;
 new g_FilteredEntity = -1;
 new g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset;
 
@@ -67,7 +67,7 @@ public OnPluginStart()
 	g_MedipacksMedium = CreateConVar("sm_medipacks_medium","25","UberCharge required for medium Medipacks");
 	g_MedipacksFull = CreateConVar("sm_medipacks_full","50","UberCharge required for full Medipacks");
 	g_MedipacksKeep = CreateConVar("sm_medipacks_keep","60","Time to keep Medipacks on map. (0 = off | >0 = seconds)");
-	g_MedipacksLimit = CreateConVar("sm_medipacks_max","100","Maximum number of Medipacks on map at a time. (<1 = unlimited)");
+	g_MedipacksLimit = CreateConVar("sm_medipacks_limit","100","Maximum number of extra Medipacks on map at a time. (<1 = unlimited)");
 	g_DefUberCharge = CreateConVar("sm_medipacks_ubercharge","25","Give medics a default UberCharge on spawn");
 	
 	g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
@@ -276,24 +276,26 @@ public Action:Timer_Caching(Handle:timer)
 		new time = GetTime() - MedipacksKeep;
 		for (new c = 0; c < 2048; c++)
 		{
-			if (g_MedipacksTime[c] != 0 && g_MedipacksTime[c] < time)
+			if (g_MedipacksTime[c] != 0)
 			{
-				g_MedipacksTime[c] = 0;
 				if (IsValidEntity(c))
 				{
-					new String:classname[64];
-					GetEntityNetClass(c, classname, 64);
-					if(StrEqual(classname, "CBaseAnimating"))
+					if (g_MedipacksTime[c] < time)
 					{
-						EmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
-						RemoveEdict(c);
-						g_MedipackCount--;
+						new String:classname[64];
+						GetEntityNetClass(c, classname, 64);
+						if(StrEqual(classname, "CBaseAnimating"))
+						{
+							EmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
+							RemoveEdict(c);
+							g_MedipacksCount--;
+						}
 					}
 				}
 				else
 				{
 					g_MedipacksTime[c] = 0;
-					g_MedipackCount--;
+					g_MedipacksCount--;
 				}
 			}
 		}
@@ -400,9 +402,10 @@ stock TF_SpawnMedipack(client, String:name[], bool:cmd)
 		
 	new MedipacksLimit = GetConVarInt(g_MedipacksLimit);
 	if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 && PlayerPosition[2] != 0.0 &&
-	    (MedipacksLimit <= 0 || g_MedipackCount <  MedipacksLimit) && IsEntLimitReached() == false)
+	    (MedipacksLimit <= 0 || g_MedipacksCount <  MedipacksLimit) &&
+	    IsEntLimitReached() == false)
 	{
-		g_MedipackCount++;
+		g_MedipacksCount++;
 		PlayerPosition[2] += 4;
 		g_FilteredEntity = client;
 		if (cmd)
