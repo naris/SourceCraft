@@ -23,16 +23,8 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2_stocks>
 
-#define TF_SCOUT 1
-#define TF_SNIPER 2
-#define TF_SOLDIER 3 
-#define TF_DEMOMAN 4
-#define TF_MEDIC 5
-#define TF_HEAVY 6
-#define TF_PYRO 7
-#define TF_SPY 8
-#define TF_ENG 9
 #define PL_VERSION "1.0.4"
 #define SOUND_A "weapons/smg_clip_out.wav"
 #define SOUND_B "items/spawn_item.wav"
@@ -60,7 +52,7 @@ new Handle:g_AmmopacksFull = INVALID_HANDLE;
 new Handle:g_AmmopacksKeep = INVALID_HANDLE;
 new g_FilteredEntity = -1;
 new g_TF_MetalAmmo = 3;
-new g_TF_ClassOffsets, g_TF_MetalOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
+new g_TF_ClassOffsets, g_TF_MetalOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset;
 
 public OnPluginStart()
 {
@@ -74,7 +66,6 @@ public OnPluginStart()
 	g_AmmopacksFull = CreateConVar("sm_ammopacks_full","200","Metal required for full Ammopacks");
 	g_AmmopacksKeep = CreateConVar("sm_ammopacks_keep","60","Time to keep Ammopacks on map. (0 = off | >0 = seconds)");
 	
-	g_TF_ClassOffsets = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");
 	g_TF_MetalOffset = FindSendPropOffs("CTFPlayer", "m_iAmmo");
 	g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
 	g_TF_TeamNumOffset = FindSendPropOffs("CTFItem", "m_iTeamNum");
@@ -112,7 +103,6 @@ public OnMapStart()
 	PrecacheSound(SOUND_C, true);
 	
 	g_IsRunning = true;
-	g_ResourceEnt = FindResourceObject();
 }
 
 public OnClientDisconnect(client)
@@ -156,8 +146,6 @@ public ConVarChange_IsAmmopacksOn(Handle:convar, const String:oldValue[], const 
 	{
 		g_IsRunning = true
 		PrintToChatAll("[SM] %t", "Enabled Ammopacks");
-		if (StringToInt(newValue) != StringToInt(oldValue))
-			g_ResourceEnt = FindResourceObject();
 	}
 	else
 	{
@@ -182,8 +170,7 @@ public Action:Command_Ammopack(client, args)
 	if (AmmopacksOn < 2)
 		return Plugin_Handled;
 	
-	new class = TF_GetClass(client);
-	if (class != TF_ENG)
+	if (TF2_GetPlayerClass(client) != TFClass_Engineer)
 		return Plugin_Handled;
 	
 	new String:classname[64];
@@ -229,8 +216,7 @@ public Action:Command_MetalAmount(client, args)
 		return Plugin_Handled;
 	}
 	
-	new class = TF_GetClass(target);
-	if (class != TF_ENG)
+	if (TF2_GetPlayerClass(target) != TFClass_Engineer)
 	{
 		ReplyToCommand(client, "[SM] %t", "Not a Engineer", name);
 		return Plugin_Handled;
@@ -314,7 +300,7 @@ public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroa
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	new class = GetEventInt(event, "class");
-	if (class != TF_ENG)
+	if (class != _:TFClass_Engineer)
 	{
 		g_Engis[client] = false;
 		return;
@@ -334,8 +320,7 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	if (!g_Engis[client] || !IsClientInGame(client))
 		return;
 	
-	new class = TF_GetClass(client);	
-	if (class != TF_ENG)
+	if (TF2_GetPlayerClass(client) != TFClass_Engineer)
 		return;
 	
 	TF_DropAmmopack(client, false);
@@ -360,26 +345,6 @@ public Action:Event_PlayerTeam(Handle:event, const String:name[], bool:dontBroad
 public bool:AmmopackTraceFilter(ent, contentMask)
 {
    return (ent == g_FilteredEntity) ? false : true;
-}
-
-stock FindResourceObject()
-{
-	new maxclients = GetMaxClients();
-	new maxents = GetMaxEntities();
-	new i, String:classname[64];
-	for(i = maxclients; i <= maxents; i++)
-	{
-	 	if(IsValidEntity(i))
-		{
-			GetEntityNetClass(i, classname, 64);
-			if(StrEqual(classname, "CTFPlayerResource"))
-			{
-				return i;
-			}
-		}
-	}
-	SetFailState("Cannot find TF2 player ressource prop!")
-	return -1;
 }
 
 stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
@@ -448,11 +413,6 @@ stock bool:IsEntLimitReached()
 	}
 	else
 		return false;
-}
-
-stock TF_GetClass(client)
-{
-	return GetEntData(g_ResourceEnt, g_TF_ClassOffsets + (client*4), 4);
 }
 
 stock TF_GetMetalAmount(client)
