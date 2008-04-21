@@ -79,7 +79,7 @@ public OnPluginReady()
                             "Allows you to teleport to where you \naim, 60-105 feet being the range.",
                             true); // Ultimate
 
-    m_VelocityOffset = FindSendPropOffs("CBasePlayer", "m_vecVelocity[0]");
+    m_VelocityOffset = FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]");
     if(m_VelocityOffset == -1)
         SetFailState("[SourceCraft] Error finding Velocity offset.");
 }
