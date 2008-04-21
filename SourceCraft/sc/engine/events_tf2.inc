@@ -165,10 +165,6 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (playerHandle != INVALID_HANDLE)
             GiveObjectBuiltXP(index,playerHandle);
     }
-
-    new object = GetEventInt(event,"object");
-    LogMessage("player_objectbuilt: userid=%d, object=%d",
-               userid, object);
 }
 
 public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
