@@ -44,9 +44,10 @@ enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, 
 new m_SkinOffset;
 new m_BuilderOffset;
 new m_BuildingOffset;
+new m_PlacingOffset;
 new m_ObjectTypeOffset;
-
-new bool:m_ObjectAlive[MAXPLAYERS+1][objects];
+new m_ObjectFlagsOffset;
+new m_ObjectStateOffset;
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
@@ -144,21 +145,33 @@ public OnPluginReady()
         if (m_OffsetDisguiseHealth == -1)
             SetFailState("Couldn't find DisguiseHealth Offset");
 
-        m_SkinOffset = FindSendPropOffs("CObjectSentrygun","m_nSkin");
+        m_SkinOffset = FindSendPropInfo("CObjectSentrygun","m_nSkin");
         if(m_SkinOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Skin offset.");
 
-        m_BuilderOffset = FindSendPropOffs("CObjectSentrygun","m_hBuilder");
+        m_BuilderOffset = FindSendPropInfo("CObjectSentrygun","m_hBuilder");
         if(m_BuilderOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
 
-        m_BuildingOffset = FindSendPropOffs("CObjectSentrygun","m_bBuilding");
+        m_BuildingOffset = FindSendPropInfo("CObjectSentrygun","m_bBuilding");
         if(m_BuildingOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
 
-        m_ObjectTypeOffset = FindSendPropOffs("CObjectSentrygun","m_iObjectType");
+        m_PlacingOffset = FindSendPropInfo("CObjectSentrygun","m_bPlacing");
+        if(m_PlacingOffset == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun Placing offset.");
+
+        m_ObjectTypeOffset = FindSendPropInfo("CObjectSentrygun","m_iObjectType");
         if(m_ObjectTypeOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
+
+        m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
+        if(m_ObjectFlagsOffset == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
+
+        m_ObjectStateOffset = FindSendPropInfo("CObjectSentrygun","m_iState");
+        if(m_ObjectStateOffset == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun State offset.");
     }
 }
 
@@ -312,8 +325,8 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
+            LogMessage("%d built a %d", index, type);
             UpdateMindControlledObject(-1, index, type, false);
-            m_ObjectAlive[index][type] = true;
         }
     }
 }
@@ -332,10 +345,9 @@ public OnObjectKilled(attacker, builder, const String:object[])
     else if (StrEqual(object, "OBJ_SAPPER", false))
         type = teleporter_exit;
 
-    LogMessage("objectkilled: builder=%d, object=%s", builder, object);
+    LogMessage("objectkilled: builder=%d, type=%d, object=%s", builder, type, object);
 
     UpdateMindControlledObject(-1, builder, type, true);
-    m_ObjectAlive[builder][type] = false;
 }
 
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
@@ -470,18 +482,24 @@ MindControl(client,Handle:player)
                         else if (StrEqual(class, "CObjectTeleporter", false))
                         {
                             type = teleporter_entry;
-                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset); // Get the Object Type
-                            LogMessage("Target ObjectType=%d, Class=%s", otype, class);
-                            PrintToChat(client, "Target ObjectType=%d, Class=%s", otype, class);
                         }
                         else
                             type = unknown;
 
                         if (type != unknown)
                         {
+                            new otype = GetEntData(target, m_ObjectTypeOffset); // Get the Object Type
+                            new oflags = GetEntData(target, m_ObjectFlagsOffset); // Get the Object Type
+                            new ostate = GetEntData(target, m_ObjectStateOffset); // Get the Object Type
+                            new placing = GetEntData(target, m_PlacingOffset);
+                            new building = GetEntData(target, m_BuildingOffset);
+                            LogMessage("Target ObjectType=%d, Flags=%d, building=%d, placing=%d, state=%d, Class=%s",
+                                       otype, oflags, building, placing, ostate, class);
+                            PrintToChat(client, "Target ObjectType=%d, flags=%d, building=%d, state=%d, placing=%d, Class=%s",
+                                        otype, oflags, building, placing, ostate, class);
+
                             //Check to see if the object is still being built
-                            new building = GetEntDataEnt2(target, m_BuildingOffset);
-                            if (building != 1)
+                            if (placing != 1 && building != 1)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
                                 new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
@@ -538,7 +556,7 @@ MindControl(client,Handle:player)
                                             decl String:object[32];
                                             strcopy(object, sizeof(object), class[7]);
 
-                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
+                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown) * 0.0;
                                             LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
                                                       client,builder,object);
                                             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
@@ -552,16 +570,20 @@ MindControl(client,Handle:player)
                                             }
 
                                             // Create the Tracking Package
+                                            /*
                                             new Handle:pack = CreateDataPack();
                                             WritePackCell(pack, builder);
                                             WritePackCell(pack, type);
                                             WritePackCell(pack, target);
+                                            */
 
                                             // And add it to the list
+                                            /*
                                             if (m_StolenObjectList[client] == INVALID_HANDLE)
                                                 m_StolenObjectList[client] = CreateArray();
 
                                             PushArrayCell(m_StolenObjectList[client], pack);
+                                            */
                                         }
                                         else
                                         {
@@ -772,7 +794,7 @@ public Action:CloakingAndDetector(Handle:timer)
     return Plugin_Continue;
 }
 
-ResetCloakingAndDetector(client)
+stock ResetCloakingAndDetector(client)
 {
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
@@ -795,7 +817,7 @@ ResetCloakingAndDetector(client)
     }
 }
 
-UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
+stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
 {
     new bindex = builder;
     if (object > 0 || builder > 0)
@@ -849,7 +871,7 @@ UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
     return bindex;
 }
 
-ResetMindControlledObjects(client, bool:endRound)
+stock ResetMindControlledObjects(client, bool:endRound)
 {
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
@@ -877,7 +899,7 @@ ResetMindControlledObjects(client, bool:endRound)
                         else if (StrEqual(class, "CObjectTeleporter", false))
                         {
                             // Get the Object Type
-                            new otype = GetEntDataEnt2(target, m_ObjectTypeOffset);
+                            new otype = GetEntData(target, m_ObjectTypeOffset);
                             LogMessage("ObjectType for %s is %d", class, otype);
                             current_type = (otype == 1) ? teleporter_entry : teleporter_exit;
                         }
