@@ -46,8 +46,6 @@ new m_BuilderOffset;
 new m_BuildingOffset;
 new m_PlacingOffset;
 new m_ObjectTypeOffset;
-new m_ObjectFlagsOffset;
-new m_ObjectStateOffset;
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
@@ -164,14 +162,6 @@ public OnPluginReady()
         m_ObjectTypeOffset = FindSendPropInfo("CObjectSentrygun","m_iObjectType");
         if(m_ObjectTypeOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
-
-        m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
-        if(m_ObjectFlagsOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
-
-        m_ObjectStateOffset = FindSendPropInfo("CObjectSentrygun","m_iState");
-        if(m_ObjectStateOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun State offset.");
     }
 }
 
@@ -325,7 +315,6 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
-            LogMessage("%d built a %d", index, type);
             UpdateMindControlledObject(-1, index, type, false);
         }
     }
@@ -344,8 +333,6 @@ public OnObjectKilled(attacker, builder, const String:object[])
         type = teleporter_exit;
     else if (StrEqual(object, "OBJ_SAPPER", false))
         type = teleporter_exit;
-
-    LogMessage("objectkilled: builder=%d, type=%d, object=%s", builder, type, object);
 
     UpdateMindControlledObject(-1, builder, type, true);
 }
@@ -488,16 +475,8 @@ MindControl(client,Handle:player)
 
                         if (type != unknown)
                         {
-                            new otype = GetEntData(target, m_ObjectTypeOffset); // Get the Object Type
-                            new oflags = GetEntData(target, m_ObjectFlagsOffset); // Get the Object Type
-                            new ostate = GetEntData(target, m_ObjectStateOffset); // Get the Object Type
                             new placing = GetEntData(target, m_PlacingOffset);
                             new building = GetEntData(target, m_BuildingOffset);
-                            LogMessage("Target ObjectType=%d, Flags=%d, building=%d, placing=%d, state=%d, Class=%s",
-                                       otype, oflags, building, placing, ostate, class);
-                            PrintToChat(client, "Target ObjectType=%d, flags=%d, building=%d, state=%d, placing=%d, Class=%s",
-                                        otype, oflags, building, placing, ostate, class);
-
                             //Check to see if the object is still being built
                             if (placing != 1 && building != 1)
                             {
@@ -556,7 +535,7 @@ MindControl(client,Handle:player)
                                             decl String:object[32];
                                             strcopy(object, sizeof(object), class[7]);
 
-                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown) * 0.0;
+                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
                                             LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
                                                       client,builder,object);
                                             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
@@ -897,12 +876,7 @@ stock ResetMindControlledObjects(client, bool:endRound)
                         else if (StrEqual(class, "CObjectDispenser", false))
                             current_type = dispenser;
                         else if (StrEqual(class, "CObjectTeleporter", false))
-                        {
-                            // Get the Object Type
-                            new otype = GetEntData(target, m_ObjectTypeOffset);
-                            LogMessage("ObjectType for %s is %d", class, otype);
-                            current_type = (otype == 1) ? teleporter_entry : teleporter_exit;
-                        }
+                            current_type = objects:GetEntData(target, m_ObjectTypeOffset);
                         else
                             current_type = unknown;
 
