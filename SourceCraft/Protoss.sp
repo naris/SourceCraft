@@ -48,7 +48,6 @@ new m_PlacingOffset;
 new m_ObjectTypeOffset;
 
 new m_ObjectFlagsOffset;
-//new m_ObjectStateOffset;
 new m_OwnerEntityOffset;
 new m_PercentConstructedOffset;
 
@@ -172,10 +171,6 @@ public OnPluginReady()
         m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
         if(m_ObjectFlagsOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
-
-        //m_ObjectStateOffset = FindSendPropInfo("CObjectSentrygun","m_iState");
-        //if(m_ObjectStateOffset == -1)
-        //    SetFailState("[SourceCraft] Error finding Sentrygun State offset.");
 
         m_OwnerEntityOffset = FindSendPropInfo("CObjectSentrygun","m_hOwnerEntity");
         if(m_OwnerEntityOffset == -1)
@@ -499,7 +494,6 @@ MindControl(client,Handle:player)
                         {
                             new otype = GetEntData(target, m_ObjectTypeOffset); // Get the Object Type
                             new oflags = GetEntData(target, m_ObjectFlagsOffset); // Get the Object Type
-                            //new ostate = GetEntData(target, m_ObjectStateOffset); // Get the Object Type
                             new placing = GetEntData(target, m_PlacingOffset);
                             new building = GetEntData(target, m_BuildingOffset);
                             new owner    = GetEntDataEnt2(target,m_OwnerEntityOffset);
