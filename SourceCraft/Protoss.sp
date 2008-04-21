@@ -47,6 +47,11 @@ new m_BuildingOffset;
 new m_PlacingOffset;
 new m_ObjectTypeOffset;
 
+new m_ObjectFlagsOffset;
+//new m_ObjectStateOffset;
+new m_OwnerEntityOffset;
+new m_PercentConstructedOffset;
+
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
 new m_OffsetCloakMeter;
@@ -162,6 +167,23 @@ public OnPluginReady()
         m_ObjectTypeOffset = FindSendPropInfo("CObjectSentrygun","m_iObjectType");
         if(m_ObjectTypeOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
+
+        //
+        m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
+        if(m_ObjectFlagsOffset == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
+
+        //m_ObjectStateOffset = FindSendPropInfo("CObjectSentrygun","m_iState");
+        //if(m_ObjectStateOffset == -1)
+        //    SetFailState("[SourceCraft] Error finding Sentrygun State offset.");
+
+        m_OwnerEntityOffset = FindSendPropInfo("CObjectSentrygun","m_hOwnerEntity");
+        if(m_OwnerEntityOffset == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun OwnerEntity offset.");
+
+        m_PercentConstructedOffset = FindSendPropInfo("CObjectSentrygun","m_flPercentageConstructed");
+        if(m_PercentConstructedOffset == -1)
+            SetFailState("[SourceCraft] Error finding Sentrygun PercentConstructed offset.");
     }
 }
 
@@ -475,13 +497,26 @@ MindControl(client,Handle:player)
 
                         if (type != unknown)
                         {
+                            new otype = GetEntData(target, m_ObjectTypeOffset); // Get the Object Type
+                            new oflags = GetEntData(target, m_ObjectFlagsOffset); // Get the Object Type
+                            //new ostate = GetEntData(target, m_ObjectStateOffset); // Get the Object Type
                             new placing = GetEntData(target, m_PlacingOffset);
                             new building = GetEntData(target, m_BuildingOffset);
+                            new owner    = GetEntDataEnt2(target,m_OwnerEntityOffset);
+                            new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
+                            new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
+                            LogMessage("Target Owner=%d, Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Flags=%d, Class=%s",
+                                       owner, builder, complete, otype, building, placing, oflags, class);
+                            PrintToChat(client, "Target Owner=%d, Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Flags=%d, Class=%s",
+                                        owner, builder, complete, otype, building, placing, oflags, class);
+
+                            //new placing = GetEntData(target, m_PlacingOffset);
+                            //new building = GetEntData(target, m_BuildingOffset);
                             //Check to see if the object is still being built
                             if (placing != 1 && building != 1)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                                new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
+                                //new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
                                 new Handle:player_check=GetPlayerHandle(builder);
                                 if (player_check != INVALID_HANDLE)
                                 {
