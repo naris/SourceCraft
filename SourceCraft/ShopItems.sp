@@ -219,7 +219,7 @@ public LoadSDKToolStuff()
 
     if (GameType == cstrike)
     {
-        myWepsOffset = FindSendPropOffs("CAI_BaseNPC", "m_hMyWeapons");
+        myWepsOffset = FindSendPropInfo("CAI_BaseNPC", "m_hMyWeapons");
 
         StartPrepSDKCall(SDKCall_Static);
         PrepSDKCall_SetFromConf(hGameConf,SDKConf_Signature,"UTIL_SetModel");
