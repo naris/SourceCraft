@@ -549,20 +549,16 @@ MindControl(client,Handle:player)
                                             }
 
                                             // Create the Tracking Package
-                                            /*
                                             new Handle:pack = CreateDataPack();
                                             WritePackCell(pack, builder);
                                             WritePackCell(pack, type);
                                             WritePackCell(pack, target);
-                                            */
 
                                             // And add it to the list
-                                            /*
                                             if (m_StolenObjectList[client] == INVALID_HANDLE)
                                                 m_StolenObjectList[client] = CreateArray();
 
                                             PushArrayCell(m_StolenObjectList[client], pack);
-                                            */
                                         }
                                         else
                                         {
