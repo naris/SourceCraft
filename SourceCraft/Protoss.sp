@@ -907,10 +907,16 @@ stock ResetMindControlledObjects(client, bool:endRound)
                                         AcceptEntityInput(target, "SetTeam", -1, -1, 0);
                                     }
                                     else // Zap it.
-                                        RemoveEdict(target); // Remove the object.
+                                    {
+                                        //RemoveEdict(target); // Remove the object.
+                                        LogMessage("Orphaned object %x", target);
+                                    }
                                 }
                                 else // Zap it.
-                                    RemoveEdict(target); // Remove the object.
+                                {
+                                    //RemoveEdict(target); // Remove the object.
+                                    LogMessage("Orphaned object %x", target);
+                                }
                             }
                         }
                     }
