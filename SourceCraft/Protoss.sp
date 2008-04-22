@@ -824,7 +824,6 @@ stock ResetCloakingAndDetector(client)
 
 stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
 {
-    new bindex = builder;
     if (object > 0 || builder > 0)
     {
         new maxplayers=GetMaxClients();
@@ -839,7 +838,7 @@ stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
                     if (pack != INVALID_HANDLE)
                     {
                         ResetPack(pack);
-                        bindex           = ReadPackCell(pack);
+                        new bindex       = ReadPackCell(pack);
                         new objects:type = objects:ReadPackCell(pack);
                         new target       = ReadPackCell(pack);
 
@@ -866,14 +865,14 @@ stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
                             }
 
                             client = maxplayers+1;
-                            break;
+                            return bindex;
                         }
                     }
                 }
             }
         }
     }
-    return bindex;
+    return builder;
 }
 
 stock ResetMindControlledObjects(client, bool:endRound)
