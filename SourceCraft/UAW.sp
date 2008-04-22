@@ -416,9 +416,9 @@ public SetupRope(client, Handle:player, level)
             }
             case 4:
             {
-                duration=30;
+                duration=0;
                 range=0.0;
-                cooldown=5.0;
+                cooldown=0.0;
             }
         }
         TakeHook(client);

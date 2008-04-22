@@ -311,7 +311,7 @@ public Native_KillPlayer(Handle:plugin,numParams)
                 weapon_desc[0] = 0;
             }
 
-            KillPlayer(attacker, victim, weapon_name, weapon_desc, xp);
+            KillPlayer(victim, attacker, weapon_name, weapon_desc, xp);
             SaveHealth(victim);
             return 0;
         }
