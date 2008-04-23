@@ -48,7 +48,6 @@ new m_PlacingOffset;
 new m_ObjectTypeOffset;
 
 new m_ObjectFlagsOffset;
-new m_OwnerEntityOffset;
 new m_PercentConstructedOffset;
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
@@ -175,10 +174,6 @@ public OnPluginReady()
         m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
         if(m_ObjectFlagsOffset == -1)
             SetFailState("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
-
-        m_OwnerEntityOffset = FindSendPropInfo("CObjectSentrygun","m_hOwnerEntity");
-        if(m_OwnerEntityOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun OwnerEntity offset.");
     }
 }
 
@@ -332,6 +327,7 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
+            LogMessage("%N Built a %d", index, type);
             UpdateMindControlledObject(-1, index, type, false);
         }
     }
@@ -351,6 +347,7 @@ public OnObjectKilled(attacker, builder, const String:object[])
     else if (StrEqual(object, "OBJ_SAPPER", false))
         type = teleporter_exit;
 
+    LogMessage("%N Killed %N's %d:%s", attacker, builder, type, object);
     UpdateMindControlledObject(-1, builder, type, true);
 }
 
@@ -484,25 +481,18 @@ MindControl(client,Handle:player)
                         else if (StrEqual(class, "CObjectDispenser", false))
                             type = dispenser;
                         else if (StrEqual(class, "CObjectTeleporter", false))
-                        {
-                            type = teleporter_entry;
-                        }
+                            type = objects:GetEntData(target, m_ObjectTypeOffset);
                         else
                             type = unknown;
 
-                        if (type != unknown)
+                        if (type == sentrygun || type == dispenser)
                         {
-                            new otype = GetEntData(target, m_ObjectTypeOffset); // Get the Object Type
-                            new oflags = GetEntData(target, m_ObjectFlagsOffset); // Get the Object Type
                             new placing = GetEntData(target, m_PlacingOffset);
                             new building = GetEntData(target, m_BuildingOffset);
-                            new owner    = GetEntData(target,m_OwnerEntityOffset);
                             new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
                             new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
-                            LogMessage("Target Owner=%d, Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Flags=%d, Class=%s",
-                                       owner, builder, complete, otype, building, placing, oflags, class);
-                            PrintToChat(client, "Target Owner=%d, Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Flags=%d, Class=%s",
-                                        owner, builder, complete, otype, building, placing, oflags, class);
+                            LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
+                                       builder, complete, type, building, placing, class);
 
                             //new placing = GetEntData(target, m_PlacingOffset);
                             //new building = GetEntData(target, m_BuildingOffset);
@@ -523,6 +513,8 @@ MindControl(client,Handle:player)
                                         {
                                             // Check to see if this target has already been controlled.
                                             builder = UpdateMindControlledObject(target, builder, type, true);
+
+                                            LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
                                             // Change the builder to client
                                             SetEntDataEnt2(target, m_BuilderOffset, client, true);
 
@@ -579,6 +571,7 @@ MindControl(client,Handle:player)
                                             }
 
                                             // Create the Tracking Package
+                                            LogMessage("Track the target=%d, type=%d, builder=%d", target, type, builder);
                                             new Handle:pack = CreateDataPack();
                                             WritePackCell(pack, builder);
                                             WritePackCell(pack, type);
@@ -586,7 +579,13 @@ MindControl(client,Handle:player)
 
                                             // And add it to the list
                                             if (m_StolenObjectList[client] == INVALID_HANDLE)
+                                            {
+                                                LogMessage("Create %N's object List", client);
                                                 m_StolenObjectList[client] = CreateArray();
+                                            }
+
+                                            LogMessage("Push Pack onto %N's List; list=%x, pack=%x",
+                                                       client, m_StolenObjectList[client], pack);
 
                                             PushArrayCell(m_StolenObjectList[client], pack);
                                         }
@@ -822,8 +821,9 @@ stock ResetCloakingAndDetector(client)
     }
 }
 
-stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
+stock UpdateMindControlledObject(object, builder, objects:type, bool:remove)
 {
+    LogMessage("UpdateMindControlledObject() of %N, object=%d, type=%d, remove=%d", builder, object, type, remove);
     if (object > 0 || builder > 0)
     {
         new maxplayers=GetMaxClients();
@@ -838,34 +838,38 @@ stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
                     if (pack != INVALID_HANDLE)
                     {
                         ResetPack(pack);
-                        new bindex       = ReadPackCell(pack);
-                        new objects:type = objects:ReadPackCell(pack);
-                        new target       = ReadPackCell(pack);
+                        new pack_builder      = ReadPackCell(pack);
+                        new objects:pack_type = objects:ReadPackCell(pack);
+                        new pack_target       = ReadPackCell(pack);
 
                         new bool:found;
                         if (object > 0)
-                            found = (object == target);
+                            found = (object == pack_target);
                         else
-                            found = (builder == bindex && obj == type);
+                            found = (builder == pack_builder && type == pack_type);
 
                         if (found)
                         {
+                            LogMessage("Object Found in %x", pack);
                             CloseHandle(pack);
 
                             if (remove)
+                            {
+                                LogMessage("Removing %x", pack);
                                 RemoveFromArray(m_StolenObjectList[client], index);
+                            }
                             else
                             {
+                                LogMessage("Updating %x", pack);
                                 // Update the tracking package
                                 pack = CreateDataPack();
                                 WritePackCell(pack, -1);
                                 WritePackCell(pack, type);
-                                WritePackCell(pack, target);
+                                WritePackCell(pack, pack_target);
                                 SetArrayCell(m_StolenObjectList[client], index, pack);
                             }
-
-                            client = maxplayers+1;
-                            return bindex;
+                            LogMessage("Original owner=%d", pack_builder);
+                            return pack_builder;
                         }
                     }
                 }
@@ -877,6 +881,7 @@ stock UpdateMindControlledObject(object, builder, objects:obj, bool:remove)
 
 stock ResetMindControlledObjects(client, bool:endRound)
 {
+    LogMessage("ResetMindControlledObject() for %N, endRound=%d", client, endRound);
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
         new size = GetArraySize(m_StolenObjectList[client]);
@@ -939,14 +944,14 @@ stock ResetMindControlledObjects(client, bool:endRound)
                                     {
                                         LogMessage("Orphaned object %x", target);
                                         //RemoveEdict(target); // Remove the object.
-                                        AcceptEntityInput(target, "Kill", -1, -1, 0);
+                                        //AcceptEntityInput(target, "Kill", -1, -1, 0);
                                     }
                                 }
                                 else // Zap it.
                                 {
                                     //RemoveEdict(target); // Remove the object.
                                     LogMessage("Orphaned object %x", target);
-                                    AcceptEntityInput(target, "Kill", -1, -1, 0);
+                                    //AcceptEntityInput(target, "Kill", -1, -1, 0);
                                 }
                             }
                         }
