@@ -10,25 +10,25 @@
 #endif
 #define _log_included
 
-stock Log(String:message[])
+stock Log(const String:message[])
 {
     PrintToServer(message);
     LogMessage(message);
 }
 
-stock Error(String:message[])
+stock Error(const String:message[])
 {
     PrintToServer(message);
     LogError(message);
 }
 
-stock Fail(String:message[])
+stock Fail(const String:message[])
 {
     PrintToServer(message);
     SetFailState(message);
 }
 
-stock LogDamage(client, victim, String:weapon[], String:description[], hp)
+stock LogDamage(client, victim, const String:weapon[], const String:description[], hp)
 {
     if (victim)
     {
@@ -63,7 +63,7 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp)
             if (victim == client)
             {
                 PrintToChat(victim, "%c[SourceCraft]%c You have damaged yourself for %d with %c%s%c",
-                            COLOR_GREEN,client,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
+                            COLOR_GREEN,COLOR_DEFAULT,hp,COLOR_TEAM,description,COLOR_DEFAULT);
             }
             else
             {
@@ -83,7 +83,7 @@ stock LogDamage(client, victim, String:weapon[], String:description[], hp)
     }
 }
 
-stock LogKill(client, victim, String:weapon[], String:description[], xp=0)
+stock LogKill(client, victim, const String:weapon[], const String:description[], xp=0)
 {
     if (victim)
     {
@@ -112,7 +112,7 @@ stock LogKill(client, victim, String:weapon[], String:description[], xp=0)
             if (victim == client)
             {
                 PrintToChat(victim, "%c[SourceCraft]%c You killed yourself with %c%s%c",
-                            COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,description,COLOR_DEFAULT);
 
                 PrintToConsole(client, "[SourceCraft] \"%N<%d><%s><%s>\" killed \"%N<%d><%s><%s>\" with %s\n",
                                client, client, steamID, team, victim, victim, victimID, victimTeam, weapon);

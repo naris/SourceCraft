@@ -319,7 +319,7 @@ public Native_KillPlayer(Handle:plugin,numParams)
     return -1;
 } 
 
-KillPlayer(victim, attacker, String:weapon_name[], String:weapon_desc[], xp)
+KillPlayer(victim, attacker, const String:weapon_name[], const String:weapon_desc[], xp)
 {
     if (victim)
     {
