@@ -339,7 +339,8 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     new Handle:player_check=GetPlayerHandle(index);
                     if (player_check != INVALID_HANDLE)
                     {
-                        if (!GetImmunity(player_check,Immunity_Ultimates))
+                        if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                            !GetImmunity(victim_player,Immunity_MotionTake))
                         {
                             if (IsInRange(client,index,range))
                             {

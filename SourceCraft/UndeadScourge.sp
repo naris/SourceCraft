@@ -385,7 +385,7 @@ SuicideBomber(client,ult_level,bool:ondeath)
     if (!ondeath)
     {
         m_Suicided[client]=true;
-        KillPlayer(client);
+        KillPlayer(client,client,"suicide_bomb", "Suicide Bomb");
     }
 
     new Float:radius;
