@@ -558,7 +558,7 @@ MindControl(client,Handle:player)
                                             strcopy(object, sizeof(object), class[7]);
 
                                             new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
-                                            LogToGame("[SourceCraft] %N has stolen %N's %s!\n",
+                                            LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
                                                       client,builder,object);
                                             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
                                                         COLOR_GREEN,COLOR_DEFAULT,client,object);
