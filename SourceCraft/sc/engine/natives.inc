@@ -16,6 +16,8 @@ new Handle:g_OnPlayerHurtEventHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerDeathEventHandle = INVALID_HANDLE;
 new Handle:g_OnObjectKilledHandle = INVALID_HANDLE;
 
+new g_KilledBy[MAXPLAYERS+1] = { 0, ...};
+
 /**
  * Registers a race with the SourceCraft plugin
  * @param name: The name of the race. (max 64)
@@ -323,6 +325,7 @@ KillPlayer(victim, attacker, const String:weapon_name[], const String:weapon_des
 {
     if (victim)
     {
+        g_KilledBy[victim] = attacker;
         ForcePlayerSuicide(victim);
         if (xp && attacker && victim != attacker)
         {

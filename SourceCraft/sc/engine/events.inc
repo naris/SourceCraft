@@ -20,9 +20,15 @@ bool:HookEvents()
         return false;
     }
 
+    if(!HookEventEx("player_death",CorrectDeathEvent, EventHookMode_Pre))
+    {
+        LogError("Could not hook the player_death pre event.");
+        return false;
+    }
+
     if(!HookEventEx("player_death",PlayerDeathEvent))
     {
-        LogError("Could not hook the player_spawn event.");
+        LogError("Could not hook the player_death event.");
         return false;
     }
 
@@ -233,4 +239,22 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         }
     }
     return result;
+}
+
+public Action:CorrectDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new victim_userid=GetEventInt(event,"userid");
+    new attacker_userid=GetEventInt(event,"attacker");
+    if (victim_userid == attacker_userid)
+    {
+        new victim_index=GetClientOfUserId(victim_userid);
+        new killed_by = g_KilledBy[victim_index];
+        if (killed_by > 0 && killed_by != victim_index)
+        {
+            SetEventInt(event,"attacker",GetClientUserId(killed_by));
+            g_KilledBy[victim_index] = 0;
+            return Plugin_Changed;
+        }
+    }
+    return Plugin_Continue;
 }
