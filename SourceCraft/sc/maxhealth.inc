@@ -17,7 +17,6 @@
 stock m_OffsetMaxHealth[MAXPLAYERS+1];
 
 stock maxHealth[MAXPLAYERS+1];
-stock bool:healthIncreased[MAXPLAYERS+1];
 
 stock FindMaxHealthOffset(client)
 {
@@ -41,7 +40,7 @@ stock GetMaxHealth(entity)
             if (offset)
                 return GetEntData(entity,offset);
             else
-                return -1;
+                return TF2_GetPlayerResourceData(entity,TFResource_MaxHealth);
         }
     }
     else
@@ -71,22 +70,18 @@ stock IncreaseHealth(client, amount)
     if (GameType == tf2)
     {
         if (health > GetMaxHealth(client))
-        {
             SetMaxHealth(client, health);
-            healthIncreased[client] = true;
-        }
     }
     SetEntityHealth(client, health);
 }
 
 stock ResetMaxHealth(client)
 {
-    if (healthIncreased[client])
+    if (GameType == tf2)
     {
-        healthIncreased[client] = false;
-        if (GameType == tf2)
-            SetMaxHealth(client,TF2_GetPlayerResourceData(client,TFResource_MaxHealth));
-        else
-            maxHealth[client] = 100;
+        new max=TF2_GetPlayerResourceData(client,TFResource_MaxHealth);
+        SetMaxHealth(client, max);
     }
+    else
+        maxHealth[client] = 100;
 }
