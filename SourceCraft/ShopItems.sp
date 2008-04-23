@@ -646,7 +646,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                     SetOverrideSpeed(victim_player, 0.5);
                     SetVisibility(victim_player, 192, BasicVisibility,
                                   -1.0, -1.0, RenderMode:-1, RenderFx:-1,
-                                  0, 128, 255);
+                                  (GetClientTeam(victim_index) == _:TFTeam_Red) ? 255 : 0,
+                                  128, 255);
+
                     AuthTimer(5.0,victim_index,RestoreSpeed);
 
                     decl String:aname[128];
