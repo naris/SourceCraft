@@ -227,7 +227,6 @@ public Action:DoDevotionAura(Handle:timer,Handle:pack)
     new client=ClientOfAuthTimer(pack);
     if(client)
     {
-        SaveMaxHealth(client);
         DevotionAura(client, GetUpgradeLevel(GetPlayerHandle(client),raceID,devotionID));
     }
     return Plugin_Stop;

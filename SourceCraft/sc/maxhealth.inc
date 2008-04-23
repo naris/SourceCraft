@@ -10,6 +10,10 @@
 #endif
 #define _maxhealth_included
 
+#undef REQUIRE_EXTENSIONS
+#include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
+
 stock m_OffsetMaxHealth[MAXPLAYERS+1];
 
 stock maxHealth[MAXPLAYERS+1];
@@ -61,14 +65,6 @@ stock SetMaxHealth(entity,amount)
         maxHealth[entity] = amount;
 }
 
-stock SaveMaxHealth(client)
-{
-    if (GameType == tf2)
-        maxHealth[client] = GetMaxHealth(client);
-    else
-        maxHealth[client] = GetClientHealth(client);
-}
-
 stock IncreaseHealth(client, amount)
 {
     new health = GetClientHealth(client)+amount;
@@ -89,7 +85,7 @@ stock ResetMaxHealth(client)
     {
         healthIncreased[client] = false;
         if (GameType == tf2)
-            SetMaxHealth(client,maxHealth[client]);
+            SetMaxHealth(client,TF2_GetPlayerResourceData(client,TFResource_MaxHealth));
         else
             maxHealth[client] = 100;
     }

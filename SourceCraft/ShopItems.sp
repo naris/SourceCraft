@@ -928,7 +928,6 @@ public Action:DoPeriapt(Handle:timer,Handle:pack)
     new client=ClientOfAuthTimer(pack);
     if(client)
     {
-        SaveMaxHealth(client);
         UsePeriapt(client);
     }
     return Plugin_Stop;
