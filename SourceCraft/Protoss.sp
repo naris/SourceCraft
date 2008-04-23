@@ -487,21 +487,17 @@ MindControl(client,Handle:player)
 
                         if (type == sentrygun || type == dispenser)
                         {
+                            //Check to see if the object is still being built
                             new placing = GetEntData(target, m_PlacingOffset);
                             new building = GetEntData(target, m_BuildingOffset);
-                            new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
                             new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
-                            LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
-                                       builder, complete, type, building, placing, class);
-
-                            //new placing = GetEntData(target, m_PlacingOffset);
-                            //new building = GetEntData(target, m_BuildingOffset);
-                            //new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
-                            //Check to see if the object is still being built
                             if (placing == 0 && building == 0 && complete >= 1.0)
                             {
                                 //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                                //new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
+                                new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
+                                LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
+                                           builder, complete, type, building, placing, class);
+
                                 new Handle:player_check=GetPlayerHandle(builder);
                                 if (player_check != INVALID_HANDLE)
                                 {
@@ -604,7 +600,12 @@ MindControl(client,Handle:player)
                                     }
                                 }
                                 else
+                                {
                                     EmitSoundToClient(client,deniedWav);
+                                    LogMessage("Killing object %x", target);
+                                    //RemoveEdict(target); // Remove the object.
+                                    AcceptEntityInput(target, "Kill", -1, -1, 0);
+                                }
                             }
                             else
                             {
