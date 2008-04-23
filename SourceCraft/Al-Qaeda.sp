@@ -415,8 +415,8 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             new Handle:check_player=GetPlayerHandle(index);
             if (check_player != INVALID_HANDLE)
             {
-                if (!GetImmunity(check_player,Immunity_Ultimates) &&
-                    !GetImmunity(check_player,Immunity_Explosion))
+                if (!GetImmunity(check_player,Immunity_Explosion) &&
+                    (!ondeath || !GetImmunity(check_player,Immunity_Ultimates)))
                 {
                     new Float:check_location[3];
                     GetClientAbsOrigin(index,check_location);
