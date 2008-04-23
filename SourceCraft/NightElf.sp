@@ -340,7 +340,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     if (player_check != INVALID_HANDLE)
                     {
                         if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                            !GetImmunity(victim_player,Immunity_MotionTake))
+                            !GetImmunity(player_check,Immunity_MotionTake))
                         {
                             if (IsInRange(client,index,range))
                             {
