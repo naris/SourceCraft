@@ -46,9 +46,9 @@ new m_BuilderOffset;
 new m_BuildingOffset;
 new m_PlacingOffset;
 new m_ObjectTypeOffset;
+new m_PercentConstructedOffset;
 
 new m_ObjectFlagsOffset;
-new m_PercentConstructedOffset;
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
@@ -173,7 +173,7 @@ public OnPluginReady()
         //
         m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
         if(m_ObjectFlagsOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
+            LogError("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
     }
 }
 
