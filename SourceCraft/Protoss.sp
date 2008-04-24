@@ -600,12 +600,7 @@ MindControl(client,Handle:player)
                                     }
                                 }
                                 else
-                                {
                                     EmitSoundToClient(client,deniedWav);
-                                    LogMessage("Killing object %x", target);
-                                    //RemoveEdict(target); // Remove the object.
-                                    AcceptEntityInput(target, "Kill", -1, -1, 0);
-                                }
                             }
                             else
                             {
@@ -944,15 +939,15 @@ stock ResetMindControlledObjects(client, bool:endRound)
                                     else // Zap it.
                                     {
                                         LogMessage("Orphaned object %x", target);
+                                        AcceptEntityInput(target, "Kill", -1, -1, 0);
                                         //RemoveEdict(target); // Remove the object.
-                                        //AcceptEntityInput(target, "Kill", -1, -1, 0);
                                     }
                                 }
                                 else // Zap it.
                                 {
-                                    //RemoveEdict(target); // Remove the object.
                                     LogMessage("Orphaned object %x", target);
-                                    //AcceptEntityInput(target, "Kill", -1, -1, 0);
+                                    AcceptEntityInput(target, "Kill", -1, -1, 0);
+                                    //RemoveEdict(target); // Remove the object.
                                 }
                             }
                         }
