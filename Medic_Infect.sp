@@ -3,15 +3,15 @@
 #include <tf2>
 #include <tf2_stocks>
 
-new ClientInfected[MAXPLAYERS];
-new bool:ClientFriendlyInfected[MAXPLAYERS];
+new ClientInfected[MAXPLAYERS + 1];
+new bool:ClientFriendlyInfected[MAXPLAYERS + 1];
 
 public Plugin:myinfo = 
 {
 	name = "Medic Infection",
 	author = "Twilight Suzuka",
 	description = "Allows medics to infect again",
-	version = "Alpha:5",
+	version = "Beta:1",
 	url = "http://www.sourcemod.net/"
 };
 
@@ -22,6 +22,7 @@ new Handle:Cvar_DmgDistance = INVALID_HANDLE;
 new Handle:Cvar_SpreadAll = INVALID_HANDLE;
 new Handle:Cvar_SpreadSameTeam = INVALID_HANDLE;
 new Handle:Cvar_SpreadOpposingTeam = INVALID_HANDLE;
+new Handle:Cvar_SpreadDistance = INVALID_HANDLE
 
 new Handle:Cvar_InfectSameTeam = INVALID_HANDLE;
 new Handle:Cvar_InfectOpposingTeam = INVALID_HANDLE;
@@ -38,22 +39,25 @@ new Handle:CvarBlue = INVALID_HANDLE;
 new Handle:CvarGreen = INVALID_HANDLE;
 new Handle:CvarTrans = INVALID_HANDLE;
 
+new Handle:InfectionTimer = INVALID_HANDLE;
+
 public OnPluginStart()
 {
 	CvarEnable = CreateConVar("medic_infect_on", "1", "1 turns the plugin on 0 is off", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	CvarRed = CreateConVar("medic_infect_red", "200", "Amount of Red", FCVAR_NOTIFY);
-	CvarGreen = CreateConVar("medic_infect_green", "0", "Amount of Green", FCVAR_NOTIFY);
-	CvarBlue = CreateConVar("medic_infect_blue", "25", "Amount of Blue", FCVAR_NOTIFY);
-	CvarTrans = CreateConVar("medic_infect_alpha", "100", "Amount of Transperency", FCVAR_NOTIFY);
+	CvarRed = CreateConVar("medic_infect_red", "0", "Amount of Red", FCVAR_NOTIFY);
+	CvarGreen = CreateConVar("medic_infect_green", "255", "Amount of Green", FCVAR_NOTIFY);
+	CvarBlue = CreateConVar("medic_infect_blue", "100", "Amount of Blue", FCVAR_NOTIFY);
+	CvarTrans = CreateConVar("medic_infect_alpha", "255", "Amount of Transperency", FCVAR_NOTIFY);
 	
 	Cvar_DmgAmount = CreateConVar("sv_medic_infect_dmg_amount", "10", "Amount of damage medic infect does each heartbeat",FCVAR_PLUGIN);
 	Cvar_DmgTime = CreateConVar("sv_medic_infect_dmg_time", "12", "Amount of time between infection heartbeats",FCVAR_PLUGIN);
-	Cvar_DmgDistance = CreateConVar("sv_medic_infect_dmg_distance", "1000.0", "Distance infection can spread",FCVAR_PLUGIN);
+	Cvar_DmgDistance = CreateConVar("sv_medic_infect_dmg_distance", "0.0", "Distance infection can spread",FCVAR_PLUGIN);
 
 	Cvar_SpreadAll = CreateConVar("sv_medic_infect_spread_all", "0", "Allow medical infections to run rampant",FCVAR_PLUGIN);
 	Cvar_SpreadSameTeam = CreateConVar("sv_medic_infect_spread_friendly", "1", "Allow medical infections to run rampant inside a team",FCVAR_PLUGIN);
 	Cvar_SpreadOpposingTeam = CreateConVar("sv_medic_infect_spread_enemy", "0", "Allow medical infections to run rampant between teams",FCVAR_PLUGIN);		
-
+	Cvar_SpreadDistance = CreateConVar("sv_medic_infect_spread_distance", "2000.0", "Distance infection can spread",FCVAR_PLUGIN);
+	
 	Cvar_InfectSameTeam = CreateConVar("sv_medic_infect_friendly", "1", "Allow medics to infect friends",FCVAR_PLUGIN);
 	Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies",FCVAR_PLUGIN);
 	
@@ -63,23 +67,34 @@ public OnPluginStart()
 	
 	Cvar_InfectMedi = CreateConVar("sv_medic_infect_medi", "1", "Infect using medi gun",FCVAR_PLUGIN);
 	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "0", "Infect using syringe gun",FCVAR_PLUGIN);
-		
-	CreateTimer(1.0, HandleInfection);
+	
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
 }
 
-new beamSprite;
-new haloSprite;
-
-public OnMapStart()
+public OnConfigsExecuted()
 {
-	beamSprite = PrecacheModel("materials/sprites/bluelaser1.vmt");
-	haloSprite = PrecacheModel("materials/sprites/fire.vmt");
+	InfectionTimer = CreateTimer(GetConVarFloat(Cvar_DmgTime), HandleInfection,_,TIMER_REPEAT);
+	HookConVarChange(Cvar_DmgTime, HandleInfectionChange);
+}
+
+public OnMapEnd()
+{
+	new maxplayers = GetMaxClients();
+	for(new a = 1; a <= maxplayers; a++)
+	{
+		ClientInfected[a] = 0;
+		ClientFriendlyInfected[a] = false;
+	}
+}
+
+public HandleInfectionChange(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	CloseHandle(InfectionTimer);
+	InfectionTimer = CreateTimer(StringToFloat(newValue), HandleInfection,_,TIMER_REPEAT);
 }
 
 public Action:HandleInfection(Handle:timer)
 {
-	CreateTimer(GetConVarFloat(Cvar_DmgTime), HandleInfection);
 	if(!GetConVarInt(CvarEnable)) return;
 	
 	new maxplayers = GetMaxClients();
@@ -89,8 +104,14 @@ public Action:HandleInfection(Handle:timer)
 		
 		new hp = GetClientHealth(a);
 		hp -= GetConVarInt(Cvar_DmgAmount);
-		SetEntityHealth(a,hp);
-	
+		
+		if(hp < 0) ForcePlayerSuicide(a);
+		else
+		{
+			//SetEntityHealth(a,hp);
+			SetEntProp(a, Prop_Send, "m_iHealth", hp, 1);
+			SetEntProp(a, Prop_Data, "m_iHealth", hp, 1);
+		}
 	}	
 }
 
@@ -100,6 +121,13 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	if(!ClientInfected[id]) return Plugin_Continue;
 	
 	new attacker = ClientInfected[id];
+	
+	ClientInfected[id] = 0;
+	ClientFriendlyInfected[id] = false;
+
+	SetEntityRenderColor(id)
+	SetEntityRenderMode(id, RENDER_NORMAL)
+	
 	SetEventInt(event,"attacker",GetClientUserId(attacker));
 	if(TF2_GetPlayerClass(attacker) != TFClass_Medic)
 	{
@@ -120,14 +148,18 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 
 public OnGameFrame()
 {
+	if(!GetConVarInt(CvarEnable)) return;
+	
 	if(GetConVarInt(Cvar_InfectMedi)) CheckMedics();
 	RunInfection();
 }
 
-new Float:MedicDelay[MAXPLAYERS];
+new Float:MedicDelay[MAXPLAYERS + 1];
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
+	if(GetConVarInt(CvarEnable)) return Plugin_Continue;
+	
 	if(
 		GetConVarInt(Cvar_InfectSyringe) 
 		|| (TF2_GetPlayerClass(client) != TFClass_Medic) 
@@ -158,11 +190,12 @@ public CheckMedics()
 		if( !IsClientInGame(i) 
 			|| !IsPlayerAlive(i) 
 			|| (TF2_GetPlayerClass(i) != TFClass_Medic) 
-			|| (MedicDelay[i] > GetGameTime()) ) 
+			|| (MedicDelay[i] > GetGameTime()) 
+			) 
 			continue;
 		
 		new weaponent = GetEntPropEnt(i, Prop_Send, "m_hActiveWeapon");
-		
+
 		if(GetEdictClassname(weaponent, classname , sizeof(classname)) )
 		{
 			if(StrEqual(classname, "tf_weapon_medigun") )
@@ -191,79 +224,77 @@ public CheckMedics()
 	}
 }
 
-stock MedicInfect(a,b,amount)
+stock MedicInfect(a,b,allow)
 {
+	// Rukia: Don't reinfect!
+	if(ClientInfected[b]) return;
+	
 	// Rukia: are the teams identical?
 	new t_same = GetClientTeam(a) == GetClientTeam(b);
 	
-	// Rukia: Don't spread to same team
-	if(!GetConVarInt(Cvar_InfectSameTeam) && t_same )
+	// Rukia: Don't infect same team if not allowed
+	if( (t_same && !allow) || (!GetConVarInt(Cvar_InfectSameTeam) && t_same) )
 	{
-		return 0;
+		return;
 	}
 	
-	// Rukia: Don't spread to opposing team
+	// Rukia: Don't infect opposing team if not allowed
 	if(!GetConVarInt(Cvar_InfectOpposingTeam) && !t_same )
 	{
-		return 0;
+		return;
 	}
 	
 	decl Float:ori1[3], Float:ori2[3];
-	
 	GetClientAbsOrigin(a, ori1);
 	GetClientAbsOrigin(b, ori2);
 
-	if( GetVectorDistance(ori1, ori2, true) < GetConVarFloat(Cvar_DmgDistance) )
+	if( (GetConVarFloat(Cvar_DmgDistance) == 0.0) || (GetVectorDistance(ori1, ori2, true) < GetConVarFloat(Cvar_DmgDistance)) )
 	{
-		Infect(a,b,amount);
-		return 1;
+		// Rukia: Infect same team if allowed is on
+		if(allow && t_same)
+		{
+			SendInfection(b,a,true,true);
+		}
+		// Rukia: Heal if applicable.
+		else if( t_same ) 
+		{ 
+			ClientInfected[b] = 0; 
+			ClientFriendlyInfected[b] = false; 
+			
+			PrintHintText(a,"Cure spread!");
+			PrintHintText(b,"You have been cured!");
+		}
+		// Rukia: Infect the opposing team otherwise
+		else
+		{
+			SendInfection(b,a,false,true);
+		}
 	}
-	
-	return 0;
-}
-
-stock Infect(from,to,allow)
-{
-	// Rukia: are the teams identical?
-	new t_same = GetClientTeam(from) == GetClientTeam(to);
-	
-	if(allow && GetConVarInt(Cvar_InfectSameTeam) && ( t_same ) )
-	{
-		ClientInfected[to] = from
-		ClientFriendlyInfected[to] = true;
-	}
-	else if(GetConVarInt(Cvar_InfectOpposingTeam) && ( !t_same ) )
-		ClientInfected[to] = from;
-	else if(GetClientTeam(from) == GetClientTeam(to) )
-		ClientInfected[to] = 0;
-		
-	InfectionEffect(from,to);
 }
 
 public RunInfection()
 {
-	new maxplayers = GetMaxClients();
-
 	static Float:InfectedVec[MAXPLAYERS][3];
 	static Float:NotInfectedVec[MAXPLAYERS][3];
 	static PlayerVec[MAXPLAYERS]
 	
 	new InfectedCount, NotInfectedCount
 	
+	new maxplayers = GetMaxClients();
 	new i = 1, a = 0
 	for(; i <= maxplayers; i++)
 	{
 		if(!IsClientInGame(i) || !IsPlayerAlive(i)) continue;
 		PlayerVec[a] = i;
 		
-		if(ClientInfected[a])
+		if(ClientInfected[i])
 		{
-			GetClientAbsOrigin(a, InfectedVec[a]);
+			GetClientAbsOrigin(i, InfectedVec[a]);
 			InfectedCount++;
 		}
 		else
 		{
-			GetClientAbsOrigin(a, NotInfectedVec[a]);
+			GetClientAbsOrigin(i, NotInfectedVec[a]);
 			NotInfectedCount++;
 		}
 		
@@ -275,7 +306,7 @@ public RunInfection()
 	{
 		for(k = 0; k < NotInfectedCount; k++)
 		{
-			if(GetVectorDistance(InfectedVec[i], NotInfectedVec[k], true) < GetConVarFloat(Cvar_DmgDistance) )
+			if(GetVectorDistance(InfectedVec[i], NotInfectedVec[k], true) < GetConVarFloat(Cvar_SpreadDistance) )
 			{
 				a = PlayerVec[k];
 				m = PlayerVec[i];
@@ -291,15 +322,14 @@ stock TransmitInfection(from, to)
 	// Rukia: Spread to all
 	if(GetConVarInt(Cvar_SpreadAll) )
 	{
-		ClientInfected[to] = from;
-		InfectionEffect(from,to)
-		return 1;
+		SendInfection(to,from,GetClientTeam(from) == GetClientTeam(to),false);
+		return;
 	}
 	
 	// Rukia: Don't spread to medics
 	if(!GetConVarInt(Cvar_InfectMedics) && (TF2_GetPlayerClass(to) == TFClass_Medic) )
 	{
-		return 0;
+		return;
 	}
 	
 	if(!GetConVarInt(Cvar_InfectInfector))
@@ -307,7 +337,7 @@ stock TransmitInfection(from, to)
 		new a = from;
 		while(ClientInfected[a])
 		{
-			if(ClientInfected[a] == to) return 0;
+			if(ClientInfected[a] == to) return;
 			a = ClientInfected[a];
 		}
 	}
@@ -318,38 +348,28 @@ stock TransmitInfection(from, to)
 	// Rukia: Spread to same team
 	if(GetConVarInt(Cvar_SpreadSameTeam) && t_same )
 	{
-		ClientInfected[to] = from;
-		ClientFriendlyInfected[to] = true;
+		SendInfection(to,from,true,false);
 	}
 	// Rukia: Spread to opposing team
 	else if(GetConVarInt(Cvar_SpreadOpposingTeam) && !t_same )
 	{
-		ClientInfected[to] = from;
+		SendInfection(to,from,false,false);
 	}
 	// Rukia: If a medic infects a friendly, allow the infection to spread across team boundaries
 	else if(GetConVarInt(Cvar_InfectSameTeam) && !t_same && ClientFriendlyInfected[from])
 	{
-		ClientInfected[to] = from;
+		SendInfection(to,from,false,false);
 	}
-	else return 0;
-	
-	InfectionEffect(from,to)
-	return 1;
 }
-	
-stock InfectionEffect(from,to)
-{
-	decl Float:ori1[3], Float:ori2[3];
-	
-	GetClientAbsOrigin(from, ori1);
-	GetClientAbsOrigin(to, ori2);
 
-	decl color[4];
-	color[0] = GetConVarInt(CvarRed); 
-	color[1] = GetConVarInt(CvarGreen);
-	color[2] = GetConVarInt(CvarBlue);
-	color[3] = GetConVarInt(CvarTrans);
-			
-	TE_SetupBeamPoints(ori1, ori2, beamSprite, haloSprite, 0, 0, 5.0, 
-				2.0, 4.0, 10, 1.0,color, 1);
+stock SendInfection(to,from,bool:friendly,bool:infect)
+{
+	ClientInfected[to] = from;
+	ClientFriendlyInfected[to] = friendly;
+	SetEntityRenderColor(to,GetConVarInt(CvarRed),GetConVarInt(CvarGreen),GetConVarInt(CvarBlue),GetConVarInt(CvarTrans))
+	
+	PrintHintText(to,"You have been infected!");
+	
+	if(infect) PrintHintText(from,"Virus administered!");
+	else PrintHintText(from,"Virus spread!");
 }
