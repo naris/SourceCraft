@@ -877,7 +877,7 @@ stock UpdateMindControlledObject(object, builder, objects:type, bool:remove)
 
 stock ResetMindControlledObjects(client, bool:endRound)
 {
-    LogMessage("ResetMindControlledObject() for %N, endRound=%d", client, endRound);
+    LogMessage("ResetMindControlledObject() for %d, endRound=%d", client, endRound);
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
         new size = GetArraySize(m_StolenObjectList[client]);
