@@ -112,7 +112,7 @@ public OnPluginReady()
 {
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation", "ankh",
                                        "If you die you will retrieve your equipment the following round.",
-                                       40);
+                                       60);
 
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed", "boots", 
                                         "Allows you to move faster.",
@@ -173,7 +173,7 @@ public OnPluginReady()
 
     shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting", "sack", 
                                        "Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!",
-                                       85);
+                                       65);
 
     shopItem[ITEM_LOCKBOX]=CreateShopItem("Lockbox", "lockbox", 
                                           "A lockbox to keep your crystals safe from theft.",
@@ -367,16 +367,20 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_player != INVALID_HANDLE)
     {
-        if (victim_index != attacker_index && attacker_player != INVALID_HANDLE)
+        if(!GetImmunity(victim_player,Immunity_ShopItems) &&
+           !GetImmunity(victim_player,Immunity_Theft))
         {
-            if(GetOwnsItem(attacker_player,shopItem[ITEM_SACK]))
-                LootCorpse(event, victim_index, victim_player, attacker_index, attacker_player);
-        }
+            if (victim_index != attacker_index && attacker_player != INVALID_HANDLE)
+            {
+                if(GetOwnsItem(attacker_player,shopItem[ITEM_SACK]))
+                    LootCorpse(event, victim_index, victim_player, attacker_index, attacker_player);
+            }
 
-        if (assister_player != INVALID_HANDLE)
-        {
-            if(GetOwnsItem(assister_player,shopItem[ITEM_SACK]))
-                LootCorpse(event, victim_index, victim_player, assister_index, assister_player);
+            if (assister_player != INVALID_HANDLE)
+            {
+                if(GetOwnsItem(assister_player,shopItem[ITEM_SACK]))
+                    LootCorpse(event, victim_index, victim_player, assister_index, assister_player);
+            }
         }
 
         if (GameType == cstrike || !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
