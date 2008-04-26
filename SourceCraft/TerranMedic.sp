@@ -136,7 +136,10 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     {
         new restore_level=GetUpgradeLevel(player,race,restoreID);
         if (restore_level)
+        {
             RestorePlayer(player);
+            HealInfect(client,client);
+        }
         else
         {
             new flare_level=GetUpgradeLevel(player,race,flareID);
@@ -417,6 +420,7 @@ public Action:Restore(Handle:timer)
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
                                             RestorePlayer(player_check);
+                                            HealInfect(client,index);
 
                                             new color[4] = { 0, 0, 255, 255 };
                                             TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
@@ -447,7 +451,7 @@ OpticFlare(client,ultlevel)
     }
 
     new count=0;
-    new duration = ultlevel*2;
+    new duration = ultlevel*100;
     new Float:clientLoc[3];
     GetClientAbsOrigin(client, clientLoc);
     new maxplayers=GetMaxClients();

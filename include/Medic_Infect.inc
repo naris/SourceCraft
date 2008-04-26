@@ -33,8 +33,17 @@ native SetMedicInfect(client,bool:arm=true,amount=0);
  *
  * @param index 	Client index of infector
  * @param target    Client index of target
- * @param allow     Set to true to enable Medic Infections for tagets on the same team.
+ * @param allow     Set to true to enable Medic Infections for targets on the same team.
  * @return			none
  */
 native MedicInfect(client,target,bool:allow=false);
+
+/**
+ * Heal a player.
+ *
+ * @param index 	Client index of infector
+ * @param target    Client index of target
+ * @return			none
+ */
+native HealInfect(client,target);
 

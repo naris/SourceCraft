@@ -57,6 +57,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 	CreateNative("ControlMedicInfect",Native_ControlMedicInfect);
 	CreateNative("SetMedicInfect",Native_SetMedicInfect);
 	CreateNative("MedicInfect",Native_MedicInfect);
+	CreateNative("HealInfect",Native_HealInfect);
 	return true;
 }
 
@@ -159,9 +160,9 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 				SetEventInt(event,"assister",GetClientUserId(ClientInfected[infecter]));
 		}
 		SetEventString(event,"weapon","infection");
-		SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
+		//SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
 	}
-	else
+	else if (attacker != infecter)
 	{
 		if (GetEventInt(event,"assister") <= 0)
 			SetEventInt(event,"assister",GetClientUserId(infecter));
@@ -299,13 +300,14 @@ MedicInfect(a,b,allow)
 				SendInfection(b,a,true,true);
 			}
 			// Rukia: Heal if applicable.
-			else
+			else if (ClientInfected[b] || ClientFriendlyInfected[b])
 			{ 
 				ClientInfected[b] = 0; 
 				ClientFriendlyInfected[b] = false; 
+				SetEntityRenderColor(b,255,255,255,255);
 
-				PrintHintText(a,"Cure spread!");
 				PrintHintText(b,"You have been cured!");
+				PrintHintText(a,"%N has been cured!", b);
 			}
 		}
 		// Rukia: Infect the opposing team otherwise
@@ -447,5 +449,26 @@ public Native_MedicInfect(Handle:plugin,numParams)
 		new target = GetNativeCell(2);
 		new allow = (numParams >= 3) ? GetNativeCell(3) : 0;
 		MedicInfect(client,target,allow)
+	}
+}
+
+public Native_HealInfect(Handle:plugin,numParams)
+{
+	if (numParams >= 2 && numParams <= 2)
+	{
+		new client = GetNativeCell(1);
+		new target = GetNativeCell(2);
+		{ 
+			if (ClientInfected[target] || ClientFriendlyInfected[target])
+			{
+				ClientInfected[target] = 0; 
+				ClientFriendlyInfected[target] = false; 
+				SetEntityRenderColor(target,255,255,255,255);
+				PrintHintText(target,"You have been cured!");
+
+				if (client > 0)
+					PrintHintText(client,"%N has been cured!", target);
+			}
+		}
 	}
 }
