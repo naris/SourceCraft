@@ -15,6 +15,7 @@
 #define REQUIRE_EXTENSIONS
 
 #include "jetpack"
+#include "medihancer"
 #include "Medic_Infect"
 
 #include "sc/SourceCraft"

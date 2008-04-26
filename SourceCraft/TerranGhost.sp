@@ -727,18 +727,18 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                     case 2:
                     {
-                        Shake(0, 14.0, 10.0, 150.0);
+                        ShakeAll(0, 14.0, 10.0, 150.0);
                         explodeall(m_NuclearAimPos[client]);
                     }
                     case 3:
                     {
                         new color[4]={250,250,250,255};
-                        Fade(600, 600 , color);
+                        FadeAll(600, 600 , color);
                         explodeall(m_NuclearAimPos[client]);
                     }
                     case 4:
                     {
-                        Shake(0, 14.0, 10.0, 150.0);
+                        ShakeAll(0, 14.0, 10.0, 150.0);
                     }
                     default:
                     {
@@ -812,7 +812,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
             }
         }
 
-        Shake(1, 0.0, 0.0, 0.0);
+        ShakeAll(1, 0.0, 0.0, 0.0);
 
         if (IsClientInGame(client))
         {
