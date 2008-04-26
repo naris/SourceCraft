@@ -22,17 +22,23 @@
 #include "sc/util"
 #include "sc/maxhealth"
 #include "sc/weapons"
+#include "sc/screen"
 #include "sc/trace"
 
 #include "sc/log" // for debugging
 
-new raceID, infectID, chargeID, armorID, restoreID, jetpackID;
+new raceID, infectID, chargeID, armorID, restoreID, flareID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
 new m_Armor[MAXPLAYERS+1];
+new bool:m_AllowOpticFlare[MAXPLAYERS+1];
+
+new Handle:cvarFlareCooldown = INVALID_HANDLE;
+
+new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
 public Plugin:myinfo = 
 {
@@ -42,6 +48,17 @@ public Plugin:myinfo =
     version = "1.0.0.0",
     url = "http://jigglysfunhouse.net/"
 };
+
+public OnPluginStart()
+{
+    GetGameType();
+
+    cvarFlareCooldown=CreateConVar("sc_opticflarecooldown","30");
+
+    HookEvent("player_spawn",PlayerSpawnEvent);
+
+    CreateTimer(3.0,Restore,INVALID_HANDLE,TIMER_REPEAT);
+}
 
 public OnPluginReady()
 {
@@ -55,22 +72,14 @@ public OnPluginReady()
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
     restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for the teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
-    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 14); // Ultimate
+    flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
+    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 15); // Ultimate
 
     ControlMedicInfect(true);
     ControlMedicEnhancer(true);
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
-}
-
-public OnPluginStart()
-{
-    GetGameType();
-
-    HookEvent("player_spawn",PlayerSpawnEvent);
-
-    CreateTimer(3.0,Restore,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnMapStart()
@@ -86,6 +95,8 @@ public OnMapStart()
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
+
+    SetupSound(rechargeWav,true,true);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -128,13 +139,19 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             RestorePlayer(player);
         else
         {
-            new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
-            if (jetpack_level)
+            new flare_level=GetUpgradeLevel(player,race,flareID);
+            if (flare_level)
+                OpticFlare(client, flare_level);
+            else
             {
-                if (pressed)
-                    StartJetpack(client);
-                else
-                    StopJetpack(client);
+                new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
+                if (jetpack_level)
+                {
+                    if (pressed)
+                        StartJetpack(client);
+                    else
+                        StopJetpack(client);
+                }
             }
         }
     }
@@ -416,5 +433,79 @@ public Action:Restore(Handle:timer)
         }
     }
     return Plugin_Continue;
+}
+
+OpticFlare(client,ultlevel)
+{
+    new Float:range;
+    switch(ultlevel)
+    {
+        case 1: range=300.0;
+        case 2: range=450.0;
+        case 3: range=650.0;
+        case 4: range=800.0;
+    }
+
+    new count=0;
+    new duration = ultlevel*2;
+    new Float:clientLoc[3];
+    GetClientAbsOrigin(client, clientLoc);
+    new maxplayers=GetMaxClients();
+    for(new index=1;index<=maxplayers;index++)
+    {
+        if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(client) != GetClientTeam(index))
+        {
+            new Handle:player_check=GetPlayerHandle(index);
+            if (player_check != INVALID_HANDLE)
+            {
+                if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                    !GetImmunity(player_check,Immunity_HealthTake) &&
+                    !TF2_IsPlayerInvuln(index))
+                {
+                    if (IsInRange(client,index,range))
+                    {
+                        new Float:indexLoc[3];
+                        GetClientAbsOrigin(index, indexLoc);
+                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                        {
+                            new color[4]={250,250,250,255};
+                            FadeOne(index, duration, duration , color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    new Float:cooldown = GetConVarFloat(cvarFlareCooldown);
+    if (count)
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c to blind %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+    }
+    else
+    {
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c, with no effect! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+    }
+    if (cooldown > 0.0)
+    {
+        m_AllowOpticFlare[client]=false;
+        CreateTimer(cooldown,AllowOpticFlare,client);
+    }
+}
+
+public Action:AllowOpticFlare(Handle:timer,any:index)
+{
+    m_AllowOpticFlare[index]=true;
+
+    if (IsClientInGame(index) && IsPlayerAlive(index))
+    {
+        if (GetRace(GetPlayerHandle(index)) == raceID)
+        {
+            EmitSoundToClient(index, rechargeWav);
+            PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cOptic Flare%c is now available again!",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+        }
+    }                
+    return Plugin_Stop;
 }
 

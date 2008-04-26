@@ -1,11 +1,12 @@
 Terran Medic
 1) Infect
 2) UberCharge (medihancer)
-3) Optical Flare
-4) Armor
-5) MedicPack [1 level]
+3) Armor
 Ult) Restoration -- remove bash/lockdown/orb/etc...
-Ult2) JetPack
+Ult2) Optical Flare
+Ult3) JetPack
+
+unused) MedicPack [1 level]
 
 Terran SCV:
 1) AmmoPack [1 level]
