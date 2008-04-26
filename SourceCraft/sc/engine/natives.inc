@@ -606,7 +606,7 @@ public Native_SetImmunity(Handle:plugin,numParams)
 
 public Native_SetSpeed(Handle:plugin,numParams)
 {
-    if (numParams==2)
+    if (numParams >= 2 && numParams <= 3)
     {
         new Handle:player=Handle:GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
@@ -650,13 +650,15 @@ public Native_SetSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
+            if (numParams >= 3 && bool:GetNativeCell(3))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
 }
 
 public Native_SetGravity(Handle:plugin,numParams)
 {
-    if (numParams==2)
+    if (numParams >= 2 && numParams <= 3)
     {
         new Handle:player=Handle:GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
@@ -700,6 +702,8 @@ public Native_SetGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
+            if (numParams >= 3 && bool:GetNativeCell(3))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
 }
@@ -725,7 +729,7 @@ public Native_SetGravity(Handle:plugin,numParams)
 */
 public Native_SetVisibility(Handle:plugin,numParams)
 {
-    if (numParams >= 1 && numParams <= 10)
+    if (numParams >= 1 && numParams <= 11)
     {
         new Handle:player       = Handle:GetNativeCell(1);
         new visibility          = (numParams >= 2) ? GetNativeCell(2) : -1;
@@ -789,13 +793,15 @@ public Native_SetVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,b); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
+            if (numParams >= 11 && bool:GetNativeCell(11))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
 }
 
 public Native_SetOverrideSpeed(Handle:plugin,numParams)
 {
-    if (numParams == 2)
+    if (numParams >= 2 && numParams <= 3)
     {
         new Handle:player = Handle:GetNativeCell(1);
         new Float:speed=GetNativeCell(2);
@@ -840,13 +846,15 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
+            if (numParams >= 3 && bool:GetNativeCell(3))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
 }
 
 public Native_SetOverrideGravity(Handle:plugin,numParams)
 {
-    if (numParams == 2)
+    if (numParams >= 2 && numParams <= 3)
     {
         new Handle:player = Handle:GetNativeCell(1);
         new Float:gravity=GetNativeCell(2);
@@ -890,13 +898,15 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
+            if (numParams >= 3 && bool:GetNativeCell(3))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
 }
 
 public Native_SetOverrideVisiblity(Handle:plugin,numParams)
 {
-    if (numParams == 2)
+    if (numParams >= 2 && numParams <= 3)
     {
         new Handle:player = Handle:GetNativeCell(1);
         new visibility=GetNativeCell(2);
@@ -940,8 +950,15 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility blue component
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
+            if (numParams >= 3 && bool:GetNativeCell(3))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
+}
+
+public Native_ApplyPlayerSettings(Handle:plugin,numParams)
+{
+    TriggerTimer(m_PlayerPropertiesTimer, true);
 }
 
 bool:InitNatives()
@@ -979,6 +996,7 @@ bool:InitNatives()
     CreateNative("SetOverrideSpeed",Native_SetOverrideSpeed);
     CreateNative("SetOverrideGravity",Native_SetOverrideGravity);
     CreateNative("SetOverrideVisiblity",Native_SetOverrideVisiblity);
+    CreateNative("ApplyPlayerSettings",Native_ApplyPlayerSettings);
     return true;
 }
 

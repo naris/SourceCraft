@@ -268,9 +268,10 @@ native SetImmunity(Handle:player,Immunity:immunity,imm_state=1);
  * they no longer have the upgrade or item, or whatever.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param speed: The speed you want to pass.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
-native SetSpeed(Handle:player,Float:speed=-1.0);
+native SetSpeed(Handle:player,Float:speed=-1.0,bool:apply=false);
 
 /**
  * Sets the gravity for the player that is handled within the SourceCraft system,
@@ -279,9 +280,10 @@ native SetSpeed(Handle:player,Float:speed=-1.0);
  * they no longer have the upgrade or item, or whatever.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param gravity: The gravity you want to pass.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
-native SetGravity(Handle:player,Float:gravity=-1.0);
+native SetGravity(Handle:player,Float:gravity=-1.0,bool:apply=false);
 
 /**
  * Sets the visibility for the player that is handled within the SourceCraft system,
@@ -298,6 +300,7 @@ native SetGravity(Handle:player,Float:gravity=-1.0);
  * @param r: Red Component.
  * @param g: Green Component.
  * @param b: Blue Component.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
 native SetVisibility(Handle:player,visibility=-1,
@@ -305,7 +308,8 @@ native SetVisibility(Handle:player,visibility=-1,
                      Float:factor1=-1.0,Float:factor2=-1.0,
                      RenderMode:mode=RenderMode:-1,
                      RenderFx:fx=RenderFx:-1,
-                     r=-1,g=-1,b=-1);
+                     r=-1,g=-1,b=-1,
+                     bool:apply=false);
 
 /**
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
@@ -313,9 +317,10 @@ native SetVisibility(Handle:player,visibility=-1,
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param speed: The speed you want to pass.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
-native SetOverrideSpeed(Handle:player,Float:speed=-1.0);
+native SetOverrideSpeed(Handle:player,Float:speed=-1.0,bool:apply=false);
 
 /**
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
@@ -323,9 +328,10 @@ native SetOverrideSpeed(Handle:player,Float:speed=-1.0);
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param gravity: The gravity you want to pass.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
-native SetOverrideGravity(Handle:player,Float:gravity=-1.0);
+native SetOverrideGravity(Handle:player,Float:gravity=-1.0,bool:apply=false);
 
 /**
  * Overrides the (in)visibility for SourceCraft , useful for punishing them or whatever.
@@ -333,9 +339,18 @@ native SetOverrideGravity(Handle:player,Float:gravity=-1.0);
  * make sure to do this when they are no longer supposed to follow!
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param visibility: The visibility you want to pass.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
-native SetOverrideVisiblity(Handle:player,visibility=-1);
+native SetOverrideVisiblity(Handle:player,visibility=-1,bool:apply=false);
+
+/**
+ * Applies the Speed, Gravity and Visibility settings for all players
+ * right away. This function is not required to change the player's state.
+ * If this is not called, the settings will be applied automatically within 2 seconds.
+ * @noreturn
+ */
+native ApplyPlayerSettings();
 
 /**
  * Called when the plugin is ready.
