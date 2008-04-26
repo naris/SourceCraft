@@ -34,6 +34,9 @@ new Handle:m_SaveXPConVar         = INVALID_HANDLE;
 new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
 new Handle:m_MaxCredits           = INVALID_HANDLE;
 
+// Global Timers
+new Handle:PlayerPropertiesTimer  = INVALID_HANDLE;
+
 // Sound Files
 new String:buttonWav[] = "play buttons/button14.wav";
 new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
@@ -146,7 +149,7 @@ public OnPluginStart()
     InitHooks();
 
     // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
-    CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
+    PlayerPropertiesTimer = CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
 
     PrintToServer("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
     LogMessage("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
