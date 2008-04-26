@@ -22,10 +22,11 @@
 #include "sc/util"
 #include "sc/maxhealth"
 #include "sc/weapons"
+#include "sc/trace"
 
 #include "sc/log" // for debugging
 
-new raceID, infectID, chargeID, armorID, jetpackID;
+new raceID, infectID, chargeID, armorID, restoreID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -42,13 +43,6 @@ public Plugin:myinfo =
     url = "http://jigglysfunhouse.net/"
 };
 
-public OnPluginStart()
-{
-    GetGameType();
-
-    HookEvent("player_spawn",PlayerSpawnEvent);
-}
-
 public OnPluginReady()
 {
     raceID      = CreateRace("Terran Medic", "medic",
@@ -60,13 +54,23 @@ public OnPluginReady()
     chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
-    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
+    restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for the teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
+    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 14); // Ultimate
 
     ControlMedicInfect(true);
     ControlMedicEnhancer(true);
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+}
+
+public OnPluginStart()
+{
+    GetGameType();
+
+    HookEvent("player_spawn",PlayerSpawnEvent);
+
+    CreateTimer(3.0,Restore,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnMapStart()
@@ -119,10 +123,20 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client))
     {
-        if (pressed)
-            StartJetpack(client);
+        new restore_level=GetUpgradeLevel(player,race,restoreID);
+        if (restore_level)
+            RestorePlayer(player);
         else
-            StopJetpack(client);
+        {
+            new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
+            if (jetpack_level)
+            {
+                if (pressed)
+                    StartJetpack(client);
+                else
+                    StopJetpack(client);
+            }
+        }
     }
 }
 
@@ -340,3 +354,67 @@ public SetupUberCharger(client, level)
     else
         SetMedicEnhancement(client, false, 0);
 }
+
+public Action:Restore(Handle:timer)
+{
+    new maxplayers=GetMaxClients();
+    for(new client=1;client<=maxplayers;client++)
+    {
+        if(IsClientInGame(client))
+        {
+            if(IsPlayerAlive(client))
+            {
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
+                {
+                    new restore_level=GetUpgradeLevel(player,raceID,restoreID);
+                    if (restore_level)
+                    {
+                        new Float:range=1.0;
+                        switch(restore_level)
+                        {
+                            case 1:
+                                range=300.0;
+                            case 2:
+                                range=450.0;
+                            case 3:
+                                range=650.0;
+                            case 4:
+                                range=800.0;
+                        }
+                        new Float:clientLoc[3];
+                        GetClientAbsOrigin(client, clientLoc);
+                        new team = GetClientTeam(client);
+                        for (new index=1;index<=maxplayers;index++)
+                        {
+                            if (index != client && IsClientInGame(index) &&
+                                IsPlayerAlive(index) && GetClientTeam(index) == team)
+                            {
+                                new Handle:player_check=GetPlayerHandle(index);
+                                if (player_check != INVALID_HANDLE)
+                                {
+                                    if (IsInRange(client,index,range))
+                                    {
+                                        new Float:indexLoc[3];
+                                        GetClientAbsOrigin(index, indexLoc);
+                                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                                        {
+                                            RestorePlayer(player_check);
+
+                                            new color[4] = { 0, 0, 255, 255 };
+                                            TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                              0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                            TE_SendToAll();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return Plugin_Continue;
+}
+

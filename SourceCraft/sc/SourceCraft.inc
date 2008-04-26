@@ -347,9 +347,10 @@ native SetOverrideVisiblity(Handle:player,visibility=-1,bool:apply=false);
 /**
  * Restores Settings for a player (removes all overrides)
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @param apply: Set to true to apply the setting immedately.
  * @noreturn
  */
-native RestorePlayer(Handle:player);
+native RestorePlayer(Handle:player,bool:apply=false);
 
 /**
  * Applies the Speed, Gravity and Visibility settings for all players

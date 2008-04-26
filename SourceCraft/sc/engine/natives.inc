@@ -958,7 +958,7 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
 
 public Native_RestorePlayer(Handle:plugin,numParams)
 {
-    if (numParams == 1)
+    if (numParams >= 1 && numParams <= 2)
     {
         new Handle:player=Handle:GetNativeCell(1);
         if (player != INVALID_HANDLE)
@@ -974,7 +974,8 @@ public Native_RestorePlayer(Handle:plugin,numParams)
                 SetArrayCell(temp,TRACKING_VISIBILITY_G, -1);
                 SetArrayCell(temp,TRACKING_VISIBILITY_B, -1);
             }
-            TriggerTimer(m_PlayerPropertiesTimer, true);
+            if (numParams >= 2 && bool:GetNativeCell(2))
+                TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
 }
