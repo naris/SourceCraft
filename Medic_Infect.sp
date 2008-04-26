@@ -1,10 +1,19 @@
+/**
+ * File: Medic_Infect.sp
+ * Description: Medic Infection for TF2
+ * Author(s): Twilight Suzuka
+ */
+
 #include <sourcemod>
 #include <sdktools>
 #include <tf2>
 #include <tf2_stocks>
 
+new bool:MedicArmed[MAXPLAYERS + 1];
 new ClientInfected[MAXPLAYERS + 1];
 new bool:ClientFriendlyInfected[MAXPLAYERS + 1];
+
+new bool:NativeControl = false;
 
 public Plugin:myinfo = 
 {
@@ -66,9 +75,12 @@ public OnPluginStart()
 	Cvar_InfectDelay = CreateConVar("sv_medic_infect_delay", "1.0", "Delay between infections",FCVAR_PLUGIN);
 	
 	Cvar_InfectMedi = CreateConVar("sv_medic_infect_medi", "1", "Infect using medi gun",FCVAR_PLUGIN);
-	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "0", "Infect using syringe gun",FCVAR_PLUGIN);
+	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "1", "Infect using syringe gun",FCVAR_PLUGIN);
 	
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
+
+	CreateNative("ControlMedicInfect",Native_ControlMedicInfect);
+	CreateNative("SetMedicInfect",Native_SetMedicInfect);
 }
 
 public OnConfigsExecuted()
@@ -95,7 +107,7 @@ public HandleInfectionChange(Handle:convar, const String:oldValue[], const Strin
 
 public Action:HandleInfection(Handle:timer)
 {
-	if(!GetConVarInt(CvarEnable)) return;
+	if(!GetConVarInt(CvarEnable) && !NativeControl) return;
 	
 	new maxplayers = GetMaxClients();
 	for(new a = 1; a <= maxplayers; a++)
@@ -105,14 +117,15 @@ public Action:HandleInfection(Handle:timer)
 		new hp = GetClientHealth(a);
 		hp -= GetConVarInt(Cvar_DmgAmount);
 		
-		if(hp < 0) ForcePlayerSuicide(a);
+		if(hp < 0)
+			ForcePlayerSuicide(a);
 		else
 		{
 			//SetEntityHealth(a,hp);
 			SetEntProp(a, Prop_Send, "m_iHealth", hp, 1);
 			SetEntProp(a, Prop_Data, "m_iHealth", hp, 1);
 		}
-	}	
+	}
 }
 
 public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
@@ -120,22 +133,32 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	new id = GetClientOfUserId(GetEventInt(event,"userid"));
 	if(!ClientInfected[id]) return Plugin_Continue;
 	
-	new attacker = ClientInfected[id];
+	new infecter = ClientInfected[id];
 	
 	ClientInfected[id] = 0;
 	ClientFriendlyInfected[id] = false;
 
 	SetEntityRenderColor(id)
 	SetEntityRenderMode(id, RENDER_NORMAL)
-	
-	SetEventInt(event,"attacker",GetClientUserId(attacker));
-	if(TF2_GetPlayerClass(attacker) != TFClass_Medic)
+
+	new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
+	if (attacker == id)
 	{
-		if(ClientInfected[attacker]) SetEventInt(event,"assister",GetClientUserId(ClientInfected[attacker]));
+		SetEventInt(event,"attacker",GetClientUserId(infecter));
+		if(TF2_GetPlayerClass(infecter) != TFClass_Medic)
+		{
+			if(ClientInfected[infecter])
+				SetEventInt(event,"assister",GetClientUserId(ClientInfected[infecter]));
+		}
+		SetEventString(event,"weapon","infection");
+		SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
 	}
-	SetEventString(event,"weapon","infection");
-	SetEventInt(event,"customkill",1);
-	
+	else
+	{
+		if (GetEventInt(event,"assister") <= 0)
+			SetEventInt(event,"assister",GetClientUserId(infecter));
+	}
+
 	return Plugin_Continue;
 }
 
@@ -148,8 +171,8 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 
 public OnGameFrame()
 {
-	if(!GetConVarInt(CvarEnable)) return;
-	
+	if(!GetConVarInt(CvarEnable) && !NativeControl) return;
+
 	if(GetConVarInt(Cvar_InfectMedi)) CheckMedics();
 	RunInfection();
 }
@@ -158,15 +181,16 @@ new Float:MedicDelay[MAXPLAYERS + 1];
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if(GetConVarInt(CvarEnable)) return Plugin_Continue;
-	
+	if(GetConVarInt(CvarEnable) && !NativeControl) return Plugin_Continue;
+	if (NativeControl && !MedicArmed[client]) return Plugin_Continue;
+
 	if(
 		GetConVarInt(Cvar_InfectSyringe) 
 		|| (TF2_GetPlayerClass(client) != TFClass_Medic) 
 		|| (MedicDelay[client] > GetGameTime())
 		) 
 		return Plugin_Continue;
-	
+
 	if(StrEqual(weaponname, "tf_weapon_syringegun_medic") )
 	{
 		new target = GetClientAimTarget(client);
@@ -176,7 +200,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 			MedicDelay[client] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 		}
 	}
-	
+
 	return Plugin_Continue;
 }
 
@@ -187,13 +211,16 @@ public CheckMedics()
 
 	for(new i = 1; i <= maxplayers; i++)
 	{
+		if (NativeControl && !MedicArmed[i])
+			 continue;
+
 		if( !IsClientInGame(i) 
 			|| !IsPlayerAlive(i) 
 			|| (TF2_GetPlayerClass(i) != TFClass_Medic) 
 			|| (MedicDelay[i] > GetGameTime()) 
 			) 
 			continue;
-		
+
 		new weaponent = GetEntPropEnt(i, Prop_Send, "m_hActiveWeapon");
 
 		if(GetEdictClassname(weaponent, classname , sizeof(classname)) )
@@ -366,10 +393,32 @@ stock SendInfection(to,from,bool:friendly,bool:infect)
 {
 	ClientInfected[to] = from;
 	ClientFriendlyInfected[to] = friendly;
-	SetEntityRenderColor(to,GetConVarInt(CvarRed),GetConVarInt(CvarGreen),GetConVarInt(CvarBlue),GetConVarInt(CvarTrans))
-	
+	if (GetClientTeam(to) == _:TFTeam_Blue)
+		SetEntityRenderColor(to,GetConVarInt(CvarRed),GetConVarInt(CvarGreen),GetConVarInt(CvarBlue),GetConVarInt(CvarTrans));
+	else // Switch Red & Blue for Red Team.
+		SetEntityRenderColor(to,GetConVarInt(CvarBlue),GetConVarInt(CvarGreen),GetConVarInt(CvarRed),GetConVarInt(CvarTrans));
+
 	PrintHintText(to,"You have been infected!");
-	
+
 	if(infect) PrintHintText(from,"Virus administered!");
 	else PrintHintText(from,"Virus spread!");
 }
+
+public Native_ControlMedicInfect(Handle:plugin,numParams)
+{
+	if (numParams == 0)
+		NativeControl = true;
+	else if(numParams == 1)
+		NativeControl = GetNativeCell(1);
+}
+
+public Native_SetMedicInfect(Handle:plugin,numParams)
+{
+	if(numParams >= 1 && numParams <= 2)
+	{
+		new client = GetNativeCell(1);
+		if(IsPlayerAlive(client))
+			MedicArmed[client] = (numParams >= 2) ? GetNativeCell(2) : true;
+	}
+}
+
