@@ -63,6 +63,14 @@ new bool:NativeControl = false;
 new bool:NativeMedicEnabled[MAXPLAYERS + 1] = { false, ...};
 new NativeAmount[MAXPLAYERS + 1];
 
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+	// Register Natives
+    CreateNative("ControlMedicEnhancer",Native_ControlMedicEnhancer);
+    CreateNative("SetMedicEnhancement",Native_SetMedicEnhancement);
+	return true;
+}
+
 public OnPluginStart()
 {
     g_IsMedihancerOn = CreateConVar("sm_medihancer","3","Enable/Disable medihancer");
@@ -76,9 +84,6 @@ public OnPluginStart()
     AutoExecConfig(true, "sm_medihancer");
 
     CreateConVar("sm_tf_medihancer", PL_VERSION, "Medihancer", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-
-    CreateNative("ControlMedicEnhancer",Native_ControlMedicEnhancer);
-    CreateNative("SetMedicEnhancement",Native_SetMedicEnhancement);
 
     g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
     if (g_TF_ChargeLevelOffset == -1)

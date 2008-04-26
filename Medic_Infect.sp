@@ -51,6 +51,15 @@ new Handle:CvarTrans = INVALID_HANDLE;
 
 new Handle:InfectionTimer = INVALID_HANDLE;
 
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+	// Register Natives
+	CreateNative("ControlMedicInfect",Native_ControlMedicInfect);
+	CreateNative("SetMedicInfect",Native_SetMedicInfect);
+	CreateNative("MedicInfect",Native_MedicInfect);
+	return true;
+}
+
 public OnPluginStart()
 {
 	CvarEnable = CreateConVar("medic_infect_on", "1", "1 turns the plugin on 0 is off", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
@@ -79,10 +88,6 @@ public OnPluginStart()
 	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "1", "Infect using syringe gun",FCVAR_PLUGIN);
 	
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
-
-	CreateNative("ControlMedicInfect",Native_ControlMedicInfect);
-	CreateNative("SetMedicInfect",Native_SetMedicInfect);
-	CreateNative("MedicInfect",Native_MedicInfect);
 }
 
 public OnConfigsExecuted()
