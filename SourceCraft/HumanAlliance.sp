@@ -67,7 +67,7 @@ public OnPluginReady()
                             "You will be part of the Human Alliance when you die or respawn.");
 
     immunityID = AddUpgrade(raceID,"Immunity", "immunity",
-                            "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking at level 3,\nand Ultimates at Level 4.");
+                            "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking/Extra Damage at level 3,\nand Ultimates at Level 4.");
 
     devotionID = AddUpgrade(raceID,"Devotion Aura", "devotion",
                             "Gives you additional 15-50 health each round.");

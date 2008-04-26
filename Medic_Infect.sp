@@ -253,45 +253,54 @@ public CheckMedics()
 	}
 }
 
-stock MedicInfect(a,b,allow)
+MedicInfect(a,b,allow)
 {
-	// Rukia: Don't reinfect!
-	if(ClientInfected[b]) return;
-	
 	// Rukia: are the teams identical?
 	new t_same = GetClientTeam(a) == GetClientTeam(b);
-	
-	// Rukia: Don't infect same team if not allowed
-	if( (t_same && !allow) || (!GetConVarInt(Cvar_InfectSameTeam) && t_same) )
+	if( t_same )
 	{
-		return;
+		if( allow  )
+		{
+			// Rukia: Don't infect same team if not allowed
+			if(  !GetConVarInt(Cvar_InfectSameTeam) )
+				return;
+			// Rukia: Don't reinfect!
+			else if(ClientInfected[b])
+				return;
+		}
 	}
-	
-	// Rukia: Don't infect opposing team if not allowed
-	if(!GetConVarInt(Cvar_InfectOpposingTeam) && !t_same )
+	else
 	{
-		return;
+		// Rukia: Don't infect opposing team if not allowed
+		if(!GetConVarInt(Cvar_InfectOpposingTeam) )
+			return;
+		// Rukia: Don't reinfect!
+		else if(ClientInfected[b])
+			return;
 	}
-	
+
 	decl Float:ori1[3], Float:ori2[3];
 	GetClientAbsOrigin(a, ori1);
 	GetClientAbsOrigin(b, ori2);
 
 	if( (GetConVarFloat(Cvar_DmgDistance) == 0.0) || (GetVectorDistance(ori1, ori2, true) < GetConVarFloat(Cvar_DmgDistance)) )
 	{
-		// Rukia: Infect same team if allowed is on
-		if(allow && t_same)
+		if( t_same ) 
 		{
-			SendInfection(b,a,true,true);
-		}
-		// Rukia: Heal if applicable.
-		else if( t_same ) 
-		{ 
-			ClientInfected[b] = 0; 
-			ClientFriendlyInfected[b] = false; 
-			
-			PrintHintText(a,"Cure spread!");
-			PrintHintText(b,"You have been cured!");
+			// Rukia: Infect same team if allowed is on
+			if(allow)
+			{
+				SendInfection(b,a,true,true);
+			}
+			// Rukia: Heal if applicable.
+			else
+			{ 
+				ClientInfected[b] = 0; 
+				ClientFriendlyInfected[b] = false; 
+
+				PrintHintText(a,"Cure spread!");
+				PrintHintText(b,"You have been cured!");
+			}
 		}
 		// Rukia: Infect the opposing team otherwise
 		else
@@ -346,7 +355,7 @@ public RunInfection()
 	}
 }
 
-stock TransmitInfection(from, to)
+TransmitInfection(from, to)
 {
 	// Rukia: Spread to all
 	if(GetConVarInt(Cvar_SpreadAll) )
@@ -391,7 +400,7 @@ stock TransmitInfection(from, to)
 	}
 }
 
-stock SendInfection(to,from,bool:friendly,bool:infect)
+SendInfection(to,from,bool:friendly,bool:infect)
 {
 	ClientInfected[to] = from;
 	ClientFriendlyInfected[to] = friendly;
@@ -416,7 +425,7 @@ public Native_ControlMedicInfect(Handle:plugin,numParams)
 
 public Native_SetMedicInfect(Handle:plugin,numParams)
 {
-	if(numParams >= 1 && numParams <= 3)
+	if (numParams >= 1 && numParams <= 3)
 	{
 		new client = GetNativeCell(1);
 		NativeMedicArmed[client] = (numParams >= 2) ? GetNativeCell(2) : true;
@@ -424,3 +433,13 @@ public Native_SetMedicInfect(Handle:plugin,numParams)
 	}
 }
 
+public Native_MedicInfect(Handle:plugin,numParams)
+{
+	if (numParams >= 2 && numParams <= 3)
+	{
+		new client = GetNativeCell(1);
+		new target = GetNativeCell(2);
+		new allow = (numParams >= 3) ? GetNativeCell(3) : 0;
+		MedicInfect(client,target,allow)
+	}
+}

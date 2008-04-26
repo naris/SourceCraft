@@ -183,13 +183,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
     if (attacker_race == raceID && victim_index != attacker_index)
     {
-        changed |= Infect(event, damage, victim_index, victim_player,
+        changed |= Infect(victim_index, victim_player,
                           attacker_index, attacker_player);
     }
 
     if (assister_race == raceID && victim_index != assister_index)
     {
-        changed |= Infect(event, damage, victim_index, victim_player,
+        changed |= Infect(victim_index, victim_player,
                           assister_index, assister_player);
     }
 
@@ -263,7 +263,7 @@ bool:Armor(damage, victim_index, Handle:victim_player)
     return false;
 }
 
-bool:Infect(Handle:event, damage, victim_index, Handle:victim_player, index, Handle:player)
+bool:Infect(victim_index, Handle:victim_player, index, Handle:player)
 {
     new infect_level = GetUpgradeLevel(player,raceID,infectID);
     if (infect_level > 0)
@@ -271,43 +271,10 @@ bool:Infect(Handle:event, damage, victim_index, Handle:victim_player, index, Han
         if (!GetImmunity(victim_player,Immunity_HealthTake) &&
             !TF2_IsPlayerInvuln(victim_index))
         {
-            if(GetRandomInt(1,100)<=25)
+            if(GetRandomInt(1,100)<=(infect_level*7))
             {
-                decl String:weapon[64];
-                new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-                if (!IsMelee(weapon, is_equipment,index,victim_index))
-                {
-                    new Float:percent;
-                    switch(infect_level)
-                    {
-                        case 1:
-                            percent=0.30;
-                        case 2:
-                            percent=0.50;
-                        case 3:
-                            percent=0.80;
-                        case 4:
-                            percent=1.00;
-                    }
-
-                    new health_take=RoundFloat(float(damage)*percent);
-                    new new_health=GetClientHealth(victim_index)-health_take;
-                    if (new_health <= 0)
-                    {
-                        new_health=0;
-                        LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
-                    }
-                    else
-                        LogDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
-
-                    SetEntityHealth(victim_index,new_health);
-
-                    new color[4] = { 100, 255, 55, 255 };
-                    TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                            0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-                    TE_SendToAll();
-                    return true;
-                }
+                MedicInfect(index, victim_index, false);
+                return true;
             }
         }
     }
