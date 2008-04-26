@@ -14,6 +14,10 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
+#undef REQUIRE_PLUGIN
+#include "medipacks"
+#define REQUIRE_PLUGIN
+
 #include "jetpack"
 #include "medihancer"
 #include "Medic_Infect"
@@ -27,7 +31,7 @@
 
 #include "sc/log" // for debugging
 
-new raceID, infectID, chargeID, armorID, restoreID, flareID, jetpackID;
+new raceID, infectID, chargeID, armorID, medipackID, restoreID, flareID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -35,6 +39,8 @@ new g_lightningSprite;
 
 new m_Armor[MAXPLAYERS+1];
 new bool:m_AllowOpticFlare[MAXPLAYERS+1];
+
+new bool:m_MedipacksAvailable = false;
 
 new Handle:cvarFlareCooldown = INVALID_HANDLE;
 
@@ -62,6 +68,8 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
+    m_MedipacksAvailable = LibraryExists("medipacks");
+
     raceID      = CreateRace("Terran Medic", "medic",
                              "You are now part of the Terran Medic.",
                              "You will be part of the Terran Medic when you die or respawn.",
@@ -71,6 +79,10 @@ public OnPluginReady()
     chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
+
+    if (m_MedipacksAvailable)
+        medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks with alt fire of medigun and on death. Also gives some ubercharge on spawn.");
+
     restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for the teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
     flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 15); // Ultimate
@@ -80,6 +92,9 @@ public OnPluginReady()
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+
+    if (m_MedipacksAvailable)
+        ControlMediPacks(true);
 }
 
 public OnMapStart()
@@ -108,6 +123,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             SetMedicInfect(client, false, 0);
             SetMedicEnhancement(client, false, 0);
             TakeJetpack(client);
+
+            if (m_MedipacksAvailable)
+                SetMediPack(client, false, 0);
         }
         else if (race == raceID)
         {
@@ -118,6 +136,10 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             new charge_level = GetUpgradeLevel(player,raceID,chargeID);
             if (charge_level)
                 SetupUberCharger(client, charge_level);
+
+            new medipack_level = GetUpgradeLevel(player,raceID,medipackID);
+            if (medipack_level)
+                SetupMediPack(client, charge_level);
 
             new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
@@ -168,6 +190,8 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
             SetupInfection(client, new_level);
         else if (upgrade==chargeID)
             SetupUberCharger(client, new_level);
+        else if (upgrade==medipackID)
+            SetupMediPack(client, new_level);
         else if (upgrade==armorID)
             SetupArmor(client, new_level);
         else if (upgrade==jetpackID)
@@ -373,6 +397,17 @@ public SetupUberCharger(client, level)
         SetMedicEnhancement(client, true, level);
     else
         SetMedicEnhancement(client, false, 0);
+}
+
+public SetupMediPack(client, level)
+{
+    if (m_MedipacksAvailable)
+    {
+        if (level)
+            SetMediPack(client, true, (level-1)*10);
+        else
+            SetMediPack(client, false, 0);
+    }
 }
 
 public Action:Restore(Handle:timer)

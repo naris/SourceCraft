@@ -11,9 +11,9 @@
 #define _medihancer_included
 
 /**
- * Assume control of the HookGrabRope plugin
+ * Assume control of the Medic Enhancer plugin
  *
- * @param plugin_only 	Set to 1 to assume complete control of the Medic_Infect plugin.
+ * @param plugin_only 	Set to 1 to assume complete control of the Medic Enhancer plugin.
  * @return		    	none
  */
 native ControlMedicEnhancer(bool:plugin_only=true);
@@ -22,8 +22,8 @@ native ControlMedicEnhancer(bool:plugin_only=true);
  * Give a hook to the player
  *
  * @param index 	Client index
- * @param arm       Set to true to enable Medic Infections for Client when a Medic.
- * @param amount    Set to amount of damage per heartbeat, 0 = default amount from convar.
+ * @param arm       Set to true to enable Medic Enhancement for Client when a Medic.
+ * @param amount    Set to amount of uber per heartbeat, 0 = default amount from convar.
  * @return			none
  */
 native SetMedicEnhancement(client,bool:arm=true,amount=0);
