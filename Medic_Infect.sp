@@ -9,11 +9,12 @@
 #include <tf2>
 #include <tf2_stocks>
 
-new bool:MedicArmed[MAXPLAYERS + 1];
 new ClientInfected[MAXPLAYERS + 1];
 new bool:ClientFriendlyInfected[MAXPLAYERS + 1];
 
 new bool:NativeControl = false;
+new bool:NativeMedicArmed[MAXPLAYERS + 1] = { false, ...};
+new NativeAmount[MAXPLAYERS + 1];
 
 public Plugin:myinfo = 
 {
@@ -113,9 +114,10 @@ public Action:HandleInfection(Handle:timer)
 	for(new a = 1; a <= maxplayers; a++)
 	{
 		if(!IsClientInGame(a) || !IsPlayerAlive(a) || ClientInfected[a] == 0) continue;
-		
+	
+		new amt = NativeAmount[ClientInfected[a]];
 		new hp = GetClientHealth(a);
-		hp -= GetConVarInt(Cvar_DmgAmount);
+		hp -= (amt >0) ? amt : GetConVarInt(Cvar_DmgAmount);
 		
 		if(hp < 0)
 			ForcePlayerSuicide(a);
@@ -182,7 +184,7 @@ new Float:MedicDelay[MAXPLAYERS + 1];
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
 	if(GetConVarInt(CvarEnable) && !NativeControl) return Plugin_Continue;
-	if (NativeControl && !MedicArmed[client]) return Plugin_Continue;
+	if (NativeControl && !NativeMedicArmed[client]) return Plugin_Continue;
 
 	if(
 		GetConVarInt(Cvar_InfectSyringe) 
@@ -211,7 +213,7 @@ public CheckMedics()
 
 	for(new i = 1; i <= maxplayers; i++)
 	{
-		if (NativeControl && !MedicArmed[i])
+		if (NativeControl && !NativeMedicArmed[i])
 			 continue;
 
 		if( !IsClientInGame(i) 
@@ -414,11 +416,11 @@ public Native_ControlMedicInfect(Handle:plugin,numParams)
 
 public Native_SetMedicInfect(Handle:plugin,numParams)
 {
-	if(numParams >= 1 && numParams <= 2)
+	if(numParams >= 1 && numParams <= 3)
 	{
 		new client = GetNativeCell(1);
-		if(IsPlayerAlive(client))
-			MedicArmed[client] = (numParams >= 2) ? GetNativeCell(2) : true;
+		NativeMedicArmed[client] = (numParams >= 2) ? GetNativeCell(2) : true;
+		NativeAmount[client] = (numParams >= 3) ? GetNativeCell(3) : 0;
 	}
 }
 
