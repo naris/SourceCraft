@@ -117,7 +117,7 @@ public Action:HandleInfection(Handle:timer)
 	
 		new amt = NativeAmount[ClientInfected[a]];
 		new hp = GetClientHealth(a);
-		hp -= (amt >0) ? amt : GetConVarInt(Cvar_DmgAmount);
+		hp -= (amt > 0) ? amt : GetConVarInt(Cvar_DmgAmount);
 		
 		if(hp < 0)
 			ForcePlayerSuicide(a);

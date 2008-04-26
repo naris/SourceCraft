@@ -7,6 +7,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2_stocks>
 
 #define TF_SCOUT 1
 #define TF_SNIPER 2
@@ -54,8 +55,13 @@ new Handle:g_BeaconRadius = INVALID_HANDLE;
 new Handle:g_ChargeAmount = INVALID_HANDLE;
 new Handle:g_ChargeTimer = INVALID_HANDLE;
 new Handle:g_PingCount = INVALID_HANDLE;
-new g_TF_ClassOffsets, g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
-    g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
+new Handle:g_TimerHandle = INVALID_HANDLE;
+new g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
+    g_TF_CurrentOffset, g_TF_TeamNumOffset;
+
+new bool:NativeControl = false;
+new bool:NativeMedicEnabled[MAXPLAYERS + 1] = { false, ...};
+new NativeAmount[MAXPLAYERS + 1];
 
 public OnPluginStart()
 {
@@ -71,9 +77,8 @@ public OnPluginStart()
 
     CreateConVar("sm_tf_medihancer", PL_VERSION, "Medihancer", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
-    g_TF_ClassOffsets = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");
-    if (g_TF_ClassOffsets == -1)
-        SetFailState("Cannot find TF2 m_iPlayerClass offset!");
+    CreateNative("ControlMedicEnhancer",Native_ControlMedicEnhancer);
+    CreateNative("SetMedicEnhancement",Native_SetMedicEnhancement);
 
     g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
     if (g_TF_ChargeLevelOffset == -1)
@@ -91,16 +96,19 @@ public OnPluginStart()
     if (g_TF_TeamNumOffset == -1)
         SetFailState("Cannot find TF2 m_iTeamNum offset!");
 
-    HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
     HookEvent("teamplay_round_active", Event_RoundStart);
+}
 
-    CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+public OnConfigsExecuted()
+{
+    if (GetConVarInt(g_IsMedihancerOn))
+        g_TimerHandle = CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+
+    HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
 }
 
 public OnMapStart()
 {
-    g_ResourceEnt = FindResourceObject();
-
     PrecacheSound(SOUND_BLIP, true);
     PrecacheSound(Charged[0], true);
     PrecacheSound(Charged[1], true);
@@ -115,12 +123,19 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 {
     if (StringToInt(newValue) > 0)
     {
-        PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
-        if (StringToInt(newValue) != StringToInt(oldValue))
-            g_ResourceEnt = FindResourceObject();
+        if (g_TimerHandle == INVALID_HANDLE)
+            g_TimerHandle = CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+
+        if (!NativeControl)
+            PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
     }
     else
     {
+        if (g_TimerHandle != INVALID_HANDLE)
+        {
+            KillTimer(g_TimerHandle);
+            g_TimerHandle = INVALID_HANDLE;
+        }
         PrintToChatAll("[SM] Medic Enhancer is disabled");
     }
 }
@@ -135,8 +150,7 @@ public Action:Medic_Timer(Handle:timer)
             new team = GetClientTeam(client);
             if (team >= 2 && team <= 3)
             {
-                new class = TF_GetClass(client);
-                if (class == TF_MEDIC)
+                if (TF2_GetPlayerClass(client) == TFClass_Medic)
                 {
                     new String:classname[64];
                     TF_GetCurrentWeaponClass(client, classname, sizeof(classname));
@@ -145,7 +159,8 @@ public Action:Medic_Timer(Handle:timer)
                         new UberCharge = TF_GetUberLevel(client);
                         if (UberCharge < 100)
                         {
-                            UberCharge += GetConVarInt(g_ChargeAmount);
+                            new amt = NativeAmount[client];
+                            UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
                             if (UberCharge >= 100)
                             {
                                 UberCharge = 100;
@@ -223,33 +238,8 @@ BeaconPing(client,bool:ping)
 public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new MedihancerOn = GetConVarInt(g_IsMedihancerOn);
-    if (MedihancerOn)
+    if (MedihancerOn && !NativeControl)
         PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
-}
-
-stock FindResourceObject()
-{
-    new maxclients = GetMaxClients();
-    new maxents = GetMaxEntities();
-    new i, String:classname[64];
-    for(i = maxclients; i <= maxents; i++)
-    {
-        if(IsValidEntity(i))
-        {
-            GetEntityNetClass(i, classname, 64);
-            if(StrEqual(classname, "CTFPlayerResource"))
-            {
-                return i;
-            }
-        }
-    }
-    SetFailState("Cannot find TF2 player ressource prop!");
-    return -1;
-}
-
-stock TF_GetClass(client)
-{
-    return GetEntData(g_ResourceEnt, g_TF_ClassOffsets + (client*4), 4);
 }
 
 stock TF_IsUberCharge(client)
@@ -285,3 +275,28 @@ stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
     if (index != 0)
         GetEntityNetClass(index, name, maxlength);
 }
+
+public Native_ControlMedicEnhancer(Handle:plugin,numParams)
+{
+    if (numParams == 0)
+        NativeControl = true;
+    else if(numParams == 1)
+        NativeControl = GetNativeCell(1);
+
+    if (NativeControl)
+    {
+        if (g_TimerHandle == INVALID_HANDLE)
+            g_TimerHandle = CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+    }
+}
+
+public Native_SetMedicEnhancement(Handle:plugin,numParams)
+{
+    if(numParams >= 1 && numParams <= 3)
+    {
+        new client = GetNativeCell(1);
+        NativeMedicEnabled[client] = (numParams >= 2) ? GetNativeCell(2) : true;
+        NativeAmount[client] = (numParams >= 3) ? GetNativeCell(3) : 0;
+    }
+}
+

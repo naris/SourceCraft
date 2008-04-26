@@ -14,7 +14,8 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
-#include "jetpack.inc"
+#include "jetpack"
+#include "Medic_Infect"
 
 #include "sc/SourceCraft"
 #include "sc/util"
@@ -49,18 +50,20 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    return; // Disable until it's done
-
     raceID      = CreateRace("Terran Medic", "medic",
                              "You are now part of the Terran Medic.",
                              "You will be part of the Terran Medic when you die or respawn.",
                              32);
 
-    infectID    = AddUpgrade(raceID,"Infection", "infect", "Infects your victims");
+    infectID    = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
+    chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
+
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
     stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 8-36% faster.");
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 
+    ControlMedicInfect(true);
+    ControlMedicEnhancer(true);
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
@@ -87,11 +90,21 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
+            SetMedicInfect(client, false, 0);
+            SetMedicEnhancement(client, false, 0);
             TakeJetpack(client);
             SetSpeed(player,-1.0);
         }
         else if (race == raceID)
         {
+            new infect_level = GetUpgradeLevel(player,raceID,infectID);
+            if (infect_level)
+                SetupInfection(client, infect_level);
+
+            new charge_level = GetUpgradeLevel(player,raceID,chargeID);
+            if (charge_level)
+                SetupInfection(client, charge_level);
+
             new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
                 SetupArmor(client, armor_level);
@@ -122,11 +135,15 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 {
     if (race == raceID && GetRace(player) == raceID)
     {
-        if (upgrade==1)
+        if (upgrade==infectID)
+            SetupInfection(client, new_level);
+        else if (upgrade==chargeID)
+            SetupUberCharger(client, new_level);
+        else if (upgrade==armorID)
             SetupArmor(client, new_level);
-        else if (upgrade==2)
+        else if (upgrade==stimpackID)
             Stimpacks(client, player, new_level);
-        else if (upgrade==3)
+        else if (upgrade==jetpackID)
             Jetpack(client, new_level);
     }
 }
@@ -394,4 +411,30 @@ Jetpack(client, level)
     }
     else
         TakeJetpack(client);
+}
+
+public SetupInfection(client, level)
+{
+    if (level)
+    {
+        new amount;
+        switch(level)
+        {
+            case 1: amount=2;
+            case 2: amount=8;
+            case 3: amount=10;
+            case 4: amount=12;
+        }
+        SetMedicInfect(client, true, amount);
+    }
+    else
+        SetMedicInfect(client, false, 0);
+}
+
+public SetupUberCharger(client, level)
+{
+    if (level)
+        SetMedicEnhancement(client, true, level);
+    else
+        SetMedicEnhancement(client, false, 0);
 }

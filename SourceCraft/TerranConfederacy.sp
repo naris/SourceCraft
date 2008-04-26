@@ -120,11 +120,11 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 {
     if (race == raceID && GetRace(player) == raceID)
     {
-        if (upgrade==1)
+        if (upgrade==armorID)
             SetupArmor(client, new_level);
-        else if (upgrade==2)
+        else if (upgrade==stimpackID)
             Stimpacks(client, player, new_level);
-        else if (upgrade==3)
+        else if (upgrade==jetpackID)
             Jetpack(client, new_level);
     }
 }
