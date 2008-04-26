@@ -345,6 +345,13 @@ native SetOverrideGravity(Handle:player,Float:gravity=-1.0,bool:apply=false);
 native SetOverrideVisiblity(Handle:player,visibility=-1,bool:apply=false);
 
 /**
+ * Restores Settings for a player (removes all overrides)
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @noreturn
+ */
+native RestorePlayer(Handle:player);
+
+/**
  * Applies the Speed, Gravity and Visibility settings for all players
  * right away. This function is not required to change the player's state.
  * If this is not called, the settings will be applied automatically within 2 seconds.

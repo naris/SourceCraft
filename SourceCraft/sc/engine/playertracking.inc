@@ -728,6 +728,7 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             if(overridevisibility >= 0)
                             {
+                                LogMessage("%N's Override Visibility=%d", client, overridevisibility);
                                 visibility=overridevisibility;
                                 overridePlayerVisibility=true;
                                 m_VisibilityAltered[client]=true;
@@ -735,8 +736,14 @@ public Action:PlayerProperties(Handle:timer)
                             else if (checkVisibility >= 0 || _:type >= 0 ||
                                     _:checkFx >= 0 || _:checkMode >= 0)
                             {
+                                LogMessage("%N's Visibility=%d,type=%d,fc=%d,mode=%d",
+                                           client,checkVisibility,type,checkFx,checkMode);
+
                                 new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
                                                                     type, factor1, factor2, checkMode, checkFx);
+
+                                LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fc=%d,mode=%d)",
+                                           client,checkRank,checkVisibility,type,checkFx,checkMode);
 
                                 if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
                                 {
@@ -945,6 +952,9 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
 
 SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
 {
+    LogMessage("Set %N's Visibility=%d,mode=%d,fx=%d,r=%d,g=%d,b=%d",
+               client, visibility, mode, fx, r, g, b);
+
     if (visibility == 0)
     {
         if (m_CloakTime[client] == 0.0)
@@ -997,8 +1007,9 @@ ResetVisibility(client)
 {
     if (m_OwnerOffset != -1)
     {
-        if(client>0)
+        if (client>0)
         {
+            LogMessage("Reset %N's Visibility", client);
             new count=GetEntityCount();
             for(new y=GetMaxClients()+1;y<count;y++)
             {

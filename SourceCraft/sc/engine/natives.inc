@@ -956,6 +956,29 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
     }
 }
 
+public Native_RestorePlayer(Handle:plugin,numParams)
+{
+    if (numParams == 1)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        if (player != INVALID_HANDLE)
+        {
+            new Handle:pinfo=GetArrayCell(player,INFO_PROPERTIES);
+            for(new y=0;y<GetArraySize(pinfo);y++)
+            {
+                new Handle:temp = GetArrayCell(pinfo,y);
+                SetArrayCell(temp,TRACKING_OVERRIDE_SPEED, -1.0);
+                SetArrayCell(temp,TRACKING_OVERRIDE_GRAVITY, -1.0);
+                SetArrayCell(temp,TRACKING_OVERRIDE_VISIBILITY, -1.0);
+                SetArrayCell(temp,TRACKING_VISIBILITY_R, -1);
+                SetArrayCell(temp,TRACKING_VISIBILITY_G, -1);
+                SetArrayCell(temp,TRACKING_VISIBILITY_B, -1);
+            }
+            TriggerTimer(m_PlayerPropertiesTimer, true);
+        }
+    }
+}
+
 public Native_ApplyPlayerSettings(Handle:plugin,numParams)
 {
     TriggerTimer(m_PlayerPropertiesTimer, true);
@@ -997,6 +1020,7 @@ bool:InitNatives()
     CreateNative("SetOverrideGravity",Native_SetOverrideGravity);
     CreateNative("SetOverrideVisiblity",Native_SetOverrideVisiblity);
     CreateNative("ApplyPlayerSettings",Native_ApplyPlayerSettings);
+    CreateNative("RestorePlayer",Native_RestorePlayer);
     return true;
 }
 
