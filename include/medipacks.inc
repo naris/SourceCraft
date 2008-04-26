@@ -28,3 +28,23 @@ native ControlMediPacks(bool:plugin_only=true);
  */
 native SetMediPack(client,bool:arm=true,amount=0);
 
+/* DO NOT EDIT BELOW THIS LINE */
+
+public SharedPlugin:__pl_medipacks = 
+{
+	name = "medipacks",
+	file = "medipacks.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_medipacks_SetNTVOptional()
+{
+	MarkNativeAsOptional("ControlMediPacks");
+	MarkNativeAsOptional("SetMediPack");
+}
+#endif
