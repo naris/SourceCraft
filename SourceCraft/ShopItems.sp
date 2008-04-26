@@ -268,7 +268,7 @@ public OnItemPurchase(client,Handle:player,item)
 {
     if(item==shopItem[ITEM_BOOTS] && IsPlayerAlive(client))             // Boots of Speed
     {
-        SetSpeed(player,1.2);
+        SetSpeed(player, 1.2, true);
         EmitSoundToAll(bootsWav,client);
     }
     else if(item==shopItem[ITEM_CLOAK] && IsPlayerAlive(client))        // Cloak of Shadows
@@ -296,7 +296,7 @@ public OnItemPurchase(client,Handle:player,item)
         RespawnPlayer(client);
     }
     else if(item==shopItem[ITEM_SOCK])                                  // Sock of the Feather
-        SetGravity(player,0.5);
+        SetGravity(player, 0.5, true);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -652,6 +652,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                   -1.0, -1.0, RenderMode:-1, RenderFx:-1,
                                   (GetClientTeam(victim_index) == _:TFTeam_Red) ? 255 : 0,
                                   128, 255);
+                    ApplyPlayerSettings();
 
                     AuthTimer(5.0,victim_index,RestoreSpeed);
 
