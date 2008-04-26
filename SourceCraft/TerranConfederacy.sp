@@ -86,7 +86,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         if (oldrace == raceID)
         {
             TakeJetpack(client);
-            SetSpeed(player,-1.0);
+            SetSpeed(player, -1.0, true);
         }
         else if (race == raceID)
         {
@@ -354,10 +354,10 @@ Stimpacks(client, Handle:player, level)
                 0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
         TE_SendToAll();
 
-        SetSpeed(player,speed);
+        SetSpeed(player, speed, true);
     }
     else
-        SetSpeed(player,-1.0);
+        SetSpeed(player, -1.0, true);
 }
 
 Jetpack(client, level)

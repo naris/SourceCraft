@@ -187,8 +187,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            SetVisibility(player, -1);
             ResetOcularImplants(client);
+            SetVisibility(player, -1);
+            ApplyPlayerSettings();
         }
         else if (race == raceID)
             Cloak(client, player, GetUpgradeLevel(player,race,cloakID));
@@ -374,6 +375,8 @@ Cloak(client, Handle:player, level)
     }
     else
         SetVisibility(player, -1);
+
+    ApplyPlayerSettings();
 }
 
 Lockdown(victim_index, Handle:victim_player, Handle:player)
@@ -492,6 +495,7 @@ public Action:OcularImplants(Handle:timer)
                             }
                         }
                     }
+                    ApplyPlayerSettings();
                 }
             }
         }
@@ -514,6 +518,7 @@ ResetOcularImplants(client)
             }
         }
     }
+    ApplyPlayerSettings();
 }
 
 TargetNuclearDevice(client)
@@ -538,8 +543,9 @@ LaunchNuclearDevice(client,Handle:player)
     m_NuclearLaunchStatus[client]=LaunchInitiated;
 
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
-    SetVisibility(player, 100, TimedInvisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, 0, BasicVisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
     SetOverrideSpeed(player, 0.0);
+    ApplyPlayerSettings();
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",
@@ -593,6 +599,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
         {
             SetVisibility(player, -1);
             SetOverrideSpeed(player, -1.0);
+            ApplyPlayerSettings();
 
             EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
 

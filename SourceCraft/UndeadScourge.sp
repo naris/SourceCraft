@@ -116,10 +116,16 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 {
     if(race == raceID && GetRace(player) == raceID)
     {
-        if (upgrade==1)
+        if (upgrade==unholyID)
+        {
             UnholyAura(client, player, new_level);
-        else if (upgrade==2)
+            ApplyPlayerSettings();
+        }
+        else if (upgrade==levitationID)
+        {
             Levitation(client, player, new_level);
+            ApplyPlayerSettings();
+        }
     }
 }
 
@@ -133,6 +139,7 @@ public OnItemPurchase(client,Handle:player,item)
         {
             new unholy_level = GetUpgradeLevel(player,race,unholyID);
             UnholyAura(client,player, unholy_level);
+            ApplyPlayerSettings();
         }
         else
         {
@@ -141,6 +148,7 @@ public OnItemPurchase(client,Handle:player,item)
             {
                 new levitation_level = GetUpgradeLevel(player,race,levitationID);
                 Levitation(client,player, levitation_level);
+                ApplyPlayerSettings();
             }
         }
     }
@@ -164,6 +172,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             new levitation_level = GetUpgradeLevel(player,race,levitationID);
             if (levitation_level)
                 Levitation(client, player, levitation_level);
+
+            if (unholy_level || levitation_level)
+                ApplyPlayerSettings();
         }
     }
 }
@@ -188,6 +199,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                 new levitation_level = GetUpgradeLevel(player,race,levitationID);
                 if (levitation_level)
                     Levitation(index, player, levitation_level);
+
+                if (unholy_level || levitation_level)
+                    ApplyPlayerSettings();
             }
         }
     }

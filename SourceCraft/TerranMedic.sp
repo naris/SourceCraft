@@ -93,7 +93,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             SetMedicInfect(client, false, 0);
             SetMedicEnhancement(client, false, 0);
             TakeJetpack(client);
-            SetSpeed(player,-1.0);
         }
         else if (race == raceID)
         {
