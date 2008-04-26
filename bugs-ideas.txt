@@ -4,7 +4,8 @@ Terran Medic
 3) Infect
 4) Armor
 Ult) JetPack?
-Ult) Restore -- remove bash/lockdown/orb/etc...
+Ult) Restoration -- remove bash/lockdown/orb/etc...
+Ult) Optical Flare
 
 Terran SCV:
 1) AmmoPack [1 level]

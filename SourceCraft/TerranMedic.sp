@@ -24,7 +24,7 @@
 
 #include "sc/log" // for debugging
 
-new raceID, infectID, armorID, stimpackID, jetpackID;
+new raceID, infectID, chargeID, armorID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -59,7 +59,6 @@ public OnPluginReady()
     chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
-    stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 8-36% faster.");
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 
     ControlMedicInfect(true);
@@ -109,10 +108,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             if (armor_level)
                 SetupArmor(client, armor_level);
 
-            new stimpacks_level = GetUpgradeLevel(player,race,stimpackID);
-            if (stimpacks_level)
-                Stimpacks(client, player, stimpacks_level);
-
             new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
             if (jetpack_level)
                 Jetpack(client, jetpack_level);
@@ -141,24 +136,8 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
             SetupUberCharger(client, new_level);
         else if (upgrade==armorID)
             SetupArmor(client, new_level);
-        else if (upgrade==stimpackID)
-            Stimpacks(client, player, new_level);
         else if (upgrade==jetpackID)
             Jetpack(client, new_level);
-    }
-}
-
-public OnItemPurchase(client,Handle:player,item)
-{
-    new race=GetRace(player);
-    if (race == raceID && IsPlayerAlive(client))
-    {
-        new boots = FindShopItem("boots");
-        if (boots == item)
-        {
-            new level=GetUpgradeLevel(player,race,stimpackID);
-            Stimpacks(client, player, level);
-        }
     }
 }
 
@@ -183,10 +162,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 new armor_level = GetUpgradeLevel(player,raceID,armorID);
                 if (armor_level)
                     SetupArmor(client, armor_level);
-
-                new stimpacks_level = GetUpgradeLevel(player,race,stimpackID);
-                if (stimpacks_level)
-                    Stimpacks(client, player, stimpacks_level);
 
                 new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
                 if (jetpack_level)
@@ -337,46 +312,6 @@ bool:Infect(Handle:event, damage, victim_index, Handle:victim_player, index, Han
         }
     }
     return false;
-}
-
-Stimpacks(client, Handle:player, level)
-{
-    if (level > 0)
-    {
-        new Float:speed=1.0;
-        switch (level)
-        {
-            case 1:
-                speed=1.10;
-            case 2:
-                speed=1.15;
-            case 3:
-                speed=1.20;
-            case 4:
-                speed=1.25;
-        }
-
-        /* If the Player also has the Boots of Speed,
-         * Increase the speed further
-         */
-        new boots = FindShopItem("boots");
-        if (boots != -1 && GetOwnsItem(player,boots))
-        {
-            speed *= 1.1;
-        }
-
-        new Float:start[3];
-        GetClientAbsOrigin(client, start);
-
-        new color[4] = { 255, 100, 0, 255 };
-        TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
-                0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
-        TE_SendToAll();
-
-        SetSpeed(player,speed);
-    }
-    else
-        SetSpeed(player,-1.0);
 }
 
 Jetpack(client, level)
