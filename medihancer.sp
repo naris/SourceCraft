@@ -65,10 +65,10 @@ new NativeAmount[MAXPLAYERS + 1];
 
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
-	// Register Natives
+    // Register Natives
     CreateNative("ControlMedicEnhancer",Native_ControlMedicEnhancer);
     CreateNative("SetMedicEnhancement",Native_SetMedicEnhancement);
-	return true;
+    return true;
 }
 
 public OnPluginStart()
@@ -150,54 +150,57 @@ public Action:Medic_Timer(Handle:timer)
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
     {
-        if (IsClientInGame(client) && IsPlayerAlive(client))
+        if (!NativeControl || NativeMedicEnabled[client])
         {
-            new team = GetClientTeam(client);
-            if (team >= 2 && team <= 3)
+            if (IsClientInGame(client) && IsPlayerAlive(client))
             {
-                if (TF2_GetPlayerClass(client) == TFClass_Medic)
+                new team = GetClientTeam(client);
+                if (team >= 2 && team <= 3)
                 {
-                    new String:classname[64];
-                    TF_GetCurrentWeaponClass(client, classname, sizeof(classname));
-                    if(StrEqual(classname, "CWeaponMedigun"))
+                    if (TF2_GetPlayerClass(client) == TFClass_Medic)
                     {
-                        new UberCharge = TF_GetUberLevel(client);
-                        if (UberCharge < 100)
+                        new String:classname[64];
+                        TF_GetCurrentWeaponClass(client, classname, sizeof(classname));
+                        if(StrEqual(classname, "CWeaponMedigun"))
                         {
-                            new amt = NativeAmount[client];
-                            UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
-                            if (UberCharge >= 100)
+                            new UberCharge = TF_GetUberLevel(client);
+                            if (UberCharge < 100)
                             {
-                                UberCharge = 100;
-                                new num=GetRandomInt(0,2);
-                                EmitSoundToAll(Charged[num],client);
-                            }
-                            TF_SetUberLevel(client, UberCharge);
-                            if (GetConVarInt(g_EnableBeacon))
-                            {
-                                new count = GetConVarInt(g_PingCount);
-                                if (count > 0)
+                                new amt = NativeAmount[client];
+                                UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
+                                if (UberCharge >= 100)
                                 {
-                                    new bool:ping = (++g_BeaconCount[client] >= count);
-                                    BeaconPing(client, ping);
-                                    if (ping)
-                                        g_BeaconCount[client] = 0;
+                                    UberCharge = 100;
+                                    new num=GetRandomInt(0,2);
+                                    EmitSoundToAll(Charged[num],client);
                                 }
-                            }
-                            else
-                            {
-                                new count = GetConVarInt(g_PingCount);
-                                if (count > 0)
+                                TF_SetUberLevel(client, UberCharge);
+                                if (GetConVarInt(g_EnableBeacon))
                                 {
-                                    new value = ++g_BeaconCount[client];
-                                    if (value == 1)
+                                    new count = GetConVarInt(g_PingCount);
+                                    if (count > 0)
                                     {
-                                        new Float:vec[3];
-                                        GetClientEyePosition(client, vec);
-                                        EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
+                                        new bool:ping = (++g_BeaconCount[client] >= count);
+                                        BeaconPing(client, ping);
+                                        if (ping)
+                                            g_BeaconCount[client] = 0;
                                     }
-                                    else if (value >= count)
-                                        g_BeaconCount[client] = 0;
+                                }
+                                else
+                                {
+                                    new count = GetConVarInt(g_PingCount);
+                                    if (count > 0)
+                                    {
+                                        new value = ++g_BeaconCount[client];
+                                        if (value == 1)
+                                        {
+                                            new Float:vec[3];
+                                            GetClientEyePosition(client, vec);
+                                            EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
+                                        }
+                                        else if (value >= count)
+                                            g_BeaconCount[client] = 0;
+                                    }
                                 }
                             }
                         }

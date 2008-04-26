@@ -117,7 +117,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 
             new charge_level = GetUpgradeLevel(player,raceID,chargeID);
             if (charge_level)
-                SetupInfection(client, charge_level);
+                SetupUberCharger(client, charge_level);
 
             new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
