@@ -82,6 +82,7 @@ public OnPluginStart()
 
 	CreateNative("ControlMedicInfect",Native_ControlMedicInfect);
 	CreateNative("SetMedicInfect",Native_SetMedicInfect);
+	CreateNative("MedicInfect",Native_MedicInfect);
 }
 
 public OnConfigsExecuted()
