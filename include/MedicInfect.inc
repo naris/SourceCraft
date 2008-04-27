@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: Medic_Infect.inc
- * Description: Native Interface to Medic_Infect
+ * File: MedicInfect.inc
+ * Description: Native Interface to MedicInfect
  * Author(s): -=|JFH|=-Naris (Murray Wilson)
  */
 
@@ -11,9 +11,9 @@
 #define _medicinfect_included
 
 /**
- * Assume control of the Medic_Infect plugin
+ * Assume control of the MedicInfect plugin
  *
- * @param plugin_only 	Set to 1 to assume complete control of the Medic_Infect plugin.
+ * @param plugin_only 	Set to 1 to assume complete control of the MedicInfect plugin.
  * @return		    	none
  */
 native ControlMedicInfect(bool:plugin_only=true);
@@ -49,10 +49,10 @@ native HealInfect(client,target);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
-public SharedPlugin:__pl_Medic_Infect = 
+public SharedPlugin:__pl_MedicInfect = 
 {
-	name = "Medic_Infect",
-	file = "Medic_Infect.smx",
+	name = "MedicInfect",
+	file = "MedicInfect.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
 #else
@@ -61,7 +61,7 @@ public SharedPlugin:__pl_Medic_Infect =
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_Medic_Infect_SetNTVOptional()
+public __pl_MedicInfect_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlMedicInfect");
 	MarkNativeAsOptional("SetMedicInfect");

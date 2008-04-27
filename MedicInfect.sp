@@ -1,5 +1,5 @@
 /**
- * File: Medic_Infect.sp
+ * File: MedicInfect.sp
  * Description: Medic Infection for TF2
  * Author(s): Twilight Suzuka
  */
@@ -58,7 +58,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 	CreateNative("SetMedicInfect",Native_SetMedicInfect);
 	CreateNative("MedicInfect",Native_MedicInfect);
 	CreateNative("HealInfect",Native_HealInfect);
-	RegPluginLibrary("Medic_Infect");
+	RegPluginLibrary("MedicInfect");
 	return true;
 }
 

@@ -16,11 +16,11 @@
 
 #undef REQUIRE_PLUGIN
 #include "medipacks"
+#include "MedicInfect"
 #define REQUIRE_PLUGIN
 
 #include "jetpack"
 #include "medihancer"
-#include "Medic_Infect"
 
 #include "sc/SourceCraft"
 #include "sc/util"
@@ -70,7 +70,7 @@ public OnPluginStart()
 public OnPluginReady()
 {
     m_MedipacksAvailable = LibraryExists("medipacks");
-    m_InfectionAvailable = LibraryExists("Medic_Infect");
+    m_InfectionAvailable = LibraryExists("MedicInfect");
 
     raceID      = CreateRace("Terran Medic", "medic",
                              "You are now part of the Terran Medic.",
