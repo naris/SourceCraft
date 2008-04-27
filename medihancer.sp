@@ -108,8 +108,13 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
     if (GetConVarInt(g_IsMedihancerOn))
-        g_TimerHandle = CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+    {
+        new Float:delay = GetConVarFloat(g_ChargeTimer);
+        LogMessage("[OnConfigExecuted]Created Medic_Timer with delay=%f", delay);
+        g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
+    }
 
+    HookConVarChange(g_ChargeTimer, ConVarChange_IsMedihancerOn);
     HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
 }
 
@@ -129,8 +134,18 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 {
     if (StringToInt(newValue) > 0)
     {
+        if (convar == g_ChargeTimer && g_TimerHandle != INVALID_HANDLE)
+        {
+            KillTimer(g_TimerHandle);
+            g_TimerHandle = INVALID_HANDLE;
+        }
+
         if (g_TimerHandle == INVALID_HANDLE)
-            g_TimerHandle = CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+        {
+            new Float:delay = GetConVarFloat(g_ChargeTimer);
+            LogMessage("OnConvarChange]Created Medic_Timer with delay=%f", delay);
+            g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
+        }
 
         if (!NativeControl)
             PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
@@ -146,8 +161,22 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
     }
 }
 
+new Float:lastGameTime = 0.0;
+new Float:lastEngineTime = 0.0;
+new lastTime = 0;
 public Action:Medic_Timer(Handle:timer)
 {
+    decl String:buffer[64];
+    new Float:gameTime = GetGameTime();
+    new Float:engineTime = GetEngineTime();
+    new time = GetTime();
+    FormatTime(buffer, sizeof(buffer),"%D %T", time);
+    LogMessage("Medic_Timer, gameTime=%f(%f), engineTime=%f(%f), time=%d(%d) - %s",
+               gameTime,gameTime-lastGameTime,engineTime,engineTime-lastEngineTime,time,time-lastTime,buffer);
+    lastGameTime=gameTime;
+    lastEngineTime=engineTime;
+    lastTime=time;
+
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
     {
@@ -295,7 +324,11 @@ public Native_ControlMedicEnhancer(Handle:plugin,numParams)
     if (NativeControl)
     {
         if (g_TimerHandle == INVALID_HANDLE)
-            g_TimerHandle = CreateTimer(GetConVarFloat(g_ChargeTimer), Medic_Timer, _, TIMER_REPEAT);
+        {
+            new Float:delay = GetConVarFloat(g_ChargeTimer);
+            LogMessage("[NativeControl]Created Medic_Timer with delay=%f", delay);
+            g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
+        }
     }
 }
 
