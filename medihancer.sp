@@ -52,8 +52,8 @@ new Float:g_LastBeaconTime[MAXPLAYERS+1];
 new Float:g_LastPingTime[MAXPLAYERS+1];
 
 new Float:g_ChargeDelay = 5.0;
-new Float:g_BeaconDelay = 5.0;
-new Float:g_PingDelay = 20.0;
+new Float:g_BeaconDelay = 3.0;
+new Float:g_PingDelay = 12.0;
 
 new Handle:g_IsMedihancerOn = INVALID_HANDLE;
 new Handle:g_EnableBeacon = INVALID_HANDLE;
@@ -88,11 +88,11 @@ public OnPluginStart()
     g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "5.0", "Sets the time interval for medihancer.");
 
     g_EnableBeacon = CreateConVar("sm_medihancer_beacon","1","Enable/Disable medihancer beacon");
-    g_BeaconTimer = CreateConVar("sm_medihancer_beacon_timer","5.0","Sets the time interval of beacons for medihancer");
+    g_BeaconTimer = CreateConVar("sm_medihancer_beacon_timer","3.0","Sets the time interval of beacons for medihancer");
     g_BeaconRadius = CreateConVar("sm_medihancer_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.", 0, true, 50.0, true, 1500.0);
 
     g_EnablePing = CreateConVar("sm_medihancer_ping","1","Enable/Disable medihancer ping");
-    g_PingTimer = CreateConVar("sm_medihancer_ping_timer", "20.0", "Sets the time interval of pings for medihancer.");
+    g_PingTimer = CreateConVar("sm_medihancer_ping_timer", "12.0", "Sets the time interval of pings for medihancer.");
 
     // Execute the config file
     AutoExecConfig(true, "sm_medihancer");
@@ -340,16 +340,18 @@ stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
 
 Float:CalcDelay()
 {
-    new Float:chargeDelay = GetConVarFloat(g_ChargeTimer);
-    new Float:beaconDelay = GetConVarFloat(g_BeaconTimer);
-    new Float:pingDelay = GetConVarFloat(g_PingTimer);
+    g_ChargeDelay = GetConVarFloat(g_ChargeTimer);
+    g_BeaconDelay = GetConVarFloat(g_BeaconTimer);
+    g_PingDelay = GetConVarFloat(g_PingTimer);
 
-    new Float:delay = chargeDelay;
-    if (delay > beaconDelay)
-        delay = beaconDelay;
-    if (delay > pingDelay)
-        delay = pingDelay;
+    new Float:delay = g_ChargeDelay;
+    if (delay > g_BeaconDelay)
+        delay = g_BeaconDelay;
+    if (delay > g_PingDelay)
+        delay = g_PingDelay;
 
+    LogMessage("ChargeDelay=%f,BeaconDelay=%f,PingDelay=%f,delay=%f",
+               g_ChargeDelay, g_BeaconDelay, g_PingDelay, delay);
     return delay;
 }
 
