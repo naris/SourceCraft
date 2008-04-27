@@ -59,6 +59,7 @@ new Handle:g_TimerHandle = INVALID_HANDLE;
 new g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
     g_TF_CurrentOffset, g_TF_TeamNumOffset;
 
+new bool:ConfigsExecuted = false;
 new bool:NativeControl = false;
 new bool:NativeMedicEnabled[MAXPLAYERS + 1] = { false, ...};
 new NativeAmount[MAXPLAYERS + 1];
@@ -109,13 +110,17 @@ public OnConfigsExecuted()
 {
     if (GetConVarInt(g_IsMedihancerOn))
     {
-        new Float:delay = GetConVarFloat(g_ChargeTimer);
-        LogMessage("[OnConfigExecuted]Created Medic_Timer with delay=%f", delay);
-        g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
+        if (g_TimerHandle == INVALID_HANDLE)
+        {
+            new Float:delay = GetConVarFloat(g_ChargeTimer);
+            LogMessage("[OnConfigExecuted]Created Medic_Timer with delay=%f", delay);
+            g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
+        }
     }
 
     HookConVarChange(g_ChargeTimer, ConVarChange_IsMedihancerOn);
     HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
+    ConfigsExecuted = true;
 }
 
 public OnMapStart()
@@ -140,7 +145,7 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
             g_TimerHandle = INVALID_HANDLE;
         }
 
-        if (g_TimerHandle == INVALID_HANDLE)
+        if (g_TimerHandle == INVALID_HANDLE && ConfigsExecuted)
         {
             new Float:delay = GetConVarFloat(g_ChargeTimer);
             LogMessage("OnConvarChange]Created Medic_Timer with delay=%f", delay);
@@ -321,14 +326,11 @@ public Native_ControlMedicEnhancer(Handle:plugin,numParams)
     else if(numParams == 1)
         NativeControl = GetNativeCell(1);
 
-    if (NativeControl)
+    if (g_TimerHandle == INVALID_HANDLE && NativeControl && ConfigsExecuted)
     {
-        if (g_TimerHandle == INVALID_HANDLE)
-        {
-            new Float:delay = GetConVarFloat(g_ChargeTimer);
-            LogMessage("[NativeControl]Created Medic_Timer with delay=%f", delay);
-            g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
-        }
+        new Float:delay = GetConVarFloat(g_ChargeTimer);
+        LogMessage("[NativeControl]Created Medic_Timer with delay=%f", delay);
+        g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
     }
 }
 
