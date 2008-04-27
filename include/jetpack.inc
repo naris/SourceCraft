@@ -112,3 +112,31 @@ native StartJetpack(client);
  */
 native StopJetpack(client);
 
+/* DO NOT EDIT BELOW THIS LINE */
+
+public SharedPlugin:__pl_jetpack = 
+{
+	name = "jetpack",
+	file = "jetpack.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_jetpack_SetNTVOptional()
+{
+	MarkNativeAsOptional("ControlJetpack");
+	MarkNativeAsOptional("GetJetpack");
+	MarkNativeAsOptional("GetJetpackFuel");
+	MarkNativeAsOptional("GetJetpackRefuelingTime");
+	MarkNativeAsOptional("SetJetpackFuel");
+	MarkNativeAsOptional("SetJetpackRefuelingTime");
+	MarkNativeAsOptional("GiveJetpack");
+	MarkNativeAsOptional("TakeJetpackFuel");
+	MarkNativeAsOptional("StartJetpack");
+	MarkNativeAsOptional("StopJetpack");
+}
+#endif

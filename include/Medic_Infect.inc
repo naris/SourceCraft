@@ -47,3 +47,25 @@ native MedicInfect(client,target,bool:allow=false);
  */
 native HealInfect(client,target);
 
+/* DO NOT EDIT BELOW THIS LINE */
+
+public SharedPlugin:__pl_Medic_Infect = 
+{
+	name = "Medic_Infect",
+	file = "Medic_Infect.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_Medic_Infect_SetNTVOptional()
+{
+	MarkNativeAsOptional("ControlMedicInfect");
+	MarkNativeAsOptional("SetMedicInfect");
+	MarkNativeAsOptional("MedicInfect");
+	MarkNativeAsOptional("HealInfect");
+}
+#endif

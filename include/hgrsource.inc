@@ -163,3 +163,36 @@ forward Action:OnGrab(client,target);
  * @param target: The index of the target that got grabbed
  */
 forward Action:OnDrop(client,target);
+
+/* DO NOT EDIT BELOW THIS LINE */
+
+public SharedPlugin:__pl_hgrsource = 
+{
+	name = "hgrsource",
+	file = "hgrsource.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_hgrsource_SetNTVOptional()
+{
+	MarkNativeAsOptional("ControlHookGrabRope");
+	MarkNativeAsOptional("GiveHook");
+	MarkNativeAsOptional("TakeHook");
+	MarkNativeAsOptional("GiveGrab");
+	MarkNativeAsOptional("TakeGrab");
+	MarkNativeAsOptional("GiveRope");
+	MarkNativeAsOptional("TakeRope");
+	MarkNativeAsOptional("Hook");
+	MarkNativeAsOptional("UnHook");
+	MarkNativeAsOptional("Grab");
+	MarkNativeAsOptional("Drop");
+	MarkNativeAsOptional("Rope");
+	MarkNativeAsOptional("Detach");
+	MarkNativeAsOptional("ToggleRope");
+}
+#endif

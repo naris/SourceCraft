@@ -157,6 +157,8 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
     fwdOnGrab=CreateGlobalForward("OnGrab",ET_Hook,Param_Cell,Param_Cell);
     fwdOnDrop=CreateGlobalForward("OnDrop",ET_Ignore,Param_Cell,Param_Cell);
 
+    RegPluginLibrary("hgrsource");
+
     return true;
 }
 

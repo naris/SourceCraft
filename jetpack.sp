@@ -108,7 +108,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 	CreateNative("TakeJetpackFuel",Native_TakeJetpackFuel);
 	CreateNative("StartJetpack",Native_StartJetpack);
 	CreateNative("StopJetpack",Native_StopJetpack);
-
+	RegPluginLibrary("jetpack");
 	return true;
 }
 

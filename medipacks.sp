@@ -65,6 +65,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
     // Register Natives
     CreateNative("ControlMediPacks",Native_ControlMediPacks);
     CreateNative("SetMediPack",Native_SetMediPack);
+    RegPluginLibrary("medipacks");
     return true;
 }
 

@@ -68,6 +68,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
     // Register Natives
     CreateNative("ControlMedicEnhancer",Native_ControlMedicEnhancer);
     CreateNative("SetMedicEnhancement",Native_SetMedicEnhancement);
+    RegPluginLibrary("medihancer");
     return true;
 }
 

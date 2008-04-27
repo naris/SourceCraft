@@ -28,3 +28,23 @@ native ControlMedicEnhancer(bool:plugin_only=true);
  */
 native SetMedicEnhancement(client,bool:arm=true,amount=0);
 
+/* DO NOT EDIT BELOW THIS LINE */
+
+public SharedPlugin:__pl_medihancer = 
+{
+	name = "medihancer",
+	file = "medihancer.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_medihancer_SetNTVOptional()
+{
+	MarkNativeAsOptional("ControlMedicEnhancer");
+	MarkNativeAsOptional("SetMedicEnhancement");
+}
+#endif

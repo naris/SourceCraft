@@ -58,6 +58,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 	CreateNative("SetMedicInfect",Native_SetMedicInfect);
 	CreateNative("MedicInfect",Native_MedicInfect);
 	CreateNative("HealInfect",Native_HealInfect);
+	RegPluginLibrary("Medic_Infect");
 	return true;
 }
 
