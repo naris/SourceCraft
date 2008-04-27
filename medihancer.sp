@@ -79,7 +79,7 @@ public OnPluginStart()
     g_BeaconRadius = CreateConVar("sm_medihancer_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.", 0, true, 50.0, true, 1500.0);
     g_PingCount = CreateConVar("sm_medihancer_ping_count", "4", "Sets the number of beacon pulses inbetween pings for medihancer.");
     g_ChargeAmount = CreateConVar("sm_medihancer_charge_amount", "3", "Sets the amount of uber charge to add time for medihancer.");
-    g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "3.0", "Sets the time iinterval for medihancer.");
+    g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "5.0", "Sets the time interval for medihancer.");
 
     // Execute the config file
     AutoExecConfig(true, "sm_medihancer");
