@@ -395,13 +395,14 @@ UpgradesInfo(client,race,bool:change)
     decl String:minLevel[64];
     new String:ult[] = "Ultimate:";
     new maxUpgradeLevel, requiredLevel;
+    new maxLevel = GetRaceMaxLevel(raceHandle);
     new upgradeCount = GetUpgradeCount(raceHandle);
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
         requiredLevel=GetUpgradeRequiredLevel(raceHandle,upgrade);
         maxUpgradeLevel=GetUpgradeMaxLevel(raceHandle,upgrade);
 
-        if (requiredLevel > maxUpgradeLevel || maxUpgradeLevel <= 0)
+        if (requiredLevel > maxLevel || maxUpgradeLevel <= 0)
             Format(minLevel,sizeof(minLevel)," [Not Available]");
         else if (requiredLevel > 1)
             Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
