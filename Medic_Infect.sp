@@ -420,8 +420,11 @@ SendInfection(to,from,bool:friendly,bool:infect)
 
 	PrintHintText(to,"You have been infected!");
 
-	if(infect) PrintHintText(from,"Virus administered!");
-	else PrintHintText(from,"Virus spread!");
+	if(IsClientInGame(from) && IsPlayerAlive(from))
+	{
+		if(infect) PrintHintText(from,"Virus administered!");
+		else PrintHintText(from,"Virus spread!");
+	}
 }
 
 public Native_ControlMedicInfect(Handle:plugin,numParams)
@@ -467,7 +470,7 @@ public Native_HealInfect(Handle:plugin,numParams)
 				SetEntityRenderColor(target,255,255,255,255);
 				PrintHintText(target,"You have been cured!");
 
-				if (client > 0)
+				if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client))
 					PrintHintText(client,"%N has been cured!", target);
 			}
 		}
