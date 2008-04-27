@@ -195,15 +195,15 @@ public OnPluginReady()
                                        "Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.",
                                        75);
 
-    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection", "mole_protection",
+    shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection", "protection",
                                                   "Deflect some damage from the mole\nto give yourself a fighting chance.",
                                                   15);
 
-    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection", "mole_reflection",
+    shopItem[ITEM_MOLE_REFLECTION]=CreateShopItem("Mole Reflection", "reflection",
                                                   "Reflect some damage back to the mole\nto give yourself a fighting chance.",
                                                   45);
 
-    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention", "mole_retrntion",
+    shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention", "retention",
                                                  "Keep your Mole Protection and/or Reflection\nafter you die until it is used.",
                                                  15);
 
