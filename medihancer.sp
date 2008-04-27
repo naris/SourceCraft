@@ -47,14 +47,22 @@ new greyColor[4] = {128, 128, 128, 255};
 new g_BeamSprite;
 new g_HaloSprite;
 
-new g_BeaconCount[MAXPLAYERS+1];
+new Float:g_LastChargeTime[MAXPLAYERS+1];
+new Float:g_LastBeaconTime[MAXPLAYERS+1];
+new Float:g_LastPingTime[MAXPLAYERS+1];
+
+new Float:g_ChargeDelay = 5.0;
+new Float:g_BeaconDelay = 5.0;
+new Float:g_PingDelay = 20.0;
 
 new Handle:g_IsMedihancerOn = INVALID_HANDLE;
 new Handle:g_EnableBeacon = INVALID_HANDLE;
 new Handle:g_BeaconRadius = INVALID_HANDLE;
+new Handle:g_BeaconTimer = INVALID_HANDLE;
 new Handle:g_ChargeAmount = INVALID_HANDLE;
 new Handle:g_ChargeTimer = INVALID_HANDLE;
-new Handle:g_PingCount = INVALID_HANDLE;
+new Handle:g_EnablePing = INVALID_HANDLE;
+new Handle:g_PingTimer = INVALID_HANDLE;
 new Handle:g_TimerHandle = INVALID_HANDLE;
 new g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
     g_TF_CurrentOffset, g_TF_TeamNumOffset;
@@ -75,12 +83,16 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-    g_IsMedihancerOn = CreateConVar("sm_medihancer","3","Enable/Disable medihancer");
-    g_EnableBeacon = CreateConVar("sm_medihancer_beacon","3","Enable/Disable medihancer beacon");
-    g_BeaconRadius = CreateConVar("sm_medihancer_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.", 0, true, 50.0, true, 1500.0);
-    g_PingCount = CreateConVar("sm_medihancer_ping_count", "4", "Sets the number of beacon pulses inbetween pings for medihancer.");
+    g_IsMedihancerOn = CreateConVar("sm_medihancer","1","Enable/Disable medihancer");
     g_ChargeAmount = CreateConVar("sm_medihancer_charge_amount", "3", "Sets the amount of uber charge to add time for medihancer.");
     g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "5.0", "Sets the time interval for medihancer.");
+
+    g_EnableBeacon = CreateConVar("sm_medihancer_beacon","1","Enable/Disable medihancer beacon");
+    g_BeaconTimer = CreateConVar("sm_medihancer_beacon_timer","5.0","Sets the time interval of beacons for medihancer");
+    g_BeaconRadius = CreateConVar("sm_medihancer_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.", 0, true, 50.0, true, 1500.0);
+
+    g_EnablePing = CreateConVar("sm_medihancer_ping","1","Enable/Disable medihancer ping");
+    g_PingTimer = CreateConVar("sm_medihancer_ping_timer", "20.0", "Sets the time interval of pings for medihancer.");
 
     // Execute the config file
     AutoExecConfig(true, "sm_medihancer");
@@ -112,13 +124,15 @@ public OnConfigsExecuted()
     {
         if (g_TimerHandle == INVALID_HANDLE)
         {
-            new Float:delay = GetConVarFloat(g_ChargeTimer);
+            new Float:delay = CalcDelay();
             LogMessage("[OnConfigExecuted]Created Medic_Timer with delay=%f", delay);
             g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
         }
     }
 
+    HookConVarChange(g_PingTimer, ConVarChange_IsMedihancerOn);
     HookConVarChange(g_ChargeTimer, ConVarChange_IsMedihancerOn);
+    HookConVarChange(g_BeaconTimer, ConVarChange_IsMedihancerOn);
     HookConVarChange(g_IsMedihancerOn, ConVarChange_IsMedihancerOn);
     ConfigsExecuted = true;
 }
@@ -139,7 +153,9 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 {
     if (StringToInt(newValue) > 0)
     {
-        if (convar == g_ChargeTimer && g_TimerHandle != INVALID_HANDLE)
+        if (g_TimerHandle != INVALID_HANDLE && (convar == g_ChargeTimer ||
+                                                convar == g_BeaconTimer ||
+                                                convar == g_PingTimer))
         {
             KillTimer(g_TimerHandle);
             g_TimerHandle = INVALID_HANDLE;
@@ -147,7 +163,7 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 
         if (g_TimerHandle == INVALID_HANDLE && ConfigsExecuted)
         {
-            new Float:delay = GetConVarFloat(g_ChargeTimer);
+            new Float:delay = CalcDelay();
             LogMessage("OnConvarChange]Created Medic_Timer with delay=%f", delay);
             g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
         }
@@ -201,40 +217,43 @@ public Action:Medic_Timer(Handle:timer)
                             new UberCharge = TF_GetUberLevel(client);
                             if (UberCharge < 100)
                             {
-                                new amt = NativeAmount[client];
-                                UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
-                                if (UberCharge >= 100)
+                                if (gameTime - g_LastChargeTime[client] >= g_ChargeDelay)
                                 {
-                                    UberCharge = 100;
-                                    new num=GetRandomInt(0,2);
-                                    EmitSoundToAll(Charged[num],client);
+                                    new amt = NativeAmount[client];
+                                    LogMessage("Add %d Uber", amt);
+                                    UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
+                                    if (UberCharge >= 100)
+                                    {
+                                        UberCharge = 100;
+                                        new num=GetRandomInt(0,2);
+                                        EmitSoundToAll(Charged[num],client);
+                                    }
+                                    TF_SetUberLevel(client, UberCharge);
+                                    g_LastChargeTime[client] = gameTime;
                                 }
-                                TF_SetUberLevel(client, UberCharge);
                                 if (GetConVarInt(g_EnableBeacon))
                                 {
-                                    new count = GetConVarInt(g_PingCount);
-                                    if (count > 0)
+                                    if (gameTime - g_LastBeaconTime[client] >= g_BeaconDelay)
                                     {
-                                        new bool:ping = (++g_BeaconCount[client] >= count);
+                                        new bool:ping = GetConVarInt(g_EnablePing) &&
+                                                        (gameTime - g_LastPingTime[client] >= g_PingDelay);
+
                                         BeaconPing(client, ping);
+                                        LogMessage("Beacon, ping=%d", ping);
+                                        g_LastBeaconTime[client] = gameTime;
                                         if (ping)
-                                            g_BeaconCount[client] = 0;
+                                            g_LastPingTime[client] = gameTime;
                                     }
                                 }
-                                else
+                                else if (GetConVarInt(g_EnablePing))
                                 {
-                                    new count = GetConVarInt(g_PingCount);
-                                    if (count > 0)
+                                    if (gameTime - g_LastPingTime[client] >= g_PingDelay)
                                     {
-                                        new value = ++g_BeaconCount[client];
-                                        if (value == 1)
-                                        {
-                                            new Float:vec[3];
-                                            GetClientEyePosition(client, vec);
-                                            EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
-                                        }
-                                        else if (value >= count)
-                                            g_BeaconCount[client] = 0;
+                                        LogMessage("Ping");
+                                        new Float:vec[3];
+                                        GetClientEyePosition(client, vec);
+                                        EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
+                                        g_LastPingTime[client] = gameTime;
                                     }
                                 }
                             }
@@ -319,6 +338,21 @@ stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
         GetEntityNetClass(index, name, maxlength);
 }
 
+Float:CalcDelay()
+{
+    new Float:chargeDelay = GetConVarFloat(g_ChargeTimer);
+    new Float:beaconDelay = GetConVarFloat(g_BeaconTimer);
+    new Float:pingDelay = GetConVarFloat(g_PingTimer);
+
+    new Float:delay = chargeDelay;
+    if (delay > beaconDelay)
+        delay = beaconDelay;
+    if (delay > pingDelay)
+        delay = pingDelay;
+
+    return delay;
+}
+
 public Native_ControlMedicEnhancer(Handle:plugin,numParams)
 {
     if (numParams == 0)
@@ -328,7 +362,7 @@ public Native_ControlMedicEnhancer(Handle:plugin,numParams)
 
     if (g_TimerHandle == INVALID_HANDLE && NativeControl && ConfigsExecuted)
     {
-        new Float:delay = GetConVarFloat(g_ChargeTimer);
+        new Float:delay = CalcDelay();
         LogMessage("[NativeControl]Created Medic_Timer with delay=%f", delay);
         g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
     }
