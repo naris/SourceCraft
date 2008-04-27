@@ -406,7 +406,7 @@ public SetupMediPack(client, level)
     if (m_MedipacksAvailable)
     {
         if (level)
-            SetMediPack(client, true, (level-1)*10);
+            SetMediPack(client, true, (level-1)*2);
         else
             SetMediPack(client, false, 0);
     }
