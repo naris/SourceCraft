@@ -41,6 +41,7 @@ new m_Armor[MAXPLAYERS+1];
 new bool:m_AllowOpticFlare[MAXPLAYERS+1];
 
 new bool:m_MedipacksAvailable = false;
+new bool:m_InfectionAvailable = false;
 
 new Handle:cvarFlareCooldown = INVALID_HANDLE;
 
@@ -69,13 +70,18 @@ public OnPluginStart()
 public OnPluginReady()
 {
     m_MedipacksAvailable = LibraryExists("medipacks");
+    m_InfectionAvailable = LibraryExists("Medic_Infect");
 
     raceID      = CreateRace("Terran Medic", "medic",
                              "You are now part of the Terran Medic.",
                              "You will be part of the Terran Medic when you die or respawn.",
                              32,20);
 
-    infectID    = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
+    if (m_InfectionAvailable)
+        infectID    = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
+    else
+        infectID    = AddUpgrade(raceID,"Infection", "infection", "Infection is currently disabled", false, 99, 0);
+
     chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
@@ -83,17 +89,19 @@ public OnPluginReady()
     if (m_MedipacksAvailable)
         medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks with alt fire of medigun and on death.\nAlso gives some ubercharge on spawn.");
     else
-        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false,99,0);
+        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false, 99, 0);
 
     restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for\nthe teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
     flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 15); // Ultimate
 
-    ControlMedicInfect(true);
     ControlMedicEnhancer(true);
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+
+    if (m_InfectionAvailable)
+        ControlMedicInfect(true);
 
     if (m_MedipacksAvailable)
         ControlMediPacks(true);
@@ -325,16 +333,19 @@ bool:Armor(damage, victim_index, Handle:victim_player)
 
 bool:Infect(victim_index, Handle:victim_player, index, Handle:player)
 {
-    new infect_level = GetUpgradeLevel(player,raceID,infectID);
-    if (infect_level > 0)
+    if (m_InfectionAvailable)
     {
-        if (!GetImmunity(victim_player,Immunity_HealthTake) &&
-            !TF2_IsPlayerInvuln(victim_index))
+        new infect_level = GetUpgradeLevel(player,raceID,infectID);
+        if (infect_level > 0)
         {
-            if(GetRandomInt(1,100)<=(infect_level*7))
+            if (!GetImmunity(victim_player,Immunity_HealthTake) &&
+                    !TF2_IsPlayerInvuln(victim_index))
             {
-                MedicInfect(index, victim_index, false);
-                return true;
+                if(GetRandomInt(1,100)<=(infect_level*7))
+                {
+                    MedicInfect(index, victim_index, false);
+                    return true;
+                }
             }
         }
     }
@@ -377,20 +388,23 @@ Jetpack(client, level)
 
 public SetupInfection(client, level)
 {
-    if (level)
+    if (m_InfectionAvailable)
     {
-        new amount;
-        switch(level)
+        if (level)
         {
-            case 1: amount=2;
-            case 2: amount=8;
-            case 3: amount=10;
-            case 4: amount=12;
+            new amount;
+            switch(level)
+            {
+                case 1: amount=2;
+                case 2: amount=8;
+                case 3: amount=10;
+                case 4: amount=12;
+            }
+            SetMedicInfect(client, true, amount);
         }
-        SetMedicInfect(client, true, amount);
+        else
+            SetMedicInfect(client, false, 0);
     }
-    else
-        SetMedicInfect(client, false, 0);
 }
 
 public SetupUberCharger(client, level)
