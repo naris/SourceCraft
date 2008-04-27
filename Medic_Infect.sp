@@ -160,7 +160,7 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 			if(ClientInfected[infecter])
 				SetEventInt(event,"assister",GetClientUserId(ClientInfected[infecter]));
 		}
-		SetEventString(event,"weapon","infection");
+		//SetEventString(event,"weapon","infection");
 		//SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
 	}
 	else if (attacker != infecter)
