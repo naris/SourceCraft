@@ -289,24 +289,29 @@ UpgradeMenu(client, Handle:playerHandle)
         new level=GetLevel(playerHandle,race);
         SetMenuExitButton(sMenu,true);
         SetMenuTitle(sMenu,"[SourceCraft] Select your desired upgrade. (%d/%d)",upgradecount,level);
-        new upgradeLevel, requiredLevel, style, bool:ultimate;
+        new upgradeLevel, maxUpgradeLevel, requiredLevel, style;
         decl String:sbuf[11];
         decl String:buf[192];
-        decl String:ult[] = "Ultimate:";
         decl String:minLevel[64];
         decl String:toLevel[64];
         decl String:upgradename[64];
+        new String:ult[] = "Ultimate:";
+        new maxLevel = GetRaceMaxLevel(raceHandle);
         new raceLevel = GetLevel(playerHandle,race);
         new activeUltimate = GetActiveUltimate(playerHandle,race);
         new upgradeCount = GetUpgradeCount(raceHandle);
         for(new upgrade=0;upgrade<upgradeCount;upgrade++)
         {
             upgradeLevel=GetUpgradeLevel(playerHandle,race,upgrade);
-
             requiredLevel=GetUpgradeRequiredLevel(raceHandle,upgrade);
-            ultimate=IsUpgradeUltimate(raceHandle, upgrade);
+            maxUpgradeLevel=GetUpgradeMaxLevel(raceHandle,upgrade);
 
-            if (raceLevel < requiredLevel)
+            if (requiredLevel > maxLevel || maxUpgradeLevel <= 0)
+            {
+                style = ITEMDRAW_DISABLED;
+                Format(minLevel,sizeof(minLevel)," [Not Available]");
+            }
+            else if (raceLevel < requiredLevel)
             {
                 style = ITEMDRAW_DISABLED;
                 Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
@@ -314,13 +319,13 @@ UpgradeMenu(client, Handle:playerHandle)
             else
             {
                 minLevel[0] = 0;
-                if (upgradeLevel >= GetUpgradeMaxLevel(raceHandle,upgrade))
+                if (upgradeLevel >= maxUpgradeLevel)
                     style = ITEMDRAW_DISABLED;
                 else
                     style = ITEMDRAW_DEFAULT;
             }
 
-            if (ultimate)
+            if (IsUpgradeUltimate(raceHandle, upgrade))
             {
                 ult[0] = 'U';
                 if (activeUltimate >= 0 && activeUltimate != upgrade)
@@ -375,10 +380,10 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 }
                 else
                 {
-                    if (IsUpgradeUltimate(raceHandle, upgrade))
+                    new minLevel = GetUpgradeRequiredLevel(raceHandle,upgrade);
+                    if (level >= minLevel)
                     {
-                        new minLevel = MIN_ULTIMATE_LEVEL;
-                        if (level >= minLevel)
+                        if (IsUpgradeUltimate(raceHandle, upgrade))
                         {
                             new activeUltimate = GetActiveUltimate(playerHandle,race);
                             if (activeUltimate < 0 || activeUltimate == upgrade)
@@ -399,24 +404,26 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                         }
                         else
                         {
-                            PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose an ultimate.",
-                                        COLOR_GREEN,COLOR_DEFAULT,minLevel);
+                            IncrementUpgradeLevel(playerHandle,race,upgrade,false);
+                            decl String:upgradename[64];
+                            GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
+                            PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
+                                        COLOR_GREEN,COLOR_DEFAULT,upgradename,
+                                        GetUpgradeLevel(playerHandle,race,upgrade));
                         }
+
+                        if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
+                            UpgradeMenu(client,playerHandle);
+                        else if (DBIDB && SAVE_ENABLED)
+                            SavePlayerData(client,playerHandle,false);
                     }
                     else
                     {
-                        IncrementUpgradeLevel(playerHandle,race,upgrade,false);
                         decl String:upgradename[64];
                         GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
-                        PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                    COLOR_GREEN,COLOR_DEFAULT,upgradename,
-                                    GetUpgradeLevel(playerHandle,race,upgrade));
+                        PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose %s.",
+                                COLOR_GREEN,COLOR_DEFAULT,minLevel,upgradename);
                     }
-
-                    if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                        UpgradeMenu(client,playerHandle);
-                    else if (DBIDB && SAVE_ENABLED)
-                        SavePlayerData(client,playerHandle,false);
                 }
             }
         }

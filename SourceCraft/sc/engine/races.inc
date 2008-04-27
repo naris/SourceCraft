@@ -391,12 +391,34 @@ UpgradesInfo(client,race,bool:change)
     GetRaceName(raceHandle, name, sizeof(name));
     SetMenuTitle(menu,"[%s] Select an upgrade for more info.", name);
 
+    decl String:buf[192];
+    decl String:minLevel[64];
+    new String:ult[] = "Ultimate:";
+    new maxUpgradeLevel, requiredLevel;
     new upgradeCount = GetUpgradeCount(raceHandle);
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
+        requiredLevel=GetUpgradeRequiredLevel(raceHandle,upgrade);
+        maxUpgradeLevel=GetUpgradeMaxLevel(raceHandle,upgrade);
+
+        if (requiredLevel > maxUpgradeLevel || maxUpgradeLevel <= 0)
+            Format(minLevel,sizeof(minLevel)," [Not Available]");
+        else if (requiredLevel > 1)
+            Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
+        else
+            minLevel[0] = 0;
+
+        if (IsUpgradeUltimate(raceHandle, upgrade))
+            ult[0] = 'U';
+        else
+            ult[0] = 0;
+
         GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
-        AddMenuItem(menu,"",name);
+
+        Format(buf,sizeof(buf),"%s%s%s",ult,name,minLevel);
+        AddMenuItem(menu,"",buf);
     }
+
     if (change)
     {
         Format(name,sizeof(name),"%d",race);

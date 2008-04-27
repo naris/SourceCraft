@@ -1022,6 +1022,7 @@ bool:InitNatives()
     CreateNative("SetOverrideVisiblity",Native_SetOverrideVisiblity);
     CreateNative("ApplyPlayerSettings",Native_ApplyPlayerSettings);
     CreateNative("RestorePlayer",Native_RestorePlayer);
+    RegPluginLibrary("sourcecraft");
     return true;
 }
 

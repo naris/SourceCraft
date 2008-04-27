@@ -73,7 +73,7 @@ public OnPluginReady()
     raceID      = CreateRace("Terran Medic", "medic",
                              "You are now part of the Terran Medic.",
                              "You will be part of the Terran Medic when you die or respawn.",
-                             32);
+                             32,20);
 
     infectID    = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
     chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
@@ -81,9 +81,11 @@ public OnPluginReady()
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
 
     if (m_MedipacksAvailable)
-        medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks with alt fire of medigun and on death. Also gives some ubercharge on spawn.");
+        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks with alt fire of medigun and on death.\nAlso gives some ubercharge on spawn.");
+    else
+        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false,99,0);
 
-    restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for the teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
+    restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for\nthe teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
     flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 15); // Ultimate
 

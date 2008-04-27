@@ -481,15 +481,14 @@ forward Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player
  */
 forward OnObjectKilled(attacker, builder,const String:object[]);
 
-
 /**
  * Do not edit below this line!
  */
-public Extension:__pl_sourcecraft = 
+
+public SharedPlugin:__pl_sourcecraft = 
 {
 	name = "sourcecraft",
 	file = "sourcecraft.smx",
-	autoload = 0,
 #if defined REQUIRE_PLUGIN
 	required = 1,
 #else
@@ -504,11 +503,10 @@ public __pl_sourcecraft_SetNTVOptional()
 	MarkNativeAsOptional("AddUpgrade");
 	MarkNativeAsOptional("CreateShopItem");
 	MarkNativeAsOptional("CreateHelpCommand");
-	MarkNativeAsOptional("GetShopItem");
-	MarkNativeAsOptional("KillPlayer");
-	MarkNativeAsOptional("HurtPlayer");
+	MarkNativeAsOptional("FindShopItem");
 	MarkNativeAsOptional("HealPlayer");
-	MarkNativeAsOptional("GetClass");
+	MarkNativeAsOptional("HurtPlayer");
+	MarkNativeAsOptional("KillPlayer");
 	MarkNativeAsOptional("GetPlayerHandle");
 	MarkNativeAsOptional("GetLevel");
 	MarkNativeAsOptional("SetLevel");
@@ -521,6 +519,8 @@ public __pl_sourcecraft_SetNTVOptional()
 	MarkNativeAsOptional("SetUpgradeLevel");
 	MarkNativeAsOptional("ResetSetUpgradeLevels");
 	MarkNativeAsOptional("SetCredits");
+	MarkNativeAsOptional("GetOverallLevel");
+	MarkNativeAsOptional("SetOverallLevel");
 	MarkNativeAsOptional("GetOwnsItem");
 	MarkNativeAsOptional("SetOwnsItem");
 	MarkNativeAsOptional("GetImmunity");
@@ -531,5 +531,7 @@ public __pl_sourcecraft_SetNTVOptional()
 	MarkNativeAsOptional("SetOverrideSpeed");
 	MarkNativeAsOptional("SetOverrideGravity");
 	MarkNativeAsOptional("SetOverrideVisiblity");
+	MarkNativeAsOptional("RestorePlayer");
+	MarkNativeAsOptional("ApplyPlayerSettings");
 }
 #endif
