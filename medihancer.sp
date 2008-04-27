@@ -123,11 +123,7 @@ public OnConfigsExecuted()
     if (GetConVarInt(g_IsMedihancerOn))
     {
         if (g_TimerHandle == INVALID_HANDLE)
-        {
-            new Float:delay = CalcDelay();
-            LogMessage("[OnConfigExecuted]Created Medic_Timer with delay=%f", delay);
-            g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
-        }
+            g_TimerHandle = CreateTimer(CalcDelay(), Medic_Timer, _, TIMER_REPEAT);
     }
 
     HookConVarChange(g_PingTimer, ConVarChange_IsMedihancerOn);
@@ -162,11 +158,7 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
         }
 
         if (g_TimerHandle == INVALID_HANDLE && ConfigsExecuted)
-        {
-            new Float:delay = CalcDelay();
-            LogMessage("OnConvarChange]Created Medic_Timer with delay=%f", delay);
-            g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
-        }
+            g_TimerHandle = CreateTimer(CalcDelay(), Medic_Timer, _, TIMER_REPEAT);
 
         if (!NativeControl)
             PrintToChatAll("[SM] Medics will auto-charge uber (and will beacon while charging)");
@@ -182,22 +174,9 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
     }
 }
 
-new Float:lastGameTime = 0.0;
-new Float:lastEngineTime = 0.0;
-new lastTime = 0;
 public Action:Medic_Timer(Handle:timer)
 {
-    decl String:buffer[64];
     new Float:gameTime = GetGameTime();
-    new Float:engineTime = GetEngineTime();
-    new time = GetTime();
-    FormatTime(buffer, sizeof(buffer),"%D %T", time);
-    LogMessage("Medic_Timer, gameTime=%f(%f), engineTime=%f(%f), time=%d(%d) - %s",
-               gameTime,gameTime-lastGameTime,engineTime,engineTime-lastEngineTime,time,time-lastTime,buffer);
-    lastGameTime=gameTime;
-    lastEngineTime=engineTime;
-    lastTime=time;
-
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
     {
@@ -220,7 +199,6 @@ public Action:Medic_Timer(Handle:timer)
                                 if (gameTime - g_LastChargeTime[client] >= g_ChargeDelay)
                                 {
                                     new amt = NativeAmount[client];
-                                    LogMessage("Add %d Uber", amt);
                                     UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
                                     if (UberCharge >= 100)
                                     {
@@ -239,7 +217,6 @@ public Action:Medic_Timer(Handle:timer)
                                                         (gameTime - g_LastPingTime[client] >= g_PingDelay);
 
                                         BeaconPing(client, ping);
-                                        LogMessage("Beacon, ping=%d", ping);
                                         g_LastBeaconTime[client] = gameTime;
                                         if (ping)
                                             g_LastPingTime[client] = gameTime;
@@ -249,7 +226,6 @@ public Action:Medic_Timer(Handle:timer)
                                 {
                                     if (gameTime - g_LastPingTime[client] >= g_PingDelay)
                                     {
-                                        LogMessage("Ping");
                                         new Float:vec[3];
                                         GetClientEyePosition(client, vec);
                                         EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
@@ -350,8 +326,6 @@ Float:CalcDelay()
     if (delay > g_PingDelay)
         delay = g_PingDelay;
 
-    LogMessage("ChargeDelay=%f,BeaconDelay=%f,PingDelay=%f,delay=%f",
-               g_ChargeDelay, g_BeaconDelay, g_PingDelay, delay);
     return delay;
 }
 
@@ -363,11 +337,7 @@ public Native_ControlMedicEnhancer(Handle:plugin,numParams)
         NativeControl = GetNativeCell(1);
 
     if (g_TimerHandle == INVALID_HANDLE && NativeControl && ConfigsExecuted)
-    {
-        new Float:delay = CalcDelay();
-        LogMessage("[NativeControl]Created Medic_Timer with delay=%f", delay);
-        g_TimerHandle = CreateTimer(delay, Medic_Timer, _, TIMER_REPEAT);
-    }
+        g_TimerHandle = CreateTimer(CalcDelay(), Medic_Timer, _, TIMER_REPEAT);
 }
 
 public Native_SetMedicEnhancement(Handle:plugin,numParams)
