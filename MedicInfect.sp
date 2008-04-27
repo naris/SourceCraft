@@ -6,7 +6,6 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <tf2>
 #include <tf2_stocks>
 
 new ClientInfected[MAXPLAYERS + 1];
@@ -131,9 +130,9 @@ public Action:HandleInfection(Handle:timer)
 			ForcePlayerSuicide(a);
 		else
 		{
-			//SetEntityHealth(a,hp);
-			SetEntProp(a, Prop_Send, "m_iHealth", hp, 1);
-			SetEntProp(a, Prop_Data, "m_iHealth", hp, 1);
+			SetEntityHealth(a,hp);
+			//SetEntProp(a, Prop_Send, "m_iHealth", hp, 1);
+			//SetEntProp(a, Prop_Data, "m_iHealth", hp, 1);
 		}
 	}
 }
@@ -312,7 +311,7 @@ MedicInfect(a,b,allow)
 			}
 		}
 		// Rukia: Infect the opposing team otherwise
-		else
+		else if (!ClientInfected[b])
 		{
 			SendInfection(b,a,false,true);
 		}
@@ -411,19 +410,22 @@ TransmitInfection(from, to)
 
 SendInfection(to,from,bool:friendly,bool:infect)
 {
-	ClientInfected[to] = from;
-	ClientFriendlyInfected[to] = friendly;
-	if (GetClientTeam(to) == _:TFTeam_Blue)
-		SetEntityRenderColor(to,GetConVarInt(CvarRed),GetConVarInt(CvarGreen),GetConVarInt(CvarBlue),GetConVarInt(CvarTrans));
-	else // Switch Red & Blue for Red Team.
-		SetEntityRenderColor(to,GetConVarInt(CvarBlue),GetConVarInt(CvarGreen),GetConVarInt(CvarRed),GetConVarInt(CvarTrans));
-
-	PrintHintText(to,"You have been infected!");
-
-	if(IsClientInGame(from) && IsPlayerAlive(from))
+	if (!ClientInfected[to])
 	{
-		if(infect) PrintHintText(from,"Virus administered!");
-		else PrintHintText(from,"Virus spread!");
+		ClientInfected[to] = from;
+		ClientFriendlyInfected[to] = friendly;
+		if (GetClientTeam(to) == _:TFTeam_Blue)
+			SetEntityRenderColor(to,GetConVarInt(CvarRed),GetConVarInt(CvarGreen),GetConVarInt(CvarBlue),GetConVarInt(CvarTrans));
+		else // Switch Red & Blue for Red Team.
+			SetEntityRenderColor(to,GetConVarInt(CvarBlue),GetConVarInt(CvarGreen),GetConVarInt(CvarRed),GetConVarInt(CvarTrans));
+
+		PrintHintText(to,"You have been infected!");
+
+		if(IsClientInGame(from) && IsPlayerAlive(from))
+		{
+			if(infect) PrintHintText(from,"Virus administered!");
+			else PrintHintText(from,"Virus spread!");
+		}
 	}
 }
 
