@@ -45,10 +45,14 @@ new Handle:Cvar_InfectMedi = INVALID_HANDLE;
 new Handle:Cvar_InfectSyringe = INVALID_HANDLE;
 
 new Handle:CvarEnable = INVALID_HANDLE;
-new Handle:CvarRed = INVALID_HANDLE;
-new Handle:CvarBlue = INVALID_HANDLE;
-new Handle:CvarGreen = INVALID_HANDLE;
-new Handle:CvarTrans = INVALID_HANDLE;
+new Handle:CvarRedTeamRed = INVALID_HANDLE;
+new Handle:CvarRedTeamBlue = INVALID_HANDLE;
+new Handle:CvarRedTeamGreen = INVALID_HANDLE;
+new Handle:CvarRedTeamTrans = INVALID_HANDLE;
+new Handle:CvarBlueTeamRed = INVALID_HANDLE;
+new Handle:CvarBlueTeamBlue = INVALID_HANDLE;
+new Handle:CvarBlueTeamGreen = INVALID_HANDLE;
+new Handle:CvarBlueTeamTrans = INVALID_HANDLE;
 
 new Handle:InfectionTimer = INVALID_HANDLE;
 
@@ -66,10 +70,14 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 public OnPluginStart()
 {
 	CvarEnable = CreateConVar("medic_infect_on", "1", "1 turns the plugin on 0 is off", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	CvarRed = CreateConVar("medic_infect_red", "0", "Amount of Red", FCVAR_NOTIFY);
-	CvarGreen = CreateConVar("medic_infect_green", "255", "Amount of Green", FCVAR_NOTIFY);
-	CvarBlue = CreateConVar("medic_infect_blue", "100", "Amount of Blue", FCVAR_NOTIFY);
-	CvarTrans = CreateConVar("medic_infect_alpha", "255", "Amount of Transperency", FCVAR_NOTIFY);
+	CvarRedTeamRed = CreateConVar("medic_infect_red", "255", "Amount of Red for the Red Team", FCVAR_NOTIFY);
+	CvarRedTeamGreen = CreateConVar("medic_infect_green", "100", "Amount of Green for the Red Team", FCVAR_NOTIFY);
+	CvarRedTeamBlue = CreateConVar("medic_infect_blue", "60", "Amount of Blue for the Red Team", FCVAR_NOTIFY);
+	CvarRedTeamTrans = CreateConVar("medic_infect_alpha", "255", "Amount of Transperency for the Red Team", FCVAR_NOTIFY);
+	CvarBlueTeamRed = CreateConVar("medic_infect_red", "0", "Amount of Red for the Blue Team", FCVAR_NOTIFY);
+	CvarBlueTeamGreen = CreateConVar("medic_infect_green", "255", "Amount of Green for the Blue Team", FCVAR_NOTIFY);
+	CvarBlueTeamBlue = CreateConVar("medic_infect_blue", "100", "Amount of Blue for the Blue Team", FCVAR_NOTIFY);
+	CvarBlueTeamTrans = CreateConVar("medic_infect_alpha", "255", "Amount of Transperency for the Blue Team", FCVAR_NOTIFY);
 	
 	Cvar_DmgAmount = CreateConVar("sv_medic_infect_dmg_amount", "10", "Amount of damage medic infect does each heartbeat",FCVAR_PLUGIN);
 	Cvar_DmgTime = CreateConVar("sv_medic_infect_dmg_time", "12", "Amount of time between infection heartbeats",FCVAR_PLUGIN);
@@ -426,9 +434,9 @@ SendInfection(to,from,bool:friendly,bool:infect)
 		ClientInfected[to] = from;
 		ClientFriendlyInfected[to] = friendly;
 		if (GetClientTeam(to) == _:TFTeam_Blue)
-			SetEntityRenderColor(to,GetConVarInt(CvarRed),GetConVarInt(CvarGreen),GetConVarInt(CvarBlue),GetConVarInt(CvarTrans));
+			SetEntityRenderColor(to,GetConVarInt(CvarBlueTeamRed),GetConVarInt(CvarBlueTeamGreen),GetConVarInt(CvarBlueTeamBlue),GetConVarInt(CvarBlueTeamTrans));
 		else // Switch Red & Blue for Red Team.
-			SetEntityRenderColor(to,GetConVarInt(CvarBlue),GetConVarInt(CvarGreen),GetConVarInt(CvarRed),GetConVarInt(CvarTrans));
+			SetEntityRenderColor(to,GetConVarInt(CvarRedTeamRed),GetConVarInt(CvarRedTeamGreen),GetConVarInt(CvarRedTeamBlue),GetConVarInt(CvarRedTeamTrans));
 
 		PrintHintText(to,"You have been infected!");
 
