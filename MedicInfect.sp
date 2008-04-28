@@ -4,6 +4,8 @@
  * Author(s): Twilight Suzuka
  */
 
+#pragma semicolon 1
+
 #include <sourcemod>
 #include <sdktools>
 #include <tf2_stocks>
@@ -31,7 +33,7 @@ new Handle:Cvar_DmgDistance = INVALID_HANDLE;
 new Handle:Cvar_SpreadAll = INVALID_HANDLE;
 new Handle:Cvar_SpreadSameTeam = INVALID_HANDLE;
 new Handle:Cvar_SpreadOpposingTeam = INVALID_HANDLE;
-new Handle:Cvar_SpreadDistance = INVALID_HANDLE
+new Handle:Cvar_SpreadDistance = INVALID_HANDLE;
 
 new Handle:Cvar_InfectSameTeam = INVALID_HANDLE;
 new Handle:Cvar_InfectOpposingTeam = INVALID_HANDLE;
@@ -120,7 +122,7 @@ public Action:HandleInfection(Handle:timer)
 	new maxplayers = GetMaxClients();
 	for(new a = 1; a <= maxplayers; a++)
 	{
-		if(!IsClientInGame(a) || !IsPlayerAlive(a) || ClientInfected[a] == 0) continue;
+		if(ClientInfected[a] == 0 || !IsClientInGame(a) || !IsPlayerAlive(a)) continue;
 	
 		new amt = NativeAmount[ClientInfected[a]];
 		new hp = GetClientHealth(a);
@@ -147,8 +149,11 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	ClientInfected[id] = 0;
 	ClientFriendlyInfected[id] = false;
 
-	SetEntityRenderColor(id)
-	SetEntityRenderMode(id, RENDER_NORMAL)
+	if (IsClientInGame(id))
+	{
+		SetEntityRenderColor(id);
+		SetEntityRenderMode(id, RENDER_NORMAL);
+	}
 
 	new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
 	if (attacker == id)
@@ -205,7 +210,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 		new target = GetClientAimTarget(client);
 		if(target > 0) 
 		{
-			MedicInfect(client,target,1)
+			MedicInfect(client,target,1);
 			MedicDelay[client] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 		}
 	}
@@ -242,7 +247,7 @@ public CheckMedics()
 					new target = GetClientAimTarget(i);
 					if(target > 0) 
 					{
-						MedicInfect(i,target,0)
+						MedicInfect(i,target,0);
 						MedicDelay[i] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 					}
 				}
@@ -251,7 +256,7 @@ public CheckMedics()
 					new target = GetClientAimTarget(i);
 					if(target > 0) 
 					{
-						MedicInfect(i,target,1)
+						MedicInfect(i,target,1);
 						MedicDelay[i] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 					}
 				}
@@ -262,6 +267,9 @@ public CheckMedics()
 
 MedicInfect(a,b,allow)
 {
+	if (!IsClientInGame(a) || !IsClientInGame(b))
+		return;
+
 	// Rukia: are the teams identical?
 	new t_same = GetClientTeam(a) == GetClientTeam(b);
 	if( t_same )
@@ -322,12 +330,12 @@ public RunInfection()
 {
 	static Float:InfectedVec[MAXPLAYERS][3];
 	static Float:NotInfectedVec[MAXPLAYERS][3];
-	static PlayerVec[MAXPLAYERS]
+	static PlayerVec[MAXPLAYERS];
 	
-	new InfectedCount, NotInfectedCount
+	new InfectedCount, NotInfectedCount;
 	
 	new maxplayers = GetMaxClients();
-	new i = 1, a = 0
+	new i = 1, a = 0;
 	for(; i <= maxplayers; i++)
 	{
 		if(!IsClientInGame(i) || !IsPlayerAlive(i)) continue;
@@ -365,6 +373,9 @@ public RunInfection()
 
 TransmitInfection(from, to)
 {
+	if (!IsClientInGame(from) || !IsClientInGame(to))
+		return;
+
 	// Rukia: Spread to all
 	if(GetConVarInt(Cvar_SpreadAll) )
 	{
@@ -454,7 +465,7 @@ public Native_MedicInfect(Handle:plugin,numParams)
 		new client = GetNativeCell(1);
 		new target = GetNativeCell(2);
 		new allow = (numParams >= 3) ? GetNativeCell(3) : 0;
-		MedicInfect(client,target,allow)
+		MedicInfect(client,target,allow);
 	}
 }
 
