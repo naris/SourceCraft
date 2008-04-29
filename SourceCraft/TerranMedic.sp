@@ -360,6 +360,7 @@ public OnInfected(victim,infector,bool:infected,const color[4])
     new Handle:player=GetPlayerHandle(victim);
     if (player != INVALID_HANDLE)
     {
+        LogMessage("%N infected, color = %d,%d,%d,%d", victim, color[0], color[1], color[2], color[3]);
         SetVisibility(player, color[3], BasicVisibility,
                       -1.0, -1.0, RenderMode:-1, RenderFx:-1,
                       color[0], color[1], color[2]);
