@@ -666,7 +666,7 @@ public Action:PlayerProperties(Handle:timer)
                     new bool:overridePlayerSpeed=false;
 
                     new Float:gravity=-1.0,Float:speed=-1.0;
-                    new visibility=255,r=255,g=255,b=255;
+                    new visibility=-1,r=-1,g=-1,b=-1;
                     new RenderMode:mode=RenderMode:-1;
                     new RenderFx:fx=RenderFx:-1;
                     new visibilityRank=-1;
@@ -756,9 +756,9 @@ public Action:PlayerProperties(Handle:timer)
                                     visibility=(checkVisibility < 0) ? 255 : checkVisibility;
                                     mode=(_:checkMode < 0) ? RENDER_NORMAL : checkMode;
                                     fx=(_:checkFx < 0) ? RENDERFX_NONE : checkFx;
-                                    r=(checkR < 0 || checkR >= 255) ? r : checkR; // Propagate changed colors
-                                    g=(checkG < 0 || checkG >= 255) ? g : checkG;
-                                    b=(checkB < 0 || checkB >= 255) ? b : checkB;
+                                    r=(checkR < 0 || checkR >= 255) ? 255 : checkR; // Propagate changed colors
+                                    g=(checkG < 0 || checkG >= 255) ? 255 : checkG;
+                                    b=(checkB < 0 || checkB >= 255) ? 255 : checkB;
                                     colorWeapons=checkWeapons;
                                 }
                             }

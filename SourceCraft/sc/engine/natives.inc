@@ -648,6 +648,7 @@ public Native_SetSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
+                PushArrayCell(indiceHandle,false); // visibility color weapons flag
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             if (numParams >= 3 && bool:GetNativeCell(3))
@@ -700,6 +701,7 @@ public Native_SetGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
+                PushArrayCell(indiceHandle,false); // visibility color weapons flag
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             if (numParams >= 3 && bool:GetNativeCell(3))
@@ -847,6 +849,7 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
+                PushArrayCell(indiceHandle,false); // visibility color weapons flag
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             if (numParams >= 3 && bool:GetNativeCell(3))
@@ -899,6 +902,7 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
+                PushArrayCell(indiceHandle,false); // visibility color weapons flag
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             if (numParams >= 3 && bool:GetNativeCell(3))
@@ -951,6 +955,7 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,-1); // visibility red component
                 PushArrayCell(indiceHandle,-1); // visibility green component
                 PushArrayCell(indiceHandle,-1); // visibility blue component
+                PushArrayCell(indiceHandle,false); // visibility color weapons flag
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
             if (numParams >= 3 && bool:GetNativeCell(3))
