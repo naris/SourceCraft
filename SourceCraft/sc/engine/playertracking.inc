@@ -743,8 +743,8 @@ public Action:PlayerProperties(Handle:timer)
                                            client,checkVisibility,type,checkFx,checkMode);
 
                                 new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
-                                                                    type, factor1, factor2, checkMode, checkFx,
-                                                                    r,g,b);
+                                                                    type, factor1, factor2, checkMode,
+                                                                    checkFx, checkR, checkG, checkB);
 
                                 LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fc=%d,mode=%d)",
                                            client,checkRank,checkVisibility,type,checkFx,checkMode);
@@ -753,24 +753,35 @@ public Action:PlayerProperties(Handle:timer)
                                 {
                                     m_VisibilityAltered[client]=true;
                                     visibilityRank=checkRank;
-                                    visibility=(checkVisibility < 0) ? 255 : checkVisibility;
-                                    mode=(_:checkMode < 0) ? RENDER_NORMAL : checkMode;
-                                    fx=(_:checkFx < 0) ? RENDERFX_NONE : checkFx;
-                                    r=(checkR < 0 || checkR >= 255) ? 255 : checkR; // Propagate changed colors
-                                    g=(checkG < 0 || checkG >= 255) ? 255 : checkG;
-                                    b=(checkB < 0 || checkB >= 255) ? 255 : checkB;
-                                    colorWeapons=checkWeapons;
+                                    visibility=checkVisibility;
+                                    mode=checkMode;
+                                    fx=checkFx;
+                                    if ((checkR >= 0 && checkR < 255) ||
+                                        (checkG >= 0 && checkG < 255) ||
+                                        (checkB >= 0 && checkB < 255))
+                                    {
+                                        r=checkR;
+                                        g=checkG;
+                                        b=checkB;
+                                        colorWeapons=checkWeapons;
+                                    }
+                                    // else Propagate changed colors (if any)
                                 }
-                                /*
-                                else if ((checkR >= 0 && checkR < 255) ||
-                                         (checkG >= 0 && checkG < 255) ||
-                                         (checkB >= 0 && checkB < 255))
+                                else if ((r < 0 || r >= 255) &&
+                                         (g < 0 || g >= 255) &&
+                                         (b < 0 || b >= 255))
                                 {
-                                    r=(checkR < 0 || checkR >= 255) ? r : checkR; // Propagate changed colors
-                                    g=(checkG < 0 || checkG >= 255) ? g : checkG;
-                                    b=(checkB < 0 || checkB >= 255) ? b : checkB;
+                                    if ((checkR >= 0 || checkR < 255) ||
+                                        (checkG >= 0 || checkG < 255) ||
+                                        (checkB >= 0 || checkB < 255))
+                                    {
+                                        // Propagate changed colors
+                                        r=checkR;
+                                        g=checkG;
+                                        b=checkB;
+                                        colorWeapons=checkWeapons;
+                                    }
                                 }
-                                */
                             }
                         }
                     }
@@ -808,9 +819,27 @@ public Action:PlayerProperties(Handle:timer)
 
                     if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                     {
-                        if ((visibility < 0 || visibility >= 255) &&
-                            mode == RENDER_NORMAL && fx == RENDERFX_NONE &&
-                            r == 255 && g == 255 && b == 255)
+                        if (_:mode < 0)
+                            mode=RENDER_NORMAL;
+
+                        if (_:fx < 0)
+                            fx=RENDERFX_NONE;
+
+                        if (visibility < 0 || visibility > 255)
+                            r = 255;
+
+                        if (r < 0 || r > 255)
+                            r = 255;
+
+                        if (g < 0 || g > 255)
+                            g = 255;
+
+                        if (b < 0 || b > 255)
+                            b = 255;
+
+                        if (visibility >= 255 &&
+                            r >= 255 && g >= 255 && b >= 255 &&
+                            mode == RENDER_NORMAL && fx == RENDERFX_NONE)
                         {
                             LogMessage("%N's visibility=%d",visibility);
                             ResetVisibility(client);
@@ -940,15 +969,6 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
         if (visibility < 0 || visibility > 255)
             visibility = 255;
 
-        if (r >= 0 && r <= 255)
-            visibility--;
-
-        if (b >= 0 && b <= 255)
-            visibility--;
-
-        if (g >= 0 && g <= 255)
-            visibility--;
-
         if (factor1 >= 0.0 && factor1 != 1.0) // factor1 == melee factor
         {
             if (IsEquipmentMelee(wepName))
@@ -967,12 +987,23 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
     else
     {
         rank = visibility;
+        if (r >= 0 && r <= 255)
+            rank--;
+
+        if (b >= 0 && b <= 255)
+            rank--;
+
+        if (g >= 0 && g <= 255)
+            rank--;
+
         if (mode != RENDER_NORMAL)
         {
             rank--;
             if (fx != RENDERFX_NONE)
                 rank -= _:fx;
         }
+        if (rank < 0)
+            rank = 0;
     }
     return rank;
 }
