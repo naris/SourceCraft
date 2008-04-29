@@ -31,7 +31,8 @@
 
 #include "sc/log" // for debugging
 
-new raceID, infectID, chargeID, armorID, medipackID, restoreID, flareID, jetpackID;
+new raceID, regenerationID, healingID, chargeID, armorID, medipackID, infectID;
+new restoreID, flareID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -90,6 +91,9 @@ public OnPluginReady()
         medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks with alt fire of medigun and on death.\nAlso gives some ubercharge on spawn.");
     else
         medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false, 99, 0);
+
+    regenerationID  = AddUpgrade(raceID,"Regeneration", "regeneration", "Regenerates your Health.");
+    healingID       = AddUpgrade(raceID,"Healing Aura", "healing", "Heals all of your teammates in range (It does NOT heal you).");
 
     restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for\nthe teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
     flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
@@ -468,21 +472,41 @@ public Action:Restore(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new restore_level=GetUpgradeLevel(player,raceID,restoreID);
-                    if (restore_level)
+                    new regeneration_level=GetUpgradeLevel(player,raceID,regenerationID);
+                    if (regeneration_level)
                     {
-                        new Float:range=1.0;
+                        new newhp=GetClientHealth(client)+regeneration_level;
+                        new maxhp=GetMaxHealth(client);
+                        if(newhp<=maxhp)
+                            SetEntityHealth(client,newhp);
+                    }
+
+                    new restore_level=GetUpgradeLevel(player,raceID,restoreID);
+                    new healing_aura_level=GetUpgradeLevel(player,raceID,healingID);
+                    if (restore_level || healing_aura_level)
+                    {
+                        new Float:restore_range;
                         switch(restore_level)
                         {
-                            case 1:
-                                range=300.0;
-                            case 2:
-                                range=450.0;
-                            case 3:
-                                range=650.0;
-                            case 4:
-                                range=800.0;
+                            case 1:  restore_range = 300.0;
+                            case 2:  restore_range = 450.0;
+                            case 3:  restore_range = 650.0;
+                            case 4:  restore_range = 800.0;
+                            default: restore_range = 0.0;
                         }
+
+                        new Float:healing_range;
+                        switch(healing_aura_level)
+                        {
+                            case 1:  healing_range = 300.0;
+                            case 2:  healing_range = 450.0;
+                            case 3:  healing_range = 650.0;
+                            case 4:  healing_range = 800.0;
+                            default: healing_range = 0.0;
+                        }
+
+                        new Float:distance;
+                        new Float:indexLoc[3];
                         new Float:clientLoc[3];
                         GetClientAbsOrigin(client, clientLoc);
                         new team = GetClientTeam(client);
@@ -494,10 +518,11 @@ public Action:Restore(Handle:timer)
                                 new Handle:player_check=GetPlayerHandle(index);
                                 if (player_check != INVALID_HANDLE)
                                 {
-                                    if (IsInRange(client,index,range))
+                                    GetClientAbsOrigin(index, indexLoc);
+                                    distance = DistanceBetween(clientLoc,indexLoc);
+
+                                    if (restore_level > 0 && distance <= restore_range)
                                     {
-                                        new Float:indexLoc[3];
-                                        GetClientAbsOrigin(index, indexLoc);
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
                                             RestorePlayer(player_check);
@@ -509,6 +534,25 @@ public Action:Restore(Handle:timer)
                                             TE_SendToAll();
                                         }
                                     }
+
+                                    if (healing_aura_level > 0 && distance <= healing_range)
+                                    {
+                                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                                        {
+                                            new health=GetClientHealth(index);
+                                            new max=GetMaxHealth(index);
+                                            if (health < max)
+                                            {
+                                                HealPlayer(index,healing_aura_level*5,health,max);
+
+                                                new color[4] = { 0, 0, 255, 255 };
+                                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                                TE_SendToAll();
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
                         }

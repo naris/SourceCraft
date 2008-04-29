@@ -133,6 +133,7 @@ public Action:Regeneration(Handle:timer)
                                 range=800.0;
                         }
                         new count=0;
+                        new Float:indexLoc[3];
                         new Float:clientLoc[3];
                         GetClientAbsOrigin(client, clientLoc);
                         new team = GetClientTeam(client);
@@ -144,10 +145,9 @@ public Action:Regeneration(Handle:timer)
                                 new Handle:player_check=GetPlayerHandle(index);
                                 if (player_check != INVALID_HANDLE)
                                 {
-                                    if (IsInRange(client,index,range))
+                                    GetClientAbsOrigin(index, indexLoc);
+                                    if (IsPointInRange(clientLoc,indexLoc,range))
                                     {
-                                        new Float:indexLoc[3];
-                                        GetClientAbsOrigin(index, indexLoc);
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
                                             new health=GetClientHealth(index);
