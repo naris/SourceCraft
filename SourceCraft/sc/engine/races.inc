@@ -397,8 +397,8 @@ UpgradesInfo(client,race,bool:change)
     if (change)
     {
         Format(name,sizeof(name),"%d",race);
-        AddMenuItem(menu,"","",ITEMDRAW_SPACER);
         AddMenuItem(menu,name,"Change to this Race");
+        AddMenuItem(menu,"","",ITEMDRAW_SPACER);
     }
 
     new String:ult[] = "Ultimate:";

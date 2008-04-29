@@ -27,7 +27,7 @@
 #define REQUIRE_EXTENSIONS
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION     "2.2.0 $Revision$ beta"
+#define VERSION     "2.2.2 $Revision$ beta"
 
 // ConVar definitions
 new Handle:m_SaveXPConVar         = INVALID_HANDLE;
