@@ -326,8 +326,7 @@ Cloak(client, Handle:player, level)
                 alpha = 255;
                 delay = 2.0;
                 duration = 5.0;
-                fx=RENDERFX_PULSE_SLOW_WIDE;
-                //fx=RENDERFX_FADE_SLOW;
+                fx=RENDERFX_STROBE_FAST;
             }
             case 2:
             {
@@ -335,7 +334,6 @@ Cloak(client, Handle:player, level)
                 delay = 1.5;
                 duration = 10.0;
                 fx=RENDERFX_FLICKER_FAST;
-                //fx=RENDERFX_PULSE_SLOW;
             }
             case 3:
             {
@@ -343,7 +341,6 @@ Cloak(client, Handle:player, level)
                 delay = 1.0;
                 duration = 15.0;
                 fx=RENDERFX_FLICKER_SLOW;
-                //fx=RENDERFX_PULSE_FAST_WIDE;
             }
             case 4:
             {
@@ -351,8 +348,6 @@ Cloak(client, Handle:player, level)
                 delay = 0.5;
                 duration = 20.0;
                 fx=RENDERFX_STROBE_SLOW;
-                //fx=RENDERFX_PULSE_FAST_WIDER;
-                //fx=RENDERFX_HOLOGRAM;
             }
         }
 
@@ -545,11 +540,14 @@ LaunchNuclearDevice(client,Handle:player)
     m_NuclearLaunchStatus[client]=LaunchInitiated;
 
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
-    SetVisibility(player, 200, TimedMeleeInvisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_FADE_SLOW);
+
+    new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
+    SetVisibility(player, 200, TimedMeleeInvisibility, 0.1, launchTime,
+                  RENDER_TRANSTEXTURE, RENDERFX_FADE_SLOW);
+
     SetOverrideSpeed(player, 0.0);
     ApplyPlayerSettings();
 
-    new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
 
