@@ -923,20 +923,17 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
     }
     else //if (type == BasicVisibility)
     {
-        if (visibility < 0)
+        if (visibility < 0 || visibility > 255)
             visibility = 255;
 
-        if (r < 0)
-            r = 255;
+        if (r >= 0 && r <= 255)
+            visibility--;
 
-        if (g < 0)
-            g = 255;
+        if (b >= 0 && b <= 255)
+            visibility--;
 
-        if (b < 0)
-            b = 255;
-
-        if (visibility == 255 && (r != 255 || g != 255 || b != 255))
-            visibility = (visibility+r+g+b)/4;
+        if (g >= 0 && g <= 255)
+            visibility--;
 
         if (factor1 >= 0.0 && factor1 != 1.0) // factor1 == melee factor
         {

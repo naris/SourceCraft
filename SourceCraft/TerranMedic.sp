@@ -279,6 +279,19 @@ SetupArmor(client, level)
     }
 }
 
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
+{
+    if (victim_player != INVALID_HANDLE)
+    {
+        // Make sure infected players don't stay green!
+        SetVisibility(victim_player, -1);
+    }
+}
+
 bool:Armor(damage, victim_index, Handle:victim_player)
 {
     new armor_level = GetUpgradeLevel(victim_player,raceID,armorID);
