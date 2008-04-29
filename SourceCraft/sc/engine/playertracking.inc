@@ -740,7 +740,8 @@ public Action:PlayerProperties(Handle:timer)
                                            client,checkVisibility,type,checkFx,checkMode);
 
                                 new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
-                                                                    type, factor1, factor2, checkMode, checkFx);
+                                                                    type, factor1, factor2, checkMode, checkFx,
+                                                                    r,g,b);
 
                                 LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fc=%d,mode=%d)",
                                            client,checkRank,checkVisibility,type,checkFx,checkMode);
@@ -793,8 +794,11 @@ public Action:PlayerProperties(Handle:timer)
 
                     if (m_VisibilityAltered[client] || overridePlayerVisibility || visibility >= 0)
                     {
-                        if (visibility < 0 || visibility >= 255)
+                        if ((visibility < 0 || visibility >= 255) &&
+                            mode == RENDER_NORMAL && fx == RENDERFX_NONE &&
+                            r == 255 && g == 255 && b == 255)
                         {
+                            LogMessage("%N's visibility=%d",visibility);
                             ResetVisibility(client);
 
                             // Visibility is back to normal, Reset the altered flag
@@ -850,7 +854,7 @@ bool:IsStill(client)
 
 CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                     VisibilityType:type, Float:factor1, Float:factor2,
-                    &RenderMode:mode, &RenderFx:fx)
+                    &RenderMode:mode, &RenderFx:fx,r,g,b)
 {
     new rank = visibility;
 
@@ -921,6 +925,18 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
     {
         if (visibility < 0)
             visibility = 255;
+
+        if (r < 0)
+            r = 255;
+
+        if (g < 0)
+            g = 255;
+
+        if (b < 0)
+            b = 255;
+
+        if (visibility == 255 && (r != 255 || g != 255 || b != 255))
+            visibility = (visibility+r+g+b)/4;
 
         if (factor1 >= 0.0 && factor1 != 1.0) // factor1 == melee factor
         {
