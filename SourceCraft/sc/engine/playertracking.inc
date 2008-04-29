@@ -841,7 +841,7 @@ public Action:PlayerProperties(Handle:timer)
                             r >= 255 && g >= 255 && b >= 255 &&
                             mode == RENDER_NORMAL && fx == RENDERFX_NONE)
                         {
-                            LogMessage("%N's visibility=%d",visibility);
+                            LogMessage("Reset %N's visibility=%d",client,visibility);
                             ResetVisibility(client);
 
                             // Visibility is back to normal, Reset the altered flag
@@ -907,7 +907,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             visibility = 255;
         else if (m_CloakTime[client] != 0.0) // Currently Cloaked
         {
-            if (factor2 > 0.0 && (GetGameTime() - m_CloakTime[client]) >= factor2) // factor2 == duration
+            // factor2 == duration
+            if (factor2 > 0.0 && (GetGameTime() - m_CloakTime[client]) >= factor2)
             {
                 visibility = 255;
                 if (mode == RENDER_NONE)
@@ -932,7 +933,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
         }
         else // Not Cloaked
         {
-            if (factor1 <= 0.0 || (GetGameTime() - m_StoppedMoving[client]) >= factor1) // factor1 == delay
+            // factor1 == delay
+            if (factor1 <= 0.0 || (GetGameTime() - m_StoppedMoving[client]) >= factor1)
             {
                 if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
                 {

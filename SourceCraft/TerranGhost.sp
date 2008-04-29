@@ -283,37 +283,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return Plugin_Continue;
 }
 
-/*
-enum RenderFx
-{	
-	RENDERFX_NONE = 0, 
-	RENDERFX_PULSE_SLOW, 
-	RENDERFX_PULSE_FAST, 
-	RENDERFX_PULSE_SLOW_WIDE, 
-	RENDERFX_PULSE_FAST_WIDE, 
-	RENDERFX_FADE_SLOW, 
-	RENDERFX_FADE_FAST, 
-	RENDERFX_SOLID_SLOW, 
-	RENDERFX_SOLID_FAST, 	   
-	RENDERFX_STROBE_SLOW, 
-	RENDERFX_STROBE_FAST, 
-	RENDERFX_STROBE_FASTER, 
-	RENDERFX_FLICKER_SLOW, 
-	RENDERFX_FLICKER_FAST,
-	RENDERFX_NO_DISSIPATION,
-	RENDERFX_DISTORT,			**< Distort/scale/translate flicker *
-	RENDERFX_HOLOGRAM,			**< kRenderFxDistort + distance fade *
-	RENDERFX_EXPLODE,			**< Scale up really big! *
-	RENDERFX_GLOWSHELL,			**< Glowing Shell *
-	RENDERFX_CLAMP_MIN_SCALE,	**< Keep this sprite from getting very small (SPRITES only!) *
-	RENDERFX_ENV_RAIN,			**< for environmental rendermode, make rain *
-	RENDERFX_ENV_SNOW,			**<  "        "            "    , make snow *
-	RENDERFX_SPOTLIGHT,			**< TEST CODE for experimental spotlight *
-	RENDERFX_RAGDOLL,			**< HACKHACK: TEST CODE for signalling death of a ragdoll character *
-	RENDERFX_PULSE_FAST_WIDER,
-	RENDERFX_MAX
-};
-*/
 Cloak(client, Handle:player, level)
 {
     if (level > 0)
@@ -326,14 +295,14 @@ Cloak(client, Handle:player, level)
                 alpha = 255;
                 delay = 2.0;
                 duration = 5.0;
-                fx=RENDERFX_STROBE_FAST;
+                fx=RENDERFX_FLICKER_FAST;
             }
             case 2:
             {
                 alpha = 235;
                 delay = 1.5;
                 duration = 10.0;
-                fx=RENDERFX_FLICKER_FAST;
+                fx=RENDERFX_STROBE_FAST;
             }
             case 3:
             {
@@ -542,8 +511,9 @@ LaunchNuclearDevice(client,Handle:player)
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
-    SetVisibility(player, 200, TimedMeleeInvisibility, 0.1, launchTime,
-                  RENDER_TRANSTEXTURE, RENDERFX_FADE_SLOW);
+    LogMessage("%N is launching missle", client);
+    SetVisibility(player, 255, BasicVisibility, 0.1, 0.1,
+                  RENDER_TRANSTEXTURE, RENDERFX_NONE); //RENDERFX_FADE_SLOW);
 
     SetOverrideSpeed(player, 0.0);
     ApplyPlayerSettings();
@@ -597,6 +567,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
+            LogMessage("%N has locked on", client);
             SetVisibility(player, -1);
             SetOverrideSpeed(player, -1.0);
             ApplyPlayerSettings();
