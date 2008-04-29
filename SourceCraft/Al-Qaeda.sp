@@ -467,6 +467,7 @@ public Action:FlamingWrath(Handle:timer)
                                 range=800.0;
                         }
                         new count=0;
+                        new Float:indexLoc[3];
                         new Float:clientLoc[3];
                         GetClientAbsOrigin(client, clientLoc);
                         for (new index=1;index<=maxplayers;index++)
@@ -480,11 +481,10 @@ public Action:FlamingWrath(Handle:timer)
                                     new Handle:player_check=GetPlayerHandle(index);
                                     if (player_check != INVALID_HANDLE)
                                     {
+                                        GetClientAbsOrigin(index, indexLoc);
                                         if (!GetImmunity(player_check, Immunity_HealthTake) &&
-                                            IsInRange(client,index,range))
+                                            IsPointInRange(clientLoc,indexLoc,range))
                                         {
-                                            new Float:indexLoc[3];
-                                            GetClientAbsOrigin(index, indexLoc);
                                             if (TraceTarget(client, index, clientLoc, indexLoc))
                                             {
                                                 new color[4] = { 255, 10, 55, 255 };

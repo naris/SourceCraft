@@ -452,6 +452,7 @@ ChainLightning(client,ultlevel)
     }
     new count=0;
     new last=client;
+    new Float:indexLoc[3];
     new Float:clientLoc[3];
     GetClientAbsOrigin(client, clientLoc);
     new maxplayers=GetMaxClients();
@@ -467,10 +468,9 @@ ChainLightning(client,ultlevel)
                     !GetImmunity(player_check,Immunity_HealthTake) &&
                     !TF2_IsPlayerInvuln(index))
                 {
-                    if (IsInRange(client,index,range))
+                    GetClientAbsOrigin(index, indexLoc);
+                    if (IsPointInRange(clientLoc,indexLoc,range))
                     {
-                        new Float:indexLoc[3];
-                        GetClientAbsOrigin(index, indexLoc);
                         if (TraceTarget(client, index, clientLoc, indexLoc))
                         {
                             new color[4] = { 10, 200, 255, 255 };

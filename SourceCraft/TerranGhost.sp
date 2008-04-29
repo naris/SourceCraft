@@ -416,6 +416,15 @@ Lockdown(victim_index, Handle:victim_player, Handle:player)
 
 public Action:OcularImplants(Handle:timer)
 {
+    decl String:clientName[64];
+    decl String:name[64];
+    new Float:indexLoc[3];
+    new Float:clientLoc[3];
+    new Float:detecting_range;
+    new Handle:player;
+    new bool:detect;
+    new detecting_level;
+
     new maxplayers=GetMaxClients();
     for(new client=1;client<=maxplayers;client++)
     {
@@ -423,11 +432,10 @@ public Action:OcularImplants(Handle:timer)
         {
             if(IsPlayerAlive(client))
             {
-                new Handle:player=GetPlayerHandle(client);
+                player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
-                    new Float:detecting_range;
-                    new detecting_level=GetUpgradeLevel(player,raceID,detectorID);
+                    detecting_level=GetUpgradeLevel(player,raceID,detectorID);
                     if (detecting_level)
                     {
                         switch(detecting_level)
@@ -443,7 +451,6 @@ public Action:OcularImplants(Handle:timer)
                         }
                     }
 
-                    new Float:clientLoc[3];
                     GetClientAbsOrigin(client, clientLoc);
                     for (new index=1;index<=maxplayers;index++)
                     {
@@ -454,19 +461,15 @@ public Action:OcularImplants(Handle:timer)
                                 new Handle:player_check=GetPlayerHandle(index);
                                 if (player_check != INVALID_HANDLE)
                                 {
-                                    decl String:clientName[64];
                                     GetClientName(client,clientName,63);
-
-                                    decl String:name[64];
                                     GetClientName(index,name,63);
 
                                     if (GetClientTeam(index) != GetClientTeam(client))
                                     {
-                                        new bool:detect = IsInRange(client,index,detecting_range);
+                                        GetClientAbsOrigin(index, indexLoc);
+                                        detect = IsPointInRange(clientLoc,indexLoc,detecting_range);
                                         if (detect)
                                         {
-                                            new Float:indexLoc[3];
-                                            GetClientAbsOrigin(index, indexLoc);
                                             detect = TraceTarget(client, index, clientLoc, indexLoc);
                                         }
                                         if (detect && !GetImmunity(player_check,Immunity_Uncloaking))

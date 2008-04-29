@@ -321,6 +321,7 @@ public Action:PersistFart(Handle:timer,any:client)
             case 3: EmitSoundToAll(fart3Wav,client);
         }
 
+        new Float:indexLoc[3];
         new Float:clientLoc[3];
         GetClientAbsOrigin(client, clientLoc);
 
@@ -357,10 +358,9 @@ public Action:PersistFart(Handle:timer,any:client)
                         !GetImmunity(player_check,Immunity_HealthTake) &&
                         !TF2_IsPlayerInvuln(index))
                     {
-                        if ( IsInRange(client,index,range))
+                        GetClientAbsOrigin(index, indexLoc);
+                        if ( IsPointInRange(clientLoc,indexLoc,range))
                         {
-                            new Float:indexLoc[3];
-                            GetClientAbsOrigin(index, indexLoc);
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 new amt=GetRandomInt(minDmg,maxDmg);
