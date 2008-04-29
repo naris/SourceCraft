@@ -344,10 +344,10 @@ Cloak(client, Handle:player, level)
             }
             case 4:
             {
-                alpha = 100;
+                alpha = 200;
                 delay = 0.5;
                 duration = 20.0;
-                fx=RENDERFX_HOLOGRAM;
+                fx=RENDERFX_PULSE_FAST_WIDER; //RENDERFX_HOLOGRAM;
             }
         }
 
