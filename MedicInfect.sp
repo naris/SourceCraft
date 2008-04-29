@@ -103,6 +103,9 @@ public OnPluginStart()
 
 public OnConfigsExecuted()
 {
+	if (InfectionTimer != INVALID_HANDLE)
+		CloseHandle(InfectionTimer);
+
 	InfectionTimer = CreateTimer(GetConVarFloat(Cvar_DmgTime), HandleInfection,_,TIMER_REPEAT);
 	HookConVarChange(Cvar_DmgTime, HandleInfectionChange);
 }
@@ -119,7 +122,9 @@ public OnMapEnd()
 
 public HandleInfectionChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	CloseHandle(InfectionTimer);
+	if (InfectionTimer != INVALID_HANDLE)
+		CloseHandle(InfectionTimer);
+
 	InfectionTimer = CreateTimer(StringToFloat(newValue), HandleInfection,_,TIMER_REPEAT);
 }
 
@@ -136,7 +141,7 @@ public Action:HandleInfection(Handle:timer)
 		new hp = GetClientHealth(a);
 		hp -= (amt > 0) ? amt : GetConVarInt(Cvar_DmgAmount);
 		
-		if(hp < 0)
+		if(hp <= 0)
 			ForcePlayerSuicide(a);
 		else
 		{
@@ -161,26 +166,28 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		SetEntityRenderColor(id);
 		SetEntityRenderMode(id, RENDER_NORMAL);
-	}
 
-	new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
-	if (attacker == id)
-	{
-		SetEventInt(event,"attacker",GetClientUserId(infecter));
-		if(TF2_GetPlayerClass(infecter) != TFClass_Medic)
+		if (IsClientInGame(infecter))
 		{
-			if(ClientInfected[infecter])
-				SetEventInt(event,"assister",GetClientUserId(ClientInfected[infecter]));
+			new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
+			if (attacker == id)
+			{
+				SetEventInt(event,"attacker",GetClientUserId(infecter));
+				if(TF2_GetPlayerClass(infecter) != TFClass_Medic)
+				{
+					if(ClientInfected[infecter])
+						SetEventInt(event,"assister",GetClientUserId(ClientInfected[infecter]));
+				}
+				//SetEventString(event,"weapon","infection");
+				//SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
+			}
+			else if (attacker != infecter)
+			{
+				if (GetEventInt(event,"assister") <= 0)
+					SetEventInt(event,"assister",GetClientUserId(infecter));
+			}
 		}
-		//SetEventString(event,"weapon","infection");
-		//SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
 	}
-	else if (attacker != infecter)
-	{
-		if (GetEventInt(event,"assister") <= 0)
-			SetEventInt(event,"assister",GetClientUserId(infecter));
-	}
-
 	return Plugin_Continue;
 }
 

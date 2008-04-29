@@ -344,7 +344,7 @@ bool:Infect(victim_index, Handle:victim_player, index, Handle:player)
             if (!GetImmunity(victim_player,Immunity_HealthTake) &&
                     !TF2_IsPlayerInvuln(victim_index))
             {
-                if(GetRandomInt(1,100)<=(infect_level*7))
+                if(GetRandomInt(1,100)<=(infect_level*4))
                 {
                     MedicInfect(index, victim_index, false);
                     return true;
