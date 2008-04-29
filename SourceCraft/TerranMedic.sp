@@ -492,59 +492,62 @@ public Action:Restore(Handle:timer)
 
 OpticFlare(client,ultlevel)
 {
-    new Float:range;
-    switch(ultlevel)
+    if (m_AllowOpticFlare[client] && ultlevel)
     {
-        case 1: range=300.0;
-        case 2: range=450.0;
-        case 3: range=650.0;
-        case 4: range=800.0;
-    }
-
-    new count=0;
-    new duration = ultlevel*100;
-    new Float:clientLoc[3];
-    GetClientAbsOrigin(client, clientLoc);
-    new maxplayers=GetMaxClients();
-    for(new index=1;index<=maxplayers;index++)
-    {
-        if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
-            GetClientTeam(client) != GetClientTeam(index))
+        new Float:range;
+        switch(ultlevel)
         {
-            new Handle:player_check=GetPlayerHandle(index);
-            if (player_check != INVALID_HANDLE)
+            case 1: range=300.0;
+            case 2: range=450.0;
+            case 3: range=650.0;
+            case 4: range=800.0;
+        }
+
+        new count=0;
+        new duration = ultlevel*100;
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
+        new maxplayers=GetMaxClients();
+        for(new index=1;index<=maxplayers;index++)
+        {
+            if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
+                    GetClientTeam(client) != GetClientTeam(index))
             {
-                if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                    !GetImmunity(player_check,Immunity_HealthTake) &&
-                    !TF2_IsPlayerInvuln(index))
+                new Handle:player_check=GetPlayerHandle(index);
+                if (player_check != INVALID_HANDLE)
                 {
-                    if (IsInRange(client,index,range))
+                    if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                            !GetImmunity(player_check,Immunity_HealthTake) &&
+                            !TF2_IsPlayerInvuln(index))
                     {
-                        new Float:indexLoc[3];
-                        GetClientAbsOrigin(index, indexLoc);
-                        if (TraceTarget(client, index, clientLoc, indexLoc))
+                        if (IsInRange(client,index,range))
                         {
-                            new color[4]={250,250,250,255};
-                            FadeOne(index, duration, duration , color);
+                            new Float:indexLoc[3];
+                            GetClientAbsOrigin(index, indexLoc);
+                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                            {
+                                new color[4]={250,250,250,255};
+                                FadeOne(index, duration, duration , color);
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    new Float:cooldown = GetConVarFloat(cvarFlareCooldown);
-    if (count)
-    {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c to blind %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
-    }
-    else
-    {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c, with no effect! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-    }
-    if (cooldown > 0.0)
-    {
-        m_AllowOpticFlare[client]=false;
-        CreateTimer(cooldown,AllowOpticFlare,client);
+        new Float:cooldown = GetConVarFloat(cvarFlareCooldown);
+        if (count)
+        {
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c to blind %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+        }
+        else
+        {
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c, with no effect! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        }
+        if (cooldown > 0.0)
+        {
+            m_AllowOpticFlare[client]=false;
+            CreateTimer(cooldown,AllowOpticFlare,client);
+        }
     }
 }
 
