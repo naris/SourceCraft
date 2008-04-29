@@ -382,7 +382,10 @@ ResetUpgradesNow(client,Handle:playerHandle)
 
 UpgradesInfo(client,race,bool:change)
 {
+    new maxUpgradeLevel, requiredLevel;
+    decl String:minLevel[64];
     decl String:name[64];
+    decl String:buf[192];
 
     new Handle:menu=CreateMenu(UpgradesInfo_Selected);
     SetMenuExitButton(menu,true);
@@ -391,10 +394,14 @@ UpgradesInfo(client,race,bool:change)
     GetRaceName(raceHandle, name, sizeof(name));
     SetMenuTitle(menu,"[%s] Select an upgrade for more info.", name);
 
-    decl String:buf[192];
-    decl String:minLevel[64];
+    if (change)
+    {
+        Format(name,sizeof(name),"%d",race);
+        AddMenuItem(menu,"","",ITEMDRAW_SPACER);
+        AddMenuItem(menu,name,"Change to this Race");
+    }
+
     new String:ult[] = "Ultimate:";
-    new maxUpgradeLevel, requiredLevel;
     new maxLevel = GetRaceMaxLevel(raceHandle);
     new upgradeCount = GetUpgradeCount(raceHandle);
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
@@ -418,13 +425,6 @@ UpgradesInfo(client,race,bool:change)
 
         Format(buf,sizeof(buf),"%s%s%s",ult,name,minLevel);
         AddMenuItem(menu,"",buf);
-    }
-
-    if (change)
-    {
-        Format(name,sizeof(name),"%d",race);
-        AddMenuItem(menu,"","",ITEMDRAW_SPACER);
-        AddMenuItem(menu,name,"Change to this Race");
     }
 
     gRaceForUpgrades[client] = race;
