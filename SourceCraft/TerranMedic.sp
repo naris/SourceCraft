@@ -212,6 +212,7 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
+    m_AllowOpticFlare[client]=true;
 }
 
 // Events
@@ -227,6 +228,8 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
+                m_AllowOpticFlare[client]=true;
+
                 new armor_level = GetUpgradeLevel(player,raceID,armorID);
                 if (armor_level)
                     SetupArmor(client, armor_level);
