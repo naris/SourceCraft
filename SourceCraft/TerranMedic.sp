@@ -342,7 +342,7 @@ bool:Infect(victim_index, Handle:victim_player, index, Handle:player)
         if (infect_level > 0)
         {
             if (!GetImmunity(victim_player,Immunity_HealthTake) &&
-                    !TF2_IsPlayerInvuln(victim_index))
+                !TF2_IsPlayerInvuln(victim_index))
             {
                 if(GetRandomInt(1,100)<=(infect_level*4))
                 {
@@ -353,6 +353,17 @@ bool:Infect(victim_index, Handle:victim_player, index, Handle:player)
         }
     }
     return false;
+}
+
+public OnInfected(victim,infector,bool:infected,const color[4])
+{
+    new Handle:player=GetPlayerHandle(victim);
+    if (player != INVALID_HANDLE)
+    {
+        SetVisibility(player, color[3], BasicVisibility,
+                      -1.0, -1.0, RenderMode:-1, RenderFx:-1,
+                      color[0], color[1], color[2]);
+    }
 }
 
 Jetpack(client, level)

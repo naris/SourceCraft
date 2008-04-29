@@ -47,6 +47,16 @@ native MedicInfect(client,target,bool:allow=false);
  */
 native HealInfect(client,target);
 
+/**
+ * Gets called when a player is infected or healed
+ * @param victim: The victim's index.
+ * @param infector: The infector's index.
+ * @param player: The player handle of the client.
+ * @param infected: Set true when infected and false when healed.
+ * @param color: Array for color player was turned (r,b,g,a).
+ */
+forward OnInfected(victim,infector,bool:infected,const color[4]);
+
 /* DO NOT EDIT BELOW THIS LINE */
 
 public SharedPlugin:__pl_MedicInfect = 

@@ -56,6 +56,8 @@ new Handle:CvarBlueTeamTrans = INVALID_HANDLE;
 
 new Handle:InfectionTimer = INVALID_HANDLE;
 
+new Handle:OnInfectedHandle = INVALID_HANDLE;
+
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
 	// Register Natives
@@ -63,6 +65,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 	CreateNative("SetMedicInfect",Native_SetMedicInfect);
 	CreateNative("MedicInfect",Native_MedicInfect);
 	CreateNative("HealInfect",Native_HealInfect);
+	OnInfectedHandle=CreateGlobalForward("OnInfected",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Array);
 	RegPluginLibrary("MedicInfect");
 	return true;
 }
@@ -157,7 +160,7 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	new id = GetClientOfUserId(GetEventInt(event,"userid"));
 	if(!ClientInfected[id]) return Plugin_Continue;
 	
-	new infecter = ClientInfected[id];
+	new infector = ClientInfected[id];
 	
 	ClientInfected[id] = 0;
 	ClientFriendlyInfected[id] = false;
@@ -167,24 +170,24 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 		SetEntityRenderColor(id);
 		SetEntityRenderMode(id, RENDER_NORMAL);
 
-		if (IsClientInGame(infecter))
+		if (IsClientInGame(infector))
 		{
 			new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
 			if (attacker == id)
 			{
-				SetEventInt(event,"attacker",GetClientUserId(infecter));
-				if(TF2_GetPlayerClass(infecter) != TFClass_Medic)
+				SetEventInt(event,"attacker",GetClientUserId(infector));
+				if(TF2_GetPlayerClass(infector) != TFClass_Medic)
 				{
-					if(ClientInfected[infecter])
-						SetEventInt(event,"assister",GetClientUserId(ClientInfected[infecter]));
+					if(ClientInfected[infector])
+						SetEventInt(event,"assister",GetClientUserId(ClientInfected[infector]));
 				}
 				//SetEventString(event,"weapon","infection");
 				//SetEventInt(event,"customkill",1); // This makes the kill a Headshot!
 			}
-			else if (attacker != infecter)
+			else if (attacker != infector)
 			{
 				if (GetEventInt(event,"assister") <= 0)
-					SetEventInt(event,"assister",GetClientUserId(infecter));
+					SetEventInt(event,"assister",GetClientUserId(infector));
 			}
 		}
 	}
@@ -319,19 +322,10 @@ MedicInfect(a,b,allow)
 		{
 			// Rukia: Infect same team if allowed is on
 			if(allow)
-			{
 				SendInfection(b,a,true,true);
-			}
 			// Rukia: Heal if applicable.
 			else if (ClientInfected[b] || ClientFriendlyInfected[b])
-			{ 
-				ClientInfected[b] = 0; 
-				ClientFriendlyInfected[b] = false; 
-				SetEntityRenderColor(b,255,255,255,255);
-
-				PrintHintText(b,"You have been cured!");
-				PrintHintText(a,"%N has been cured!", b);
-			}
+				HealInfection(b, a);
 		}
 		// Rukia: Infect the opposing team otherwise
 		else if (!ClientInfected[b])
@@ -436,32 +430,68 @@ TransmitInfection(from, to)
 
 SendInfection(to,from,bool:friendly,bool:infect)
 {
-	if (!ClientInfected[to])
+	if (to > 0 && !ClientInfected[to])
 	{
 		ClientInfected[to] = from;
 		ClientFriendlyInfected[to] = friendly;
+
+		new color[4];
 		if (GetClientTeam(to) == _:TFTeam_Blue)
 		{
-			SetEntityRenderColor(to,GetConVarInt(CvarBlueTeamRed),
-						GetConVarInt(CvarBlueTeamGreen),
-						GetConVarInt(CvarBlueTeamBlue),
-						GetConVarInt(CvarBlueTeamTrans));
+			color[0] = GetConVarInt(CvarBlueTeamRed);
+			color[1] = GetConVarInt(CvarBlueTeamGreen);
+			color[2] = GetConVarInt(CvarBlueTeamBlue);
+			color[3] = GetConVarInt(CvarBlueTeamTrans);
 		}
-		else // Switch Red & Blue for Red Team.
+		else
 		{
-			SetEntityRenderColor(to,GetConVarInt(CvarRedTeamRed),
-						GetConVarInt(CvarRedTeamGreen),
-						GetConVarInt(CvarRedTeamBlue),
-						GetConVarInt(CvarRedTeamTrans));
+			color[0] = GetConVarInt(CvarRedTeamRed);
+			color[1] = GetConVarInt(CvarRedTeamGreen);
+			color[2] = GetConVarInt(CvarRedTeamBlue);
+			color[3] = GetConVarInt(CvarRedTeamTrans);
 		}
+		SetEntityRenderColor(to,color[0],color[1],color[2],color[3]);
 
 		PrintHintText(to,"You have been infected!");
 
-		if(IsClientInGame(from) && IsPlayerAlive(from))
+		if(from > 0 && IsClientInGame(from))
 		{
 			if(infect) PrintHintText(from,"Virus administered!");
 			else PrintHintText(from,"Virus spread!");
 		}
+
+		new res;
+		Call_StartForward(OnInfectedHandle);
+		Call_PushCell(to);
+		Call_PushCell(from);
+		Call_PushCell(true);
+		Call_PushArray(color, sizeof(color));
+		Call_Finish(res);
+	}
+}
+
+HealInfection(target,client)
+{
+	if (target > 0 && IsClientInGame(target) && IsPlayerAlive(target))
+	{
+		new color[4] = {255, 255, 255, 255};
+
+		ClientInfected[target] = 0; 
+		ClientFriendlyInfected[target] = false;
+
+		SetEntityRenderColor(target,color[0],color[1],color[2],color[3]);
+		PrintHintText(target,"You have been cured!");
+
+		if (client > 0 && IsClientInGame(client))
+			PrintHintText(client,"%N has been cured!", target);
+
+		new res;
+		Call_StartForward(OnInfectedHandle);
+		Call_PushCell(target);
+		Call_PushCell(client);
+		Call_PushCell(false);
+		Call_PushArray(color, sizeof(color));
+		Call_Finish(res);
 	}
 }
 
@@ -502,15 +532,7 @@ public Native_HealInfect(Handle:plugin,numParams)
 		new target = GetNativeCell(2);
 		{ 
 			if (ClientInfected[target] || ClientFriendlyInfected[target])
-			{
-				ClientInfected[target] = 0; 
-				ClientFriendlyInfected[target] = false; 
-				SetEntityRenderColor(target,255,255,255,255);
-				PrintHintText(target,"You have been cured!");
-
-				if (client > 0 && IsClientInGame(client) && IsPlayerAlive(client))
-					PrintHintText(client,"%N has been cured!", target);
-			}
+				HealInfection(target, client);
 		}
 	}
 }
