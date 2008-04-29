@@ -510,14 +510,13 @@ LaunchNuclearDevice(client,Handle:player)
 
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
 
-    new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
-    LogMessage("%N is launching missle", client);
     SetVisibility(player, 255, BasicVisibility, 0.1, 0.1,
-                  RENDER_TRANSTEXTURE, RENDERFX_NONE); //RENDERFX_FADE_SLOW);
+                  RENDER_TRANSTEXTURE, RENDERFX_NONE);
 
     SetOverrideSpeed(player, 0.0);
     ApplyPlayerSettings();
 
+    new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",
                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
 
@@ -567,10 +566,9 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
-            LogMessage("%N has locked on", client);
-            SetVisibility(player, -1);
+            // Reset speed and cloak.
             SetOverrideSpeed(player, -1.0);
-            ApplyPlayerSettings();
+            Cloak(client, player, GetUpgradeLevel(player,raceID,cloakID));
 
             EmitSoundToAll(launchWav,SOUND_FROM_PLAYER);
 
@@ -765,15 +763,12 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                                 !TF2_IsPlayerInvuln(index))
                             {
                                 GetClientAbsOrigin(index, indexLoc);
-                                new Float:dist=DistanceBetween(m_NuclearAimPos[client],indexLoc);
-                                LogMessage("Check Target=%f,%f,%f; index=%f,%f,%f; range=%f; dist=%f",
-                                           m_NuclearAimPos[client][0],m_NuclearAimPos[client][1],m_NuclearAimPos[client][2],
-                                           indexLoc[0], indexLoc[1], indexLoc[2], radius, dist);
-
                                 if (TraceTarget(0, index, m_NuclearAimPos[client], indexLoc))
                                     amt = PowerOfRange(m_NuclearAimPos[client],radius,indexLoc,damage,0.5,false);
                                 else if ( IsPointInRange(m_NuclearAimPos[client],indexLoc,radius))
                                     amt = GetRandomInt(minDmg,maxDmg)-ult_level;
+                                else
+                                    amt = 0;
 
                                 if (amt > 0)
                                 {
