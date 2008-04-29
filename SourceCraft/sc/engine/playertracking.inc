@@ -50,8 +50,9 @@
 #define TRACKING_VISIBILITY_R          12
 #define TRACKING_VISIBILITY_G          13
 #define TRACKING_VISIBILITY_B          14
+#define TRACKING_VISIBILITY_WEAPONS    15
 
-#define TRACKING_COUNT                 15
+#define TRACKING_COUNT                 16
 
 new Handle:arrayPlayers[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
@@ -665,10 +666,11 @@ public Action:PlayerProperties(Handle:timer)
                     new bool:overridePlayerSpeed=false;
 
                     new Float:gravity=-1.0,Float:speed=-1.0;
-                    new visibility=-1,r=-1,g=-1,b=-1;
+                    new visibility=255,r=255,g=255,b=255;
                     new RenderMode:mode=RenderMode:-1;
                     new RenderFx:fx=RenderFx:-1;
                     new visibilityRank=-1;
+                    new bool:colorWeapons=false;
 
                     decl String:wepName[128];
                     GetClientWeapon(client, wepName, 127);
@@ -694,6 +696,7 @@ public Action:PlayerProperties(Handle:timer)
                         new checkR                  = GetArrayCell(temp,TRACKING_VISIBILITY_R);
                         new checkG                  = GetArrayCell(temp,TRACKING_VISIBILITY_G);
                         new checkB                  = GetArrayCell(temp,TRACKING_VISIBILITY_B);
+                        new bool:checkWeapons       = GetArrayCell(temp,TRACKING_VISIBILITY_WEAPONS);
 
                         if(!overridePlayerSpeed)
                         {
@@ -753,9 +756,10 @@ public Action:PlayerProperties(Handle:timer)
                                     visibility=(checkVisibility < 0) ? 255 : checkVisibility;
                                     mode=(_:checkMode < 0) ? RENDER_NORMAL : checkMode;
                                     fx=(_:checkFx < 0) ? RENDERFX_NONE : checkFx;
-                                    r=(_:checkR < 0) ? 255 : checkR;
-                                    g=(_:checkG < 0) ? 255 : checkG;
-                                    b=(_:checkB < 0) ? 255 : checkB;
+                                    r=(checkR < 0 || checkR >= 255) ? r : checkR; // Propagate changed colors
+                                    g=(checkG < 0 || checkG >= 255) ? g : checkG;
+                                    b=(checkB < 0 || checkB >= 255) ? b : checkB;
+                                    colorWeapons=checkWeapons;
                                 }
                             }
                         }
@@ -805,7 +809,7 @@ public Action:PlayerProperties(Handle:timer)
                             m_VisibilityAltered[client]=false;
                         }
                         else
-                            SetVisibility(client, visibility, mode, fx, r, g, b);
+                            SetVisibility(client, visibility, mode, fx, r, g, b, colorWeapons);
                     }
 
                     if (m_GravityAltered[client] || overridePlayerGravity || gravity >= 0.0)
@@ -963,7 +967,7 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
     return rank;
 }
 
-SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
+SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b, bool:colorWeapons)
 {
     LogMessage("Set %N's Visibility=%d,mode=%d,fx=%d,r=%d,g=%d,b=%d",
                client, visibility, mode, fx, r, g, b);
@@ -978,35 +982,41 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b)
 
     if (m_OwnerOffset != -1)
     {
-        new count=GetEntityCount();
-        for (new obj=GetMaxClients()+1; obj < count; obj++)
+        if (colorWeapons || visibility < 255 || mode != RENDER_NORMAL || fx != RENDERFX_NONE)
         {
-            if (IsValidEdict(obj))
+            new r2 = colorWeapons ? r : 255;
+            new g2 = colorWeapons ? g : 255;
+            new b2 = colorWeapons ? b : 255;
+            new count=GetEntityCount();
+            for (new obj=GetMaxClients()+1; obj < count; obj++)
             {
-                if (GetEntDataEnt2(obj,m_OwnerOffset) == client)
+                if (IsValidEdict(obj))
                 {
-                    decl String:name[32];
-                    if (!GetEntityNetClass(obj,name,sizeof(name)) ||
-                        (!StrEqual(name, "CCaptureFlag") &&
-                         !StrEqual(name, "CSniperDot")))
+                    if (GetEntDataEnt2(obj,m_OwnerOffset) == client)
                     {
-                        SetEntityRenderColor(obj,r,g,b,visibility);
-                        SetEntityRenderMode(obj,mode);
-                        SetEntityRenderFx(obj,fx);
+                        decl String:name[32];
+                        if (!GetEntityNetClass(obj,name,sizeof(name)) ||
+                            (!StrEqual(name, "CCaptureFlag") &&
+                             !StrEqual(name, "CSniperDot")))
+                        {
+                            SetEntityRenderColor(obj,r2,g2,b2,visibility);
+                            SetEntityRenderMode(obj,mode);
+                            SetEntityRenderFx(obj,fx);
+                        }
+                        /*
+                        decl String:clsname[128];
+                        GetEdictClassname(obj, clsname, sizeof(clsname));
+
+                        LogMessage("%N has %s(%s)", client, name, clsname);
+                        PrintToChat(client,"%c[DEBUG]%c %c%s%c(%s)-%d",
+                                    COLOR_GREEN,COLOR_DEFAULT,
+                                    COLOR_TEAM,name,COLOR_DEFAULT,
+                                    clsname,obj);
+
+                        if (StrEqual(name, "CSniperDot"))
+                            DumpSniperDot(client, obj);
+                        */
                     }
-                    /*
-                       decl String:clsname[128];
-                       GetEdictClassname(obj, clsname, sizeof(clsname));
-
-                    LogMessage("%N has %s(%s)", client, name, clsname);
-                    PrintToChat(client,"%c[DEBUG]%c %c%s%c(%s)-%d",
-                                COLOR_GREEN,COLOR_DEFAULT,
-                                COLOR_TEAM,name,COLOR_DEFAULT,
-                                clsname,obj);
-
-                    if (StrEqual(name, "CSniperDot"))
-                        DumpSniperDot(client, obj);
-                    */
                 }
             }
         }

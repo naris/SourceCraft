@@ -378,7 +378,7 @@ public OnInfected(victim,infector,bool:infected,const color[4])
 
         SetVisibility(player, color[3], BasicVisibility,
                       -1.0, -1.0, RenderMode:-1, RenderFx:-1,
-                      color[0], color[1], color[2]);
+                      color[0], color[1], color[2], false);
     }
 }
 

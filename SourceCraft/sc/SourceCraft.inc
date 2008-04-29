@@ -309,6 +309,7 @@ native SetVisibility(Handle:player,visibility=-1,
                      RenderMode:mode=RenderMode:-1,
                      RenderFx:fx=RenderFx:-1,
                      r=-1,g=-1,b=-1,
+                     bool:colorWeapons=false,
                      bool:apply=false);
 
 /**

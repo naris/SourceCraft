@@ -729,7 +729,7 @@ public Native_SetGravity(Handle:plugin,numParams)
 */
 public Native_SetVisibility(Handle:plugin,numParams)
 {
-    if (numParams >= 1 && numParams <= 11)
+    if (numParams >= 1 && numParams <= 12)
     {
         new Handle:player       = Handle:GetNativeCell(1);
         new visibility          = (numParams >= 2) ? GetNativeCell(2) : -1;
@@ -741,6 +741,7 @@ public Native_SetVisibility(Handle:plugin,numParams)
         new r                   = (numParams >= 8) ? GetNativeCell(8) : -1;
         new g                   = (numParams >= 9) ? GetNativeCell(9) : -1;
         new b                   = (numParams >= 10) ? GetNativeCell(10) : -1;
+        new colorWeapons        = (numParams >= 11) ? GetNativeCell(11) : -1;
         if(player != INVALID_HANDLE)
         {
             new Handle:temp=GetPropertyInfo(player);
@@ -769,6 +770,7 @@ public Native_SetVisibility(Handle:plugin,numParams)
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_R,r);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_G,g);
                 SetArrayCell(indiceHandle,TRACKING_VISIBILITY_B,b);
+                SetArrayCell(indiceHandle,TRACKING_VISIBILITY_WEAPONS,colorWeapons);
             }
             else
             {
@@ -791,9 +793,10 @@ public Native_SetVisibility(Handle:plugin,numParams)
                 PushArrayCell(indiceHandle,r); // visibility red component
                 PushArrayCell(indiceHandle,g); // visibility green component
                 PushArrayCell(indiceHandle,b); // visibility blue component
+                PushArrayCell(indiceHandle,colorWeapons); // visibility color weapons flag
                 PushArrayCell(temp,indiceHandle); // insert into the property info
             }
-            if (numParams >= 11 && bool:GetNativeCell(11))
+            if (numParams >= 12 && bool:GetNativeCell(12))
                 TriggerTimer(m_PlayerPropertiesTimer, true);
         }
     }
