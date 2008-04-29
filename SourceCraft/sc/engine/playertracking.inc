@@ -912,6 +912,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                 visibility = 255;
                 if (mode == RENDER_NONE)
                     mode = RENDER_NORMAL;
+                if (fx == RENDERFX_FADE_SLOW || fx == RENDERFX_FADE_FAST)
+                    fx = RENDERFX_NONE;
             }
             else if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
             {
@@ -924,6 +926,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                 visibility = 255;
                 if (mode == RENDER_NONE)
                     mode = RENDER_NORMAL;
+                if (fx == RENDERFX_FADE_SLOW || fx == RENDERFX_FADE_FAST)
+                    fx = RENDERFX_NONE;
             }
         }
         else // Not Cloaked
@@ -941,6 +945,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                     visibility = 255;
                     if (mode == RENDER_NONE)
                         mode = RENDER_NORMAL;
+                    if (fx == RENDERFX_FADE_SLOW || fx == RENDERFX_FADE_FAST)
+                        fx = RENDERFX_NONE;
                 }
             }
             else
@@ -948,6 +954,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
                 visibility = 255;
                 if (mode == RENDER_NONE)
                     mode = RENDER_NORMAL;
+                if (fx == RENDERFX_FADE_SLOW || fx == RENDERFX_FADE_FAST)
+                    fx = RENDERFX_NONE;
             }
         }
 

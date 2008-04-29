@@ -326,14 +326,16 @@ Cloak(client, Handle:player, level)
                 alpha = 255;
                 delay = 2.0;
                 duration = 5.0;
-                fx=RENDERFX_PULSE_SLOW;
+                fx=RENDERFX_PULSE_SLOW_WIDE;
+                //fx=RENDERFX_FADE_SLOW;
             }
             case 2:
             {
                 alpha = 235;
                 delay = 1.5;
                 duration = 10.0;
-                fx=RENDERFX_PULSE_FAST;
+                fx=RENDERFX_FLICKER_FAST;
+                //fx=RENDERFX_PULSE_SLOW;
             }
             case 3:
             {
@@ -341,13 +343,16 @@ Cloak(client, Handle:player, level)
                 delay = 1.0;
                 duration = 15.0;
                 fx=RENDERFX_FLICKER_SLOW;
+                //fx=RENDERFX_PULSE_FAST_WIDE;
             }
             case 4:
             {
                 alpha = 200;
                 delay = 0.5;
                 duration = 20.0;
-                fx=RENDERFX_PULSE_FAST_WIDER; //RENDERFX_HOLOGRAM;
+                fx=RENDERFX_STROBE_SLOW;
+                //fx=RENDERFX_PULSE_FAST_WIDER;
+                //fx=RENDERFX_HOLOGRAM;
             }
         }
 
@@ -389,14 +394,11 @@ Lockdown(victim_index, Handle:victim_player, Handle:player)
             new percent;
             switch(lockdown_level)
             {
-                case 1:
-                    percent=15;
-                case 2:
-                    percent=21;
-                case 3:
-                    percent=37;
-                case 4:
-                    percent=52;
+                case 1:  percent=15;
+                case 2:  percent=21;
+                case 3:  percent=37;
+                case 4:  percent=52;
+                default: percent=0;
             }
             if (GetRandomInt(1,100)<=percent && (!gLockdownTime[victim_index] ||
                 GetGameTime() - gLockdownTime[victim_index] > 2.0))
@@ -440,14 +442,11 @@ public Action:OcularImplants(Handle:timer)
                     {
                         switch(detecting_level)
                         {
-                            case 1:
-                                detecting_range=300.0;
-                            case 2:
-                                detecting_range=450.0;
-                            case 3:
-                                detecting_range=650.0;
-                            case 4:
-                                detecting_range=800.0;
+                            case 1:  detecting_range=300.0;
+                            case 2:  detecting_range=450.0;
+                            case 3:  detecting_range=650.0;
+                            case 4:  detecting_range=800.0;
+                            default: detecting_range=0.0;
                         }
                     }
 
@@ -546,7 +545,7 @@ LaunchNuclearDevice(client,Handle:player)
     m_NuclearLaunchStatus[client]=LaunchInitiated;
 
     EmitSoundToAll(detectedWav,SOUND_FROM_PLAYER);
-    SetVisibility(player, 0, BasicVisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_HOLOGRAM);
+    SetVisibility(player, 200, TimedMeleeInvisibility, 0.0, 0.0, RENDER_TRANSTEXTURE, RENDERFX_FADE_SLOW);
     SetOverrideSpeed(player, 0.0);
     ApplyPlayerSettings();
 
