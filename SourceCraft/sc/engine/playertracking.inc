@@ -761,6 +761,16 @@ public Action:PlayerProperties(Handle:timer)
                                     b=(checkB < 0 || checkB >= 255) ? 255 : checkB;
                                     colorWeapons=checkWeapons;
                                 }
+                                /*
+                                else if ((checkR >= 0 && checkR < 255) ||
+                                         (checkG >= 0 && checkG < 255) ||
+                                         (checkB >= 0 && checkB < 255))
+                                {
+                                    r=(checkR < 0 || checkR >= 255) ? r : checkR; // Propagate changed colors
+                                    g=(checkG < 0 || checkG >= 255) ? g : checkG;
+                                    b=(checkB < 0 || checkB >= 255) ? b : checkB;
+                                }
+                                */
                             }
                         }
                     }
