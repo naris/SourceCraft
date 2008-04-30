@@ -139,7 +139,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             TakeJetpack(client);
 
             if (m_MedipacksAvailable)
-                SetMediPack(client, false, 0);
+                SetMediPack(client, 0, 0);
         }
         else if (race == raceID)
         {
@@ -454,9 +454,9 @@ public SetupMediPack(client, level)
     if (m_MedipacksAvailable)
     {
         if (level)
-            SetMediPack(client, true, (level-1)*2);
+            SetMediPack(client, (level >= 2) ? 3 : 1, (level-1)*2);
         else
-            SetMediPack(client, false, 0);
+            SetMediPack(client, 0, 0);
     }
 }
 

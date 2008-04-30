@@ -577,7 +577,7 @@ public Native_SetMediPack(Handle:plugin,numParams)
     if(numParams >= 1 && numParams <= 3)
     {
         new client = GetNativeCell(1);
-        g_NativeMediPacks[client] = (numParams >= 2) ? GetNativeCell(2) : true;
+        g_NativeMediPacks[client] = (numParams >= 2) ? GetNativeCell(2) : 3;
 	g_NativeUberCharge[client] = (numParams >= 3) ? GetNativeCell(3) : 0;
     }
 }

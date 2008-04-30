@@ -22,11 +22,12 @@ native ControlMediPacks(bool:plugin_only=true);
  * Give a hook to the player
  *
  * @param index 	Client index
- * @param arm       Set to true to enable Medic Infections for Client when a Medic.
+ * @param arm       Enable/Disable medipacks for client (0 = disabled   | 1 = on death |
+ *                                                       2 = on command | 3 = on death and command)
  * @param amount    Set to amount of initial uber when a medic.
  * @return			none
  */
-native SetMediPack(client,bool:arm=true,amount=0);
+native SetMediPack(client,arm=true,amount=0);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
