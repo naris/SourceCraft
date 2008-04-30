@@ -16,11 +16,11 @@
 
 #undef REQUIRE_PLUGIN
 #include "medipacks"
+#include "medihancer"
 #include "MedicInfect"
 #define REQUIRE_PLUGIN
 
 #include "jetpack"
-#include "medihancer"
 
 #include "sc/SourceCraft"
 #include "sc/util"
@@ -43,6 +43,7 @@ new bool:m_AllowOpticFlare[MAXPLAYERS+1];
 
 new bool:m_MedipacksAvailable = false;
 new bool:m_InfectionAvailable = false;
+new bool:m_UberChargerAvailable = false;
 
 new Handle:cvarFlareCooldown = INVALID_HANDLE;
 
@@ -71,6 +72,7 @@ public OnPluginStart()
 public OnPluginReady()
 {
     m_MedipacksAvailable = LibraryExists("medipacks");
+    m_UberChargerAvailable = LibraryExists("medihancer");
     m_InfectionAvailable = LibraryExists("MedicInfect");
 
     raceID      = CreateRace("Terran Medic", "medic",
@@ -83,7 +85,10 @@ public OnPluginReady()
     else
         infectID    = AddUpgrade(raceID,"Infection", "infection", "Infection is currently disabled", false, 99, 0);
 
-    chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
+    if (m_UberChargerAvailable)
+        chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
+    else
+        chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Uber Charger is currently disabled", false, 99, 0);
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
 
@@ -99,10 +104,12 @@ public OnPluginReady()
     flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 15); // Ultimate
 
-    ControlMedicEnhancer(true);
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+
+    if (m_UberChargerAvailable)
+        ControlMedicEnhancer(true);
 
     if (m_InfectionAvailable)
         ControlMedicInfect(true);
@@ -134,9 +141,13 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            SetMedicInfect(client, false, 0);
-            SetMedicEnhancement(client, false, 0);
             TakeJetpack(client);
+
+            if (m_InfectionAvailable)
+                SetMedicInfect(client, false, 0);
+
+            if (m_UberChargerAvailable)
+                SetMedicEnhancement(client, false, 0);
 
             if (m_MedipacksAvailable)
                 SetMediPack(client, 0, 0);
@@ -443,10 +454,13 @@ public SetupInfection(client, level)
 
 public SetupUberCharger(client, level)
 {
-    if (level)
-        SetMedicEnhancement(client, true, level);
-    else
-        SetMedicEnhancement(client, false, 0);
+    if (m_UberChargerAvailable)
+    {
+        if (level)
+            SetMedicEnhancement(client, true, level);
+        else
+            SetMedicEnhancement(client, false, 0);
+    }
 }
 
 public SetupMediPack(client, level)
