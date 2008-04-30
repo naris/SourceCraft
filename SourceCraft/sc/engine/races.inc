@@ -385,7 +385,8 @@ UpgradesInfo(client,race,bool:change)
     new maxUpgradeLevel, requiredLevel;
     decl String:minLevel[64];
     decl String:name[64];
-    decl String:buf[192];
+    decl String:text[192];
+    decl String:buf[11];
 
     new Handle:menu=CreateMenu(UpgradesInfo_Selected);
     SetMenuExitButton(menu,true);
@@ -396,8 +397,7 @@ UpgradesInfo(client,race,bool:change)
 
     if (change)
     {
-        Format(name,sizeof(name),"%d",race);
-        AddMenuItem(menu,name,"Change to this Race");
+        AddMenuItem(menu,"-1","Change to this Race");
         AddMenuItem(menu,"","",ITEMDRAW_SPACER);
     }
 
@@ -423,8 +423,8 @@ UpgradesInfo(client,race,bool:change)
 
         GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
 
-        Format(buf,sizeof(buf),"%s%s%s",ult,name,minLevel);
-        AddMenuItem(menu,"",buf);
+        Format(text,sizeof(text),"%s%s%s",ult,name,minLevel);
+        AddMenuItem(menu,buf,text);
     }
 
     gRaceForUpgrades[client] = race;
@@ -440,12 +440,21 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         new Handle:playerHandle=GetPlayerHandle(client);
         if (playerHandle != INVALID_HANDLE)
         {
-            new race=gRaceForUpgrades[client];
-            new Handle:raceHandle=GetRaceHandle(race);
-            if (selection < GetUpgradeCount(raceHandle))
-                UpgradesInfo_Upgrade(client,raceHandle,selection);
-            else // They decided to change to this race.
-                ChangeRace(client, playerHandle, race, raceHandle);
+            decl String:SelectionInfo[11];
+            decl String:SelectionDispText[256];
+            new SelectionStyle;
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
+                        SelectionDispText,sizeof(SelectionDispText));
+            if (SelectionInfo[0])
+            {
+                new race=gRaceForUpgrades[client];
+                new Handle:raceHandle=GetRaceHandle(race);
+                new upgrade=StringToInt(SelectionInfo);
+                if (upgrade < 0) // They decided to change to this race.
+                    ChangeRace(client, playerHandle, race, raceHandle);
+                else
+                    UpgradesInfo_Upgrade(client,raceHandle,upgrade);
+            }
         }
     }
 }
