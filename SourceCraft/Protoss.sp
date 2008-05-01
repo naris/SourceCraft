@@ -1,4 +1,4 @@
-/**
+ /**
  * vim: set ai et ts=4 sw=4 :
  * File: Protoss.sp
  * Description: The Protoss race for SourceCraft.
@@ -16,16 +16,14 @@
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
+#include "sc/MindControl"
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
 #include "sc/log"
 
-new String:errorWav[] = "soundcraft/perror.mp3";
-new String:deniedWav[] = "sourcecraft/buzz.wav";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
-new String:controlWav[] = "sourcecraft/pteSum00.wav";
 new String:unCloakWav[] = "sourcecraft/PabCag00.wav";
 new String:cloakWav[] = "sourcecraft/pabRdy00.wav";
 
@@ -39,29 +37,7 @@ new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new bool:m_AllowMindControl[MAXPLAYERS+1];
 new Float:gReaverScarabTime[MAXPLAYERS+1];
 
-enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
-
-new m_SkinOffset;
-new m_BuilderOffset;
-new m_BuildingOffset;
-new m_PlacingOffset;
-new m_ObjectTypeOffset;
-new m_PercentConstructedOffset;
-
-new m_ObjectFlagsOffset;
-
-new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
-
 new m_OffsetCloakMeter;
-new m_OffsetDisguiseTeam;
-new m_OffsetDisguiseClass;
-new m_OffsetDisguiseHealth;
-
-new g_redGlow;
-new g_blueGlow;
-new g_haloSprite;
-new g_smokeSprite;
-new g_lightningSprite;
 
 new explosionModel;
 
@@ -100,9 +76,6 @@ public OnPluginStart()
 
         if(!HookEventEx("teamplay_win_panel",RoundOver,EventHookMode_PostNoCopy))
             SetFailState("Could not hook the teamplay_win_panel event.");
-
-        if(!HookEvent("player_builtobject", PlayerBuiltObject))
-            SetFailState("Could not hook the player_builtobject event.");
     }
 
     CreateTimer(1.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
@@ -133,81 +106,17 @@ public OnPluginReady()
         m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
         if (m_OffsetCloakMeter == -1)
             SetFailState("Couldn't find CloakMeter Offset");
-
-        m_OffsetDisguiseTeam=FindSendPropInfo("CTFPlayer","m_nDisguiseTeam");
-        if (m_OffsetDisguiseTeam == -1)
-            SetFailState("Couldn't find DisguiseTeam Offset");
-
-        m_OffsetDisguiseClass=FindSendPropInfo("CTFPlayer","m_nDisguiseClass");
-        if (m_OffsetDisguiseClass == -1)
-            SetFailState("Couldn't find DisguiseClass Offset");
-
-        m_OffsetDisguiseHealth=FindSendPropInfo("CTFPlayer","m_iDisguiseHealth");
-        if (m_OffsetDisguiseHealth == -1)
-            SetFailState("Couldn't find DisguiseHealth Offset");
-
-        m_SkinOffset = FindSendPropInfo("CObjectSentrygun","m_nSkin");
-        if(m_SkinOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Skin offset.");
-
-        m_BuilderOffset = FindSendPropInfo("CObjectSentrygun","m_hBuilder");
-        if(m_BuilderOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
-
-        m_BuildingOffset = FindSendPropInfo("CObjectSentrygun","m_bBuilding");
-        if(m_BuildingOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
-
-        m_PercentConstructedOffset = FindSendPropInfo("CObjectSentrygun","m_flPercentageConstructed");
-        if(m_PercentConstructedOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun PercentConstructed offset.");
-
-        m_PlacingOffset = FindSendPropInfo("CObjectSentrygun","m_bPlacing");
-        if(m_PlacingOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Placing offset.");
-
-        m_ObjectTypeOffset = FindSendPropInfo("CObjectSentrygun","m_iObjectType");
-        if(m_ObjectTypeOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
-
-        //
-        m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
-        if(m_ObjectFlagsOffset == -1)
-            LogError("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
     }
 }
 
 public OnMapStart()
 {
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
-
-    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find blueglow Model");
-
-    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
-    if (g_redGlow == -1)
-        SetFailState("Couldn't find redglow Model");
-
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
     explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");
 
-    SetupSound(errorWav, true, true);
-    SetupSound(deniedWav, true, true);
     SetupSound(rechargeWav, true, true);
     SetupSound(explodeWav, true, true);
-    SetupSound(controlWav, true, true);
     SetupSound(unCloakWav, true, true);
     SetupSound(cloakWav, true, true);
 }
@@ -247,7 +156,59 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && IsPlayerAlive(client) &&
         m_AllowMindControl[client] && pressed)
     {
-        MindControl(client,player);
+        new ult_level=GetUpgradeLevel(player,raceID,controlID);
+        if(ult_level)
+        {
+            if (!GetConVarBool(cvarMindControlEnable))
+            {
+                PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
+                        COLOR_GREEN,COLOR_DEFAULT);
+                return;
+            }
+
+            new Float:range, percent;
+            switch(ult_level)
+            {
+                case 1:
+                    {
+                        range=150.0;
+                        percent=30;
+                    }
+                case 2:
+                    {
+                        range=300.0;
+                        percent=50;
+                    }
+                case 3:
+                    {
+                        range=450.0;
+                        percent=70;
+                    }
+                case 4:
+                    {
+                        range=650.0;
+                        percent=90;
+                    }
+            }
+
+            new builder;
+            new objects:type;
+            if (MindControl(client, range, percent, builder, type))
+            {
+                new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
+                LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
+                        client,builder,objectName[type]);
+                PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
+                        COLOR_GREEN,COLOR_DEFAULT,client,objectName[type]);
+                PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,objectName[type], cooldown);
+
+                if (cooldown > 0.0)
+                {
+                    m_AllowMindControl[client]=false;
+                    CreateTimer(cooldown,AllowMindControl,client);
+                }
+            }
+        }
     }
 }
 
@@ -318,39 +279,6 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid = GetEventInt(event,"userid");
-    if (userid > 0)
-    {
-        new index = GetClientOfUserId(userid);
-        if (index > 0)
-        {
-            new objects:type = objects:GetEventInt(event,"object");
-            LogMessage("%N Built a %d", index, type);
-            UpdateMindControlledObject(-1, index, type, false);
-        }
-    }
-}
-
-public OnObjectKilled(attacker, builder, const String:object[])
-{
-    new objects:type = unknown;
-    if (StrEqual(object, "OBJ_SENTRYGUN", false))
-        type = sentrygun;
-    else if (StrEqual(object, "OBJ_DISPENSER", false))
-        type = dispenser;
-    else if (StrEqual(object, "OBJ_TELEPORTER_ENTRANCE", false))
-        type = teleporter_entry;
-    else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
-        type = teleporter_exit;
-    else if (StrEqual(object, "OBJ_SAPPER", false))
-        type = teleporter_exit;
-
-    LogMessage("%N Killed %N's %d:%s", attacker, builder, type, object);
-    UpdateMindControlledObject(-1, builder, type, true);
-}
-
 bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new rs_level = GetUpgradeLevel(player,raceID,scarabID);
@@ -419,225 +347,6 @@ bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:play
         }
     }
     return false;
-}
-
-MindControl(client,Handle:player)
-{
-    new ult_level=GetUpgradeLevel(player,raceID,controlID);
-    if(ult_level)
-    {
-        if (!GetConVarBool(cvarMindControlEnable))
-        {
-            PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
-                        COLOR_GREEN,COLOR_DEFAULT);
-            return;
-        }
-
-        new Float:range, percent;
-        switch(ult_level)
-        {
-            case 1:
-            {
-                range=150.0;
-                percent=30;
-            }
-            case 2:
-            {
-                range=300.0;
-                percent=50;
-            }
-            case 3:
-            {
-                range=450.0;
-                percent=70;
-            }
-            case 4:
-            {
-                range=650.0;
-                percent=90;
-            }
-        }
-
-        new target = TraceAimTarget(client);
-        if (target >= 0)
-        {
-            new Float:clientLoc[3];
-            GetClientAbsOrigin(client, clientLoc);
-
-            new Float:targetLoc[3];
-            TR_GetEndPosition(targetLoc);
-
-            if (IsPointInRange(clientLoc,targetLoc,range))
-            {
-                new Float:distance=DistanceBetween(clientLoc,targetLoc);
-                if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
-                {
-                    decl String:class[32];
-                    if (GetEntityNetClass(target,class,sizeof(class)))
-                    {
-                        new objects:type;
-                        if (StrEqual(class, "CObjectSentrygun", false))
-                            type = sentrygun;
-                        else if (StrEqual(class, "CObjectDispenser", false))
-                            type = dispenser;
-                        else if (StrEqual(class, "CObjectTeleporter", false))
-                            type = objects:GetEntData(target, m_ObjectTypeOffset);
-                        else
-                            type = unknown;
-
-                        if (type == sentrygun || type == dispenser)
-                        {
-                            //Check to see if the object is still being built
-                            new placing = GetEntData(target, m_PlacingOffset);
-                            new building = GetEntData(target, m_BuildingOffset);
-                            new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
-                            if (placing == 0 && building == 0 && complete >= 1.0)
-                            {
-                                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                                new builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
-                                LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
-                                           builder, complete, type, building, placing, class);
-
-                                new Handle:player_check=GetPlayerHandle(builder);
-                                if (player_check != INVALID_HANDLE)
-                                {
-                                    if (!GetImmunity(player_check,Immunity_Ultimates))
-                                    {
-                                        new builderTeam = GetClientTeam(builder);
-                                        new team = GetClientTeam(client);
-                                        if (builderTeam != team)
-                                        {
-                                            // Check to see if this target has already been controlled.
-                                            builder = UpdateMindControlledObject(target, builder, type, true);
-
-                                            LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
-                                            // Change the builder to client
-                                            SetEntDataEnt2(target, m_BuilderOffset, client, true);
-
-                                            //paint red or blue
-                                            SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
-
-                                            //Change TeamNum
-                                            SetVariantInt(team);
-                                            AcceptEntityInput(target, "TeamNum", -1, -1, 0);
-
-                                            //Same thing again but we are changing SetTeam
-                                            SetVariantInt(team);
-                                            AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-
-                                            EmitSoundToAll(controlWav,target);
-
-                                            new color[4] = { 0, 0, 0, 255 };
-                                            if (team == 3)
-                                                color[2] = 255; // Blue
-                                            else
-                                                color[0] = 255; // Red
-
-                                            TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                                               0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
-                                            TE_SendToAll();
-
-                                            TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
-                                            TE_SendToAll();
-
-                                            TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,
-                                                               5.0,5.0,255);
-                                            TE_SendToAll();
-
-                                            new Float:splashDir[3];
-                                            splashDir[0] = 0.0;
-                                            splashDir[1] = 0.0;
-                                            splashDir[2] = 100.0;
-                                            TE_SetupEnergySplash(targetLoc, splashDir, true);
-
-                                            decl String:object[32];
-                                            strcopy(object, sizeof(object), class[7]);
-
-                                            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
-                                            LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
-                                                      client,builder,object);
-                                            PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
-                                                        COLOR_GREEN,COLOR_DEFAULT,client,object);
-                                            PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,object, cooldown);
-
-                                            if (cooldown > 0.0)
-                                            {
-                                                m_AllowMindControl[client]=false;
-                                                CreateTimer(cooldown,AllowMindControl,client);
-                                            }
-
-                                            // Create the Tracking Package
-                                            LogMessage("Track the target=%d, type=%d, builder=%d", target, type, builder);
-                                            new Handle:pack = CreateDataPack();
-                                            WritePackCell(pack, builder);
-                                            WritePackCell(pack, type);
-                                            WritePackCell(pack, target);
-
-                                            // And add it to the list
-                                            if (m_StolenObjectList[client] == INVALID_HANDLE)
-                                            {
-                                                LogMessage("Create %N's object List", client);
-                                                m_StolenObjectList[client] = CreateArray();
-                                            }
-
-                                            LogMessage("Push Pack onto %N's List; list=%x, pack=%x",
-                                                       client, m_StolenObjectList[client], pack);
-
-                                            PushArrayCell(m_StolenObjectList[client], pack);
-                                        }
-                                        else
-                                        {
-                                            EmitSoundToClient(client,errorWav);
-                                            PrintToChat(client,"%c[SourceCraft] %cTarget belongs to a teammate!",
-                                                        COLOR_GREEN,COLOR_DEFAULT);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        EmitSoundToClient(client,errorWav);
-                                        PrintToChat(client,"%c[SourceCraft] %cTarget is %cimmune%c to ultimates!",
-                                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                    }
-                                }
-                                else
-                                    EmitSoundToClient(client,deniedWav);
-                            }
-                            else
-                            {
-                                EmitSoundToClient(client,errorWav);
-                                PrintToChat(client,"%c[SourceCraft] %cTarget is still %cbuilding%c!",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                            }
-                        }
-                        else
-                        {
-                            EmitSoundToClient(client,deniedWav);
-                            PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
-                                        COLOR_GREEN,COLOR_DEFAULT);
-                        }
-                    }
-                    else
-                    {
-                        EmitSoundToClient(client,deniedWav);
-                        PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
-                                    COLOR_GREEN,COLOR_DEFAULT);
-                    }
-                }
-                else
-                    EmitSoundToClient(client,errorWav); // Chance check failed.
-            }
-            else
-            {
-                EmitSoundToClient(client,errorWav);
-                PrintToChat(client,"%c[SourceCraft] %cTarget is too far away!",
-                            COLOR_GREEN,COLOR_DEFAULT);
-            }
-        }
-        else
-            EmitSoundToClient(client,deniedWav);
-    }
-    else
-        EmitSoundToClient(client,deniedWav);
 }
 
 public Action:AllowMindControl(Handle:timer,any:index)
@@ -816,151 +525,3 @@ stock ResetCloakingAndDetector(client)
         }
     }
 }
-
-stock UpdateMindControlledObject(object, builder, objects:type, bool:remove)
-{
-    LogMessage("UpdateMindControlledObject() of %N, object=%d, type=%d, remove=%d", builder, object, type, remove);
-    if (object > 0 || builder > 0)
-    {
-        new maxplayers=GetMaxClients();
-        for (new client=1;client<=maxplayers;client++)
-        {
-            if (m_StolenObjectList[client] != INVALID_HANDLE)
-            {
-                new size = GetArraySize(m_StolenObjectList[client]);
-                for (new index = 0; index < size; index++)
-                {
-                    new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
-                    if (pack != INVALID_HANDLE)
-                    {
-                        ResetPack(pack);
-                        new pack_builder      = ReadPackCell(pack);
-                        new objects:pack_type = objects:ReadPackCell(pack);
-                        new pack_target       = ReadPackCell(pack);
-
-                        new bool:found;
-                        if (object > 0)
-                            found = (object == pack_target);
-                        else
-                            found = (builder == pack_builder && type == pack_type);
-
-                        if (found)
-                        {
-                            LogMessage("Object Found in %x", pack);
-                            CloseHandle(pack);
-
-                            if (remove)
-                            {
-                                LogMessage("Removing %x", pack);
-                                RemoveFromArray(m_StolenObjectList[client], index);
-                            }
-                            else
-                            {
-                                LogMessage("Updating %x", pack);
-                                // Update the tracking package
-                                pack = CreateDataPack();
-                                WritePackCell(pack, -1);
-                                WritePackCell(pack, type);
-                                WritePackCell(pack, pack_target);
-                                SetArrayCell(m_StolenObjectList[client], index, pack);
-                            }
-                            LogMessage("Original owner=%d", pack_builder);
-                            return pack_builder;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return builder;
-}
-
-stock ResetMindControlledObjects(client, bool:endRound)
-{
-    LogMessage("ResetMindControlledObject() for %d, endRound=%d", client, endRound);
-    if (m_StolenObjectList[client] != INVALID_HANDLE)
-    {
-        new size = GetArraySize(m_StolenObjectList[client]);
-        for (new index = 0; index < size; index++)
-        {
-            new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
-            if (pack != INVALID_HANDLE)
-            {
-                ResetPack(pack);
-                new builder = ReadPackCell(pack);
-                new objects:type = objects:ReadPackCell(pack);
-                new target = ReadPackCell(pack);
-
-                if (IsValidEntity(target))
-                {
-                    decl String:class[32];
-                    if (GetEntityNetClass(target,class,sizeof(class)))
-                    {
-                        new objects:current_type;
-                        if (StrEqual(class, "CObjectSentrygun", false))
-                            current_type = sentrygun;
-                        else if (StrEqual(class, "CObjectDispenser", false))
-                            current_type = dispenser;
-                        else if (StrEqual(class, "CObjectTeleporter", false))
-                            current_type = objects:GetEntData(target, m_ObjectTypeOffset);
-                        else
-                            current_type = unknown;
-
-                        // Is the object still what we stole?
-                        if (current_type == type)
-                        {
-                            // Do we still own it?
-                            if (GetEntDataEnt2(target, m_BuilderOffset) == client)
-                            {
-                                // Is the round not ending and the builder valid?
-                                if (!endRound && builder > 0)
-                                {
-                                    // Is the original builder still around and still an engie?
-                                    if (IsClientInGame(builder) &&
-                                        TF2_GetPlayerClass(builder) == TFClass_Engineer)
-                                    {
-                                        // Give it back.
-                                        new team = GetClientTeam(builder);
-
-                                        // Change the builder back
-                                        SetEntDataEnt2(target, m_BuilderOffset, builder, true);
-
-                                        //paint red or blue
-                                        SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
-
-                                        //Change TeamNum
-                                        SetVariantInt(team);
-                                        AcceptEntityInput(target, "TeamNum", -1, -1, 0);
-
-                                        //Same thing again but we are changing SetTeam
-                                        SetVariantInt(team);
-                                        AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-                                    }
-                                    else // Zap it.
-                                    {
-                                        LogMessage("Orphaned object %x", target);
-                                        AcceptEntityInput(target, "Kill", -1, -1, 0);
-                                        //RemoveEdict(target); // Remove the object.
-                                    }
-                                }
-                                else // Zap it.
-                                {
-                                    LogMessage("Orphaned object %x", target);
-                                    AcceptEntityInput(target, "Kill", -1, -1, 0);
-                                    //RemoveEdict(target); // Remove the object.
-                                }
-                            }
-                        }
-                    }
-                }
-
-                CloseHandle(pack);
-                //SetArrayCell(m_StolenObjectList[client], index, INVALID_HANDLE);
-            }
-        }
-        ClearArray(m_StolenObjectList[client]);
-        CloseHandle(m_StolenObjectList[client]);
-        m_StolenObjectList[client] = INVALID_HANDLE;
-    }
-}
-
