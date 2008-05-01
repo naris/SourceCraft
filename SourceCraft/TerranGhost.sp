@@ -98,7 +98,7 @@ public OnPluginReady()
                              32);
 
     cloakID     = AddUpgrade(raceID,"Personal Cloaking Device", "cloak",
-                             "Makes you partially invisible, \n62% visibility - 37% visibility.\nTotal Invisibility when standing still");
+                             "Makes you partially invisible, you will blink in and out of visibility.\nTotal Invisibility when standing still for a period of time");
 
     lockdownID  = AddUpgrade(raceID,"Lockdown", "lockdown", 
                              "Have a 15-52\% chance to render an \nenemy immobile for 1 second.");

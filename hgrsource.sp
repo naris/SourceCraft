@@ -228,7 +228,7 @@ public OnPluginStart()
     // Rope cvars
     cvarRopeEnable=CreateConVar("hgrsource_rope_enable","1","This will enable the rope feature of this plugin");
     cvarRopeAdminOnly=CreateConVar("hgrsource_rope_adminonly","1","If 1, only admins can use rope");
-    cvarRopeSpeed=CreateConVar("hgrsource_rope_speed","5.0","The speed of the player using rope");
+    cvarRopeSpeed=CreateConVar("hgrsource_rope_speed","3.0","The speed of the player using rope");
     cvarRopeBeamColor=CreateConVar("hgrsource_rope_color","1","The color of the rope, 0=White, 1=Team color, 2=custom");
     cvarRopeRed=CreateConVar("hgrsource_rope_red","0","The red component of the beam (Only if you are using a custom color)");
     cvarRopeGreen=CreateConVar("hgrsource_rope_green","255","The green component of the beam (Only if you are using a custom color)");
