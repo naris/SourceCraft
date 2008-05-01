@@ -526,13 +526,11 @@ public Native_MedicInfect(Handle:plugin,numParams)
 
 public Native_HealInfect(Handle:plugin,numParams)
 {
-	if (numParams >= 2 && numParams <= 2)
+	if (numParams == 2)
 	{
 		new client = GetNativeCell(1);
 		new target = GetNativeCell(2);
-		{ 
-			if (ClientInfected[target] || ClientFriendlyInfected[target])
-				HealInfection(target, client);
-		}
+		if (ClientInfected[target] || ClientFriendlyInfected[target])
+			HealInfection(target, client);
 	}
 }
