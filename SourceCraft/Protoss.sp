@@ -29,6 +29,8 @@ new String:cloakWav[] = "sourcecraft/pabRdy00.wav";
 
 new raceID, scarabID, cloakID, sensorID, controlID;
 
+new bool:m_MindControlAvailable = false;
+
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
 new Handle:cvarMindControlEnable = INVALID_HANDLE;
 
@@ -83,6 +85,8 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
+    m_MindControlAvailable = LibraryExists("MindControl");
+
     raceID    = CreateRace("Protoss", "protoss",
                            "You are now part of the Protoss.",
                            "You will be part of the Protoss when you die or respawn.",
@@ -97,9 +101,17 @@ public OnPluginReady()
     sensorID  = AddUpgrade(raceID,"Observer Sensors", "sensors",
                            "Reveals enemy invisible units within range");
 
-    controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
-                           "Allows you to control an object from the opposite team.",
-                           true); // Ultimate
+    if (m_MindControlAvailable)
+    {
+        controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
+                               "Allows you to control an object from the opposite team.",
+                               true); // Ultimate
+    }
+    else
+    {
+        controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
+                               "Not Available", true, 99, 0); // Ultimate
+    }
 
     if (GameType == tf2)
     {
@@ -154,7 +166,8 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
     if (race==raceID && IsPlayerAlive(client) &&
-        m_AllowMindControl[client] && pressed)
+        m_AllowMindControl[client] && pressed &&
+        m_MindControlAvailable)
     {
         new ult_level=GetUpgradeLevel(player,raceID,controlID);
         if(ult_level)
