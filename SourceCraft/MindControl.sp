@@ -58,7 +58,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
 	// Register Natives
 	CreateNative("MindControl",Native_MindControl);
-	CreateNative("ResetMindControlledObjs",Native_ResetMindControlledObjs);
+	CreateNative("ResetMindControlledObjects",Native_ResetMindControlledObjs);
 	RegPluginLibrary("MindControl");
 	return true;
 }
