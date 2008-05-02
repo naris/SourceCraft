@@ -220,59 +220,72 @@ RaceMenu(client,bool:change)
         {
             raceHandle=GetRaceHandle(race);
             reqLevel = GetRaceRequiredLevel(raceHandle);
-            if (reqLevel)
+            if (reqLevel >= 0)
             {
-                level = GetOverallLevel(GetPlayerHandle(client));
-                style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                if (!change || level < reqLevel)
+                if (reqLevel)
                 {
-                    GetRaceName(raceHandle,name,sizeof(name));
-                    Format(item,sizeof(item),"%s (overall level must be >= %d)",
-                           name, reqLevel);
+                    level = GetOverallLevel(GetPlayerHandle(client));
+                    style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                    if (!change || level < reqLevel)
+                    {
+                        GetRaceName(raceHandle,name,sizeof(name));
+                        Format(item,sizeof(item),"%s (overall level must be >= %d)",
+                                name, reqLevel);
+                    }
+                    else
+                        GetRaceName(raceHandle,item,sizeof(item));
                 }
                 else
+                {
+                    style = ITEMDRAW_DEFAULT;
                     GetRaceName(raceHandle,item,sizeof(item));
-            }
-            else
-            {
-                style = ITEMDRAW_DEFAULT;
-                GetRaceName(raceHandle,item,sizeof(item));
-            }
-            AddMenuItem(crMenu,rbuf,item,style);
+                }
 
-            /*
-            new upgradeCount = GetUpgradeCount(raceHandle);
-            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-            {
-                if (upgrade == 0)
-                    strcopy(item,sizeof(item),"   (");
-                else
-                    StrCat(item,sizeof(item),",");
+                /*
+                new upgradeCount = GetUpgradeCount(raceHandle);
+                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                {
+                    if (upgrade == 0)
+                        strcopy(item,sizeof(item),"   (");
+                    else
+                        StrCat(item,sizeof(item),",");
 
-                GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
-                StrCat(item,sizeof(item),name);
-                if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
-                    StrCat(item,sizeof(item),"[U]");
+                    GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
+                    StrCat(item,sizeof(item),name);
+                    if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
+                        StrCat(item,sizeof(item),"[U]");
+                }
+                StrCat(item,sizeof(item),")");
+                Format(rbuf,sizeof(rbuf),"%d",race);
+                AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
+                */
+
+                Format(rbuf,sizeof(rbuf),"%d",race);
+                AddMenuItem(crMenu,rbuf,item,style);
             }
-            StrCat(item,sizeof(item),")");
-            Format(rbuf,sizeof(rbuf),"%d",race);
-            AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
-            */
         }
         gRaceMenuMode[client]=change;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                    COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        EmitSoundToClient(client,buttonWav);
-        UpgradesInfo(client,selection,gRaceMenuMode[client]);
+        decl String:SelectionInfo[11];
+        decl String:SelectionDispText[256];
+        new SelectionStyle;
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
+                    SelectionDispText,sizeof(SelectionDispText));
+        if (SelectionInfo[0])
+        {
+            EmitSoundToClient(client,buttonWav);
+            UpgradesInfo(client,StringToInt(SelectionInfo),gRaceMenuMode[client]);
+        }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);

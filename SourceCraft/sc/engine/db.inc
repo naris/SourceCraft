@@ -184,7 +184,7 @@ public SQL_CreatePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[],
 LoadRaceIdent(const String:shortName[], const String:raceName[])
 {
     new race_ident = -1;
-    if(DBIDB)
+    if(DBIDB && shortName[0])
     {
         decl String:SQLString[512];
 

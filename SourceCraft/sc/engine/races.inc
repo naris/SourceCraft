@@ -41,7 +41,10 @@ new gRaceForUpgrades[MAXPLAYERS+1];
 bool:InitRaceArray()
 {
     if (arrayRaces == INVALID_HANDLE)
+    {
         arrayRaces = CreateArray();
+        CreateRace("", "", "", "", -1, -1);
+    }
 
     return bool:(arrayRaces != INVALID_HANDLE);
 }
