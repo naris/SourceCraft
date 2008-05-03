@@ -731,7 +731,7 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             if(overridevisibility >= 0)
                             {
-                                LogMessage("%N's Override Visibility=%d", client, overridevisibility);
+                                //LogMessage("%N's Override Visibility=%d", client, overridevisibility);
                                 visibility=overridevisibility;
                                 overridePlayerVisibility=true;
                                 m_VisibilityAltered[client]=true;
@@ -739,15 +739,15 @@ public Action:PlayerProperties(Handle:timer)
                             else if (checkVisibility >= 0 || _:type >= 0 ||
                                     _:checkFx >= 0 || _:checkMode >= 0)
                             {
-                                LogMessage("%N's Visibility=%d,type=%d,fc=%d,mode=%d",
-                                           client,checkVisibility,type,checkFx,checkMode);
+                                //LogMessage("%N's Visibility=%d,type=%d,fc=%d,mode=%d",
+                                //           client,checkVisibility,type,checkFx,checkMode);
 
                                 new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
                                                                     type, factor1, factor2, checkMode,
                                                                     checkFx, checkR, checkG, checkB);
 
-                                LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fc=%d,mode=%d)",
-                                           client,checkRank,checkVisibility,type,checkFx,checkMode);
+                                //LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fc=%d,mode=%d)",
+                                //           client,checkRank,checkVisibility,type,checkFx,checkMode);
 
                                 if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
                                 {
@@ -841,7 +841,7 @@ public Action:PlayerProperties(Handle:timer)
                             r >= 255 && g >= 255 && b >= 255 &&
                             mode == RENDER_NORMAL && fx == RENDERFX_NONE)
                         {
-                            LogMessage("Reset %N's visibility=%d",client,visibility);
+                            //LogMessage("Reset %N's visibility=%d",client,visibility);
                             ResetVisibility(client);
 
                             // Visibility is back to normal, Reset the altered flag
@@ -1020,8 +1020,8 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
 
 SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b, bool:colorWeapons)
 {
-    LogMessage("Set %N's Visibility=%d,mode=%d,fx=%d,r=%d,g=%d,b=%d",
-               client, visibility, mode, fx, r, g, b);
+    //LogMessage("Set %N's Visibility=%d,mode=%d,fx=%d,r=%d,g=%d,b=%d",
+    //           client, visibility, mode, fx, r, g, b);
 
     if (visibility == 0)
     {
@@ -1083,7 +1083,7 @@ ResetVisibility(client)
     {
         if (client>0)
         {
-            LogMessage("Reset %N's Visibility", client);
+            //LogMessage("Reset %N's Visibility", client);
             new count=GetEntityCount();
             for(new y=GetMaxClients()+1;y<count;y++)
             {
