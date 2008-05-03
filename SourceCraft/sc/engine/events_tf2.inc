@@ -115,7 +115,67 @@ bool:HookTFEvents()
     {
         LogError("Could not hook the teamplay_game_over event.");
     }
-   
+
+    if(!HookEventEx("player_escort_score",LogEvent))
+    {
+        LogError("Could not hook the player_escort_score event.");
+    }
+
+    if(!HookEventEx("escort_progress",LogEvent))
+    {
+        LogError("Could not hook the escort_progress event.");
+    }
+
+    if(!HookEventEx("escort_recede",LogEvent))
+    {
+        LogError("Could not hook the escort_recede event.");
+    }
+
+    if(!HookEventEx("escort_speed",LogEvent))
+    {
+        LogError("Could not hook the escort_speed event.");
+    }
+
+    if(!HookEventEx("player_healonhit",LogEvent))
+    {
+        LogError("Could not hook the player_healonhit event.");
+    }
+
+    if(!HookEventEx("player_invulned",LogEvent))
+    {
+        LogError("Could not hook the player_invulned event.");
+    }
+
+    if(!HookEventEx("player_healedmediccall",LogEvent))
+    {
+        LogError("Could not hook the player_healedmediccall event.");
+    }
+
+    if(!HookEventEx("player_extinguished",LogEvent))
+    {
+        LogError("Could not hook the player_extinguished event.");
+    }
+
+    if(!HookEventEx("player_ignited_inv",LogEvent))
+    {
+        LogError("Could not hook the player_ignited_inv event.");
+    }
+
+    if(!HookEventEx("player_calledformedic",LogEvent))
+    {
+        LogError("Could not hook the player_calledformedic event.");
+    }   
+
+    if(!HookEventEx("player_chargedeployed",LogEvent))
+    {
+        LogError("Could not hook the player_chargedeployed event.");
+    }   
+
+    if(!HookEventEx("achievement_earned",LogEvent))
+    {
+        LogError("Could not hook the achievement_earned event.");
+    }
+
     AddGameLogHook(LogScanner);
 
     return true;
@@ -399,7 +459,9 @@ public GameOver(Handle:event,const String:name[],bool:dontBroadcast)
 
 public LogEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    LogMessage("LogEvent(%s)", name);
+    new userid=GetEventInt(event,"userid");
+    new player=GetEventInt(event,"userid");
+    LogMessage("LogEvent(%s), userid=%d, player=%d", name, userid, player);
 }
 
 public Action:LogScanner(const String:message[])
