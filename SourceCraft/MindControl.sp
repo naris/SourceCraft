@@ -145,7 +145,7 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
-            LogMessage("%N Built a %d", index, type);
+            //LogMessage("%N Built a %d", index, type);
             UpdateMindControlledObject(-1, index, type, false);
         }
     }
@@ -165,7 +165,7 @@ public OnObjectKilled(attacker, builder, const String:object[])
     else if (StrEqual(object, "OBJ_SAPPER", false))
         type = teleporter_exit;
 
-    LogMessage("%N Killed %N's %d:%s", attacker, builder, type, object);
+    //LogMessage("%N Killed %N's %d:%s", attacker, builder, type, object);
     UpdateMindControlledObject(-1, builder, type, true);
 }
 
@@ -207,8 +207,8 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                         {
                             //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
                             builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
-                            LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
-                                    builder, complete, type, building, placing, class);
+                            //LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
+                            //        builder, complete, type, building, placing, class);
 
                             new Handle:player_check=GetPlayerHandle(builder);
                             if (player_check != INVALID_HANDLE)
@@ -222,7 +222,7 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                                         // Check to see if this target has already been controlled.
                                         builder = UpdateMindControlledObject(target, builder, type, true);
 
-                                        LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
+                                        //LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
                                         // Change the builder to client
                                         SetEntDataEnt2(target, m_BuilderOffset, client, true);
 
@@ -263,7 +263,7 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                                         TE_SetupEnergySplash(targetLoc, splashDir, true);
 
                                         // Create the Tracking Package
-                                        LogMessage("Track the target=%d, type=%d, builder=%d", target, type, builder);
+                                        //LogMessage("Track the target=%d, type=%d, builder=%d", target, type, builder);
                                         new Handle:pack = CreateDataPack();
                                         WritePackCell(pack, builder);
                                         WritePackCell(pack, type);
@@ -272,12 +272,12 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                                         // And add it to the list
                                         if (m_StolenObjectList[client] == INVALID_HANDLE)
                                         {
-                                            LogMessage("Create %N's object List", client);
+                                            //LogMessage("Create %N's object List", client);
                                             m_StolenObjectList[client] = CreateArray();
                                         }
 
-                                        LogMessage("Push Pack onto %N's List; list=%x, pack=%x",
-                                                   client, m_StolenObjectList[client], pack);
+                                        //LogMessage("Push Pack onto %N's List; list=%x, pack=%x",
+                                        //           client, m_StolenObjectList[client], pack);
 
                                         PushArrayCell(m_StolenObjectList[client], pack);
                                         return true;
@@ -338,7 +338,7 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
 
 UpdateMindControlledObject(object, builder, objects:type, bool:remove)
 {
-    LogMessage("UpdateMindControlledObject() of %N, object=%d, type=%d, remove=%d", builder, object, type, remove);
+    //LogMessage("UpdateMindControlledObject() of %N, object=%d, type=%d, remove=%d", builder, object, type, remove);
     if (object > 0 || builder > 0)
     {
         new maxplayers=GetMaxClients();
@@ -365,17 +365,17 @@ UpdateMindControlledObject(object, builder, objects:type, bool:remove)
 
                         if (found)
                         {
-                            LogMessage("Object Found in %x", pack);
+                            //LogMessage("Object Found in %x", pack);
                             CloseHandle(pack);
 
                             if (remove)
                             {
-                                LogMessage("Removing %x", pack);
+                                //LogMessage("Removing %x", pack);
                                 RemoveFromArray(m_StolenObjectList[client], index);
                             }
                             else
                             {
-                                LogMessage("Updating %x", pack);
+                                //LogMessage("Updating %x", pack);
                                 // Update the tracking package
                                 pack = CreateDataPack();
                                 WritePackCell(pack, -1);
@@ -383,7 +383,7 @@ UpdateMindControlledObject(object, builder, objects:type, bool:remove)
                                 WritePackCell(pack, pack_target);
                                 SetArrayCell(m_StolenObjectList[client], index, pack);
                             }
-                            LogMessage("Original owner=%d", pack_builder);
+                            //LogMessage("Original owner=%d", pack_builder);
                             return pack_builder;
                         }
                     }
@@ -396,7 +396,7 @@ UpdateMindControlledObject(object, builder, objects:type, bool:remove)
 
 ResetMindControlledObjects(client, bool:remove)
 {
-    LogMessage("ResetMindControlledObject() for %d, remove=%d", client, remove);
+    //LogMessage("ResetMindControlledObject() for %d, remove=%d", client, remove);
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
         new size = GetArraySize(m_StolenObjectList[client]);
@@ -434,7 +434,7 @@ ResetMindControlledObjects(client, bool:remove)
                                 // Is the round not ending and the builder valid?
                                 if (remove || builder <= 0)
                                 {
-                                    LogMessage("Orphaned object %x", target);
+                                    //LogMessage("Orphaned object %x", target);
                                     AcceptEntityInput(target, "Kill", -1, -1, 0);
                                     //RemoveEdict(target); // Remove the object.
                                 }
@@ -463,7 +463,7 @@ ResetMindControlledObjects(client, bool:remove)
                                     }
                                     else // Zap it.
                                     {
-                                        LogMessage("Orphaned object %x", target);
+                                        //LogMessage("Orphaned object %x", target);
                                         AcceptEntityInput(target, "Kill", -1, -1, 0);
                                         //RemoveEdict(target); // Remove the object.
                                     }
