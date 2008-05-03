@@ -339,43 +339,38 @@ public RunInfection()
 {
 	static Float:InfectedVec[MAXPLAYERS][3];
 	static Float:NotInfectedVec[MAXPLAYERS][3];
-	static PlayerVec[MAXPLAYERS];
+	static InfectedPlayerVec[MAXPLAYERS];
+	static NotInfectedPlayerVec[MAXPLAYERS];
 	
 	new InfectedCount, NotInfectedCount;
 	
 	new maxplayers = GetMaxClients();
-	new i = 1, a = 0;
+	new i = 1;
 	for(; i <= maxplayers; i++)
 	{
 		if(!IsClientInGame(i) || !IsPlayerAlive(i)) continue;
-		PlayerVec[a] = i;
 		
 		if(ClientInfected[i])
 		{
-			GetClientAbsOrigin(i, InfectedVec[a]);
+			GetClientAbsOrigin(i, InfectedVec[InfectedCount]);
+			InfectedPlayerVec[InfectedCount] = i;
 			InfectedCount++;
 		}
 		else
 		{
-			GetClientAbsOrigin(i, NotInfectedVec[a]);
+			GetClientAbsOrigin(i, NotInfectedVec[NotInfectedCount]);
+			NotInfectedPlayerVec[NotInfectedCount] = i;
 			NotInfectedCount++;
 		}
-		
-		a++;
 	}
 	
-	new k = 0, m = 0;
+	new k = 0;
 	for(i = 0; i < InfectedCount; i++)
 	{
 		for(k = 0; k < NotInfectedCount; k++)
 		{
 			if(GetVectorDistance(InfectedVec[i], NotInfectedVec[k], true) < GetConVarFloat(Cvar_SpreadDistance) )
-			{
-				a = PlayerVec[k];
-				m = PlayerVec[i];
-				TransmitInfection(a,m);
-				
-			}
+				TransmitInfection(InfectedPlayerVec[i],NotInfectedPlayerVec[k]);
 		}
 	}
 }
@@ -385,10 +380,13 @@ TransmitInfection(from, to)
 	if (!IsClientInGame(from) || !IsClientInGame(to))
 		return;
 
+	// Rukia: are the teams identical?
+	new bool:t_same = GetClientTeam(from) == GetClientTeam(to);
+	
 	// Rukia: Spread to all
 	if(GetConVarInt(Cvar_SpreadAll) )
 	{
-		SendInfection(to,from,(GetClientTeam(from) == GetClientTeam(to)),false);
+		SendInfection(to,from,t_same,false);
 		return;
 	}
 	
@@ -408,9 +406,6 @@ TransmitInfection(from, to)
 		}
 	}
 
-	// Rukia: are the teams identical?
-	new t_same = GetClientTeam(from) == GetClientTeam(to);
-	
 	// Rukia: Spread to same team
 	if(GetConVarInt(Cvar_SpreadSameTeam) && t_same )
 	{
