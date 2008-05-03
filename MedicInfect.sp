@@ -205,8 +205,11 @@ public OnGameFrame()
 {
 	if(!GetConVarInt(CvarEnable) && !NativeControl) return;
 
-	if(GetConVarInt(Cvar_InfectMedi)) CheckMedics();
-	RunInfection();
+	if(GetConVarInt(Cvar_InfectMedi))
+		CheckMedics();
+
+	if(GetConVarInt(Cvar_SpreadSameTeam) || GetConVarInt(Cvar_SpreadOpposingTeam) || GetConVarInt(Cvar_SpreadAll))
+		RunInfection();
 }
 
 new Float:MedicDelay[MAXPLAYERS + 1];
@@ -367,8 +370,11 @@ public RunInfection()
 	{
 		for(new uninfected = 0; uninfected < NotInfectedCount; uninfected++)
 		{
-			if(GetVectorDistance(InfectedVec[infected], NotInfectedVec[uninfected], true) < GetConVarFloat(Cvar_SpreadDistance) )
+			if(GetVectorDistance(InfectedVec[infected], NotInfectedVec[uninfected], true)
+			   < GetConVarFloat(Cvar_SpreadDistance) )
+			{
 				TransmitInfection(NotInfectedPlayerVec[uninfected],InfectedPlayerVec[infected]);
+			}
 		}
 	}
 }
