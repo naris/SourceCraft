@@ -58,6 +58,8 @@ new Handle:InfectionTimer = INVALID_HANDLE;
 
 new Handle:OnInfectedHandle = INVALID_HANDLE;
 
+new Float:MedicDelay[MAXPLAYERS + 1];
+
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
 	// Register Natives
@@ -116,11 +118,28 @@ public OnConfigsExecuted()
 public OnMapEnd()
 {
 	new maxplayers = GetMaxClients();
-	for(new a = 1; a <= maxplayers; a++)
+	for(new index = 1; index <= maxplayers; index++)
 	{
-		ClientInfected[a] = 0;
-		ClientFriendlyInfected[a] = false;
+		ClientInfected[index] = 0;
+		ClientFriendlyInfected[index] = false;
 	}
+}
+
+public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
+{
+	ClientInfected[client] = 0;
+	ClientFriendlyInfected[client] = false;
+	NativeMedicArmed[client] = false;
+	NativeAmount[client] = 0;
+	return true;
+}
+
+public OnClientDisconnect(client)
+{
+	ClientInfected[client] = 0;
+	ClientFriendlyInfected[client] = false;
+	NativeMedicArmed[client] = false;
+	NativeAmount[client] = 0;
 }
 
 public HandleInfectionChange(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -133,24 +152,66 @@ public HandleInfectionChange(Handle:convar, const String:oldValue[], const Strin
 
 public Action:HandleInfection(Handle:timer)
 {
-	if(!GetConVarInt(CvarEnable) && !NativeControl) return;
+	static Float:InfectedVec[MAXPLAYERS][3];
+	static Float:NotInfectedVec[MAXPLAYERS][3];
+	static InfectedPlayerVec[MAXPLAYERS];
+	static NotInfectedPlayerVec[MAXPLAYERS];
+	
+	new InfectedCount, NotInfectedCount;
+	
+	if(!NativeControl && !GetConVarInt(CvarEnable)) return;
+
+	new bool:spread = (GetConVarInt(Cvar_SpreadSameTeam) ||
+			   GetConVarInt(Cvar_SpreadOpposingTeam) ||
+                           GetConVarInt(Cvar_SpreadAll));
 	
 	new maxplayers = GetMaxClients();
-	for(new a = 1; a <= maxplayers; a++)
+	for(new index = 1; index <= maxplayers; index++)
 	{
-		if(ClientInfected[a] == 0 || !IsClientInGame(a) || !IsPlayerAlive(a)) continue;
-	
-		new amt = NativeAmount[ClientInfected[a]];
-		new hp = GetClientHealth(a);
-		hp -= (amt > 0) ? amt : GetConVarInt(Cvar_DmgAmount);
-		
-		if(hp <= 0)
-			ForcePlayerSuicide(a);
-		else
+		if(!IsClientInGame(index) || !IsPlayerAlive(index)) continue;
+
+		if(ClientInfected[index])
 		{
-			SetEntityHealth(a,hp);
-			//SetEntProp(a, Prop_Send, "m_iHealth", hp, 1);
-			//SetEntProp(a, Prop_Data, "m_iHealth", hp, 1);
+			new amt = NativeAmount[ClientInfected[index]];
+			new hp = GetClientHealth(index);
+			hp -= (amt > 0) ? amt : GetConVarInt(Cvar_DmgAmount);
+
+			if(hp <= 0)
+				ForcePlayerSuicide(index);
+			else
+			{
+				SetEntityHealth(index,hp);
+				//SetEntProp(index, Prop_Send, "m_iHealth", hp, 1);
+				//SetEntProp(index, Prop_Data, "m_iHealth", hp, 1);
+			}
+
+			if (spread)
+			{
+				GetClientAbsOrigin(index, InfectedVec[InfectedCount]);
+				InfectedPlayerVec[InfectedCount] = index;
+				InfectedCount++;
+			}
+		}
+		else if (spread)
+		{
+			GetClientAbsOrigin(index, NotInfectedVec[NotInfectedCount]);
+			NotInfectedPlayerVec[NotInfectedCount] = index;
+			NotInfectedCount++;
+		}
+	}
+
+	if(spread)
+	{
+		for(new infected = 0; infected < InfectedCount; infected++)
+		{
+			for(new uninfected = 0; uninfected < NotInfectedCount; uninfected++)
+			{
+				if(GetVectorDistance(InfectedVec[infected], NotInfectedVec[uninfected], true)
+						< GetConVarFloat(Cvar_SpreadDistance) )
+				{
+					TransmitInfection(NotInfectedPlayerVec[uninfected],InfectedPlayerVec[infected]);
+				}
+			}
 		}
 	}
 }
@@ -194,29 +255,6 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	return Plugin_Continue;
 }
 
-public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
-{
-	ClientInfected[client] = 0;
-	ClientFriendlyInfected[client] = false;
-	return true;
-}
-
-/*
-public OnGameFrame()
-{
-	if(!GetConVarInt(CvarEnable) && !NativeControl) return;
-
-	if(GetConVarInt(Cvar_InfectMedi))
-		CheckMedics();
-
-
-	if(GetConVarInt(Cvar_SpreadSameTeam) || GetConVarInt(Cvar_SpreadOpposingTeam) || GetConVarInt(Cvar_SpreadAll))
-		RunInfection();
-}
-*/
-
-new Float:MedicDelay[MAXPLAYERS + 1];
-
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
 	if(GetConVarInt(CvarEnable) && !NativeControl) return Plugin_Continue;
@@ -240,6 +278,12 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 	}
 
 	return Plugin_Continue;
+}
+
+public OnGameFrame()
+{
+	if ((NativeControl || GetConVarInt(CvarEnable)) && GetConVarInt(Cvar_InfectMedi))
+		CheckMedics();
 }
 
 public CheckMedics()
@@ -337,47 +381,6 @@ MedicInfect(medic,target,allow)
 		else if (!ClientInfected[target])
 		{
 			SendInfection(target,medic,false,true);
-		}
-	}
-}
-
-public RunInfection()
-{
-	static Float:InfectedVec[MAXPLAYERS][3];
-	static Float:NotInfectedVec[MAXPLAYERS][3];
-	static InfectedPlayerVec[MAXPLAYERS];
-	static NotInfectedPlayerVec[MAXPLAYERS];
-	
-	new InfectedCount, NotInfectedCount;
-	
-	new maxplayers = GetMaxClients();
-	for(new index = 1; index <= maxplayers; index++)
-	{
-		if(!IsClientInGame(index) || !IsPlayerAlive(index)) continue;
-		
-		if(ClientInfected[index])
-		{
-			GetClientAbsOrigin(index, InfectedVec[InfectedCount]);
-			InfectedPlayerVec[InfectedCount] = index;
-			InfectedCount++;
-		}
-		else
-		{
-			GetClientAbsOrigin(index, NotInfectedVec[NotInfectedCount]);
-			NotInfectedPlayerVec[NotInfectedCount] = index;
-			NotInfectedCount++;
-		}
-	}
-	
-	for(new infected = 0; infected < InfectedCount; infected++)
-	{
-		for(new uninfected = 0; uninfected < NotInfectedCount; uninfected++)
-		{
-			if(GetVectorDistance(InfectedVec[infected], NotInfectedVec[uninfected], true)
-			   < GetConVarFloat(Cvar_SpreadDistance) )
-			{
-				TransmitInfection(NotInfectedPlayerVec[uninfected],InfectedPlayerVec[infected]);
-			}
 		}
 	}
 }
