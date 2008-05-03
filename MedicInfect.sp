@@ -34,6 +34,7 @@ new Handle:Cvar_SpreadAll = INVALID_HANDLE;
 new Handle:Cvar_SpreadSameTeam = INVALID_HANDLE;
 new Handle:Cvar_SpreadOpposingTeam = INVALID_HANDLE;
 new Handle:Cvar_SpreadDistance = INVALID_HANDLE;
+new Handle:Cvar_SpreadTime = INVALID_HANDLE;
 
 new Handle:Cvar_InfectSameTeam = INVALID_HANDLE;
 new Handle:Cvar_InfectOpposingTeam = INVALID_HANDLE;
@@ -85,13 +86,14 @@ public OnPluginStart()
 	CvarBlueTeamTrans = CreateConVar("medic_infect_blue_team_alpha", "255", "Amount of Transperency for the Blue Team", FCVAR_NOTIFY);
 	
 	Cvar_DmgAmount = CreateConVar("sv_medic_infect_dmg_amount", "10", "Amount of damage medic infect does each heartbeat",FCVAR_PLUGIN);
-	Cvar_DmgTime = CreateConVar("sv_medic_infect_dmg_time", "12", "Amount of time between infection heartbeats",FCVAR_PLUGIN);
+	Cvar_DmgTime = CreateConVar("sv_medic_infect_dmg_time", "12.0", "Amount of time between infection heartbeats",FCVAR_PLUGIN);
 	Cvar_DmgDistance = CreateConVar("sv_medic_infect_dmg_distance", "0.0", "Distance infection can spread",FCVAR_PLUGIN);
 
 	Cvar_SpreadAll = CreateConVar("sv_medic_infect_spread_all", "0", "Allow medical infections to run rampant",FCVAR_PLUGIN);
 	Cvar_SpreadSameTeam = CreateConVar("sv_medic_infect_spread_friendly", "1", "Allow medical infections to run rampant inside a team",FCVAR_PLUGIN);
 	Cvar_SpreadOpposingTeam = CreateConVar("sv_medic_infect_spread_enemy", "0", "Allow medical infections to run rampant between teams",FCVAR_PLUGIN);		
 	Cvar_SpreadDistance = CreateConVar("sv_medic_infect_spread_distance", "2000.0", "Distance infection can spread",FCVAR_PLUGIN);
+	Cvar_SpreadTime = CreateConVar("sv_medic_infect_spread_time", "2.0", "Amount of time between spread heartbeats",FCVAR_PLUGIN);
 	
 	Cvar_InfectSameTeam = CreateConVar("sv_medic_infect_friendly", "1", "Allow medics to infect friends",FCVAR_PLUGIN);
 	Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies",FCVAR_PLUGIN);
@@ -111,18 +113,8 @@ public OnConfigsExecuted()
 	if (InfectionTimer != INVALID_HANDLE)
 		CloseHandle(InfectionTimer);
 
-	InfectionTimer = CreateTimer(GetConVarFloat(Cvar_DmgTime), HandleInfection,_,TIMER_REPEAT);
+	InfectionTimer = CreateTimer(GetConVarFloat(Cvar_SpreadTime), HandleInfection,_,TIMER_REPEAT);
 	HookConVarChange(Cvar_DmgTime, HandleInfectionChange);
-}
-
-public OnMapEnd()
-{
-	new maxplayers = GetMaxClients();
-	for(new index = 1; index <= maxplayers; index++)
-	{
-		ClientInfected[index] = 0;
-		ClientFriendlyInfected[index] = false;
-	}
 }
 
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
@@ -152,37 +144,47 @@ public HandleInfectionChange(Handle:convar, const String:oldValue[], const Strin
 
 public Action:HandleInfection(Handle:timer)
 {
+	static Float:lastTime;
 	static Float:InfectedVec[MAXPLAYERS][3];
 	static Float:NotInfectedVec[MAXPLAYERS][3];
 	static InfectedPlayerVec[MAXPLAYERS];
 	static NotInfectedPlayerVec[MAXPLAYERS];
-	
-	new InfectedCount, NotInfectedCount;
 	
 	if(!NativeControl && !GetConVarInt(CvarEnable)) return;
 
 	new bool:spread = (GetConVarInt(Cvar_SpreadSameTeam) ||
 			   GetConVarInt(Cvar_SpreadOpposingTeam) ||
                            GetConVarInt(Cvar_SpreadAll));
+
+	new Float:now = GetGameTime();
+	new bool:damage = (now - lastTime) >= GetConVarFloat(Cvar_DmgTime);
+	if (damage)
+		lastTime = now;
+	else if (!spread)
+		return;
 	
 	new maxplayers = GetMaxClients();
+	new InfectedCount = 0, NotInfectedCount = 0;
 	for(new index = 1; index <= maxplayers; index++)
 	{
 		if(!IsClientInGame(index) || !IsPlayerAlive(index)) continue;
 
 		if(ClientInfected[index])
 		{
-			new amt = NativeAmount[ClientInfected[index]];
-			new hp = GetClientHealth(index);
-			hp -= (amt > 0) ? amt : GetConVarInt(Cvar_DmgAmount);
-
-			if(hp <= 0)
-				ForcePlayerSuicide(index);
-			else
+			if (damage)
 			{
-				SetEntityHealth(index,hp);
-				//SetEntProp(index, Prop_Send, "m_iHealth", hp, 1);
-				//SetEntProp(index, Prop_Data, "m_iHealth", hp, 1);
+				new amt = NativeAmount[ClientInfected[index]];
+				new hp = GetClientHealth(index);
+				hp -= (amt > 0) ? amt : GetConVarInt(Cvar_DmgAmount);
+
+				if(hp <= 0)
+					ForcePlayerSuicide(index);
+				else
+				{
+					SetEntityHealth(index,hp);
+					//SetEntProp(index, Prop_Send, "m_iHealth", hp, 1);
+					//SetEntProp(index, Prop_Data, "m_iHealth", hp, 1);
+				}
 			}
 
 			if (spread)
@@ -260,8 +262,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 	if(GetConVarInt(CvarEnable) && !NativeControl) return Plugin_Continue;
 	if (NativeControl && !NativeMedicArmed[client]) return Plugin_Continue;
 
-	if(
-		GetConVarInt(Cvar_InfectSyringe) 
+	if( !GetConVarInt(Cvar_InfectSyringe) 
 		|| (TF2_GetPlayerClass(client) != TFClass_Medic) 
 		|| (MedicDelay[client] > GetGameTime())
 		) 
@@ -291,41 +292,40 @@ public CheckMedics()
 	decl String:classname[32];
 	new maxplayers = GetMaxClients();
 
-	for(new i = 1; i <= maxplayers; i++)
+	for(new index = 1; index <= maxplayers; index++)
 	{
-		if (NativeControl && !NativeMedicArmed[i])
+		if (NativeControl && !NativeMedicArmed[index])
 			 continue;
 
-		if( !IsClientInGame(i) 
-			|| !IsPlayerAlive(i) 
-			|| (TF2_GetPlayerClass(i) != TFClass_Medic) 
-			|| (MedicDelay[i] > GetGameTime()) 
+		if( !IsClientInGame(index) 
+			|| !IsPlayerAlive(index) 
+			|| (TF2_GetPlayerClass(index) != TFClass_Medic) 
+			|| (MedicDelay[index] > GetGameTime()) 
 			) 
 			continue;
 
-		new weaponent = GetEntPropEnt(i, Prop_Send, "m_hActiveWeapon");
-
-		if(GetEdictClassname(weaponent, classname , sizeof(classname)) )
+		new weaponent = GetEntPropEnt(index, Prop_Send, "m_hActiveWeapon");
+		if(weaponent > 0 && GetEdictClassname(weaponent, classname , sizeof(classname)) )
 		{
 			if(StrEqual(classname, "tf_weapon_medigun") )
 			{
-				new buttons = GetClientButtons(i);
+				new buttons = GetClientButtons(index);
 				if(buttons & IN_ATTACK)
 				{
-					new target = GetClientAimTarget(i);
+					new target = GetClientAimTarget(index);
 					if(target > 0) 
 					{
-						MedicInfect(i,target,0);
-						MedicDelay[i] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
+						MedicInfect(index,target,0);
+						MedicDelay[index] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 					}
 				}
 				if(buttons & IN_RELOAD)
 				{
-					new target = GetClientAimTarget(i);
+					new target = GetClientAimTarget(index);
 					if(target > 0) 
 					{
-						MedicInfect(i,target,1);
-						MedicDelay[i] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
+						MedicInfect(index,target,1);
+						MedicDelay[index] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 					}
 				}
 			}
