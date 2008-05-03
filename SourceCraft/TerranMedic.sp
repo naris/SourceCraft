@@ -185,7 +185,8 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         if (restore_level)
         {
             RestorePlayer(player);
-            HealInfect(client,client);
+            if (m_InfectionAvailable)
+                HealInfect(client,client);
         }
         else
         {
@@ -540,7 +541,8 @@ public Action:Restore(Handle:timer)
                                         if (TraceTarget(client, index, clientLoc, indexLoc))
                                         {
                                             RestorePlayer(player_check);
-                                            HealInfect(client,index);
+                                            if (m_InfectionAvailable)
+                                                HealInfect(client,index);
 
                                             new color[4] = { 0, 0, 255, 255 };
                                             TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
