@@ -201,6 +201,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 	return true;
 }
 
+/*
 public OnGameFrame()
 {
 	if(!GetConVarInt(CvarEnable) && !NativeControl) return;
@@ -208,9 +209,11 @@ public OnGameFrame()
 	if(GetConVarInt(Cvar_InfectMedi))
 		CheckMedics();
 
+
 	if(GetConVarInt(Cvar_SpreadSameTeam) || GetConVarInt(Cvar_SpreadOpposingTeam) || GetConVarInt(Cvar_SpreadAll))
 		RunInfection();
 }
+*/
 
 new Float:MedicDelay[MAXPLAYERS + 1];
 
