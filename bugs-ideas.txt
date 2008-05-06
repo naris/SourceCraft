@@ -1,14 +1,4 @@
-Terran Medic
-1) Infect
-2) UberCharge (medihancer)
-3) Armor
-Ult) Restoration -- remove bash/lockdown/orb/etc...
-Ult2) Optical Flare
-Ult3) JetPack
-
-unused) MedicPack [1 level]
-
-Terran SCV:
+Terran Space Construction Vehicle:
 1) AmmoPack [1 level]
 2) Metal Regen
 3) Immunity
@@ -19,6 +9,41 @@ Ult) BuildExtra
 	Lvl3: 2nd SG
 	Lvl4: 3rd SG & Dispenser
 
+Protoss Archon / Dark Archon / Twilight Archon
+1) Immunity (decloaking,motiontaking,healthtaking,crystaltaking)
+2) Armor / Shields
+3) Shields
+4) Melee Attacks
+Ult) Feedback (drains enemy's energy[ammo] and damages with it)
+Ult) Energy Attack
+Ult) Maelstorm (freezes all units in range)
+Ult) Mind Control
+
+Protoss Zealot
+1) Speed
+2) Armor / Shields
+3) Melee Attacks
+
+Protoss Dragoon
+ Singularity Core (Increased Range)
+
+High Templar
+ Psionic Storm (Area Damage)
+ Hallucination
+
+Dark Templar
+ Invisibility
+
+Arbiter
+ Distortion Field (cloaks friendly units)
+ Recall (teleports friendly units)
+ Stasis Field (freezes enemy units)
+
+Corsair
+ Disruption Web (prevents attacks)
+
+Stalker
+ Blink (short teleport)
 
 I had an idea for the medic class. Since the Medic is german, the Wehrmacht.  Abilities: Blitzkrieg (Speed boost), War Hardened (Armor), Veteran (Faster uber chargeup). Ultimate: V1 rocket (same as nuke, basically). Of course, this has nothing to do with Warcraft or Starcract >.<
 
@@ -27,10 +52,6 @@ Bugs:
 3. Protoss ultimate is disabled.
 
 4. Reaver scarabs and lockdown sometimes stop working during the map and will not work for the next 40 minutes or so. For reaver scarabs this usually happens at the beginning of the map after the player has used this ability for more than 2 maps in a row, reaver scarabs will usually come back at the end of the map. I honestly don't know any of the symptoms for lockdown stopping, since I personally have not used them.
-
-5. Zerg adrenal glands will work on any weapon if the player dies before their shot hits. For example, I shoot a pipe bomb and as its in the air I die, adrenal glands will work on that pipe bomb if it hits someone.
-
-6. Nuclear missile works, however it randomly hits a spot on the map no matter where its launched from. It does kill people.
 
 7.  Fix/Remove the autostacker.
 
