@@ -25,7 +25,7 @@
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
-new raceID, immunityID, shieldsID, feedbackID, maelstormID;
+new raceID, shockwaveID, shieldsID, feedbackID, maelstormID;
 
 new bool:m_AllowMaelstorm[MAXPLAYERS+1];
 new Handle:cvarMaelstormCooldown = INVALID_HANDLE;
@@ -60,8 +60,8 @@ public OnPluginReady()
                              "You are now a Protoss Archon.",
                              "You will be a Protoss Archon when you die or respawn.");
 
-    immunityID  = AddUpgrade(raceID,"Immunity", "immunity",
-                             "Makes you Immune to: Decloaking at Level 1,\nMotion Taking at Level 2,\nCrystal Theft at level 3,\nand ShopItems at Level 4.");
+    shockwaveID  = AddUpgrade(raceID,"Psionic Shockwave", "shockwave",
+                             "A Shockwave of Psionic Energy accompanies all attacks to increase damage.");
 
     shieldsID   = AddUpgrade(raceID,"Plasma Shields", "shields", "You are enveloped in re-generating Plasma Shields that protect you from damage.");
 
@@ -96,26 +96,11 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 {
     if (race != oldrace)
     {
-        if (oldrace == raceID)
+        if (race == raceID)
         {
-            m_TeleportCount[client]=0;
-            ResetMaxHealth(client);
-
-            // Turn off Immunities
-            new immunity_level=GetUpgradeLevel(player,race,immunityID);
-            if (immunity_level)
-                DoImmunity(client, player, immunity_level,false);
-        }
-        else if (race == raceID)
-        {
-            // Turn on Immunities
-            new immunity_level=GetUpgradeLevel(player,race,immunityID);
-            if (immunity_level)
-                DoImmunity(client, player, immunity_level,true);
-
             new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
             if (shields_level)
-                SetupShields(client, shield_level);
+                SetupShields(client, shields_level);
         }
     }
 }
@@ -124,9 +109,7 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 {
     if (race == raceID && new_level > 0 && GetRace(player) == raceID)
     {
-        if (upgrade == immunityID)
-            DoImmunity(client, player, new_level,true);
-        else if (upgrade == shieldsID)
+        if (upgrade == shieldsID)
             SetupShields(client, new_level);
     }
 }
@@ -134,19 +117,15 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    if (index>0)
+    new client=GetClientOfUserId(userid);
+    if (client>0)
     {
-        m_AllowMaelstorm[index]=true;
+        m_AllowMaelstorm[client]=true;
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
             if (GetRace(player) == raceID)
             {
-                new immunity_level=GetUpgradeLevel(player,raceID,immunityID);
-                if (immunity_level)
-                    DoImmunity(client, player, immunity_level,true);
-
                 new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
                 if (shields_level)
                     SetupShields(client, shields_level);
@@ -164,7 +143,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     if (victim_race == raceID)
     {
         if (Feedback(damage, victim_index, victim_player,
-                     attacker_index, assister_index))
+                     attacker_index, attacker_player, assister_index))
         {
             changed = true;
         }
@@ -178,7 +157,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
         if (attacker_race == raceID)
         {
-            amount = TrueshotAura(damage, victim_index, victim_player,
+            amount = PsionicShockwave(damage, victim_index, victim_player,
                                   attacker_index, attacker_player);
             if (amount)
                 changed = true;
@@ -193,7 +172,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         new amount = 0;
         if (assister_race == raceID)
         {
-            amount = TrueshotAura(damage, victim_index, victim_player,
+            amount = PsionicShockwave(damage, victim_index, victim_player,
                                   assister_index, assister_player);
         }
 
@@ -204,7 +183,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:Feedback(damage, victim_index, Handle:victim_player, index, Handle:player)
+public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
+                     Handle:attacker_player, assister_index)
 {
     new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
     if (feedback_level)
@@ -231,22 +211,22 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, index, Handle:p
                       victim_index, attacker_index);
 
             if (attacker_index && attacker_index != victim_index &&
-                !GetImmunity(player,Immunity_HealthTake) &&
-                !TF2_IsPlayerInvuln(index))
+                !GetImmunity(attacker_player,Immunity_HealthTake) &&
+                !TF2_IsPlayerInvuln(attacker_index))
             {
-                new newhp=GetClientHealth(index)-damage;
+                newhp=GetClientHealth(attacker_index)-damage;
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(victim_index, index, "feedback", "Feedback", damage);
+                    LogKill(victim_index, attacker_index, "feedback", "Feedback", damage);
                 }
                 else
-                    LogDamage(victim_index, index, "feedback", "Feedback", damage);
+                    LogDamage(victim_index, attacker_index, "feedback", "Feedback", damage);
 
-                SetEntityHealth(index,newhp);
+                SetEntityHealth(attacker_index,newhp);
 
                 new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
+                GetClientAbsOrigin(attacker_index, Origin);
                 Origin[2] += 5;
 
                 TE_SetupSparks(Origin,Origin,255,1);
@@ -334,68 +314,38 @@ bool:Shields(damage, victim_index, Handle:victim_player)
     return false;
 }
 
-DoImmunity(client, Handle:player, level, bool:value)
-{
-    if (level >= 1)
-    {
-        SetImmunity(player,Immunity_Uncloaking,value);
-        if (level >= 2)
-        {
-            SetImmunity(player,Immunity_MotionTake,value);
-            if (level >= 3)
-            {
-                SetImmunity(player,Immunity_Theft,value);
-                if (level >= 4)
-                    SetImmunity(player,Immunity_ShopItems,value);
-            }
-        }
-
-        if (value)
-        {
-            new Float:start[3];
-            GetClientAbsOrigin(client, start);
-
-            new color[4] = { 0, 255, 50, 128 };
-            TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                                  0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
-            TE_SendToAll();
-        }
-    }
-}
-
 SetupShields(client, level)
 {
     switch (level)
     {
         case 0: m_Shields[client] = 0;
-        case 1: m_Shields[client] = GetMaxHealth(client) / 4;
-        case 2: m_Shields[client] = GetMaxHealth(client) / 3;
-        case 3: m_Shields[client] = GetMaxHealth(client) / 2;
-        case 4: m_Shields[client] = GetMaxHealth(client); 
+        case 1: m_Shields[client] = GetMaxHealth(client);
+        case 2: m_Shields[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
+        case 3: m_Shields[client] = GetMaxHealth(client) * 2;
+        case 4: m_Shields[client] = RoundFloat(float(GetMaxHealth(client))*2.50); 
     }
 }
 
-public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:player)
+public PsionicShockwave(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
-    // Trueshot Aura
-    new trueshot_level=GetUpgradeLevel(player,raceID,trueshotID);
-    if (trueshot_level &&
+    new shockwave_level=GetUpgradeLevel(player,raceID,shockwaveID);
+    if (shockwave_level &&
         !GetImmunity(victim_player,Immunity_HealthTake) &&
         !TF2_IsPlayerInvuln(victim_index))
     {
-        if (GetRandomInt(1,100) <= GetRandomInt(30,60))
+        if (GetRandomInt(1,100) <= GetRandomInt((shockwave_level*10)+10,60-shockwave_level*2))
         {
             new Float:percent;
-            switch(trueshot_level)
+            switch(shockwave_level)
             {
                 case 1:
-                    percent=0.20;
+                    percent=0.50;
                 case 2:
-                    percent=0.35;
+                    percent=1.00;
                 case 3:
-                    percent=0.60;
+                    percent=1.50;
                 case 4:
-                    percent=0.80;
+                    percent=2.00;
             }
 
             new amount=RoundFloat(float(damage)*percent);
@@ -405,10 +355,10 @@ public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:pl
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+                    LogKill(index, victim_index, "shockwave", "Psionic Shockwave", amount);
                 }
                 else
-                    LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+                    LogDamage(index, victim_index, "shockwave", "Psionic Shockwave", amount);
 
                 SetEntityHealth(victim_index,newhp);
 
@@ -430,7 +380,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (race==raceID && pressed && IsPlayerAlive(client) &&
         m_AllowMaelstorm[client])
     {
-        new ult_level=GetUpgradeLevel(player,race,rootsID);
+        new ult_level=GetUpgradeLevel(player,race,maelstormID);
         if(ult_level)
         {
             new Float:range=1.0;

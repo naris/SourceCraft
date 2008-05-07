@@ -55,7 +55,7 @@ public OnPluginReady()
                              32);
 
     u238ID      = AddUpgrade(raceID,"Depleted U-238 Shells", "u238", "Increases damage for non-melee attacks");
-    armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", "Reduces damage.");
+    armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", " A suit of Heavy Armor that reduces damage greatly.");
     stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 8-36% faster.");
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 
@@ -207,10 +207,10 @@ SetupArmor(client, level)
     switch (level)
     {
         case 0: m_Armor[client] = 0;
-        case 1: m_Armor[client] = GetMaxHealth(client);
-        case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
-        case 3: m_Armor[client] = GetMaxHealth(client)*2;
-        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*2.50);
+        case 1: m_Armor[client] = GetMaxHealth(client) / 2;
+        case 2: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*0.75);
+        case 3: m_Armor[client] = GetMaxHealth(client);
+        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
     }
 }
 

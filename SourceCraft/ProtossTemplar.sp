@@ -25,12 +25,12 @@
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
-new raceID, immunityID, levitationID, feedbackID, psionicStormID;
+new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationID, archonID;
 
 new g_lightningSprite;
 new g_haloSprite;
 
-new m_Shields[MAXPLAYERS+1];
+new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -47,8 +47,6 @@ public OnPluginStart()
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
-
-    cvarMaelstormCooldown=CreateConVar("sc_entangledrootscooldown","45");
 }
 
 public OnPluginReady()
@@ -69,9 +67,9 @@ public OnPluginReady()
     hallucinationID = AddUpgrade(raceID,"Hallucination", "hallucination",
                                  "Enemies that stike you have a chance of experiencing hallucinations.");
 
-    maelstormID = AddUpgrade(raceID,"Psionic Storm", "psistorm", 
-                             "Every enemy in 150-300 feet range will \nbe damaged continously while in range",
-                             true); // Ultimate
+    psionicStormID = AddUpgrade(raceID,"Psionic Storm", "psistorm", 
+                                "Every enemy in 150-300 feet range will \nbe damaged continously while in range",
+                                true); // Ultimate
 
     archonID = AddUpgrade(raceID,"Summon Archon", "archon", "You become an Archon until you die", true, 15); // Ultimate
 }
@@ -92,7 +90,7 @@ public OnMapStart()
 public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
-    m_AllowMaelstorm[client]=true;
+    m_AllowPsionicStorm[client]=true;
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -101,7 +99,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            m_TeleportCount[client]=0;
             ResetMaxHealth(client);
             SetGravity(player,-1.0);
 
@@ -117,10 +114,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             if (immunity_level)
                 DoImmunity(client, player, immunity_level,true);
 
-            new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
-            if (shields_level)
-                SetupShields(client, shield_level);
-
             new levitation_level = GetUpgradeLevel(player,race,levitationID);
             if (levitation_level)
                 Levitation(client, player, levitation_level);
@@ -134,8 +127,6 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
     {
         if (upgrade == immunityID)
             DoImmunity(client, player, new_level,true);
-        else if (upgrade == shieldsID)
-            SetupShields(client, new_level);
         else if (upgrade==levitationID)
             Levitation(client, player, new_level);
     }
@@ -157,10 +148,10 @@ public OnItemPurchase(client,Handle:player,item)
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    if (index>0)
+    new client=GetClientOfUserId(userid);
+    if (client>0)
     {
-        m_AllowMaelstorm[index]=true;
+        m_AllowPsionicStorm[client]=true;
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
@@ -170,13 +161,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 if (immunity_level)
                     DoImmunity(client, player, immunity_level,true);
 
-                new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
-                if (shields_level)
-                    SetupShields(client, shields_level);
-
-                new levitation_level = GetUpgradeLevel(player,race,levitationID);
+                new levitation_level = GetUpgradeLevel(player,raceID,levitationID);
                 if (levitation_level)
-                    Levitation(index, player, levitation_level);
+                    Levitation(client, player, levitation_level);
             }
         }
     }
@@ -190,35 +177,15 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     new bool:changed=false;
     if (victim_race == raceID)
     {
-        if (Feedback(damage, victim_index, victim_player,
-                     attacker_index, assister_index))
-        {
-            changed = true;
-        }
-        else
-            changed = Shields(damage, victim_index, victim_player);
-    }
-
-    if (attacker_index && attacker_index != victim_index)
-    {
-        new amount = 0;
-
-        if (attacker_race == raceID)
-        {
-            amount = TrueshotAura(damage, victim_index, victim_player,
-                                  attacker_index, attacker_player);
-            if (amount)
-                changed = true;
-        }
-
-        if (amount)
-            changed = true;
+        changed = Feedback(damage, victim_index, victim_player,
+                           attacker_index, attacker_player, assister_index);
     }
 
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:Feedback(damage, victim_index, Handle:victim_player, index, Handle:player)
+public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
+                     Handle:attacker_player, assister_index)
 {
     new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
     if (feedback_level)
@@ -245,22 +212,22 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, index, Handle:p
                       victim_index, attacker_index);
 
             if (attacker_index && attacker_index != victim_index &&
-                !GetImmunity(player,Immunity_HealthTake) &&
-                !TF2_IsPlayerInvuln(index))
+                !GetImmunity(attacker_player,Immunity_HealthTake) &&
+                !TF2_IsPlayerInvuln(attacker_index))
             {
-                new newhp=GetClientHealth(index)-damage;
+                newhp=GetClientHealth(attacker_index)-damage;
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(victim_index, index, "feedback", "Feedback", damage);
+                    LogKill(victim_index, attacker_index, "feedback", "Feedback", damage);
                 }
                 else
-                    LogDamage(victim_index, index, "feedback", "Feedback", damage);
+                    LogDamage(victim_index, attacker_index, "feedback", "Feedback", damage);
 
-                SetEntityHealth(index,newhp);
+                SetEntityHealth(attacker_index,newhp);
 
                 new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
+                GetClientAbsOrigin(attacker_index, Origin);
                 Origin[2] += 5;
 
                 TE_SetupSparks(Origin,Origin,255,1);
@@ -288,61 +255,6 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, index, Handle:p
                 PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
                             COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
-        }
-    }
-    return false;
-}
-
-bool:Shields(damage, victim_index, Handle:victim_player)
-{
-    new shields_level = GetUpgradeLevel(victim_player,raceID,shieldsID);
-    if (shields_level)
-    {
-        new Float:from_percent,Float:to_percent;
-        switch(shields_level)
-        {
-            case 1:
-            {
-                from_percent=0.0;
-                to_percent=0.10;
-            }
-            case 2:
-            {
-                from_percent=0.0;
-                to_percent=0.30;
-            }
-            case 3:
-            {
-                from_percent=0.10;
-                to_percent=0.60;
-            }
-            case 4:
-            {
-                from_percent=0.20;
-                to_percent=0.80;
-            }
-        }
-        new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        new shields=m_Shields[victim_index];
-        if (amount > shields)
-            amount = shields;
-        if (amount > 0)
-        {
-            new newhp=GetClientHealth(victim_index)+amount;
-            new maxhp=GetMaxHealth(victim_index);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetEntityHealth(victim_index,newhp);
-
-            m_Shields[victim_index] = shields - amount;
-
-            decl String:victimName[64];
-            GetClientName(victim_index,victimName,63);
-
-            PrintToChat(victim_index,"%c[SourceCraft] %s %cyour shields absorbed %d hp",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
-            return true;
         }
     }
     return false;
@@ -416,16 +328,3 @@ Levitation(client, Handle:player, level)
     else
         SetGravity(player,-1.0);
 }
-
-SetupShields(client, level)
-{
-    switch (level)
-    {
-        case 0: m_Shields[client] = 0;
-        case 1: m_Shields[client] = GetMaxHealth(client) / 4;
-        case 2: m_Shields[client] = GetMaxHealth(client) / 3;
-        case 3: m_Shields[client] = GetMaxHealth(client) / 2;
-        case 4: m_Shields[client] = GetMaxHealth(client); 
-    }
-}
-

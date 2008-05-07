@@ -18,8 +18,9 @@ Ult) Psionic Storm (Chained lightning with duration)
 Ult) Summon Archon
 
 Protoss Archon / Dark Archon / Twilight Archon
-1) Plasma Shields
-2) Feedback (reflect damage back to enemy)
+1) Psionic Shockwave
+2) Plasma Shields
+3) Feedback (reflect damage back to enemy)
 Ult) Maelstorm (freezes all units in range)
 Ult) Mind Control
 
