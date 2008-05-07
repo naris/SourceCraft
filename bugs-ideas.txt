@@ -9,13 +9,17 @@ Ult) BuildExtra
 	Lvl3: 2nd SG
 	Lvl4: 3rd SG & Dispenser
 
+Protoss High Templar / Dark Templar
+1) Immunity (decloaking,crystaltaking,motiontaking,healthtaking)
+2) Levitation
+3) Hallucination
+4) Feedback (reflect damage back to enemy)
+Ult) Psionic Storm (Chained lightning with duration)
+Ult) Summon Archon
+
 Protoss Archon / Dark Archon / Twilight Archon
-1) Immunity (decloaking,motiontaking,healthtaking,crystaltaking)
-2) Armor / Shields
-3) Shields
-4) Melee Attacks
-Ult) Feedback (drains enemy's energy[ammo] and damages with it)
-Ult) Energy Attack
+1) Plasma Shields
+2) Feedback (reflect damage back to enemy)
 Ult) Maelstorm (freezes all units in range)
 Ult) Mind Control
 

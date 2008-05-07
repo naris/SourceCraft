@@ -134,22 +134,17 @@ public OnItemPurchase(client,Handle:player,item)
     new race=GetRace(player);
     if (race == raceID && IsPlayerAlive(client))
     {
-        new boots = FindShopItem("boots");
-        if (boots == item)
+        if (item == FindShopItem("boots"))
         {
             new unholy_level = GetUpgradeLevel(player,race,unholyID);
             UnholyAura(client,player, unholy_level);
             ApplyPlayerSettings();
         }
-        else
+        else if (item == FindShopItem("sock"))
         {
-            new sock = FindShopItem("sock");
-            if (sock == item)
-            {
-                new levitation_level = GetUpgradeLevel(player,race,levitationID);
-                Levitation(client,player, levitation_level);
-                ApplyPlayerSettings();
-            }
+            new levitation_level = GetUpgradeLevel(player,race,levitationID);
+            Levitation(client,player, levitation_level);
+            ApplyPlayerSettings();
         }
     }
 }

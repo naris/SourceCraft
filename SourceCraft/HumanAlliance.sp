@@ -117,12 +117,14 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             m_TeleportCount[client]=0;
             ResetMaxHealth(client);
 
+            // Turn off Immunities
             new immunity_level=GetUpgradeLevel(player,race,immunityID);
             if (immunity_level)
                 DoImmunity(client, player, immunity_level,false);
         }
         else if (race == raceID)
         {
+            // Turn on Immunities
             new immunity_level=GetUpgradeLevel(player,race,immunityID);
             if (immunity_level)
                 DoImmunity(client, player, immunity_level,true);
@@ -131,6 +133,17 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             if (devotion_level)
                 DevotionAura(client, devotion_level);
         }
+    }
+}
+
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
+{
+    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    {
+        if (upgrade == immunityID)
+            DoImmunity(client, player, new_level,true);
+        else if (upgrade == devotionID)
+            DevotionAura(client, new_level);
     }
 }
 
@@ -180,17 +193,6 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                 }
             }
         }
-    }
-}
-
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
-{
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
-    {
-        if (upgrade == 0)
-            DoImmunity(client, player, new_level,true);
-        else if (upgrade == 1)
-            DevotionAura(client, new_level);
     }
 }
 

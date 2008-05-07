@@ -103,13 +103,13 @@ public OnPluginReady()
 
     if (m_MindControlAvailable)
     {
-        controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
+        controlID = AddUpgrade(raceID,"Mind Control", "mind_control",
                                "Allows you to control an object from the opposite team.",
                                true); // Ultimate
     }
     else
     {
-        controlID = AddUpgrade(raceID,"Dark Archon Mind Control", "mind_control",
+        controlID = AddUpgrade(raceID,"Mind Control", "mind_control",
                                "Not Available", true, 99, 0); // Ultimate
     }
 
