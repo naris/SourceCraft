@@ -32,6 +32,9 @@ new g_lightningSprite;
 new g_haloSprite;
 
 new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
+new gPsionicStormDuration[MAXPLAYERS+1];
+
+new Handle:cvarPsionicStormCooldown = INVALID_HANDLE;
 
 public Plugin:myinfo = 
 {
@@ -62,6 +65,8 @@ public OnPluginStart()
         if (!HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy))
             LogError("Couldn't hook the round_end event.");
     }
+
+    cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","30");
 
     SetupDrugs();
 }
@@ -107,12 +112,6 @@ public OnMapStart()
 public OnMapEnd()
 {
 	KillAllDrugs();
-}
-
-public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
-{
-	KillAllDrugs();
-	return Plugin_Handled;
 }
 
 public OnPlayerAuthed(client,Handle:player)
@@ -173,6 +172,17 @@ public OnItemPurchase(client,Handle:player,item)
     }
 }
 
+public OnUltimateCommand(client,Handle:player,race,bool:pressed)
+{
+    if (pressed && m_AllowPsionicStorm[client] &&
+        race == raceID && IsPlayerAlive(client))
+    {
+        new level = GetUpgradeLevel(player,race,psionicStormID);
+        if (level)
+            PsionicStorm(player,client,level);
+    }
+}
+
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid=GetEventInt(event,"userid");
@@ -195,6 +205,12 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
+}
+
+public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	KillAllDrugs();
+	return Plugin_Handled;
 }
 
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
@@ -404,3 +420,96 @@ public Action:CurePlayer(Handle:timer,Handle:pack)
         PerformDrug(client, 0);
     return Plugin_Stop;
 }
+
+public PsionicStorm(Handle:player,client,ultlevel)
+{
+    gPsionicStormDuration[client] = ultlevel*3;
+
+    new Handle:PsionicStormTimer = CreateTimer(0.4, PersistPsionicStorm, client,TIMER_REPEAT);
+    TriggerTimer(PsionicStormTimer, true);
+
+    new Float:cooldown = GetConVarFloat(cvarPsionicStormCooldown);
+
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %Psionic Storm%c! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+
+    if (cooldown > 0.0)
+    {
+        m_AllowPsionicStorm[client]=false;
+        CreateTimer(cooldown,AllowPsionicStorm,client);
+    }
+}
+
+public Action:PersistPsionicStorm(Handle:timer,any:client)
+{
+    new Handle:player=GetPlayerHandle(client);
+    if (player != INVALID_HANDLE)
+    {
+        new Float:range;
+        new level = GetUpgradeLevel(player,raceID,psionicStormID);
+        switch(level)
+        {
+            case 1: range=400.0;
+            case 2: range=550.0;
+            case 3: range=850.0;
+            case 4: range=1000.0;
+        }
+
+        new Float:indexLoc[3];
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
+
+        new last=client;
+        new minDmg=level*3;
+        new maxDmg=level*10;
+        new maxplayers=GetMaxClients();
+        for(new index=1;index<=maxplayers;index++)
+        {
+            if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
+                GetClientTeam(client) != GetClientTeam(index))
+            {
+                new Handle:player_check=GetPlayerHandle(index);
+                if (player_check != INVALID_HANDLE)
+                {
+                    if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                        !GetImmunity(player_check,Immunity_HealthTake) &&
+                        !TF2_IsPlayerInvuln(index))
+                    {
+                        GetClientAbsOrigin(index, indexLoc);
+                        if ( IsPointInRange(clientLoc,indexLoc,range))
+                        {
+                            if (TraceTarget(client, index, clientLoc, indexLoc))
+                            {
+                                new color[4] = { 10, 200, 255, 255 };
+                                TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
+                                                  0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
+                                TE_SendToAll();
+
+                                new amt=GetRandomInt(minDmg,maxDmg);
+                                HurtPlayer(index,amt,client,"psistorm", "Psionic Storm", 5+level);
+                                last=index;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (--gPsionicStormDuration[client] > 0)
+        {
+            return Plugin_Continue;
+        }
+    }
+    return Plugin_Stop;
+}
+
+public Action:AllowPsionicStorm(Handle:timer,any:index)
+{
+    if (IsClientInGame(index))
+    {
+        EmitSoundToClient(index, rechargeWav);
+        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
+                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+    }
+    m_AllowPsionicStorm[index]=true;
+    return Plugin_Stop;
+}
+
