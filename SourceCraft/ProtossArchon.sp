@@ -52,6 +52,8 @@ public OnPluginStart()
         SetFailState("Couldn't hook the player_spawn event.");
 
     cvarMaelstormCooldown=CreateConVar("sc_maelstormcooldown","45");
+
+    CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnPluginReady()
@@ -475,3 +477,26 @@ public Action:AllowMaelstorm(Handle:timer,any:index)
     }                
     return Plugin_Stop;
 }
+
+public Action:Regeneration(Handle:timer)
+{
+    new maxplayers=GetMaxClients();
+    for(new client=1;client<=maxplayers;client++)
+    {
+        if(IsClientInGame(client))
+        {
+            if(IsPlayerAlive(client))
+            {
+                new Handle:player=GetPlayerHandle(client);
+                if(player != INVALID_HANDLE && GetRace(player) == raceID)
+                {
+                    new max = GetMaxHealth(client);
+                    if (m_Shields[client] < max)
+                        m_Shields[client] += 2;
+                }
+            }
+        }
+    }
+    return Plugin_Continue;
+}
+
