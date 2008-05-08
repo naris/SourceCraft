@@ -37,9 +37,6 @@ new greyColor[4] = {128, 128, 128, 255};
 new g_BeamSprite;
 new g_HaloSprite;
 
-new Float:g_LastBeaconTime[MAXPLAYERS+1];
-new Float:g_LastPingTime[MAXPLAYERS+1];
-
 new Float:g_ChargeDelay = 5.0;
 new Float:g_BeaconDelay = 3.0;
 new Float:g_PingDelay = 12.0;
@@ -166,10 +163,26 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 public Action:Medic_Timer(Handle:timer)
 {
     static Float:lastChargeTime;
+    static Float:lastBeaconTime;
+    static Float:lastPingTime;
+
     new Float:gameTime = GetGameTime();
-    new bool:chargeIt  = (gameTime - lastChargeTime >= g_ChargeDelay);
-    if (chargeIt)
+    new bool:charge    = (gameTime - lastChargeTime >= g_ChargeDelay);
+    new bool:beacon    = (gameTime - lastBeaconTime >= g_BeaconDelay);
+    new bool:ping      = (gameTime - lastPingTime >= g_PingDelay);
+
+    if (charge)
         lastChargeTime = gameTime;
+
+    if (beacon)
+        lastBeaconTime = gameTime;
+
+    if (ping)
+        lastPingTime = gameTime;
+
+    LogMessage("Medic_Timer, charge=%d, beacon=%d, ping=%d, Cdelay=%f, Bdelay=%f, Pdelay=%f, time=%f, gameTime=%f, lastCTime=%f, lastBTime=%f, lastPTime=%f",
+               charge, beacon, ping, g_ChargeDelay, g_BeaconDelay, g_PingDelay,
+               (gameTime - lastChargeTime), gameTime, lastChargeTime, lastBeaconTime, lastPingTime);
 
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
@@ -190,7 +203,7 @@ public Action:Medic_Timer(Handle:timer)
                             new UberCharge = TF_GetUberLevel(client);
                             if (UberCharge < 100)
                             {
-                                if (chargeIt)
+                                if (charge)
                                 {
                                     new amt = NativeAmount[client];
                                     UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
@@ -205,25 +218,16 @@ public Action:Medic_Timer(Handle:timer)
 
                                 if (GetConVarInt(g_EnableBeacon))
                                 {
-                                    if (gameTime - g_LastBeaconTime[client] >= g_BeaconDelay)
-                                    {
-                                        new bool:ping = GetConVarInt(g_EnablePing) &&
-                                                        (gameTime - g_LastPingTime[client] >= g_PingDelay);
-
-                                        BeaconPing(client, ping);
-                                        g_LastBeaconTime[client] = gameTime;
-                                        if (ping)
-                                            g_LastPingTime[client] = gameTime;
-                                    }
+                                    if (beacon)
+                                        BeaconPing(client, ping && GetConVarInt(g_EnablePing));
                                 }
                                 else if (GetConVarInt(g_EnablePing))
                                 {
-                                    if (gameTime - g_LastPingTime[client] >= g_PingDelay)
+                                    if (ping)
                                     {
                                         new Float:vec[3];
                                         GetClientEyePosition(client, vec);
                                         EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
-                                        g_LastPingTime[client] = gameTime;
                                     }
                                 }
                             }
