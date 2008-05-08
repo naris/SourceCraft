@@ -214,62 +214,65 @@ RaceMenu(client,bool:change)
         decl String:rbuf[11];
         decl String:name[64];
         decl String:item[256];
-        new reqLevel, level, style;
+        new bool:disable, reqLevel, level, style;
         new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
         {
             raceHandle=GetRaceHandle(race);
             reqLevel = GetRaceRequiredLevel(raceHandle);
-            if (reqLevel >= 0)
+            if (reqLevel == 0)
             {
-                if (reqLevel)
+                style = ITEMDRAW_DEFAULT;
+                GetRaceName(raceHandle,item,sizeof(item));
+            }
+            else
+            {
+                level = GetOverallLevel(GetPlayerHandle(client));
+                disable = (level < reqLevel || reqLevel < 0);
+                style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                if (disable || !change)
                 {
-                    level = GetOverallLevel(GetPlayerHandle(client));
-                    style = (change && level < reqLevel) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                    if (!change || level < reqLevel)
+                    GetRaceName(raceHandle,name,sizeof(name));
+                    if (reqLevel > 0)
                     {
-                        GetRaceName(raceHandle,name,sizeof(name));
                         Format(item,sizeof(item),"%s (overall level must be >= %d)",
-                                name, reqLevel);
+                               name, reqLevel);
                     }
                     else
-                        GetRaceName(raceHandle,item,sizeof(item));
+                        Format(item,sizeof(item),"%s (locked)", name);
                 }
                 else
-                {
-                    style = ITEMDRAW_DEFAULT;
                     GetRaceName(raceHandle,item,sizeof(item));
-                }
-
-                /*
-                new upgradeCount = GetUpgradeCount(raceHandle);
-                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-                {
-                    if (upgrade == 0)
-                        strcopy(item,sizeof(item),"   (");
-                    else
-                        StrCat(item,sizeof(item),",");
-
-                    GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
-                    StrCat(item,sizeof(item),name);
-                    if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
-                        StrCat(item,sizeof(item),"[U]");
-                }
-                StrCat(item,sizeof(item),")");
-                Format(rbuf,sizeof(rbuf),"%d",race);
-                AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
-                */
-
-                Format(rbuf,sizeof(rbuf),"%d",race);
-                AddMenuItem(crMenu,rbuf,item,style);
             }
+
+            /*
+            new upgradeCount = GetUpgradeCount(raceHandle);
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            {
+                if (upgrade == 0)
+                    strcopy(item,sizeof(item),"   (");
+                else
+                    StrCat(item,sizeof(item),",");
+
+                GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
+                StrCat(item,sizeof(item),name);
+                if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
+                    StrCat(item,sizeof(item),"[U]");
+            }
+            StrCat(item,sizeof(item),")");
+            Format(rbuf,sizeof(rbuf),"%d",race);
+            AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
+            */
+
+            Format(rbuf,sizeof(rbuf),"%d",race);
+            AddMenuItem(crMenu,rbuf,item,style);
         }
         gRaceMenuMode[client]=change;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                COLOR_GREEN,COLOR_DEFAULT);
+                    COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)

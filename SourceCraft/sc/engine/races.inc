@@ -332,10 +332,10 @@ PendingCheck(client,Handle:playerHandle)
     }
 }
 
-ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle)
+ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle, bool:forceNow)
 {
     decl String:buf[192];
-    if(IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
+    if(!forceNow && IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
     {
         SetPendingRace(playerHandle,race);
         GetRaceSwitchMessageDead(raceHandle, buf,sizeof(buf));
@@ -348,7 +348,6 @@ ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle)
         GetRaceSwitchMessage(raceHandle, buf,sizeof(buf));
         PrintToChat(client, "%c[SourceCraft] %c%s", COLOR_GREEN,COLOR_DEFAULT,buf);
         m_FirstSpawn[client]=0;
-        LogMessage("Reset Firstspawn in ChangeRace()");
     }
 }
 
@@ -454,7 +453,7 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                 new Handle:raceHandle=GetRaceHandle(race);
                 new upgrade=StringToInt(SelectionInfo);
                 if (upgrade < 0) // They decided to change to this race.
-                    ChangeRace(client, playerHandle, race, raceHandle);
+                    ChangeRace(client, playerHandle, race, raceHandle, false);
                 else
                     UpgradesInfo_Upgrade(client,raceHandle,upgrade);
             }

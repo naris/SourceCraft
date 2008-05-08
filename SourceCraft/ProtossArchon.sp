@@ -51,25 +51,27 @@ public OnPluginStart()
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
 
-    cvarMaelstormCooldown=CreateConVar("sc_entangledrootscooldown","45");
+    cvarMaelstormCooldown=CreateConVar("sc_maelstormcooldown","45");
 }
 
 public OnPluginReady()
 {
     raceID      = CreateRace("Protoss Archon", "archon",
                              "You are now a Protoss Archon.",
-                             "You will be a Protoss Archon when you die or respawn.");
+                             "You will be a Protoss Archon when you die or respawn.",
+                             -1);
 
-    shockwaveID  = AddUpgrade(raceID,"Psionic Shockwave", "shockwave",
-                             "A Shockwave of Psionic Energy accompanies all attacks to increase damage.");
+    shockwaveID = AddUpgrade(raceID,"Psionic Shockwave", "shockwave",
+                             "A Shockwave of Psionic Energy accompanies all attacks to increase damage up to 250%, always available.");
 
-    shieldsID   = AddUpgrade(raceID,"Plasma Shields", "shields", "You are enveloped in re-generating Plasma Shields that protect you from damage.");
+    shieldsID   = AddUpgrade(raceID,"Plasma Shields", "shields",
+                             "You are enveloped in re-generating Plasma Shields that protect you from damage, always available.");
 
     feedbackID  = AddUpgrade(raceID,"Feedback", "feedback",
-                             "Gives you 5-50% chance of reflecting a shot back to the attacker.");
+                             "Gives you 5-50% chance of reflecting a shot back to the attacker, always available.");
 
     maelstormID = AddUpgrade(raceID,"Maelstorm", "maelstorm", 
-                             "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.\nThey will also be decloaked",
+                             "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.\nThey will also be decloaked, always available.",
                              true); // Ultimate
 }
 
@@ -99,15 +101,14 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         if (race == raceID)
         {
             new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
-            if (shields_level)
-                SetupShields(client, shields_level);
+            SetupShields(client, shields_level);
         }
     }
 }
 
 public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
 {
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    if (race == raceID && GetRace(player) == raceID)
     {
         if (upgrade == shieldsID)
             SetupShields(client, new_level);
@@ -127,8 +128,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if (GetRace(player) == raceID)
             {
                 new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
-                if (shields_level)
-                    SetupShields(client, shields_level);
+                SetupShields(client, shields_level);
             }
         }
     }
@@ -158,7 +158,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         if (attacker_race == raceID)
         {
             amount = PsionicShockwave(damage, victim_index, victim_player,
-                                  attacker_index, attacker_player);
+                                      attacker_index, attacker_player);
             if (amount)
                 changed = true;
         }
@@ -173,7 +173,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         if (assister_race == raceID)
         {
             amount = PsionicShockwave(damage, victim_index, victim_player,
-                                  assister_index, assister_player);
+                                      assister_index, assister_player);
         }
 
         if (amount)
@@ -183,77 +183,91 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
+{
+    if (victim_race == raceID)
+    {
+        // Revert back to Templar upon death.
+        new templar_race = FindRace("templar");
+        if (templar_race)
+            ChangeRace(victim_player, templar_race, true);
+    }
+    return Plugin_Continue;
+}
+
 public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                      Handle:attacker_player, assister_index)
 {
     new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
-    if (feedback_level)
+    new chance;
+    switch(feedback_level)
     {
-        new chance;
-        switch(feedback_level)
+        case 0: chance=10;
+        case 1: chance=15;
+        case 2: chance=25;
+        case 3: chance=35;
+        case 4: chance=50;
+    }
+
+    if(GetRandomInt(1,100) <= chance)
+    {
+        new newhp=GetClientHealth(victim_index)+damage;
+        new maxhp=GetMaxHealth(victim_index);
+        if (newhp > maxhp)
+            newhp = maxhp;
+
+        SetEntityHealth(victim_index,newhp);
+
+        LogToGame("[SourceCraft] Feedback prevented damage to %N from %N!\n",
+                victim_index, attacker_index);
+
+        if (attacker_index && attacker_index != victim_index &&
+            !GetImmunity(attacker_player,Immunity_HealthTake) &&
+            !TF2_IsPlayerInvuln(attacker_index))
         {
-            case 1: chance=15;
-            case 2: chance=25;
-            case 3: chance=35;
-            case 4: chance=50;
-        }
-
-        if(GetRandomInt(1,100) <= chance)
-        {
-            new newhp=GetClientHealth(victim_index)+damage;
-            new maxhp=GetMaxHealth(victim_index);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetEntityHealth(victim_index,newhp);
-
-            LogToGame("[SourceCraft] Feedback prevented damage to %N from %N!\n",
-                      victim_index, attacker_index);
-
-            if (attacker_index && attacker_index != victim_index &&
-                !GetImmunity(attacker_player,Immunity_HealthTake) &&
-                !TF2_IsPlayerInvuln(attacker_index))
+            newhp=GetClientHealth(attacker_index)-damage;
+            if (newhp <= 0)
             {
-                newhp=GetClientHealth(attacker_index)-damage;
-                if (newhp <= 0)
-                {
-                    newhp=0;
-                    LogKill(victim_index, attacker_index, "feedback", "Feedback", damage);
-                }
-                else
-                    LogDamage(victim_index, attacker_index, "feedback", "Feedback", damage);
+                newhp=0;
+                LogKill(victim_index, attacker_index, "feedback", "Feedback", damage);
+            }
+            else
+                LogDamage(victim_index, attacker_index, "feedback", "Feedback", damage);
 
-                SetEntityHealth(attacker_index,newhp);
+            SetEntityHealth(attacker_index,newhp);
 
-                new Float:Origin[3];
-                GetClientAbsOrigin(attacker_index, Origin);
-                Origin[2] += 5;
+            new Float:Origin[3];
+            GetClientAbsOrigin(attacker_index, Origin);
+            Origin[2] += 5;
 
-                TE_SetupSparks(Origin,Origin,255,1);
-                TE_SendToAll();
-                return true;
+            TE_SetupSparks(Origin,Origin,255,1);
+            TE_SendToAll();
+            return true;
+        }
+        else
+        {
+            if (attacker_index && attacker_index != victim_index)
+            {
+                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
+                PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
             else
             {
-                if (attacker_index && attacker_index != victim_index)
-                {
-                    PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
-                    PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                                COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-                }
-                else
-                {
-                    PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-                }
+                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
+        }
 
-            if (assister_index)
-            {
-                PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-            }
+        if (assister_index)
+        {
+            PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                        COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     return false;
@@ -262,54 +276,56 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
 bool:Shields(damage, victim_index, Handle:victim_player)
 {
     new shields_level = GetUpgradeLevel(victim_player,raceID,shieldsID);
-    if (shields_level)
+    new Float:from_percent,Float:to_percent;
+    switch(shields_level)
     {
-        new Float:from_percent,Float:to_percent;
-        switch(shields_level)
+        case 0:
         {
-            case 1:
-            {
-                from_percent=0.0;
-                to_percent=0.10;
-            }
-            case 2:
-            {
-                from_percent=0.0;
-                to_percent=0.30;
-            }
-            case 3:
-            {
-                from_percent=0.10;
-                to_percent=0.60;
-            }
-            case 4:
-            {
-                from_percent=0.20;
-                to_percent=0.80;
-            }
+            from_percent=0.00;
+            to_percent=0.10;
         }
-        new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
-        new shields=m_Shields[victim_index];
-        if (amount > shields)
-            amount = shields;
-        if (amount > 0)
+        case 1:
         {
-            new newhp=GetClientHealth(victim_index)+amount;
-            new maxhp=GetMaxHealth(victim_index);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetEntityHealth(victim_index,newhp);
-
-            m_Shields[victim_index] = shields - amount;
-
-            decl String:victimName[64];
-            GetClientName(victim_index,victimName,63);
-
-            PrintToChat(victim_index,"%c[SourceCraft] %s %cyour shields absorbed %d hp",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
-            return true;
+            from_percent=0.05;
+            to_percent=0.10;
         }
+        case 2:
+        {
+            from_percent=0.05;
+            to_percent=0.30;
+        }
+        case 3:
+        {
+            from_percent=0.10;
+            to_percent=0.60;
+        }
+        case 4:
+        {
+            from_percent=0.20;
+            to_percent=0.80;
+        }
+    }
+    new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
+    new shields=m_Shields[victim_index];
+    if (amount > shields)
+        amount = shields;
+    if (amount > 0)
+    {
+        new newhp=GetClientHealth(victim_index)+amount;
+        new maxhp=GetMaxHealth(victim_index);
+        if (newhp > maxhp)
+            newhp = maxhp;
+
+        SetEntityHealth(victim_index,newhp);
+
+        m_Shields[victim_index] = shields - amount;
+
+        decl String:victimName[64];
+        GetClientName(victim_index,victimName,63);
+
+        PrintToChat(victim_index,"%c[SourceCraft] %s %cyour shields absorbed %d hp",
+                    COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+        return true;
     }
     return false;
 }
@@ -318,7 +334,7 @@ SetupShields(client, level)
 {
     switch (level)
     {
-        case 0: m_Shields[client] = 0;
+        case 0: m_Shields[client] = GetMaxHealth(client) / 2;
         case 1: m_Shields[client] = GetMaxHealth(client);
         case 2: m_Shields[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
         case 3: m_Shields[client] = GetMaxHealth(client) * 2;
@@ -329,23 +345,20 @@ SetupShields(client, level)
 public PsionicShockwave(damage, victim_index, Handle:victim_player, index, Handle:player)
 {
     new shockwave_level=GetUpgradeLevel(player,raceID,shockwaveID);
-    if (shockwave_level &&
-        !GetImmunity(victim_player,Immunity_HealthTake) &&
+    if (!GetImmunity(victim_player,Immunity_HealthTake) &&
         !TF2_IsPlayerInvuln(victim_index))
     {
-        if (GetRandomInt(1,100) <= GetRandomInt((shockwave_level*10)+10,60-shockwave_level*2))
+        new adj = shockwave_level*10;
+        if (GetRandomInt(1,100) <= GetRandomInt(10+adj,100-adj))
         {
             new Float:percent;
             switch(shockwave_level)
             {
-                case 1:
-                    percent=0.50;
-                case 2:
-                    percent=1.00;
-                case 3:
-                    percent=1.50;
-                case 4:
-                    percent=2.00;
+                case 0: percent=0.25;
+                case 1: percent=0.50;
+                case 2: percent=1.00;
+                case 3: percent=1.50;
+                case 4: percent=2.00;
             }
 
             new amount=RoundFloat(float(damage)*percent);
@@ -381,74 +394,68 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         m_AllowMaelstorm[client])
     {
         new ult_level=GetUpgradeLevel(player,race,maelstormID);
-        if(ult_level)
+        new Float:range;
+        switch(ult_level)
         {
-            new Float:range=1.0;
-            switch(ult_level)
+            case 0: range=200.0;
+            case 1: range=300.0;
+            case 2: range=450.0;
+            case 3: range=650.0;
+            case 4: range=800.0;
+        }
+        new count=0;
+        new Float:indexLoc[3];
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
+        new maxplayers=GetMaxClients();
+        for (new index=1;index<=maxplayers;index++)
+        {
+            if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
+                GetClientTeam(index) != GetClientTeam(client))
             {
-                case 1:
-                    range=300.0;
-                case 2:
-                    range=450.0;
-                case 3:
-                    range=650.0;
-                case 4:
-                    range=800.0;
-            }
-            new count=0;
-            new Float:indexLoc[3];
-            new Float:clientLoc[3];
-            GetClientAbsOrigin(client, clientLoc);
-            new maxplayers=GetMaxClients();
-            for (new index=1;index<=maxplayers;index++)
-            {
-                if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
-                    GetClientTeam(index) != GetClientTeam(client))
+                new Handle:player_check=GetPlayerHandle(index);
+                if (player_check != INVALID_HANDLE)
                 {
-                    new Handle:player_check=GetPlayerHandle(index);
-                    if (player_check != INVALID_HANDLE)
+                    if (!GetImmunity(player_check,Immunity_Ultimates) &&
+                        !GetImmunity(player_check,Immunity_MotionTake))
                     {
-                        if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                            !GetImmunity(player_check,Immunity_MotionTake))
+                        GetClientAbsOrigin(index, indexLoc);
+                        if (IsPointInRange(clientLoc,indexLoc,range))
                         {
-                            GetClientAbsOrigin(index, indexLoc);
-                            if (IsPointInRange(clientLoc,indexLoc,range))
+                            if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
-                                if (TraceTarget(client, index, clientLoc, indexLoc))
-                                {
-                                    new color[4] = { 0, 255, 0, 255 };
-                                    TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                      0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                    TE_SendToAll();
+                                new color[4] = { 0, 255, 0, 255 };
+                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
+                                                  0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
+                                TE_SendToAll();
 
-                                    PrintToChat(index,"%c[SourceCraft] %N %chas tied you down with %cMaelstorm%c",
-                                                COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                PrintToChat(index,"%c[SourceCraft] %N %chas tied you down with %cMaelstorm%c",
+                                            COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
-                                    FreezeEntity(index);
-                                    AuthTimer(10.0,index,UnfreezePlayer);
-                                    count++;
-                                }
+                                FreezeEntity(index);
+                                AuthTimer(10.0,index,UnfreezePlayer);
+                                count++;
                             }
                         }
                     }
                 }
             }
+        }
 
-            new Float:cooldown = GetConVarFloat(cvarMaelstormCooldown);
-            if (count)
-            {
-                PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cMaelstormd Roots%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
-            }
-            else
-            {
-                PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cMaelstormd Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-            }
+        new Float:cooldown = GetConVarFloat(cvarMaelstormCooldown);
+        if (count)
+        {
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cMaelstorm%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+        }
+        else
+        {
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cMaelstormd Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        }
 
-            if (cooldown > 0.0)
-            {
-                m_AllowMaelstorm[client]=false;
-                CreateTimer(cooldown,AllowMaelstorm,client);
-            }
+        if (cooldown > 0.0)
+        {
+            m_AllowMaelstorm[client]=false;
+            CreateTimer(cooldown,AllowMaelstorm,client);
         }
     }
 }

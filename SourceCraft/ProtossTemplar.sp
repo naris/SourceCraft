@@ -75,7 +75,8 @@ public OnPluginReady()
 {
     raceID      = CreateRace("Protoss Templar", "templar",
                              "You are now a Protoss Templar.",
-                             "You will be a Protoss Templar when you die or respawn.");
+                             "You will be a Protoss Templar when you die or respawn.",
+                             32);
 
     immunityID  = AddUpgrade(raceID,"Immunity", "immunity",
                              "Makes you Immune to: Decloaking at Level 1,\nMotion Taking at Level 2,\nCrystal Theft at level 3,\nand ShopItems at Level 4.");
@@ -93,7 +94,8 @@ public OnPluginReady()
                                 "Every enemy in 150-300 feet range will \nbe damaged continously while in range",
                                 true); // Ultimate
 
-    archonID = AddUpgrade(raceID,"Summon Archon", "archon", "You become an Archon until you die", true, 15); // Ultimate
+    archonID = AddUpgrade(raceID,"Summon Archon", "archon", "You become an Archon until you die",
+                          true, 15,1); // Ultimate
 }
 
 public OnMapStart()
@@ -177,9 +179,19 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     if (pressed && m_AllowPsionicStorm[client] &&
         race == raceID && IsPlayerAlive(client))
     {
-        new level = GetUpgradeLevel(player,race,psionicStormID);
-        if (level)
-            PsionicStorm(player,client,level);
+        new ps_level = GetUpgradeLevel(player,race,psionicStormID);
+        if (ps_level)
+            PsionicStorm(player,client,ps_level);
+        else
+        {
+            new archon_level = GetUpgradeLevel(player,race,archonID);
+            if (archon_level)
+            {
+                new archon_race = FindRace("archon");
+                if (archon_race)
+                    ChangeRace(player, archon_race, true);
+            }
+        }
     }
 }
 

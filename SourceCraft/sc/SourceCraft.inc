@@ -24,8 +24,8 @@
  * @param max_level: The maximum level the race can attain. (default is 16)
  * @return The return value will be the race index or -1 if there was a problem.
  */         
-native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
-                  required_level=0,max_level=16);
+native CreateRace(const String:name[],const String:short[],const String:switchmessage_instant[],
+                  const String:switchmessage_dead[],required_level=0,max_level=16);
 
 /**
  * Adds an upgrade to a race
@@ -39,7 +39,7 @@ native CreateRace(String:name[],String:short[],String:switchmessage_instant[],St
  * @param max_level: The maximum level the upgrade can attain. (default is 4)
  * @return The return value will be the upgrade index or -1 if there was a problem.
  */         
-native AddUpgrade(race,String:name[],String:short[],String:desc[],
+native AddUpgrade(race,const String:name[],const String:short[],const String:desc[],
                   bool:ultimate=false,required_level=-1,max_level=4);
 
 /**
@@ -52,7 +52,8 @@ native AddUpgrade(race,String:name[],String:short[],String:desc[],
  * @param required_level: The overall level the player must obtain before buying this item.
  * @return The return value will be the item index or -1 if there was a problem.
  */         
-native CreateShopItem(String:name[],String:short[],String:desc[],cost,max=1,required_level=0);
+native CreateShopItem(const String:name[],const String:short[],const String:desc[],
+                      cost,max=1,required_level=0);
 
 /**
  * Registers a help command with the SourceCraft plugin for help
@@ -60,14 +61,21 @@ native CreateShopItem(String:name[],String:short[],String:desc[],cost,max=1,requ
  * @param desc: The description of the command. (max 256) 
  * @return The return value will be the help index or -1 if there was a problem.
  */
-native CreateHelpCommand(String:name[],String:desc[]);
+native CreateHelpCommand(const String:name[],const String:desc[]);
+
+/**
+ * Find the Race ID of a race
+ * @param name: The name of the race. (max 64)
+ * @return The return value will be the race index or -1 if there was a problem.
+ */         
+native FindRace(const String:name[]);
 
 /**
  * Find the ShopItem ID of a shop item
  * @param name: The name of the item. (max 64)
  * @return The return value will be the item index or -1 if there was a problem.
  */         
-native FindShopItem(String:name[]);
+native FindShopItem(const String:name[]);
 
 /**
  * Give health to (heal) a player
@@ -113,21 +121,28 @@ native KillPlayer(victim, attacker=0, const String:weapon_name[]="",
 native Handle:GetPlayerHandle(client);
 
 /**
+ * Gets the current race for the player.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @return The return value will be the race of the player, if -1 then it failed.
+ */
+native GetRace(Handle:player);
+
+/**
+ * Changes the current race of the player.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @param race: The race ID returned from CreateRace.
+ * @param force: Set true to force the race to change now or false to change on death.
+ * @noreturn
+ */
+native ChangeRace(Handle:player,race,bool:force=false);
+
+/**
  * Gets the current level for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace or -1 for current race
  * @return The return value will be the level, if -1 then it failed.
  */
 native GetLevel(Handle:player,race=-1);
-
-/**
- * Sets the current level for the provided race.
- * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @param race: The race ID returned from CreateRace or -1 for current race
- * @param newlevel: The level you want to set to 
- * @noreturn
- */
-native SetLevel(Handle:player,race,newlevel);
 
 /**
  * Resets the current level for the provided race, also adjusts Upgrade levels as required.
@@ -139,11 +154,13 @@ native SetLevel(Handle:player,race,newlevel);
 native ResetLevel(Handle:player,race,newlevel);
 
 /**
- * Gets the current race for the player.
+ * Sets the current level for the provided race.
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
- * @return The return value will be the race of the player, if -1 then it failed.
+ * @param race: The race ID returned from CreateRace or -1 for current race
+ * @param newlevel: The level you want to set to 
+ * @noreturn
  */
-native GetRace(Handle:player);
+native SetLevel(Handle:player,race,newlevel);
 
 /**
  * Gets the XP for the provided race.

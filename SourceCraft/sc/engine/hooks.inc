@@ -62,7 +62,7 @@ public Action:SayCommand(client,args)
                 {
                     new Handle:raceHandle=GetRaceHandle(race);
                     if (raceHandle != INVALID_HANDLE)
-                        ChangeRace(client, playerHandle, race, raceHandle);
+                        ChangeRace(client, playerHandle, race, raceHandle, false);
                     else
                         RaceMenu(client,true);
                 }
@@ -235,7 +235,7 @@ public Action:ChangeRaceCommand(client,args)
             {
                 new Handle:raceHandle=GetRaceHandle(race);
                 if (raceHandle != INVALID_HANDLE)
-                    ChangeRace(client, playerHandle, race, raceHandle);
+                    ChangeRace(client, playerHandle, race, raceHandle, false);
                 else
                     RaceMenu(client,true);
             }

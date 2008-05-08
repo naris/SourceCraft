@@ -28,8 +28,8 @@ new g_KilledBy[MAXPLAYERS+1] = { 0, ...};
  * @param max_level: The maximum level the race can attain. (default is 16)
  * @return The return value will be the race index or -1 if there was a problem.
  *
- * native CreateRace(String:name[],String:short[],String:switchmessage_instant[],String:switchmessage_dead[],
- *                   required_level=0,max_level=16);
+ * native CreateRace(const String:name[],const String:short[],const String:switchmessage_instant[],
+ *                   const String:switchmessage_dead[],required_level=0,max_level=16);
  */         
 public Native_CreateRace(Handle:plugin,numParams)
 {
@@ -63,7 +63,7 @@ public Native_CreateRace(Handle:plugin,numParams)
  *                        (default is the minumum ultimate level {usually 8} and 0 for all others)
  * @param max_level: The maximum level the upgrade can attain. (default is 4)
  * @return The return value will be the upgrade index or -1 if there was a problem.
- * native AddUpgrade(race,String:name[],String:short[],String:desc[],
+ * native AddUpgrade(race,const String:name[],const String:short[],const String:desc[],
                      bool:ultimate=false,required_level=-1,max_level=4);
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
@@ -122,7 +122,7 @@ public Native_CreateShopItem(Handle:plugin,numParams)
  * @param desc: The description of the command. (max 256) 
  * @return The return value will be the help index or -1 if there was a problem.
  *
- * native CreateHelpCommand(String:name[],String:desc[]);
+ * native CreateHelpCommand(const String:name[],const String:desc[]);
  */
 public Native_CreateHelpCommand(Handle:plugin,numParams)
 {
@@ -142,7 +142,7 @@ public Native_CreateHelpCommand(Handle:plugin,numParams)
  * @param name: The name of the item. (max 64)
  * @return The return value will be the item index or -1 if there was a problem.
  *
- * native FindShopItem(String:name[]);
+ * native FindShopItem(const String:name[]);
  */         
 public Native_FindShopItem(Handle:plugin,numParams)
 {
@@ -151,6 +151,25 @@ public Native_FindShopItem(Handle:plugin,numParams)
         decl String:name[16];
         GetNativeString(1,name,sizeof(name));
         return FindShopItem(name);
+    }
+    else
+        return -1;
+}
+
+/**
+ * Find the Race ID of a race
+ * @param name: The name of the race. (max 64)
+ * @return The return value will be the race index or -1 if there was a problem.
+ *
+ * native FindRace(const String:name[]);
+ */         
+public Native_FindRace(Handle:plugin,numParams)
+{
+    if(numParams==1)
+    {
+        decl String:name[16];
+        GetNativeString(1,name,sizeof(name));
+        return FindRace(name);
     }
     else
         return -1;
@@ -343,6 +362,12 @@ KillPlayer(victim, attacker, const String:weapon_name[], const String:weapon_des
     }
 }
 
+/**
+ * Gets the Player Handle used for the rest of the interface natives.
+ * @param client: The client's index you want.
+ * @return The return value will be the Player Handle, INVALID_HANDLE on failure.
+ * native Handle:GetPlayerHandle(client);
+ */
 public Native_GetPlayerHandle(Handle:plugin,numParams)
 {
     if (numParams == 1)
@@ -351,6 +376,12 @@ public Native_GetPlayerHandle(Handle:plugin,numParams)
         return _:INVALID_HANDLE;
 }
 
+/**
+ * Gets the current race for the player.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @return The return value will be the race of the player, if -1 then it failed.
+ * native GetRace(Handle:player);
+ */
 public Native_GetRace(Handle:plugin,numParams)
 {
     if (numParams==1)
@@ -360,6 +391,30 @@ public Native_GetRace(Handle:plugin,numParams)
             return GetRace(player);
     }
     return -1;
+}
+
+/**
+ * Changes the current race of the player.
+ * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
+ * @param race: The race ID returned from CreateRace.
+ * @param force: Set true to force the race to change now or false to change on death.
+ * @noreturn
+ * native ChangeRace(Handle:player,race,bool:force=false);
+ */
+public Native_ChangeRace(Handle:plugin,numParams)
+{
+    if (numParams >= 2 && numParams <= 3)
+    {
+        new Handle:player=Handle:GetNativeCell(1);
+        new race=GetNativeCell(2);
+        new bool:force=(numParams >= 3) ? (bool:GetNativeCell(3)) : false;
+
+        if (player != INVALID_HANDLE && race != -1)
+        {
+            ChangeRace(GetClientIndex(player), player,
+                       race, GetRaceHandle(race), force);
+        }
+    }
 }
 
 public Native_GetLevel(Handle:plugin,numParams)
