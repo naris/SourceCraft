@@ -1,54 +1,49 @@
-Terran Space Construction Vehicle:
+Terran Space Construction Vehicle / Protoss Probe:
 1) AmmoPack [1 level]
 2) Metal Regen
 3) Immunity
 4) Armor
 Ult) Tripmines
-Ult) BuildExtra
+Ult) Move Building
+Ult) Summon Building
 	Lvl1: 2nd Dispenser
 	Lvl2: 2nd Teleport (entry&exit)
 	Lvl3: 2nd SG
 	Lvl4: 3rd SG & Dispenser
 
-Protoss High Templar / Dark Templar
+Protoss High Templar / Dark Templar:
 1) Immunity (decloaking,crystaltaking,motiontaking,healthtaking)
 2) Levitation
 3) Hallucination
 4) Feedback (reflect damage back to enemy)
+5) Invisibility
 Ult) Psionic Storm (Chained lightning with duration)
 Ult) Summon Archon
 
-Protoss Archon / Dark Archon / Twilight Archon
+Protoss Archon / Dark Archon / Twilight Archon:
 1) Psionic Shockwave
 2) Plasma Shields
 3) Feedback (reflect damage back to enemy)
 Ult) Maelstorm (freezes all units in range)
 Ult) Mind Control
 
-Protoss Zealot
+Protoss Zealot:
 1) Speed
 2) Armor / Shields
 3) Melee Attacks
 
-Protoss Dragoon
+Protoss Dragoon:
  Singularity Core (Increased Range)
 
-High Templar
- Psionic Storm (Area Damage)
- Hallucination
-
-Dark Templar
- Invisibility
-
-Arbiter
+Protoss Arbiter:
  Distortion Field (cloaks friendly units)
  Recall (teleports friendly units)
  Stasis Field (freezes enemy units)
 
-Corsair
+Protoss Corsair:
  Disruption Web (prevents attacks)
 
-Stalker
+Protoss Stalker:
  Blink (short teleport)
 
 I had an idea for the medic class. Since the Medic is german, the Wehrmacht.  Abilities: Blitzkrieg (Speed boost), War Hardened (Armor), Veteran (Faster uber chargeup). Ultimate: V1 rocket (same as nuke, basically). Of course, this has nothing to do with Warcraft or Starcract >.<

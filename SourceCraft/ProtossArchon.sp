@@ -238,14 +238,14 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                 if (attacker_index && attacker_index != victim_index)
                 {
                     PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
                     PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                                COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
                 else
                 {
                     PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
                 }
             }
 

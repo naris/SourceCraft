@@ -101,7 +101,7 @@ public OnPluginReady()
                              "Makes you partially invisible, you will blink in and out of visibility.\nTotal Invisibility when standing still for a period of time");
 
     lockdownID  = AddUpgrade(raceID,"Lockdown", "lockdown", 
-                             "Have a 15-52\% chance to render an \nenemy immobile for 1 second.");
+                             "Gives you a 15-52\% chance to render an \nenemy immobile for 1 second.");
 
     detectorID  = AddUpgrade(raceID,"Ocular Implants", "implants", 
                              "Detect cloaked units around you.");
