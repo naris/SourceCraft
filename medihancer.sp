@@ -9,16 +9,6 @@
 #include <sdktools>
 #include <tf2_stocks>
 
-#define TF_SCOUT 1
-#define TF_SNIPER 2
-#define TF_SOLDIER 3 
-#define TF_DEMOMAN 4
-#define TF_MEDIC 5
-#define TF_HEAVY 6
-#define TF_PYRO 7
-#define TF_SPY 8
-#define TF_ENG 9
-
 #define PL_VERSION "1.0.0"
 
 #define SOUND_BLIP		"buttons/blip1.wav"
@@ -47,7 +37,6 @@ new greyColor[4] = {128, 128, 128, 255};
 new g_BeamSprite;
 new g_HaloSprite;
 
-new Float:g_LastChargeTime[MAXPLAYERS+1];
 new Float:g_LastBeaconTime[MAXPLAYERS+1];
 new Float:g_LastPingTime[MAXPLAYERS+1];
 
@@ -85,7 +74,7 @@ public OnPluginStart()
 {
     g_IsMedihancerOn = CreateConVar("sm_medihancer","1","Enable/Disable medihancer");
     g_ChargeAmount = CreateConVar("sm_medihancer_charge_amount", "3", "Sets the amount of uber charge to add time for medihancer.");
-    g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "5.0", "Sets the time interval for medihancer.");
+    g_ChargeTimer = CreateConVar("sm_medihancer_charge_timer", "3.0", "Sets the time interval for medihancer.");
 
     g_EnableBeacon = CreateConVar("sm_medihancer_beacon","1","Enable/Disable medihancer beacon");
     g_BeaconTimer = CreateConVar("sm_medihancer_beacon_timer","3.0","Sets the time interval of beacons for medihancer");
@@ -176,7 +165,12 @@ public ConVarChange_IsMedihancerOn(Handle:convar, const String:oldValue[], const
 
 public Action:Medic_Timer(Handle:timer)
 {
+    static Float:lastChargeTime;
     new Float:gameTime = GetGameTime();
+    new bool:chargeIt  = (gameTime - lastChargeTime >= g_ChargeDelay);
+    if (chargeIt)
+        lastChargeTime = gameTime;
+
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
     {
@@ -196,7 +190,7 @@ public Action:Medic_Timer(Handle:timer)
                             new UberCharge = TF_GetUberLevel(client);
                             if (UberCharge < 100)
                             {
-                                if (gameTime - g_LastChargeTime[client] >= g_ChargeDelay)
+                                if (chargeIt)
                                 {
                                     new amt = NativeAmount[client];
                                     UberCharge += (amt > 0) ? amt : GetConVarInt(g_ChargeAmount);
@@ -207,8 +201,8 @@ public Action:Medic_Timer(Handle:timer)
                                         EmitSoundToAll(Charged[num],client);
                                     }
                                     TF_SetUberLevel(client, UberCharge);
-                                    g_LastChargeTime[client] = gameTime;
                                 }
+
                                 if (GetConVarInt(g_EnableBeacon))
                                 {
                                     if (gameTime - g_LastBeaconTime[client] >= g_BeaconDelay)
