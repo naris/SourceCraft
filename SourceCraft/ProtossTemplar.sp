@@ -31,9 +31,11 @@ new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationI
 new g_lightningSprite;
 new g_haloSprite;
 
+new bool:m_AllowArchon[MAXPLAYERS+1];
 new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
 new gPsionicStormDuration[MAXPLAYERS+1];
 
+new Handle:cvarArchonCooldown = INVALID_HANDLE;
 new Handle:cvarPsionicStormCooldown = INVALID_HANDLE;
 
 public Plugin:myinfo = 
@@ -67,6 +69,7 @@ public OnPluginStart()
     }
 
     cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","30");
+    cvarArchonCooldown=CreateConVar("sc_archoncooldown","300");
 
     SetupDrugs();
 }
@@ -118,8 +121,9 @@ public OnMapEnd()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
+    m_AllowArchon[client]=true;
     m_AllowPsionicStorm[client]=true;
+    FindMaxHealthOffset(client);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -176,20 +180,29 @@ public OnItemPurchase(client,Handle:player,item)
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
-    if (pressed && m_AllowPsionicStorm[client] &&
-        race == raceID && IsPlayerAlive(client))
+    if (pressed && race == raceID && IsPlayerAlive(client))
     {
         new ps_level = GetUpgradeLevel(player,race,psionicStormID);
         if (ps_level)
-            PsionicStorm(player,client,ps_level);
-        else
+        {
+            if (m_AllowPsionicStorm[client])
+                PsionicStorm(player,client,ps_level);
+        }
+        else if (m_AllowArchon[client])
         {
             new archon_level = GetUpgradeLevel(player,race,archonID);
             if (archon_level)
             {
                 new archon_race = FindRace("archon");
                 if (archon_race)
+                {
+                    new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
+                    new Float:minutes = cooldown / 60.0;
+                    new Float:seconds = FloatFraction(minutes) * 60.0;
+                    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cSummon Archon%c to become an Archon, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
                     ChangeRace(player, archon_race, true);
+                    CreateTimer(cooldown,AllowArchon,client);
+                }
             }
         }
     }
@@ -515,13 +528,25 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
 
 public Action:AllowPsionicStorm(Handle:timer,any:index)
 {
+    m_AllowPsionicStorm[index]=true;
     if (IsClientInGame(index))
     {
         EmitSoundToClient(index, rechargeWav);
         PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
                     COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     }
-    m_AllowPsionicStorm[index]=true;
+    return Plugin_Stop;
+}
+
+public Action:AllowArchon(Handle:timer,any:index)
+{
+    m_AllowArchon[index]=true;
+    if (IsClientInGame(index))
+    {
+        EmitSoundToClient(index, rechargeWav);
+        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cSummon Archon%c is now available again!",
+                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+    }
     return Plugin_Stop;
 }
 

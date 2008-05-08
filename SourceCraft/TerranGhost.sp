@@ -336,7 +336,7 @@ Cloak(client, Handle:player, level)
 
         new color[4] = { 0, 255, 50, 128 };
         TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                0, 1, 2.0, 10.0, 0.0, color, 10, 0);
+                              0, 1, 2.0, 10.0, 0.0, color, 10, 0);
         TE_SendToAll();
 
         SetVisibility(player, alpha, TimedMeleeInvisibility, delay, duration,
@@ -598,7 +598,9 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
     else
     {
         new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        new Float:minutes = cooldown / 60.0;
+        new Float:seconds = FloatFraction(minutes) * 60.0;
+        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
         CreateTimer(cooldown,AllowNuclearLaunch,client);
     }
 }
@@ -790,8 +792,9 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
         if (IsClientInGame(client))
         {
             new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
-
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %3.1f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+            new Float:minutes = cooldown / 60.0;
+            new Float:seconds = FloatFraction(minutes) * 60.0;
+            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
 
             m_NuclearLaunchStatus[client]=Quiescent;
             CreateTimer(cooldown,AllowNuclearLaunch,client);
@@ -806,7 +809,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
 public Action:AllowNuclearLaunch(Handle:timer,any:index)
 {
     m_NuclearLaunchStatus[index] = Ready;
-    if (IsClientInGame(index) && IsPlayerAlive(index))
+    if (IsClientInGame(index))
         EmitSoundToClient(index,readyWav);
 
     return Plugin_Stop;
