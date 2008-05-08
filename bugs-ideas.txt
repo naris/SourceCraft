@@ -3,6 +3,7 @@ Terran Space Construction Vehicle:
 2) Metal Regen
 3) Immunity
 4) Armor
+Ult) Tripmines
 Ult) BuildExtra
 	Lvl1: 2nd Dispenser
 	Lvl2: 2nd Teleport (entry&exit)
