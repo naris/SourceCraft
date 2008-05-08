@@ -180,10 +180,6 @@ public Action:Medic_Timer(Handle:timer)
     if (ping)
         lastPingTime = gameTime;
 
-    LogMessage("Medic_Timer, charge=%d, beacon=%d, ping=%d, Cdelay=%f, Bdelay=%f, Pdelay=%f, time=%f, gameTime=%f, lastCTime=%f, lastBTime=%f, lastPTime=%f",
-               charge, beacon, ping, g_ChargeDelay, g_BeaconDelay, g_PingDelay,
-               (gameTime - lastChargeTime), gameTime, lastChargeTime, lastBeaconTime, lastPingTime);
-
     new maxclients = GetMaxClients();
     for (new client = 1; client <= maxclients; client++)
     {
