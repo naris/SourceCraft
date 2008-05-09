@@ -3,27 +3,39 @@
 #include <sourcemod>
 #include <sdktools>
 
-#define PLUGIN_VERSION "1.0.0.2"
+#define PLUGIN_VERSION "1.0.0.3"
 
 #define TRACE_START 24.0
 #define TRACE_END 64.0
 
 #define MDL_LASER "sprites/laser.vmt"
-#define MDL_MINE "models/props_lab/tpplug.mdl"
 
-#define SND_MINE "npc/roller/mine/rmine_blades_in2.wav"
+#define SND_MINEPUT "npc/roller/blade_cut.wav"
+#define SND_MINEACT "npc/roller/mine/rmine_blades_in2.wav"
+
+#define TEAM_T 2
+#define TEAM_CT 3
+
+#define COLOR_T "255 0 0"
+#define COLOR_CT "0 0 255"
+#define COLOR_DEF "0 255 255"
+
+#define MAX_LINE_LEN 256
 
 // globals
-new gRemaining[MAXPLAYERS+1];                 // how many tripmines player has this spawn
+new gRemaining[MAXPLAYERS+1];    // how many tripmines player has this spawn
 new gCount = 1;
+new String:mdlMine[256];
 
 // convars
 new Handle:cvNumMines = INVALID_HANDLE;
-
+new Handle:cvActTime = INVALID_HANDLE;
+new Handle:cvModel = INVALID_HANDLE;
+new Handle:cvTeamRestricted = INVALID_HANDLE;
 
 public Plugin:myinfo = {
 	name = "Tripmines",
-	author = "L. Duke",
+	author = "L. Duke (mod by user)",
 	description = "Plant a trip mine",
 	version = PLUGIN_VERSION,
 	url = "http://www.lduke.com/"
@@ -31,39 +43,45 @@ public Plugin:myinfo = {
 
 
 public OnPluginStart() 
-{ 
+{
   // events
+  HookEvent("player_death", PlayerDeath);
   HookEvent("player_spawn",PlayerSpawn);
   
   // convars
   CreateConVar("sm_tripmines_version", PLUGIN_VERSION, "Tripmines", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-  cvNumMines = CreateConVar("sm_tripmines_allowed","3");
-  
+  cvNumMines = CreateConVar("sm_tripmines_allowed", "3");
+  cvActTime = CreateConVar("sm_tripmines_activate_time", "2.0");
+  cvModel = CreateConVar("sm_tripmines_model", "models/props_lab/tpplug.mdl");
+  cvTeamRestricted = CreateConVar("sm_tripmines_restrictedteam", "0");
+
   // commands
   RegConsoleCmd("sm_tripmine", Command_TripMine);
-  
 }
 
-
-
-public OnEventShutdown()
-{
+public OnEventShutdown(){
+	UnhookEvent("player_death", PlayerDeath);
 	UnhookEvent("player_spawn",PlayerSpawn);
 }
 
-
-
 public OnMapStart()
 {
+  // set model based on cvar
+  GetConVarString(cvModel, mdlMine, sizeof(mdlMine));
+  
   // precache models
-  PrecacheModel(MDL_MINE, true);
+  PrecacheModel(mdlMine, true);
   PrecacheModel(MDL_LASER, true);
   
   // precache sounds
-  PrecacheSound(SND_MINE, true);
+  PrecacheSound(SND_MINEPUT, true);
+  PrecacheSound(SND_MINEACT, true);
 }
 
-
+// When a new client is put in the server we reset their mines count
+public OnClientPutInServer(client){
+  if(client && !IsFakeClient(client)) gRemaining[client] = 0;
+}
 
 public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -73,14 +91,28 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 	return Plugin_Continue;
 }
 
-
+public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast){
+	new client;
+	client = GetClientOfUserId(GetEventInt(event, "userid"));
+	gRemaining[client] = 0;
+	return Plugin_Continue;
+}
 
 public Action:Command_TripMine(client, args)
 {  
   // make sure client is not spectating
   if (!IsPlayerAlive(client))
     return Plugin_Handled;
-   
+    
+  // check restricted team 
+  new team = GetClientTeam(client);
+  if(team == GetConVarInt(cvTeamRestricted))
+  { 
+    PrintHintText(client, "Your team does not have access to this equipment.");
+    return Plugin_Handled;
+  }
+  
+  // call SetMine if any remain in client's inventory
   if (gRemaining[client]>0) {
     SetMine(client);
   }
@@ -90,9 +122,9 @@ public Action:Command_TripMine(client, args)
   return Plugin_Handled;
 }
 
-
 SetMine(client)
 {
+  
   // setup unique target names for entities to be created with
   new String:beam[64];
   new String:beammdl[64];
@@ -139,7 +171,7 @@ SetMine(client)
     
     // create tripmine model
     new ent = CreateEntityByName("prop_physics_override");
-    SetEntityModel(ent,MDL_MINE);
+    SetEntityModel(ent,mdlMine);
     DispatchKeyValue(ent, "StartDisabled", "false");
     DispatchSpawn(ent);
     TeleportEntity(ent, end, normal, NULL_VECTOR);
@@ -181,31 +213,59 @@ SetMine(client)
     SetEntPropVector(ent, Prop_Data, "m_vecEndPos", end);
     SetEntPropFloat(ent, Prop_Data, "m_fWidth", 4.0);
     AcceptEntityInput(ent, "TurnOff");
-    CreateTimer(1.0, TurnBeamOn, ent);
+
+    new Handle:data = CreateDataPack();
+    CreateTimer(GetConVarFloat(cvActTime), TurnBeamOn, data);
+    WritePackCell(data, client);
+    WritePackCell(data, ent);
+    WritePackFloat(data, end[0]);
+    WritePackFloat(data, end[1]);
+    WritePackFloat(data, end[2]);
     
     // play sound
-    EmitSoundToAll(SND_MINE, ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, ent, end, NULL_VECTOR, true, 0.0);
+    EmitSoundToAll(SND_MINEPUT, ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, ent, end, NULL_VECTOR, true, 0.0);
     
     // send message
     PrintHintText(client, "Tripmines remaining: %d", gRemaining[client]);
   }
   else
   {
-    PrintHintText(client, "could find a valid location to put tripmine");
-  } 
+    PrintHintText(client, "Invalid location for Tripmine");
+  }
 }
 
-public Action:TurnBeamOn(Handle:timer, any:ent)
+public Action:TurnBeamOn(Handle:timer, Handle:data)
 {
+  decl String:color[26];
+
+  ResetPack(data);
+  new client = ReadPackCell(data);
+  new ent = ReadPackCell(data);
+
   if (IsValidEntity(ent))
   {
-    DispatchKeyValue(ent, "rendercolor", "0 255 255");
+    new team = GetClientTeam(client);
+    if(team == TEAM_T) color = COLOR_T;
+    else if(team == TEAM_CT) color = COLOR_CT;
+    else color = COLOR_DEF;
+
+    DispatchKeyValue(ent, "rendercolor", color);
     AcceptEntityInput(ent, "TurnOn");
+
+    new Float:end[3];
+    end[0] = ReadPackFloat(data);
+    end[1] = ReadPackFloat(data);
+    end[2] = ReadPackFloat(data);
+
+    EmitSoundToAll(SND_MINEACT, ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, ent, end, NULL_VECTOR, true, 0.0);
   }
+
+  CloseHandle(data);
 }
 
 public bool:FilterAll (entity, contentsMask)
 {
   return false;
 }
+
 
