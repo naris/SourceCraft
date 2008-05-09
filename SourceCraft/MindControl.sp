@@ -136,6 +136,18 @@ public OnMapStart()
     SetupSound(controlWav, true, true);
 }
 
+public OnMapEnd()
+{
+    new maxplayers=GetMaxClients();
+    for (new index=1;index<=maxplayers;index++)
+        ResetMindControlledObjects(index, true);
+}
+
+public OnClientDisconnect(client)
+{
+    ResetMindControlledObjects(client, false);
+}
+
 public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");

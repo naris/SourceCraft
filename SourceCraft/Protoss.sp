@@ -137,10 +137,7 @@ public OnMapEnd()
 {
     new maxplayers=GetMaxClients();
     for (new index=1;index<=maxplayers;index++)
-    {
         ResetCloakingAndDetector(index);
-        ResetMindControlledObjects(index, true);
-    }
 }
 
 public OnPlayerAuthed(client,Handle:player)
@@ -151,7 +148,6 @@ public OnPlayerAuthed(client,Handle:player)
 public OnClientDisconnect(client)
 {
     ResetCloakingAndDetector(client);
-    ResetMindControlledObjects(client, false);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)

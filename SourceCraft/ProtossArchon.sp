@@ -113,13 +113,6 @@ public OnMapStart()
     SetupSound(rechargeWav,true,true);
 }
 
-public OnMapEnd()
-{
-    new maxplayers=GetMaxClients();
-    for (new index=1;index<=maxplayers;index++)
-        ResetMindControlledObjects(index, true);
-}
-
 public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
