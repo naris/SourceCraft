@@ -15,6 +15,7 @@
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
+#include "sc/MindControl"
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
@@ -25,13 +26,19 @@
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
-new raceID, shockwaveID, shieldsID, feedbackID, maelstormID;
-
-new bool:m_AllowMaelstorm[MAXPLAYERS+1];
-new Handle:cvarMaelstormCooldown = INVALID_HANDLE;
+new raceID, shockwaveID, shieldsID, feedbackID, maelstormID, controlID;
 
 new g_lightningSprite;
 new g_haloSprite;
+
+new Handle:cvarMindControlCooldown = INVALID_HANDLE;
+new Handle:cvarMindControlEnable = INVALID_HANDLE;
+new Handle:cvarMaelstormCooldown = INVALID_HANDLE;
+
+new bool:m_MindControlAvailable = false;
+
+new bool:m_AllowMaelstorm[MAXPLAYERS+1];
+new bool:m_AllowMindControl[MAXPLAYERS+1];
 
 new m_Shields[MAXPLAYERS+1];
 
@@ -52,12 +59,16 @@ public OnPluginStart()
         SetFailState("Couldn't hook the player_spawn event.");
 
     cvarMaelstormCooldown=CreateConVar("sc_maelstormcooldown","45");
+    cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
+    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
 
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
 
 public OnPluginReady()
 {
+    m_MindControlAvailable = LibraryExists("MindControl");
+
     raceID      = CreateRace("Protoss Archon", "archon",
                              "You are now a Protoss Archon.",
                              "You will be a Protoss Archon when you die or respawn.",
@@ -75,6 +86,18 @@ public OnPluginReady()
     maelstormID = AddUpgrade(raceID,"Maelstorm", "maelstorm", 
                              "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.\nThey will also be decloaked, always available.",
                              true); // Ultimate
+
+    if (m_MindControlAvailable)
+    {
+        controlID = AddUpgrade(raceID,"Mind Control", "mind_control",
+                               "Allows you to control an object from the opposite team.",
+                               true); // Ultimate
+    }
+    else
+    {
+        controlID = AddUpgrade(raceID,"Mind Control", "mind_control",
+                               "Not Available", true, 99, 0); // Ultimate
+    }
 }
 
 public OnMapStart()
@@ -90,10 +113,18 @@ public OnMapStart()
     SetupSound(rechargeWav,true,true);
 }
 
+public OnMapEnd()
+{
+    new maxplayers=GetMaxClients();
+    for (new index=1;index<=maxplayers;index++)
+        ResetMindControlledObjects(index, true);
+}
+
 public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
     m_AllowMaelstorm[client]=true;
+    m_AllowMindControl[client]=true;
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -105,6 +136,8 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
             SetupShields(client, shields_level);
         }
+        else if (oldrace == raceID)
+            ResetMindControlledObjects(client, false);
     }
 }
 
@@ -381,12 +414,26 @@ public PsionicShockwave(damage, victim_index, Handle:victim_player, index, Handl
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
-    if (race==raceID && pressed && IsPlayerAlive(client) &&
-        m_AllowMaelstorm[client])
+    if (race==raceID && IsPlayerAlive(client))
     {
-        new ult_level=GetUpgradeLevel(player,race,maelstormID);
+        new maelstorm_level=GetUpgradeLevel(player,race,maelstormID);
+        if (maelstorm_level)
+            Maelstorm(client,player,maelstorm_level);
+        else
+        {
+            new control_level=GetUpgradeLevel(player,race,controlID);
+            if (control_level)
+                DoMindControl(client,player,control_level);
+        }
+    }
+}
+
+public Maelstorm(client,Handle:player, level)
+{
+    if (m_AllowMaelstorm[client])
+    {
         new Float:range;
-        switch(ult_level)
+        switch(level)
         {
             case 0: range=350.0;
             case 1: range=400.0;
@@ -451,6 +498,62 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
+public DoMindControl(client,Handle:player,level)
+{
+    if ( m_AllowMindControl[client] && m_MindControlAvailable)
+    {
+        if (!GetConVarBool(cvarMindControlEnable))
+        {
+            PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
+                    COLOR_GREEN,COLOR_DEFAULT);
+            return;
+        }
+
+        new Float:range, percent;
+        switch(level)
+        {
+            case 1:
+            {
+                range=150.0;
+                percent=30;
+            }
+            case 2:
+            {
+                range=300.0;
+                percent=50;
+            }
+            case 3:
+            {
+                range=450.0;
+                percent=70;
+            }
+            case 4:
+            {
+                range=650.0;
+                percent=90;
+            }
+        }
+
+        new builder;
+        new objects:type;
+        if (MindControl(client, range, percent, builder, type))
+        {
+            new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
+            LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
+                    client,builder,objectName[type]);
+            PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
+                    COLOR_GREEN,COLOR_DEFAULT,client,objectName[type]);
+            PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,objectName[type], cooldown);
+
+            if (cooldown > 0.0)
+            {
+                m_AllowMindControl[client]=false;
+                CreateTimer(cooldown,AllowMindControl,client);
+            }
+        }
+    }
+}
+
 public Action:AllowMaelstorm(Handle:timer,any:index)
 {
     m_AllowMaelstorm[index]=true;
@@ -462,6 +565,21 @@ public Action:AllowMaelstorm(Handle:timer,any:index)
             EmitSoundToClient(index, rechargeWav);
             PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cMaelstorm%c is now available again!",
                     COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+        }
+    }                
+    return Plugin_Stop;
+}
+
+public Action:AllowMindControl(Handle:timer,any:index)
+{
+    m_AllowMindControl[index]=true;
+    if (IsClientInGame(index) && IsPlayerAlive(index))
+    {
+        if (GetRace(GetPlayerHandle(index)) == raceID)
+        {
+            EmitSoundToClient(index, rechargeWav);
+            PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cMind Control%c is now available again!",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         }
     }                
     return Plugin_Stop;
@@ -488,4 +606,3 @@ public Action:Regeneration(Handle:timer)
     }
     return Plugin_Continue;
 }
-
