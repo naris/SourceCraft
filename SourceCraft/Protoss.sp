@@ -13,6 +13,7 @@
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <tf2_player>
+#include <tf2_cloak>
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
@@ -38,8 +39,6 @@ new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
 new bool:m_AllowMindControl[MAXPLAYERS+1];
 new Float:gReaverScarabTime[MAXPLAYERS+1];
-
-new m_OffsetCloakMeter;
 
 new explosionModel;
 
@@ -111,13 +110,6 @@ public OnPluginReady()
     {
         controlID = AddUpgrade(raceID,"Mind Control", "mind_control",
                                "Not Available", true, 99, 0); // Ultimate
-    }
-
-    if (GameType == tf2)
-    {
-        m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
-        if (m_OffsetCloakMeter == -1)
-            SetFailState("Couldn't find CloakMeter Offset");
     }
 }
 
@@ -487,11 +479,9 @@ public Action:CloakingAndDetector(Handle:timer)
                                                 TF2_RemovePlayerDisguise(index);
                                                 TF2_SetPlayerCloak(client, false);
 
-                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
+                                                new Float:cloakMeter = TF2_GetCloakMeter(index);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
-                                                {
-                                                    SetEntDataFloat(index,m_OffsetCloakMeter, 0.0);
-                                                }
+                                                    TF2_SetCloakMeter(index, 0.0);
                                             }
                                             m_Detected[client][index] = true;
                                         }

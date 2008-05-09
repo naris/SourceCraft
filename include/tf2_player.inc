@@ -1,7 +1,7 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: tf2_player.inc
- * Description: Functions to return information about TF2 players.
+ * Description: Functions to return information about TF2 player condition.
  * Author(s): Naris (Murray Wilson)
  */
  
