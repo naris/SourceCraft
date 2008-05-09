@@ -20,11 +20,35 @@ stock m_ReincarnationCount[MAXPLAYERS+1];
 stock bool:m_IsRespawning[MAXPLAYERS+1];
 stock bool:m_IsChangingClass[MAXPLAYERS+1];
 stock Float:m_DeathLoc[MAXPLAYERS+1][3];
+stock Float:m_DeathAng[MAXPLAYERS+1][3];
 
 stock SetupRespawn()
 {
     if (GetGameType() != cstrike)
         MarkNativeAsOptional("CS_RespawnPlayer");
+}
+
+stock Respawn(client)
+{
+    m_IsRespawning[client]=true;
+    m_ReincarnationCount[client]++;
+    GetClientAbsOrigin(client, m_DeathLoc[client]);
+    GetClientAbsAngles(client, m_DeathAng[client]);
+    AuthTimer(0.1,client,RespawnPlayerHandle);
+}
+
+stock Reposition(client)
+{
+    m_IsRespawning[client]=false;
+    TeleportEntity(client,m_DeathLoc[client], m_DeathAng[client], NULL_VECTOR);
+
+    /*
+    if (GameType == tf2)
+    {
+        new Handle:pack = AuthTimer(0.1,client,SetInvuln);
+        WritePackFloat(pack, 0.1);
+    }
+    */
 }
 
 stock RespawnPlayer(client)

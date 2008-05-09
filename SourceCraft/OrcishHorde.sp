@@ -211,20 +211,9 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                     m_IsChangingClass[client] = false;
                 else if (m_IsRespawning[client])
                 {
-                    m_IsRespawning[client]=false;
-
-                    TeleportEntity(client,m_DeathLoc[client], NULL_VECTOR, NULL_VECTOR);
-
+                    Reposition(client);
                     TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
-
-                    /*
-                    if (GameType == tf2)
-                    {
-                        new Handle:pack = AuthTimer(0.1,client,SetInvuln);
-                        WritePackFloat(pack, 0.5);
-                    }
-                    */
                 }
             }
         }
@@ -308,14 +297,10 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             if (GetRandomInt(1,100)<=percent &&
                 m_ReincarnationCount[victim_index] <= times)
             {
-                GetClientAbsOrigin(victim_index, m_DeathLoc[victim_index]);
+                Respawn(victim_index);
+                m_HasRespawned[victim_index]=true;
                 TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
                 TE_SendToAll();
-
-                AuthTimer(0.1,victim_index,RespawnPlayerHandle);
-                m_HasRespawned[victim_index]=true;
-                m_IsRespawning[victim_index]=true;
-                m_ReincarnationCount[victim_index]++;
             }
             else
                 m_ReincarnationCount[victim_index] = 0;
