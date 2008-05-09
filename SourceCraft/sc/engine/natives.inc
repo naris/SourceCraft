@@ -1061,6 +1061,7 @@ bool:InitNatives()
     CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("GetPlayerHandle",Native_GetPlayerHandle);
     CreateNative("GetRace",Native_GetRace);
+    CreateNative("ChangeRace",Native_ChangeRace);
     CreateNative("GetLevel",Native_GetLevel);
     CreateNative("SetLevel",Native_SetLevel);
     CreateNative("ResetLevel",Native_ResetLevel);
