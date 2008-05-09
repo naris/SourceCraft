@@ -124,7 +124,7 @@ public OnMapStart()
         SetFailState("Couldn't find smoke Model");
 
     g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
-    if (g_haloSprite == -1)
+    if (g_blueGlow == -1)
         SetFailState("Couldn't find blueglow Model");
 
     g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
@@ -251,14 +251,14 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                                             color[0] = 255; // Red
 
                                         TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                                0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
+                                                           0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
                                         TE_SendToAll();
 
                                         TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
                                         TE_SendToAll();
 
                                         TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,
-                                                5.0,5.0,255);
+                                                           5.0,5.0,255);
                                         TE_SendToAll();
 
                                         new Float:splashDir[3];

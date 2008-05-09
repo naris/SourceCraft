@@ -347,26 +347,29 @@ Lockdown(victim_index, Handle:victim_player, Handle:player)
         new lockdown_level=GetUpgradeLevel(player,raceID,lockdownID);
         if (lockdown_level)
         {
-            new percent;
-            switch(lockdown_level)
+            new Float:lastTime = gLockdownTime[victim_index];
+            if (lastTime == 0.0 || (GetGameTime() - lastTime > 2.0))
             {
-                case 1:  percent=15;
-                case 2:  percent=21;
-                case 3:  percent=37;
-                case 4:  percent=52;
-                default: percent=0;
-            }
-            if (GetRandomInt(1,100)<=percent && (!gLockdownTime[victim_index] ||
-                GetGameTime() - gLockdownTime[victim_index] > 2.0))
-            {
-                new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
-                TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
+                new percent;
+                switch(lockdown_level)
+                {
+                    case 1:  percent=15;
+                    case 2:  percent=21;
+                    case 3:  percent=37;
+                    case 4:  percent=52;
+                    default: percent=0;
+                }
+                if (GetRandomInt(1,100)<=percent)
+                {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(victim_index, Origin);
+                    TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
 
-                gLockdownTime[victim_index] = GetGameTime();
-                FreezeEntity(victim_index);
-                EmitSoundToAll(lockdownWav,victim_index);
-                AuthTimer(1.0,victim_index,UnfreezePlayer);
+                    FreezeEntity(victim_index);
+                    EmitSoundToAll(lockdownWav,victim_index);
+                    gLockdownTime[victim_index] = GetGameTime();
+                    AuthTimer(1.0,victim_index,UnfreezePlayer);
+                }
             }
         }
     }

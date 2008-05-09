@@ -30,6 +30,8 @@ new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationI
 
 new g_lightningSprite;
 new g_haloSprite;
+new g_blueGlow;
+new g_redGlow;
 
 new bool:m_AllowArchon[MAXPLAYERS+1];
 new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
@@ -110,6 +112,14 @@ public OnMapStart()
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");
+
+    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
+    if (g_blueGlow == -1)
+        SetFailState("Couldn't find blueglow Model");
+
+    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
+    if (g_redGlow == -1)
+        SetFailState("Couldn't find redglow Model");
 
     SetupSound(rechargeWav,true,true);
 }
@@ -205,6 +215,14 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     new Float:minutes = cooldown / 60.0;
                     new Float:seconds = FloatFraction(minutes) * 60.0;
                     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cSummon Archon%c to become an Archon, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
+
+                    new Float:clientLoc[3];
+                    GetClientAbsOrigin(client, clientLoc);
+                    clientLoc[2] += 50.0; // Adjust position to the middle
+                    TE_SetupGlowSprite(clientLoc,(GetClientTeam(client) == 3) ? g_blueGlow : g_redGlow,
+                                       6.0,100.0,255);
+                    TE_SendToAll();
+
                     ChangeRace(player, archon_race, true);
                     CreateTimer(cooldown,AllowArchon,client);
                     m_AllowArchon[client]=false;

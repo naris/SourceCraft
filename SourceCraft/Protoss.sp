@@ -285,65 +285,69 @@ bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:play
     new rs_level = GetUpgradeLevel(player,raceID,scarabID);
     if (rs_level > 0)
     {
-        new Float:percent, chance;
-        switch(rs_level)
-        {
-            case 1:
-            {
-                chance=20;
-                percent=0.14;
-            }
-            case 2:
-            {
-                chance=40;
-                percent=0.27;
-            }
-            case 3:
-            {
-                chance=60;
-                percent=0.43;
-            }
-            case 4:
-            {
-                chance=90;
-                percent=0.63;
-            }
-        }
-
         if (!GetImmunity(victim_player,Immunity_Explosion) &&
-            !TF2_IsPlayerInvuln(victim_index) &&
-            GetRandomInt(1,100) <= chance &&
-            (!gReaverScarabTime[index] ||
-             GetGameTime() - gReaverScarabTime[index] > 0.5))
+            !TF2_IsPlayerInvuln(victim_index))
         {
-            new health_take= RoundToFloor(float(damage)*percent);
-            if (health_take > 0)
+            new Float:lastTime = gReaverScarabTime[index];
+            new Float:interval = GetGameTime() - lastTime;
+            if (lastTime == 0.0 || interval > 0.5)
             {
-                new new_health=GetClientHealth(victim_index)-health_take;
-                if (new_health <= 0)
+                new Float:percent, chance;
+                switch(rs_level)
                 {
-                    new_health=0;
-                    LogKill(index, victim_index, "scarab", "Reaver Scarab", health_take);
+                    case 1:
+                    {
+                        chance=20;
+                        percent=0.14;
+                    }
+                    case 2:
+                    {
+                        chance=40;
+                        percent=0.27;
+                    }
+                    case 3:
+                    {
+                        chance=60;
+                        percent=0.43;
+                    }
+                    case 4:
+                    {
+                        chance=90;
+                        percent=0.63;
+                    }
                 }
-                else
-                    LogDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
 
-                SetEntityHealth(victim_index,new_health);
-
-                if (!gReaverScarabTime[index] ||
-                    GetGameTime() - gReaverScarabTime[index] >= 2.0)
+                if (GetRandomInt(1,100) <= chance)
                 {
-                    new Float:Origin[3];
-                    GetClientAbsOrigin(victim_index, Origin);
-                    Origin[2] += 5;
+                    new health_take = RoundToFloor(float(damage)*percent);
+                    if (health_take > 0)
+                    {
+                        new new_health=GetClientHealth(victim_index)-health_take;
+                        if (new_health <= 0)
+                        {
+                            new_health=0;
+                            LogKill(index, victim_index, "scarab", "Reaver Scarab", health_take);
+                        }
+                        else
+                            LogDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
 
-                    TE_SetupExplosion(Origin,explosionModel,5.0,1,0,5,10);
-                    TE_SendToAll();
+                        SetEntityHealth(victim_index,new_health);
+
+                        if (gReaverScarabTime[index] == 0.0 || interval >= 2.0)
+                        {
+                            new Float:Origin[3];
+                            GetClientAbsOrigin(victim_index, Origin);
+                            Origin[2] += 5;
+
+                            TE_SetupExplosion(Origin,explosionModel,5.0,1,0,5,10);
+                            TE_SendToAll();
+                        }
+
+                        EmitSoundToAll(explodeWav,victim_index);
+                        gReaverScarabTime[index] = GetGameTime();
+                        return true;
+                    }
                 }
-
-                EmitSoundToAll(explodeWav,victim_index);
-                gReaverScarabTime[index] = GetGameTime();
-                return true;
             }
         }
     }

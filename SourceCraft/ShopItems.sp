@@ -570,50 +570,62 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                 if (!GetImmunity(victim_player,Immunity_HealthTake) &&
                     !TF2_IsPlayerInvuln(victim_index))
                 {
-                    if (GetOwnsItem(attacker_player,shopItem[ITEM_CLAWS]) &&
-                        (!gClawTime[attacker_index] ||
-                         GetGameTime() - gClawTime[attacker_index] > 1.000))
+                    if (GetOwnsItem(attacker_player,shopItem[ITEM_CLAWS]))
                     {
-                        new amount=RoundToCeil(float(damage)*0.10);
-                        if (amount > 8)
-                            amount = 8;
-                        else if (amount < 1)
-                            amount = 1;
-
-                        new newhealth=GetClientHealth(victim_index)-amount;
-                        if (newhealth <= 0)
+                        new Float:lastTime = gClawTime[attacker_index];
+                        if (lastTime == 0.0 || GetGameTime() - lastTime > 1.0)
                         {
-                            newhealth=0;
-                            LogKill(attacker_index, victim_index, "item_claws", "Claws of Attack", amount);
-                        }
-                        else
-                            LogDamage(attacker_index, victim_index, "item_claws", "Claws of Attack", amount);
+                            new amount=RoundToCeil(float(damage)*0.10);
+                            if (amount > 8)
+                                amount = 8;
+                            else if (amount < 1)
+                                amount = 1;
 
-                        SetEntityHealth(victim_index,newhealth);
-                        gClawTime[attacker_index] = GetGameTime();
-                        changed = true;
+                            new newhealth=GetClientHealth(victim_index)-amount;
+                            if (newhealth <= 0)
+                            {
+                                newhealth=0;
+                                LogKill(attacker_index, victim_index,
+                                        "item_claws", "Claws of Attack", amount);
+                            }
+                            else
+                            {
+                                LogDamage(attacker_index, victim_index,
+                                          "item_claws", "Claws of Attack", amount);
+                            }
+
+                            SetEntityHealth(victim_index,newhealth);
+                            gClawTime[attacker_index] = GetGameTime();
+                            changed = true;
+                        }
                     }
 
                     if (assister_player != INVALID_HANDLE &&
-                        GetOwnsItem(assister_player,shopItem[ITEM_CLAWS]) &&
-                        (!gClawTime[assister_index] ||
-                         GetGameTime() - gClawTime[assister_index] > 1.000))
+                        GetOwnsItem(assister_player,shopItem[ITEM_CLAWS]))
                     {
-                        new amount=RoundToFloor(float(damage)*0.10);
-                        if (amount > 8)
-                            amount = 8;
-                        new newhealth=GetClientHealth(victim_index)-amount;
-                        if (newhealth <= 0)
+                        new Float:lastTime = gClawTime[assister_index];
+                        if (lastTime == 0.0 || GetGameTime() - lastTime > 1.0)
                         {
-                            newhealth=0;
-                            LogKill(assister_index, victim_index, "item_claws", "Claws of Attack", amount);
-                        }
-                        else
-                            LogDamage(assister_index, victim_index, "item_claws", "Claws of Attack", amount);
+                            new amount=RoundToFloor(float(damage)*0.10);
+                            if (amount > 8)
+                                amount = 8;
+                            new newhealth=GetClientHealth(victim_index)-amount;
+                            if (newhealth <= 0)
+                            {
+                                newhealth=0;
+                                LogKill(assister_index, victim_index,
+                                        "item_claws", "Claws of Attack", amount);
+                            }
+                            else
+                            {
+                                LogDamage(assister_index, victim_index,
+                                          "item_claws", "Claws of Attack", amount);
+                            }
 
-                        SetEntityHealth(victim_index,newhealth);
-                        gClawTime[assister_index] = GetGameTime();
-                        changed = true;
+                            SetEntityHealth(victim_index,newhealth);
+                            gClawTime[assister_index] = GetGameTime();
+                            changed = true;
+                        }
                     }
                 }
 
