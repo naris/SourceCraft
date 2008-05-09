@@ -12,6 +12,7 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_player>
+#include <tf2_cloak>
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
@@ -447,6 +448,22 @@ public Maelstorm(client,Handle:player, level)
                 new Handle:player_check=GetPlayerHandle(index);
                 if (player_check != INVALID_HANDLE)
                 {
+                    if (!GetImmunity(player_check,Immunity_Uncloaking))
+                    {
+                        SetOverrideVisiblity(player_check, 255);
+                        if (TF2_GetPlayerClass(index) == TFClass_Spy)
+                        {
+                            TF2_RemovePlayerDisguise(index);
+                            TF2_SetPlayerCloak(index, false);
+
+                            new Float:cloakMeter = TF2_GetCloakMeter(index);
+                            if (cloakMeter > 0.0 && cloakMeter <= 100.0)
+                                TF2_SetCloakMeter(index, 0.0);
+
+                            AuthTimer(10.0,index,RecloakPlayer);
+                        }
+                    }
+
                     if (!GetImmunity(player_check,Immunity_Ultimates) &&
                         !GetImmunity(player_check,Immunity_MotionTake))
                     {
@@ -489,6 +506,18 @@ public Maelstorm(client,Handle:player, level)
             CreateTimer(cooldown,AllowMaelstorm,client);
         }
     }
+}
+
+public Action:RecloakPlayer(Handle:timer,Handle:pack)
+{
+    new client=ClientOfAuthTimer(pack);
+    if(client)
+    {
+        new Handle:player=GetPlayerHandle(client);
+        if (player != INVALID_HANDLE)
+            SetOverrideVisiblity(player, -1);
+    }
+    return Plugin_Stop;
 }
 
 public DoMindControl(client,Handle:player,level)

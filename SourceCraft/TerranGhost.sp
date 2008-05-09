@@ -13,6 +13,7 @@
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <tf2_player>
+#include <tf2_cloak>
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
@@ -37,8 +38,6 @@ new g_laserSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 new g_explosionModel;
-
-new m_OffsetCloakMeter;
 
 new Handle:cvarNuclearLaunchTime = INVALID_HANDLE;
 new Handle:cvarNuclearLockTime = INVALID_HANDLE;
@@ -109,13 +108,6 @@ public OnPluginReady()
     nukeID      = AddUpgrade(raceID,"Nuclear Launch", "nuke", 
                              "Launches a Nuclear Device that does extreme damage to all players in the area.",
                              true); // Ultimate
-
-    if (GameType == tf2)
-    {
-        m_OffsetCloakMeter=FindSendPropInfo("CTFPlayer","m_flCloakMeter");
-        if (m_OffsetCloakMeter == -1)
-            SetFailState("Couldn't find CloakMeter Offset");
-    }
 }
 
 public OnMapStart()
@@ -443,11 +435,9 @@ public Action:OcularImplants(Handle:timer)
                                                 TF2_RemovePlayerDisguise(index);
                                                 TF2_SetPlayerCloak(index, false);
 
-                                                new Float:cloakMeter = GetEntDataFloat(index,m_OffsetCloakMeter);
+                                                new Float:cloakMeter = TF2_GetCloakMeter(index);
                                                 if (cloakMeter > 0.0 && cloakMeter <= 100.0)
-                                                {
-                                                    SetEntDataFloat(index,m_OffsetCloakMeter, 0.0);
-                                                }
+                                                    TF2_SetCloakMeter(index, 0.0);
                                             }
                                             m_Detected[client][index] = true;
                                         }
