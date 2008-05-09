@@ -76,8 +76,8 @@ public OnPluginReady()
     m_InfectionAvailable = LibraryExists("MedicInfect");
 
     raceID      = CreateRace("Terran Medic", "medic",
-                             "You are now part of the Terran Medic.",
-                             "You will be part of the Terran Medic when you die or respawn.",
+                             "You are now a Terran Medic.",
+                             "You will be a Terran Medic when you die or respawn.",
                              32,20);
 
     if (m_InfectionAvailable)

@@ -425,6 +425,7 @@ UpgradesInfo(client,race,bool:change)
 
         GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
 
+        Format(buf,sizeof(buf),"%d",upgrade);
         Format(text,sizeof(text),"%s%s%s",ult,name,minLevel);
         AddMenuItem(menu,buf,text);
     }
