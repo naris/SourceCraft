@@ -233,46 +233,54 @@ RaceMenu(client,bool:change)
                 if (disable || !change)
                 {
                     GetRaceName(raceHandle,name,sizeof(name));
-                    if (reqLevel > 0)
+                    if (name[0] != 0)
                     {
-                        Format(item,sizeof(item),"%s (overall level must be >= %d)",
-                               name, reqLevel);
+                        if (reqLevel > 0)
+                        {
+                            Format(item,sizeof(item),"%s (overall level must be >= %d)",
+                                   name, reqLevel);
+                        }
+                        else
+                            Format(item,sizeof(item),"%s (locked)", name);
                     }
                     else
-                        Format(item,sizeof(item),"%s (locked)", name);
+                        item[0] = 0;
                 }
                 else
                     GetRaceName(raceHandle,item,sizeof(item));
             }
 
-            /*
-            new upgradeCount = GetUpgradeCount(raceHandle);
-            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            if (item[0] != 0)
             {
-                if (upgrade == 0)
-                    strcopy(item,sizeof(item),"   (");
-                else
-                    StrCat(item,sizeof(item),",");
+                /*
+                new upgradeCount = GetUpgradeCount(raceHandle);
+                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                {
+                    if (upgrade == 0)
+                        strcopy(item,sizeof(item),"   (");
+                    else
+                        StrCat(item,sizeof(item),",");
 
-                GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
-                StrCat(item,sizeof(item),name);
-                if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
-                    StrCat(item,sizeof(item),"[U]");
+                    GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
+                    StrCat(item,sizeof(item),name);
+                    if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
+                        StrCat(item,sizeof(item),"[U]");
+                }
+                StrCat(item,sizeof(item),")");
+                Format(rbuf,sizeof(rbuf),"%d",race);
+                AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
+                */
+
+                Format(rbuf,sizeof(rbuf),"%d",race);
+                AddMenuItem(crMenu,rbuf,item,style);
             }
-            StrCat(item,sizeof(item),")");
-            Format(rbuf,sizeof(rbuf),"%d",race);
-            AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
-            */
-
-            Format(rbuf,sizeof(rbuf),"%d",race);
-            AddMenuItem(crMenu,rbuf,item,style);
         }
         gRaceMenuMode[client]=change;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
     else
         PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                    COLOR_GREEN,COLOR_DEFAULT);
+                COLOR_GREEN,COLOR_DEFAULT);
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
