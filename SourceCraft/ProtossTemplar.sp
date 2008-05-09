@@ -69,7 +69,7 @@ public OnPluginStart()
     }
 
     cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","30");
-    cvarArchonCooldown=CreateConVar("sc_archoncooldown","300");
+    cvarArchonCooldown=CreateConVar("sc_archoncooldown","120");
 
     SetupDrugs();
 }
