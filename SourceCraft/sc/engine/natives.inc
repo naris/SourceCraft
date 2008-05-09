@@ -1055,9 +1055,10 @@ bool:InitNatives()
     CreateNative("CreateShopItem",Native_CreateShopItem);
     CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
     CreateNative("FindShopItem",Native_FindShopItem);
-    CreateNative("KillPlayer",Native_KillPlayer);
-    CreateNative("HurtPlayer",Native_HurtPlayer);
+    CreateNative("FindRace",Native_FindRace);
     CreateNative("HealPlayer",Native_HealPlayer);
+    CreateNative("HurtPlayer",Native_HurtPlayer);
+    CreateNative("KillPlayer",Native_KillPlayer);
     CreateNative("GetPlayerHandle",Native_GetPlayerHandle);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("GetLevel",Native_GetLevel);
