@@ -16,7 +16,7 @@ Protoss High Templar / Dark Templar:
 2) Levitation
 3) Hallucination
 4) Feedback (reflect damage back to enemy)
-5) Invisibility
+x) Invisibility
 Ult) Psionic Storm (Chained lightning with duration)
 Ult) Summon Archon
 
