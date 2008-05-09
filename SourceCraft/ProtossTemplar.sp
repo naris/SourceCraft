@@ -119,6 +119,11 @@ public OnMapEnd()
 	KillAllDrugs();
 }
 
+public OnClientDisconnect(client)
+{
+    PerformDrug(client, 0);
+}
+
 public OnPlayerAuthed(client,Handle:player)
 {
     m_AllowArchon[client]=true;
