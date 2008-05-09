@@ -216,7 +216,7 @@ public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:play
     if (thorns_level)
     {
         if (!GetImmunity(player,Immunity_HealthTake) &&
-             !TF2_IsPlayerInvuln(index))
+            !TF2_IsPlayerInvuln(index))
         {
             new chance;
             switch(thorns_level)
@@ -233,16 +233,7 @@ public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:play
             if(GetRandomInt(1,100) <= chance)
             {
                 new amount=RoundToNearest(damage * GetRandomFloat(0.30,0.90));
-                new newhp=GetClientHealth(index)-amount;
-                if (newhp <= 0)
-                {
-                    newhp=0;
-                    LogKill(victim_index, index, "thorns_aura", "Thorns Aura", amount);
-                }
-                else
-                    LogDamage(victim_index, index, "thorns_aura", "Thorns Aura", amount);
-
-                SetEntityHealth(index,newhp);
+                HurtPlayer(index,amount,victim_index,"thorns_aura", "Thorns Aura");
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victim_index, Origin);

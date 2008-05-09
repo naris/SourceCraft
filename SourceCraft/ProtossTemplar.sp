@@ -202,6 +202,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cSummon Archon%c to become an Archon, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
                     ChangeRace(player, archon_race, true);
                     CreateTimer(cooldown,AllowArchon,client);
+                    m_AllowArchon[client]=false;
                 }
             }
         }
@@ -302,16 +303,7 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                 !GetImmunity(attacker_player,Immunity_HealthTake) &&
                 !TF2_IsPlayerInvuln(attacker_index))
             {
-                newhp=GetClientHealth(attacker_index)-damage;
-                if (newhp <= 0)
-                {
-                    newhp=0;
-                    LogKill(victim_index, attacker_index, "feedback", "Feedback", damage);
-                }
-                else
-                    LogDamage(victim_index, attacker_index, "feedback", "Feedback", damage);
-
-                SetEntityHealth(attacker_index,newhp);
+                HurtPlayer(attacker_index,damage,victim_index,"feedback", "Feedback");
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(attacker_index, Origin);
@@ -484,8 +476,8 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
         GetClientAbsOrigin(client, clientLoc);
 
         new last=client;
-        new minDmg=level*3;
-        new maxDmg=level*10;
+        new minDmg=level*5;
+        new maxDmg=level*20;
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
@@ -510,7 +502,7 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
                                 TE_SendToAll();
 
                                 new amt=GetRandomInt(minDmg,maxDmg);
-                                HurtPlayer(index,amt,client,"psistorm", "Psionic Storm", 5+level);
+                                HurtPlayer(index,amt,client,"psistorm", "Psionic Storm");
                                 last=index;
                             }
                         }
@@ -519,9 +511,7 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
             }
         }
         if (--gPsionicStormDuration[client] > 0)
-        {
             return Plugin_Continue;
-        }
     }
     return Plugin_Stop;
 }
@@ -532,7 +522,7 @@ public Action:AllowPsionicStorm(Handle:timer,any:index)
     if (IsClientInGame(index))
     {
         EmitSoundToClient(index, rechargeWav);
-        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
+        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cPsionic Storm%c is now available again!",
                     COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     }
     return Plugin_Stop;

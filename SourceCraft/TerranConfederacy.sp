@@ -55,7 +55,7 @@ public OnPluginReady()
                              32);
 
     u238ID      = AddUpgrade(raceID,"Depleted U-238 Shells", "u238", "Increases damage for non-melee attacks");
-    armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", " A suit of Heavy Armor that reduces damage greatly.");
+    armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", " A suit of Heavy Armor that takes damage up to 80% until it is depleted.");
     stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 8-36% faster.");
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 

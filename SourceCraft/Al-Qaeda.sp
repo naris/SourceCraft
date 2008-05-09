@@ -494,18 +494,8 @@ public Action:FlamingWrath(Handle:timer)
                                                                   0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                                 TE_SendToAll();
 
-                                                new newhp=GetClientHealth(index)-flaming_wrath_level;
-                                                if (newhp <= 0)
-                                                {
-                                                    newhp=0;
-                                                    LogKill(client, index, "flaming_wrath", "Flaming Wrath", flaming_wrath_level);
-                                                    KillPlayer(index,client,"flaming_wrath");
-                                                }
-                                                else
-                                                {
-                                                    LogDamage(client, index, "flaming_wrath", "Flaming Wrath", flaming_wrath_level);
-                                                    HurtPlayer(index,flaming_wrath_level,client,"flaming_wrath");
-                                                }
+                                                HurtPlayer(index,flaming_wrath_level,client,
+                                                           "flaming_wrath", "Flaming Wrath");
 
                                                 if (++count > num)
                                                     break;

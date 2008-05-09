@@ -67,7 +67,7 @@ public OnPluginReady()
                              "A Shockwave of Psionic Energy accompanies all attacks to increase damage up to 250%, always available.");
 
     shieldsID   = AddUpgrade(raceID,"Plasma Shields", "shields",
-                             "You are enveloped in re-generating Plasma Shields that protect you from damage, always available.");
+                             "You are enveloped in re-generating Plasma Shields that protect you from 10%-90% damage while it is active, always available.");
 
     feedbackID  = AddUpgrade(raceID,"Feedback", "feedback",
                              "Gives you 5-50% chance of reflecting a shot back to the attacker, always available.");
@@ -225,22 +225,13 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
         SetEntityHealth(victim_index,newhp);
 
         LogToGame("[SourceCraft] Feedback prevented damage to %N from %N!\n",
-                victim_index, attacker_index);
+                  victim_index, attacker_index);
 
         if (attacker_index && attacker_index != victim_index &&
             !GetImmunity(attacker_player,Immunity_HealthTake) &&
             !TF2_IsPlayerInvuln(attacker_index))
         {
-            newhp=GetClientHealth(attacker_index)-damage;
-            if (newhp <= 0)
-            {
-                newhp=0;
-                LogKill(victim_index, attacker_index, "feedback", "Feedback", damage);
-            }
-            else
-                LogDamage(victim_index, attacker_index, "feedback", "Feedback", damage);
-
-            SetEntityHealth(attacker_index,newhp);
+            HurtPlayer(attacker_index,damage,victim_index,"feedback", "Feedback");
 
             new Float:Origin[3];
             GetClientAbsOrigin(attacker_index, Origin);
@@ -283,28 +274,28 @@ bool:Shields(damage, victim_index, Handle:victim_player)
     {
         case 0:
         {
-            from_percent=0.00;
-            to_percent=0.10;
+            from_percent=0.10;
+            to_percent=0.50;
         }
         case 1:
         {
-            from_percent=0.05;
-            to_percent=0.10;
+            from_percent=0.20;
+            to_percent=0.60;
         }
         case 2:
         {
-            from_percent=0.05;
-            to_percent=0.30;
+            from_percent=0.30;
+            to_percent=0.70;
         }
         case 3:
         {
-            from_percent=0.10;
-            to_percent=0.60;
+            from_percent=0.40;
+            to_percent=0.80;
         }
         case 4:
         {
-            from_percent=0.20;
-            to_percent=0.80;
+            from_percent=0.50;
+            to_percent=0.90;
         }
     }
     new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
@@ -353,17 +344,15 @@ public PsionicShockwave(damage, victim_index, Handle:victim_player, index, Handl
         new adj = shockwave_level*10;
         if (GetRandomInt(1,100) <= GetRandomInt(10+adj,100-adj))
         {
-            new Float:percent;
+            new amount;
             switch(shockwave_level)
             {
-                case 0: percent=0.25;
-                case 1: percent=0.50;
-                case 2: percent=1.00;
-                case 3: percent=1.50;
-                case 4: percent=2.00;
+                case 0: amount=damage / 2;
+                case 1: amount=damage;
+                case 2: amount=RoundFloat(float(damage)*1.50);
+                case 3: amount=damage * 2;
+                case 4: amount=RoundFloat(float(damage)*2.50);
             }
-
-            new amount=RoundFloat(float(damage)*percent);
             if (amount > 0)
             {
                 new newhp=GetClientHealth(victim_index)-amount;
@@ -399,11 +388,11 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         new Float:range;
         switch(ult_level)
         {
-            case 0: range=200.0;
-            case 1: range=300.0;
-            case 2: range=450.0;
-            case 3: range=650.0;
-            case 4: range=800.0;
+            case 0: range=350.0;
+            case 1: range=400.0;
+            case 2: range=650.0;
+            case 3: range=750.0;
+            case 4: range=900.0;
         }
         new count=0;
         new Float:indexLoc[3];
