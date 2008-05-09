@@ -218,11 +218,13 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
                     TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
                     TE_SendToAll();
 
+                    /*
                     if (GameType == tf2)
                     {
                         new Handle:pack = AuthTimer(0.1,client,SetInvuln);
                         WritePackFloat(pack, 0.5);
                     }
+                    */
                 }
             }
         }

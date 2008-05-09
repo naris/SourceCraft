@@ -50,6 +50,7 @@ public Action:RespawnPlayerHandle(Handle:timer,Handle:pack)
 
 public Action:SetInvuln(Handle:timer,Handle:pack)
 {
+    /*
     new client=ClientOfAuthTimer(pack);
     if(client)
     {
@@ -58,15 +59,17 @@ public Action:SetInvuln(Handle:timer,Handle:pack)
         if (duration > 0.0)
             AuthTimer(duration,client,ResetInvuln);
     }
+     */
     return Plugin_Stop;
 }
 
 public Action:ResetInvuln(Handle:timer,Handle:pack)
 {
+    /*
     new client=ClientOfAuthTimer(pack);
     if(client)
         TF2_SetPlayerInvuln(client, false);
-
+     */
     return Plugin_Stop;
 }
 
