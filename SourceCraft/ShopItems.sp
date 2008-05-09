@@ -111,7 +111,7 @@ public OnPluginStart()
 public OnPluginReady()
 {
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation", "ankh",
-                                       "If you die you will retrieve your equipment the following round.",
+                                       "If you die you will retrieve your shopitems the following life.",
                                        60);
 
     shopItem[ITEM_BOOTS]=CreateShopItem("Boots of Speed", "boots", 
@@ -192,7 +192,7 @@ public OnPluginReady()
                                         55);
 
     shopItem[ITEM_MOLE]=CreateShopItem("Mole", "mole",
-                                       "Tunnel to the enemies spawn\nat the beginning of the round\nand disguise as the enemy to\nget a quick couple of kills.",
+                                       "Tunnel to the enemies spawn\nat the beginning of the round\nto get a quick couple of kills.",
                                        75);
 
     shopItem[ITEM_MOLE_PROTECTION]=CreateShopItem("Mole Protection", "protection",
