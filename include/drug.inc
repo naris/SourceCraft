@@ -38,3 +38,24 @@
 
 native bool:PerformDrug(target, toggle);
 
+/**
+ * Do not edit below this line!
+ */
+
+public SharedPlugin:__pl_drug = 
+{
+	name = "drug",
+	file = "drug.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public __pl_drug_SetNTVOptional()
+{
+	MarkNativeAsOptional("PerformDrug");
+}
+#endif

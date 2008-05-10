@@ -31,6 +31,11 @@
 * Version: $Id: drug.sp 1833 2007-12-28 16:46:42Z ferret $
 */
 
+#pragma semicolon 1
+
+#include <sourcemod>
+#include <sdktools>
+
 #include "gametype"
 
 new Handle:g_DrugTimers[MAXPLAYERS+1];
@@ -42,15 +47,24 @@ new UserMsg:g_FadeUserMsgId;
 public Plugin:myinfo = 
 {
     name = "drug",
-    author = "SourceMod Team",
+    author = "SourceMod Team / -=|JFH|=- Naris",
     description = "Native interface to drug.",
     version = "1.0.0.0",
     url = "http://sourcemod.net/"
 };
 
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+    CreateNative("PerformDrug",Native_PerformDrug);
+    RegPluginLibrary("drug");
+}
+
 public OnPluginStart()
 {
     g_FadeUserMsgId = GetUserMessageId("Fade");
+
+    if(!HookEventEx("player_death",Event_PlayerDeath))
+        SetFailState("Could not hook the player_death event.");
 
     if (GetGameType() == tf2)
     {
@@ -69,7 +83,7 @@ public OnPluginStart()
 
 public OnMapEnd()
 {
-	KillAllDrugs();
+    KillAllDrugs();
 }
 
 public OnClientDisconnect(client)
@@ -77,10 +91,17 @@ public OnClientDisconnect(client)
     PerformDrug(client, 0);
 }
 
+public Action:Event_PlayerDeath(Handle:event,const String:name[],bool:dontBroadcast)
+{
+    new client=GetClientOfUserId(GetEventInt(event,"userid"));
+    PerformDrug(client, 0);
+    return Plugin_Handled;
+}
+
 public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
 {
-	KillAllDrugs();
-	return Plugin_Handled;
+    KillAllDrugs();
+    return Plugin_Handled;
 }
 
 CreateDrug(client)
@@ -208,4 +229,9 @@ public Action:Timer_Drug(Handle:timer, any:client)
     EndMessage();	
 
     return Plugin_Handled;
+}
+
+public Native_PerformDrug(Handle:plugin,numParams)
+{
+    return PerformDrug(GetNativeCell(1),GetNativeCell(2));
 }
