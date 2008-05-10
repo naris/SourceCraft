@@ -27,7 +27,7 @@
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:psistormWav[] = "sourcecraft/ptesto00.wav";
-new String:feedbackWav[] = "sourcecraft/feedback.wav";
+new String:feedbackWav[] = "sourcecraft/mind.wav"; // "sourcecraft/feedback.wav";
 new String:hallucinateWav[] = "sourcecraft/ptehal00.wav";
 new String:cureWav[] = "sourcecraft/ptehal01.wav";
 
