@@ -25,6 +25,13 @@
 #include "sc/drug"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
+new String:psistormWav[] = "sourcecraft/ptesto00.wav";
+new String:feedbackWav[] = "sourcecraft/feedback.wav";
+new String:hallucinateWav[] = "sourcecraft/ptehal00.wav";
+new String:cureWav[] = "sourcecraft/ptehal01.wav";
+
+new String:summonWav[][] = { "sourcecraft/parrdy00.wav",
+                             "sourcecraft/parwht03.wav" };
 
 new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationID, archonID;
 
@@ -122,6 +129,9 @@ public OnMapStart()
         SetFailState("Couldn't find redglow Model");
 
     SetupSound(rechargeWav,true,true);
+    SetupSound(psistormWav,true,true);
+    SetupSound(summonWav[0],true,true);
+    SetupSound(summonWav[1],true,true);
 }
 
 public OnMapEnd()
@@ -215,6 +225,8 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     new Float:minutes = cooldown / 60.0;
                     new Float:seconds = FloatFraction(minutes) * 60.0;
                     PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cSummon Archon%c to become an Archon, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
+
+                    EmitSoundToAll(summonWav[GetRandomInt(0,1)],client);
 
                     new Float:clientLoc[3];
                     GetClientAbsOrigin(client, clientLoc);
@@ -327,6 +339,8 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                 !TF2_IsPlayerInvuln(attacker_index))
             {
                 HurtPlayer(attacker_index,damage,victim_index,"feedback", "Feedback");
+
+                EmitSoundToAll(feedbackWav,victim_index);
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(attacker_index, Origin);
@@ -448,7 +462,15 @@ public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
         if(GetRandomInt(1,100) <= chance)
         {
             if (PerformDrug(victim_index, 1))
+            {
+                PrintToChat(victim_index,"%c[SourceCraft] %c %N has caused you to %challucinate%c!",
+                            COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
+                PrintToChat(index,"%c[SourceCraft] %c %N is now %challucinating%c!",
+                            COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+
+                EmitSoundToAll(hallucinateWav,index);
                 AuthTimer(level*2.0,index,CurePlayer);
+            }
         }
     }
 }
@@ -457,7 +479,10 @@ public Action:CurePlayer(Handle:timer,Handle:pack)
 {
     new client=ClientOfAuthTimer(pack);
     if(client)
+    {
+        EmitSoundToAll(cureWav,client);
         PerformDrug(client, 0);
+    }
     return Plugin_Stop;
 }
 
@@ -493,6 +518,8 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
             case 3: range=850.0;
             case 4: range=1000.0;
         }
+
+        EmitSoundToAll(psistormWav,client);
 
         new Float:indexLoc[3];
         new Float:clientLoc[3];

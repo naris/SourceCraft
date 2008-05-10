@@ -171,25 +171,25 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             switch(ult_level)
             {
                 case 1:
-                    {
-                        range=150.0;
-                        percent=30;
-                    }
+                {
+                    range=150.0;
+                    percent=30;
+                }
                 case 2:
-                    {
-                        range=300.0;
-                        percent=50;
-                    }
+                {
+                    range=300.0;
+                    percent=50;
+                }
                 case 3:
-                    {
-                        range=450.0;
-                        percent=70;
-                    }
+                {
+                    range=450.0;
+                    percent=70;
+                }
                 case 4:
-                    {
-                        range=650.0;
-                        percent=90;
-                    }
+                {
+                    range=650.0;
+                    percent=90;
+                }
             }
 
             new builder;
@@ -198,9 +198,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             {
                 new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
                 LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
-                        client,builder,objectName[type]);
+                          client,builder,objectName[type]);
                 PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
-                        COLOR_GREEN,COLOR_DEFAULT,client,objectName[type]);
+                            COLOR_GREEN,COLOR_DEFAULT,client,objectName[type]);
                 PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,objectName[type], cooldown);
 
                 if (cooldown > 0.0)
