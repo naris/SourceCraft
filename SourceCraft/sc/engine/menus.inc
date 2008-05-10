@@ -1099,14 +1099,16 @@ Admin_SetRace(client,target)
         SetMenuTitle(menu,"[SourceCraft] Select a race for %N.", target);
 
         decl String:buf[11];
-        Format(buf,sizeof(buf),"%d",target);
-
         decl String:racename[64];
         new raceCount = GetRaceCount();
         for(new race=0;race<raceCount;race++)
         {
             GetRaceName(GetRaceHandle(race),racename,sizeof(racename));
-            AddMenuItem(menu,buf,racename);
+            if (racename[0])
+            {
+                Format(buf,sizeof(buf),"%d,%d",target,race);
+                AddMenuItem(menu,buf,racename);
+            }
         }
         DisplayMenu(menu,client,MENU_TIME_FOREVER);
     }
@@ -1124,15 +1126,18 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
     {
         EmitSoundToClient(client,buttonWav);
         decl String:SelectionInfo[11];
+        decl String:SelectionData[2][5];
         decl String:SelectionDispText[256];
         new SelectionStyle;
         GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
                     SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
-        new target=StringToInt(SelectionInfo);
+        ExplodeString(SelectionInfo,",",SelectionData, 2, 5);
+        new target=StringToInt(SelectionData[0]);
         new Handle:targetHandle=GetPlayerHandle(target);
         if (targetHandle != INVALID_HANDLE)
         {
-            SetRace(targetHandle,selection);
+            new race=StringToInt(SelectionData[1]);
+            SetRace(targetHandle,race);
             decl String:racename[64];
             GetRaceName(GetRaceHandle(selection),racename,sizeof(racename));
 
