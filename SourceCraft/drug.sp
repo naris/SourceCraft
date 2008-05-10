@@ -31,15 +31,56 @@
 * Version: $Id: drug.sp 1833 2007-12-28 16:46:42Z ferret $
 */
 
+#include "sc/util"
+
 new Handle:g_DrugTimers[MAXPLAYERS+1];
 new Float:g_DrugAngles[20] = {0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 20.0, 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -20.0, -25.0, -20.0, -15.0, -10.0, -5.0};
 
 // UserMessageId for Fade.
 new UserMsg:g_FadeUserMsgId;
 
-SetupDrugs()
+public Plugin:myinfo = 
+{
+    name = "drug",
+    author = "SourceMod Team",
+    description = "Native interface to drug.",
+    version = "1.0.0.0",
+    url = "http://sourcemod.net/"
+};
+
+public OnPluginStart()
 {
     g_FadeUserMsgId = GetUserMessageId("Fade");
+
+    if (GetGameType() == tf2)
+    {
+        if(!HookEventEx("teamplay_round_win",Event_RoundEnd, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_win event.");
+
+        if(!HookEventEx("teamplay_round_stalemate",Event_RoundEnd, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_stalemate event.");
+    }
+    else
+    {
+        if (!HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy))
+            LogError("Couldn't hook the round_end event.");
+    }
+}
+
+public OnMapEnd()
+{
+	KillAllDrugs();
+}
+
+public OnClientDisconnect(client)
+{
+    PerformDrug(client, 0);
+}
+
+public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	KillAllDrugs();
+	return Plugin_Handled;
 }
 
 CreateDrug(client)
@@ -88,9 +129,9 @@ KillAllDrugs()
         if (g_DrugTimers[i] != INVALID_HANDLE)
         {
             if(IsClientInGame(i))
-            KillDrug(i);
+                KillDrug(i);
             else
-            KillDrugTimer(i);
+                KillDrugTimer(i);
         }
     }
 }
@@ -136,7 +177,7 @@ public Action:Timer_Drug(Handle:timer, any:client)
         return Plugin_Handled;
     }
 
-    if (!IsPlayerAlive(client))
+    else if (!IsPlayerAlive(client))
     {
         KillDrug(client);
         return Plugin_Handled;

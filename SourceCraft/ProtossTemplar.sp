@@ -63,24 +63,8 @@ public OnPluginStart()
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
 
-    if (GameType == tf2)
-    {
-        if(!HookEventEx("teamplay_round_win",Event_RoundEnd, EventHookMode_PostNoCopy))
-            SetFailState("Couldn't hook the teamplay_round_win event.");
-
-        if(!HookEventEx("teamplay_round_stalemate",Event_RoundEnd, EventHookMode_PostNoCopy))
-            SetFailState("Couldn't hook the teamplay_round_stalemate event.");
-    }
-    else
-    {
-        if (!HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy))
-            LogError("Couldn't hook the round_end event.");
-    }
-
     cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","30");
     cvarArchonCooldown=CreateConVar("sc_archoncooldown","120");
-
-    SetupDrugs();
 }
 
 public OnPluginReady()
@@ -132,16 +116,6 @@ public OnMapStart()
     SetupSound(psistormWav,true,true);
     SetupSound(summonWav[0],true,true);
     SetupSound(summonWav[1],true,true);
-}
-
-public OnMapEnd()
-{
-	KillAllDrugs();
-}
-
-public OnClientDisconnect(client)
-{
-    PerformDrug(client, 0);
 }
 
 public OnPlayerAuthed(client,Handle:player)
@@ -266,12 +240,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
         }
     }
-}
-
-public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
-{
-	KillAllDrugs();
-	return Plugin_Handled;
 }
 
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
