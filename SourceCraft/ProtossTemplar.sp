@@ -438,13 +438,13 @@ public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
                             COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
 
                 EmitSoundToAll(hallucinateWav,index);
-                CreateTimer(level*2.0,CurePlayer,index, TIMER_FLAG_NO_MAPCHANGE);
+                CreateTimer(float(level)*2.0,CurePlayer,index,TIMER_FLAG_NO_MAPCHANGE);
             }
         }
     }
 }
 
-public Action:CurePlayer(Handle:timer,client)
+public Action:CurePlayer(Handle:timer,any:client)
 {
     if(client)
     {
