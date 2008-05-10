@@ -14,6 +14,8 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
+#include "drug"
+
 #include "sc/SourceCraft"
 #include "sc/util"
 #include "sc/range"
@@ -22,7 +24,6 @@
 #include "sc/maxhealth"
 #include "sc/freeze"
 #include "sc/log"
-#include "sc/drug"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:psistormWav[] = "sourcecraft/ptesto00.wav";
@@ -437,15 +438,14 @@ public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
                             COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
 
                 EmitSoundToAll(hallucinateWav,index);
-                AuthTimer(level*2.0,index,CurePlayer);
+                CreateTimer(level*2.0,CurePlayer,index, TIMER_FLAG_NO_MAPCHANGE);
             }
         }
     }
 }
 
-public Action:CurePlayer(Handle:timer,Handle:pack)
+public Action:CurePlayer(Handle:timer,client)
 {
-    new client=ClientOfAuthTimer(pack);
     if(client)
     {
         EmitSoundToAll(cureWav,client);

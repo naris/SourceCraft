@@ -27,6 +27,11 @@
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
+new String:archonWav[][] = { "sourcecraft/paryes00.wav" ,
+                             "sourcecraft/paryes01.wav" ,
+                             "sourcecraft/paryes02.wav" ,
+                             "sourcecraft/paryes03.wav" };
+
 new raceID, shockwaveID, shieldsID, feedbackID, maelstormID, controlID;
 
 new g_lightningSprite;
@@ -112,6 +117,10 @@ public OnMapStart()
         SetFailState("Couldn't find halo Model");
 
     SetupSound(rechargeWav,true,true);
+    SetupSound(archonWav[0],true,true);
+    SetupSound(archonWav[1],true,true);
+    SetupSound(archonWav[2],true,true);
+    SetupSound(archonWav[3],true,true);
 }
 
 public OnPlayerAuthed(client,Handle:player)
@@ -129,9 +138,18 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         {
             new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
             SetupShields(client, shields_level);
+
+            new TFTeam:team = TFTeam:GetClientTeam(client);
+            SetVisibility(victim_player, 250, BasicVisibility, -1.0, -1.0,
+                          RENDER_GLOW, RENDERFX_GLOWSHELL,
+                          (team == TFTeam_Red) ? 255 : 0, 0,
+                          (team == TFTeam_Blue) ? 255 : 0);
         }
         else if (oldrace == raceID)
+        {
             ResetMindControlledObjects(client, false);
+            SetVisibility(player, -1);
+        }
     }
 }
 
@@ -609,6 +627,7 @@ public Action:AllowMindControl(Handle:timer,any:index)
 
 public Action:Regeneration(Handle:timer)
 {
+    new Float:vec[3];
     new maxplayers=GetMaxClients();
     for(new client=1;client<=maxplayers;client++)
     {
@@ -619,6 +638,9 @@ public Action:Regeneration(Handle:timer)
                 new Handle:player=GetPlayerHandle(client);
                 if(player != INVALID_HANDLE && GetRace(player) == raceID)
                 {
+                    GetClientEyePosition(client, vec);
+                    EmitAmbientSound(archonWav[GetRandomInt(0,3)], vec, client);
+
                     new max = GetMaxHealth(client);
                     if (m_Shields[client] < max)
                         m_Shields[client] += 2;

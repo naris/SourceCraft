@@ -261,10 +261,11 @@ BeaconPing(client,bool:ping)
 
     TE_SendToAll();
 
-    GetClientEyePosition(client, vec);
-
     if (ping)
+    {
+        GetClientEyePosition(client, vec);
         EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
+    }
 }
 
 public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
