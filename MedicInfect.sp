@@ -257,6 +257,7 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	return Plugin_Continue;
 }
 
+/*
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
 	if(GetConVarInt(CvarEnable) && !NativeControl) return Plugin_Continue;
@@ -280,6 +281,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 
 	return Plugin_Continue;
 }
+*/
 
 public OnGameFrame()
 {
@@ -287,7 +289,7 @@ public OnGameFrame()
 		CheckMedics();
 }
 
-public CheckMedics()
+CheckMedics()
 {
 	decl String:classname[32];
 	new maxplayers = GetMaxClients();
