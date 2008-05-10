@@ -107,7 +107,7 @@ bool:PerformDrug(target, toggle)
                 return true;
             }
             else
-            KillDrug(target);
+                KillDrug(target);
         }
 
         case (1):
@@ -122,7 +122,7 @@ bool:PerformDrug(target, toggle)
         case (0):
         {
             if (g_DrugTimers[target] != INVALID_HANDLE)
-            KillDrug(target);
+                KillDrug(target);
         }
     }
     return false;
