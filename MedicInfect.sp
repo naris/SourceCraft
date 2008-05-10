@@ -76,34 +76,34 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 public OnPluginStart()
 {
 	CvarEnable = CreateConVar("medic_infect_on", "1", "1 turns the plugin on 0 is off", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	CvarRedTeamRed = CreateConVar("medic_infect_red_team_red", "255", "Amount of Red for the Red Team", FCVAR_NOTIFY);
-	CvarRedTeamGreen = CreateConVar("medic_infect_red_team_green", "100", "Amount of Green for the Red Team", FCVAR_NOTIFY);
-	CvarRedTeamBlue = CreateConVar("medic_infect_red_team_blue", "60", "Amount of Blue for the Red Team", FCVAR_NOTIFY);
-	CvarRedTeamTrans = CreateConVar("medic_infect_red_team_alpha", "255", "Amount of Transperency for the Red Team", FCVAR_NOTIFY);
-	CvarBlueTeamRed = CreateConVar("medic_infect_blue_team_red", "0", "Amount of Red for the Blue Team", FCVAR_NOTIFY);
-	CvarBlueTeamGreen = CreateConVar("medic_infect_blue_team_green", "255", "Amount of Green for the Blue Team", FCVAR_NOTIFY);
-	CvarBlueTeamBlue = CreateConVar("medic_infect_blue_team_blue", "100", "Amount of Blue for the Blue Team", FCVAR_NOTIFY);
-	CvarBlueTeamTrans = CreateConVar("medic_infect_blue_team_alpha", "255", "Amount of Transperency for the Blue Team", FCVAR_NOTIFY);
+	CvarRedTeamRed = CreateConVar("medic_infect_red_team_red", "255", "Amount of Red for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarRedTeamGreen = CreateConVar("medic_infect_red_team_green", "100", "Amount of Green for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarRedTeamBlue = CreateConVar("medic_infect_red_team_blue", "60", "Amount of Blue for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarRedTeamTrans = CreateConVar("medic_infect_red_team_alpha", "255", "Amount of Transperency for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarBlueTeamRed = CreateConVar("medic_infect_blue_team_red", "0", "Amount of Red for the Blue Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarBlueTeamGreen = CreateConVar("medic_infect_blue_team_green", "255", "Amount of Green for the Blue Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarBlueTeamBlue = CreateConVar("medic_infect_blue_team_blue", "100", "Amount of Blue for the Blue Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CvarBlueTeamTrans = CreateConVar("medic_infect_blue_team_alpha", "255", "Amount of Transperency for the Blue Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
-	Cvar_DmgAmount = CreateConVar("sv_medic_infect_dmg_amount", "10", "Amount of damage medic infect does each heartbeat",FCVAR_PLUGIN);
-	Cvar_DmgTime = CreateConVar("sv_medic_infect_dmg_time", "12.0", "Amount of time between infection heartbeats",FCVAR_PLUGIN);
-	Cvar_DmgDistance = CreateConVar("sv_medic_infect_dmg_distance", "0.0", "Distance infection can spread",FCVAR_PLUGIN);
+	Cvar_DmgAmount = CreateConVar("sv_medic_infect_dmg_amount", "10", "Amount of damage medic infect does each heartbeat",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_DmgTime = CreateConVar("sv_medic_infect_dmg_time", "12.0", "Amount of time between infection heartbeats",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_DmgDistance = CreateConVar("sv_medic_infect_dmg_distance", "0.0", "Distance infection can spread",FCVAR_PLUGIN|FCVAR_NOTIFY);
 
-	Cvar_SpreadAll = CreateConVar("sv_medic_infect_spread_all", "0", "Allow medical infections to run rampant",FCVAR_PLUGIN);
-	Cvar_SpreadSameTeam = CreateConVar("sv_medic_infect_spread_friendly", "1", "Allow medical infections to run rampant inside a team",FCVAR_PLUGIN);
-	Cvar_SpreadOpposingTeam = CreateConVar("sv_medic_infect_spread_enemy", "0", "Allow medical infections to run rampant between teams",FCVAR_PLUGIN);		
-	Cvar_SpreadDistance = CreateConVar("sv_medic_infect_spread_distance", "2000.0", "Distance infection can spread",FCVAR_PLUGIN);
-	Cvar_SpreadTime = CreateConVar("sv_medic_infect_spread_time", "2.0", "Amount of time between spread heartbeats",FCVAR_PLUGIN);
+	Cvar_SpreadAll = CreateConVar("sv_medic_infect_spread_all", "0", "Allow medical infections to run rampant",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_SpreadSameTeam = CreateConVar("sv_medic_infect_spread_friendly", "1", "Allow medical infections to run rampant inside a team",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_SpreadOpposingTeam = CreateConVar("sv_medic_infect_spread_enemy", "0", "Allow medical infections to run rampant between teams",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_SpreadDistance = CreateConVar("sv_medic_infect_spread_distance", "2000.0", "Distance infection can spread",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_SpreadTime = CreateConVar("sv_medic_infect_spread_time", "2.0", "Amount of time between spread heartbeats",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
-	Cvar_InfectSameTeam = CreateConVar("sv_medic_infect_friendly", "1", "Allow medics to infect friends",FCVAR_PLUGIN);
-	Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies",FCVAR_PLUGIN);
+	Cvar_InfectSameTeam = CreateConVar("sv_medic_infect_friendly", "1", "Allow medics to infect friends",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
-	Cvar_InfectInfector = CreateConVar("sv_medic_infect_infector", "0", "Allow reinfections",FCVAR_PLUGIN);
-	Cvar_InfectMedics = CreateConVar("sv_medic_infect_medics", "0", "Allow medics to be infected",FCVAR_PLUGIN);
-	Cvar_InfectDelay = CreateConVar("sv_medic_infect_delay", "1.0", "Delay between infections",FCVAR_PLUGIN);
+	Cvar_InfectInfector = CreateConVar("sv_medic_infect_infector", "0", "Allow reinfections",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_InfectMedics = CreateConVar("sv_medic_infect_medics", "0", "Allow medics to be infected",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_InfectDelay = CreateConVar("sv_medic_infect_delay", "1.0", "Delay between infections",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
-	Cvar_InfectMedi = CreateConVar("sv_medic_infect_medi", "1", "Infect using medi gun",FCVAR_PLUGIN);
-	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "1", "Infect using syringe gun",FCVAR_PLUGIN);
+	Cvar_InfectMedi = CreateConVar("sv_medic_infect_medi", "1", "Infect using medi gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "1", "Infect using syringe gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
 }
