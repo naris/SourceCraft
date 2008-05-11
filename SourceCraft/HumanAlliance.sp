@@ -158,39 +158,32 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                 m_UltimatePressed[client] = GetGameTime();
             else
             {
-                if (m_TeleportCount[client] < 2)
+                new bool:toSpawn = false;
+                new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
+                // Allow short teleports so players can attempt to get unstuck
+                // without having to return to spawn.
+                if (m_TeleportCount[client] >= 2 ||
+                    (m_TeleportCount[client] >= 1 && time_pressed > 0.2))
                 {
-                    new bool:toSpawn = false;
-                    new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
-                    // Allow short teleports so players can attempt to get unstuck
-                    // without having to return to spawn.
-                    if (time_pressed > 0.2 && m_TeleportCount[client] >= 1)
+                    // Check to see if player got stuck
+                    new Float:origin[3];
+                    GetClientAbsOrigin(client, origin);
+                    if (origin[0] == teleportLoc[client][0] &&
+                        origin[1] == teleportLoc[client][1] &&
+                        origin[2] == teleportLoc[client][2])
                     {
-                        // Check to see if player got stuck with 1st teleport
-                        new Float:origin[3];
-                        GetClientAbsOrigin(client, origin);
-                        if (origin[0] == teleportLoc[client][0] &&
-                            origin[1] == teleportLoc[client][1] &&
-                            origin[2] == teleportLoc[client][2])
-                        {
-                            toSpawn = true; // If player is stuck, allow teleport to spawn.
-                            PrintToChat(client,"%c[SourceCraft]%c You appear to be stuck, teleporting back to spawn.",
-                                        COLOR_GREEN,COLOR_DEFAULT);
-                        }
-                        else
-                        {
-                            PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet.",
-                                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                            return;
-                        }
+                        toSpawn = true; // If player is stuck, allow teleport to spawn.
+                        PrintToChat(client,"%c[SourceCraft]%c You appear to be stuck, teleporting back to spawn.",
+                                    COLOR_GREEN,COLOR_DEFAULT);
                     }
-                    Teleport(client,ult_level, toSpawn, time_pressed);
+                    else
+                    {
+                        PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet.",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                        return;
+                    }
                 }
-                else
-                {
-                    PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                }
+                Teleport(client, ult_level, toSpawn, time_pressed);
             }
         }
     }
@@ -474,8 +467,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                         COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
             CreateTimer(cooldown,AllowTeleport,client);
         }
-        else
-            m_TeleportCount[client]=0;
     }
 }
 
