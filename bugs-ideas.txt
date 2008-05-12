@@ -3,6 +3,7 @@ Terran Space Construction Vehicle / Protoss Probe:
 2) Metal Regen
 3) Immunity
 4) Armor
+5) Teleporter Charger
 Ult) Tripmines
 Ult) Move Building
 Ult) Summon Building
