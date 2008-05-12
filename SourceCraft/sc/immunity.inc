@@ -20,5 +20,5 @@ enum Immunity
 	Immunity_Drugs 		// Converts obnoxious visual effects to Blindness (permanent)
 };
 
-#define IMMUNITY_COUNT 9
+#define IMMUNITY_COUNT 11
 
