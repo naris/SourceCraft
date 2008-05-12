@@ -14,14 +14,14 @@
 #define FADE_IN  0x0001
 #define FADE_OUT 0x0002
 
-stock Fade(const clients[], numClients, duration,time,const color[4])
+stock Fade(const clients[], numClients, duration,time,const color[4], code=FADE_IN)
 {
     new Handle:hBf=StartMessage("Fade", clients, numClients);
     if(hBf!=INVALID_HANDLE)
     {
         BfWriteShort(hBf,duration); //*400);
         BfWriteShort(hBf,time); //*400);
-        BfWriteShort(hBf,FADE_IN);
+        BfWriteShort(hBf,code);
         BfWriteByte(hBf,color[0]);
         BfWriteByte(hBf,color[1]);
         BfWriteByte(hBf,color[2]);
@@ -30,14 +30,14 @@ stock Fade(const clients[], numClients, duration,time,const color[4])
     }
 }
 
-stock FadeOne(client, duration,time,const color[4])
+stock FadeOne(client, duration,time,const color[4], code=FADE_IN)
 {
     new Handle:hBf=StartMessageOne("Fade", client);
     if(hBf!=INVALID_HANDLE)
     {
         BfWriteShort(hBf,duration); //*400);
         BfWriteShort(hBf,time); //*400);
-        BfWriteShort(hBf,FADE_IN);
+        BfWriteShort(hBf,code);
         BfWriteByte(hBf,color[0]);
         BfWriteByte(hBf,color[1]);
         BfWriteByte(hBf,color[2]);
@@ -45,14 +45,15 @@ stock FadeOne(client, duration,time,const color[4])
         EndMessage();
     }
 }
-stock FadeAll(duration,time,const color[4])
+
+stock FadeAll(duration,time,const color[4], code=FADE_IN)
 {
     new Handle:hBf=StartMessageAll("Fade");
     if(hBf!=INVALID_HANDLE)
     {
         BfWriteShort(hBf,duration); //*400);
         BfWriteShort(hBf,time); //*400);
-        BfWriteShort(hBf,FADE_IN);
+        BfWriteShort(hBf,code);
         BfWriteByte(hBf,color[0]);
         BfWriteByte(hBf,color[1]);
         BfWriteByte(hBf,color[2]);

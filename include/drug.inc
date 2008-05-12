@@ -37,6 +37,7 @@
 #define drug_included
 
 native bool:PerformDrug(target, toggle);
+native PerformBlind(target, amount);
 
 /**
  * Do not edit below this line!
@@ -57,5 +58,6 @@ public SharedPlugin:__pl_drug =
 public __pl_drug_SetNTVOptional()
 {
 	MarkNativeAsOptional("PerformDrug");
+	MarkNativeAsOptional("PerformBlind");
 }
 #endif

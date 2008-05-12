@@ -428,17 +428,28 @@ public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
             case 4: chance=50;
         }
 
-        if(GetRandomInt(1,100) <= chance)
+        if (!GetImmunity(victim_player,Immunity_Blindness))
         {
-            if (PerformDrug(victim_index, 1))
+            if (GetRandomInt(1,100) <= chance)
             {
-                PrintToChat(victim_index,"%c[SourceCraft] %c %N has caused you to %challucinate%c!",
-                            COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
-                PrintToChat(index,"%c[SourceCraft] %c %N is now %challucinating%c!",
-                            COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                if (GetImmunity(victim_player,Immunity_Drugs))
+                {
+                    PerformBlind(victim_index, 255);
+                    CreateTimer(float(level)*2.0,UnblindPlayer,victim_index,TIMER_FLAG_NO_MAPCHANGE);
+                }
+                else
+                {
+                    if (PerformDrug(victim_index, 1))
+                    {
+                        PrintToChat(victim_index,"%c[SourceCraft] %c %N has caused you to %challucinate%c!",
+                                COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
+                        PrintToChat(index,"%c[SourceCraft] %c %N is now %challucinating%c!",
+                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
 
-                EmitSoundToAll(hallucinateWav,index);
-                CreateTimer(float(level)*2.0,CurePlayer,victim_index,TIMER_FLAG_NO_MAPCHANGE);
+                        EmitSoundToAll(hallucinateWav,index);
+                        CreateTimer(float(level)*2.0,CurePlayer,victim_index,TIMER_FLAG_NO_MAPCHANGE);
+                    }
+                }
             }
         }
     }
@@ -450,6 +461,16 @@ public Action:CurePlayer(Handle:timer,any:client)
     {
         EmitSoundToAll(cureWav,client);
         PerformDrug(client, 0);
+    }
+    return Plugin_Stop;
+}
+
+public Action:UnblindPlayer(Handle:timer,any:client)
+{
+    if(client)
+    {
+        EmitSoundToAll(cureWav,client);
+        PerformBlind(client, 0);
     }
     return Plugin_Stop;
 }
@@ -495,7 +516,7 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
 
         new last=client;
         new minDmg=level*5;
-        new maxDmg=level*20;
+        new maxDmg=level*10;
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {

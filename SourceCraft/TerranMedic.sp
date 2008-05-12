@@ -617,7 +617,7 @@ OpticFlare(client,ultlevel)
                             if (TraceTarget(client, index, clientLoc, indexLoc))
                             {
                                 new color[4]={250,250,250,255};
-                                FadeOne(index, duration, duration , color);
+                                FadeOne(index, duration, duration , color, FADE_IN);
                             }
                         }
                     }

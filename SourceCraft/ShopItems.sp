@@ -55,9 +55,9 @@ new Handle:hGameConf      = INVALID_HANDLE;
 #define ITEM_MOLE_PROTECTION 20 // Mole Protection - Reduce damage from a Mole.
 #define ITEM_MOLE_REFLECTION 21 // Mole Reflection - Reflects damage back to the Mole.
 #define ITEM_MOLE_RETENTION  22 // Mole Retention - Keep Mole Protection/Reflection until used.
-//#define ITEM_GOGGLES       23 // The Goggles - They do nothing!
-//#define ITEM_ADMIN         24 // Purchase Admin on the Server
-#define MAXITEMS             23
+#define ITEM_GOGGLES         23 // The Goggles - Immunity to Blindness/etc.!
+#define ITEM_BLINDERS        24 // Blinders - Permanent converts drugs and other obnoxious effects to blindness
+#define MAXITEMS             25
  
 new myWepsOffset;
 
@@ -110,6 +110,10 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
+    shopItem[ITEM_BLINDERS]=CreateShopItem("Blinders", "blinders",
+                                           "Converts Hallucination, etc. to blindness.",
+                                           0);
+
     shopItem[ITEM_ANKH]=CreateShopItem("Ankh of Reincarnation", "ankh",
                                        "If you die you will retrieve your shopitems the following life.",
                                        60);
@@ -133,6 +137,10 @@ public OnPluginReady()
     shopItem[ITEM_NECKLACE]=CreateShopItem("Necklace of Immunity", "necklace", 
                                            "You will be immune to enemy ultimates.",
                                            20);
+
+    shopItem[ITEM_GOGGLES]=CreateShopItem("Goggles", "goggles",
+                                          "Makes you immune to blindess, hallucinations, etc.",
+                                          60);
 
     shopItem[ITEM_LUBE]=CreateShopItem("Lubricant", "lube", 
                                        "Ensures you are able to move freely about.",
@@ -276,8 +284,12 @@ public OnItemPurchase(client,Handle:player,item)
         SetVisibility(player, 0, TimedMeleeInvisibility, 1.0, 10.0);
         SetImmunity(player,Immunity_Uncloaking,true);
     }
+    else if(item==shopItem[ITEM_BLINDERS])                              // Blinders
+        SetImmunity(player,Immunity_Drugs,true);
     else if(item==shopItem[ITEM_NECKLACE])                              // Necklace of Immunity
         SetImmunity(player,Immunity_Ultimates,true);
+    else if(item==shopItem[ITEM_GOGGLES])                               // Goggles
+        SetImmunity(player,Immunity_Blindness,true);
     else if(item==shopItem[ITEM_LUBE])                                  // Lubricant
         SetImmunity(player,Immunity_MotionTake,true);
     else if(item==shopItem[ITEM_LOCKBOX])                               // Lockbox
@@ -407,6 +419,12 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             {
                 SetOwnsItem(victim_player,shopItem[ITEM_NECKLACE],false);
                 SetImmunity(victim_player,Immunity_Ultimates,false);
+            }
+
+            if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
+            {
+                SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
+                SetImmunity(victim_player,Immunity_Blindness,false);
             }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_LUBE]))

@@ -704,7 +704,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     case 3:
                     {
                         new color[4]={250,250,250,255};
-                        FadeAll(600, 600 , color);
+                        FadeAll(600, 600 , color, FADE_IN);
                         explodeall(m_NuclearAimPos[client]);
                     }
                     case 4:

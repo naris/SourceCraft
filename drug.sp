@@ -56,6 +56,7 @@ public Plugin:myinfo =
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
     CreateNative("PerformDrug",Native_PerformDrug);
+    CreateNative("PerformBlind",Native_PerformBlind);
     RegPluginLibrary("drug");
     return true;
 }
@@ -191,6 +192,28 @@ bool:PerformDrug(target, toggle)
     return false;
 }
 
+PerformBlind(target, amount)
+{
+	new targets[2];
+	targets[0] = target;
+	
+	new Handle:message = StartMessageEx(g_FadeUserMsgId, targets, 1);
+	BfWriteShort(message, 1536);
+	BfWriteShort(message, 1536);
+	
+	if (amount == 0)
+		BfWriteShort(message, (0x0001 | 0x0010));
+	else
+		BfWriteShort(message, (0x0002 | 0x0008));
+	
+	BfWriteByte(message, 0);
+	BfWriteByte(message, 0);
+	BfWriteByte(message, 0);
+	BfWriteByte(message, amount);
+	
+	EndMessage();
+}
+
 public Action:Timer_Drug(Handle:timer, any:client)
 {
     if (!IsClientInGame(client))
@@ -235,4 +258,9 @@ public Action:Timer_Drug(Handle:timer, any:client)
 public Native_PerformDrug(Handle:plugin,numParams)
 {
     return PerformDrug(GetNativeCell(1),GetNativeCell(2));
+}
+
+public Native_PerformBlind(Handle:plugin,numParams)
+{
+    PerformBlind(GetNativeCell(1),GetNativeCell(2));
 }
