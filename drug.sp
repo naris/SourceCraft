@@ -57,6 +57,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
     CreateNative("PerformDrug",Native_PerformDrug);
     RegPluginLibrary("drug");
+    return true;
 }
 
 public OnPluginStart()
