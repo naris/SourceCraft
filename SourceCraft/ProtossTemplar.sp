@@ -207,7 +207,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     GetClientAbsOrigin(client, clientLoc);
                     clientLoc[2] += 50.0; // Adjust position to the middle
                     TE_SetupGlowSprite(clientLoc,(GetClientTeam(client) == 3) ? g_blueGlow : g_redGlow,
-                                       6.0,100.0,255);
+                                       6.0,50.0,255);
                     TE_SendToAll();
 
                     ChangeRace(player, archon_race, true);
@@ -438,7 +438,7 @@ public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
                             COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
 
                 EmitSoundToAll(hallucinateWav,index);
-                CreateTimer(float(level)*2.0,CurePlayer,index,TIMER_FLAG_NO_MAPCHANGE);
+                CreateTimer(float(level)*2.0,CurePlayer,victim_index,TIMER_FLAG_NO_MAPCHANGE);
             }
         }
     }

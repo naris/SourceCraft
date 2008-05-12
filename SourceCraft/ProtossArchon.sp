@@ -176,6 +176,12 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
                 SetupShields(client, shields_level);
+
+                new TFTeam:team = TFTeam:GetClientTeam(client);
+                SetVisibility(player, 250, BasicVisibility, -1.0, -1.0,
+                              RENDER_GLOW, RENDERFX_GLOWSHELL,
+                              (team == TFTeam_Red) ? 255 : 0, 0,
+                              (team == TFTeam_Blue) ? 255 : 0);
             }
         }
     }
