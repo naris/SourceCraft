@@ -10,6 +10,9 @@
 #include <sdktools>
 #include <tf2_stocks>
 
+#define COLOR_DEFAULT 0x01
+#define COLOR_GREEN 0x04
+
 new ClientInfected[MAXPLAYERS + 1];
 new bool:ClientFriendlyInfected[MAXPLAYERS + 1];
 
@@ -46,6 +49,7 @@ new Handle:Cvar_InfectMedi = INVALID_HANDLE;
 new Handle:Cvar_InfectSyringe = INVALID_HANDLE;
 
 new Handle:CvarEnable = INVALID_HANDLE;
+new Handle:CvarAnnounce = INVALID_HANDLE;
 new Handle:CvarRedTeamRed = INVALID_HANDLE;
 new Handle:CvarRedTeamBlue = INVALID_HANDLE;
 new Handle:CvarRedTeamGreen = INVALID_HANDLE;
@@ -76,6 +80,7 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 public OnPluginStart()
 {
 	CvarEnable = CreateConVar("medic_infect_on", "1", "1 turns the plugin on 0 is off", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CvarAnnounce = CreateConVar("medic_infect_announce", "1", "This will enable announcements that the plugin is loaded", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	CvarRedTeamRed = CreateConVar("medic_infect_red_team_red", "255", "Amount of Red for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	CvarRedTeamGreen = CreateConVar("medic_infect_red_team_green", "100", "Amount of Green for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
 	CvarRedTeamBlue = CreateConVar("medic_infect_red_team_blue", "60", "Amount of Blue for the Red Team", FCVAR_PLUGIN|FCVAR_NOTIFY);
@@ -106,6 +111,7 @@ public OnPluginStart()
 	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "1", "Infect using syringe gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
+    	HookEvent("player_spawn",PlayerSpawnEvent);
 }
 
 public OnConfigsExecuted()
@@ -150,11 +156,11 @@ public Action:HandleInfection(Handle:timer)
 	static InfectedPlayerVec[MAXPLAYERS];
 	static NotInfectedPlayerVec[MAXPLAYERS];
 	
-	if(!NativeControl && !GetConVarInt(CvarEnable)) return;
+	if(!NativeControl && !GetConVarBool(CvarEnable)) return;
 
-	new bool:spread = (GetConVarInt(Cvar_SpreadSameTeam) ||
-			   GetConVarInt(Cvar_SpreadOpposingTeam) ||
-                           GetConVarInt(Cvar_SpreadAll));
+	new bool:spread = (GetConVarBool(Cvar_SpreadSameTeam) ||
+			   GetConVarBool(Cvar_SpreadOpposingTeam) ||
+                           GetConVarBool(Cvar_SpreadAll));
 
 	new Float:now = GetGameTime();
 	new bool:damage = (now - lastTime) >= GetConVarFloat(Cvar_DmgTime);
@@ -218,6 +224,39 @@ public Action:HandleInfection(Handle:timer)
 	}
 }
 
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
+	ClientInfected[index]=false;
+	ClientFriendlyInfected[index]=false;
+	if(GetConVarBool(CvarEnable) && GetConVarBool(CvarAnnounce))
+	{
+		if(GetConVarBool(Cvar_InfectOpposingTeam) )
+		{
+			if(GetConVarBool(Cvar_InfectMedi) )
+				PrintToChat(index,"%c[MedicInfect] %cMedics can infect enemy players using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+
+			if(GetConVarBool(Cvar_InfectSyringe) )
+				PrintToChat(index,"%c[MedicInfect] %cMedics can infect enemy players using thier syringe gun", COLOR_GREEN,COLOR_DEFAULT);
+		}
+
+		if(GetConVarBool(Cvar_InfectSameTeam) )
+			PrintToChat(index,"%c[MedicInfect] %cMedics can infect teammates by reloading thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+
+		PrintToChat(index,"%c[MedicInfect] %cMedics can heal infected teammates using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+
+		new bool:spreadAll = GetConVarBool(Cvar_SpreadAll);
+
+		if(!spreadAll && GetConVarBool(Cvar_InfectMedics) )
+			PrintToChat(index,"%c[MedicInfect] %cMedics are Immune to infections", COLOR_GREEN,COLOR_DEFAULT);
+
+		if(spreadAll || GetConVarBool(Cvar_SpreadSameTeam) )
+			PrintToChat(index,"%c[MedicInfect] %cInfections will spread to teammates", COLOR_GREEN,COLOR_DEFAULT);
+		if(spreadAll || GetConVarBool(Cvar_SpreadOpposingTeam) )
+			PrintToChat(index,"%c[MedicInfect] %cInfections will spread to the enemy", COLOR_GREEN,COLOR_DEFAULT);
+	}
+}
+
 public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new id = GetClientOfUserId(GetEventInt(event,"userid"));
@@ -260,10 +299,10 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 /*
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if(GetConVarInt(CvarEnable) && !NativeControl) return Plugin_Continue;
+	if(GetConVarBool(CvarEnable) && !NativeControl) return Plugin_Continue;
 	if (NativeControl && !NativeMedicArmed[client]) return Plugin_Continue;
 
-	if( !GetConVarInt(Cvar_InfectSyringe) 
+	if( !GetConVarBool(Cvar_InfectSyringe) 
 		|| (TF2_GetPlayerClass(client) != TFClass_Medic) 
 		|| (MedicDelay[client] > GetGameTime())
 		) 
@@ -285,7 +324,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 
 public OnGameFrame()
 {
-	if ((NativeControl || GetConVarInt(CvarEnable)) && GetConVarInt(Cvar_InfectMedi))
+	if ((NativeControl || GetConVarBool(CvarEnable)) && GetConVarBool(Cvar_InfectMedi))
 		CheckMedics();
 }
 
@@ -347,7 +386,7 @@ MedicInfect(medic,target,allow)
 		if( allow  )
 		{
 			// Rukia: Don't infect same team if not allowed
-			if(  !GetConVarInt(Cvar_InfectSameTeam) )
+			if(  !GetConVarBool(Cvar_InfectSameTeam) )
 				return;
 			// Rukia: Don't reinfect!
 			else if(ClientInfected[target])
@@ -357,7 +396,7 @@ MedicInfect(medic,target,allow)
 	else
 	{
 		// Rukia: Don't infect opposing team if not allowed
-		if(!GetConVarInt(Cvar_InfectOpposingTeam) )
+		if(!GetConVarBool(Cvar_InfectOpposingTeam) )
 			return;
 		// Rukia: Don't reinfect!
 		else if(ClientInfected[target])
@@ -396,19 +435,19 @@ TransmitInfection(to, from)
 	new bool:t_same = (GetClientTeam(from) == GetClientTeam(to));
 	
 	// Rukia: Spread to all
-	if(GetConVarInt(Cvar_SpreadAll) )
+	if(GetConVarBool(Cvar_SpreadAll) )
 	{
 		SendInfection(to,from,t_same,false);
 		return;
 	}
 	
 	// Rukia: Don't spread to medics
-	if(!GetConVarInt(Cvar_InfectMedics) && (TF2_GetPlayerClass(to) == TFClass_Medic) )
+	if(!GetConVarBool(Cvar_InfectMedics) && (TF2_GetPlayerClass(to) == TFClass_Medic) )
 	{
 		return;
 	}
 	
-	if(!GetConVarInt(Cvar_InfectInfector))
+	if(!GetConVarBool(Cvar_InfectInfector))
 	{
 		new check = from;
 		while(ClientInfected[check])
@@ -419,17 +458,17 @@ TransmitInfection(to, from)
 	}
 
 	// Rukia: Spread to same team
-	if(GetConVarInt(Cvar_SpreadSameTeam) && t_same )
+	if(GetConVarBool(Cvar_SpreadSameTeam) && t_same )
 	{
 		SendInfection(to,from,true,false);
 	}
 	// Rukia: Spread to opposing team
-	else if(GetConVarInt(Cvar_SpreadOpposingTeam) && !t_same )
+	else if(GetConVarBool(Cvar_SpreadOpposingTeam) && !t_same )
 	{
 		SendInfection(to,from,false,false);
 	}
 	// Rukia: If a medic infects a friendly, allow the infection to spread across team boundaries
-	else if(GetConVarInt(Cvar_InfectSameTeam) && !t_same && ClientFriendlyInfected[from])
+	else if(GetConVarBool(Cvar_InfectSameTeam) && !t_same && ClientFriendlyInfected[from])
 	{
 		SendInfection(to,from,false,false);
 	}
