@@ -41,7 +41,6 @@ new Handle:Cvar_SpreadTime = INVALID_HANDLE;
 
 new Handle:Cvar_InfectSameTeam = INVALID_HANDLE;
 new Handle:Cvar_InfectOpposingTeam = INVALID_HANDLE;
-new Handle:Cvar_InfectInfector = INVALID_HANDLE;
 new Handle:Cvar_InfectMedics = INVALID_HANDLE;
 new Handle:Cvar_InfectDelay = INVALID_HANDLE;
 
@@ -103,12 +102,11 @@ public OnPluginStart()
 	Cvar_InfectSameTeam = CreateConVar("sv_medic_infect_friendly", "1", "Allow medics to infect friends",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
-	Cvar_InfectInfector = CreateConVar("sv_medic_infect_infector", "0", "Allow reinfections",FCVAR_PLUGIN|FCVAR_NOTIFY);
-	Cvar_InfectMedics = CreateConVar("sv_medic_infect_medics", "0", "Allow medics to be infected",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_InfectMedics = CreateConVar("sv_medic_infect_medics", "1", "Allow medics to be infected",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	Cvar_InfectDelay = CreateConVar("sv_medic_infect_delay", "1.0", "Delay between infections",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
 	Cvar_InfectMedi = CreateConVar("sv_medic_infect_medi", "1", "Infect using medi gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
-	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "1", "Infect using syringe gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
+	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "0", "Infect using syringe gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
 	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
     	HookEvent("player_spawn",PlayerSpawnEvent);
@@ -249,7 +247,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 		new bool:spreadAll = GetConVarBool(Cvar_SpreadAll);
 
 		if(!spreadAll && GetConVarBool(Cvar_InfectMedics) )
-			PrintToChat(index,"%c[MedicInfect] %cMedics are Immune to infections", COLOR_GREEN,COLOR_DEFAULT);
+			PrintToChat(index,"%c[MedicInfect] %cMedics are immune to infections", COLOR_GREEN,COLOR_DEFAULT);
 
 		if(spreadAll || GetConVarBool(Cvar_SpreadSameTeam) )
 			PrintToChat(index,"%c[MedicInfect] %cInfections will spread to teammates", COLOR_GREEN,COLOR_DEFAULT);
@@ -447,31 +445,26 @@ TransmitInfection(to, from)
 	{
 		return;
 	}
-	
-	if(!GetConVarBool(Cvar_InfectInfector))
-	{
-		new check = from;
-		while(ClientInfected[check])
-		{
-			if(ClientInfected[check] == to) return;
-			check = ClientInfected[check];
-		}
-	}
+
+	// Give credit for infection to original medic (if possible).
+	new medic = ClientInfected[from];
+	if (!IsClientInGame(medic))
+		medic = from;
 
 	// Rukia: Spread to same team
 	if(GetConVarBool(Cvar_SpreadSameTeam) && t_same )
 	{
-		SendInfection(to,from,true,false);
+		SendInfection(to,medic,true,false);
 	}
 	// Rukia: Spread to opposing team
 	else if(GetConVarBool(Cvar_SpreadOpposingTeam) && !t_same )
 	{
-		SendInfection(to,from,false,false);
+		SendInfection(to,medic,false,false);
 	}
 	// Rukia: If a medic infects a friendly, allow the infection to spread across team boundaries
 	else if(GetConVarBool(Cvar_InfectSameTeam) && !t_same && ClientFriendlyInfected[from])
 	{
-		SendInfection(to,from,false,false);
+		SendInfection(to,medic,false,false);
 	}
 }
 
