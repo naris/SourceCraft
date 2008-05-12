@@ -1,3 +1,9 @@
+/**
+ * File: tripmines.sp
+ * Description: Tripmines for TF2
+ * Author(s): L. Duke
+ */
+
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -27,6 +33,9 @@ new gRemaining[MAXPLAYERS+1];    // how many tripmines player has this spawn
 new gCount = 1;
 new String:mdlMine[256];
 
+new bool:gNativeControl = false;
+new gAllowed[MAXPLAYERS+1];    // how many tripmines player allowed
+
 // convars
 new Handle:cvNumMines = INVALID_HANDLE;
 new Handle:cvActTime = INVALID_HANDLE;
@@ -40,6 +49,15 @@ public Plugin:myinfo = {
 	version = PLUGIN_VERSION,
 	url = "http://www.lduke.com/"
 };
+
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+	// Register Natives
+	CreateNative("ControlTripmines",Native_ControlTripmines);
+	CreateNative("GiveTripmines",Native_GiveTripmines);
+	RegPluginLibrary("tripmines");
+	return true;
+}
 
 
 public OnPluginStart() 
@@ -87,7 +105,7 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client;
 	client = GetClientOfUserId(GetEventInt(event, "userid"));
-	gRemaining[client] = GetConVarInt(cvNumMines);
+	gRemaining[client] = gNativeControl ? gAllowed[client] : GetConVarInt(cvNumMines);
 	return Plugin_Continue;
 }
 
@@ -268,4 +286,20 @@ public bool:FilterAll (entity, contentsMask)
   return false;
 }
 
+public Native_ControlTripmines(Handle:plugin,numParams)
+{
+	if (numParams == 0)
+		gNativeControl = true;
+	else if(numParams == 1)
+		gNativeControl = GetNativeCell(1);
+}
+
+public Native_GiveTripmines(Handle:plugin,numParams)
+{
+	if (numParams >= 1 && numParams <= 2)
+	{
+		new client = GetNativeCell(1);
+		gRemaining[client] = gAllowed[client] = (numParams >= 2) ? GetNativeCell(2) : GetConVarInt(cvNumMines);
+	}
+}
 
