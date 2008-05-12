@@ -23,9 +23,9 @@ new NativeAmount[MAXPLAYERS + 1];
 public Plugin:myinfo = 
 {
 	name = "Medic Infection",
-	author = "Twilight Suzuka",
+	author = "Twilight Suzuka & -=|JFH|=-Naris",
 	description = "Allows medics to infect again",
-	version = "Beta:1",
+	version = "Beta:2",
 	url = "http://www.sourcemod.net/"
 };
 
@@ -227,9 +227,10 @@ public Action:HandleInfection(Handle:timer)
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
 	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
-	ClientInfected[index]=false;
+	ClientInfected[index]=0;
 	ClientFriendlyInfected[index]=false;
-	if(GetConVarBool(CvarEnable) && GetConVarBool(CvarAnnounce))
+
+	if(!NativeControl && GetConVarBool(CvarEnable) && GetConVarBool(CvarAnnounce))
 	{
 		if(GetConVarBool(Cvar_InfectOpposingTeam) )
 		{
