@@ -54,7 +54,9 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
 	// Register Natives
 	CreateNative("ControlTripmines",Native_ControlTripmines);
-	CreateNative("GiveTripmines",Native_GiveTripmines);
+	CreateNative("GiveTripmine",Native_GiveTripmine);
+	CreateNative("HasTripmine",Native_HasTripmine);
+	CreateNative("SetTripmine",Native_SetTripmine);
 	RegPluginLibrary("tripmines");
 	return true;
 }
@@ -294,7 +296,7 @@ public Native_ControlTripmines(Handle:plugin,numParams)
 		gNativeControl = GetNativeCell(1);
 }
 
-public Native_GiveTripmines(Handle:plugin,numParams)
+public Native_GiveTripmine(Handle:plugin,numParams)
 {
 	if (numParams >= 1 && numParams <= 2)
 	{
@@ -303,3 +305,22 @@ public Native_GiveTripmines(Handle:plugin,numParams)
 	}
 }
 
+public Native_HasTripmine(Handle:plugin,numParams)
+{
+	if (numParams >= 1 && numParams <= 2)
+	{
+		new client = GetNativeCell(1);
+		return ((numParams >= 2) && GetNativeCell(2))
+                       ? gAllowed[client] : gRemaining[client];
+	}
+	else
+		return -1;
+}
+
+public Native_SetTripmine(Handle:plugin,numParams)
+{
+	if (numParams == 1)
+	{
+		SetMine(GetNativeCell(1));
+	}
+}

@@ -19,13 +19,30 @@
 native ControlTripmines(bool:plugin_only=true);
 
 /**
- * Enable a player to utilize medic infections.
+ * Give a player one or more tripmines to plant
  *
  * @param index 	Client index
  * @param number    Set to number of tipmines to give the player.
  * @return			none
  */
 native GiveTripmine(client,number=0);
+
+/**
+ * Returns how many tripmines a player has (or is allowed).
+ *
+ * @param index 	Client index
+ * @param allowed   Set to  true to return number allowed, otherwise
+ * @return			returns number of remaining tripmines.
+ */
+native HasTripmine(client,bool:allowed=false);
+
+/**
+ * Sets (Plants) a tripmine.
+ *
+ * @param index 	Client index
+ * @return			none
+ */
+native SetTripmine(client);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -44,6 +61,8 @@ public SharedPlugin:__pl_tripmines =
 public __pl_tripmines_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlTripmiens");
-	MarkNativeAsOptional("GiveTipmines");
+	MarkNativeAsOptional("GiveTipmine");
+	MarkNativeAsOptional("HasTipmine");
+	MarkNativeAsOptional("SetTipmine");
 }
 #endif

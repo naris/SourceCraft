@@ -18,6 +18,8 @@
 #include <tftools>
 #define REQUIRE_EXTENSIONS
 
+#include <tripmines>
+
 #include "sc/SourceCraft"
 #include "sc/util"
 #include "sc/authtimer"
@@ -45,7 +47,7 @@ new Handle:hGameConf      = INVALID_HANDLE;
 #define ITEM_SCROLL          10 // Scroll of Respawning - Respawn after death.
 #define ITEM_SOCK            11 // Sock of the Feather - Jump Higher
 #define ITEM_GLOVES          12 // Flaming Gloves of Warmth - Given HE Grenades or ammo or metal over time
-#define ITEM_PACK            13 // Ammo Pack - Given Grenades
+#define ITEM_PACK            13 // Ammo Pack - Given Infinite ammo or metal.
 #define ITEM_SACK            14 // Sack of looting - Loot crystals from corpses.
 #define ITEM_LOCKBOX         15 // Lockbox - Keep crystals safe from theft.
 #define ITEM_RING            16 // Ring of Regeneration + 1 - Given extra health over time
@@ -57,7 +59,8 @@ new Handle:hGameConf      = INVALID_HANDLE;
 #define ITEM_MOLE_RETENTION  22 // Mole Retention - Keep Mole Protection/Reflection until used.
 #define ITEM_GOGGLES         23 // The Goggles - Immunity to Blindness/etc.!
 #define ITEM_BLINDERS        24 // Blinders - Permanent converts drugs and other obnoxious effects to blindness
-#define MAXITEMS             25
+#define ITEM_TRIPMINE        25 // Tripmines - 1 tripmine to plant (using sm_tripmine command/bind)
+#define MAXITEMS             26
  
 new myWepsOffset;
 
@@ -140,7 +143,7 @@ public OnPluginReady()
 
     shopItem[ITEM_GOGGLES]=CreateShopItem("Goggles", "goggles",
                                           "Makes you immune to blindess, hallucinations, etc.",
-                                          60);
+                                          40);
 
     shopItem[ITEM_LUBE]=CreateShopItem("Lubricant", "lube", 
                                        "Ensures you are able to move freely about.",
@@ -179,6 +182,10 @@ public OnPluginReady()
                                        "You will be given ammo or metal every 10 seconds.",
                                        35);
 
+    shopItem[ITEM_TRIPMINE]=CreateShopItem("Tripmine", "tripmine", 
+                                           "You will be given 1 tripmine to plant.\nBind a key to sm_tripmine to plant the tripmine.",
+                                           65);
+
     shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting", "sack", 
                                        "Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!",
                                        65);
@@ -214,8 +221,6 @@ public OnPluginReady()
     shopItem[ITEM_MOLE_RETENTION]=CreateShopItem("Mole Retention", "retention",
                                                  "Keep your Mole Protection and/or Reflection\nafter you die until it is used.",
                                                  15);
-
-    //shopItem[ITEM_GOGGLES]=CreateShopItem("The Goggles","They do nothing!","0");
 
     FindClipOffsets();
     LoadSDKToolStuff();
@@ -309,6 +314,8 @@ public OnItemPurchase(client,Handle:player,item)
     }
     else if(item==shopItem[ITEM_SOCK])                                  // Sock of the Feather
         SetGravity(player, 0.5, true);
+    else if(item==shopItem[ITEM_TRIPMINE])                              // Tripmine
+        GiveTripmine(client, 1);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -355,6 +362,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             if(GetOwnsItem(player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
                 SetGravity(player,0.5);
 
+            if(GetOwnsItem(player,shopItem[ITEM_TRIPMINE]))                        // Tripmine
+                GiveTripmine(client,1);
+
             if(GetOwnsItem(player,shopItem[ITEM_MOLE]))                            // Mole
             {
                 // We need to check to use mole, or did we JUST use it?
@@ -395,7 +405,7 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             }
         }
 
-        if (GameType == cstrike || !GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
+        if (!GetOwnsItem(victim_player,shopItem[ITEM_ANKH]))
         {
             if(GetOwnsItem(victim_player,shopItem[ITEM_BOOTS]))
             {
@@ -451,8 +461,14 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             if(GetOwnsItem(victim_player,shopItem[ITEM_PACK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_PACK],false);
 
+            if(GetOwnsItem(victim_player,shopItem[ITEM_TRIPMINE]))
+                SetOwnsItem(victim_player,shopItem[ITEM_TRIPMINE],false);
+
             if(GetOwnsItem(victim_player,shopItem[ITEM_SACK]))
+            {
                 SetOwnsItem(victim_player,shopItem[ITEM_SACK],false);
+                GiveTripmine(victim_index, 0);
+            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_LOCKBOX]))
             {
@@ -468,9 +484,6 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_RING5]))
                 SetOwnsItem(victim_player,shopItem[ITEM_RING5],false);
-
-            //if(GetOwnsItem(victim_player,shopItem[ITEM_GOGGLES]))
-            //    SetOwnsItem(victim_player,shopItem[ITEM_GOGGLES],false);
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE]))
             {
