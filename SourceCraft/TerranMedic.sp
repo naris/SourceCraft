@@ -101,8 +101,8 @@ public OnPluginReady()
     healingID       = AddUpgrade(raceID,"Healing Aura", "healing", "Heals all of your teammates in range (It does NOT heal you).");
 
     restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for\nthe teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
-    flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 12); // Ultimate
-    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 15); // Ultimate
+    flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 10); // Ultimate
+    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 12); // Ultimate
 
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);

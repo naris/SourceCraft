@@ -73,7 +73,7 @@ public OnPluginReady()
     raceID      = CreateRace("Protoss Templar", "templar",
                              "You are now a Protoss Templar.",
                              "You will be a Protoss Templar when you die or respawn.",
-                             32);
+                             48);
 
     immunityID  = AddUpgrade(raceID,"Immunity", "immunity",
                              "Makes you Immune to: Decloaking at Level 1,\nMotion Taking at Level 2,\nCrystal Theft at level 3,\nand ShopItems at Level 4.");
@@ -92,7 +92,7 @@ public OnPluginReady()
                                 true); // Ultimate
 
     archonID = AddUpgrade(raceID,"Summon Archon", "archon", "You become an Archon until you die",
-                          true, 15,1); // Ultimate
+                          true, 12,1); // Ultimate
 }
 
 public OnMapStart()

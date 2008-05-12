@@ -106,6 +106,7 @@ bool:HookTFEvents()
         return false;
     }
 
+    /*
     if(!HookEventEx("teamplay_waiting_begins",LogEvent))
     {
         LogError("Could not hook the teamplay_game_over event.");
@@ -175,6 +176,7 @@ bool:HookTFEvents()
     {
         LogError("Could not hook the achievement_earned event.");
     }
+    */
 
     AddGameLogHook(LogScanner);
 
