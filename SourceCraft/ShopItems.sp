@@ -224,6 +224,8 @@ public OnPluginReady()
 
     FindClipOffsets();
     LoadSDKToolStuff();
+
+    ControlTripmines(true);
 }
 
 public LoadSDKToolStuff()
