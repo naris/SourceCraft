@@ -23,17 +23,10 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2>
+#include <tf2_stocks>
 
-#define TF_SCOUT 1
-#define TF_SNIPER 2
-#define TF_SOLDIER 3 
-#define TF_DEMOMAN 4
-#define TF_MEDIC 5
-#define TF_HEAVY 6
-#define TF_PYRO 7
-#define TF_SPY 8
-#define TF_ENG 9
-#define PL_VERSION "1.0.8"
+#define PL_VERSION "1.0.9"
 #define SOUND_A "weapons/medigun_no_target.wav"
 #define SOUND_B "items/spawn_item.wav"
 #define SOUND_C "ui/hint.wav"
@@ -50,17 +43,17 @@ public Plugin:myinfo =
 new bool:g_IsRunning = true;
 new bool:g_Medics[MAXPLAYERS+1];
 new bool:g_MedicButtonDown[MAXPLAYERS+1];
-new g_MedicUberCharge[MAXPLAYERS+1];
 new Float:g_MedicPosition[MAXPLAYERS+1][3];
+new g_MedicUberCharge[MAXPLAYERS+1];
 new g_MedipacksTime[2048];
+new g_FilteredEntity = -1;
 new Handle:g_IsMedipacksOn = INVALID_HANDLE;
 new Handle:g_MedipacksSmall = INVALID_HANDLE;
 new Handle:g_MedipacksMedium = INVALID_HANDLE;
 new Handle:g_MedipacksFull = INVALID_HANDLE;
 new Handle:g_MedipacksKeep = INVALID_HANDLE;
+new Handle:g_MedipacksTeam = INVALID_HANDLE;
 new Handle:g_DefUberCharge = INVALID_HANDLE;
-new g_FilteredEntity = -1;
-new g_TF_ClassOffsets, g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset, g_ResourceEnt;
 
 public OnPluginStart()
 {
@@ -73,30 +66,15 @@ public OnPluginStart()
 	g_MedipacksMedium = CreateConVar("sm_medipacks_medium","25","UberCharge required for medium Medipacks");
 	g_MedipacksFull = CreateConVar("sm_medipacks_full","50","UberCharge required for full Medipacks");
 	g_MedipacksKeep = CreateConVar("sm_medipacks_keep","60","Time to keep Medipacks on map. (0 = off | >0 = seconds)");
+	g_MedipacksTeam = CreateConVar("sm_medipacks_team","0","Team to drop Medipacks for. (0 = any team | 1 = own team | 2 = opposing team)");
 	g_DefUberCharge = CreateConVar("sm_medipacks_ubercharge","25","Give medics a default UberCharge on spawn");
-	
-	g_TF_ClassOffsets = FindSendPropOffs("CTFPlayerResource", "m_iPlayerClass");
-	g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
-	g_TF_ChargeReleaseOffset = FindSendPropOffs("CWeaponMedigun", "m_bChargeRelease");
-	g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
-	g_TF_TeamNumOffset = FindSendPropOffs("CTFItem", "m_iTeamNum");
-	
-	if (g_TF_ClassOffsets == -1)
-		SetFailState("Cannot find TF2 m_iPlayerClass offset!")
-	if (g_TF_ChargeLevelOffset == -1)
-		SetFailState("Cannot find TF2 m_flChargeLevel offset!")
-	if (g_TF_ChargeReleaseOffset == -1)
-		SetFailState("Cannot find TF2 m_bChargeRelease offset!")
-	if (g_TF_CurrentOffset == -1)
-		SetFailState("Cannot find TF2 m_hActiveWeapon offset!")
-	if (g_TF_TeamNumOffset == -1)
-		SetFailState("Cannot find TF2 m_iTeamNum offset!")
 
 	HookConVarChange(g_IsMedipacksOn, ConVarChange_IsMedipacksOn);
 	HookConVarChange(g_MedipacksSmall, ConVarChange_MedipacksUber);
 	HookConVarChange(g_MedipacksMedium, ConVarChange_MedipacksUber);
 	HookConVarChange(g_MedipacksFull, ConVarChange_MedipacksUber);
 	HookConVarChange(g_MedipacksKeep, ConVarChange_MedipacksKeep);
+	HookConVarChange(g_MedipacksTeam, ConVarChange_MedipacksTeam);
 	HookConVarChange(g_DefUberCharge, ConVarChange_MedipacksUber);
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_changeclass", Event_PlayerClass);
@@ -119,7 +97,6 @@ public OnMapStart()
 	PrecacheSound(SOUND_C, true);
 	
 	g_IsRunning = true;
-	g_ResourceEnt = FindResourceObject();
 }
 
 public OnClientDisconnect(client)
@@ -163,8 +140,6 @@ public ConVarChange_IsMedipacksOn(Handle:convar, const String:oldValue[], const 
 	{
 		g_IsRunning = true
 		PrintToChatAll("[SM] %t", "Enabled Medipacks");
-		if (StringToInt(newValue) != StringToInt(oldValue))
-			g_ResourceEnt = FindResourceObject();
 	}
 	else
 	{
@@ -189,6 +164,14 @@ public ConVarChange_MedipacksKeep(Handle:convar, const String:oldValue[], const 
 	}
 }
 
+public ConVarChange_MedipacksTeam(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (StringToInt(newValue) < 0 || StringToInt(newValue) > 2)
+	{
+		SetConVarInt(convar, StringToInt(oldValue), false, false);
+	}
+}
+
 public Action:Command_Medipack(client, args)
 {
 	if(!g_IsRunning)
@@ -197,8 +180,8 @@ public Action:Command_Medipack(client, args)
 	if (MedipacksOn < 2)
 		return Plugin_Handled;
 	
-	new class = TF_GetClass(client);
-	if (class != TF_MEDIC)
+	new TFClassType:class = TF2_GetPlayerClass(client);
+	if (class != TFClass_Medic)
 		return Plugin_Handled;
 	
 	new String:classname[64];
@@ -244,8 +227,8 @@ public Action:Command_UberCharge(client, args)
 		return Plugin_Handled;
 	}
 	
-	new class = TF_GetClass(target);
-	if (class != TF_MEDIC)
+	new TFClassType:class = TF2_GetPlayerClass(target);
+	if (class != TFClass_Medic)
 	{
 		ReplyToCommand(client, "[SM] %t", "Not a Medic", name);
 		return Plugin_Handled;
@@ -315,8 +298,12 @@ public Action:Timer_PlayerDefDelay(Handle:timer, any:client)
 {
 	if (IsClientInGame(client))
 	{
-		new DefUberCharge = GetConVarInt(g_DefUberCharge);
-		TF_SetUberLevel(client, DefUberCharge);
+		new TFClassType:class = TF2_GetPlayerClass(client);
+		if (class == TFClass_Medic)
+		{
+			new DefUberCharge = GetConVarInt(g_DefUberCharge);
+			TF_SetUberLevel(client, DefUberCharge);
+		}
 	}
 }
 
@@ -337,8 +324,8 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	new class = TF_GetClass(client);
-	if (class != TF_MEDIC)
+	new TFClassType:class = TF2_GetPlayerClass(client);
+	if (class != TFClass_Medic)
 		return;
 	
 	CreateTimer(0.25, Timer_PlayerDefDelay, client);
@@ -347,8 +334,8 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	new class = GetEventInt(event, "class");
-	if (class != TF_MEDIC)
+	new any:class = GetEventInt(event, "class");
+	if (class != TFClass_Medic)
 	{
 		g_Medics[client] = false;
 		return;
@@ -370,8 +357,8 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	if (!g_Medics[client] || !IsClientInGame(client))
 		return;
 	
-	new class = TF_GetClass(client);	
-	if (class != TF_MEDIC)
+	new TFClassType:class = TF2_GetPlayerClass(client);
+	if (class != TFClass_Medic)
 		return;
 	
 	TF_DropMedipack(client, false);
@@ -398,26 +385,6 @@ public bool:MedipackTraceFilter(ent, contentMask)
    return (ent == g_FilteredEntity) ? false : true;
 }
 
-stock FindResourceObject()
-{
-	new maxclients = GetMaxClients();
-	new maxents = GetMaxEntities();
-	new i, String:classname[64];
-	for(i = maxclients; i <= maxents; i++)
-	{
-	 	if(IsValidEntity(i))
-		{
-			GetEntityNetClass(i, classname, 64);
-			if(StrEqual(classname, "CTFPlayerResource"))
-			{
-				return i;
-			}
-		}
-	}
-	SetFailState("Cannot find TF2 player ressource prop!")
-	return -1;
-}
-
 stock TF_SpawnMedipack(client, String:name[], bool:cmd)
 {
 	new Float:PlayerPosition[3];
@@ -442,6 +409,7 @@ stock TF_SpawnMedipack(client, String:name[], bool:cmd)
 			
 			new Handle:TraceEx = TR_TraceRayFilterEx(PlayerPosition, PlayerPosAway, MASK_SOLID, RayType_EndPoint, MedipackTraceFilter);
 			TR_GetEndPosition(PlayerPosition, TraceEx);
+			CloseHandle(TraceEx);
 		}
 
 		new Float:Direction[3];
@@ -452,13 +420,21 @@ stock TF_SpawnMedipack(client, String:name[], bool:cmd)
 		
 		new Float:MediPos[3];
 		TR_GetEndPosition(MediPos, Trace);
+		CloseHandle(Trace);
 		MediPos[2] += 4;
 		
 		new Medipack = CreateEntityByName(name);
 		DispatchKeyValue(Medipack, "OnPlayerTouch", "!self,Kill,,0,-1")
 		if (DispatchSpawn(Medipack))
 		{
-			SetEntData(Medipack, g_TF_TeamNumOffset, 0, 4, true);
+			new team = 0;
+			new MedipacksTeam = GetConVarInt(g_MedipacksTeam)
+			if (MedipacksTeam == 2)
+				team = ((GetClientTeam(client)-1) % 2) + 2;
+			else if (MedipacksTeam == 1)
+				team = GetClientTeam(client);
+
+			SetEntProp(Medipack, Prop_Send, "m_iTeamNum", team, 4);
 			TeleportEntity(Medipack, MediPos, NULL_VECTOR, NULL_VECTOR);
 			EmitSoundToAll(SOUND_B, Medipack, _, _, _, 0.75);
 			g_MedipacksTime[Medipack] = GetTime();
@@ -486,16 +462,11 @@ stock bool:IsEntLimitReached()
 		return false;
 }
 
-stock TF_GetClass(client)
-{
-	return GetEntData(g_ResourceEnt, g_TF_ClassOffsets + (client*4), 4);
-}
-
 stock TF_IsUberCharge(client)
 {
 	new index = GetPlayerWeaponSlot(client, 1);
 	if (index > 0)
-		return GetEntData(index, g_TF_ChargeReleaseOffset, 1);
+		return GetEntProp(index, Prop_Send, "m_bChargeRelease", 1);
 	return 0;
 }
 
@@ -503,7 +474,7 @@ stock TF_GetUberLevel(client)
 {
 	new index = GetPlayerWeaponSlot(client, 1);
 	if (index > 0)
-		return RoundFloat(GetEntDataFloat(index, g_TF_ChargeLevelOffset)*100);
+		return RoundFloat(GetEntPropFloat(index, Prop_Send, "m_flChargeLevel")*100);
 	return 0;
 }
 
@@ -513,13 +484,13 @@ stock TF_SetUberLevel(client, uberlevel)
 	if (index > 0)
 	{
 		g_MedicUberCharge[client] = uberlevel;
-		SetEntDataFloat(index, g_TF_ChargeLevelOffset, uberlevel*0.01, true);
+		SetEntPropFloat(index, Prop_Send, "m_flChargeLevel", uberlevel*0.01);
 	}
 }
 
 stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
 {
-	new index = GetEntDataEnt(client, g_TF_CurrentOffset);
+	new index = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 	if (index != 0)
 		GetEntityNetClass(index, name, maxlength);
 }
