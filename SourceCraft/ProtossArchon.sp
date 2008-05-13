@@ -195,10 +195,16 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     new bool:changed=false;
     if (victim_race == raceID)
     {
-        if (Feedback(damage, victim_index, victim_player,
-                     attacker_index, attacker_player, assister_index))
+        if (assister_index && assister_index != victim_index &&
+            IsPlayerAlive(attacker_index))
         {
-            changed = true;
+            if (Feedback(damage, victim_index, victim_player,
+                        attacker_index, attacker_player, assister_index))
+            {
+                changed = true;
+            }
+            else
+                changed = Shields(damage, victim_index, victim_player);
         }
         else
             changed = Shields(damage, victim_index, victim_player);
@@ -256,14 +262,34 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                      Handle:attacker_player, assister_index)
 {
     new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
-    new chance;
+    new Float:percent, chance;
     switch(feedback_level)
     {
-        case 0: chance=10;
-        case 1: chance=15;
-        case 2: chance=25;
-        case 3: chance=35;
-        case 4: chance=50;
+        case 0:
+        {
+            percent=0.50;
+            chance=10;
+        }
+        case 1:
+        {
+            percent=0.60;
+            chance=15;
+        }
+        case 2:
+        {
+            percent=0.70;
+            chance=25;
+        }
+        case 3:
+        {
+            percent=0.85;
+            chance=35;
+        }
+        case 4:
+        {
+            percent=1.00;
+            chance=50;
+        }
     }
 
     if(GetRandomInt(1,100) <= chance)
@@ -282,7 +308,8 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
             !GetImmunity(attacker_player,Immunity_HealthTake) &&
             !TF2_IsPlayerInvuln(attacker_index))
         {
-            HurtPlayer(attacker_index,damage,victim_index,"feedback", "Feedback");
+            HurtPlayer(attacker_index,RoundToNearest(float(damage)*percent),
+                       victim_index,"feedback", "Feedback");
 
             new Float:Origin[3];
             GetClientAbsOrigin(attacker_index, Origin);
