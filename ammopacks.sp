@@ -56,6 +56,18 @@ new Handle:g_AmmopacksKeep = INVALID_HANDLE;
 new Handle:g_AmmopacksTeam = INVALID_HANDLE;
 new Handle:g_AmmopacksLimit = INVALID_HANDLE;
 
+new bool:g_NativeControl = false;
+new g_NativeAmmopacks[MAXPLAYERS + 1] = { 0, ...};
+
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+    // Register Natives
+    CreateNative("ControlAmmopacks",Native_ControlAmmopacks);
+    CreateNative("SetAmmopack",Native_SetAmmopack);
+    RegPluginLibrary("ammopacks");
+    return true;
+}
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -112,12 +124,15 @@ public OnGameFrame()
 		return;
 
 	new AmmopacksOn = GetConVarInt(g_IsAmmopacksOn)
-	if (AmmopacksOn < 2)
+	if (AmmopacksOn < 2 && !g_NativeControl)
 		return;
 
 	new maxclients = GetMaxClients();
 	for (new i = 1; i <= maxclients; i++)
 	{
+		if (g_NativeControl && g_NativeAmmopacks[i] < 2)
+			continue;
+
 		if (g_Engis[i] && !g_EngiButtonDown[i] && IsClientInGame(i))
 		{
 			if (GetClientButtons(i) & IN_ATTACK2)
@@ -175,7 +190,8 @@ public Action:Command_Ammopack(client, args)
 {
 	if(!g_IsRunning)
 		return Plugin_Handled;
-	new AmmopacksOn = GetConVarInt(g_IsAmmopacksOn)
+	new AmmopacksOn = g_NativeControl ? g_NativeAmmopacks[client]
+					  : GetConVarInt(g_IsAmmopacksOn);
 	if (AmmopacksOn < 2)
 		return Plugin_Handled;
 	
@@ -297,6 +313,9 @@ public Action:Timer_ButtonUp(Handle:timer, any:client)
 
 public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	if(g_NativeControl)
+		return;
+
 	new AmmopacksOn = GetConVarInt(g_IsAmmopacksOn)
 	switch (AmmopacksOn)
 	{
@@ -325,12 +344,14 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 {
 	if(!g_IsRunning)
 		return;
-	new AmmopacksOn = GetConVarInt(g_IsAmmopacksOn)
-	if (AmmopacksOn < 1 || AmmopacksOn == 2)
-		return;
-	
+
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (!g_Engis[client] || !IsClientInGame(client))
+		return;
+	
+	new AmmopacksOn = g_NativeControl ? g_NativeAmmopacks[client]
+					  : GetConVarInt(g_IsAmmopacksOn);
+	if (AmmopacksOn < 1 || AmmopacksOn == 2)
 		return;
 	
 	new TFClassType:class = TF2_GetPlayerClass(client);	
@@ -499,3 +520,21 @@ stock bool:TF_DropAmmopack(client, bool:cmd)
 	}
 	return false;
 }
+
+public Native_ControlAmmopacks(Handle:plugin,numParams)
+{
+    if (numParams == 0)
+        g_NativeControl = true;
+    else if(numParams == 1)
+        g_NativeControl = GetNativeCell(1);
+}
+
+public Native_SetAmmopack(Handle:plugin,numParams)
+{
+    if(numParams >= 1 && numParams <= 2)
+    {
+        new client = GetNativeCell(1);
+        g_NativeAmmopacks[client] = (numParams >= 2) ? GetNativeCell(2) : 3;
+    }
+}
+

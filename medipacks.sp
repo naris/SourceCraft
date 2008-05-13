@@ -58,7 +58,7 @@ new Handle:g_MedipacksLimit = INVALID_HANDLE;
 new Handle:g_DefUberCharge = INVALID_HANDLE;
 
 new bool:g_NativeControl = false;
-new g_NativeMediPacks[MAXPLAYERS + 1] = { 0, ...};
+new g_NativeMedipacks[MAXPLAYERS + 1] = { 0, ...};
 new g_NativeUberCharge[MAXPLAYERS + 1] = { 0, ...};
 
 public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
@@ -129,25 +129,25 @@ public OnGameFrame()
 		return;
 
 	new MedipacksOn = GetConVarInt(g_IsMedipacksOn)
-	if (!g_NativeControl && MedipacksOn < 2)
+	if (MedipacksOn < 2 && !g_NativeControl)
 		return;
 
 	new maxclients = GetMaxClients();
 	for (new i = 1; i <= maxclients; i++)
 	{
-		if (!g_NativeControl || g_NativeMediPacks[i] >= 2)
+		if (g_NativeControl && g_NativeMedipacks[i] < 2)
+			continue;
+
+		if (g_Medics[i] && !g_MedicButtonDown[i] && IsClientInGame(i))
 		{
-			if (g_Medics[i] && !g_MedicButtonDown[i] && IsClientInGame(i))
+			if (GetClientButtons(i) & IN_ATTACK2)
 			{
-				if (GetClientButtons(i) & IN_ATTACK2)
-				{
-					g_MedicButtonDown[i] = true;
-					CreateTimer(0.5, Timer_ButtonUp, i);
-					new String:classname[64];
-					TF_GetCurrentWeaponClass(i, classname, 64);
-					if(StrEqual(classname, "CWeaponMedigun") && g_MedicUberCharge[i] < 100 && TF_IsUberCharge(i) == 0)
-						TF_DropMedipack(i, true);
-				}
+				g_MedicButtonDown[i] = true;
+				CreateTimer(0.5, Timer_ButtonUp, i);
+				new String:classname[64];
+				TF_GetCurrentWeaponClass(i, classname, 64);
+				if(StrEqual(classname, "CWeaponMedigun") && g_MedicUberCharge[i] < 100 && TF_IsUberCharge(i) == 0)
+					TF_DropMedipack(i, true);
 			}
 		}
 	}
@@ -196,7 +196,7 @@ public Action:Command_Medipack(client, args)
 	if(!g_IsRunning)
 		return Plugin_Handled;
 
-	new MedipacksOn = g_NativeControl ? g_NativeMediPacks[client]
+	new MedipacksOn = g_NativeControl ? g_NativeMedipacks[client]
 					  : GetConVarInt(g_IsMedipacksOn);
 	if (MedipacksOn < 2)
 		return Plugin_Handled;
@@ -333,18 +333,18 @@ public Action:Timer_PlayerDefDelay(Handle:timer, any:client)
 
 public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!g_NativeControl)
+	if(g_NativeControl)
+		return;
+
+	new MedipacksOn = GetConVarInt(g_IsMedipacksOn);
+	switch (MedipacksOn)
 	{
-		new MedipacksOn = GetConVarInt(g_IsMedipacksOn);
-		switch (MedipacksOn)
-		{
-			case 1:
-				PrintToChatAll("[SM] %t", "OnDeath Medipacks");
-			case 2:
-				PrintToChatAll("[SM] %t", "OnCommand Medipacks");
-			case 3:
-				PrintToChatAll("[SM] %t", "OnDeathAndCommand Medipacks");
-		}
+		case 1:
+			PrintToChatAll("[SM] %t", "OnDeath Medipacks");
+		case 2:
+			PrintToChatAll("[SM] %t", "OnCommand Medipacks");
+		case 3:
+			PrintToChatAll("[SM] %t", "OnDeathAndCommand Medipacks");
 	}
 }
 
@@ -381,7 +381,7 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	if (!g_Medics[client] || !IsClientInGame(client))
 		return;
 
-	new MedipacksOn = g_NativeControl ? g_NativeMediPacks[client]
+	new MedipacksOn = g_NativeControl ? g_NativeMedipacks[client]
 					  : GetConVarInt(g_IsMedipacksOn);
 	if (MedipacksOn < 1 || MedipacksOn == 2)
 		return;
@@ -581,7 +581,7 @@ public Native_SetMedipack(Handle:plugin,numParams)
     if(numParams >= 1 && numParams <= 3)
     {
         new client = GetNativeCell(1);
-        g_NativeMediPacks[client] = (numParams >= 2) ? GetNativeCell(2) : 3;
+        g_NativeMedipacks[client] = (numParams >= 2) ? GetNativeCell(2) : 3;
 	g_NativeUberCharge[client] = (numParams >= 3) ? GetNativeCell(3) : 0;
     }
 }
