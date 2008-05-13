@@ -26,7 +26,7 @@
 #include <tf2>
 #include <tf2_stocks>
 
-#define PL_VERSION "1.0.5"
+#define PL_VERSION "1.1.5"
 #define SOUND_A "weapons/smg_clip_out.wav"
 #define SOUND_B "items/spawn_item.wav"
 #define SOUND_C "ui/hint.wav"
@@ -47,12 +47,14 @@ new Float:g_EngiPosition[MAXPLAYERS+1][3];
 new g_EngiMetal[MAXPLAYERS+1];
 new g_AmmopacksTime[2048];
 new g_FilteredEntity = -1;
+new g_AmmopacksCount = 0;
 new Handle:g_IsAmmopacksOn = INVALID_HANDLE;
 new Handle:g_AmmopacksSmall = INVALID_HANDLE;
 new Handle:g_AmmopacksMedium = INVALID_HANDLE;
 new Handle:g_AmmopacksFull = INVALID_HANDLE;
 new Handle:g_AmmopacksKeep = INVALID_HANDLE;
 new Handle:g_AmmopacksTeam = INVALID_HANDLE;
+new Handle:g_AmmopacksLimit = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -65,6 +67,7 @@ public OnPluginStart()
 	g_AmmopacksMedium = CreateConVar("sm_ammopacks_medium","100","Metal required for medium Ammopacks");
 	g_AmmopacksFull = CreateConVar("sm_ammopacks_full","200","Metal required for full Ammopacks");
 	g_AmmopacksKeep = CreateConVar("sm_ammopacks_keep","60","Time to keep Ammopacks on map. (0 = off | >0 = seconds)");
+	g_AmmopacksLimit = CreateConVar("sm_ammopacks_limit","100","Maximum number of extra Ammopacks on map at a time. (<1 = unlimited)");
 	g_AmmopacksTeam = CreateConVar("sm_ammopacks_team","0","Team to drop Ammopacks for. (0 = any team | 1 = own team | 2 = opposing team)");
 
 	HookConVarChange(g_IsAmmopacksOn, ConVarChange_IsAmmopacksOn);
@@ -262,13 +265,15 @@ public Action:Timer_Caching(Handle:timer)
 		}
 	}
 	new AmmopacksKeep = GetConVarInt(g_AmmopacksKeep)
-	if (AmmopacksKeep > 0)
+	new AmmopacksLimit = GetConVarInt(g_AmmopacksLimit);
+	if (AmmopacksKeep > 0 || AmmopacksLimit > 0)
 	{
 		new time = GetTime() - AmmopacksKeep;
 		for (new c = 0; c < 2048; c++)
 		{
 			if (g_AmmopacksTime[c] != 0 && g_AmmopacksTime[c] < time)
 			{
+				g_AmmopacksCount--;
 				g_AmmopacksTime[c] = 0;
 				if (IsValidEntity(c))
 				{
@@ -364,6 +369,10 @@ stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
 	else
 		PlayerPosition = g_EngiPosition[client];
 		
+	new AmmopacksLimit = GetConVarInt(g_AmmopacksLimit);
+	if (AmmopacksLimit > 0 && g_AmmopacksCount >=  AmmopacksLimit)
+		return;
+
 	if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 && PlayerPosition[2] != 0.0 && IsEntLimitReached() == false)
 	{
 		PlayerPosition[2] += 4;
@@ -408,6 +417,7 @@ stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
 			SetEntProp(Ammopack, Prop_Send, "m_iTeamNum", team, 4);
 			TeleportEntity(Ammopack, AmmoPos, NULL_VECTOR, NULL_VECTOR);
 			EmitSoundToAll(SOUND_B, Ammopack, _, _, _, 0.75);
+			g_AmmopacksCount++;
 			g_AmmopacksTime[Ammopack] = GetTime();
 		}
 	}
