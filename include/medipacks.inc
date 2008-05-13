@@ -16,7 +16,7 @@
  * @param plugin_only 	Set to 1 to assume complete control of the Medipacks plugin.
  * @return		    	none
  */
-native ControlMediPacks(bool:plugin_only=true);
+native ControlMedipacks(bool:plugin_only=true);
 
 /**
  * Give a hook to the player
@@ -27,7 +27,7 @@ native ControlMediPacks(bool:plugin_only=true);
  * @param amount    Set to amount of initial uber when a medic.
  * @return			none
  */
-native SetMediPack(client,arm=true,amount=0);
+native SetMedipack(client,arm=true,amount=0);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -45,7 +45,7 @@ public SharedPlugin:__pl_medipacks =
 #if !defined REQUIRE_PLUGIN
 public __pl_medipacks_SetNTVOptional()
 {
-	MarkNativeAsOptional("ControlMediPacks");
-	MarkNativeAsOptional("SetMediPack");
+	MarkNativeAsOptional("ControlMedipacks");
+	MarkNativeAsOptional("SetMedipack");
 }
 #endif

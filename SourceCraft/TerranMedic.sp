@@ -115,7 +115,7 @@ public OnPluginReady()
         ControlMedicInfect(true);
 
     if (m_MedipacksAvailable)
-        ControlMediPacks(true);
+        ControlMedipacks(true);
 }
 
 public OnMapStart()
@@ -150,7 +150,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
                 SetMedicEnhancement(client, false, 0);
 
             if (m_MedipacksAvailable)
-                SetMediPack(client, 0, 0);
+                SetMedipack(client, 0, 0);
         }
         else if (race == raceID)
         {
@@ -164,7 +164,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 
             new medipack_level = GetUpgradeLevel(player,raceID,medipackID);
             if (medipack_level)
-                SetupMediPack(client, charge_level);
+                SetupMedipack(client, charge_level);
 
             new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
@@ -217,7 +217,7 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
         else if (upgrade==chargeID)
             SetupUberCharger(client, new_level);
         else if (upgrade==medipackID)
-            SetupMediPack(client, new_level);
+            SetupMedipack(client, new_level);
         else if (upgrade==armorID)
             SetupArmor(client, new_level);
         else if (upgrade==jetpackID)
@@ -464,14 +464,14 @@ public SetupUberCharger(client, level)
     }
 }
 
-public SetupMediPack(client, level)
+public SetupMedipack(client, level)
 {
     if (m_MedipacksAvailable)
     {
         if (level)
-            SetMediPack(client, (level >= 2) ? 3 : 1, (level-1)*2);
+            SetMedipack(client, (level >= 2) ? 3 : 1, (level-1)*2);
         else
-            SetMediPack(client, 0, 0);
+            SetMedipack(client, 0, 0);
     }
 }
 
