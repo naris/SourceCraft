@@ -295,7 +295,6 @@ public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
 	return Plugin_Continue;
 }
 
-/*
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
 	if(GetConVarBool(CvarEnable) && !NativeControl) return Plugin_Continue;
@@ -312,14 +311,13 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 		new target = GetClientAimTarget(client);
 		if(target > 0) 
 		{
-			MedicInfect(client,target,1);
+			MedicInfect(client,target,false,false);
 			MedicDelay[client] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 		}
 	}
 
 	return Plugin_Continue;
 }
-*/
 
 public OnGameFrame()
 {
@@ -355,7 +353,7 @@ CheckMedics()
 					new target = GetClientAimTarget(index);
 					if(target > 0) 
 					{
-						MedicInfect(index,target,0);
+						MedicInfect(index,target,false,true);
 						MedicDelay[index] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 					}
 				}
@@ -364,7 +362,7 @@ CheckMedics()
 					new target = GetClientAimTarget(index);
 					if(target > 0) 
 					{
-						MedicInfect(index,target,1);
+						MedicInfect(index,target,true,true);
 						MedicDelay[index] = GetGameTime() + GetConVarFloat(Cvar_InfectDelay);
 					}
 				}
@@ -373,7 +371,7 @@ CheckMedics()
 	}
 }
 
-MedicInfect(medic,target,allow)
+MedicInfect(medic,target,bool:allow,bool:medigun)
 {
 	if (!IsClientInGame(medic) || !IsClientInGame(target))
 		return;
@@ -384,21 +382,25 @@ MedicInfect(medic,target,allow)
 	{
 		if( allow  )
 		{
-			// Rukia: Don't infect same team if not allowed
-			if(  !GetConVarBool(Cvar_InfectSameTeam) )
-				return;
 			// Rukia: Don't reinfect!
-			else if(ClientInfected[target])
+			if(ClientInfected[target])
+				return;
+			// Rukia: Don't infect same team if not allowed
+			else if(  !GetConVarBool(Cvar_InfectSameTeam) )
+				return;
+			else if (medigun && !GetConVarBool(Cvar_InfectMedi))
 				return;
 		}
 	}
 	else
 	{
-		// Rukia: Don't infect opposing team if not allowed
-		if(!GetConVarBool(Cvar_InfectOpposingTeam) )
-			return;
 		// Rukia: Don't reinfect!
-		else if(ClientInfected[target])
+		if(ClientInfected[target])
+			return;
+		// Rukia: Don't infect opposing team if not allowed
+		else if(!GetConVarBool(Cvar_InfectOpposingTeam) )
+			return;
+		else if (medigun && !GetConVarBool(Cvar_InfectMedi))
 			return;
 	}
 
@@ -436,7 +438,11 @@ TransmitInfection(to, from)
 	// Rukia: Spread to all
 	if(GetConVarBool(Cvar_SpreadAll) )
 	{
-		SendInfection(to,from,t_same,false);
+		new medic = ClientInfected[from];
+		if (!IsClientInGame(medic))
+			medic = from;
+
+		SendInfection(to,medic,t_same,false);
 		return;
 	}
 	
@@ -559,8 +565,8 @@ public Native_MedicInfect(Handle:plugin,numParams)
 	{
 		new client = GetNativeCell(1);
 		new target = GetNativeCell(2);
-		new allow = (numParams >= 3) ? GetNativeCell(3) : 0;
-		MedicInfect(client,target,allow);
+		new bool:allow = (numParams >= 3) ? (bool:GetNativeCell(3)) : false;
+		MedicInfect(client,target,allow,false);
 	}
 }
 
