@@ -22,12 +22,12 @@ native ControlMedipacks(bool:plugin_only=true);
  * Enable Medipacks for a player.
  *
  * @param index 	Client index
- * @param arm       Enable/Disable medipacks for client (0 = disabled   | 1 = on death |
+ * @param enable    Enable/Disable medipacks for client (0 = disabled   | 1 = on death |
  *                                                       2 = on command | 3 = on death and command)
  * @param amount    Set to amount of initial uber when a medic.
  * @return			none
  */
-native SetMedipack(client,arm=true,amount=0);
+native SetMedipack(client,enable=3,amount=0);
 
 /* DO NOT EDIT BELOW THIS LINE */
 

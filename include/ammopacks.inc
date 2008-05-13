@@ -22,12 +22,11 @@ native ControlAmmopacks(bool:plugin_only=true);
  * Enable Ammopacks for the player
  *
  * @param index 	Client index
- * @param arm       Enable/Disable ammopacks for client (0 = disabled   | 1 = on death |
+ * @param enable    Enable/Disable ammopacks for client (0 = disabled   | 1 = on death |
  *                                                       2 = on command | 3 = on death and command)
- * @param amount    Set to amount of initial metal when an engineer spawns
  * @return			none
  */
-native SetAmmopack(client,arm=true,amount=0);
+native SetAmmopack(client,enable=3);
 
 /* DO NOT EDIT BELOW THIS LINE */
 

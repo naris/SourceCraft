@@ -108,8 +108,9 @@ public OnPluginStart()
 	Cvar_InfectMedi = CreateConVar("sv_medic_infect_medi", "1", "Infect using medi gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	Cvar_InfectSyringe = CreateConVar("sv_medic_infect_syringe", "0", "Infect using syringe gun",FCVAR_PLUGIN|FCVAR_NOTIFY);
 	
-	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
+	HookEvent("teamplay_round_active", RoundStartEvent);
     	HookEvent("player_spawn",PlayerSpawnEvent);
+	HookEventEx("player_death", MedicModify, EventHookMode_Pre);
 }
 
 public OnConfigsExecuted()
@@ -222,38 +223,41 @@ public Action:HandleInfection(Handle:timer)
 	}
 }
 
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:RoundStartEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
-	ClientInfected[index]=0;
-	ClientFriendlyInfected[index]=false;
-
 	if(!NativeControl && GetConVarBool(CvarEnable) && GetConVarBool(CvarAnnounce))
 	{
 		if(GetConVarBool(Cvar_InfectOpposingTeam) )
 		{
 			if(GetConVarBool(Cvar_InfectMedi) )
-				PrintToChat(index,"%c[MedicInfect] %cMedics can infect enemy players using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+				PrintToChatAll("%c[SM] %cMedics can infect enemy players using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
 
 			if(GetConVarBool(Cvar_InfectSyringe) )
-				PrintToChat(index,"%c[MedicInfect] %cMedics can infect enemy players using thier syringe gun", COLOR_GREEN,COLOR_DEFAULT);
+				PrintToChatAll("%c[SM] %cMedics can infect enemy players using thier syringe gun", COLOR_GREEN,COLOR_DEFAULT);
 		}
 
 		if(GetConVarBool(Cvar_InfectSameTeam) )
-			PrintToChat(index,"%c[MedicInfect] %cMedics can infect teammates by reloading thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+			PrintToChatAll("%c[SM] %cMedics can infect teammates by reloading thier medigun", COLOR_GREEN,COLOR_DEFAULT);
 
-		PrintToChat(index,"%c[MedicInfect] %cMedics can heal infected teammates using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+		PrintToChatAll("%c[SM] %cMedics can heal infected teammates using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
 
 		new bool:spreadAll = GetConVarBool(Cvar_SpreadAll);
 
 		if(!spreadAll && GetConVarBool(Cvar_InfectMedics) )
-			PrintToChat(index,"%c[MedicInfect] %cMedics are immune to infections", COLOR_GREEN,COLOR_DEFAULT);
+			PrintToChatAll("%c[SM] %cMedics are immune to infections", COLOR_GREEN,COLOR_DEFAULT);
 
 		if(spreadAll || GetConVarBool(Cvar_SpreadSameTeam) )
-			PrintToChat(index,"%c[MedicInfect] %cInfections will spread to teammates", COLOR_GREEN,COLOR_DEFAULT);
+			PrintToChatAll("%c[SM] %cInfections will spread to teammates", COLOR_GREEN,COLOR_DEFAULT);
 		if(spreadAll || GetConVarBool(Cvar_SpreadOpposingTeam) )
-			PrintToChat(index,"%c[MedicInfect] %cInfections will spread to the enemy", COLOR_GREEN,COLOR_DEFAULT);
+			PrintToChatAll("%c[SM] %cInfections will spread to the enemy", COLOR_GREEN,COLOR_DEFAULT);
 	}
+}
+
+public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	new index=GetClientOfUserId(GetEventInt(event,"userid")); // Get clients index
+	ClientInfected[index]=0;
+	ClientFriendlyInfected[index]=false;
 }
 
 public Action:MedicModify(Handle:event, const String:name[], bool:dontBroadcast)
