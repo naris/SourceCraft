@@ -414,7 +414,7 @@ MedicInfect(medic,target,bool:allow,bool:medigun)
 		{
 			// Rukia: Infect same team if allowed is on
 			if(allow)
-				SendInfection(target,medic,true,true);
+				SendInfection(target,medic,medic,true,true);
 			// Rukia: Heal if applicable.
 			else if (ClientInfected[target] || ClientFriendlyInfected[target])
 				HealInfection(target, medic);
@@ -422,7 +422,7 @@ MedicInfect(medic,target,bool:allow,bool:medigun)
 		// Rukia: Infect the opposing team otherwise
 		else if (!ClientInfected[target])
 		{
-			SendInfection(target,medic,false,true);
+			SendInfection(target,medic,medic,false,true);
 		}
 	}
 }
@@ -438,11 +438,7 @@ TransmitInfection(to, from)
 	// Rukia: Spread to all
 	if(GetConVarBool(Cvar_SpreadAll) )
 	{
-		new medic = ClientInfected[from];
-		if (!IsClientInGame(medic))
-			medic = from;
-
-		SendInfection(to,medic,t_same,false);
+		SendInfection(to,from,ClientInfected[from],t_same,false);
 		return;
 	}
 	
@@ -452,33 +448,36 @@ TransmitInfection(to, from)
 		return;
 	}
 
-	// Give credit for infection to original medic (if possible).
-	new medic = ClientInfected[from];
-	if (!IsClientInGame(medic))
-		medic = from;
-
 	// Rukia: Spread to same team
 	if(GetConVarBool(Cvar_SpreadSameTeam) && t_same )
 	{
-		SendInfection(to,medic,true,false);
+		SendInfection(to,from,ClientInfected[from],true,false);
 	}
 	// Rukia: Spread to opposing team
 	else if(GetConVarBool(Cvar_SpreadOpposingTeam) && !t_same )
 	{
-		SendInfection(to,medic,false,false);
+		SendInfection(to,from,ClientInfected[from],false,false);
 	}
 	// Rukia: If a medic infects a friendly, allow the infection to spread across team boundaries
 	else if(GetConVarBool(Cvar_InfectSameTeam) && !t_same && ClientFriendlyInfected[from])
 	{
-		SendInfection(to,medic,false,false);
+		SendInfection(to,from,ClientInfected[from],false,false);
 	}
 }
 
-SendInfection(to,from,bool:friendly,bool:infect)
+SendInfection(to,from,medic,bool:friendly,bool:infect)
 {
 	if (to > 0 && !ClientInfected[to])
 	{
-		ClientInfected[to] = from;
+		new bool:medicInGame = (medic > 0) && IsClientInGame(medic);
+		new bool:fromInGame  = (from > 0)  && IsClientInGame(from);
+		if (medicInGame)
+			ClientInfected[to] = medic;
+		else if (fromInGame)
+			ClientInfected[to] = from;
+		else
+			ClientInfected[to] = 0;
+
 		ClientFriendlyInfected[to] = friendly;
 
 		new color[4];
@@ -500,11 +499,15 @@ SendInfection(to,from,bool:friendly,bool:infect)
 
 		PrintHintText(to,"You have been infected!");
 
-		if(from > 0 && IsClientInGame(from))
+		if(fromInGame)
 		{
 			if(infect) PrintHintText(from,"Virus administered!");
 			else PrintHintText(from,"Virus spread!");
 		}
+
+		if (!infect && medicInGame && medic != from)
+			PrintHintText(medic,"Virus spread!");
+
 
 		new res;
 		Call_StartForward(OnInfectedHandle);
