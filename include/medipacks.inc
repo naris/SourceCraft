@@ -19,7 +19,7 @@
 native ControlMedipacks(bool:plugin_only=true);
 
 /**
- * Give a hook to the player
+ * Enable Medipacks for a player.
  *
  * @param index 	Client index
  * @param arm       Enable/Disable medipacks for client (0 = disabled   | 1 = on death |
