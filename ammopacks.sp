@@ -23,9 +23,10 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2>
 #include <tf2_stocks>
 
-#define PL_VERSION "1.1.0"
+#define PL_VERSION "1.0.5"
 #define SOUND_A "weapons/smg_clip_out.wav"
 #define SOUND_B "items/spawn_item.wav"
 #define SOUND_C "ui/hint.wav"
@@ -42,19 +43,16 @@ public Plugin:myinfo =
 new bool:g_IsRunning = true;
 new bool:g_Engis[MAXPLAYERS+1];
 new bool:g_EngiButtonDown[MAXPLAYERS+1];
-new g_EngiMetal[MAXPLAYERS+1];
 new Float:g_EngiPosition[MAXPLAYERS+1][3];
+new g_EngiMetal[MAXPLAYERS+1];
 new g_AmmopacksTime[2048];
+new g_FilteredEntity = -1;
 new Handle:g_IsAmmopacksOn = INVALID_HANDLE;
 new Handle:g_AmmopacksSmall = INVALID_HANDLE;
 new Handle:g_AmmopacksMedium = INVALID_HANDLE;
 new Handle:g_AmmopacksFull = INVALID_HANDLE;
 new Handle:g_AmmopacksKeep = INVALID_HANDLE;
-new Handle:g_AmmopacksLimit = INVALID_HANDLE;
-new g_AmmopacksCount = 0;
-new g_FilteredEntity = -1;
-new g_TF_MetalAmmo = 3;
-new g_TF_ClassOffsets, g_TF_MetalOffset, g_TF_CurrentOffset, g_TF_TeamNumOffset;
+new Handle:g_AmmopacksTeam = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -67,25 +65,14 @@ public OnPluginStart()
 	g_AmmopacksMedium = CreateConVar("sm_ammopacks_medium","100","Metal required for medium Ammopacks");
 	g_AmmopacksFull = CreateConVar("sm_ammopacks_full","200","Metal required for full Ammopacks");
 	g_AmmopacksKeep = CreateConVar("sm_ammopacks_keep","60","Time to keep Ammopacks on map. (0 = off | >0 = seconds)");
-	g_AmmopacksLimit = CreateConVar("sm_ammopacks_limit","100","Maximum number of extra Ammopacks on map at a time. (<1 = unlimited)");
-	
-	g_TF_MetalOffset = FindSendPropOffs("CTFPlayer", "m_iAmmo");
-	g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
-	g_TF_TeamNumOffset = FindSendPropOffs("CTFItem", "m_iTeamNum");
-	
-	if (g_TF_ClassOffsets == -1)
-		SetFailState("Cannot find TF2 m_iPlayerClass offset!")
-	if (g_TF_MetalOffset == -1)
-		SetFailState("Cannot find TF2 m_iAmmoMetal offset!")
-	if (g_TF_CurrentOffset == -1)
-		SetFailState("Cannot find TF2 m_hActiveWeapon offset!")
-	if (g_TF_TeamNumOffset == -1)
-		SetFailState("Cannot find TF2 m_iTeamNum offset!")
+	g_AmmopacksTeam = CreateConVar("sm_ammopacks_team","0","Team to drop Ammopacks for. (0 = any team | 1 = own team | 2 = opposing team)");
 
 	HookConVarChange(g_IsAmmopacksOn, ConVarChange_IsAmmopacksOn);
 	HookConVarChange(g_AmmopacksSmall, ConVarChange_AmmopacksMetal);
 	HookConVarChange(g_AmmopacksMedium, ConVarChange_AmmopacksMetal);
 	HookConVarChange(g_AmmopacksFull, ConVarChange_AmmopacksMetal);
+	HookConVarChange(g_AmmopacksKeep, ConVarChange_AmmopacksKeep);
+	HookConVarChange(g_AmmopacksTeam, ConVarChange_AmmopacksTeam);
 	HookEvent("player_changeclass", Event_PlayerClass);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("player_team", Event_PlayerTeam);
@@ -165,6 +152,22 @@ public ConVarChange_AmmopacksMetal(Handle:convar, const String:oldValue[], const
 	}
 }
 
+public ConVarChange_AmmopacksKeep(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (StringToInt(newValue) < 0 || StringToInt(newValue) > 600)
+	{
+		SetConVarInt(convar, StringToInt(oldValue), false, false);
+	}
+}
+
+public ConVarChange_AmmopacksTeam(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (StringToInt(newValue) < 0 || StringToInt(newValue) > 2)
+	{
+		SetConVarInt(convar, StringToInt(oldValue), false, false);
+	}
+}
+
 public Action:Command_Ammopack(client, args)
 {
 	if(!g_IsRunning)
@@ -173,7 +176,8 @@ public Action:Command_Ammopack(client, args)
 	if (AmmopacksOn < 2)
 		return Plugin_Handled;
 	
-	if (TF2_GetPlayerClass(client) != TFClass_Engineer)
+	new TFClassType:class = TF2_GetPlayerClass(client);
+	if (class != TFClass_Engineer)
 		return Plugin_Handled;
 	
 	new String:classname[64];
@@ -219,7 +223,8 @@ public Action:Command_MetalAmount(client, args)
 		return Plugin_Handled;
 	}
 	
-	if (TF2_GetPlayerClass(target) != TFClass_Engineer)
+	new TFClassType:class = TF2_GetPlayerClass(target);
+	if (class != TFClass_Engineer)
 	{
 		ReplyToCommand(client, "[SM] %t", "Not a Engineer", name);
 		return Plugin_Handled;
@@ -257,32 +262,23 @@ public Action:Timer_Caching(Handle:timer)
 		}
 	}
 	new AmmopacksKeep = GetConVarInt(g_AmmopacksKeep)
-	new AmmopacksLimit = GetConVarInt(g_AmmopacksLimit);
-	if (AmmopacksKeep > 0 || AmmopacksLimit)
+	if (AmmopacksKeep > 0)
 	{
 		new time = GetTime() - AmmopacksKeep;
 		for (new c = 0; c < 2048; c++)
 		{
-			if (g_AmmopacksTime[c] != 0)
+			if (g_AmmopacksTime[c] != 0 && g_AmmopacksTime[c] < time)
 			{
+				g_AmmopacksTime[c] = 0;
 				if (IsValidEntity(c))
 				{
-					if (g_AmmopacksTime[c] < time)
+					new String:classname[64];
+					GetEntityNetClass(c, classname, 64);
+					if(StrEqual(classname, "CBaseAnimating"))
 					{
-						new String:classname[64];
-						GetEntityNetClass(c, classname, 64);
-						if(StrEqual(classname, "CBaseAnimating"))
-						{
-							EmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
-							RemoveEdict(c);
-							g_AmmopacksCount--;
-						}
+						EmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
+						RemoveEdict(c);
 					}
-				}
-				else
-				{
-					g_AmmopacksTime[c] = 0;
-					g_AmmopacksCount--;
 				}
 			}
 		}
@@ -311,8 +307,8 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	new class = GetEventInt(event, "class");
-	if (class != _:TFClass_Engineer)
+	new any:class = GetEventInt(event, "class");
+	if (class != TFClass_Engineer)
 	{
 		g_Engis[client] = false;
 		return;
@@ -332,7 +328,8 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	if (!g_Engis[client] || !IsClientInGame(client))
 		return;
 	
-	if (TF2_GetPlayerClass(client) != TFClass_Engineer)
+	new TFClassType:class = TF2_GetPlayerClass(client);	
+	if (class != TFClass_Engineer)
 		return;
 	
 	TF_DropAmmopack(client, false);
@@ -367,10 +364,7 @@ stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
 	else
 		PlayerPosition = g_EngiPosition[client];
 		
-	new AmmopacksLimit = GetConVarInt(g_AmmopacksLimit);
-	if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 && PlayerPosition[2] != 0.0 &&
-	    (AmmopacksLimit <= 0 || g_AmmopacksCount <  AmmopacksLimit) &&
-	    IsEntLimitReached() == false)
+	if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 && PlayerPosition[2] != 0.0 && IsEntLimitReached() == false)
 	{
 		PlayerPosition[2] += 4;
 		g_FilteredEntity = client;
@@ -386,6 +380,7 @@ stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
 			
 			new Handle:TraceEx = TR_TraceRayFilterEx(PlayerPosition, PlayerPosAway, MASK_SOLID, RayType_EndPoint, AmmopackTraceFilter);
 			TR_GetEndPosition(PlayerPosition, TraceEx);
+			CloseHandle(TraceEx);
 		}
 
 		new Float:Direction[3];
@@ -396,13 +391,21 @@ stock TF_SpawnAmmopack(client, String:name[], bool:cmd)
 		
 		new Float:AmmoPos[3];
 		TR_GetEndPosition(AmmoPos, Trace);
+		CloseHandle(Trace);
 		AmmoPos[2] += 4;
 		
 		new Ammopack = CreateEntityByName(name);
 		DispatchKeyValue(Ammopack, "OnPlayerTouch", "!self,Kill,,0,-1")
 		if (DispatchSpawn(Ammopack))
 		{
-			SetEntData(Ammopack, g_TF_TeamNumOffset, 0, 4, true);
+			new team = 0;
+			new AmmopacksTeam = GetConVarInt(g_AmmopacksTeam)
+			if (AmmopacksTeam == 2)
+				team = ((GetClientTeam(client)-1) % 2) + 2;
+			else if (AmmopacksTeam == 1)
+				team = GetClientTeam(client);
+
+			SetEntProp(Ammopack, Prop_Send, "m_iTeamNum", team, 4);
 			TeleportEntity(Ammopack, AmmoPos, NULL_VECTOR, NULL_VECTOR);
 			EmitSoundToAll(SOUND_B, Ammopack, _, _, _, 0.75);
 			g_AmmopacksTime[Ammopack] = GetTime();
@@ -432,18 +435,18 @@ stock bool:IsEntLimitReached()
 
 stock TF_GetMetalAmount(client)
 {
-	return GetEntData(client, g_TF_MetalOffset + (g_TF_MetalAmmo * 4));
+	return GetEntData(client, FindDataMapOffs(client, "m_iAmmo") + (3 * 4), 4);
 }
 
 stock TF_SetMetalAmount(client, metal)
 {
 	g_EngiMetal[client] = metal;
-	SetEntData(client, g_TF_MetalOffset + (g_TF_MetalAmmo * 4), metal, 4);  
+	SetEntData(client, FindDataMapOffs(client, "m_iAmmo") + (3 * 4), metal, 4);  
 }
 
 stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
 {
-	new index = GetEntDataEnt(client, g_TF_CurrentOffset);
+	new index = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 	if (index != 0)
 		GetEntityNetClass(index, name, maxlength);
 }
