@@ -249,14 +249,14 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                                 damage)
 {
     new bool:changed=false;
-    if (victim_race == raceID)
-    {
-        changed = Feedback(damage, victim_index, victim_player,
-                           attacker_index, attacker_player, assister_index);
-    }
-
     if (attacker_index && attacker_index != victim_index)
     {
+        if (victim_race == raceID && IsPlayerAlive(attacker_index))
+        {
+            changed = Feedback(damage, victim_index, victim_player,
+                               attacker_index, attacker_player, assister_index);
+        }
+
         if (attacker_race == raceID)
         {
             Hallucinate(victim_index, victim_player,
@@ -282,13 +282,29 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
     new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
     if (feedback_level)
     {
-        new chance;
+        new Float:percent, chance;
         switch(feedback_level)
         {
-            case 1: chance=15;
-            case 2: chance=25;
-            case 3: chance=35;
-            case 4: chance=50;
+            case 1:
+            {
+                percent=0.50;
+                chance=15;
+            }
+            case 2:
+            {
+                percent=0.60;
+                chance=25;
+            }
+            case 3:
+            {
+                percent=0.75;
+                chance=35;
+            }
+            case 4:
+            {
+                percent=0.90;
+                chance=50;
+            }
         }
 
         if(GetRandomInt(1,100) <= chance)
@@ -307,7 +323,8 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                 !GetImmunity(attacker_player,Immunity_HealthTake) &&
                 !TF2_IsPlayerInvuln(attacker_index))
             {
-                HurtPlayer(attacker_index,damage,victim_index,"feedback", "Feedback");
+                HurtPlayer(attacker_index,RoundToNearest(float(damage)*percent),
+                           victim_index,"feedback", "Feedback");
 
                 EmitSoundToAll(feedbackWav,victim_index);
 
@@ -416,7 +433,7 @@ Levitation(client, Handle:player, level)
 
 public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
 {
-    new level = GetUpgradeLevel(victim_player,raceID,hallucinationID);
+    new level = GetUpgradeLevel(player,raceID,hallucinationID);
     if (level)
     {
         new chance;
