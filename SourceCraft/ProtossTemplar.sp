@@ -37,6 +37,7 @@ new String:summonWav[][] = { "sourcecraft/parrdy00.wav",
 new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationID, archonID;
 
 new g_lightningSprite;
+new g_smokeSprite;
 new g_haloSprite;
 new g_blueGlow;
 new g_redGlow;
@@ -100,6 +101,10 @@ public OnMapStart()
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
+
+    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
+    if (g_smokeSprite == -1)
+        SetFailState("Couldn't find smoke Model");
 
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
@@ -205,9 +210,13 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 
                     new Float:clientLoc[3];
                     GetClientAbsOrigin(client, clientLoc);
-                    clientLoc[2] += 50.0; // Adjust position to the middle
+                    clientLoc[2] += 40.0; // Adjust position to the middle
+
+                    TE_SetupSmoke(clientLoc,g_smokeSprite,8.0,2);
+                    TE_SendToAll();
+
                     TE_SetupGlowSprite(clientLoc,(GetClientTeam(client) == 3) ? g_blueGlow : g_redGlow,
-                                       6.0,50.0,255);
+                                       5.0,40.0,255);
                     TE_SendToAll();
 
                     ChangeRace(player, archon_race, true, false);

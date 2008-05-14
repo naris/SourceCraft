@@ -138,7 +138,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             SetupShields(client, shields_level);
 
             new TFTeam:team = TFTeam:GetClientTeam(client);
-            SetVisibility(player, 250, BasicVisibility, -1.0, -1.0,
+            SetVisibility(player, 255, BasicVisibility, -1.0, -1.0,
                           RENDER_GLOW, RENDERFX_GLOWSHELL,
                           (team == TFTeam_Red) ? 255 : 0, 0,
                           (team == TFTeam_Blue) ? 255 : 0);
@@ -176,7 +176,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 SetupShields(client, shields_level);
 
                 new TFTeam:team = TFTeam:GetClientTeam(client);
-                SetVisibility(player, 250, BasicVisibility, -1.0, -1.0,
+                SetVisibility(player, 255, BasicVisibility, -1.0, -1.0,
                               RENDER_GLOW, RENDERFX_GLOWSHELL,
                               (team == TFTeam_Red) ? 255 : 0, 0,
                               (team == TFTeam_Blue) ? 255 : 0);
