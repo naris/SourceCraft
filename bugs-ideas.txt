@@ -1,16 +1,18 @@
+Jiggly wants teleporter disk that can be used to telefrag other players
+(NeoTF had one for scouts)
+
 Terran Space Construction Vehicle / Protoss Probe:
 1) AmmoPack [1 level]
+2) Teleporter Charger
 2) Metal Regen
 3) Immunity
 4) Armor
-5) Teleporter Charger
-Ult) Tripmines
-Ult) Move Building
-Ult) Summon Building
-	Lvl1: 2nd Dispenser
-	Lvl2: 2nd Teleport (entry&exit)
-	Lvl3: 2nd SG
-	Lvl4: 3rd SG & Dispenser
+Ult) Tripmine
+Ult) Move Object
+Ult) Summon Sentry Gun
+Ult) Summon Dispenser
+Ult) Summon Teleporter (1st entry, then exit)
+Ult) Teleporter Disk w/Telefragging
 
 Protoss High Templar / Dark Templar:
 1) Immunity (decloaking,crystaltaking,motiontaking,healthtaking)
