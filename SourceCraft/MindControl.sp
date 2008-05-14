@@ -177,7 +177,8 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
             if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
             {
                 decl String:class[32];
-                if (GetEntityNetClass(target,class,sizeof(class)))
+                if (IsValidEntity(target) &&
+                    GetEntityNetClass(target,class,sizeof(class)))
                 {
                     if (StrEqual(class, "CObjectSentrygun", false))
                         type = sentrygun;
@@ -359,7 +360,7 @@ UpdateMindControlledObject(object, builder, objects:type, bool:remove)
                             //LogMessage("Object Found in %x", pack);
                             CloseHandle(pack);
 
-                            if (remove)
+                            if (remove || !IsValidEntity(pack_target))
                             {
                                 //LogMessage("Removing %x", pack);
                                 RemoveFromArray(m_StolenObjectList[client], index);
@@ -455,8 +456,8 @@ ResetMindControlledObjects(client, bool:remove)
                                     else // Zap it.
                                     {
                                         //LogMessage("Orphaned object %x", target);
-                                        AcceptEntityInput(target, "Kill", -1, -1, 0);
-                                        //RemoveEdict(target); // Remove the object.
+                                        //AcceptEntityInput(target, "Kill", -1, -1, 0);
+                                        RemoveEdict(target); // Remove the object.
                                     }
                                 }
                             }
