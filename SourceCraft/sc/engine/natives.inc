@@ -398,8 +398,9 @@ public Native_GetRace(Handle:plugin,numParams)
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace.
  * @param force: Set true to force the race to change now or false to change on death.
+ * @param check: Set true to check race requirements before changing.
  * @noreturn
- * native ChangeRace(Handle:player,race,bool:force=false);
+ * native ChangeRace(Handle:player,race,bool:force=false,bool:check=true);
  */
 public Native_ChangeRace(Handle:plugin,numParams)
 {
@@ -408,11 +409,12 @@ public Native_ChangeRace(Handle:plugin,numParams)
         new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
         new bool:force=(numParams >= 3) ? (bool:GetNativeCell(3)) : false;
+        new bool:check=(numParams >= 4) ? (bool:GetNativeCell(4)) : true;
 
         if (player != INVALID_HANDLE && race != -1)
         {
-            ChangeRace(GetClientIndex(player), player,
-                       race, GetRaceHandle(race), force);
+            ChangeRace(GetClientIndex(player), player, race,
+                       GetRaceHandle(race), force, check);
         }
     }
 }

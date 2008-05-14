@@ -128,7 +128,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
         if (victim_race == raceID)
         {
-            amount += ThornsAura(damage, victim_index, victim_player,
+            amount += ThornsAura(event, damage, victim_index, victim_player,
                                  attacker_index, attacker_player);
         }
 
@@ -147,7 +147,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
         if (victim_race == raceID)
         {
-            amount += ThornsAura(damage, victim_index, victim_player,
+            amount += ThornsAura(event, damage, victim_index, victim_player,
                                  assister_index, assister_player);
         }
 
@@ -210,8 +210,18 @@ public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, 
     return false;
 }
 
-public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:player)
+public ThornsAura(Handle:event, damage, victim_index, Handle:victim_player,
+                  index, Handle:player)
 {
+    decl String:weapon[64];
+    if (GetEventString(event, "weapon", weapon, sizeof(weapon)) &&
+        (strcmp(weapon, "thorns") == 0 ||
+         strcmp(weapon, "feedback") == 0))
+    {
+        // Make sure not to loop damage from thorns or feedback
+        return false;
+    }
+
     new thorns_level = GetUpgradeLevel(victim_player,raceID,thornsID);
     if (thorns_level)
     {
@@ -233,7 +243,7 @@ public ThornsAura(damage, victim_index, Handle:victim_player, index, Handle:play
             if(GetRandomInt(1,100) <= chance)
             {
                 new amount=RoundToNearest(damage * GetRandomFloat(0.30,0.90));
-                HurtPlayer(index,amount,victim_index,"thorns_aura", "Thorns Aura");
+                HurtPlayer(index,amount,victim_index,"thorns", "Thorns Aura");
 
                 new Float:Origin[3];
                 GetClientAbsOrigin(victim_index, Origin);
@@ -278,10 +288,10 @@ public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:pl
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+                    LogKill(index, victim_index, "trueshot", "Trueshot Aura", amount);
                 }
                 else
-                    LogDamage(index, victim_index, "trueshot_aura", "Trueshot Aura", amount);
+                    LogDamage(index, victim_index, "trueshot", "Trueshot Aura", amount);
 
                 SetEntityHealth(victim_index,newhp);
 

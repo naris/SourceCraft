@@ -253,7 +253,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     {
         if (victim_race == raceID && IsPlayerAlive(attacker_index))
         {
-            changed = Feedback(damage, victim_index, victim_player,
+            changed = Feedback(event, damage, victim_index, victim_player,
                                attacker_index, attacker_player, assister_index);
         }
 
@@ -276,9 +276,18 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
-                     Handle:attacker_player, assister_index)
+public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
+                     attacker_index, Handle:attacker_player, assister_index)
 {
+    decl String:weapon[64];
+    if (GetEventString(event, "weapon", weapon, sizeof(weapon)) &&
+        (strcmp(weapon, "feedback") == 0 ||
+         strcmp(weapon, "thorns") == 0))
+    {
+        // Make sure not to loop damage from feedback or thorns
+        return false;
+    }
+
     new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
     if (feedback_level)
     {

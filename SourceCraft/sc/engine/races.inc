@@ -332,9 +332,31 @@ PendingCheck(client,Handle:playerHandle)
     }
 }
 
-ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle, bool:forceNow)
+ChangeRace(client, Handle:playerHandle, race, Handle:raceHandle, bool:forceNow, bool:check)
 {
     decl String:buf[192];
+    if (check)
+    {
+        new reqLevel = GetRaceRequiredLevel(raceHandle);
+        if (reqLevel < 0)
+        {
+            GetRaceName(raceHandle, buf, sizeof(buf));
+            PrintToChat(client,"%c[SourceCraft] %c%s is not available",
+                        COLOR_GREEN,COLOR_DEFAULT,buf);
+            return;
+        }
+        else
+        {
+            new level = GetOverallLevel(GetPlayerHandle(client));
+            if (level < reqLevel)
+            {
+                GetRaceName(raceHandle, buf, sizeof(buf));
+                PrintToChat(client,"%c[SourceCraft] %cYou're level is only %d; %s requires level %d",
+                            COLOR_GREEN,COLOR_DEFAULT,level,buf,reqLevel);
+                return;
+            }
+        }
+    }
     if(!forceNow && IsPlayerAlive(client) && m_FirstSpawn[client] < 2)
     {
         SetPendingRace(playerHandle,race);
@@ -454,7 +476,7 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                 new Handle:raceHandle=GetRaceHandle(race);
                 new upgrade=StringToInt(SelectionInfo);
                 if (upgrade < 0) // They decided to change to this race.
-                    ChangeRace(client, playerHandle, race, raceHandle, false);
+                    ChangeRace(client, playerHandle, race, raceHandle, false, false);
                 else
                     UpgradesInfo_Upgrade(client,raceHandle,upgrade);
             }

@@ -48,6 +48,7 @@ public Action:SayCommand(client,args)
         ExplodeString(command, " ", arg, 2, 64);
 
         if(CommandCheck(arg[0],"showexperience") ||
+           CommandCheck(arg[0],"showexp") ||
            CommandCheck(arg[0],"showxp"))
         {
             ShowXP(client,playerHandle);
@@ -62,7 +63,8 @@ public Action:SayCommand(client,args)
                 {
                     new Handle:raceHandle=GetRaceHandle(race);
                     if (raceHandle != INVALID_HANDLE)
-                        ChangeRace(client, playerHandle, race, raceHandle, false);
+                        ChangeRace(client, playerHandle, race,
+                                   raceHandle, false, true);
                     else
                         RaceMenu(client,true);
                 }
@@ -79,7 +81,8 @@ public Action:SayCommand(client,args)
             RaceMenu(client,false);
             return Plugin_Handled;
         }
-        else if (CommandCheck(arg[0],"upgradeinfo") ||
+        else if (CommandCheck(arg[0],"upinfo") ||
+                 CommandCheck(arg[0],"upgradeinfo") ||
                  CommandCheck(arg[0],"skillsinfo"))
         {
             UpgradesInfo(client,GetRace(playerHandle),false);
@@ -94,6 +97,7 @@ public Action:SayCommand(client,args)
             return Plugin_Handled;
         }
         else if (CommandCheck(arg[0],"upgrade") ||
+                 CommandCheck(arg[0],"spendup") ||
                  CommandCheck(arg[0],"spendupgrade") ||
                  CommandCheck(arg[0],"spendupgrades") ||
                  CommandCheck(arg[0],"spendskills"))
@@ -107,7 +111,8 @@ public Action:SayCommand(client,args)
             }
             return Plugin_Handled;
         }
-        else if(CommandCheck(arg[0],"showupgrade") ||
+        else if(CommandCheck(arg[0],"showup") ||
+                CommandCheck(arg[0],"showupgrade") ||
                 CommandCheck(arg[0],"showupgrades") ||
                 CommandCheck(arg[0],"showskills"))
         {
@@ -116,7 +121,8 @@ public Action:SayCommand(client,args)
         }
         else if(CommandCheck(arg[0],"crystals") || 
                 CommandCheck(arg[0],"showcrystals") ||
-                CommandCheck(arg[0],"showcredits"))
+                CommandCheck(arg[0],"showcredits") ||
+                CommandCheck(arg[0],"showc"))
         {
             ShowCredits(client,playerHandle);
             return Plugin_Handled;
@@ -235,7 +241,7 @@ public Action:ChangeRaceCommand(client,args)
             {
                 new Handle:raceHandle=GetRaceHandle(race);
                 if (raceHandle != INVALID_HANDLE)
-                    ChangeRace(client, playerHandle, race, raceHandle, false);
+                    ChangeRace(client, playerHandle, race, raceHandle, false, true);
                 else
                     RaceMenu(client,true);
             }

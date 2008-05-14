@@ -134,9 +134,10 @@ native GetRace(Handle:player);
  * @param player: The player handle to use. Can be retrieved with GetPlayerHandle.
  * @param race: The race ID returned from CreateRace.
  * @param force: Set true to force the race to change now or false to change on death.
+ * @param check: Set true to check race requirements before changing.
  * @noreturn
  */
-native ChangeRace(Handle:player,race,bool:force=false);
+native ChangeRace(Handle:player,race,bool:force=false,bool:check=true);
 
 /**
  * Gets the current level for the provided race.
