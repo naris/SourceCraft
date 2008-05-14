@@ -65,7 +65,7 @@ public OnPluginStart()
         SetFailState("Couldn't hook the player_spawn event.");
 
     cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","30");
-    cvarArchonCooldown=CreateConVar("sc_archoncooldown","120");
+    cvarArchonCooldown=CreateConVar("sc_archoncooldown","300");
 }
 
 public OnPluginReady()
