@@ -33,12 +33,6 @@ bool:HookTFEvents()
         return false;
     }
 
-    if(!HookEvent("building_info_changed", EventObjectChanged))
-    {
-        LogError("Could not hook the building_info_changed event.");
-        return false;
-    }
-
     if(!HookEvent("teamplay_flag_event", EventFlagEvent))
     {
         LogError("Could not hook the teamplay_flag_event.");
@@ -106,7 +100,26 @@ bool:HookTFEvents()
         return false;
     }
 
-    /*
+    if(!HookEventEx("player_chargedeployed",LogEvent))
+    {
+        LogError("Could not hook the player_chargedeployed event.");
+    }   
+
+    if(!HookEventEx("achievement_earned",LogEvent))
+    {
+        LogError("Could not hook the achievement_earned event.");
+    }
+
+    if(!HookEventEx("player_invulned",LogEvent))
+    {
+        LogError("Could not hook the player_invulned event.");
+    }
+
+    if(!HookEventEx("player_extinguished",LogEvent))
+    {
+        LogError("Could not hook the player_extinguished event.");
+    }
+
     if(!HookEventEx("teamplay_waiting_begins",LogEvent))
     {
         LogError("Could not hook the teamplay_game_over event.");
@@ -137,24 +150,9 @@ bool:HookTFEvents()
         LogError("Could not hook the escort_speed event.");
     }
 
-    if(!HookEventEx("player_healonhit",LogEvent))
-    {
-        LogError("Could not hook the player_healonhit event.");
-    }
-
-    if(!HookEventEx("player_invulned",LogEvent))
-    {
-        LogError("Could not hook the player_invulned event.");
-    }
-
     if(!HookEventEx("player_healedmediccall",LogEvent))
     {
         LogError("Could not hook the player_healedmediccall event.");
-    }
-
-    if(!HookEventEx("player_extinguished",LogEvent))
-    {
-        LogError("Could not hook the player_extinguished event.");
     }
 
     if(!HookEventEx("player_ignited_inv",LogEvent))
@@ -166,17 +164,6 @@ bool:HookTFEvents()
     {
         LogError("Could not hook the player_calledformedic event.");
     }   
-
-    if(!HookEventEx("player_chargedeployed",LogEvent))
-    {
-        LogError("Could not hook the player_chargedeployed event.");
-    }   
-
-    if(!HookEventEx("achievement_earned",LogEvent))
-    {
-        LogError("Could not hook the achievement_earned event.");
-    }
-    */
 
     AddGameLogHook(LogScanner);
 
@@ -225,7 +212,10 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         new index=GetClientOfUserId(userid);
         new Handle:playerHandle=GetPlayerHandle(index);
         if (playerHandle != INVALID_HANDLE)
-            GiveObjectBuiltXP(index,playerHandle);
+        {
+            GiveObjectBuiltXP(index,playerHandle,
+                              objects:GetEventInt(event,"object"));
+        }
     }
 }
 
@@ -233,6 +223,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new userid = GetEventInt(event,"userid");
     new index  = GetClientOfUserId(userid);
+    new objects:object = objects:GetEventInt(event,"objecttype");
 
     new attacker = GetEventInt(event,"attacker");
     if (attacker > 0 && attacker != userid)
@@ -240,13 +231,13 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
         new attacker_index=GetClientOfUserId(attacker);
         new Handle:attacker_player=GetPlayerHandle(attacker_index);
         if (attacker_player != INVALID_HANDLE)
-            GiveObjectDestroyedXP(attacker_index,attacker_player);
+            GiveObjectDestroyedXP(attacker_index,attacker_player,object);
     }
     else
     {
         new Handle:playerHandle=GetPlayerHandle(index);
         if (playerHandle != INVALID_HANDLE)
-            TakeObjectBuiltXP(index,playerHandle);
+            TakeObjectBuiltXP(index,playerHandle,object);
     }
 
     new assister = GetEventInt(event,"assister");
@@ -255,23 +246,8 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
         new assister_index=GetClientOfUserId(assister);
         new Handle:assister_player=GetPlayerHandle(assister_index);
         if (assister_player != INVALID_HANDLE)
-            GiveObjectDestroyedXP(assister_index,assister_player);
+            GiveObjectDestroyedXP(assister_index,assister_player,object);
     }
-
-    decl String:weapon[64];
-    GetEventString(event, "weapon", weapon, sizeof(weapon));
-    new object = GetEventInt(event,"objecttype");
-    LogMessage("object_destroyed: %d+%d destroyed %N's %d with %s",
-               attacker, assister, index, object, weapon);
-}
-
-public EventObjectChanged(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new building_type = GetEventInt(event,"building_type");
-    new remove = GetEventInt(event,"remove");
-    new userid = GetEventInt(event,"userid");
-    LogMessage("object_changed: building_type=%d, remove=%d, userid=%d",
-               building_type, remove, userid);
 }
 
 public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -291,6 +267,12 @@ public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new Handle:playerHandle=GetPlayerHandle(player);
             if (playerHandle != INVALID_HANDLE)
                 GivePickedUpFlagCredits(player,playerHandle);
+        }
+        else if (eventtype == 4) // Flag Dropped
+        {
+            new Handle:playerHandle=GetPlayerHandle(player);
+            if (playerHandle != INVALID_HANDLE)
+                TakeDroppedFlagCredits(player,playerHandle);
         }
     }
 }
@@ -492,17 +474,29 @@ public Action:LogScanner(const String:message[])
                 object[0] = 0;
         }
 
+        new objects:type = unknown;
+        if (StrEqual(object, "OBJ_SENTRYGUN", false))
+            type = sentrygun;
+        else if (StrEqual(object, "OBJ_DISPENSER", false))
+            type = dispenser;
+        else if (StrEqual(object, "OBJ_TELEPORTER_ENTRANCE", false))
+            type = teleporter_entry;
+        else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
+            type = teleporter_exit;
+        else if (StrEqual(object, "OBJ_SAPPER", false))
+            type = teleporter_exit;
+
         if (attacker && attacker == builder)
         {
             new Handle:playerHandle=GetPlayerHandle(builder);
             if (playerHandle != INVALID_HANDLE)
-                TakeObjectBuiltXP(builder, playerHandle);
+                TakeObjectBuiltXP(builder, playerHandle,type);
         }
 
         Call_StartForward(g_OnObjectKilledHandle);
         Call_PushCell(attacker);
         Call_PushCell(builder);
-        Call_PushString(object);
+        Call_PushCell(type);
         Call_Finish(result);
     }
 }

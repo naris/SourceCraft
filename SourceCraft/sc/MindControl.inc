@@ -10,9 +10,7 @@
 #endif
 #define _mindcontrol_included
 
-enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
-
-stock String:objectName[objects][] = { "Dispenser", "Teleporter", "Teleporter", "Sentrygun", "Sapper", "" };
+#include <tf2_objects>
 
 /**
  * MindControl an Object.

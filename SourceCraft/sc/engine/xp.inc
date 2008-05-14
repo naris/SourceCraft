@@ -7,7 +7,9 @@
  * Author(s): Anthony Iacono  
  * Modifications by: Naris (Murray Wilson)
  */
- 
+
+#include <tf2_objects>
+
 #define HEADSHOT_XP         10
 #define BACKSTAB_XP         10
 #define ASSIST_XP           10
@@ -249,22 +251,29 @@ GiveChargeDeployedXP(client,Handle:playerHandle)
     GiveXP(client,playerHandle,CHARGE_XP, "deploying Ubercharge");
 }
 
-GiveObjectBuiltXP(client,Handle:playerHandle)
+GiveObjectBuiltXP(client,Handle:playerHandle,objects:object)
 {
     // Called when a player builds an object
-    GiveXP(client,playerHandle,BUILD_XP, "building something");
+    decl String:msg[128];
+    Format(msg, sizeof(msg), "building a %s", TF2_ObjectNames[object]);
+    GiveXP(client,playerHandle,BUILD_XP, msg);
 }
 
-TakeObjectBuiltXP(client,Handle:playerHandle)
+TakeObjectBuiltXP(client,Handle:playerHandle,objects:object)
 {
     // Called when a player destroys thier own object
-    TakeXP(client,playerHandle,BUILD_XP, "destroying your own object");
+    decl String:msg[128];
+    Format(msg, sizeof(msg), "destroying your own %s", TF2_ObjectNames[object]);
+    LogMessage("Destructed the %d", object);
+    TakeXP(client,playerHandle,BUILD_XP, msg);
 }
 
-GiveObjectDestroyedXP(client,Handle:playerHandle)
+GiveObjectDestroyedXP(client,Handle:playerHandle,objects:object)
 {
     // Called when a player destroys an object
-    GiveXP(client,playerHandle,DESTROY_XP, "destroying something");
+    decl String:msg[128];
+    Format(msg, sizeof(msg), "destroying a %s", TF2_ObjectNames[object]);
+    GiveXP(client,playerHandle,DESTROY_XP, msg);
 }
 
 GiveFlagCapturedXP(client,Handle:playerHandle)

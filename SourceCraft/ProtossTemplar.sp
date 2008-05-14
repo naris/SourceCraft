@@ -82,13 +82,13 @@ public OnPluginReady()
                               "Allows you to jump higher by \nreducing your gravity by 8-64%.");
 
     feedbackID  = AddUpgrade(raceID,"Feedback", "feedback",
-                             "Gives you 5-50% chance of reflecting a shot back to the attacker.");
+                             "Gives you 5-50% chance of reflecting a portion of the damage back to the attacker.");
 
     hallucinationID = AddUpgrade(raceID,"Hallucination", "hallucination",
                                  "Gives you a 15-50% chance to cause temporary hallucinations in an enemy.");
 
     psionicStormID = AddUpgrade(raceID,"Psionic Storm", "psistorm", 
-                                "Every enemy in 150-300 feet range will \nbe damaged continously while in range",
+                                "Every enemy in 25-60 feet range will \nbe damaged continously while in range",
                                 true); // Ultimate
 
     archonID = AddUpgrade(raceID,"Summon Archon", "archon", "You become an Archon until you die",
@@ -309,7 +309,8 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
 
         if(GetRandomInt(1,100) <= chance)
         {
-            new newhp=GetClientHealth(victim_index)+damage;
+            new amount=RoundToNearest(float(damage)*GetRandomFloat(0.10,percent));
+            new newhp=GetClientHealth(victim_index)+amount;
             new maxhp=GetMaxHealth(victim_index);
             if (newhp > maxhp)
                 newhp = maxhp;
@@ -323,9 +324,7 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
                 !GetImmunity(attacker_player,Immunity_HealthTake) &&
                 !TF2_IsPlayerInvuln(attacker_index))
             {
-                HurtPlayer(attacker_index,RoundToNearest(float(damage)*percent),
-                           victim_index,"feedback", "Feedback");
-
+                HurtPlayer(attacker_index,amount, victim_index,"feedback", "Feedback");
                 EmitSoundToAll(feedbackWav,victim_index);
 
                 new Float:Origin[3];
@@ -519,10 +518,10 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
         new level = GetUpgradeLevel(player,raceID,psionicStormID);
         switch(level)
         {
-            case 1: range=400.0;
-            case 2: range=550.0;
-            case 3: range=850.0;
-            case 4: range=1000.0;
+            case 1: range=300.0;
+            case 2: range=450.0;
+            case 3: range=650.0;
+            case 4: range=800.0;
         }
 
         EmitSoundToAll(psistormWav,client);

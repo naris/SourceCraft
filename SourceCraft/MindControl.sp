@@ -13,6 +13,7 @@
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <tf2_player>
+#include <tf2_objects>
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
@@ -22,7 +23,6 @@
 #include "sc/log"
 
 //#include "sc/MindControl"
-enum objects { dispenser, teleporter_entry, teleporter_exit, sentrygun, sapper, unknown };
 
 new String:errorWav[] = "soundcraft/perror.mp3";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
@@ -150,27 +150,13 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
-            //LogMessage("%N Built a %d", index, type);
             UpdateMindControlledObject(-1, index, type, false);
         }
     }
 }
 
-public OnObjectKilled(attacker, builder, const String:object[])
+public OnObjectKilled(attacker, builder, objects:type)
 {
-    new objects:type = unknown;
-    if (StrEqual(object, "OBJ_SENTRYGUN", false))
-        type = sentrygun;
-    else if (StrEqual(object, "OBJ_DISPENSER", false))
-        type = dispenser;
-    else if (StrEqual(object, "OBJ_TELEPORTER_ENTRANCE", false))
-        type = teleporter_entry;
-    else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
-        type = teleporter_exit;
-    else if (StrEqual(object, "OBJ_SAPPER", false))
-        type = teleporter_exit;
-
-    //LogMessage("%N Killed %N's %d:%s", attacker, builder, type, object);
     UpdateMindControlledObject(-1, builder, type, true);
 }
 
@@ -498,8 +484,8 @@ public Native_MindControl(Handle:plugin,numParams)
     new bool:success=MindControl(client,range,percent, builder, type);
     if (success)
     {
-        SetNativeCellRef(5, builder);
-        SetNativeCellRef(6, type);
+        SetNativeCellRef(4, builder);
+        SetNativeCellRef(5, type);
     }
     return success;
 }

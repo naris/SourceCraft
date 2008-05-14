@@ -38,7 +38,6 @@ new g_lightningSprite;
 new g_haloSprite;
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
-new Handle:cvarMindControlEnable = INVALID_HANDLE;
 new Handle:cvarMaelstormCooldown = INVALID_HANDLE;
 
 new bool:m_MindControlAvailable = false;
@@ -66,7 +65,6 @@ public OnPluginStart()
 
     cvarMaelstormCooldown=CreateConVar("sc_maelstormcooldown","45");
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
-    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
 
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
@@ -267,34 +265,35 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
     {
         case 0:
         {
-            percent=0.50;
+            percent=0.10;
             chance=10;
         }
         case 1:
         {
-            percent=0.60;
+            percent=0.25;
             chance=15;
         }
         case 2:
         {
-            percent=0.70;
+            percent=0.40;
             chance=25;
         }
         case 3:
         {
-            percent=0.85;
+            percent=0.50;
             chance=35;
         }
         case 4:
         {
-            percent=1.00;
+            percent=0.75;
             chance=50;
         }
     }
 
     if(GetRandomInt(1,100) <= chance)
     {
-        new newhp=GetClientHealth(victim_index)+damage;
+        new amount=RoundToNearest(float(damage)*GetRandomFloat(percent,1.00));
+        new newhp=GetClientHealth(victim_index)+amount;
         new maxhp=GetMaxHealth(victim_index);
         if (newhp > maxhp)
             newhp = maxhp;
@@ -308,7 +307,7 @@ public bool:Feedback(damage, victim_index, Handle:victim_player, attacker_index,
             !GetImmunity(attacker_player,Immunity_HealthTake) &&
             !TF2_IsPlayerInvuln(attacker_index))
         {
-            HurtPlayer(attacker_index,RoundToNearest(float(damage)*percent),
+            HurtPlayer(attacker_index,amount,
                        victim_index,"feedback", "Feedback");
 
             new Float:Origin[3];
@@ -575,13 +574,6 @@ public DoMindControl(client,Handle:player,level)
 {
     if ( m_AllowMindControl[client] && m_MindControlAvailable)
     {
-        if (!GetConVarBool(cvarMindControlEnable))
-        {
-            PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
-                    COLOR_GREEN,COLOR_DEFAULT);
-            return;
-        }
-
         new Float:range, percent;
         switch(level)
         {
@@ -613,10 +605,10 @@ public DoMindControl(client,Handle:player,level)
         {
             new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
             LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
-                    client,builder,objectName[type]);
+                    client,builder,TF2_ObjectNames[type]);
             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
-                    COLOR_GREEN,COLOR_DEFAULT,client,objectName[type]);
-            PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,objectName[type], cooldown);
+                    COLOR_GREEN,COLOR_DEFAULT,client,TF2_ObjectNames[type]);
+            PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,TF2_ObjectNames[type], cooldown);
 
             if (cooldown > 0.0)
             {

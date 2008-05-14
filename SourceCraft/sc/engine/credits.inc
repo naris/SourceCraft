@@ -39,6 +39,11 @@ GivePickedUpFlagCredits(client,Handle:playerHandle)
     GiveCredits(client,playerHandle,FLAG_CREDITS,"picking up the intelligence");
 }
 
+TakeDroppedFlagCredits(client,Handle:playerHandle)
+{
+    GiveCredits(client,playerHandle,-FLAG_CREDITS,"dropping the intelligence");
+}
+
 GivePointCapturedCredits(client,Handle:playerHandle)
 {
     GiveCredits(client,playerHandle,POINT_CREDITS,"capturing a point");
@@ -99,7 +104,7 @@ GiveCredits(client,Handle:playerHandle, amount, const String:reason[])
             }
             else
             {
-                new amt = maxCredits-amount;
+                new amt = maxCredits-curcredits;
                 if (amt > 0)
                 {
                     SetCredits(playerHandle,maxCredits);

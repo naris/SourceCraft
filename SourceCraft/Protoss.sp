@@ -33,7 +33,6 @@ new raceID, scarabID, cloakID, sensorID, controlID;
 new bool:m_MindControlAvailable = false;
 
 new Handle:cvarMindControlCooldown = INVALID_HANDLE;
-new Handle:cvarMindControlEnable = INVALID_HANDLE;
 
 new m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
 new m_Detected[MAXPLAYERS+1][MAXPLAYERS+1];
@@ -56,7 +55,6 @@ public OnPluginStart()
     GetGameType();
 
     cvarMindControlCooldown=CreateConVar("sc_mindcontrolcooldown","45");
-    cvarMindControlEnable=CreateConVar("sc_mindcontrolenable","1");
 
     if(!HookEventEx("player_spawn",PlayerSpawnEvent))
         SetFailState("Could not hook the player_spawn event.");
@@ -160,13 +158,6 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         new ult_level=GetUpgradeLevel(player,raceID,controlID);
         if(ult_level)
         {
-            if (!GetConVarBool(cvarMindControlEnable))
-            {
-                PrintToChat(client,"%c[SourceCraft] %c Sorry, MindControl has been disabled for testing purposes!",
-                        COLOR_GREEN,COLOR_DEFAULT);
-                return;
-            }
-
             new Float:range, percent;
             switch(ult_level)
             {
@@ -198,10 +189,10 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             {
                 new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
                 LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
-                          client,builder,objectName[type]);
+                          client,builder,TF2_ObjectNames[type]);
                 PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
-                            COLOR_GREEN,COLOR_DEFAULT,client,objectName[type]);
-                PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,objectName[type], cooldown);
+                            COLOR_GREEN,COLOR_DEFAULT,client,TF2_ObjectNames[type]);
+                PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,TF2_ObjectNames[type], cooldown);
 
                 if (cooldown > 0.0)
                 {

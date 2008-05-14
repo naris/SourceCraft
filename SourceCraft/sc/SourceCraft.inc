@@ -6,13 +6,15 @@
  * Modifications by: Naris (Murray Wilson)
  */
 
-#include "sc/immunity"
-#include "sc/visibility"
-
 #if defined sourcecraft_included
  #endinput
 #endif
 #define sourcecraft_included
+
+#include <tf2_objects>
+
+#include "sc/immunity"
+#include "sc/visibility"
 
 /**
  * Registers a race with the SourceCraft plugin
@@ -497,7 +499,7 @@ forward Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player
  * @param player: The player handle of the client.
  * @param object: The object.   
  */
-forward OnObjectKilled(attacker, builder,const String:object[]);
+forward OnObjectKilled(attacker, builder, objects:type);
 
 /**
  * Do not edit below this line!
