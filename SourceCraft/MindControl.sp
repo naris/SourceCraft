@@ -185,20 +185,28 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                     else if (StrEqual(class, "CObjectDispenser", false))
                         type = dispenser;
                     else if (StrEqual(class, "CObjectTeleporter", false))
-                        type = objects:GetEntData(target, m_ObjectTypeOffset);
+                    {
+                        //type = objects:GetEntData(target, m_ObjectTypeOffset);
+                        type = objects:GetEntPropEnt(target, Prop_Send, "m_iObjectType");
+                    }
                     else
                         type = unknown;
 
                     if (type == sentrygun || type == dispenser)
                     {
                         //Check to see if the object is still being built
-                        new placing = GetEntData(target, m_PlacingOffset);
-                        new building = GetEntData(target, m_BuildingOffset);
-                        new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
+                        //new placing = GetEntData(target, m_PlacingOffset);
+                        new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
+                        //new building = GetEntData(target, m_BuildingOffset);
+                        new building = GetEntProp(target, Prop_Send, "m_bBuilding");
+                        //new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
+                        new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
                         if (placing == 0 && building == 0 && complete >= 1.0)
                         {
                             //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                            builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
+                            //builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
+                            builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
+
                             //LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
                             //        builder, complete, type, building, placing, class);
 
@@ -216,10 +224,12 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
 
                                         //LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
                                         // Change the builder to client
-                                        SetEntDataEnt2(target, m_BuilderOffset, client, true);
+                                        //SetEntDataEnt2(target, m_BuilderOffset, client, true);
+                                        SetEntPropEnt(target, Prop_Send, "m_hBuilder", client);
 
                                         //paint red or blue
-                                        SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
+                                        //SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
+                                        SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
 
                                         //Change TeamNum
                                         SetVariantInt(team);
@@ -413,7 +423,10 @@ ResetMindControlledObjects(client, bool:remove)
                         else if (StrEqual(class, "CObjectDispenser", false))
                             current_type = dispenser;
                         else if (StrEqual(class, "CObjectTeleporter", false))
-                            current_type = objects:GetEntData(target, m_ObjectTypeOffset);
+                        {
+                            //current_type = objects:GetEntData(target, m_ObjectTypeOffset);
+                            current_type = objects:GetEntPropEnt(target, Prop_Send, "m_iObjectType");
+                        }
                         else
                             current_type = unknown;
 
@@ -421,7 +434,8 @@ ResetMindControlledObjects(client, bool:remove)
                         if (current_type == type)
                         {
                             // Do we still own it?
-                            if (GetEntDataEnt2(target, m_BuilderOffset) == client)
+                            //if (GetEntDataEnt2(target, m_BuilderOffset) == client)
+                            if (GetEntPropEnt(target, Prop_Send, "m_hBuilder") ==  client)
                             {
                                 // Is the round not ending and the builder valid?
                                 if (remove || builder <= 0)
@@ -440,10 +454,12 @@ ResetMindControlledObjects(client, bool:remove)
                                         new team = GetClientTeam(builder);
 
                                         // Change the builder back
-                                        SetEntDataEnt2(target, m_BuilderOffset, builder, true);
+                                        //SetEntDataEnt2(target, m_BuilderOffset, builder, true);
+                                        SetEntPropEnt(target, Prop_Send, "m_hBuilder", builder);
 
                                         //paint red or blue
-                                        SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
+                                        //SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
+                                        SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
 
                                         //Change TeamNum
                                         SetVariantInt(team);
