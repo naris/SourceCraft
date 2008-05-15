@@ -128,8 +128,6 @@ public OnPluginStart()
 
     if (GameType == tf2)
     {
-        if(!InitTFOffset())
-            SetFailState("There was a failure in finding the tf2 offsets required.");
         if(!HookTFEvents())
             SetFailState("There was a failure in initiating tf2 event hooks.");
     }

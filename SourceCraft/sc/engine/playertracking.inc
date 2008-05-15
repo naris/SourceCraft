@@ -62,7 +62,6 @@ new bool:g_RoundActive = true;
 new Handle:g_OnUpgradeLevelChangedHandle = INVALID_HANDLE;
 new Handle:g_OnRaceSelectedHandle = INVALID_HANDLE;
 
-new Float:m_BaseSpeed[MAXPLAYERS+1];
 new Float:m_StoppedMoving[MAXPLAYERS+1];
 new Float:m_CloakTime[MAXPLAYERS+1];
 new bool:m_SpeedAltered[MAXPLAYERS+1];
@@ -795,9 +794,6 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             new Float:classSpeed = GetClassSpeed(client);
                             new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
-                            if (m_BaseSpeed[client] == 0.0)
-                                m_BaseSpeed[client] == curSpeed;
-
                             new Float:newSpeed = classSpeed * speed;
                             if (curSpeed != newSpeed)
                             {

@@ -41,18 +41,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (userid > 0)
     {
         new index=GetClientOfUserId(userid);
-        if (index > 0)
-        {
-            if (g_RoundActive)
-            {
-                new Float:maxSpeed = GetEntDataFloat(index,m_OffsetMaxSpeed);
-                m_BaseSpeed[index] = maxSpeed;
-
-                //LogMessage("[PlayerSpawnEvent] Set BaseSpeed of %N to %f, maxSpeed=%f, classSpeed=%f",
-                //           index, m_BaseSpeed[index], maxSpeed, GetClassSpeed(index));
-                }
-            }
-
         new Handle:playerHandle=GetPlayerHandle(index);
         if (playerHandle != INVALID_HANDLE)
         {

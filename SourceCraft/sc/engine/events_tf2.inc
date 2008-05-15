@@ -9,12 +9,6 @@ new Handle:m_ObjectKilledRegex = INVALID_HANDLE;
 
 bool:HookTFEvents()
 {
-    if(!HookEventEx("player_changeclass",PlayerChangeClass))
-    {
-        LogError("Could not hook the player_changeclass event.");
-        return false;
-    }
-
     if(!HookEvent("player_chargedeployed", PlayerChargeDeployed))
     {
         LogError("Could not hook the player_chargedeployed event.");
@@ -87,7 +81,6 @@ bool:HookTFEvents()
         return false;
     }
 
-
     if(!HookEventEx("tf_game_over",GameOver))
     {
         LogError("Could not hook the tf_game_over event.");
@@ -99,11 +92,6 @@ bool:HookTFEvents()
         LogError("Could not hook the teamplay_game_over event.");
         return false;
     }
-
-    if(!HookEventEx("player_chargedeployed",LogEvent))
-    {
-        LogError("Could not hook the player_chargedeployed event.");
-    }   
 
     if(!HookEventEx("achievement_earned",LogEvent))
     {
@@ -168,25 +156,6 @@ bool:HookTFEvents()
     AddGameLogHook(LogScanner);
 
     return true;
-}
-
-public PlayerChangeClass(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client > 0 && IsClientInGame(client))
-    {
-        if (g_RoundActive)
-        {
-            new Float:maxSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
-            m_BaseSpeed[client]=maxSpeed;
-            //new Float:classSpeed=GetClassSpeed(client);
-            //new oldClass=GetClass(client);
-            //new newClass=GetEventInt(event,"class");
-            //LogMessage("[ChangeClass] Set BaseSpeed of %N(%d) to %f, maxSpeed=%f, classSpeed=%f, oldClass=%d, newClass=%d",
-            //           client, client, m_BaseSpeed[client], maxSpeed, classSpeed, oldClass ,newClass);
-        }
-    }
 }
 
 public PlayerChargeDeployed(Handle:event,const String:name[],bool:dontBroadcast)
@@ -324,27 +293,11 @@ public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
 public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 {
     g_RoundActive = false;
-    //if (DBIDB && SAVE_ENABLED)
-    //    SaveAllPlayersData();
 }
 
 public RoundActive(Handle:event,const String:name[],bool:dontBroadcast)
 {
     g_RoundActive = true;
-
-    if (GameType == tf2)
-    {
-        new playerCount = GetMaxClients();
-        for(new client=1;client<=playerCount;client++)
-        {
-            if(IsClientInGame(client))
-            {
-                m_BaseSpeed[client]=GetEntDataFloat(client,m_OffsetMaxSpeed);
-                //LogMessage("[RoundActive] Set BaseSpeed of %n(%d) to %f, classSpeed=%f",
-                //           client, client, m_BaseSpeed[client],GetClassSpeed(client));
-            }
-        }
-    }
 }
 
 public RoundWin(Handle:event,const String:name[],bool:dontBroadcast)
