@@ -23,6 +23,8 @@ new maxents;
 new maxplayers;
 
 new TeleporterList[ MAXPLAYERS ][ 2 ];
+
+new bool:NativeControl = false;
 new Float:TeleporterTime[ MAXPLAYERS ] = { 0.0, ...};
 
 #define LIST_OBJECT 0
@@ -36,6 +38,16 @@ new Float:TeleporterTime[ MAXPLAYERS ] = { 0.0, ...};
 new Handle:g_cvars[4];
 new Handle:teletimer = INVALID_HANDLE;
 
+public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+{
+    // Register Natives
+    CreateNative("ControlTeleporter",Native_ControlTeleporter);
+    CreateNative("SetTeleporter",Native_SetTeleporter);
+    RegPluginLibrary("tf2teleporter");
+    return true;
+}
+
+
 public OnPluginStart()
 {
     CreateConVar("sm_tf_teletools", PL_VERSION, "Teleport Tools", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
@@ -43,14 +55,14 @@ public OnPluginStart()
     g_cvars[ENABLEDTELE] = CreateConVar("sm_tele_on","1","Enable/Disable teleport manager");
     g_cvars[TELEBLUETIME] = CreateConVar("sm_teleblue_time","0.6","Amount of time for blue tele to recharg, 0.0=disable");
     g_cvars[TELEREDTIME] = CreateConVar("sm_telered_time","0.6","Amount of time for red tele to recharg, 0.0=disable");
-    g_cvars[TELETIME] = CreateConVar("sm_tele_time","0.0","Amount of time for the recharge timer, 0.0=auto");
+    g_cvars[TELETIME] = CreateConVar("sm_tele_time","0.0","Amount of time for the recharge timer tick, 0.0=auto");
 
     HookEvent("player_builtobject", Event_player_builtobject);
 }
 
 public OnConfigsExecuted()
 {
-    Createtimers();
+    Createtimers(0.0);
 
     HookConVarChange(g_cvars[ENABLEDTELE],  TF2ConfigsChanged );
     HookConVarChange(g_cvars[TELEBLUETIME], TF2ConfigsChanged ); 
@@ -60,10 +72,10 @@ public OnConfigsExecuted()
 
 public TF2ConfigsChanged(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-    Createtimers();
+    Createtimers(0.0);
 }
 
-stock Createtimers()
+stock Createtimers(Float:time)
 {
     if(teletimer != INVALID_HANDLE)
     {
@@ -71,23 +83,21 @@ stock Createtimers()
         teletimer = INVALID_HANDLE;
     }
 
-    if(GetConVarBool( g_cvars[ENABLEDTELE] ))
+    if (time > 0.0)
+        CreateTeleTimer( time ); 
+    else if(GetConVarBool( g_cvars[ENABLEDTELE] ))
     {
-        new Float:time = GetConVarFloat( g_cvars[TELETIME] );
-
+        time = GetConVarFloat( g_cvars[TELETIME] );
         if (time > 0.0)
             CreateTeleTimer( time ); 
         else
         {
             new Float:bluetime = GetConVarFloat( g_cvars[TELEBLUETIME] );
             new Float:redtime  = GetConVarFloat( g_cvars[TELEREDTIME] );
-
-            if(redtime > bluetime)
+            if (bluetime > 0.0 && redtime >= bluetime)
                 CreateTeleTimer( bluetime );    
             else if (redtime > 0.0)
                 CreateTeleTimer( redtime ); 
-            else if (bluetime > 0.0)
-                CreateTeleTimer( bluetime ); 
             else
                 LogError("tf2_teletools have been disabled, sm_tele_on is set, but no sm_tele*_time values are");
         }
@@ -117,19 +127,17 @@ public Action:CheckAllTeles(Handle:timer, any:useless)
             continue;
         }
 
-        time = TeleporterTime[i];
-        if (time <= 0.0)
-        {
-            if( TeleporterList[i][LIST_TEAM] == 3)
-                time = bluetime;
-            else if( TeleporterList[i][LIST_TEAM] == 2)
-                time = redtime;
-            else // Unknown Team!
-                time = 0.0;
+        if (NativeControl)
+            time = TeleporterTime[i];
+        else if( TeleporterList[i][LIST_TEAM] == 3)
+            time = bluetime;
+        else if( TeleporterList[i][LIST_TEAM] == 2)
+            time = redtime;
+        else // Unknown Team!
+            time = 0.0;
 
-            if (time <= 0.0)
-                continue;
-        }
+        if (time <= 0.0)
+            continue;
 
         oldtime = GetEntPropFloat(TeleporterList[i][LIST_OBJECT], Prop_Send, "m_flChargeLevel");
         if( float(RoundFloat(oldtime)) == oldtime)
@@ -182,4 +190,25 @@ public OnMapStart()
 {
     maxplayers = GetMaxClients();
     maxents = GetMaxEntities();
+}
+
+public Native_ControlTeleporter(Handle:plugin,numParams)
+{
+    if (numParams == 0)
+        NativeControl = true;
+    else if(numParams >= 1)
+    {
+        NativeControl = GetNativeCell(1);
+        if (numParams >= 2)
+            Createtimers(Float:GetNativeCell(1));
+    }
+}
+
+public Native_SetTeleporter(Handle:plugin,numParams)
+{
+    if (numParams >= 1 && numParams <= 2)
+    {
+        new client = GetNativeCell(1);
+        TeleporterTime[client] = (numParams >= 2) ? (Float:GetNativeCell(2)) : 0.0;
+    }
 }
