@@ -14,11 +14,10 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
-#undef REQUIRE_PLUGIN
+#include "tripmines"
 #include "ammopacks"
 #include "medihancer"
-#define REQUIRE_PLUGIN
-
+#include "tf2teleporter"
 #include "jetpack"
 
 #include "sc/SourceCraft"
@@ -31,15 +30,13 @@
 
 #include "sc/log" // for debugging
 
-new raceID, supplyID, ammopackID, armorID, tripmineID, jetpackID;
+new raceID, supplyID, ammopackID, armorID, teleporterID, tripmineID, jetpackID;
 
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
 new m_Armor[MAXPLAYERS+1];
-
-new bool:m_AmmopacksAvailable = false;
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
@@ -63,8 +60,6 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    m_AmmopacksAvailable = LibraryExists("ammopacks");
-
     raceID      = CreateRace("Terran SCV", "medic",
                              "You are now a Terran SCV.",
                              "You will be a Terran SCV when you die or respawn.",
@@ -72,23 +67,22 @@ public OnPluginReady()
 
     supplyID  = AddUpgrade(raceID,"Supply Depot", "supply", "Provides additional metal or ammo");
 
-    if (m_AmmopacksAvailable)
-        ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Drop Ammopacks on death and with alt fire of the wrench (at level 2).", false, -1, 2);
-    else
-        ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Ammopacks are currently disabled.", false, 99, 0);
+    ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Drop Ammopacks on death and with alt fire of the wrench (at level 2).", false, -1, 2);
 
     armorID     = AddUpgrade(raceID,"Armor", "armor", "Reduces damage.");
+
+    teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Increases the recharge rate of your teleporters.", false, -1, 2);
 
     tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
 
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 12); // Ultimate
 
+    ControlTeleporter(true);
+    ControlAmmopacks(true);
+
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
-
-    if (m_AmmopacksAvailable)
-        ControlAmmopacks(true);
 }
 
 public OnMapStart()
@@ -114,11 +108,10 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            TakeJetpack(client);
+            SetAmmopack(client, 0);
+            SetTeleporter(client, 0.0);
             GiveTripmine(client, 0);
-
-            if (m_AmmopacksAvailable)
-                SetAmmopack(client, 0, 0);
+            TakeJetpack(client);
         }
         else if (race == raceID)
         {
@@ -127,11 +120,15 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 
             new ammopack_level = GetUpgradeLevel(player,raceID,ammopackID);
             if (ammopack_level)
-                SetupAmmopack(client, charge_level);
+                SetupAmmopack(client, ammopack_level);
 
             new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
                 SetupArmor(client, armor_level);
+
+            new teleporter_level = GetUpgradeLevel(player,raceID,teleporterID);
+            if (teleporter_level)
+                SetupTeleporter(client, teleporter_level);
 
             new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
             if (jetpack_level)
@@ -174,6 +171,8 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
             SetupArmor(client, new_level);
         else if (upgrade==tripmineID)
             GiveTripmine(client, new_level);
+        else if (upgrade==teleporterID)
+            SetupTeleporter(client, new_level);
         else if (upgrade==jetpackID)
             Jetpack(client, new_level);
     }
@@ -218,18 +217,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
     if (victim_race == raceID)
         changed = Armor(damage, victim_index, victim_player);
-
-    if (attacker_race == raceID && victim_index != attacker_index)
-    {
-        changed |= Infect(victim_index, victim_player,
-                          attacker_index, attacker_player);
-    }
-
-    if (assister_race == raceID && victim_index != assister_index)
-    {
-        changed |= Infect(victim_index, victim_player,
-                          assister_index, assister_player);
-    }
 
     return changed ? Plugin_Changed : Plugin_Continue;
 }
@@ -337,13 +324,18 @@ Jetpack(client, level)
 
 public SetupAmmopack(client, level)
 {
-    if (m_AmmopacksAvailable)
-    {
-        if (level)
-            SetAmmopack(client, (level >= 2) ? 3 : 1);
-        else
-            SetAmmopack(client, 0);
-    }
+    if (level)
+        SetAmmopack(client, (level >= 2) ? 3 : 1);
+    else
+        SetAmmopack(client, 0);
+}
+
+public SetupTeleporter(client, level)
+{
+    if (level)
+        SetTeleporter(client, float(4-level) * 0.3);
+    else
+        SetTeleporter(client, 0.0);
 }
 
 public Action:Supply(Handle:timer)
