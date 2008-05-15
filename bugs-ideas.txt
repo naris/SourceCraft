@@ -5,12 +5,13 @@ Jiggly wants teleporter disk that can be used to telefrag other players
 (NeoTF had one for scouts)
 
 Terran Space Construction Vehicle / Protoss Probe:
-1) AmmoPack [1 level]
-2) Teleporter Charger
-2) Metal Regen
-3) Immunity
-4) Armor
+1) Supply Depot
+2) AmmoPack [1 level]
+3) Armor
+4) Teleporter Charger
+5) Immunity
 Ult) Tripmine
+Ult) Jetpack
 Ult) Move Object
 Ult) Summon Sentry Gun
 Ult) Summon Dispenser

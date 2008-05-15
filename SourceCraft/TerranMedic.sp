@@ -20,6 +20,7 @@
 #include "MedicInfect"
 #define REQUIRE_PLUGIN
 
+#include "drug"
 #include "jetpack"
 
 #include "sc/SourceCraft"
@@ -86,14 +87,14 @@ public OnPluginReady()
         infectID    = AddUpgrade(raceID,"Infection", "infection", "Infection is currently disabled", false, 99, 0);
 
     if (m_UberChargerAvailable)
-        chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges you Uber over time");
+        chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges your Uber over time");
     else
         chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Uber Charger is currently disabled", false, 99, 0);
 
     armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
 
     if (m_MedipacksAvailable)
-        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks with alt fire of medigun and on death.\nAlso gives some ubercharge on spawn.");
+        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks on death and with alt fire of medigun (at level 2 and above).\nAlso gives some ubercharge on spawn.");
     else
         medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false, 99, 0);
 
@@ -164,7 +165,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
 
             new medipack_level = GetUpgradeLevel(player,raceID,medipackID);
             if (medipack_level)
-                SetupMedipack(client, charge_level);
+                SetupMedipack(client, medipack_level);
 
             new armor_level = GetUpgradeLevel(player,raceID,armorID);
             if (armor_level)
@@ -185,6 +186,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         if (restore_level)
         {
             RestorePlayer(player);
+            PerformBlind(client, 0);
             if (m_InfectionAvailable)
                 HealInfect(client,client);
         }
