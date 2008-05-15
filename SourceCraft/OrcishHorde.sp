@@ -418,22 +418,22 @@ ChainLightning(client,ultlevel)
     {
         case 1:
         {
-            dmg=GetRandomInt(20,40);
+            dmg=GetRandomInt(20,50);
             range=300.0;
         }
         case 2:
         {
-            dmg=GetRandomInt(30,50);
+            dmg=GetRandomInt(30,80);
             range=450.0;
         }
         case 3:
         {
-            dmg=GetRandomInt(40,60);
+            dmg=GetRandomInt(40,100);
             range=650.0;
         }
         case 4:
         {
-            dmg=GetRandomInt(50,70);
+            dmg=GetRandomInt(50,120);
             range=800.0;
         }
     }

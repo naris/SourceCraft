@@ -549,8 +549,8 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
         GetClientAbsOrigin(client, clientLoc);
 
         new last=client;
-        new minDmg=level*5;
-        new maxDmg=level*10;
+        new minDmg=level*2;
+        new maxDmg=level*8;
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
