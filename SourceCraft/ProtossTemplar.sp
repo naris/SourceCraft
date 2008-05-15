@@ -220,7 +220,7 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                     TE_SendToAll();
 
                     ChangeRace(player, archon_race, true, false);
-                    CreateTimer(cooldown,AllowArchon,client);
+                    CreateTimer(cooldown, AllowArchon, client);
                     m_AllowArchon[client]=false;
                 }
             }

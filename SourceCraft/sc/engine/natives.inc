@@ -404,7 +404,7 @@ public Native_GetRace(Handle:plugin,numParams)
  */
 public Native_ChangeRace(Handle:plugin,numParams)
 {
-    if (numParams >= 2 && numParams <= 3)
+    if (numParams >= 2 && numParams <= 4)
     {
         new Handle:player=Handle:GetNativeCell(1);
         new race=GetNativeCell(2);
