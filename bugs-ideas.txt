@@ -1,3 +1,6 @@
+1) Total Invisibility when motionless w/ melee seems to be borked
+   (Cloak of Shadows and Terran Ghost)
+
 Jiggly wants teleporter disk that can be used to telefrag other players
 (NeoTF had one for scouts)
 
