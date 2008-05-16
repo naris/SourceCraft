@@ -77,7 +77,7 @@ public OnPluginReady()
 
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 12); // Ultimate
 
-    ControlTeleporter(true);
+    ControlTeleporter(true, 1.0);
     ControlAmmopacks(true);
 
     ControlJetpack(true,true);
@@ -332,10 +332,14 @@ public SetupAmmopack(client, level)
 
 public SetupTeleporter(client, level)
 {
-    if (level)
-        SetTeleporter(client, float(4-level) * 0.3);
-    else
-        SetTeleporter(client, 0.0);
+    switch (level)
+    {
+        case 0: SetTeleporter(client, 0.0);
+        case 1: SetTeleporter(client, 8.0);
+        case 2: SetTeleporter(client, 6.0);
+        case 3: SetTeleporter(client, 3.0);
+        case 4: SetTeleporter(client, 1.0); 
+    }
 }
 
 public Action:Supply(Handle:timer)
