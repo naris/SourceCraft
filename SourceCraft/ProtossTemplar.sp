@@ -137,8 +137,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
-            ResetMaxHealth(client);
-            SetGravity(player,-1.0);
+            SetGravity(player,-1.0, true);
 
             // Turn off Immunities
             new immunity_level=GetUpgradeLevel(player,race,immunityID);

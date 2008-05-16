@@ -467,7 +467,7 @@ public PsionicShockwave(damage, victim_index, Handle:victim_player, index, Handl
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
 {
-    if (race==raceID && IsPlayerAlive(client))
+    if (pressed && race==raceID && IsPlayerAlive(client))
     {
         new maelstorm_level=GetUpgradeLevel(player,race,maelstormID);
         if (maelstorm_level)
