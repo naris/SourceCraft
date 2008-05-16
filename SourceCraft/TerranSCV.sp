@@ -63,7 +63,7 @@ public OnPluginReady()
     raceID      = CreateRace("Terran SCV", "medic",
                              "You are now a Terran SCV.",
                              "You will be a Terran SCV when you die or respawn.",
-                             32,20);
+                             32);
 
     supplyID  = AddUpgrade(raceID,"Supply Depot", "supply", "Provides additional metal or ammo");
 
@@ -71,7 +71,7 @@ public OnPluginReady()
 
     armorID     = AddUpgrade(raceID,"Armor", "armor", "Reduces damage.");
 
-    teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Increases the recharge rate of your teleporters.", false, -1, 2);
+    teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Increases the recharge rate of your teleporters.");
 
     tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
 
