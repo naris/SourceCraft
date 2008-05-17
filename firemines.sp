@@ -391,7 +391,7 @@ stock TF_SetAmmoAmount(client, ammo)
 stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
 {
 	new index = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (index != 0)
+	if (index > 0)
 		GetEntityNetClass(index, name, maxlength);
 }
 
