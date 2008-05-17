@@ -1,6 +1,99 @@
 1) Total Invisibility when motionless w/ melee seems to be borked
    (Cloak of Shadows and Terran Ghost)
 
+ Blood Elf
+1 Mana Tap - Slowly leeches ammo from enemys around you.
+2 Immunity - (1) Mana Tap (2) Arcane Torrent (3) Feedback/Thorns (4) Motion Taking
+3 Blood Boil - Hits have a chance to make the enemys blood boil causing them to run 20% faster but doing 5 damage per second for 10 seconds.
+4 Ultimate: Arcane Torrent - Stops surrounding enemy's weapons from firing for 10 seeconds. (5 minute cooldown)
+
+
+Zerg Drone
+1 Spawning Pool - Kills you and instantly builds a dispenser where you died. (if engineer)
+2 Nydus Canal - Causes teleporters to construct faster than normal.
+3 Gather Materials - If you are an engineer then you will gather metal over time. (see infinite ammo pack).  Also, it allows you to drop ammo packs based on your metal stockpile.
+4 Lvl 8 Ultimate: Hatchlery - Kills you and instantly builds a level 2 sentry gun where you died.
+5 Lvl 12 Ultimate: Evolve - If you stand still for 20 seconds after activating this as any class you evolve into a hydralisk. (cooldown...same as archon)
+
+Oh for spawning pool,
+
+lvl 1 - 25% chance the dispenser will spawn
+lvl 2 - 50%
+lvl 3 - 75%
+lvl 4 - 100%
+
+Hydralisk
+1 Tough Carapace - Grants you strong armor absorbtion
+2 Grooved Spines - Grants extra ranged attack damage
+3 Zerg Reflex - Grants a chance to evade and a speed increase
+4 Lvl 8 Ultimate: Burrow - Freezes you in place and makes you invisable. Attacking will reveal you. (30 second cooldown)
+5 Lvl 12 Ultimate: Overmind Influence - Causes everyone around you to halucenate and take damage over time. (?? Cooldown)
+
+Zergling:
+Rapid Repoduction: Respawn up to 30% faster (9 per level or so)
+Metabolic Boost: Run up to 30% faster (no one can be close to the scout, but just under)
+Adrenal Glands: 25% faster reload and melee-attack speed.
+Devourer One: Go into a blood-frenzy to run faster, do more damage with melee hits, and gain HP per melee-hit.
+
+THis is just a basic idea, I would hope it would replace the current "umbrella" zerg class. I don't think its bad but meh would require tweaking.
+
+I don't mind you're Elf, but I would tweak it to be around this:
+
+Blood Elf
+1 Swift Hands: switch weapons and reload faster.
+2 Immunity - (1) Damage Reflection (2) Items (3) Movement Effects (4) Ultmates
+3 Blood Boil - Gives a 20% chance to cause an opponant to suffer 2-4 damage per second for 10 seconds
+4 Ultimate: Dispel Magic - cause an opponents skills to be removed for 30seconds.
+
+Not sure if yo ucan make switching/reloading faster or not using the mod, but its a decent idea that no other class has done, I think.
+
+ Undead Abomination
+1 Undead Flesh - Armor
+2 Sharpened Cleaver - Melee Attack bonus
+3 Gas Cloud - Chance to infect nearby enemys
+4 Ultimate: Gravitation - Causes 3 enemys within 150 feet to be pulled to the abomination  and slowing their movement
+
+Armor? Coded. (Should be "Necrotised Flesh")
+
+Terran Wraith
+1.Personal Cloaking device-like the ghost
+2.levitation-simliar to the undeads I suppose
+3.Improved lasers-increase damage like acute strike to bullets and whatnot
+4.Rocket Pods-increase damage to rockets/nades
+5.Ultimate System Overload-would work like entangling roots except instead of stopping the enemies around them would slow them down with "Electric shock"(like orb of frost) but for 20 seconds like entangling does, and paralizes the user for 5 seconds while dealing the user also for 30 damage and the people hit by it for 20
+
+Hrm, might also be interesting to eventually see Terran Vulture,
+1.Light Armor
+2.Anti-Personnel Grenades-would add an explosive kick like Reaver Scarabs do
+3.Ion Thrusters-increase speed
+4. Ultimate Spider Mines-The user can set 3 mines(Proximity mines if possible?) that would explode once someone came in the proximity range of it((Range of proximity and explosion can be increased by leveling the skill as well as increasing the damage?))
+Also if possible to code the mines could only go off to enemies. Cooldown 5 minutes after three mines have been planted.(Five minutes seem fair so it can't be spammed constantly) Hmm, would also need a way to sort of keep track howmany times they plant instead of how many mines are out that way they can't just constantly plant like only 2 and wait for them to go off and plant 2 more because they would never put that third one out that would trigger the cooldown... man thinking about this stuff is hard >.< Can't imagine yall doing it all the time.
+
+Terran Vulture
+1 Anti-Personnel Grenades - Enhanced Rocket and Nade damage (See Orcs)
+2 Ion Thrusters - Speed increase (See Undead)
+3 Light armor - Armor (see Medic)
+4 Ultimate: Spider Mines - Like Denim said (Maybe a weaker version of trip mine?)
+Hydralisk:
+1. Muscular Enhancement (Or whatever its called ingame, I really can't remember): Speed Increase
+2. Curved Spines: Increased damage with non-explosive weapons non-melee (everything but Rocket Launcher and sticky/nades)
+3. Regeneration - Same as Zergling (I believe this should be a stable for all the zerg races)
+4. Burrow - Someone suggested this earlier. Roots you in place, makes you invisible, if you attack your revealed, but it doubles your regen rate.
+
+Ultralisk:
+1.Adrenalin Increase (once again whatever its called in starcraft) - Increased Movement
+2. Hardened Carapace - Reduces damage at same rate as Terran Confed Heavy Armor
+3. Sharpened Tusk - Same as the zerglings melee bonus, maybe a little more (no more then 5-10% moer I would think.)
+4. Burrow - Same as Zergling (Starcraft 2 features burrowing Ultralist)
+OR
+4. Enrage - Makes you uber, triples melee damage, last 10 seconds, but you slow down 50% in the moments afterwards (represents coming off the berserker rage)
+
+Mutalisk
+Bounce:have a percentage chance that your attacks will a percentage damage 1/2 people near to the person hit with bullets
+devourer splash: increase explosion radius/damage
+acid: have attacks apply an acid debuff to the hit person that increases damage taken from future hits for a time, like the devourer ability.
+ultimate:flight, like jetpacks
+
 Jiggly wants teleporter disk that can be used to telefrag other players
 (NeoTF had one for scouts)
 

@@ -121,6 +121,10 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    m_MedipacksAvailable = LibraryExists("medipacks");
+    m_UberChargerAvailable = LibraryExists("medihancer");
+    m_InfectionAvailable = LibraryExists("MedicInfect");
+
     g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
     if (g_haloSprite == -1)
         SetFailState("Couldn't find halo Model");

@@ -113,6 +113,8 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    m_MindControlAvailable = LibraryExists("MindControl");
+
     explosionModel=SetupModel("materials/sprites/zerogxplode.vmt");
     if (explosionModel == -1)
         SetFailState("Couldn't find Explosion Model");

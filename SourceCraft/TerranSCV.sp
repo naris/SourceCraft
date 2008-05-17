@@ -318,7 +318,7 @@ PickupObject(client)
                 else
                     type = unknown;
 
-                if (type == sentrygun || type == dispenser)
+                if (type != unknown)
                 {
                     //Check to see if the object is still being built
                     new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
@@ -333,8 +333,12 @@ PickupObject(client)
                             if (!GetImmunity(player_check,Immunity_Ultimates))
                             {
                                 m_Object[client] = target;
-                                SetVariantInt(client);
-                                AcceptEntityInput(target, "SetParent", -1, -1, 0);
+                                //SetVariantEntity(client);
+                                //AcceptEntityInput(target, "SetParent", -1, -1, 0);
+                                new parent = GetEntProp(target, Prop_Send, "moveparent");
+                                SetEntPropEnt(target, Prop_Send, "moveparent", client);
+                                PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %d (was %d)!",
+                                            COLOR_GREEN,COLOR_DEFAULT,target, client, parent);
                             }
                             else
                             {
@@ -386,8 +390,9 @@ DropObject(client)
         m_Object[client] = 0;
         if (IsValidEntity(target))
         {
-            SetVariantInt(0);
-            AcceptEntityInput(target, "SetParent", -1, -1, 0);
+            SetEntPropEnt(target, Prop_Send, "moveparent", 0);
+            //SetVariantInt(0);
+            //AcceptEntityInput(target, "SetParent", -1, -1, 0);
         }
     }
 }

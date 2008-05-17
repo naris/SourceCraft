@@ -106,6 +106,8 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    m_MindControlAvailable = LibraryExists("MindControl");
+
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
