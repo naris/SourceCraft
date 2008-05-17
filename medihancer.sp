@@ -50,9 +50,6 @@ new Handle:g_ChargeTimer = INVALID_HANDLE;
 new Handle:g_EnablePing = INVALID_HANDLE;
 new Handle:g_PingTimer = INVALID_HANDLE;
 new Handle:g_TimerHandle = INVALID_HANDLE;
-new g_TF_ChargeLevelOffset, g_TF_ChargeReleaseOffset,
-    g_TF_CurrentOffset, g_TF_TeamNumOffset;
-
 new bool:ConfigsExecuted = false;
 new bool:NativeControl = false;
 new bool:NativeMedicEnabled[MAXPLAYERS + 1] = { false, ...};
@@ -84,22 +81,6 @@ public OnPluginStart()
     AutoExecConfig(true, "sm_medihancer");
 
     CreateConVar("sm_tf_medihancer", PL_VERSION, "Medihancer", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-
-    g_TF_ChargeLevelOffset = FindSendPropOffs("CWeaponMedigun", "m_flChargeLevel");
-    if (g_TF_ChargeLevelOffset == -1)
-        SetFailState("Cannot find TF2 m_flChargeLevel offset!");
-
-    g_TF_ChargeReleaseOffset = FindSendPropOffs("CWeaponMedigun", "m_bChargeRelease");
-    if (g_TF_ChargeReleaseOffset == -1)
-        SetFailState("Cannot find TF2 m_bChargeRelease offset!");
-
-    g_TF_CurrentOffset = FindSendPropOffs("CBasePlayer", "m_hActiveWeapon");
-    if (g_TF_CurrentOffset == -1)
-        SetFailState("Cannot find TF2 m_hActiveWeapon offset!");
-
-    g_TF_TeamNumOffset = FindSendPropOffs("CTFItem", "m_iTeamNum");
-    if (g_TF_TeamNumOffset == -1)
-        SetFailState("Cannot find TF2 m_iTeamNum offset!");
 
     HookEvent("teamplay_round_active", Event_RoundStart);
 }
@@ -279,7 +260,7 @@ stock TF_IsUberCharge(client)
 {
     new index = GetPlayerWeaponSlot(client, 1);
     if (index > 0)
-        return GetEntData(index, g_TF_ChargeReleaseOffset, 1);
+		return GetEntProp(index, Prop_Send, "m_bChargeRelease", 1);
     else
         return 0;
 }
@@ -288,7 +269,7 @@ stock TF_GetUberLevel(client)
 {
     new index = GetPlayerWeaponSlot(client, 1);
     if (index > 0)
-        return RoundFloat(GetEntDataFloat(index, g_TF_ChargeLevelOffset)*100);
+		return RoundFloat(GetEntPropFloat(index, Prop_Send, "m_flChargeLevel")*100);
     else
         return 0;
 }
@@ -297,15 +278,13 @@ stock TF_SetUberLevel(client, uberlevel)
 {
     new index = GetPlayerWeaponSlot(client, 1);
     if (index > 0)
-    {
-        SetEntDataFloat(index, g_TF_ChargeLevelOffset, uberlevel*0.01, true);
-    }
+		SetEntPropFloat(index, Prop_Send, "m_flChargeLevel", uberlevel*0.01);
 }
 
 stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
 {
-    new index = GetEntDataEnt(client, g_TF_CurrentOffset);
-    if (index != 0)
+    new index = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    if (index > 0)
         GetEntityNetClass(index, name, maxlength);
 }
 

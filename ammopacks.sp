@@ -88,6 +88,7 @@ public OnPluginStart()
 	HookConVarChange(g_AmmopacksFull, ConVarChange_AmmopacksMetal);
 	HookConVarChange(g_AmmopacksKeep, ConVarChange_AmmopacksKeep);
 	HookConVarChange(g_AmmopacksTeam, ConVarChange_AmmopacksTeam);
+	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_changeclass", Event_PlayerClass);
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("player_team", Event_PlayerTeam);
@@ -328,6 +329,18 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 	}
 }
 
+public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new TFClassType:class = TF2_GetPlayerClass(client);
+	if (class != TFClass_Engineer)
+	{
+		g_Engis[client] = false;
+		return;
+	}
+	g_Engis[client] = true;
+}
+
 public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -478,7 +491,7 @@ stock TF_SetMetalAmount(client, metal)
 stock TF_GetCurrentWeaponClass(client, String:name[], maxlength)
 {
 	new index = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (index != 0)
+	if (index > 0)
 		GetEntityNetClass(index, name, maxlength);
 }
 
