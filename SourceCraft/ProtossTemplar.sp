@@ -65,7 +65,7 @@ public OnPluginStart()
     if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
         SetFailState("Couldn't hook the player_spawn event.");
 
-    cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","30");
+    cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","60");
     cvarArchonCooldown=CreateConVar("sc_archoncooldown","300");
 }
 
@@ -529,7 +529,7 @@ public PsionicStorm(Handle:player,client,ultlevel)
 public Action:PersistPsionicStorm(Handle:timer,any:client)
 {
     new Handle:player=GetPlayerHandle(client);
-    if (player != INVALID_HANDLE)
+    if (player != INVALID_HANDLE && IsPlayerAlive(client))
     {
         new Float:range;
         new level = GetUpgradeLevel(player,raceID,psionicStormID);

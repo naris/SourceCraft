@@ -12,13 +12,13 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_player>
+#include <tf2_objects>
 #define REQUIRE_EXTENSIONS
 
 #include "tripmines"
 #include "ammopacks"
 #include "medihancer"
 #include "tf2teleporter"
-#include "jetpack"
 
 #include "sc/SourceCraft"
 #include "sc/util"
@@ -26,19 +26,23 @@
 #include "sc/maxhealth"
 #include "sc/weapons"
 #include "sc/screen"
+#include "sc/range"
 #include "sc/trace"
 
 #include "sc/log" // for debugging
 
-new raceID, supplyID, ammopackID, armorID, teleporterID, tripmineID, jetpackID;
+new raceID, supplyID, ammopackID, armorID, teleporterID, tripmineID, engineerID;
 
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
 new m_Armor[MAXPLAYERS+1];
+new m_Object[MAXPLAYERS+1];
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
+new String:deniedWav[] = "sourcecraft/buzz.wav";
+new String:errorWav[] = "soundcraft/perror.mp3";
 
 public Plugin:myinfo = 
 {
@@ -75,14 +79,9 @@ public OnPluginReady()
 
     tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
 
-    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 12); // Ultimate
-
+    engineerID   = AddUpgrade(raceID,"Advanced Engineering", "engineer", "Allows you pick up and move objects around.", true, 12); // Ultimate
     ControlTeleporter(true, 1.0);
     ControlAmmopacks(true);
-
-    ControlJetpack(true,true);
-    SetJetpackRefuelingTime(0,30.0);
-    SetJetpackFuel(0,100);
 }
 
 public OnMapStart()
@@ -100,6 +99,8 @@ public OnMapStart()
         SetFailState("Couldn't find lghtning Model");
 
     SetupSound(rechargeWav,true,true);
+    SetupSound(deniedWav, true, true);
+    SetupSound(errorWav, true, true);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -111,7 +112,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             SetAmmopack(client, 0);
             SetTeleporter(client, 0.0);
             GiveTripmine(client, 0);
-            TakeJetpack(client);
+            DropObject(client);
         }
         else if (race == raceID)
         {
@@ -129,10 +130,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             new teleporter_level = GetUpgradeLevel(player,raceID,teleporterID);
             if (teleporter_level)
                 SetupTeleporter(client, teleporter_level);
-
-            new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
-            if (jetpack_level)
-                Jetpack(client, jetpack_level);
         }
     }
 }
@@ -149,13 +146,13 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         }
         else
         {
-            new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
-            if (jetpack_level)
+            new engineer_level=GetUpgradeLevel(player,race,engineerID);
+            if (engineer_level)
             {
-                if (pressed)
-                    StartJetpack(client);
-                else
-                    StopJetpack(client);
+                if (m_Object[client] == 0 && pressed)
+                    PickupObject(client);
+                else if (m_Object[client] > 0 && !pressed)
+                    DropObject(client);
             }
         }
     }
@@ -173,8 +170,6 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
             GiveTripmine(client, new_level);
         else if (upgrade==teleporterID)
             SetupTeleporter(client, new_level);
-        else if (upgrade==jetpackID)
-            Jetpack(client, new_level);
     }
 }
 
@@ -199,10 +194,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 new armor_level = GetUpgradeLevel(player,raceID,armorID);
                 if (armor_level)
                     SetupArmor(client, armor_level);
-
-                new jetpack_level=GetUpgradeLevel(player,race,jetpackID);
-                if (jetpack_level)
-                    Jetpack(client, jetpack_level);
             }
         }
     }
@@ -219,6 +210,18 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
         changed = Armor(damage, victim_index, victim_player);
 
     return changed ? Plugin_Changed : Plugin_Continue;
+}
+
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
+{
+    if (victim_index && victim_race == raceID)
+    {
+        DropObject(victim_index);
+    }
 }
 
 SetupArmor(client, level)
@@ -288,38 +291,105 @@ bool:Armor(damage, victim_index, Handle:victim_player)
     return false;
 }
 
-Jetpack(client, level)
+PickupObject(client)
 {
-    if (level > 0)
+    new target = TraceAimTarget(client);
+    if (target >= 0)
     {
-        new fuel,Float:refueling_time;
-        switch(level)
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
+
+        new Float:targetLoc[3];
+        TR_GetEndPosition(targetLoc);
+
+        if (IsPointInRange(clientLoc,targetLoc,100.0))
         {
-            case 1:
+            decl String:class[32];
+            if (IsValidEntity(target) &&
+                GetEntityNetClass(target,class,sizeof(class)))
             {
-                fuel=40;
-                refueling_time=45.0;
+                new objects:type;
+                if (StrEqual(class, "CObjectSentrygun", false))
+                    type = sentrygun;
+                else if (StrEqual(class, "CObjectDispenser", false))
+                    type = dispenser;
+                else if (StrEqual(class, "CObjectTeleporter", false))
+                    type = objects:GetEntPropEnt(target, Prop_Send, "m_iObjectType");
+                else
+                    type = unknown;
+
+                if (type == sentrygun || type == dispenser)
+                {
+                    //Check to see if the object is still being built
+                    new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
+                    new building = GetEntProp(target, Prop_Send, "m_bBuilding");
+                    new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
+                    if (placing == 0 && building == 0 && complete >= 1.0)
+                    {
+                        new builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
+                        new Handle:player_check=GetPlayerHandle(builder);
+                        if (player_check != INVALID_HANDLE)
+                        {
+                            if (!GetImmunity(player_check,Immunity_Ultimates))
+                            {
+                                m_Object[client] = target;
+                                SetVariantInt(client);
+                                AcceptEntityInput(target, "SetParent", -1, -1, 0);
+                            }
+                            else
+                            {
+                                EmitSoundToClient(client,errorWav);
+                                PrintToChat(client,"%c[SourceCraft] %cTarget is %cimmune%c to ultimates!",
+                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                            }
+                        }
+                        else
+                            EmitSoundToClient(client,deniedWav);
+                    }
+                    else
+                    {
+                        EmitSoundToClient(client,errorWav);
+                        PrintToChat(client,"%c[SourceCraft] %cTarget is still %cbuilding%c!",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+                }
+                else
+                {
+                    EmitSoundToClient(client,deniedWav);
+                    PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
+                                COLOR_GREEN,COLOR_DEFAULT);
+                }
             }
-            case 2:
+            else
             {
-                fuel=50;
-                refueling_time=35.0;
-            }
-            case 3:
-            {
-                fuel=70;
-                refueling_time=25.0;
-            }
-            case 4:
-            {
-                fuel=90;
-                refueling_time=15.0;
+                EmitSoundToClient(client,deniedWav);
+                PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
+                            COLOR_GREEN,COLOR_DEFAULT);
             }
         }
-        GiveJetpack(client, fuel, refueling_time);
+        else
+        {
+            EmitSoundToClient(client,errorWav);
+            PrintToChat(client,"%c[SourceCraft] %cTarget is too far away!",
+                        COLOR_GREEN,COLOR_DEFAULT);
+        }
     }
     else
-        TakeJetpack(client);
+        EmitSoundToClient(client,deniedWav);
+}
+
+DropObject(client)
+{
+    new target = m_Object[client];
+    if (target > 0)
+    {
+        m_Object[client] = 0;
+        if (IsValidEntity(target))
+        {
+            SetVariantInt(0);
+            AcceptEntityInput(target, "SetParent", -1, -1, 0);
+        }
+    }
 }
 
 public SetupAmmopack(client, level)
