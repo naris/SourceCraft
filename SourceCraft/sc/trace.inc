@@ -65,3 +65,8 @@ public bool:TraceRayTryToHit(entity,mask)
   // Check if the beam hit a player and tell it to keep tracing if it did
   return (entity <= 0 || entity > GetMaxClients());
 }
+
+public bool:TraceRayDontHitSelf(entity, mask, any:data)
+{
+    return (entity != data); // Check if the TraceRay hit the owning entity.
+}

@@ -33,7 +33,6 @@ new m_BuilderOffset;
 new m_BuildingOffset;
 new m_PlacingOffset;
 new m_ObjectTypeOffset;
-new m_ObjectArrayOffset;
 new m_PercentConstructedOffset;
 
 new m_ObjectFlagsOffset;
@@ -208,59 +207,8 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                             //builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
                             builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
 
-                            LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
-                                       builder, complete, type, building, placing, class);
-
-                            new m_Offset = FindSendPropInfo("CTFPlayer", "player_object_array_element");
-                            if (m_Offset <= 0)
-                            {
-                                LogMessage("Unable to get player_object_array_element offset using FindSendPropInfo");
-                                m_Offset = FindSendPropOffs("CTFPlayer", "player_object_array_element");
-                                if (m_Offset <= 0)
-                                {
-                                    LogMessage("Unable to get player_object_array_element offset using FindSendPropOffs");
-                                    m_Offset = FindDataMapOffs(builder, "player_object_array_element");
-                                    if (m_Offset <= 0)
-                                    {
-                                        LogMessage("Unable to get player_object_array_element offset using FindDataMapOffs");
-                                        m_Offset = FindSendPropInfo("CTFPlayer", "player_object_array");
-                                        if (m_Offset <= 0)
-                                        {
-                                            LogMessage("Unable to get player_object_array offset using FindSendPropInfo");
-                                            m_Offset = FindSendPropOffs("CTFPlayer", "player_object_array");
-                                            if (m_Offset <= 0)
-                                            {
-                                                LogMessage("Unable to get player_object_array offset using FindSendPropOffs");
-                                                m_Offset = FindDataMapOffs(builder, "player_object_array");
-                                                if (m_Offset <= 0)
-                                                {
-                                                    LogMessage("Unable to get player_object_array offset using FindDataMapOffs");
-                                                    m_Offset = FindSendPropInfo("DT_TFLocalPlayerExclusive", "player_object_array");
-                                                    if (m_Offset <= 0)
-                                                    {
-                                                        LogMessage("Unable to get DT_TFLocalPlayerExclusive::player_object_array offset using FindSendPropInfo");
-                                                        m_Offset = FindSendPropInfo("DT_TFLocalPlayerExclusive", "player_object_array_element");
-                                                        if (m_Offset <= 0)
-                                                            LogMessage("Unable to get DT_TFLocalPlayerExclusive::player_object_array_element offset using FindSendPropInfo");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (m_Offset > 0)
-                            {
-                                new ArrayValue[64];
-                                GetEntDataArray( builder, m_Offset, ArrayValue, 64, 1);
-                                for (new i=0; i <= 63; i++)
-                                {
-                                    LogMessage("Array %i Value: %i", i, ArrayValue[i]);
-                                }
-                            }
-                            else
-                                LogMessage("Unable to find player_object_array");
+                            //LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
+                            //           builder, complete, type, building, placing, class);
 
                             new Handle:player_check=GetPlayerHandle(builder);
                             if (player_check != INVALID_HANDLE)

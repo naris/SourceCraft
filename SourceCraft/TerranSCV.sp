@@ -338,19 +338,19 @@ PickupObject(client)
                         {
                             if (!GetImmunity(player_check,Immunity_Ultimates))
                             {
-                                new String:strClientName[64];
-                                IntToString(client, strClientName, sizeof(strClientName));
-                                DispatchKeyValue(client, "targetname", strClientName);
-
                                 m_Object[client] = target;
-                                //SetVariantString(strClientName);
-                                //AcceptEntityInput(target, "SetParent", -1, -1, 0);
-                                SetEntityMoveType(target, MOVETYPE_FLY);
                                 SetEntPropEnt(target, Prop_Send, "moveparent", client);
-                                CreateTimer(0.1,Attach,target);
+                                SetEntityMoveType(target, MOVETYPE_FLY);
 
-                                PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %s!",
-                                            COLOR_GREEN,COLOR_DEFAULT,target, strClientName);
+                                new Float:clientPos[3];
+                                GetClientAbsOrigin(client,clientPos);
+
+                                new Float:targetPos[3];
+                                GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPos);
+
+                                new Float:origin[3];
+                                SubtractVectors(clientPos, targetPos, origin);
+                                TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
                             }
                             else
                             {
@@ -394,21 +394,6 @@ PickupObject(client)
         EmitSoundToClient(client,deniedWav);
 }
 
-public Action:Attach(Handle:timer,any:target)
-{
-    //new target = m_Object[client];
-    if (target > 0)
-    {
-        //m_Object[client] = 0;
-        if (IsValidEntity(target))
-        {
-            AcceptEntityInput(target, "SetParentAttachmentMaintainOffset", -1, -1, 0);
-            PrintToChatAll("%c[SourceCraft] %cSetAttachment for %d!",
-                           COLOR_GREEN,COLOR_DEFAULT,target);
-        }
-    }
-}
-
 DropObject(client)
 {
     new target = m_Object[client];
@@ -417,13 +402,49 @@ DropObject(client)
         m_Object[client] = 0;
         if (IsValidEntity(target))
         {
-            AcceptEntityInput(target, "ClearParent", -1, -1, 0);
-            SetEntityMoveType(target,MOVETYPE_NONE);
-            PrintToChat(client,"%c[SourceCraft] %cDropped %d!",
-                        COLOR_GREEN,COLOR_DEFAULT,target);
+            new Float:clientPos[3];
+            GetClientAbsOrigin(client,clientPos);
+
+            new Float:targetPos[3];
+            GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPos);
+
+            new Float:origin[3];
+            AddVectors(clientPos, targetPos, origin);
+
+            new Float:vecCheckBelow[3];
+            vecCheckBelow[0] = origin[0];
+            vecCheckBelow[1] = origin[1];
+            vecCheckBelow[2] = origin[2] - 50.0;
+
+            new parent = -1;
+            if (TR_DidHit(INVALID_HANDLE))
+            {
+                parent = TR_GetEntityIndex(INVALID_HANDLE);
+                if (parent < GetMaxClients())
+                    parent = -1;
+            }
+
+            TR_TraceRayFilter(origin, vecCheckBelow, MASK_PLAYERSOLID,
+                              RayType_EndPoint, TraceRayDontHitSelf, target);
+
+            SetEntPropEnt(target, Prop_Send, "moveparent", parent);
+            SetEntityMoveType(target, MOVETYPE_FLYGRAVITY);
+
+            TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
+            CreateTimer(0.5,Settle,target);
         }
     }
 }
+
+public Action:Settle(Handle:timer,any:target)
+{
+    if (target > 0)
+    {
+        if (IsValidEntity(target))
+            SetEntityMoveType(target, MOVETYPE_NONE);
+    }
+}
+
 
 public SetupAmmopack(client, level)
 {
