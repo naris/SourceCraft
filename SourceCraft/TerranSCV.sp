@@ -312,7 +312,7 @@ PickupObject(client)
         new Float:targetLoc[3];
         TR_GetEndPosition(targetLoc);
 
-        if (IsPointInRange(clientLoc,targetLoc,100.0))
+        if (IsPointInRange(clientLoc,targetLoc,200.0))
         {
             decl String:class[32];
             if (IsValidEntity(target) &&
@@ -358,7 +358,7 @@ PickupObject(client)
                                 SubtractVectors(clientPos, targetPos, origin);
                                 origin[2] += 50.0;
                                 TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
-                                EmitSoundFromOrigin(liftoffWav, origin);
+                                EmitSoundFromOrigin(liftoffWav, targetPos);
                             }
                             else
                             {
@@ -410,17 +410,19 @@ DropObject(client)
         m_Object[client] = 0;
         if (IsValidEntity(target))
         {
-            new Float:clientPos[3];
-            GetClientAbsOrigin(client,clientPos);
-            LogMessage("ClientPos=(%f,%f,%f)", clientPos[0], clientPos[1], clientPos[2]);
+            new Float:clientPos[3],Float:clientAng[3];
+            GetClientEyePosition(client,clientPos);
+            GetClientEyeAngles(client,clientAng);
 
-            new Float:targetPos[3];
-            GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPos);
-            LogMessage("TargetPos=(%f,%f,%f)", targetPos[0], targetPos[1], targetPos[2]);
+            new Float:dir[3],Float:endLoc[3];
+            GetAngleVectors(clientAng,dir,NULL_VECTOR,NULL_VECTOR);
+            ScaleVector(dir, 200.0);
+            AddVectors(clientPos, dir, endLoc);
+            TR_TraceRayFilter(clientPos,endLoc,MASK_PLAYERSOLID_BRUSHONLY,
+                              RayType_EndPoint,TraceRayTryToHit);
 
             new Float:origin[3];
-            AddVectors(clientPos, targetPos, origin);
-            LogMessage("Origin=(%f,%f,%f)", origin[0], origin[1], origin[2]);
+            TR_GetEndPosition(origin);
 
             new Float:vecCheckBelow[3];
             vecCheckBelow[0] = origin[0];
