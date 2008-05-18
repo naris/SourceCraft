@@ -535,10 +535,10 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
         new level = GetUpgradeLevel(player,raceID,psionicStormID);
         switch(level)
         {
-            case 1: range=300.0;
-            case 2: range=450.0;
-            case 3: range=650.0;
-            case 4: range=800.0;
+            case 1: range=250.0;
+            case 2: range=400.0;
+            case 3: range=550.0;
+            case 4: range=650.0;
         }
 
         EmitSoundToAll(psistormWav,client);
@@ -548,8 +548,8 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
         GetClientAbsOrigin(client, clientLoc);
 
         new last=client;
-        new minDmg=level*2;
-        new maxDmg=level*8;
+        new minDmg=level;
+        new maxDmg=level*5;
         new maxplayers=GetMaxClients();
         for(new index=1;index<=maxplayers;index++)
         {
