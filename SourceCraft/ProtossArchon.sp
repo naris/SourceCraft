@@ -15,8 +15,11 @@
 #include <tf2_cloak>
 #define REQUIRE_EXTENSIONS
 
-#include "sc/SourceCraft"
+#undef REQUIRE_PLUGIN
 #include "sc/MindControl"
+#define REQUIRE_PLUGIN
+
+#include "sc/SourceCraft"
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
@@ -147,8 +150,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (oldrace == raceID)
         {
-            ResetMindControlledObjects(client, false);
             SetVisibility(player, -1);
+            if (m_MindControlAvailable)
+                ResetMindControlledObjects(client, false);
         }
     }
 }

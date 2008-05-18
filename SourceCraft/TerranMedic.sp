@@ -76,34 +76,34 @@ public OnPluginReady()
     m_UberChargerAvailable = LibraryExists("medihancer");
     m_InfectionAvailable = LibraryExists("MedicInfect");
 
-    raceID      = CreateRace("Terran Medic", "medic",
-                             "You are now a Terran Medic.",
-                             "You will be a Terran Medic when you die or respawn.",
-                             32,20);
+    raceID  = CreateRace("Terran Medic", "medic",
+                         "You are now a Terran Medic.",
+                         "You will be a Terran Medic when you die or respawn.",
+                         32,20);
 
     if (m_InfectionAvailable)
-        infectID    = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
+        infectID = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
     else
-        infectID    = AddUpgrade(raceID,"Infection", "infection", "Infection is currently disabled", false, 99, 0);
+        infectID = AddUpgrade(raceID,"Infection", "infection", "Infection is currently disabled", false, 99, 0);
 
     if (m_UberChargerAvailable)
-        chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges your Uber over time");
+        chargeID = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges your Uber over time");
     else
-        chargeID    = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Uber Charger is currently disabled", false, 99, 0);
+        chargeID = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Uber Charger is currently disabled", false, 99, 0);
 
-    armorID     = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
+    armorID = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
 
     if (m_MedipacksAvailable)
-        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks on death and with alt fire of medigun (at level 2 and above).\nAlso gives some ubercharge on spawn.");
+        medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks on death and with alt fire of medigun (at level 2 and above).\nAlso gives some ubercharge on spawn.");
     else
-        medipackID  = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false, 99, 0);
+        medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false, 99, 0);
 
-    regenerationID  = AddUpgrade(raceID,"Regeneration", "regeneration", "Regenerates your Health.");
-    healingID       = AddUpgrade(raceID,"Healing Aura", "healing", "Heals all of your teammates in range (It does NOT heal you).");
+    regenerationID = AddUpgrade(raceID,"Regeneration", "regeneration", "Regenerates your Health.");
+    healingID      = AddUpgrade(raceID,"Healing Aura", "healing", "Heals all of your teammates in range (It does NOT heal you).");
 
-    restoreID   = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for\nthe teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
+    restoreID = AddUpgrade(raceID,"Restore", "restore", "Restores (removes effects of orb,bash,lockdown, etc.) for\nthe teammates around you or yourself (when +ultimate is hit).", true); // Ultimate
     flareID   = AddUpgrade(raceID,"Optical Flare", "flare", "Blinds the enemies around you.", true, 10); // Ultimate
-    jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 12); // Ultimate
+    jetpackID = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true, 12); // Ultimate
 
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);

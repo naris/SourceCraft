@@ -342,7 +342,8 @@ PickupObject(client)
                                 m_Object[client] = target;
                                 SetVariantString(strClientName);
                                 AcceptEntityInput(target, "SetParent", -1, -1, 0);
-                                SetEntPropEnt(target, Prop_Send, "moveparent", client);
+                                //SetEntPropEnt(target, Prop_Send, "moveparent", client);
+                                SetEntityMoveType(target,MOVETYPE_FLY);
                                 CreateTimer(0.1,Attach,target);
 
                                 PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %s!",
@@ -414,6 +415,7 @@ DropObject(client)
         if (IsValidEntity(target))
         {
             AcceptEntityInput(target, "ClearParent", -1, -1, 0);
+            SetEntityMoveType(target,MOVETYPE_NONE);
             PrintToChat(client,"%c[SourceCraft] %cDropped %d!",
                         COLOR_GREEN,COLOR_DEFAULT,target);
         }
