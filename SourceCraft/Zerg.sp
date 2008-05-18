@@ -24,7 +24,7 @@
 #include "sc/maxhealth"
 #include "sc/log"
 
-new String:errorWav[] = "sourcecraft/perror.wav";
+new String:errorWav[] = "sourcecraft/perror.mp3";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
 
 new raceID, glandsID, regenerationID, healingID, tentacleID;

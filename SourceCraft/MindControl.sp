@@ -24,7 +24,7 @@
 
 //#include "sc/MindControl"
 
-new String:errorWav[] = "sourcecraft/perror.wav";
+new String:errorWav[] = "sourcecraft/perror.mp3";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
 new String:controlWav[] = "sourcecraft/pteSum00.wav";
 

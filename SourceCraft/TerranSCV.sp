@@ -43,7 +43,7 @@ new m_Object[MAXPLAYERS+1];
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:liftoffWav[] = "sourcecraft/liftoff.wav";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
-new String:errorWav[] = "sourcecraft/perror.wav";
+new String:errorWav[] = "sourcecraft/perror.mp3";
 new String:landWav[] = "sourcecraft/land.wav";
 
 public Plugin:myinfo = 
