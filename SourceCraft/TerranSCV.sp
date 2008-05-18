@@ -112,7 +112,9 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             SetAmmopack(client, 0);
             SetTeleporter(client, 0.0);
             GiveTripmine(client, 0);
-            DropObject(client);
+
+            if (m_Object[client] > 0)
+                DropObject(client);
         }
         else if (race == raceID)
         {
@@ -223,7 +225,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
 {
     if (victim_index && victim_race == raceID)
     {
-        DropObject(victim_index);
+        if (m_Object[victim_index] > 0)
+            DropObject(victim_index);
     }
 }
 
@@ -340,10 +343,10 @@ PickupObject(client)
                                 DispatchKeyValue(client, "targetname", strClientName);
 
                                 m_Object[client] = target;
-                                SetVariantString(strClientName);
-                                AcceptEntityInput(target, "SetParent", -1, -1, 0);
-                                //SetEntPropEnt(target, Prop_Send, "moveparent", client);
-                                SetEntityMoveType(target,MOVETYPE_FLY);
+                                //SetVariantString(strClientName);
+                                //AcceptEntityInput(target, "SetParent", -1, -1, 0);
+                                SetEntityMoveType(target, MOVETYPE_FLY);
+                                SetEntPropEnt(target, Prop_Send, "moveparent", client);
                                 CreateTimer(0.1,Attach,target);
 
                                 PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %s!",
