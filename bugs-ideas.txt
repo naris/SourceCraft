@@ -48,12 +48,10 @@ Blood Elf
 Not sure if yo ucan make switching/reloading faster or not using the mod, but its a decent idea that no other class has done, I think.
 
  Undead Abomination
-1 Undead Flesh - Armor
+1 Necrotised Flesh - Armor
 2 Sharpened Cleaver - Melee Attack bonus
 3 Gas Cloud - Chance to infect nearby enemys
 4 Ultimate: Gravitation - Causes 3 enemys within 150 feet to be pulled to the abomination  and slowing their movement
-
-Armor? Coded. (Should be "Necrotised Flesh")
 
 Terran Wraith
 1.Personal Cloaking device-like the ghost
@@ -96,20 +94,22 @@ ultimate:flight, like jetpacks
 
 Jiggly wants teleporter disk that can be used to telefrag other players
 (NeoTF had one for scouts)
+Ult) Teleporter Disk w/Telefragging
 
 Terran Space Construction Vehicle / Protoss Probe:
 1) Supply Depot
 2) AmmoPack [1 level]
-3) Armor
-4) Teleporter Charger
+3) Teleporter Charger
+4) Armor
 5) Immunity
 Ult) Tripmine
 Ult) Jetpack
 Ult) Move Object
+
+Protoss Probe:
 Ult) Summon Sentry Gun
 Ult) Summon Dispenser
 Ult) Summon Teleporter (1st entry, then exit)
-Ult) Teleporter Disk w/Telefragging
 
 Protoss High Templar / Dark Templar:
 1) Immunity (decloaking,crystaltaking,motiontaking,healthtaking)

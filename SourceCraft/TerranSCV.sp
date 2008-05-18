@@ -31,7 +31,7 @@
 
 #include "sc/log" // for debugging
 
-new raceID, supplyID, ammopackID, armorID, teleporterID, tripmineID, engineerID;
+new raceID, supplyID, ammopackID, teleporterID, immunityID, armorID, tripmineID, engineerID;
 
 new g_haloSprite;
 new g_smokeSprite;
@@ -77,6 +77,10 @@ public OnPluginReady()
 
     teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Decreases the recharge rate of your teleporters.");
 
+    immunityID = AddUpgrade(raceID,"Immunity", "immunity",
+                            "Makes you Immune to: Crystal Theft at Level 1,\nUltimates at Level 2,\nMotion Taking at Level 3,\nand Blindness at level 4.");
+
+
     armorID     = AddUpgrade(raceID,"Armor", "armor", "A suit of Light Armor that takes damage up to 60% until it is depleted.");
 
     tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
@@ -113,6 +117,11 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
+            // Turn off Immunities
+            new immunity_level=GetUpgradeLevel(player,race,immunityID);
+            if (immunity_level)
+                DoImmunity(client, player, immunity_level,false);
+
             SetAmmopack(client, 0);
             SetTeleporter(client, 0.0);
             GiveTripmine(client, 0);
@@ -122,6 +131,11 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         }
         else if (race == raceID)
         {
+            // Turn on Immunities
+            new immunity_level=GetUpgradeLevel(player,race,immunityID);
+            if (immunity_level)
+                DoImmunity(client, player, immunity_level,true);
+
             new tripmine_level=GetUpgradeLevel(player,race,tripmineID);
             GiveTripmine(client, tripmine_level);
 
@@ -137,6 +151,23 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             if (teleporter_level)
                 SetupTeleporter(client, teleporter_level);
         }
+    }
+}
+
+public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
+{
+    if (race == raceID && GetRace(player) == raceID)
+    {
+        if (upgrade==ammopackID)
+            SetupAmmopack(client, new_level);
+        else if (upgrade==armorID)
+            SetupArmor(client, new_level);
+        else if (upgrade==tripmineID)
+            GiveTripmine(client, new_level);
+        else if (upgrade==teleporterID)
+            SetupTeleporter(client, new_level);
+        else if (upgrade == immunityID)
+            DoImmunity(client, player, new_level,true);
     }
 }
 
@@ -167,21 +198,6 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
     }
 }
 
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
-{
-    if (race == raceID && GetRace(player) == raceID)
-    {
-        if (upgrade==ammopackID)
-            SetupAmmopack(client, new_level);
-        else if (upgrade==armorID)
-            SetupArmor(client, new_level);
-        else if (upgrade==tripmineID)
-            GiveTripmine(client, new_level);
-        else if (upgrade==teleporterID)
-            SetupTeleporter(client, new_level);
-    }
-}
-
 public OnPlayerAuthed(client,Handle:player)
 {
     FindMaxHealthOffset(client);
@@ -200,6 +216,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
+                new immunity_level=GetUpgradeLevel(player,raceID,immunityID);
+                if (immunity_level)
+                    DoImmunity(client, player, immunity_level,true);
+
                 new armor_level = GetUpgradeLevel(player,raceID,armorID);
                 if (armor_level)
                     SetupArmor(client, armor_level);
@@ -231,6 +251,35 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     {
         if (m_Object[victim_index] > 0)
             DropObject(victim_index);
+    }
+}
+
+DoImmunity(client, Handle:player, level, bool:value)
+{
+    if (level >= 1)
+    {
+        SetImmunity(player,Immunity_Theft,value);
+        if (level >= 2)
+        {
+            SetImmunity(player,Immunity_Ultimates,value);
+            if (level >= 3)
+            {
+                SetImmunity(player,Immunity_MotionTake,value);
+                if (level >= 4)
+                    SetImmunity(player,Immunity_Blindness,value);
+            }
+        }
+
+        if (value)
+        {
+            new Float:start[3];
+            GetClientAbsOrigin(client, start);
+
+            new color[4] = { 0, 255, 50, 128 };
+            TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
+                                  0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+            TE_SendToAll();
+        }
     }
 }
 
