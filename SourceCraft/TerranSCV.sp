@@ -339,6 +339,8 @@ PickupObject(client)
                             if (!GetImmunity(player_check,Immunity_Ultimates))
                             {
                                 m_Object[client] = target;
+                                new parent = GetEntPropEnt(target, Prop_Send, "moveparent");
+                                LogMessage("parent=%d", parent);
                                 SetEntPropEnt(target, Prop_Send, "moveparent", client);
                                 SetEntityMoveType(target, MOVETYPE_FLY);
 
@@ -350,6 +352,7 @@ PickupObject(client)
 
                                 new Float:origin[3];
                                 SubtractVectors(clientPos, targetPos, origin);
+                                origin[2] += 50.0;
                                 TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
                             }
                             else
@@ -404,47 +407,40 @@ DropObject(client)
         {
             new Float:clientPos[3];
             GetClientAbsOrigin(client,clientPos);
+            LogMessage("ClientPos=(%f,%f,%f)", clientPos[0], clientPos[1], clientPos[2]);
 
             new Float:targetPos[3];
             GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPos);
+            LogMessage("TargetPos=(%f,%f,%f)", targetPos[0], targetPos[1], targetPos[2]);
 
             new Float:origin[3];
             AddVectors(clientPos, targetPos, origin);
+            LogMessage("Origin=(%f,%f,%f)", origin[0], origin[1], origin[2]);
 
             new Float:vecCheckBelow[3];
             vecCheckBelow[0] = origin[0];
             vecCheckBelow[1] = origin[1];
-            vecCheckBelow[2] = origin[2] - 50.0;
-
-            new parent = -1;
-            if (TR_DidHit(INVALID_HANDLE))
-            {
-                parent = TR_GetEntityIndex(INVALID_HANDLE);
-                if (parent < GetMaxClients())
-                    parent = -1;
-            }
+            vecCheckBelow[2] = origin[2] - 1000.0;
 
             TR_TraceRayFilter(origin, vecCheckBelow, MASK_PLAYERSOLID,
                               RayType_EndPoint, TraceRayDontHitSelf, target);
 
+            new parent = -1;
+            if (TR_DidHit(INVALID_HANDLE))
+            {
+                TR_GetEndPosition(origin);
+                parent = TR_GetEntityIndex();
+                if (parent < GetMaxClients())
+                    parent = -1;
+            }
+
             SetEntPropEnt(target, Prop_Send, "moveparent", parent);
-            SetEntityMoveType(target, MOVETYPE_FLYGRAVITY);
+            SetEntityMoveType(target, MOVETYPE_NONE);
 
             TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
-            CreateTimer(0.5,Settle,target);
         }
     }
 }
-
-public Action:Settle(Handle:timer,any:target)
-{
-    if (target > 0)
-    {
-        if (IsValidEntity(target))
-            SetEntityMoveType(target, MOVETYPE_NONE);
-    }
-}
-
 
 public SetupAmmopack(client, level)
 {
