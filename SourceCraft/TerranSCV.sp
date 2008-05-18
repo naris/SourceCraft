@@ -69,7 +69,7 @@ public OnPluginReady()
     raceID      = CreateRace("Terran SCV", "scv",
                              "You are now a Terran SCV.",
                              "You will be a Terran SCV when you die or respawn.",
-                             32);
+                             48, 20);
 
     supplyID  = AddUpgrade(raceID,"Supply Depot", "supply", "Provides additional metal or ammo");
 
@@ -80,12 +80,12 @@ public OnPluginReady()
     immunityID = AddUpgrade(raceID,"Immunity", "immunity",
                             "Makes you Immune to: Crystal Theft at Level 1,\nUltimates at Level 2,\nMotion Taking at Level 3,\nand Blindness at level 4.");
 
-
     armorID     = AddUpgrade(raceID,"Armor", "armor", "A suit of Light Armor that takes damage up to 60% until it is depleted.");
 
     tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
 
     engineerID   = AddUpgrade(raceID,"Advanced Engineering", "engineer", "Allows you pick up and move objects around.", true, 12); // Ultimate
+
     ControlTeleporter(true, 1.0);
     ControlAmmopacks(true);
 }
