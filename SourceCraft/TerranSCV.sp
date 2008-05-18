@@ -66,7 +66,7 @@ public OnPluginStart()
 
 public OnPluginReady()
 {
-    raceID      = CreateRace("Terran SCV", "medic",
+    raceID      = CreateRace("Terran SCV", "scv",
                              "You are now a Terran SCV.",
                              "You will be a Terran SCV when you die or respawn.",
                              32);
