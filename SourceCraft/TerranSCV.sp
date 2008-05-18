@@ -100,11 +100,11 @@ public OnMapStart()
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
 
-    SetupSound(rechargeWav,true,true);
-    SetupSound(liftoffWav,true,true);
+    SetupSound(rechargeWav, true, true);
+    SetupSound(liftoffWav, true, true);
     SetupSound(deniedWav, true, true);
     SetupSound(errorWav, true, true);
-    SetupSound(landWav,true,true);
+    SetupSound(landWav, true, true);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -560,4 +560,11 @@ public Action:Supply(Handle:timer)
         }
     }
     return Plugin_Continue;
+}
+
+stock EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
+{
+    EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,
+                   SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,
+                   NULL_VECTOR,true,0.0);
 }
