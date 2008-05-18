@@ -24,7 +24,7 @@
 
 //#include "sc/MindControl"
 
-new String:errorWav[] = "soundcraft/perror.mp3";
+new String:errorWav[] = "sourcecraft/perror.wav";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
 new String:controlWav[] = "sourcecraft/pteSum00.wav";
 
@@ -514,3 +514,11 @@ public Native_ResetMindControlledObjs(Handle:plugin,numParams)
     new bool:remove = bool:GetNativeCell(2);
     ResetMindControlledObjects(client,remove);
 }
+
+stock EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
+{
+    EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,
+                   SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,
+                   NULL_VECTOR,true,0.0);
+}
+

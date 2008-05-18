@@ -41,8 +41,10 @@ new m_Armor[MAXPLAYERS+1];
 new m_Object[MAXPLAYERS+1];
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
+new String:liftoffWav[] = "sourcecraft/liftoff.wav";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
-new String:errorWav[] = "soundcraft/perror.mp3";
+new String:errorWav[] = "sourcecraft/perror.wav";
+new String:landWav[] = "sourcecraft/land.wav";
 
 public Plugin:myinfo = 
 {
@@ -99,8 +101,10 @@ public OnMapStart()
         SetFailState("Couldn't find lghtning Model");
 
     SetupSound(rechargeWav,true,true);
+    SetupSound(liftoffWav,true,true);
     SetupSound(deniedWav, true, true);
     SetupSound(errorWav, true, true);
+    SetupSound(landWav,true,true);
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -354,6 +358,7 @@ PickupObject(client)
                                 SubtractVectors(clientPos, targetPos, origin);
                                 origin[2] += 50.0;
                                 TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
+                                EmitSoundFromOrigin(liftoffWav, origin);
                             }
                             else
                             {
@@ -438,6 +443,7 @@ DropObject(client)
             SetEntityMoveType(target, MOVETYPE_NONE);
 
             TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
+            EmitSoundFromOrigin(landWav, origin);
         }
     }
 }
