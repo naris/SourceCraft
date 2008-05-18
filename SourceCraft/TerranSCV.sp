@@ -75,9 +75,9 @@ public OnPluginReady()
 
     ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Drop Ammopacks on death and with alt fire of the wrench (at level 2).", false, -1, 2);
 
-    armorID     = AddUpgrade(raceID,"Armor", "armor", "Reduces damage.");
+    teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Decreases the recharge rate of your teleporters.");
 
-    teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Increases the recharge rate of your teleporters.");
+    armorID     = AddUpgrade(raceID,"Armor", "armor", "A suit of Light Armor that takes damage up to 60% until it is depleted.");
 
     tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
 
@@ -267,12 +267,12 @@ bool:Armor(damage, victim_index, Handle:victim_player)
             case 3:
             {
                 from_percent=0.10;
-                to_percent=0.60;
+                to_percent=0.50;
             }
             case 4:
             {
                 from_percent=0.20;
-                to_percent=0.80;
+                to_percent=0.60;
             }
         }
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));

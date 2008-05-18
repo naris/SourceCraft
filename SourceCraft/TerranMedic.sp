@@ -91,7 +91,7 @@ public OnPluginReady()
     else
         chargeID = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Uber Charger is currently disabled", false, 99, 0);
 
-    armorID = AddUpgrade(raceID,"Light Armor", "armor", "Reduces damage.");
+    armorID = AddUpgrade(raceID,"Light Armor", "armor", "A suit of Light Armor that takes damage up to 70% until it is depleted.");
 
     if (m_MedipacksAvailable)
         medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks on death and with alt fire of medigun (at level 2 and above).\nAlso gives some ubercharge on spawn.");
@@ -340,7 +340,7 @@ bool:Armor(damage, victim_index, Handle:victim_player)
             case 4:
             {
                 from_percent=0.20;
-                to_percent=0.80;
+                to_percent=0.70;
             }
         }
         new amount=RoundFloat(float(damage)*GetRandomFloat(from_percent,to_percent));
