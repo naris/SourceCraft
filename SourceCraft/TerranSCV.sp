@@ -149,10 +149,13 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             new engineer_level=GetUpgradeLevel(player,race,engineerID);
             if (engineer_level)
             {
-                if (m_Object[client] == 0 && pressed)
-                    PickupObject(client);
-                else if (m_Object[client] > 0 && !pressed)
-                    DropObject(client);
+                if (pressed)
+                {
+                    if (m_Object[client] > 0)
+                        DropObject(client);
+                    else
+                        PickupObject(client);
+                }
             }
         }
     }
@@ -332,13 +335,17 @@ PickupObject(client)
                         {
                             if (!GetImmunity(player_check,Immunity_Ultimates))
                             {
+                                new String:strClientName[64];
+                                IntToString(client, strClientName, sizeof(strClientName));
+                                DispatchKeyValue(client, "targetname", strClientName);
+                                SetVariantString(strClientName);
+                                AcceptEntityInput(target, "SetParent", -1, -1, 0);
+                                CreateTimer(0.1,Attach,target);
                                 m_Object[client] = target;
-                                //SetVariantEntity(client);
-                                //AcceptEntityInput(target, "SetParent", -1, -1, 0);
-                                new parent = GetEntProp(target, Prop_Send, "moveparent");
-                                SetEntPropEnt(target, Prop_Send, "moveparent", client);
-                                PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %d (was %d)!",
-                                            COLOR_GREEN,COLOR_DEFAULT,target, client, parent);
+
+                                //SetEntPropEnt(target, Prop_Send, "moveparent", client);
+                                PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %s!",
+                                            COLOR_GREEN,COLOR_DEFAULT,target, strClientName);
                             }
                             else
                             {
@@ -382,6 +389,21 @@ PickupObject(client)
         EmitSoundToClient(client,deniedWav);
 }
 
+public Action:Attach(Handle:timer,any:target)
+{
+    //new target = m_Object[client];
+    if (target > 0)
+    {
+        //m_Object[client] = 0;
+        if (IsValidEntity(target))
+        {
+            AcceptEntityInput(target, "SetParentAttachmentMaintainOffset", -1, -1, 0);
+            //PrintToChat(client,"%c[SourceCraft] %cDropped %d!",
+            //            COLOR_GREEN,COLOR_DEFAULT,target);
+        }
+    }
+}
+
 DropObject(client)
 {
     new target = m_Object[client];
@@ -390,9 +412,9 @@ DropObject(client)
         m_Object[client] = 0;
         if (IsValidEntity(target))
         {
-            SetEntPropEnt(target, Prop_Send, "moveparent", 0);
-            //SetVariantInt(0);
-            //AcceptEntityInput(target, "SetParent", -1, -1, 0);
+            AcceptEntityInput(target, "ClearParent", -1, -1, 0);
+            PrintToChat(client,"%c[SourceCraft] %cDropped %d!",
+                        COLOR_GREEN,COLOR_DEFAULT,target);
         }
     }
 }
