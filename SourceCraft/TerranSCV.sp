@@ -338,12 +338,13 @@ PickupObject(client)
                                 new String:strClientName[64];
                                 IntToString(client, strClientName, sizeof(strClientName));
                                 DispatchKeyValue(client, "targetname", strClientName);
+
+                                m_Object[client] = target;
                                 SetVariantString(strClientName);
                                 AcceptEntityInput(target, "SetParent", -1, -1, 0);
+                                SetEntPropEnt(target, Prop_Send, "moveparent", client);
                                 CreateTimer(0.1,Attach,target);
-                                m_Object[client] = target;
 
-                                //SetEntPropEnt(target, Prop_Send, "moveparent", client);
                                 PrintToChat(client,"%c[SourceCraft] %cParent of %d set to %s!",
                                             COLOR_GREEN,COLOR_DEFAULT,target, strClientName);
                             }
@@ -398,8 +399,8 @@ public Action:Attach(Handle:timer,any:target)
         if (IsValidEntity(target))
         {
             AcceptEntityInput(target, "SetParentAttachmentMaintainOffset", -1, -1, 0);
-            //PrintToChat(client,"%c[SourceCraft] %cDropped %d!",
-            //            COLOR_GREEN,COLOR_DEFAULT,target);
+            PrintToChatAll("%c[SourceCraft] %cSetAttachment for %d!",
+                           COLOR_GREEN,COLOR_DEFAULT,target);
         }
     }
 }
