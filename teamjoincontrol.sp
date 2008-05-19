@@ -90,14 +90,25 @@ public OnPluginStart()
 		SetFailState("This plugin only works with Counter-Strike:Source, Day of Defeat:Source or Team Fortress 2");
 	}
 
-	HookEvent("player_team", EventTeamChange, EventHookMode_Pre);
+	HookEvent("player_team", EventTeamChange);
 
 	if (g_gameType == TF2)
-    		HookEvent("player_spawn", EventPlayerSpawn, EventHookMode_Pre);
+	{
+    		HookEvent("teamplay_teambalanced_player", EventTeamBalanced);
+		RegConsoleCmd("mp_scrambleteams", CommandScrambleTeams);
+	}
 	else
+	{
 		RegConsoleCmd("jointeam", CommandJoinTeam);
+	}
 	
 	g_kv=CreateKeyValues("LockExpiration");
+}
+
+public OnPluginEnd()
+{
+	CloseHandle(g_kv);
+	g_kv = INVALID_HANDLE;
 }
 
 public OnClientPutInServer(client)
@@ -253,13 +264,27 @@ public Action:CommandJoinTeam(client, args)
 	return Plugin_Continue;
 }
 
+public Action:CommandScrambleTeams(client, args)
+{
+	// Close and ReCreate the KeyValue History.
+	CloseHandle(g_kv);
+	g_kv=CreateKeyValues("LockExpiration");
+
+	// Reset all the remembered team to 0 os theams can be scrambled.
+	new maxplayers = GetMaxClients();
+	for(new index = 1; index <= maxplayers; index++)
+	{
+		g_teamList[index] = 0;
+	}
+	return Plugin_Continue;
+}
+
 public Action:EventTeamChange(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	new team = GetEventInt(event, "team");
-	
 	if(client && IsClientInGame(client) && !IsFakeClient(client))
 	{
+		new team = GetEventInt(event, "team");
 		if (g_gameType == TF2)
 		{
 			if (team != g_teamList[client])
@@ -284,22 +309,13 @@ public Action:ResetTeam(Handle:timer,any:client)
 	}                
 }
 
-public Action:EventPlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:EventTeamBalanced(Handle:event,const String:name[],bool:dontBroadcast)
 {
-	new userid = GetEventInt(event,"userid");
-	if (userid > 0)
+	new client = GetClientOfUserId(GetEventInt(event,"player"));
+	if(client && IsClientInGame(client) && !IsFakeClient(client))
 	{
-		new client=GetClientOfUserId(userid);
-		if(client && IsClientInGame(client) && !IsFakeClient(client))
-		{
-			if (GetClientTeam(client) != g_teamList[client])
-			{
-				Deny(client, "You cannot join that team");
-				ChangeClientTeam (client, g_teamList[client]);
-			}
-		}
+		g_teamList[client] = GetEventInt(event, "team");
 	}
-	return Plugin_Continue;
 }
 
 public GetOtherTeam(team)

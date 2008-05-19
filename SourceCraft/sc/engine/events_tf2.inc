@@ -93,64 +93,67 @@ bool:HookTFEvents()
         return false;
     }
 
-    if(!HookEventEx("achievement_earned",LogEvent))
+    if (IsPluginDebugging(INVALID_HANDLE))
     {
-        LogError("Could not hook the achievement_earned event.");
-    }
+        if(!HookEventEx("achievement_earned",LogEvent))
+        {
+            LogError("Could not hook the achievement_earned event.");
+        }
 
-    if(!HookEventEx("player_invulned",LogEvent))
-    {
-        LogError("Could not hook the player_invulned event.");
-    }
+        if(!HookEventEx("player_invulned",LogEvent))
+        {
+            LogError("Could not hook the player_invulned event.");
+        }
 
-    if(!HookEventEx("player_extinguished",LogEvent))
-    {
-        LogError("Could not hook the player_extinguished event.");
-    }
+        if(!HookEventEx("player_extinguished",LogEvent))
+        {
+            LogError("Could not hook the player_extinguished event.");
+        }
 
-    if(!HookEventEx("teamplay_waiting_begins",LogEvent))
-    {
-        LogError("Could not hook the teamplay_game_over event.");
-    }
+        if(!HookEventEx("teamplay_waiting_begins",LogEvent))
+        {
+            LogError("Could not hook the teamplay_game_over event.");
+        }
 
-    if(!HookEventEx("teamplay_waiting_ends",LogEvent))
-    {
-        LogError("Could not hook the teamplay_game_over event.");
-    }
+        if(!HookEventEx("teamplay_waiting_ends",LogEvent))
+        {
+            LogError("Could not hook the teamplay_game_over event.");
+        }
 
-    if(!HookEventEx("player_escort_score",LogEvent))
-    {
-        LogError("Could not hook the player_escort_score event.");
-    }
+        if(!HookEventEx("player_escort_score",LogEvent))
+        {
+            LogError("Could not hook the player_escort_score event.");
+        }
 
-    if(!HookEventEx("escort_progress",LogEvent))
-    {
-        LogError("Could not hook the escort_progress event.");
-    }
+        if(!HookEventEx("escort_progress",LogEvent))
+        {
+            LogError("Could not hook the escort_progress event.");
+        }
 
-    if(!HookEventEx("escort_recede",LogEvent))
-    {
-        LogError("Could not hook the escort_recede event.");
-    }
+        if(!HookEventEx("escort_recede",LogEvent))
+        {
+            LogError("Could not hook the escort_recede event.");
+        }
 
-    if(!HookEventEx("escort_speed",LogEvent))
-    {
-        LogError("Could not hook the escort_speed event.");
-    }
+        if(!HookEventEx("escort_speed",LogEvent))
+        {
+            LogError("Could not hook the escort_speed event.");
+        }
 
-    if(!HookEventEx("player_healedmediccall",LogEvent))
-    {
-        LogError("Could not hook the player_healedmediccall event.");
-    }
+        if(!HookEventEx("player_healedmediccall",LogEvent))
+        {
+            LogError("Could not hook the player_healedmediccall event.");
+        }
 
-    if(!HookEventEx("player_ignited_inv",LogEvent))
-    {
-        LogError("Could not hook the player_ignited_inv event.");
-    }
+        if(!HookEventEx("player_ignited_inv",LogEvent))
+        {
+            LogError("Could not hook the player_ignited_inv event.");
+        }
 
-    if(!HookEventEx("player_calledformedic",LogEvent))
-    {
-        LogError("Could not hook the player_calledformedic event.");
+        if(!HookEventEx("player_calledformedic",LogEvent))
+        {
+            LogError("Could not hook the player_calledformedic event.");
+        }   
     }   
 
     AddGameLogHook(LogScanner);
