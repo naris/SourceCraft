@@ -266,6 +266,7 @@ public Action:EventTeamChange(Handle:event, const String:name[], bool:dontBroadc
 			{
 				Deny(client, "You cannot join that team");
 				ChangeClientTeam (client, g_teamList[client]);
+				CreateTimer(0.1,ResetTeam,client);
 				return Plugin_Handled;
 			}
 		}
@@ -273,6 +274,14 @@ public Action:EventTeamChange(Handle:event, const String:name[], bool:dontBroadc
 			g_teamList[client] = team;
 	}
 	return Plugin_Continue;
+}
+
+public Action:ResetTeam(Handle:timer,any:client)
+{
+	if (client && IsClientInGame(client) && !IsFakeClient(client))
+	{
+		ChangeClientTeam (client, g_teamList[client]);
+	}                
 }
 
 public Action:EventPlayerSpawn(Handle:event,const String:name[],bool:dontBroadcast)
