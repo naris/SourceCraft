@@ -24,6 +24,10 @@ Versions:
 		* Add sm_team_join_control_stop_spec
 		* Added an optional sound
 		* Moved the default location of the cfg file
+		
+	1.3	- Modified by -=|JFH|=-Naris to:
+		* Added support for TF2
+		* Changed default error sound to button10 since button11 doesn't exist for TF2
 */
 
 
@@ -32,7 +36,7 @@ Versions:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.3"
 
 #define CSS 0
 #define DODS 1
@@ -70,7 +74,7 @@ public OnPluginStart()
 	g_CvarLockTime = CreateConVar("sm_team_join_control_lock_time", "15", "The number of minutes after disconnect before the team lock expires after disconnect");
 	g_CvarForceJoin = CreateConVar("sm_team_join_control_force_join", "0", "Set to 1 if you want the player to be autojoined regardless of what they select");
 	g_CvarStopSpec = CreateConVar("sm_team_join_control_stop_spec", "0", "Set to 1 if you don't want players who have already joined a team to be able to switch to spectator");
-	g_CvarSoundName = CreateConVar("sm_team_join_control_sound_name", "buttons/button11.wav", "The name of the sound to play when an action is denied");
+	g_CvarSoundName = CreateConVar("sm_team_join_control_sound_name", "buttons/button10.wav", "The name of the sound to play when an action is denied");
 	
 	// Determine the mod we are in
 	decl String:gameName[20];
