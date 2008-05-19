@@ -544,7 +544,7 @@ public Action:Supply(Handle:timer)
                                     if (ammo < 400.0)
                                     {
                                         SetAmmo(client, Primary, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cInfinite Ammo Pack%c.",
+                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cSupply Depot%c.",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                     }
                                 }
@@ -554,7 +554,7 @@ public Action:Supply(Handle:timer)
                                     if (ammo < 400.0)
                                     {
                                         SetAmmo(client, Primary, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cSupply Depot%c.",
                                                 COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                     }
                                 }
