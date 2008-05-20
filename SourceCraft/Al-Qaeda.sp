@@ -39,6 +39,7 @@ new g_smokeSprite;
 new g_lightningSprite;
 
 new bool:m_Suicided[MAXPLAYERS+1];
+new Float:gBomberTime[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -318,14 +319,17 @@ public Action:MadBomber(Handle:timer,Handle:pack)
                     case 1:
                             percent=75;
                     case 2:
-                            percent=50;
+                            percent=60;
                     case 3:
-                            percent=25;
+                            percent=50;
                     case 4:
-                            percent=10;
+                            percent=25;
                 }
 
-                if (GetRandomInt(1,100)<=percent)
+                new Float:lastTime = gBomberTime[client];
+                new Float:interval = GetGameTime() - lastTime;
+                LogMessage("MadBomber, interval =%f", interval);
+                if (interval < 0.0 || GetRandomInt(1,100)<=percent)
                 {
                     m_Suicided[client]=true;
                     ForcePlayerSuicide(client);
@@ -406,7 +410,7 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             if (check_player != INVALID_HANDLE)
             {
                 if (!GetImmunity(check_player,Immunity_Explosion) &&
-                    (!ondeath || !GetImmunity(check_player,Immunity_Ultimates)))
+                    (ondeath || !GetImmunity(check_player,Immunity_Ultimates)))
                 {
                     new Float:check_location[3];
                     GetClientAbsOrigin(index,check_location);
@@ -426,6 +430,7 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             }
         }
     }
+    gBomberTime[client] = GetGameTime();
 }
 
 public Action:FlamingWrath(Handle:timer)
