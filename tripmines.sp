@@ -134,27 +134,25 @@ public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
     if (gMineList[client] != INVALID_HANDLE)
     {
-        LogMessage("%N died, checking for tripmines",client);
         decl String:class[32];
         new Handle:array = gMineList[client];
         new size = GetArraySize(array);
         for (new i = 0;  i < size; i++)
         {
             new ent = GetArrayCell(array,i);
-            LogMessage("Checking Mine #%d, ent=%d", i, ent);
             if (IsValidEntity(ent) &&
                 GetEntityNetClass(ent,class,sizeof(class)))
             {
-                LogMessage("Entity is a %s", class);
+                LogMessage("Object is a %s", class);
                 if (StrEqual(class, "CPhysicsProp", false))
                 {
-                    AcceptEntityInput(ent, "KillHierarchy");
+                    //AcceptEntityInput(ent, "KillHierarchy");
+                    AcceptEntityInput(ent, "Break");
                 }
             }
         }
         ClearArray(array);
     }
-
     return Plugin_Continue;
 }
 
@@ -240,66 +238,68 @@ SetMine(client)
         TR_GetEndPosition(beamend, INVALID_HANDLE);
 
         // create tripmine model
-        new ent = CreateEntityByName("prop_physics_override");
-        SetEntityModel(ent,mdlMine);
-        DispatchKeyValue(ent, "StartDisabled", "false");
-        DispatchSpawn(ent);
-        TeleportEntity(ent, end, normal, NULL_VECTOR);
-        SetEntProp(ent, Prop_Data, "m_usSolidFlags", 152);
-        SetEntProp(ent, Prop_Data, "m_CollisionGroup", 1);
-        SetEntityMoveType(ent, MOVETYPE_NONE);
-        SetEntProp(ent, Prop_Data, "m_MoveCollide", 0);
-        SetEntProp(ent, Prop_Data, "m_nSolidType", 6);
-        SetEntPropEnt(ent, Prop_Data, "m_hLastAttacker", client);
-        DispatchKeyValue(ent, "targetname", beammdl);
-        DispatchKeyValue(ent, "ExplodeRadius", "256");
-        DispatchKeyValue(ent, "ExplodeDamage", "400");
+        new prop_ent = CreateEntityByName("prop_physics_override");
+        SetEntityModel(prop_ent,mdlMine);
+        DispatchKeyValue(prop_ent, "StartDisabled", "false");
+        DispatchSpawn(prop_ent);
+        TeleportEntity(prop_ent, end, normal, NULL_VECTOR);
+        SetEntProp(prop_ent, Prop_Data, "m_usSolidFlags", 152);
+        SetEntProp(prop_ent, Prop_Data, "m_CollisionGroup", 1);
+        SetEntityMoveType(prop_ent, MOVETYPE_NONE);
+        SetEntProp(prop_ent, Prop_Data, "m_MoveCollide", 0);
+        SetEntProp(prop_ent, Prop_Data, "m_nSolidType", 6);
+        SetEntPropEnt(prop_ent, Prop_Data, "m_hLastAttacker", client);
+        DispatchKeyValue(prop_ent, "targetname", beammdl);
+        DispatchKeyValue(prop_ent, "ExplodeRadius", "256");
+        DispatchKeyValue(prop_ent, "ExplodeDamage", "400");
         Format(tmp, sizeof(tmp), "%s,Break,,0,-1", beammdl);
-        DispatchKeyValue(ent, "OnHealthChanged", tmp);
+        DispatchKeyValue(prop_ent, "OnHealthChanged", tmp);
         Format(tmp, sizeof(tmp), "%s,Kill,,0,-1", beam);
-        DispatchKeyValue(ent, "OnBreak", tmp);
-        SetEntProp(ent, Prop_Data, "m_takedamage", 2);
-        AcceptEntityInput(ent, "Enable");
+        DispatchKeyValue(prop_ent, "OnBreak", tmp);
+        SetEntProp(prop_ent, Prop_Data, "m_takedamage", 2);
+        AcceptEntityInput(prop_ent, "Enable");
 
         if (gMineList[client] == INVALID_HANDLE)
             gMineList[client] = CreateArray();
 
-        PushArrayCell(gMineList[client], ent);
-        LogMessage("Added tripmine %d to %N", ent, client);
+        PushArrayCell(gMineList[client], prop_ent);
+
 
         // create laser beam
-        ent = CreateEntityByName("env_beam");
-        TeleportEntity(ent, beamend, NULL_VECTOR, NULL_VECTOR);
-        SetEntityModel(ent, MDL_LASER);
-        DispatchKeyValue(ent, "texture", MDL_LASER);
-        DispatchKeyValue(ent, "targetname", beam);
-        DispatchKeyValue(ent, "parentname", beammdl);
-        DispatchKeyValue(ent, "TouchType", "4");
-        DispatchKeyValue(ent, "LightningStart", beam);
-        DispatchKeyValue(ent, "BoltWidth", "4.0");
-        DispatchKeyValue(ent, "life", "0");
-        DispatchKeyValue(ent, "rendercolor", "0 0 0");
-        DispatchKeyValue(ent, "renderamt", "0");
-        DispatchKeyValue(ent, "HDRColorScale", "1.0");
-        DispatchKeyValue(ent, "decalname", "Bigshot");
-        DispatchKeyValue(ent, "StrikeTime", "0");
-        DispatchKeyValue(ent, "TextureScroll", "35");
+        new beam_ent = CreateEntityByName("env_beam");
+        TeleportEntity(beam_ent, beamend, NULL_VECTOR, NULL_VECTOR);
+        SetEntityModel(beam_ent, MDL_LASER);
+        DispatchKeyValue(beam_ent, "texture", MDL_LASER);
+        DispatchKeyValue(beam_ent, "targetname", beam);
+        DispatchKeyValue(beam_ent, "TouchType", "4");
+        DispatchKeyValue(beam_ent, "LightningStart", beam);
+        DispatchKeyValue(beam_ent, "BoltWidth", "4.0");
+        DispatchKeyValue(beam_ent, "life", "0");
+        DispatchKeyValue(beam_ent, "rendercolor", "0 0 0");
+        DispatchKeyValue(beam_ent, "renderamt", "0");
+        DispatchKeyValue(beam_ent, "HDRColorScale", "1.0");
+        DispatchKeyValue(beam_ent, "decalname", "Bigshot");
+        DispatchKeyValue(beam_ent, "StrikeTime", "0");
+        DispatchKeyValue(beam_ent, "TextureScroll", "35");
         Format(tmp, sizeof(tmp), "%s,Break,,0,-1", beammdl);
-        DispatchKeyValue(ent, "OnTouchedByEntity", tmp);   
-        SetEntPropVector(ent, Prop_Data, "m_vecEndPos", end);
-        SetEntPropFloat(ent, Prop_Data, "m_fWidth", 4.0);
-        AcceptEntityInput(ent, "TurnOff");
+        DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);   
+        SetEntPropVector(beam_ent, Prop_Data, "m_vecEndPos", end);
+        SetEntPropFloat(beam_ent, Prop_Data, "m_fWidth", 4.0);
+        AcceptEntityInput(beam_ent, "TurnOff");
+
+        SetVariantString(beammdl);
+        AcceptEntityInput(beam_ent, "SetParent", -1, -1, 0);
 
         new Handle:data = CreateDataPack();
         CreateTimer(GetConVarFloat(cvActTime), TurnBeamOn, data);
         WritePackCell(data, client);
-        WritePackCell(data, ent);
+        WritePackCell(data, beam_ent);
         WritePackFloat(data, end[0]);
         WritePackFloat(data, end[1]);
         WritePackFloat(data, end[2]);
 
         // play sound
-        EmitSoundToAll(SND_MINEPUT, ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, ent, end, NULL_VECTOR, true, 0.0);
+        EmitSoundToAll(SND_MINEPUT, beam_ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, beam_ent, end, NULL_VECTOR, true, 0.0);
 
         // send message
         PrintHintText(client, "Tripmines remaining: %d", gRemaining[client]);
