@@ -134,19 +134,20 @@ public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
     if (gMineList[client] != INVALID_HANDLE)
     {
+        //LogMessage("%N died, checking for tripmines",client);
         decl String:class[32];
         new Handle:array = gMineList[client];
         new size = GetArraySize(array);
         for (new i = 0;  i < size; i++)
         {
             new ent = GetArrayCell(array,i);
+            //LogMessage("Checking Mine #%d, ent=%d", i, ent);
             if (IsValidEntity(ent) &&
                 GetEntityNetClass(ent,class,sizeof(class)))
             {
-                LogMessage("Object is a %s", class);
+                //LogMessage("Entity is a %s", class);
                 if (StrEqual(class, "CPhysicsProp", false))
                 {
-                    //AcceptEntityInput(ent, "KillHierarchy");
                     AcceptEntityInput(ent, "Break");
                 }
             }
@@ -263,7 +264,7 @@ SetMine(client)
             gMineList[client] = CreateArray();
 
         PushArrayCell(gMineList[client], prop_ent);
-
+        //LogMessage("Added tripmine %d to %N", prop_ent, client);
 
         // create laser beam
         new beam_ent = CreateEntityByName("env_beam");
@@ -286,9 +287,6 @@ SetMine(client)
         SetEntPropVector(beam_ent, Prop_Data, "m_vecEndPos", end);
         SetEntPropFloat(beam_ent, Prop_Data, "m_fWidth", 4.0);
         AcceptEntityInput(beam_ent, "TurnOff");
-
-        SetVariantString(beammdl);
-        AcceptEntityInput(beam_ent, "SetParent", -1, -1, 0);
 
         new Handle:data = CreateDataPack();
         CreateTimer(GetConVarFloat(cvActTime), TurnBeamOn, data);
