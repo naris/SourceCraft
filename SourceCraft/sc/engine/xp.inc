@@ -117,7 +117,7 @@ DoLevelCheck(client,Handle:playerHandle)
 
                     EmitSoundToClient(client,levelUpWav);
 
-                    UpgradeMenu(client, playerHandle);
+                    UpgradeMenu(client, playerHandle, false);
                 }
                 else
                 {
@@ -186,41 +186,47 @@ GiveKillXP(index,Handle:playerHandle,Handle:victim_player,bool:headshot,
         if (headshot)
         {
             amount+=HEADSHOT_XP;
-            PrintToChat(index,"%c[SourceCraft] %cYou get %d additional experience for a headshot.",
-                        COLOR_GREEN,COLOR_DEFAULT,HEADSHOT_XP);
+            DisplayMessage(index,SC_DISPLAY_DETAILS,
+                           "%c[SourceCraft] %cYou get %d additional experience for a headshot.",
+                           COLOR_GREEN,COLOR_DEFAULT,HEADSHOT_XP);
         }
         else if (backstab)
         {
             amount+=BACKSTAB_XP;
-            PrintToChat(index,"%c[SourceCraft] %cYou get %d additional experience for a backstab.",
-                        COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
+            DisplayMessage(index,SC_DISPLAY_DETAILS,
+                           "%c[SourceCraft] %cYou get %d additional experience for a backstab.",
+                           COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
         }
         else if (melee)
         {
             amount+=MELEE_XP;
-            PrintToChat(index,"%c[SourceCraft] %cYou get %d additional experience for a knife/shovel/wrench/etc kill.",
-                        COLOR_GREEN,COLOR_DEFAULT,MELEE_XP);
+            DisplayMessage(index,SC_DISPLAY_DETAILS,
+                           "%c[SourceCraft] %cYou get %d additional experience for a knife/shovel/wrench/etc kill.",
+                           COLOR_GREEN,COLOR_DEFAULT,MELEE_XP);
         }
 
         if (dominated)
         {
             amount+=DOMINATED_XP;
-            PrintToChat(index,"%c[SourceCraft] %cYou get %d additional experience for domination!",
-                        COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
+            DisplayMessage(index,SC_DISPLAY_DETAILS,
+                           "%c[SourceCraft] %cYou get %d additional experience for domination!",
+                           COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
         }
 
         if (revenge)
         {
             amount+=REVENGE_XP;
-            PrintToChat(index,"%c[SourceCraft] %cYou get %d additional experience for a revenge kill!",
-                        COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
+            DisplayMessage(index,SC_DISPLAY_DETAILS,
+                           "%c[SourceCraft] %cYou get %d additional experience for a revenge kill!",
+                           COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
         }
 
         if (assist)
         {
             amount+=ASSIST_XP;
-            PrintToChat(index,"%c[SourceCraft] %cYou get %d additional experience for assisting a kill.",
-                        COLOR_GREEN,COLOR_DEFAULT,ASSIST_XP);
+            DisplayMessage(index,SC_DISPLAY_DETAILS,
+                           "%c[SourceCraft] %cYou get %d additional experience for assisting a kill.",
+                           COLOR_GREEN,COLOR_DEFAULT,ASSIST_XP);
         }
 
         GiveXP(index,playerHandle,amount, assist ? "assisting a kill" : "getting a kill");
@@ -332,8 +338,9 @@ GiveXP(client,Handle:playerHandle, amount, const String:reason[])
             new newxp=GetXP(playerHandle,race)+amount;
             SetXP(playerHandle,race,newxp);
             LogToGame("%N gained %d experience for %s", client, amount, reason);
-            PrintToChat(client,"%c[SourceCraft] %cYou have gained %d experience for %s.",
-                        COLOR_GREEN,COLOR_DEFAULT,amount, reason);
+            DisplayMessage(client, SC_DISPLAY_XP,
+                           "%c[SourceCraft] %cYou have gained %d experience for %s.",
+                           COLOR_GREEN,COLOR_DEFAULT,amount, reason);
             if(GetLevel(playerHandle,race)<MAX_LEVELS)
                 DoLevelCheck(client,playerHandle);
         }

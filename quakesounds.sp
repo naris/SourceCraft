@@ -509,33 +509,37 @@ public EventPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		lastKillTime[assisterClient] = GetEngineTime();
 	}
 			
-	if(attackerClient && attackerClient != victimClient && (settingsArray[DOUBLECOMBO] ||
-								settingsArray[TRIPLECOMBO] ||
-								settingsArray[QUADCOMBO] ||
-								settingsArray[MONSTERCOMBO]))
+	if(attackerClient && attackerClient != victimClient)
 	{
-		if(lastKillTime[attackerClient] != -1.0) {
-			if((GetEngineTime() - lastKillTime[attackerClient]) < 1.5) {
-				switch(++lastKillCount[attackerClient])
-				{
-					case 2:
-						soundId = DOUBLECOMBO;
-					case 3:
-						soundId = TRIPLECOMBO;
-					case 4:
-						soundId = QUADCOMBO;
-					case 5:
-						soundId = MONSTERCOMBO;
+		if (settingsArray[DOUBLECOMBO] || settingsArray[TRIPLECOMBO] ||
+                    settingsArray[QUADCOMBO] || settingsArray[MONSTERCOMBO])
+		{
+			if(lastKillTime[attackerClient] != -1.0) {
+				if((GetEngineTime() - lastKillTime[attackerClient]) < 1.5) {
+					switch(++lastKillCount[attackerClient])
+					{
+						case 2:
+							soundId = DOUBLECOMBO;
+						case 3:
+							soundId = TRIPLECOMBO;
+						case 4:
+							soundId = QUADCOMBO;
+						case 5:
+							soundId = MONSTERCOMBO;
+					}
 				}
-			}
-		} else
-			lastKillCount[attackerClient] = 1;
-		lastKillTime[attackerClient] = GetEngineTime();
+			} else
+				lastKillCount[attackerClient] = 1;
+			lastKillTime[attackerClient] = GetEngineTime();
+		}
+
+		if (victimClient && settingsArray[TEAMKILL] &&
+		    IsClientInGame(attackerClient) && IsClientInGame(victimClient) &&
+		    GetClientTeam(attackerClient) == GetClientTeam(victimClient))
+		{
+			soundId = TEAMKILL;
+		}
 	}
-			
-	if(attackerClient && victimClient && GetClientTeam(attackerClient) == GetClientTeam(victimClient) &&
-			attackerId != victimId && settingsArray[TEAMKILL])
-		soundId = TEAMKILL;
 
 	// Play the appropriate sound if there was a reason to do so 
 	if(soundId != -1) {

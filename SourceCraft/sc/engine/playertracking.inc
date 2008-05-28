@@ -56,6 +56,8 @@
 
 new Handle:arrayPlayers[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
+new g_DisplayFlags[MAXPLAYERS+1] = { 0, ...};
+
 // Global definition
 new bool:g_RoundActive = true;
 
@@ -238,6 +240,26 @@ Handle:GetPlayerHandle(client)
 GetClientIndex(Handle:playerHandle)
 {
     return GetArrayCell(playerHandle,INFO_CLIENT_INDEX);
+}
+
+GetClientDisplayFlags(client)
+{
+    return g_DisplayFlags[client];
+}
+
+SetClientDisplayFlags(client,flags)
+{
+    g_DisplayFlags[client] = flags;
+}
+
+stock GetDisplayFlags(Handle:playerHandle)
+{
+    return g_DisplayFlags[GetArrayCell(playerHandle,INFO_CLIENT_INDEX)];
+}
+
+stock SetDisplayFlags(Handle:playerHandle,flags)
+{
+    g_DisplayFlags[GetArrayCell(playerHandle,INFO_CLIENT_INDEX)] = flags;
 }
 
 GetDatabaseIdent(Handle:playerHandle)
@@ -463,7 +485,7 @@ ResetLevel(Handle:playerHandle,race,new_level)
                 else // (difference > 0)
                 {
                     UpgradeMenu(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
-                                playerHandle);
+                                playerHandle, false);
                 }
             }
         }

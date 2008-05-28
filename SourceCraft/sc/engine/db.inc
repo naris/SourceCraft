@@ -70,7 +70,7 @@ SQL_CreateTables()
         SQL_UnlockDatabase(DBIDB);
 
         // Create the sc_players table, if it doesn't exist
-        Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s",
+        Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s",
                 "CREATE TABLE IF NOT EXISTS sc_players ",
                 "(player_ident int not null auto_increment,",
                 " steamid varchar(64) not null,",
@@ -78,6 +78,7 @@ SQL_CreateTables()
                 " race_ident int default 0,",
                 " credits int default 0,",
                 " overall_level int default 0,",
+                " display_flags int default 0,",
                 " last_update timestamp default current_timestamp,",
                 "PRIMARY KEY(player_ident),",
                 "UNIQUE INDEX (steamid))");
@@ -233,7 +234,7 @@ LoadPlayerData(client,Handle:playerHandle)
             SQL_LockDatabase(DBIDB);
 
             Format(SQLString,sizeof(SQLString),
-                   "SELECT player_ident, race_ident, credits, overall_level FROM sc_players WHERE steamid = '%s'",
+                   "SELECT player_ident, race_ident, credits, overall_level, display_flags FROM sc_players WHERE steamid = '%s'",
                    steamid);
 
             new Handle:query=SQL_Query(DBIDB,SQLString);
@@ -248,6 +249,7 @@ LoadPlayerData(client,Handle:playerHandle)
 
                     SetCredits(playerHandle,SQL_FetchInt(query,2));
                     SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
+                    SetClientDisplayFlags(client,SQL_FetchInt(query,4));
 
                     // Load the current Race.
                     new race_ident = SQL_FetchInt(query,1);
@@ -390,6 +392,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         new credits           = GetCredits(playerHandle);
         new overall_level     = GetOverallLevel(playerHandle);
         new player_ident      = GetDatabaseIdent(playerHandle);
+        new display_flags     = GetClientDisplayFlags(client);
 
         new Handle:raceHandle = GetRaceHandle(GetRace(playerHandle));
         new race_ident        = GetRaceIdent(raceHandle);
@@ -408,8 +411,8 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
         if (player_ident > 0)
         {
             Format(SQLString,sizeof(SQLString),
-                   "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d,last_update=current_timestamp WHERE player_ident = %d",
-                   race_ident, credits, overall_level, player_ident);
+                   "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d, display_flags=%d, last_update=current_timestamp WHERE player_ident = %d",
+                   race_ident, credits, overall_level, display_flags, player_ident);
 
             if (threaded)
             {
@@ -467,7 +470,7 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
             GetClientName(client,name,sizeof(name));
             SQL_EscapeString(DBIDB, name, escName, sizeof(escName));
 
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,last_update) VALUES ('%s','%s',%d,%d,%d,current_timestamp)", steamid, escName, race_ident, credits, overall_level);
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,display_flags,last_update) VALUES ('%s','%s',%d,%d,%d,%d,current_timestamp)", steamid, escName, race_ident, credits, overall_level, display_flags);
 
             // Process this query in the main thread
             SQL_LockDatabase(DBIDB);

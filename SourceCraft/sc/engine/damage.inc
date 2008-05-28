@@ -15,7 +15,8 @@ stock savedHealth[MAXPLAYERS+1];
 
 stock SaveHealth(client)
 {
-    savedHealth[client] = GetClientHealth(client);
+    if (IsClientInGame(client))
+        savedHealth[client] = GetClientHealth(client);
 }
 
 stock GetSavedHealth(client)

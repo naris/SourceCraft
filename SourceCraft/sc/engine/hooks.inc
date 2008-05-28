@@ -16,6 +16,7 @@ bool:InitHooks()
     RegConsoleCmd("sc_buy",BuyCommand,"Purchase a SourceCraft Item");
     RegConsoleCmd("shopmenu",BuyCommand,"use SourceCraft shopmenu to purchase shop items");
     RegConsoleCmd("changerace",ChangeRaceCommand,"SourceCraft command to change race.");
+    RegConsoleCmd("settings",ChangeSettingsCommand,"SourceCraft command to change settings.");
 
     RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
@@ -66,19 +67,19 @@ public Action:SayCommand(client,args)
                         ChangeRace(client, playerHandle, race,
                                    raceHandle, false, true);
                     else
-                        RaceMenu(client,true);
+                        RaceMenu(client, true, false);
                 }
                 else
-                    RaceMenu(client,true);
+                    RaceMenu(client, true, false);
             }
             else
-                RaceMenu(client,true);
+                RaceMenu(client, true, false);
 
             return Plugin_Handled;
         }
         else if(CommandCheck(arg[0],"raceinfo"))
         {
-            RaceMenu(client,false);
+            RaceMenu(client, false, false);
             return Plugin_Handled;
         }
         else if (CommandCheck(arg[0],"upinfo") ||
@@ -104,7 +105,7 @@ public Action:SayCommand(client,args)
         {
             new race=GetRace(playerHandle);
             if(GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                UpgradeMenu(client,playerHandle);
+                UpgradeMenu(client,playerHandle,false);
             else
             {
                 PrintToChat(client,"%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use reset.",COLOR_GREEN,COLOR_DEFAULT);
@@ -137,10 +138,10 @@ public Action:SayCommand(client,args)
                 if (item >= 0)
                     PurchaseShopItem(client, playerHandle, item);
                 else
-                    ShopMenu(client,true);
+                    ShopMenu(client,true,false);
             }
             else
-                ShopMenu(client,true);
+                ShopMenu(client,true,false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg[0],"showitems") ||
@@ -148,7 +149,7 @@ public Action:SayCommand(client,args)
                 CommandCheck(arg[0],"inven") ||
                 CommandCheck(arg[0],"inv"))
         {
-            ShopMenu(client,false);
+            ShopMenu(client,false,false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg[0],"schelp") ||
@@ -161,6 +162,11 @@ public Action:SayCommand(client,args)
                 CommandCheck(arg[0],"menu"))
         {
             MainMenu(client);
+            return Plugin_Handled;
+        }
+        else if(CommandCheck(arg[0],"settings"))
+        {
+            ChangeSettings(client, false);
             return Plugin_Handled;
         }
         else if(CommandCheck(arg[0],"scsave") ||
@@ -220,10 +226,10 @@ public Action:BuyCommand(client,args)
             if (item >= 0)
                 PurchaseShopItem(client, playerHandle, item);
             else
-                ShopMenu(client,true);
+                ShopMenu(client,true,false);
         }
         else
-            ShopMenu(client,true);
+            ShopMenu(client,true,false);
     }
     return Plugin_Handled;
 }
@@ -243,17 +249,22 @@ public Action:ChangeRaceCommand(client,args)
                 if (raceHandle != INVALID_HANDLE)
                     ChangeRace(client, playerHandle, race, raceHandle, false, true);
                 else
-                    RaceMenu(client,true);
+                    RaceMenu(client,true,false);
             }
             else
-                RaceMenu(client,true);
+                RaceMenu(client,true,false);
         }
         else
-            RaceMenu(client,true);
+            RaceMenu(client,true,false);
     }
     return Plugin_Handled;
 }
 
+public Action:ChangeSettingsCommand(client,args)
+{
+    ChangeSettings(client, false);
+    return Plugin_Continue;
+}
 
 public Action:ChangelevelCommand(client,args)
 {

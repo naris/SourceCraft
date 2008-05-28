@@ -15,6 +15,7 @@
 
 #include "sc/immunity"
 #include "sc/visibility"
+#include "sc/display_flags"
 
 /**
  * Registers a race with the SourceCraft plugin
@@ -114,6 +115,38 @@ native HurtPlayer(victim, damage, attacker=0, const String:weapon_name[]="",
  */
 native KillPlayer(victim, attacker=0, const String:weapon_name[]="",
                   const String:weapon_desc[]="", xp=0);
+
+/**
+ * Displays damage inflicted upon a player
+ * @param client: The index of the player that inflicted the damage (attacker)
+ * @param victim: The index of the player that got damaged
+ * @param weapon: The short name of the weapon used to inflice the damage (for the log)
+ * @param description: The description of the weapon (displayed to the players)
+ * @param hp: The amount of damage dealt
+ * @noreturn
+ */
+native DisplayDamage(client, victim, const String:weapon[], const String:description[], hp);
+
+/**
+ * Displays when a player is killed
+ * @param client: The index of the attacking player (attacker)
+ * @param victim: The index of the player that got killed
+ * @param weapon: The short name of the weapon used to inflice the damage (for the log)
+ * @param description: The description of the weapon (displayed to the players)
+ * @param xp: The amount of XP gained
+ * @noreturn
+ */
+native DisplayKill(client, victim, const String:weapon[], const String:description[], xp=0);
+
+/**
+ * Displays a message to a player
+ * @param client: The index of the player to display the message to
+ * @param flags: The message flags to categorize the message
+ * @param fmt: The format string for the message
+ * @param ...: Format arguments (if any)
+ * @noreturn
+ */
+native DisplayMessage(client, flags, const String:fmt[], any:...);
 
 /**
  * Gets the Player Handle used for the rest of the interface natives.
@@ -528,6 +561,9 @@ public __pl_sourcecraft_SetNTVOptional()
 	MarkNativeAsOptional("HealPlayer");
 	MarkNativeAsOptional("HurtPlayer");
 	MarkNativeAsOptional("KillPlayer");
+	MarkNativeAsOptional("DisplayDamage");
+	MarkNativeAsOptional("DisplayKill");
+	MarkNativeAsOptional("DisplayMessage");
 	MarkNativeAsOptional("GetPlayerHandle");
 	MarkNativeAsOptional("GetLevel");
 	MarkNativeAsOptional("SetLevel");

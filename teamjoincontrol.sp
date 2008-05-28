@@ -28,6 +28,9 @@ Versions:
 	1.3	- Modified by -=|JFH|=-Naris to:
 		* Added support for TF2
 		* Changed default error sound to button10 since button11 doesn't exist for TF2
+	1.4
+		* Added support for TF2's team balancing
+		* Added support for TF2's mp_scrambleteams command
 */
 
 
@@ -36,7 +39,7 @@ Versions:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "1.3"
+#define PLUGIN_VERSION "1.4"
 
 #define CSS 0
 #define DODS 1
@@ -95,7 +98,7 @@ public OnPluginStart()
 	if (g_gameType == TF2)
 	{
     		HookEvent("teamplay_teambalanced_player", EventTeamBalanced);
-		RegConsoleCmd("mp_scrambleteams", CommandScrambleTeams);
+		RegServerCmd("mp_scrambleteams", CommandScrambleTeams);
 	}
 	else
 	{
@@ -264,9 +267,9 @@ public Action:CommandJoinTeam(client, args)
 	return Plugin_Continue;
 }
 
-public Action:CommandScrambleTeams(client, args)
+public Action:CommandScrambleTeams(args)
 {
-	// Close and ReCreate the KeyValue History.
+	// Close and ReCreate the LockExpiration KeyValue.
 	CloseHandle(g_kv);
 	g_kv=CreateKeyValues("LockExpiration");
 
@@ -287,7 +290,7 @@ public Action:EventTeamChange(Handle:event, const String:name[], bool:dontBroadc
 		new team = GetEventInt(event, "team");
 		if (g_gameType == TF2)
 		{
-			if (team != g_teamList[client])
+			if (g_teamList[client] >= 2 && team != g_teamList[client])
 			{
 				Deny(client, "You cannot join that team");
 				ChangeClientTeam (client, g_teamList[client]);
@@ -311,7 +314,7 @@ public Action:ResetTeam(Handle:timer,any:client)
 
 public Action:EventTeamBalanced(Handle:event,const String:name[],bool:dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event,"player"));
+	new client = GetEventInt(event,"player");
 	if(client && IsClientInGame(client) && !IsFakeClient(client))
 	{
 		g_teamList[client] = GetEventInt(event, "team");

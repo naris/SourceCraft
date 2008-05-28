@@ -122,16 +122,37 @@ public Action:CheckAllTeles(Handle:timer, any:useless)
     new Float:bluetime = GetConVarFloat( g_cvars[TELEBLUETIME] );
     new Float:redtime  = GetConVarFloat( g_cvars[TELEREDTIME] );
 
+    decl String:classname[19];
     new Float:oldtime, Float:newtime, Float:time;
 
     for(i = 1; i< maxplayers; i++)
-    {    
-        if(TeleporterList[i][LIST_OBJECT] == 0)
+    {
+        new entity = TeleporterList[i][LIST_OBJECT];
+        if(entity == 0)
             continue;
-        else if(!IsValidEntity(TeleporterList[i][LIST_OBJECT]))
+        else if(!IsValidEntity(entity))
         {
             TeleporterList[i][LIST_OBJECT] = 0;
             continue;
+        }
+        else
+        {
+            GetEntityNetClass(entity, classname, sizeof(classname));
+            if(!StrEqual(classname, "CObjectTeleporter"))
+            {
+                TeleporterList[i][LIST_OBJECT] = 0;
+                continue;
+            }
+            else if( GetEntProp(entity, Prop_Send, "m_iObjectType") != 1 )
+            {
+                TeleporterList[i][LIST_OBJECT] = 0;
+                continue;
+            }
+            else if( GetEntProp(entity, Prop_Send, "m_hBuilder") != i )
+            {
+                TeleporterList[i][LIST_OBJECT] = 0;
+                continue;
+            }
         }
 
         if (NativeControl)
@@ -147,7 +168,7 @@ public Action:CheckAllTeles(Handle:timer, any:useless)
             continue;
 
         //oldtime = GetEntDataFloat(TeleporterList[i][ LIST_SENTRY ], TimeOffset);
-        oldtime = GetEntPropFloat(TeleporterList[i][LIST_OBJECT], Prop_Send, "m_flRechargeTime");
+        oldtime = GetEntPropFloat(entity, Prop_Send, "m_flRechargeTime");
         if( float(RoundFloat(oldtime)) == oldtime)
             continue;
 
@@ -156,8 +177,7 @@ public Action:CheckAllTeles(Handle:timer, any:useless)
         LogMessage("Change %0.2f %0.2f %0.2f", newtime, oldtime, GetGameTime());
 
         //SetEntDataFloat(TeleporterList[i][ LIST_SENTRY ], TimeOffset, float(RoundFloat(newtime)), true);
-        SetEntPropFloat(TeleporterList[i][LIST_OBJECT], Prop_Send, "m_flRechargeTime",
-                        float(RoundFloat(newtime)));
+        SetEntPropFloat(entity, Prop_Send, "m_flRechargeTime", float(RoundFloat(newtime)));
     } 
 }
 

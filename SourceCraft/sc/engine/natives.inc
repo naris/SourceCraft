@@ -4,6 +4,7 @@
  * Description: All the natives that keep us from having to make a C++ extension,
  *              I <3 SourceMod :) (Note: Forwards are handled here too.)
  * Author(s): Anthony Iacono  
+ * Rewritten by: -=|JFH|=-Naris (Murray Wilson)
  */
 
 // Handles
@@ -262,7 +263,7 @@ public Native_HurtPlayer(Handle:plugin,numParams)
                 new Handle:event = CreateEvent("player_hurt");
                 if (event != INVALID_HANDLE)
                 {
-                    LogDamage(attacker, victim, weapon_name, weapon_desc, damage);
+                    DisplayDamage(attacker, victim, weapon_name, weapon_desc, damage);
 
                     SetEventInt(event, "userid", GetClientUserId(victim));
                     SetEventInt(event, "attacker", (attacker) ? GetClientUserId(attacker) : 0);
@@ -358,9 +359,95 @@ KillPlayer(victim, attacker, const String:weapon_name[], const String:weapon_des
                 SetXP(attacker_player,race,newxp);
             }
         }
-        LogKill(attacker, victim, weapon_name, weapon_desc, xp);
+        DisplayKill(attacker, victim, weapon_name, weapon_desc, xp);
     }
 }
+
+/**
+ * Displays damage inflicted upon a player
+ * @param client: The index of the player that inflicted the damage (attacker)
+ * @param victim: The index of the player that got damaged
+ * @param weapon: The short name of the weapon used to inflice the damage (for the log)
+ * @param description: The description of the weapon (displayed to the players)
+ * @param hp: The amount of damage dealt
+ * @noreturn
+ * native DisplayDamage(client, victim, const String:weapon[], const String:description[], hp);
+ */
+public Native_DisplayDamage(Handle:plugin,numParams)
+{
+    if (numParams == 5)
+    {
+        decl String:weapon[64],String:desc[192];
+        new client = GetNativeCell(1);
+        new victim = GetNativeCell(2);
+        new hp = GetNativeCell(5);
+        GetNativeString(3,weapon,sizeof(weapon));
+        GetNativeString(4,desc,sizeof(desc));
+        DisplayDamage(client, victim, weapon, desc, hp);
+    }
+}
+
+/**
+ * Displays when a player is killed
+ * @param client: The index of the attacking player (attacker)
+ * @param victim: The index of the player that got killed
+ * @param weapon: The short name of the weapon used to inflice the damage (for the log)
+ * @param description: The description of the weapon (displayed to the players)
+ * @param xp: The amount of XP gained
+ * @noreturn
+ * native DisplayKill(client, victim, const String:weapon[], const String:description[], xp=0);
+ */
+public Native_DisplayKill(Handle:plugin,numParams)
+{
+    if (numParams >= 4 && numParams <= 4)
+    {
+        decl String:weapon[64],String:desc[192];
+        new client = GetNativeCell(1);
+        new victim = GetNativeCell(2);
+        new xp = (numParams >= 5) ? GetNativeCell(5) : 0;
+        GetNativeString(3,weapon,sizeof(weapon));
+        GetNativeString(4,desc,sizeof(desc));
+        DisplayKill(client, victim, weapon, desc, xp);
+    }
+}
+
+/**
+ * Displays a message to a player
+ * @param client: The index of the player to display the message to
+ * @param flags: The message flags to categorize the message
+ * @param fmt: The format string for the message
+ * @param ...: Format arguments (if any)
+ * @noreturn
+ * native DisplayMessage(client, flags, const String:fmt[], any:...);
+ */
+public Native_DisplayMessage(Handle:plugin,numParams)
+{
+    if (numParams >= 3)
+    {
+        decl String:buffer[1024], written;
+        new client = GetNativeCell(1);
+        new flags = GetNativeCell(2);
+
+        FormatNativeString(0, /* Use an output buffer */
+                           3, /* Format param */
+                           4, /* Format argument #1 */
+                           sizeof(buffer), /* Size of output buffer */
+                           written, /* Store # of written bytes */
+                           buffer /* Use our buffer */
+        );
+
+        LogToGame(buffer);
+        PrintToServer(buffer);
+
+        if (client)
+        {
+            PrintToConsole(client, buffer);
+            if ((g_DisplayFlags[client] & flags) == 0)
+                PrintToChat(client, buffer);
+        }
+    }
+}
+
 
 /**
  * Gets the Player Handle used for the rest of the interface natives.
@@ -1061,6 +1148,9 @@ bool:InitNatives()
     CreateNative("HealPlayer",Native_HealPlayer);
     CreateNative("HurtPlayer",Native_HurtPlayer);
     CreateNative("KillPlayer",Native_KillPlayer);
+    CreateNative("DisplayDamage",Native_DisplayDamage);
+    CreateNative("DisplayKill",Native_DisplayKill);
+    CreateNative("DisplayMessage",Native_DisplayMessage);
     CreateNative("GetPlayerHandle",Native_GetPlayerHandle);
     CreateNative("GetRace",Native_GetRace);
     CreateNative("ChangeRace",Native_ChangeRace);

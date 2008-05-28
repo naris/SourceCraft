@@ -500,27 +500,36 @@ stock bool:IsEntLimitReached()
 
 stock TF_IsUberCharge(client)
 {
-	new index = GetPlayerWeaponSlot(client, 1);
-	if (index > 0)
-		return GetEntProp(index, Prop_Send, "m_bChargeRelease", 1);
+	if (TF2_GetPlayerClass(client) == TFClass_Medic)
+	{
+		new index = GetPlayerWeaponSlot(client, 1);
+		if (index > 0)
+			return GetEntProp(index, Prop_Send, "m_bChargeRelease", 1);
+	}
 	return 0;
 }
 
 stock TF_GetUberLevel(client)
 {
-	new index = GetPlayerWeaponSlot(client, 1);
-	if (index > 0)
-		return RoundFloat(GetEntPropFloat(index, Prop_Send, "m_flChargeLevel")*100);
+	if (TF2_GetPlayerClass(client) == TFClass_Medic)
+	{
+		new index = GetPlayerWeaponSlot(client, 1);
+		if (index > 0)
+			return RoundFloat(GetEntPropFloat(index, Prop_Send, "m_flChargeLevel")*100);
+	}
 	return 0;
 }
 
 stock TF_SetUberLevel(client, uberlevel)
 {
-	new index = GetPlayerWeaponSlot(client, 1);
-	if (index > 0)
+	if (TF2_GetPlayerClass(client) == TFClass_Medic)
 	{
-		g_MedicUberCharge[client] = uberlevel;
-		SetEntPropFloat(index, Prop_Send, "m_flChargeLevel", uberlevel*0.01);
+		new index = GetPlayerWeaponSlot(client, 1);
+		if (index > 0)
+		{
+			g_MedicUberCharge[client] = uberlevel;
+			SetEntPropFloat(index, Prop_Send, "m_flChargeLevel", uberlevel*0.01);
+		}
 	}
 }
 

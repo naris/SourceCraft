@@ -401,7 +401,7 @@ ResetUpgradesNow(client,Handle:playerHandle)
                 COLOR_GREEN,COLOR_DEFAULT);
 
     if(GetLevel(playerHandle,race) > 0)
-        UpgradeMenu(client, playerHandle);
+        UpgradeMenu(client, playerHandle, false);
 }
 
 UpgradesInfo(client,race,bool:change)

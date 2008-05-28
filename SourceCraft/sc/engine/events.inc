@@ -45,15 +45,22 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         if (playerHandle != INVALID_HANDLE)
         {
             PendingCheck(index,playerHandle);
-            PrintToChat(index, "This is a Test of the SourceCraft Beta");
             ShowXP(index,playerHandle);
             ShowCredits(index,playerHandle);
-            PrintToChat(index, "Please report any bugs in the forums of www.jigglysfunhouse.net");
             new race=GetRace(playerHandle);
-            if (m_FirstSpawn[index])
-                IntroMenu(index);
+            if (m_FirstSpawn[index] > 0)
+            {
+                PrintToChat(index, "This is a Test of the SourceCraft Beta");
+                PrintToChat(index, "Please report any bugs in the forums of www.jigglysfunhouse.net");
+
+                // Only show them the Intro if they
+                // haven't played before
+                // (Not found in DB)
+                if (m_FirstSpawn[index] < 2)
+                    IntroMenu(index);
+            }
             else if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                UpgradeMenu(index, playerHandle);
+                UpgradeMenu(index, playerHandle, false);
         }
     }
 }
@@ -221,7 +228,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
                 PendingCheck(victim_index,victim_player);
                 new race=GetRace(victim_player);
                 if(GetUpgradeLevelCount(victim_player,race)<GetLevel(victim_player,race))
-                    UpgradeMenu(victim_index, victim_player);
+                    UpgradeMenu(victim_index, victim_player, false);
             }
             SaveHealth(victim_index);
         }
@@ -237,7 +244,8 @@ public Action:CorrectDeathEvent(Handle:event,const String:name[],bool:dontBroadc
     {
         new victim_index=GetClientOfUserId(victim_userid);
         new killed_by = g_KilledBy[victim_index];
-        if (killed_by > 0 && killed_by != victim_index)
+        if (killed_by > 0 && killed_by != victim_index &&
+            IsClientInGame(killed_by))
         {
             SetEventInt(event,"attacker",GetClientUserId(killed_by));
             g_KilledBy[victim_index] = 0;

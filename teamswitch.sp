@@ -33,8 +33,10 @@
 #define TEAM_SPEC 1
 
 
-#define TEAMSWITCH_VERSION    "1.3"
+#define TEAMSWITCH_VERSION    "1.4"
 #define TEAMSWITCH_ADMINFLAG  ADMFLAG_KICK
+#define TEAMSCRAMBLE_ADMINFLAG  ADMFLAG_CUSTOM2
+#define Admin_Scramble Admin_Custom2
 #define TEAMSWITCH_ARRAY_SIZE 64
 
 
@@ -48,6 +50,7 @@ public Plugin:myinfo = {
 
 new	Handle:hAdminMenu	= INVALID_HANDLE,
 	bool:onRoundEndPossible	= false,
+	bool:scramblePossible	= false,
 	bool:cstrikeExtAvail	= false,
 	String:teamName1[5],
 	String:teamName2[5],
@@ -64,10 +67,11 @@ enum TeamSwitchEvent{
 public OnPluginStart(){
 	CreateConVar( "teamswitch_version",	TEAMSWITCH_VERSION, "TeamSwitch version", FCVAR_NOTIFY );
 	
-	RegAdminCmd( "teamswitch",		Command_SwitchImmed,	TEAMSWITCH_ADMINFLAG );
-	RegAdminCmd( "teamswitch_death",	Command_SwitchDeath,	TEAMSWITCH_ADMINFLAG );
-	RegAdminCmd( "teamswitch_roundend",	Command_SwitchRend,	TEAMSWITCH_ADMINFLAG );
-	RegAdminCmd( "teamswitch_spec", 	Command_SwitchSpec,	TEAMSWITCH_ADMINFLAG );
+	RegAdminCmd( "teamswitch",		Command_SwitchImmed,	TEAMSWITCH_ADMINFLAG, "Switch player to opposite team immediately" );
+	RegAdminCmd( "teamswitch_death",	Command_SwitchDeath,	TEAMSWITCH_ADMINFLAG, "Switch player to opposite team when they die" );
+	RegAdminCmd( "teamswitch_roundend",	Command_SwitchRend,	TEAMSWITCH_ADMINFLAG, "Switch player to opposite team when the round ends" );
+	RegAdminCmd( "teamswitch_spec", 	Command_SwitchSpec,	TEAMSWITCH_ADMINFLAG, "Switch player to spectators immediately" );
+	RegAdminCmd( "teamswitch_scramble", 	Command_Scramble,	TEAMSCRAMBLE_ADMINFLAG, "Switch all players to scramble teams", "teamscramble" );
 	
 	HookEvent(   "player_death",	Event_PlayerDeath	);
 	
@@ -85,6 +89,7 @@ public OnPluginStart(){
 		HookEvent( "teamplay_round_win",	Event_RoundEnd, EventHookMode_PostNoCopy );
 		HookEvent( "teamplay_round_stalemate",	Event_RoundEnd, EventHookMode_PostNoCopy );
 		onRoundEndPossible = true;
+		scramblePossible = true;
 		}
 	else if( StrEqual( theFolder, "cstrike" ) ){
 		HookEvent( "round_end",			Event_RoundEnd, EventHookMode_PostNoCopy );
@@ -211,6 +216,16 @@ public Action:Command_SwitchSpec( client, args ){
 	return Plugin_Handled;
 	}
 
+public Action:Command_Scramble( client, args ){
+	if( !scramblePossible ){
+		ReplyToCommand( client, "[SM] Team scrambling is not possible in this mod." );
+		return Plugin_Handled;
+		}
+
+	ServerCommand("mp_scrambleteams 1");
+	return Plugin_Handled;
+	}
+
 public Event_PlayerDeath( Handle:event, const String:name[], bool:dontBroadcast ){
 	new victim   = GetClientOfUserId( GetEventInt( event, "userid" ) );
 	
@@ -307,13 +322,17 @@ public OnAdminMenuReady( Handle:topmenu ){
 		TEAMSWITCH_ADMINFLAG		// Admin flag
 		);
 
-	AddToTopMenu(hAdminMenu, 
-		"mp_scrambleteams",
-		TopMenuObject_Item,
-		Handle_Scramble,
-		menu_category,
-		"mp_scrambleteams",
-		TEAMSWITCH_ADMINFLAG);
+	if( scramblePossible ){
+		AddToTopMenu(
+			hAdminMenu,			// Menu
+			"mp_scrambleteams",		// Name
+			TopMenuObject_Item,		// Type
+			Handle_Scramble,		// Callback
+			menu_category,			// Parent
+			"mp_scrambleteams",		// cmdName
+			TEAMSCRAMBLE_ADMINFLAG		// Admin flag
+			);
+		}
 	
 	}
 
@@ -370,6 +389,11 @@ public Handle_Scramble(Handle:topmenu, TopMenuAction:action, TopMenuObject:objec
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
+		new AdminId:aid = GetUserAdmin(param);
+		if(aid == INVALID_ADMIN_ID || !GetAdminFlag(aid, Admin_Scramble, Access_Effective)){
+			PrintToChat(param,"[SM] Sorry, you are not authorized to scramble teams!");
+			return;
+		}
 		ServerCommand("mp_scrambleteams 1");
 	}
 }
