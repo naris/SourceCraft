@@ -1,3 +1,6 @@
+Anti Stacker: Would it be possible to do something where, when a team is ahead by say five rounds, it kicks everyone to Spectator for a second, then assigns teams in order of score? Create a list, order it by points scored, then go down that list going Blue, Red, Blue, Red.....
+
+
 1) Total Invisibility when motionless w/ melee seems to be borked
    (Cloak of Shadows and Terran Ghost)
 
