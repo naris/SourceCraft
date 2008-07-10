@@ -22,7 +22,6 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/respawn"
-#include "sc/log"
 
 new String:allahWav[] = "sourcecraft/allahuakbar.wav";
 new String:kaboomWav[] = "sourcecraft/iraqi_engaging.wav";
@@ -39,7 +38,7 @@ new g_smokeSprite;
 new g_lightningSprite;
 
 new bool:m_Suicided[MAXPLAYERS+1];
-new Float:gBomberTime[MAXPLAYERS+1];
+new Float:m_BomberTime[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
@@ -91,7 +90,7 @@ public OnPluginStart()
     CreateTimer(3.0,FlamingWrath,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID = CreateRace("Al-Qaeda", "alqaeda",
                         "You are now an Al-Qaeda.",
@@ -149,18 +148,15 @@ public OnMapStart()
     SetupSound(allahWav, true, true);
     SetupSound(kaboomWav, true, true);
     SetupSound(explodeWav, true, true);
-
-    for(new x=1;x<=MAXPLAYERS;x++)
-    {
-        m_IsRespawning[x]=false;
-        m_IsChangingClass[x]=false;
-        m_ReincarnationCount[x]=0;
-    }
 }
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
+    m_ReincarnationCount[client]=0;
+    m_IsChangingClass[client]=false;
+    m_IsRespawning[client]=false;
+    m_BomberTime[client] = 0.0;
+    m_Suicided[client]=false;
 }
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
@@ -183,9 +179,11 @@ public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     for(new x=1;x<=MAXPLAYERS;x++)
     {
-        m_IsRespawning[x]=false;
-        m_IsChangingClass[x]=false;
         m_ReincarnationCount[x]=0;
+        m_IsChangingClass[x]=false;
+        m_IsRespawning[x]=false;
+        m_BomberTime[x] = 0.0;
+        m_Suicided[x]=false;
     }
 }
 
@@ -210,6 +208,8 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
     new client=GetClientOfUserId(userid);
     if (client)
     {
+        m_BomberTime[client] = 0.0;
+
         new Handle:player = GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
         {
@@ -298,6 +298,7 @@ public OnRaceSelected(client,Handle:player,oldrace,newrace)
     {
         m_ReincarnationCount[client]=0;
         m_IsRespawning[client]=false;
+        m_BomberTime[client] = 0.0;
         m_Suicided[client]=false;
     }
 }
@@ -316,20 +317,15 @@ public Action:MadBomber(Handle:timer,Handle:pack)
                 new percent;
                 switch(ult_level)
                 {
-                    case 1:
-                            percent=75;
-                    case 2:
-                            percent=60;
-                    case 3:
-                            percent=50;
-                    case 4:
-                            percent=25;
+                    case 1: percent=75;
+                    case 2: percent=60;
+                    case 3: percent=40;
+                    case 4: percent=20;
                 }
 
-                new Float:lastTime = gBomberTime[client];
-                new Float:interval = GetGameTime() - lastTime;
-                LogMessage("MadBomber, interval =%f", interval);
-                if (interval < 0.0 || GetRandomInt(1,100)<=percent)
+                new Float:interval = GetGameTime() - m_BomberTime[client];
+                m_BomberTime[client] = GetGameTime();
+                if (interval < 0.18 || GetRandomInt(1,100)<=percent)
                 {
                     m_Suicided[client]=true;
                     ForcePlayerSuicide(client);
@@ -410,7 +406,7 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             if (check_player != INVALID_HANDLE)
             {
                 if (!GetImmunity(check_player,Immunity_Explosion) &&
-                    (ondeath || !GetImmunity(check_player,Immunity_Ultimates)))
+                    (!ondeath || !GetImmunity(check_player,Immunity_Ultimates)))
                 {
                     new Float:check_location[3];
                     GetClientAbsOrigin(index,check_location);
@@ -430,7 +426,6 @@ public Bomber(client,Handle:player,level,bool:ondeath)
             }
         }
     }
-    gBomberTime[client] = GetGameTime();
 }
 
 public Action:FlamingWrath(Handle:timer)

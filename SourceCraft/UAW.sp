@@ -23,7 +23,6 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/respawn"
-#include "sc/log"
 
 new String:explodeWav[] = "weapons/explode5.wav";
 
@@ -59,7 +58,7 @@ public OnPluginStart()
     CreateTimer(10.0,Negotiations,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID          = CreateRace("UAW", "uaw",
                                  "You have joined the UAW.",
@@ -106,11 +105,6 @@ public OnMapStart()
     }
 
     SetupSound(explodeWav, true, true);
-}
-
-public OnPlayerAuthed(client,Handle:player)
-{
-    FindMaxHealthOffset(client);
 }
 
 public OnXPGiven(client,Handle:player,&amount)

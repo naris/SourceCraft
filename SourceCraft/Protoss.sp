@@ -24,7 +24,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:explodeWav[] = "sourcecraft/PSaHit00.wav";
@@ -83,7 +82,7 @@ public OnPluginStart()
     CreateTimer(1.0,CloakingAndDetector,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     m_MindControlAvailable = LibraryExists("MindControl");
 
@@ -137,7 +136,8 @@ public OnMapEnd()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    m_AllowMindControl[client]=true;
+    m_AllowMindControl[client] = true;
+    gReaverScarabTime[client] = 0.0;
 }
 
 public OnClientDisconnect(client)
@@ -221,7 +221,10 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
         {
             new race = GetRace(player);
             if (race == raceID)
+            {
                 m_AllowMindControl[index]=true;
+                gReaverScarabTime[index] = 0.0;
+            }
         }
     }
 }
@@ -263,7 +266,8 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
     if (victim_index && victim_race == raceID)
     {
         ResetCloakingAndDetector(victim_index);
-        ResetMindControlledObjects(victim_index, false);
+        if (m_MindControlAvailable)
+            ResetMindControlledObjects(victim_index, false);
     }
 }
 
@@ -273,7 +277,8 @@ public RoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     for (new index=1;index<=maxplayers;index++)
     {
         ResetCloakingAndDetector(index);
-        ResetMindControlledObjects(index, true);
+        if (m_MindControlAvailable)
+            ResetMindControlledObjects(index, true);
     }
 }
 
@@ -323,14 +328,14 @@ bool:ReaverScarab(damage, victim_index, Handle:victim_player, index, Handle:play
                         if (new_health <= 0)
                         {
                             new_health=0;
-                            LogKill(index, victim_index, "scarab", "Reaver Scarab", health_take);
+                            DisplayKill(index, victim_index, "scarab", "Reaver Scarab", health_take);
                         }
                         else
-                            LogDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
+                            DisplayDamage(index, victim_index, "scarab", "Reaver Scarab", health_take);
 
                         SetEntityHealth(victim_index,new_health);
 
-                        if (gReaverScarabTime[index] == 0.0 || interval >= 2.0)
+                        if (interval == 0.0 || interval >= 2.0)
                         {
                             new Float:Origin[3];
                             GetClientAbsOrigin(victim_index, Origin);
@@ -477,7 +482,7 @@ public Action:CloakingAndDetector(Handle:timer)
                                             SetOverrideVisiblity(player_check, 255);
                                             if (TF2_GetPlayerClass(index) == TFClass_Spy)
                                             {
-                                                TF2_RemovePlayerDisguise(index);
+                                                //TF2_RemovePlayerDisguise(index);
                                                 TF2_SetPlayerCloak(client, false);
 
                                                 new Float:cloakMeter = TF2_GetCloakMeter(index);

@@ -34,7 +34,7 @@ IntroMenu(client)
     {
         g_IntroMenu=CreateMenu(IntroMenu_Action);
         SetMenuExitButton(g_IntroMenu,false);
-        if (GetRaceCount() >= 1)
+        if (GetRaceCount() > 1)
         {
             if (GetShopItemCount() >= 1)
             {
@@ -62,7 +62,7 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         && (param == MenuCancel_Timeout ||
             param == MenuCancel_Exit)))
     {
-        if (m_FirstSpawn[client] > 1 && GetRaceCount() >= 1)
+        if (m_FirstSpawn[client] > 1 && GetRaceCount() > 1)
             RaceMenu(client, true, false);
 
         m_FirstSpawn[client]=0;
@@ -76,7 +76,7 @@ MainMenu(client)
         g_MainMenu=CreateMenu(Menu_Select);
         SetMenuExitButton(g_MainMenu,true);
         SetMenuTitle(g_MainMenu,"[SourceCraft] Choose a task.");
-        new race_style = (GetRaceCount() >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+        new race_style = (GetRaceCount() > 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
         new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
         AddMenuItem(g_MainMenu,"0","Bring up the shopmenu",shop_style);
         AddMenuItem(g_MainMenu,"1","Change your race",race_style);
@@ -151,7 +151,7 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 
 RaceMenu(client,bool:change, bool:fromMain)
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         new Handle:crMenu=CreateMenu(RaceMenu_Selected);
 
@@ -267,7 +267,7 @@ public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
 UpgradeMenu(client, Handle:playerHandle, bool:fromMain)
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         new Handle:sMenu=CreateMenu(UpgradeMenu_Selected);
         new race=GetRace(playerHandle);
@@ -405,8 +405,6 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 
                         if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
                             UpgradeMenu(client, playerHandle, false);
-                        else if (DBIDB && SAVE_ENABLED)
-                            SavePlayerData(client,playerHandle,false);
                     }
                     else
                     {
@@ -420,7 +418,15 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         }
     }
     else if (action == MenuAction_End)
+    {
         CloseHandle(menu);
+        new Handle:playerHandle=GetPlayerHandle(client);
+        if (playerHandle != INVALID_HANDLE)
+        {
+            if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
+                SavePlayerData(client,playerHandle,false);
+        }
+    }
 }
 
 ShopMenu(client, bool:shopmenu, bool:fromMain)

@@ -146,8 +146,12 @@ Versions:
 	2.0.3 Mar 16, 2008
 		* Modified by -=|JFH|=-Naris
 		* Merged the last few saysounds changes with saysounds hybrid.
-	2.0.4 Mar 28, 2008
+	2.0.4 Jun 13, 2008
 		* Modified by -=|JFH|=-Naris
+		* Checks the GameType() before hooking TF2 events.
+	2.0.4 Jun 13, 2008
+		* Modified by -=|JFH|=-Naris
+		* Added Karaoke mode.
 
 
 Todo:
@@ -185,7 +189,7 @@ User Commands:
 	!soundlist  			 When used in chat will print all the trigger words to the console (Now displays menu)
 	!soundmenu  			 When used in chat will present a menu to choose a sound to play.
 
-	
+
 Make sure "saysounds.cfg" is in your addons/sourcemod/configs/ directory.
 Sounds go in your mods "sound" directory (such as sound/misc/filename.wav).
 File Format:
@@ -202,7 +206,7 @@ File Format:
 				"file"	"misc/wazza.wav" //"file" is always there, next is the filepath (always starts with "sound/")
 				"admin"	"1"	//1 is admin only, 0 is anyone (defaults is 0)
 				"download" "1"	//1 to download the sounds, 0 to not download (default is 1)
-				"duration" "5.0" // duration of the sound (default is 0.0)
+				"duration" "5.0" // duration of the sound in seconds (default is 0.0)
 			}
 			"lol"  // Word trigger to randomly select 1 of multiple sounds
 			{
@@ -211,13 +215,18 @@ File Format:
 				"file3"	"misc/lol3.wav"
 				"file4"	"misc/lol4.wav"
 				"count"	"4"		// number of sounds (default is 1)
-				"duration" "5.0"	// This will apply no matter which sound is selected
+				"duration" "1:30"	// This will apply no matter which sound is selected
 			}
-			"STEAM_0:0:xxxxxx" // trigger for specific STEAM ID
+			"STEAM_0:x:xxxxxx" // trigger for specific STEAM ID
 			{
 				"file"	"misc/myhouse.mp3" // name of sound to play when joining
 				"exit"	"misc/goodbye.mp3" // name of sound to play when leaving
 				"admin"	"0"
+			}
+			"somesong"  // Word trigger for Karaoke
+			{
+				"file"	"misc/somesong.wav"
+				"karaoke" "somesong.cfg" // name of config file for karaoke lyrics
 			}
 			"doh"  // Minimun configuration for sounds
 			{
@@ -254,6 +263,28 @@ File Format:
 			}
 		}
 
+Karaoke config files are formatted like this:
+	"Some Song Karaoke" // Whatever
+		{
+			"1"
+			{
+				"time"	"0:0" // time offset for 1st line
+				"text"	"1st line"
+			}
+			"2"
+			{
+				"time"	"0:5" // time offset for 2nd line
+				"text"	"2nd line for spectators"
+				"text1"	"2nd line for first (Red/T/Allies) team"
+				"text2"	"2nd line for second (Blue/CT/Axis) team"
+			}
+			"3"
+			{
+				"time"	"0:10/ time offset for 3rd line
+				"text"	"3rd line"
+			}
+		}
+
 	**  Current Flag actions are:
 		flag_picked_up
 		flag_captured
@@ -278,6 +309,8 @@ File Format:
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
+#include "gametype"
+
 // BEIGN MOD BY LAMDACORE
 // extra memory usability for a lot of sounds.
 // Uncomment the next line (w/#pragma) to add additional memory
@@ -286,7 +319,9 @@ File Format:
 
 #pragma semicolon 1
 
-#define PLUGIN_VERSION "2.0.3"
+#define PLUGIN_VERSION "2.0.5"
+
+enum sound_types { normal_sounds, admin_sounds, karaoke_sounds, all_sounds };
 
 new Handle:cvarsoundenable = INVALID_HANDLE;
 new Handle:cvarsoundlimit = INVALID_HANDLE;
@@ -301,6 +336,7 @@ new Handle:cvaradminlimit = INVALID_HANDLE;
 new Handle:cvarannounce = INVALID_HANDLE;
 new Handle:cvarsentence = INVALID_HANDLE;
 new Handle:cvarlogging = INVALID_HANDLE;
+new Handle:cvarkaraokedelay = INVALID_HANDLE;
 /*####FernFerret####*/
 new Handle:cvarshowsoundmenu = INVALID_HANDLE;
 /*##################*/
@@ -314,6 +350,15 @@ new Float:LastSound[MAXPLAYERS+1];
 new bool:firstSpawn[MAXPLAYERS+1];
 new Float:globalLastSound = 0.0;
 new Float:globalLastAdminSound = 0.0;
+
+// Variables for karaoke
+new Handle:karaokeFile = INVALID_HANDLE;
+new Handle:karaokeTimer = INVALID_HANDLE;
+new Float:karaokeStartTime = 0.0;
+
+// Variables to enable/disable advertisments plugin during karaoke
+new Handle:cvaradvertisements = INVALID_HANDLE;
+new bool:advertisements_enabled = false;
 
 public Plugin:myinfo = 
 {
@@ -339,6 +384,7 @@ public OnPluginStart(){
 	cvarannounce = CreateConVar("sm_sound_announce","0","Turns on announcements when a sound is played",FCVAR_PLUGIN);
 	cvarsentence = CreateConVar("sm_sound_sentence","0","When set, will trigger sounds if keyword is embedded in a sentence",FCVAR_PLUGIN);
 	cvarlogging = CreateConVar("sm_sound_logging","1","When set, will log sounds that are played",FCVAR_PLUGIN);
+	cvarkaraokedelay = CreateConVar("sm_karaoke_delay","15.0","Delay before playing a Karaoke song",FCVAR_PLUGIN);
 	/*####FernFerret####*/
 	// This is the Variable that will enable or disable the sound menu to public users, Admin users will always have
 	// access to their menus, From the admin menu it is a toggle variable
@@ -349,6 +395,7 @@ public OnPluginStart(){
 	RegAdminCmd("sm_sound_unban", Command_Sound_Unban, ADMFLAG_BAN, "sm_sound_unban <user> : Unbans a player from using sounds");
 	RegAdminCmd("sm_sound_reset", Command_Sound_Reset, ADMFLAG_GENERIC, "sm_sound_reset <user | all> : Resets sound quota for user, or everyone if all");
 	RegAdminCmd("sm_admin_sounds", Command_Admin_Sounds,ADMFLAG_GENERIC, "Display a menu of Admin sounds to play");
+	RegAdminCmd("sm_karaoke", Command_Karaoke,ADMFLAG_GENERIC, "Display a menu of Karaoke songs to play");
 	/*####FernFerret####*/
 	// This is the admin command that shows all sounds, it is currently set to show to a GENERIC ADMIN
 	RegAdminCmd("sm_all_sounds", Command_All_Sounds, ADMFLAG_GENERIC,"Display a menu of ALL sounds to play");
@@ -365,12 +412,15 @@ public OnPluginStart(){
 
 	/*####FernFerret####*/
 	// This is where we hook the events that we will use and assign them to functions
-	HookEvent("teamplay_flag_event", Event_Flag);
 	HookEvent("player_death", Event_Kill);
-	HookEvent("player_chargedeployed", Event_UberCharge);
-	HookEvent("player_builtobject", Event_Build);
-	/*##################*/
 	HookEventEx("player_spawn",PlayerSpawn);
+
+	if (GetGameType() == tf2){
+		HookEvent("teamplay_flag_event", Event_Flag);
+		HookEvent("player_chargedeployed", Event_UberCharge);
+		HookEvent("player_builtobject", Event_Build);
+	}
+	/*##################*/
 
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -397,6 +447,7 @@ public OnAdminMenuReady(Handle:topmenu)
 		new TopMenuObject:server_commands = FindTopMenuCategory(hAdminMenu, ADMINMENU_SERVERCOMMANDS);
 		AddToTopMenu(hAdminMenu, "sm_admin_sounds", TopMenuObject_Item, Play_Admin_Sound,
 				server_commands, "sm_admin_sounds", ADMFLAG_GENERIC);
+		AddToTopMenu(hAdminMenu, "sm_karaoke", TopMenuObject_Item, Play_Karaoke_Sound, server_commands, "sm_karaoke", ADMFLAG_CHANGEMAP);
 
 		/*####FernFerret####*/
 		// Added two new items to the admin menu, the soundmenu hide (toggle) and the all sounds menu
@@ -412,7 +463,16 @@ public Play_Admin_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:obje
 	if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "Play Admin Sound");
 	else if (action == TopMenuAction_SelectOption)
-		Sound_Menu(param,true,false);
+		Sound_Menu(param,admin_sounds);
+}
+
+public Play_Karaoke_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id,
+                          param, String:buffer[], maxlength)
+{
+	if (action == TopMenuAction_DisplayOption)
+		Format(buffer, maxlength, "Karaoke");
+	else if (action == TopMenuAction_SelectOption)
+		Sound_Menu(param,karaoke_sounds);
 }
 
 /*####FernFerret####*/
@@ -423,8 +483,9 @@ public Play_All_Sound(Handle:topmenu, TopMenuAction:action, TopMenuObject:object
 	if (action == TopMenuAction_DisplayOption)
 		Format(buffer, maxlength, "Play a Sound");
 	else if (action == TopMenuAction_SelectOption)
-		Sound_Menu(param,false,true);
+		Sound_Menu(param,all_sounds);
 }
+
 // Creates the SoundMenu show/hide item in the admin menu, it is a toggle
 public Set_Sound_Menu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
 {
@@ -563,11 +624,30 @@ public Action:Event_Build(Handle:event,const String:name[],bool:dontBroadcast)
 public OnMapStart(){
 	globalLastSound = 0.0;
 	globalLastAdminSound = 0.0;
-	for (new i = 1; i <= MAXPLAYERS; i++)
-	{
+	for (new i = 1; i <= MAXPLAYERS; i++) {
 		SndCount[i] = 0;
 		LastSound[i] = 0.0;
 	}
+
+	if (GetGameType() == tf2) {
+		PrecacheSound("vo/announcer_attention.wav", true);
+		PrecacheSound("vo/announcer_begins_20sec.wav", true);
+		PrecacheSound("vo/announcer_begins_10sec.wav", true);
+		PrecacheSound("vo/announcer_begins_5sec.wav", true);
+		PrecacheSound("vo/announcer_begins_4sec.wav", true);
+		PrecacheSound("vo/announcer_begins_3sec.wav", true);
+		PrecacheSound("vo/announcer_begins_2sec.wav", true);
+		PrecacheSound("vo/announcer_begins_1sec.wav", true);
+	} else {
+		PrecacheSound("npc/overwatch/radiovoice/attention.wav", true);
+		PrecacheSound("npc/overwatch/cityvoice/fcitadel_10sectosingularity.wav", true);
+		PrecacheSound("npc/overwatch/radiovoice/five.wav", true);
+		PrecacheSound("npc/overwatch/radiovoice/four.wav", true);
+		PrecacheSound("npc/overwatch/radiovoice/three.wav", true);
+		PrecacheSound("npc/overwatch/radiovoice/two.wav", true);
+		PrecacheSound("npc/overwatch/radiovoice/one.wav", true);
+	}
+
 	CreateTimer(0.2, Load_Sounds);
 }
 
@@ -596,8 +676,9 @@ public Action:Load_Sounds(Handle:timer){
 					}else{
 						strcopy(file, sizeof(file), "file");
 					}
+					filelocation[0] = '\0';
 					KvGetString(listfile, file, filelocation, sizeof(filelocation), "");
-					if (strlen(filelocation)){
+					if (filelocation[0] != '\0'){
 						Format(dl, sizeof(dl), "sound/%s", filelocation);
 						PrecacheSound(filelocation, true);
 						if(download && FileExists(dl)){
@@ -650,8 +731,9 @@ public CheckJoin(client, const String:auth[]){
 		decl String:filelocation[PLATFORM_MAX_PATH+1];
 		KvRewind(listfile);
 		if (KvJumpToKey(listfile, auth)){
+			filelocation[0] = '\0';
 			KvGetString(listfile, "join", filelocation, sizeof(filelocation), "");
-			if (strlen(filelocation)){
+			if (filelocation[0] != '\0'){
 				Send_Sound(client,filelocation, "");
 				SndCount[client] = 0;
 				return;
@@ -684,8 +766,9 @@ public OnClientDisconnect(client){
 			decl String:filelocation[PLATFORM_MAX_PATH+1];
 			KvRewind(listfile);
 			if (KvJumpToKey(listfile, auth)){
+				filelocation[0] = '\0';
 				KvGetString(listfile, "exit", filelocation, sizeof(filelocation), "");
-				if (strlen(filelocation)){
+				if (filelocation[0] != '\0'){
 					Send_Sound(client,filelocation, "");
 					SndCount[client] = 0;
 					return;
@@ -739,25 +822,30 @@ public Action:Command_Say(client,args){
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundlist",false) == 0 ||
 			strcmp(speech[startidx],"soundlist",false) == 0){
-				//List_Sounds(client);
-				//PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 				if(GetConVarInt(cvarshowsoundmenu) == 1){
-					Sound_Menu(client,false,false);
+					Sound_Menu(client,normal_sounds);
+				}else{
+					List_Sounds(client);
+					PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
 				}
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0 ||
 			strcmp(speech[startidx],"soundmenu",false) == 0){
 				if(GetConVarInt(cvarshowsoundmenu) == 1){
-					Sound_Menu(client,false,false);
+					Sound_Menu(client,normal_sounds);
 				}
 				return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
 			strcmp(speech[startidx],"adminsounds",false) == 0){
-				Sound_Menu(client,true,false);
+				Sound_Menu(client,admin_sounds);
 				return Plugin_Handled;
+		}else if(strcmp(speech[startidx],"!karaoke",false) == 0 ||
+			strcmp(speech[startidx],"karaoke",false) == 0){
+			Sound_Menu(client,karaoke_sounds);
+			return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!allsounds",false) == 0 ||
 			strcmp(speech[startidx],"allsounds",false) == 0){
-				Sound_Menu(client,false,true);
+				Sound_Menu(client,all_sounds);
 				return Plugin_Handled;
 		}
 
@@ -802,7 +890,8 @@ public Action:Command_InsurgencySay(client,args){
 			}
 		}
 
-		if(strcmp(speech[startidx],"!sounds",false) == 0){
+		if(strcmp(speech[startidx],"!sounds",false) == 0 ||
+		   strcmp(speech[startidx],"sounds",false) == 0){
 				if(SndOn[client] == 1){
 					SndOn[client] = 0;
 					PrintToChat(client,"[Say Sounds] Sounds Disabled");
@@ -811,20 +900,33 @@ public Action:Command_InsurgencySay(client,args){
 					PrintToChat(client,"[Say Sounds] Sounds Enabled");
 				}
 				return Plugin_Handled;
-		}else if(strcmp(speech[startidx],"!soundlist",false) == 0){
-			List_Sounds(client);
-			PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
+		}else if(strcmp(speech[startidx],"!soundlist",false ||
+			strcmp(speech[startidx],"soundlist",false) == 0) == 0){
+			if(GetConVarInt(cvarshowsoundmenu) == 1){
+				Sound_Menu(client,normal_sounds);
+			}else{
+				List_Sounds(client);
+				PrintToChat(client,"[Say Sounds] Check your console for a list of sound triggers");
+			}
 			return Plugin_Handled;
-		}else if(strcmp(speech[startidx],"!soundmenu",false) == 0){
-			Sound_Menu(client,false,false);
+		}else if(strcmp(speech[startidx],"!soundmenu",false ||
+			strcmp(speech[startidx],"soundmenu",false) == 0) == 0){
+			if(GetConVarInt(cvarshowsoundmenu) == 1){
+				Sound_Menu(client,normal_sounds);
+			}
 			return Plugin_Handled;
-		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0){
-			Sound_Menu(client,true,false);
+		}else if(strcmp(speech[startidx],"!adminsounds",false) == 0 ||
+			strcmp(speech[startidx],"adminsounds",false) == 0){
+			Sound_Menu(client,admin_sounds);
+			return Plugin_Handled;
+		}else if(strcmp(speech[startidx],"!karaoke",false) == 0 ||
+			strcmp(speech[startidx],"karaoke",false) == 0){
+			Sound_Menu(client,karaoke_sounds);
 			return Plugin_Handled;
 		}else if(strcmp(speech[startidx],"!allsounds",false) == 0 ||
 			strcmp(speech[startidx],"allsounds",false) == 0){
-				Sound_Menu(client,false,true);
-				return Plugin_Handled;
+			Sound_Menu(client,all_sounds);
+			return Plugin_Handled;
 		}
 
 		KvRewind(listfile);
@@ -853,12 +955,20 @@ bool:Submit_Sound(client,const String:name[])
 	if (count > 1){
 		Format(file, sizeof(file), "file%d", GetRandomInt(1,count));
 	}
+	filelocation[0] = '\0';
 	KvGetString(listfile, file, filelocation, sizeof(filelocation));
-	if (!strlen(filelocation) && StrEqual(file, "file1")){
+	if (filelocation[0] == '\0' && StrEqual(file, "file1")){
 		KvGetString(listfile, "file", filelocation, sizeof(filelocation), "");
 	}
-	if (strlen(filelocation)){
-		Send_Sound(client, filelocation,name);
+	if (filelocation[0] != '\0'){
+		decl String:karaoke[PLATFORM_MAX_PATH+1];
+		karaoke[0] = '\0';
+		KvGetString(listfile, "karaoke", karaoke, sizeof(karaoke));
+		if (karaoke[0] != '\0'){
+			Load_Karaoke(client, filelocation, name, karaoke);
+		}else{
+			Send_Sound(client, filelocation, name);
+		}
 		return true;
 	}
 	return false;
@@ -866,15 +976,17 @@ bool:Submit_Sound(client,const String:name[])
 
 Send_Sound(client, const String:filelocation[], const String:name[])
 {
+	decl String:timebuf[64];
 	new adminonly = KvGetNum(listfile, "admin",0);
 	new singleonly = KvGetNum(listfile, "single",0);
 	/*####FernFerret####*/
 	// Added the action only param to the pack
 	new actiononly = KvGetNum(listfile, "actiononly",0);
 	/*##################*/
-	new Float:duration = KvGetFloat(listfile, "duration",0.0);
+	new Float:duration = Convert_Time(timebuf);
+
 	new Handle:pack;
-	CreateDataTimer(0.2,Command_Play_Sound,pack);
+	CreateDataTimer(0.1,Play_Sound_Timer,pack);
 	WritePackCell(pack, client);
 	WritePackCell(pack, adminonly);
 	WritePackCell(pack, singleonly);
@@ -887,7 +999,7 @@ Send_Sound(client, const String:filelocation[], const String:name[])
 	ResetPack(pack);
 }
 
-public Action:Command_Play_Sound(Handle:timer,Handle:pack){
+public Action:Play_Sound_Timer(Handle:timer,Handle:pack){
 	decl String:filelocation[PLATFORM_MAX_PATH+1];
 	decl String:name[PLATFORM_MAX_PATH+1];
 	new client = ReadPackCell(pack);
@@ -966,17 +1078,7 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 					EmitSoundToClient(client, filelocation);
 				}
 			}else{
-				new clientlist[MAXPLAYERS+1];
-				new clientcount = 0;
-				new playersconnected = GetMaxClients();
-				for (new i = 1; i <= playersconnected; i++){
-					if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(client)){
-						clientlist[clientcount++] = i;
-					}
-				}
-				if (clientcount){
-					EmitSound(clientlist, clientcount, filelocation);
-				}
+				Play_Sound(filelocation);
 				if (name[0] && IsClientInGame(client) && !IsFakeClient(client)){
 					if (GetConVarBool(cvarannounce)){
 						PrintToChatAll("%N played %s", client, name);
@@ -1014,6 +1116,279 @@ public Action:Command_Play_Sound(Handle:timer,Handle:pack){
 		}
 	}
 	return Plugin_Handled;
+}
+
+Play_Sound(const String:filelocation[])
+{
+	new clientlist[MAXPLAYERS+1];
+	new clientcount = 0;
+	new playersconnected = GetMaxClients();
+	for (new i = 1; i <= playersconnected; i++){
+		if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(i)){
+			clientlist[clientcount++] = i;
+		}
+	}
+	if (clientcount){
+		EmitSound(clientlist, clientcount, filelocation);
+	}
+}
+
+public Load_Karaoke(client, const String:filelocation[], const String:name[], const String:karaoke[]){
+	new adminonly = KvGetNum(listfile, "admin", 1); // Karaoke sounds default to admin only
+	new bool:isadmin = false;
+	if (IsClientInGame(client) && !IsFakeClient(client))
+	{
+		new AdminId:aid = GetUserAdmin(client);
+		isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+		if(adminonly && !isadmin){
+			PrintToChat(client,"[Say Sounds] Sorry, you are not authorized to play this sound!");
+			return;
+		}
+	}
+
+	decl String:karaokecfg[PLATFORM_MAX_PATH+1];
+	BuildPath(Path_SM,karaokecfg,sizeof(karaokecfg),"configs/%s",karaoke);
+	if(!FileExists(karaokecfg)){
+		LogError("%s not parsed...file doesnt exist!", karaokecfg);
+		Send_Sound(client, filelocation, name);
+	}else{
+		if (karaokeFile != INVALID_HANDLE){
+			CloseHandle(karaokeFile);
+		}
+		karaokeFile = CreateKeyValues(name);
+		FileToKeyValues(karaokeFile,karaokecfg);
+		KvRewind(karaokeFile);
+		decl String:title[128];
+		title[0] = '\0';
+		KvGetSectionName(karaokeFile, title, sizeof(title));
+		if (KvGotoFirstSubKey(karaokeFile)){
+			new Float:time = GetConVarFloat(cvarkaraokedelay);
+			if (time > 0.0){
+				Karaoke_Countdown(client, filelocation, title[0] ? title : name, time, true);
+			}else{
+				Karaoke_Start(client, filelocation, name);
+			}
+		}else{
+			LogError("%s not parsed...No subkeys found!", karaokecfg);
+			Send_Sound(client, filelocation, name);
+		}
+	}
+}
+
+Karaoke_Countdown(client, const String:filelocation[], const String:name[], Float:time, bool:attention){
+	new Float:next=0.0;
+
+	decl String:announcement[128];
+	if (attention){
+		Show_Message("%s\nKaraoke will begin in %2.0f seconds", name, time);
+		if (GetGameType() == tf2) {
+			strcopy(announcement, sizeof(announcement), "vo/announcer_attention.wav");
+		}else{
+			strcopy(announcement, sizeof(announcement), "npc/overwatch/radiovoice/attention.wav");
+		}
+		if (time >= 20.0){
+			next = 20.0;
+		}else if (time >= 10.0){
+			next = 10.0;
+		}else if (time > 5.0){
+			next = 5.0;
+		}else{
+			next = time - 1.0;
+		}
+	}else{
+		if (GetGameType() == tf2) {
+			Format(announcement, sizeof(announcement), "vo/announcer_begins_%dsec.wav", RoundToFloor(time));
+		}else{
+			if (time == 10.0){
+				strcopy(announcement, sizeof(announcement), "npc/overwatch/cityvoice/fcitadel_10sectosingularity.wav");
+			} else if (time == 5.0){
+				strcopy(announcement, sizeof(announcement), "npc/overwatch/radiovoice/five.wav");
+			} else if (time == 4.0){
+				strcopy(announcement, sizeof(announcement), "npc/overwatch/radiovoice/four.wav");
+			} else if (time == 3.0){
+				strcopy(announcement, sizeof(announcement), "npc/overwatch/radiovoice/three.wav");
+			} else if (time == 2.0){
+				strcopy(announcement, sizeof(announcement), "npc/overwatch/radiovoice/two.wav");
+			} else if (time == 1.0){
+				strcopy(announcement, sizeof(announcement), "npc/overwatch/radiovoice/one.wav");
+			} else {
+				announcement[0] = '\0';
+			}
+		}
+		switch (time) {
+			case 20.0: next = 10.0;
+			case 10.0: next = 5.0;
+			case 5.0:  next = 4.0;
+			case 4.0:  next = 3.0;
+			case 3.0:  next = 2.0; 
+			case 2.0:  next = 1.0; 
+			case 1.0:  next = 0.0; 
+		}
+	}
+
+	if (time > 0.0){
+		if (announcement[0] != '\0') {
+			Play_Sound(announcement);
+		}
+
+		new Handle:pack;
+		karaokeTimer = CreateDataTimer(time - next, Karaoke_Countdown_Timer, pack);
+		WritePackCell(pack, client);
+		WritePackFloat(pack, next);
+		WritePackString(pack, filelocation);
+		WritePackString(pack, name);
+		ResetPack(pack);
+	}else{
+		Karaoke_Start(client, filelocation, name);
+	}
+}
+
+Karaoke_Start(client, const String:filelocation[], const String:name[]){
+	decl String:text[3][128], String:timebuf[64];
+	timebuf[0] = '\0';
+	text[0][0] = '\0';
+	text[1][0] = '\0';
+	text[2][0] = '\0';
+
+	KvGetString(karaokeFile,"text",text[0],sizeof(text[]));
+	KvGetString(karaokeFile,"text1",text[1],sizeof(text[]));
+	KvGetString(karaokeFile,"text2",text[2],sizeof(text[]));
+	KvGetString(karaokeFile,"time",timebuf,sizeof(timebuf));
+
+	new Float:time = Convert_Time(timebuf);
+	if (time == 0.0)
+	{
+		Karaoke_Message(text);
+		if (KvGotoNextKey(karaokeFile)){
+			text[0][0] = '\0';
+			text[1][0] = '\0';
+			text[2][0] = '\0';
+			KvGetString(karaokeFile,"text",text[0],sizeof(text[]));
+			KvGetString(karaokeFile,"text1",text[1],sizeof(text[]));
+			KvGetString(karaokeFile,"text2",text[2],sizeof(text[]));
+			KvGetString(karaokeFile,"time",timebuf,sizeof(timebuf));
+			time = Convert_Time(timebuf);
+		}else{
+			CloseHandle(karaokeFile);
+			karaokeFile = INVALID_HANDLE;
+			time = 0.0;
+		}
+	}
+
+	if (time > 0.0){
+		cvaradvertisements = FindConVar("sm_advertisements_enabled");
+		if (cvaradvertisements != INVALID_HANDLE)
+		{
+			advertisements_enabled = GetConVarBool(cvaradvertisements);
+			SetConVarBool(cvaradvertisements, false);
+		}
+
+		new Handle:pack;
+		karaokeTimer = CreateDataTimer(time, Karaoke_Timer, pack);
+		WritePackString(pack, text[0]);
+		WritePackString(pack, text[1]);
+		WritePackString(pack, text[2]);
+		ResetPack(pack);
+	}else{
+		karaokeTimer = INVALID_HANDLE;
+	}
+
+	karaokeStartTime = GetEngineTime();
+	Send_Sound(client, filelocation, name);
+}
+
+Float:Convert_Time(const String:buffer[]){
+	decl String:part[5];
+	new pos = SplitString(buffer, ":", part, sizeof(part));
+	if (pos == -1) {
+		return StringToFloat(buffer);
+	}else{
+		return (StringToFloat(part)*60.0) +
+			StringToFloat(buffer[pos]);
+	}
+}
+
+Karaoke_Message(const String:text[3][]){
+	new playersconnected = GetMaxClients();
+	for (new i = 1; i <= playersconnected; i++){
+		if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(i)){
+			new team = GetClientTeam(i) - 1;
+			if (team >= 1 && text[team][0] != '\0')
+				PrintCenterText(i, text[team]);
+			else
+				PrintCenterText(i, text[0]);
+		}
+	}
+}
+
+Show_Message(const String:fmt[], any:...){
+        decl String:text[128];
+        VFormat(text, sizeof(text), fmt, 2);
+
+	new playersconnected = GetMaxClients();
+	for (new i = 1; i <= playersconnected; i++){
+		if(SndOn[i] && IsClientInGame(i) && !IsFakeClient(i)){
+			PrintCenterText(i, text);
+		}
+	}
+}
+
+public Action:Karaoke_Countdown_Timer(Handle:timer,Handle:pack){
+	decl String:filelocation[PLATFORM_MAX_PATH+1];
+	decl String:name[PLATFORM_MAX_PATH+1];
+	new client = ReadPackCell(pack);
+	new Float:time = ReadPackFloat(pack);
+	ReadPackString(pack, filelocation , sizeof(filelocation));
+	ReadPackString(pack, name , sizeof(name));
+	Karaoke_Countdown(client, filelocation, name, time, false);
+}
+
+public Action:Karaoke_Timer(Handle:timer,Handle:pack){
+	decl String:text[3][128], String:timebuf[64];
+	timebuf[0] = '\0';
+	text[0][0] = '\0';
+	text[1][0] = '\0';
+	text[2][0] = '\0';
+
+	ReadPackString(pack, text[0], sizeof(text[]));
+	ReadPackString(pack, text[1], sizeof(text[]));
+	ReadPackString(pack, text[2], sizeof(text[]));
+	Karaoke_Message(text);
+
+	if (karaokeFile != INVALID_HANDLE){
+		if (KvGotoNextKey(karaokeFile)){
+			text[0][0] = '\0';
+			text[1][0] = '\0';
+			text[2][0] = '\0';
+			KvGetString(karaokeFile,"text",text[0],sizeof(text[]));
+			KvGetString(karaokeFile,"text1",text[1],sizeof(text[]));
+			KvGetString(karaokeFile,"text2",text[2],sizeof(text[]));
+			KvGetString(karaokeFile,"time",timebuf,sizeof(timebuf));
+			new Float:time = Convert_Time(timebuf);
+			new Float:current_time = GetEngineTime() - karaokeStartTime;
+
+			new Handle:next_pack;
+			karaokeTimer = CreateDataTimer(time-current_time, Karaoke_Timer, next_pack);
+			WritePackString(next_pack, text[0]);
+			WritePackString(next_pack, text[1]);
+			WritePackString(next_pack, text[2]);
+			ResetPack(next_pack);
+		}else{
+			CloseHandle(karaokeFile);
+			karaokeFile = INVALID_HANDLE;
+			karaokeTimer = INVALID_HANDLE;
+			karaokeStartTime = 0.0;
+
+			if (cvaradvertisements != INVALID_HANDLE)
+			{
+				SetConVarBool(cvaradvertisements, advertisements_enabled);
+				CloseHandle(cvaradvertisements);
+				cvaradvertisements = INVALID_HANDLE;
+			}
+		}
+	}else{
+		karaokeTimer = INVALID_HANDLE;
+	}
 }
 
 public Action:Command_Sound_Reset(client, args){
@@ -1137,39 +1512,27 @@ stock List_Sounds(client){
 }
 
 public Action:Command_Sound_Menu(client, args){
-	/*####FernFerret####*/
-	// Just a note: event though this is the first time I note that I changed the Sound_Menu function
-	// It has been modified earlier in the code (Ctrl-F works wonders :) ) to add an AllSounds parameter, true if
-	// you would like to display ALL sounds false if you do not want to
-	//Sound_Menu(client,false);==>Sound_Menu(client,false,false);
-	Sound_Menu(client,false,false);
-	/*##################*/
+	Sound_Menu(client,normal_sounds);
 }
 
 public Action:Command_Admin_Sounds(client, args){
-	/*####FernFerret####*/
-	//Sound_Menu(client,true);==>Sound_Menu(client,true,false);
-	Sound_Menu(client,true,false);
-	/*##################*/
+	Sound_Menu(client,admin_sounds);
 }
 
-/*####FernFerret####*/
-// Added the allsounds menu which shows all sounds
+public Action:Command_Karaoke(client, args){
+	Sound_Menu(client,karaoke_sounds);
+}
+
 public Action:Command_All_Sounds(client, args){
-	Sound_Menu(client,false,true);
+	Sound_Menu(client,all_sounds);
 }
 
-/*##################*/
-/*####FernFerret####*/
-//Added the bool:alsounds, if active this overrides adminsounds and shows all
-public Sound_Menu(client, bool:adminsounds, bool:allsounds){
-/*##################*/
-	if (adminsounds || allsounds){
+public Sound_Menu(client, sound_types:types){
+	if (types >= admin_sounds){
 		new AdminId:aid = GetUserAdmin(client);
 		new bool:isadmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
 
 		if (!isadmin){
-			//PrintToChat(client,"[Say Sounds] You must be an admin to play admin sounds!");
 			PrintToChat(client,"[Say Sounds] You must be an admin view this menu!");
 			return;
 		}
@@ -1181,6 +1544,7 @@ public Sound_Menu(client, bool:adminsounds, bool:allsounds){
 
 	decl String:num[4];
 	decl String:buffer[PLATFORM_MAX_PATH+1];
+	decl String:karaokefile[PLATFORM_MAX_PATH+1];
 	new count=1;
 
 	KvRewind(listfile);
@@ -1191,30 +1555,37 @@ public Sound_Menu(client, bool:adminsounds, bool:allsounds){
 			    !StrEqual(buffer, "ExitSound") &&
 			    strncmp(buffer,"STEAM_",6,false))
 			{
-				/*####FernFerret####*/
-				// Added aditional checks to see if the sound is admin only, and if it is, it won't show up anywhere
-				if (allsounds)
-				{
-					if(!KvGetNum(listfile, "actiononly",0))
-					{
-						Format(num,3,"%d",count);
-						AddMenuItem(soundmenu,num,buffer);
-						count++;
-					}
-				}
-				// Changed next line to else if rather than if
-				/*##################*/
-				else if (adminsounds){
-					if (KvGetNum(listfile, "admin",0)){
-						Format(num,3,"%d",count);
-						AddMenuItem(soundmenu,num,buffer);
-						count++;
-					}
-				}else{
-					if (!KvGetNum(listfile, "admin",0)){
-						Format(num,3,"%d",count);
-						AddMenuItem(soundmenu,num,buffer);
-						count++;
+				if (!KvGetNum(listfile, "actiononly", 0)){
+					new bool:admin = bool:KvGetNum(listfile, "admin",0);
+					if (!admin || types >= admin_sounds){
+						karaokefile[0] = '\0';
+						KvGetString(listfile, "karaoke", karaokefile, sizeof(karaokefile));
+						new bool:karaoke = (karaokefile[0] != '\0');
+						if (!karaoke || types >= karaoke_sounds){
+							switch (types){
+								case karaoke_sounds:{
+							    		if (!karaoke){
+								    		continue;
+									}
+								}
+								case admin_sounds:{
+									if (!admin){
+										continue;
+									}
+								}
+								case all_sounds:{
+									if (karaoke){
+										StrCat(buffer, sizeof(buffer), " [Karaoke]");
+									}
+									if (admin){
+										StrCat(buffer, sizeof(buffer), " [Admin]");
+									}
+								}
+							}
+							Format(num,3,"%d",count);
+							AddMenuItem(soundmenu,num,buffer);
+							count++;
+						}
 					}
 				}
 			}
@@ -1254,7 +1625,17 @@ public OnMapEnd(){
 	if (listfile != INVALID_HANDLE){
 		CloseHandle(listfile);
 		listfile = INVALID_HANDLE;
-	}	
+	}
+
+	if (karaokeFile != INVALID_HANDLE){
+		CloseHandle(karaokeFile);
+		karaokeFile = INVALID_HANDLE;
+	}
+
+	if (karaokeTimer != INVALID_HANDLE){
+		KillTimer(karaokeTimer);
+		karaokeTimer = INVALID_HANDLE;
+	}
 }
 
 public OnPluginEnd()
@@ -1262,5 +1643,10 @@ public OnPluginEnd()
 	if (listfile != INVALID_HANDLE){
 		CloseHandle(listfile);
 		listfile = INVALID_HANDLE;
+	}
+
+	if (karaokeFile != INVALID_HANDLE){
+		CloseHandle(karaokeFile);
+		karaokeFile = INVALID_HANDLE;
 	}
 }

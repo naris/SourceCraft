@@ -26,7 +26,6 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/freeze"
-#include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
@@ -72,7 +71,7 @@ public OnPluginStart()
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     m_MindControlAvailable = LibraryExists("MindControl");
 
@@ -128,7 +127,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
     m_AllowMaelstorm[client]=true;
     m_AllowMindControl[client]=true;
 }
@@ -181,6 +179,11 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 new shields_level = GetUpgradeLevel(player,raceID,shieldsID);
                 SetupShields(client, shields_level);
 
+                new health=GetClientHealth(client)-m_Shields[client];
+                if (health <= 0)
+                    health = GetMaxHealth(client) / 2;
+                SetEntityHealth(client, health);
+
                 new TFTeam:team = TFTeam:GetClientTeam(client);
                 SetVisibility(player, 255, BasicVisibility, -1.0, -1.0,
                               RENDER_GLOW, RENDERFX_GLOWSHELL,
@@ -199,7 +202,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     new bool:changed=false;
     if (victim_race == raceID)
     {
-        if (assister_index && assister_index != victim_index &&
+        if (attacker_index && attacker_index != victim_index &&
             IsPlayerAlive(attacker_index))
         {
             if (Feedback(event, damage, victim_index, victim_player,
@@ -246,22 +249,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                 attacker_index,Handle:attacker_player,attacker_race,
-                                 assister_index,Handle:assister_player,assister_race,
-                                 damage,const String:weapon[], bool:is_equipment,
-                                 customkill,bool:headshot,bool:backstab,bool:melee)
-{
-    if (victim_race == raceID)
-    {
-        // Revert back to Templar upon death.
-        new templar_race = FindRace("templar");
-        if (templar_race)
-            ChangeRace(victim_player, templar_race, true);
-    }
-    return Plugin_Continue;
-}
-
 public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
                      attacker_index, Handle:attacker_player, assister_index)
 {
@@ -280,34 +267,34 @@ public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
     {
         case 0:
         {
-            percent=0.10;
+            percent=GetRandomFloat(0.10,1.00);
             chance=10;
         }
         case 1:
         {
-            percent=0.25;
+            percent=GetRandomFloat(0.25,1.00);
             chance=15;
         }
         case 2:
         {
-            percent=0.40;
+            percent=GetRandomFloat(0.40,1.00);
             chance=25;
         }
         case 3:
         {
-            percent=0.50;
+            percent=GetRandomFloat(0.50,1.00);
             chance=35;
         }
         case 4:
         {
-            percent=0.75;
+            percent=GetRandomFloat(0.75,1.00);
             chance=50;
         }
     }
 
     if(GetRandomInt(1,100) <= chance)
     {
-        new amount=RoundToNearest(float(damage)*GetRandomFloat(percent,1.00));
+        new amount=RoundToNearest(float(damage)*percent);
         new newhp=GetClientHealth(victim_index)+amount;
         new maxhp=GetMaxHealth(victim_index);
         if (newhp > maxhp)
@@ -322,6 +309,15 @@ public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
             !GetImmunity(attacker_player,Immunity_HealthTake) &&
             !TF2_IsPlayerInvuln(attacker_index))
         {
+            new health=GetClientHealth(attacker_index);
+            if (amount >= health)
+            {
+                if (percent > 0.95)
+                    percent = 0.95;
+
+                amount = RoundToCeil(float(health) * percent)+1;
+            }
+
             HurtPlayer(attacker_index,amount,
                        victim_index,"feedback", "Feedback");
 
@@ -337,22 +333,26 @@ public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
         {
             if (attacker_index && attacker_index != victim_index)
             {
-                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
-                PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                               "%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
+                               COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
+                DisplayMessage(attacker_index,SC_DISPLAY_ENEMY_DEFENDED,
+                               "%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                               COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
             else
             {
-                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
-                            COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                               "%c[SourceCraft] you %c have %cevaded%c damage!",
+                               COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
         }
 
         if (assister_index)
         {
-            PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                        COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+            DisplayMessage(assister_index,SC_DISPLAY_ENEMY_DEFENDED,
+                           "%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                           COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         }
     }
     return false;
@@ -408,8 +408,9 @@ bool:Shields(damage, victim_index, Handle:victim_player)
         decl String:victimName[64];
         GetClientName(victim_index,victimName,63);
 
-        PrintToChat(victim_index,"%c[SourceCraft] %s %cyour shields absorbed %d hp",
-                    COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+        DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                       "%c[SourceCraft] %s %cyour shields absorbed %d hp",
+                       COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
         return true;
     }
     return false;
@@ -419,11 +420,11 @@ SetupShields(client, level)
 {
     switch (level)
     {
-        case 0: m_Shields[client] = GetMaxHealth(client) / 2;
-        case 1: m_Shields[client] = GetMaxHealth(client);
-        case 2: m_Shields[client] = RoundFloat(float(GetMaxHealth(client))*1.50);
-        case 3: m_Shields[client] = GetMaxHealth(client) * 2;
-        case 4: m_Shields[client] = RoundFloat(float(GetMaxHealth(client))*2.50); 
+        case 0: m_Shields[client] = GetMaxHealth(client) / 4;
+        case 1: m_Shields[client] = GetMaxHealth(client) / 2;
+        case 2: m_Shields[client] = GetMaxHealth(client);
+        case 3: m_Shields[client] = RoundFloat(float(GetMaxHealth(client))*1.50); 
+        case 4: m_Shields[client] = GetMaxHealth(client) * 2; 
     }
 }
 
@@ -451,10 +452,10 @@ public PsionicShockwave(damage, victim_index, Handle:victim_player, index, Handl
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(index, victim_index, "shockwave", "Psionic Shockwave", amount);
+                    DisplayKill(index, victim_index, "shockwave", "Psionic Shockwave", amount);
                 }
                 else
-                    LogDamage(index, victim_index, "shockwave", "Psionic Shockwave", amount);
+                    DisplayDamage(index, victim_index, "shockwave", "Psionic Shockwave", amount);
 
                 SetEntityHealth(victim_index,newhp);
 
@@ -542,8 +543,9 @@ public Maelstorm(client,Handle:player, level)
                                                   0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                 TE_SendToAll();
 
-                                PrintToChat(index,"%c[SourceCraft] %N %chas tied you down with %cMaelstorm%c",
-                                            COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                DisplayMessage(index,SC_DISPLAY_ENEMY_ULTIMATE,
+                                               "%c[SourceCraft] %N %chas tied you down with %cMaelstorm%c",
+                                               COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                 FreezeEntity(index);
                                 AuthTimer(10.0,index,UnfreezePlayer);
@@ -558,11 +560,11 @@ public Maelstorm(client,Handle:player, level)
         new Float:cooldown = GetConVarFloat(cvarMaelstormCooldown);
         if (count)
         {
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cMaelstorm%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+            DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cMaelstorm%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
         }
         else
         {
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cMaelstormd Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+            DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cMaelstorm%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
         }
 
         if (cooldown > 0.0)
@@ -620,9 +622,9 @@ public DoMindControl(client,Handle:player,level)
         {
             new Float:cooldown = GetConVarFloat(cvarMindControlCooldown);
             LogToGame("[SourceCraft] %N has stolen %d's %s!\n",
-                    client,builder,TF2_ObjectNames[type]);
+                      client,builder,TF2_ObjectNames[type]);
             PrintToChat(builder,"%c[SourceCraft] %c %N has stolen your %s!",
-                    COLOR_GREEN,COLOR_DEFAULT,client,TF2_ObjectNames[type]);
+                        COLOR_GREEN,COLOR_DEFAULT,client,TF2_ObjectNames[type]);
             PrintToChat(client,"%c[SourceCraft] %c You have used your ultimate %cMind Control%c to steal %N's %s, you now need to wait %2.0f seconds before using it again.!", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT,builder,TF2_ObjectNames[type], cooldown);
 
             if (cooldown > 0.0)

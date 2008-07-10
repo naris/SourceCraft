@@ -24,7 +24,6 @@
 #include "sc/maxhealth"
 #include "sc/respawn"
 #include "sc/weapons"
-#include "sc/log"
 
 new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
@@ -91,7 +90,7 @@ public OnPluginStart()
     }
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID          = CreateRace("Orcish Horde", "orc",
                                  "You are now an Orcish Horde.",
@@ -142,7 +141,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
     m_AllowChainLightning[client]=true;
 }
 
@@ -337,10 +335,10 @@ bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:playe
             if (new_health <= 0)
             {
                 new_health=0;
-                LogKill(index, victim_index, "acute_strike", "Acute Strike", health_take);
+                DisplayKill(index, victim_index, "acute_strike", "Acute Strike", health_take);
             }
             else
-                LogDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
+                DisplayDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
 
             SetEntityHealth(victim_index,new_health);
 
@@ -390,10 +388,10 @@ bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:play
                 if (new_health <= 0)
                 {
                     new_health=0;
-                    LogKill(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
+                    DisplayKill(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
                 }
                 else
-                    LogDamage(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
+                    DisplayDamage(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
 
                 SetEntityHealth(victim_index,new_health);
 
@@ -477,11 +475,11 @@ ChainLightning(client,ultlevel)
     new Float:cooldown = GetConVarFloat(cvarChainCooldown);
     if (count)
     {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+        DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
     }
     else
     {
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+        DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
     }
     if (cooldown > 0.0)
     {

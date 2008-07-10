@@ -30,8 +30,6 @@
 #include "sc/screen"
 #include "sc/trace"
 
-#include "sc/log" // for debugging
-
 new raceID, regenerationID, healingID, chargeID, armorID, medipackID, infectID;
 new restoreID, flareID, jetpackID;
 
@@ -70,11 +68,11 @@ public OnPluginStart()
     CreateTimer(3.0,Restore,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     m_MedipacksAvailable = LibraryExists("medipacks");
-    m_UberChargerAvailable = LibraryExists("medihancer");
     m_InfectionAvailable = LibraryExists("MedicInfect");
+    m_UberChargerAvailable = LibraryExists("medihancer");
 
     raceID  = CreateRace("Terran Medic", "medic",
                          "You are now a Terran Medic.",
@@ -82,19 +80,29 @@ public OnPluginReady()
                          32,20);
 
     if (m_InfectionAvailable)
+    {
         infectID = AddUpgrade(raceID,"Infection", "infection", "Infects your victims, which can then spread the infection");
+        ControlMedicInfect(true);
+        HookInfection(OnInfected);
+    }
     else
         infectID = AddUpgrade(raceID,"Infection", "infection", "Infection is currently disabled", false, 99, 0);
 
     if (m_UberChargerAvailable)
+    {
         chargeID = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Constantly charges your Uber over time");
+        ControlMedicEnhancer(true);
+    }
     else
         chargeID = AddUpgrade(raceID,"Uber Charger", "ubercharger", "Uber Charger is currently disabled", false, 99, 0);
 
     armorID = AddUpgrade(raceID,"Light Armor", "armor", "A suit of Light Armor that takes damage up to 70% until it is depleted.");
 
     if (m_MedipacksAvailable)
+    {
         medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Drop Medipacks on death and with alt fire of medigun (at level 2 and above).\nAlso gives some ubercharge on spawn.");
+        ControlMedipacks(true);
+    }
     else
         medipackID = AddUpgrade(raceID,"Medipack", "medipack", "Medipacks are currently disabled.", false, 99, 0);
 
@@ -108,15 +116,36 @@ public OnPluginReady()
     ControlJetpack(true,true);
     SetJetpackRefuelingTime(0,30.0);
     SetJetpackFuel(0,100);
+}
 
-    if (m_UberChargerAvailable)
-        ControlMedicEnhancer(true);
-
-    if (m_InfectionAvailable)
-        ControlMedicInfect(true);
-
-    if (m_MedipacksAvailable)
+public OnLibraryAdded(const String:name[])
+{
+    if (StrEqual(name, "medipacks"))
+    {
+        m_MedipacksAvailable = true;
         ControlMedipacks(true);
+    }
+    else if (StrEqual(name, "MedicInfect"))
+    {
+        m_InfectionAvailable = true;
+        ControlMedipacks(true);
+        HookInfection(OnInfected);
+    }
+    else if (StrEqual(name, "medihancer"))
+    {
+        m_UberChargerAvailable = true;
+        ControlMedicEnhancer(true);
+    }
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+    if (StrEqual(name, "medipacks"))
+        m_MedipacksAvailable = false;
+    else if (StrEqual(name, "MedicInfect"))
+        m_InfectionAvailable = false;
+    else if (StrEqual(name, "medihancer"))
+        m_UberChargerAvailable = false;
 }
 
 public OnMapStart()
@@ -149,7 +178,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             TakeJetpack(client);
 
             if (m_InfectionAvailable)
-                SetMedicInfect(client, false, 0);
+                SetMedicInfect(client, false, 0, 0);
 
             if (m_UberChargerAvailable)
                 SetMedicEnhancement(client, false, 0);
@@ -233,7 +262,6 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
     m_AllowOpticFlare[client]=true;
 }
 
@@ -273,18 +301,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
     if (victim_race == raceID)
         changed = Armor(damage, victim_index, victim_player);
-
-    if (attacker_race == raceID && victim_index != attacker_index)
-    {
-        changed |= Infect(victim_index, victim_player,
-                          attacker_index, attacker_player);
-    }
-
-    if (assister_race == raceID && victim_index != assister_index)
-    {
-        changed |= Infect(victim_index, victim_player,
-                          assister_index, assister_player);
-    }
 
     return changed ? Plugin_Changed : Plugin_Continue;
 }
@@ -361,47 +377,36 @@ bool:Armor(damage, victim_index, Handle:victim_player)
             decl String:victimName[64];
             GetClientName(victim_index,victimName,63);
 
-            PrintToChat(victim_index,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+            DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                           "%c[SourceCraft] %s %cyour armor absorbed %d hp",
+                           COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
             return true;
         }
     }
     return false;
 }
 
-bool:Infect(victim_index, Handle:victim_player, index, Handle:player)
-{
-    if (m_InfectionAvailable)
-    {
-        new infect_level = GetUpgradeLevel(player,raceID,infectID);
-        if (infect_level > 0)
-        {
-            if (!GetImmunity(victim_player,Immunity_HealthTake) &&
-                !TF2_IsPlayerInvuln(victim_index))
-            {
-                if(GetRandomInt(1,100)<=(infect_level*4))
-                {
-                    MedicInfect(index, victim_index, false);
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
-public OnInfected(victim,infector,bool:infected,const color[4])
+public Action:OnInfected(victim,infector,bool:infected,const color[4])
 {
     new Handle:player=GetPlayerHandle(victim);
     if (player != INVALID_HANDLE)
     {
-        LogMessage("%N infected, infected=%d, color=%d,%d,%d,%d",
-                   victim, infected, color[0], color[1], color[2], color[3]);
+        if (infected && (TF2_IsPlayerInvuln(victim) ||
+            GetImmunity(player,Immunity_HealthTake)))
+        {
+            return Plugin_Stop;
+        }
+        else
+        {
+            LogMessage("%N infected, infected=%d, color=%d,%d,%d,%d",
+                       victim, infected, color[0], color[1], color[2], color[3]);
 
-        SetVisibility(player, color[3], BasicVisibility,
-                      -1.0, -1.0, RenderMode:-1, RenderFx:-1,
-                      color[0], color[1], color[2], false);
+            SetVisibility(player, color[3], BasicVisibility,
+                          -1.0, -1.0, RenderMode:-1, RenderFx:-1,
+                          color[0], color[1], color[2], false);
+        }
     }
+    return Plugin_Continue;
 }
 
 Jetpack(client, level)
@@ -452,10 +457,10 @@ public SetupInfection(client, level)
                 case 3: amount=10;
                 case 4: amount=12;
             }
-            SetMedicInfect(client, true, amount);
+            SetMedicInfect(client, true, amount, level*25);
         }
         else
-            SetMedicInfect(client, false, 0);
+            SetMedicInfect(client, false, 0, 0);
     }
 }
 
@@ -633,11 +638,11 @@ OpticFlare(client,ultlevel)
         new Float:cooldown = GetConVarFloat(cvarFlareCooldown);
         if (count)
         {
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c to blind %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+            DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c to blind %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
         }
         else
         {
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c, with no effect! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+            DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cOptic Flare%c, with no effect! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
         }
         if (cooldown > 0.0)
         {
@@ -662,4 +667,3 @@ public Action:AllowOpticFlare(Handle:timer,any:index)
     }                
     return Plugin_Stop;
 }
-

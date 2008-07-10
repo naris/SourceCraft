@@ -20,6 +20,8 @@
 #include "sc/maxhealth"
 #include "sc/freeze"
 
+#define TELEPORT_MAX_CHARGE_TIME 2.0
+
 new String:teleportWav[] = "ambient/machines/teleport1.wav"; //"beams/beamstart5.wav";
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
@@ -28,8 +30,6 @@ new raceID, immunityID, devotionID, bashID, teleportID;
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
-
-new m_VelocityOffset;
 
 new Handle:cvarTeleportCooldown = INVALID_HANDLE;
 
@@ -60,7 +60,7 @@ public OnPluginStart()
         SetFailState("Couldn't hook the player_spawn event.");
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID     = CreateRace("Human Alliance", "human",
                             "You are now part of the Human Alliance.",
@@ -78,10 +78,6 @@ public OnPluginReady()
     teleportID = AddUpgrade(raceID,"Teleport", "teleport",
                             "Allows you to teleport to where you \naim, 60-105 feet being the range.",
                             true); // Ultimate
-
-    m_VelocityOffset = FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]");
-    if(m_VelocityOffset == -1)
-        SetFailState("[SourceCraft] Error finding Velocity offset.");
 }
 
 public OnMapStart()
@@ -104,8 +100,8 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
     m_TeleportCount[client]=0;
+    gBashTime[client] = 0.0;
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -114,6 +110,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
     {
         if (oldrace == raceID)
         {
+            gBashTime[client] = 0.0;
             m_TeleportCount[client]=0;
             ResetMaxHealth(client);
 
@@ -155,11 +152,15 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         if(ult_level)
         {
             if (pressed)
+            {
                 m_UltimatePressed[client] = GetGameTime();
+                CreateTimer(0.2, UpdateTeleportBar, client, TIMER_REPEAT);
+            }
             else
             {
                 new bool:toSpawn = false;
                 new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
+                m_UltimatePressed[client] = 0.0;
                 // Allow short teleports so players can attempt to get unstuck
                 // without having to return to spawn.
                 if (m_TeleportCount[client] >= 2 ||
@@ -203,6 +204,7 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             {
                 GetClientAbsOrigin(client,spawnLoc[client]);
                 m_TeleportCount[client]=0;
+                gBashTime[client] = 0.0;
 
                 new immunity_level=GetUpgradeLevel(player,raceID,immunityID);
                 if (immunity_level)
@@ -306,8 +308,9 @@ DevotionAura(client, level)
         }
         IncreaseHealth(client,hpadd);
 
-        PrintToChat(client,"%c[SourceCraft]%c You have received %d extra hp from %cDevotion Aura%c.",
-                   COLOR_GREEN,COLOR_DEFAULT,hpadd,COLOR_TEAM,COLOR_DEFAULT);
+        DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                       "%c[SourceCraft]%c You have received %d extra hp from %cDevotion Aura%c.",
+                       COLOR_GREEN,COLOR_DEFAULT,hpadd,COLOR_TEAM,COLOR_DEFAULT);
 
         new Float:start[3];
         GetClientAbsOrigin(client, start);
@@ -345,7 +348,7 @@ Bash(victim_index, Handle:victim_player, Handle:player)
                     percent=32;
             }
             if (GetRandomInt(1,100)<=percent &&
-                (!gBashTime[victim_index] ||
+                (gBashTime[victim_index] == 0.0 ||
                  GetGameTime() - gBashTime[victim_index] > 2.0))
             {
                 new Float:Origin[3];
@@ -372,20 +375,16 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         destloc=spawnLoc[client];
     else
     {
-        if (time_pressed > 2.0 || time_pressed <= 0.0)
-            time_pressed = 2.0;
+        if (time_pressed > TELEPORT_MAX_CHARGE_TIME || time_pressed <= 0.0)
+            time_pressed = TELEPORT_MAX_CHARGE_TIME;
 
         new Float:range=1.0;
         switch(ult_level)
         {
-            case 1:
-                range=(time_pressed / 2.0) * 300.0;
-            case 2:
-                range=(time_pressed / 2.0) * 500.0;
-            case 3:
-                range=(time_pressed / 2.0) * 800.0;
-            case 4:
-                range=(time_pressed / 2.0) * 1500.0;
+            case 1: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 300.0;
+            case 2: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 500.0;
+            case 3: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 800.0;
+            case 4: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 1500.0;
         }
 
         new Float:clientloc[3],Float:clientang[3];
@@ -427,21 +426,6 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
                 destloc[2] -= size[2];
             else
                 destloc[2] += size[2];
-
-            /*
-            new Float:dist = (GetVectorDistance(clientloc, destloc) - size[1]);
-            destloc[1] = (clientloc[1] + (dist * Sine(DegToRad(clientang[1]))));
-            destloc[0] = (clientloc[0] + (dist * Cosine(DegToRad(clientang[1]))));
-            */
-
-            //Check ceiling
-            /*
-            decl Float:ceiling[3];
-            ceiling = destloc;
-            ceiling[2] -= size[2];
-            if(TR_GetPointContents(ceiling) == 0)
-                destloc[2] = ceiling[2];
-            */
         }
 
         // Save teleport location for stuck comparison later
@@ -463,8 +447,9 @@ Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
         new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
         if (cooldown > 0.0)
         {
-            PrintToChat(client,"%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+            DisplayMessage(client,SC_DISPLAY_ULTIMATE,
+                           "%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",
+                           COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
             CreateTimer(cooldown,AllowTeleport,client);
         }
     }
@@ -484,4 +469,27 @@ public Action:AllowTeleport(Handle:timer,any:index)
         }
     }
     return Plugin_Stop;
+}
+
+public Action:UpdateTeleportBar(Handle:timer, any:client)
+{
+    if (m_UltimatePressed[client] == 0.0)
+        return Plugin_Stop;
+    else
+    {
+        new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
+        new String:gauge[30] = "[=====================]";
+        new Float:percent = time_pressed/TELEPORT_MAX_CHARGE_TIME;
+        if (percent < 1.0)
+        {
+            new pos = RoundFloat(percent * 20.0) + 1;
+            if (pos < 21)
+            {
+                gauge{pos} = ']';
+                gauge{pos+1} = 0;
+            }
+        }
+        PrintHintText(client, gauge);
+        return Plugin_Continue;
+    }
 }

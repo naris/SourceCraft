@@ -27,7 +27,7 @@
 #define REQUIRE_EXTENSIONS
 
 new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION     "2.2.3 $Revision$ beta"
+#define VERSION     "2.3.0 $Revision$ beta"
 
 // ConVar definitions
 new Handle:m_SaveXPConVar         = INVALID_HANDLE;
@@ -41,7 +41,7 @@ new Handle:m_PlayerPropertiesTimer = INVALID_HANDLE;
 new String:buttonWav[] = "play buttons/button14.wav";
 new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 
-#define SAVE_ENABLED       (GetConVarInt(m_SaveXPConVar)==1 && GetRaceCount() > 0)
+#define SAVE_ENABLED       (GetConVarInt(m_SaveXPConVar)==1 && GetRaceCount() > 1)
 #define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
 #define MAX_LEVELS         16
 
@@ -51,10 +51,9 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/immunity"
 #include "sc/visibility"
 #include "sc/maxhealth"
-#include "sc/log"
+#include "sc/display_flags"
 
 #include "sc/engine/help"
-#include "sc/engine/offsets"
 #include "sc/engine/damage"
 #include "sc/engine/races"
 #include "sc/engine/shopitems"
@@ -63,9 +62,12 @@ new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
 #include "sc/engine/natives"
 #include "sc/engine/credits"
 #include "sc/engine/xp"
+#include "sc/engine/display"
 #include "sc/engine/hooks"
 #include "sc/engine/console"
+#include "sc/engine/adminmenus"
 #include "sc/engine/menus"
+#include "sc/engine/settings"
 #include "sc/engine/events"
 #include "sc/engine/events_tf2"
 #include "sc/engine/events_cstrike"
@@ -121,26 +123,24 @@ public OnPluginStart()
     if(!InitHelpVector())
         SetFailState("There was a failure in creating the help vector.");
 
-    if(!InitOffset())
-        SetFailState("There was a failure in finding the offsets required.");
     if(!HookEvents())
-        SetFailState("There was a failure in initiating event hooks.");
+        SetFailState("There was a failure in initializing event hooks.");
 
     if (GameType == tf2)
     {
         if(!HookTFEvents())
-            SetFailState("There was a failure in initiating tf2 event hooks.");
+            SetFailState("There was a failure in initializing tf2 event hooks.");
     }
     else if(GameType == cstrike)
     {
         if(!HookCStrikeEvents())
-            SetFailState("There was a failure in initiating cstrike event hooks.");
+            SetFailState("There was a failure in initializing cstrike event hooks.");
     }
 
     if(!InitCVars())
-        SetFailState("There was a failure in initiating console variables.");
-    if(!InitMenus())
-        SetFailState("There was a failure in initiating menus.");
+        SetFailState("There was a failure in initializing console variables.");
+    if(!InitAdminMenu())
+        SetFailState("There was a failure in initializing admin menus.");
     if(!ParseSettings())
         SetFailState("There was a failure in parsing the configuration file.");
 
@@ -157,7 +157,7 @@ public OnAllPluginsLoaded()
 {
     if(!m_CalledReady)
     {
-        Call_StartForward(g_OnPluginReadyHandle);
+        Call_StartForward(g_OnSourceCraftReadyHandle);
         new res;
         Call_Finish(res);
         m_CalledReady=true;
@@ -189,7 +189,7 @@ public OnClientPutInServer(client)
 {
     if (client>0 && !IsFakeClient(client))
     {
-        m_OffsetGravity[client]=FindDataMapOffs(client,"m_flGravity");
+        m_CloakTime[client] = 0.0;
 
         new Handle:playerHandle=CreatePlayer(client);
         if (playerHandle != INVALID_HANDLE)
@@ -200,7 +200,7 @@ public OnClientPutInServer(client)
             Call_PushCell(playerHandle);
             Call_Finish(res);
 
-            if (GetRaceCount() > 0)
+            if (GetRaceCount() > 1)
             {
                 if(DBIDB && GetConVarInt(m_SaveXPConVar)==1)
                     m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
@@ -233,7 +233,7 @@ public OnClientDisconnect(client)
         if (playerHandle != INVALID_HANDLE)
         {
             new bool:freePlayer = true;
-            if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
+            if (GetRaceCount() > 1 && DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
                 freePlayer = SavePlayerData(client,playerHandle,true);
 
             if (freePlayer)

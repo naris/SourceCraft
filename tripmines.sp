@@ -17,12 +17,15 @@
 
 #include <gametype>
 
-#define PLUGIN_VERSION "1.0.0.3"
+#include <entlimit>
+
+#define PLUGIN_VERSION "1.1.0.4"
 
 #define TRACE_START 24.0
 #define TRACE_END 64.0
 
 #define MDL_LASER "sprites/laser.vmt"
+#define MDL_MINE "models/props_lab/tpplug.mdl"
 
 #define SND_MINEPUT "npc/roller/blade_cut.wav"
 #define SND_MINEACT "npc/roller/mine/rmine_blades_in2.wav"
@@ -46,12 +49,16 @@ new bool:gNativeControl = false;
 new gAllowed[MAXPLAYERS+1];    // how many tripmines player allowed
 
 new Handle:gMineList[MAXPLAYERS+1];
+new gTripmineModelIndex;
 
 // convars
 new Handle:cvNumMines = INVALID_HANDLE;
 new Handle:cvActTime = INVALID_HANDLE;
 new Handle:cvModel = INVALID_HANDLE;
 new Handle:cvTeamRestricted = INVALID_HANDLE;
+new Handle:cvDestruct = INVALID_HANDLE;
+new Handle:cvRadius = INVALID_HANDLE;
+new Handle:cvDamage = INVALID_HANDLE;
 
 public Plugin:myinfo = {
     name = "Tripmines",
@@ -66,12 +73,13 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
     // Register Natives
     CreateNative("ControlTripmines",Native_ControlTripmines);
     CreateNative("GiveTripmine",Native_GiveTripmine);
+    CreateNative("AddTripmine",Native_AddTripmine);
+    CreateNative("SubTripmine",Native_SubTripmine);
     CreateNative("HasTripmine",Native_HasTripmine);
     CreateNative("SetTripmine",Native_SetTripmine);
     RegPluginLibrary("tripmines");
     return true;
 }
-
 
 public OnPluginStart() 
 {
@@ -83,10 +91,13 @@ public OnPluginStart()
 
     // convars
     CreateConVar("sm_tripmines_version", PLUGIN_VERSION, "Tripmines", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    cvNumMines = CreateConVar("sm_tripmines_allowed", "3");
-    cvActTime = CreateConVar("sm_tripmines_activate_time", "2.0");
-    cvModel = CreateConVar("sm_tripmines_model", "models/props_lab/tpplug.mdl");
-    cvTeamRestricted = CreateConVar("sm_tripmines_restrictedteam", "0");
+    cvNumMines = CreateConVar("sm_tripmines_allowed", "3", "Number of tripmines allowed per life (-1=unlimited)");
+    cvActTime = CreateConVar("sm_tripmines_activate_time", "2.0", "Tripmine activation time.");
+    cvModel = CreateConVar("sm_tripmines_model", MDL_MINE, "Tripmine model");
+    cvTeamRestricted = CreateConVar("sm_tripmines_restrictedteam", "0", "Team that does NOT get any tripmines");
+    cvDestruct = CreateConVar("sm_tripmines_destruct", "1", "Tripmines self-destruct when owner dies");
+    cvRadius = CreateConVar("sm_tripmines_radius", "256", "Tripmines Explosion Radius");
+    cvDamage = CreateConVar("sm_tripmines_radius", "200", "Tripmines Explosion Damage");
 
     // commands
     RegConsoleCmd("sm_tripmine", Command_TripMine);
@@ -95,7 +106,7 @@ public OnPluginStart()
 public OnEventShutdown()
 {
     UnhookEvent("player_death", PlayerDeath);
-    UnhookEvent("player_spawn",PlayerSpawn);
+    UnhookEvent("player_spawn", PlayerSpawn);
 }
 
 public OnMapStart()
@@ -117,44 +128,55 @@ public OnMapStart()
 public OnClientPutInServer(client)
 {
     if(client && !IsFakeClient(client))
-        gRemaining[client] = 0;
+        gRemaining[client] = gAllowed[client] = gNativeControl ? 0 : GetConVarInt(cvNumMines);
 }
 
 public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    gRemaining[client] = gNativeControl ? gAllowed[client] : GetConVarInt(cvNumMines);
+
+    if (gNativeControl)
+        gRemaining[client] = gAllowed[client];
+    else
+        gRemaining[client] = gAllowed[client] = GetConVarInt(cvNumMines);
+
     return Plugin_Continue;
 }
 
 public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    gRemaining[client] = 0;
-
-    if (gMineList[client] != INVALID_HANDLE)
+    if (GetConVarBool(cvDestruct))
     {
-        //LogMessage("%N died, checking for tripmines",client);
-        decl String:class[32];
-        new Handle:array = gMineList[client];
-        new size = GetArraySize(array);
-        for (new i = 0;  i < size; i++)
+        new client = GetClientOfUserId(GetEventInt(event, "userid"));
+        gRemaining[client] = 0;
+
+        if (gMineList[client] != INVALID_HANDLE)
         {
-            new ent = GetArrayCell(array,i);
-            //LogMessage("Checking Mine #%d, ent=%d", i, ent);
-            if (IsValidEntity(ent) &&
-                GetEntityNetClass(ent,class,sizeof(class)))
+            new size = GetArraySize(gMineList[client]);
+            for (new i = 0;  i < size; i++)
             {
-                //LogMessage("Entity is a %s", class);
-                if (StrEqual(class, "CPhysicsProp", false))
-                {
-                    AcceptEntityInput(ent, "Break");
-                }
+                CreateTimer(float(i)*0.1, ExplodeMine, GetArrayCell(gMineList[client], i));
             }
+            ClearArray(gMineList[client]);
         }
-        ClearArray(array);
     }
     return Plugin_Continue;
+}
+
+public Action:ExplodeMine(Handle:timer, any:ent)
+{
+    decl String:class[32];
+    if (IsValidEntity(ent) &&
+        GetEntityNetClass(ent,class,sizeof(class)))
+    {
+        if (StrEqual(class, "CPhysicsProp", false))
+        {
+            // Make sure it's a tripmine
+            if (GetEntProp(ent,Prop_Send,"m_nModelIndex") == gTripmineModelIndex)
+                AcceptEntityInput(ent, "Break");
+        }
+    }
+    return Plugin_Stop;
 }
 
 public Action:Command_TripMine(client, args)
@@ -171,17 +193,18 @@ public Action:Command_TripMine(client, args)
         return Plugin_Handled;
     }
 
-    // call SetMine if any remain in client's inventory
-    if (gRemaining[client]>0)
-        SetMine(client);
-    else
-        PrintHintText(client, "You do not have any tripmines.");
-
+    SetMine(client);
     return Plugin_Handled;
 }
 
 SetMine(client)
 {
+    if (gRemaining[client] <= 0 && gAllowed[client] >= 0)
+    {
+        PrintHintText(client, "You do not have any tripmines.");
+        return;
+    }
+
     if (GameType == tf2)
     {
         if (TF2_GetPlayerClass(client) == TFClass_Spy)
@@ -226,8 +249,11 @@ SetMine(client)
 
     if (TR_DidHit(INVALID_HANDLE))
     {
+        if (IsEntLimitReached())
+            return;
+
         // update client's inventory
-        gRemaining[client]-=1;
+        gRemaining[client]--;
 
         // find angles for tripmine
         TR_GetEndPosition(end, INVALID_HANDLE);
@@ -242,65 +268,72 @@ SetMine(client)
         new prop_ent = CreateEntityByName("prop_physics_override");
         SetEntityModel(prop_ent,mdlMine);
         DispatchKeyValue(prop_ent, "StartDisabled", "false");
-        DispatchSpawn(prop_ent);
-        TeleportEntity(prop_ent, end, normal, NULL_VECTOR);
-        SetEntProp(prop_ent, Prop_Data, "m_usSolidFlags", 152);
-        SetEntProp(prop_ent, Prop_Data, "m_CollisionGroup", 1);
-        SetEntityMoveType(prop_ent, MOVETYPE_NONE);
-        SetEntProp(prop_ent, Prop_Data, "m_MoveCollide", 0);
-        SetEntProp(prop_ent, Prop_Data, "m_nSolidType", 6);
-        SetEntPropEnt(prop_ent, Prop_Data, "m_hLastAttacker", client);
-        DispatchKeyValue(prop_ent, "targetname", beammdl);
-        DispatchKeyValue(prop_ent, "ExplodeRadius", "256");
-        DispatchKeyValue(prop_ent, "ExplodeDamage", "400");
-        Format(tmp, sizeof(tmp), "%s,Break,,0,-1", beammdl);
-        DispatchKeyValue(prop_ent, "OnHealthChanged", tmp);
-        Format(tmp, sizeof(tmp), "%s,Kill,,0,-1", beam);
-        DispatchKeyValue(prop_ent, "OnBreak", tmp);
-        SetEntProp(prop_ent, Prop_Data, "m_takedamage", 2);
-        AcceptEntityInput(prop_ent, "Enable");
+        if (DispatchSpawn(prop_ent))
+        {
+            TeleportEntity(prop_ent, end, normal, NULL_VECTOR);
+            SetEntProp(prop_ent, Prop_Data, "m_usSolidFlags", 152);
+            SetEntProp(prop_ent, Prop_Data, "m_CollisionGroup", 1);
+            SetEntityMoveType(prop_ent, MOVETYPE_NONE);
+            SetEntProp(prop_ent, Prop_Data, "m_MoveCollide", 0);
+            SetEntProp(prop_ent, Prop_Data, "m_nSolidType", 6);
+            SetEntPropEnt(prop_ent, Prop_Data, "m_hLastAttacker", client);
+            DispatchKeyValue(prop_ent, "targetname", beammdl);
+            GetConVarString(cvRadius, tmp, sizeof(tmp));
+            DispatchKeyValue(prop_ent, "ExplodeRadius", tmp);
+            GetConVarString(cvDamage, tmp, sizeof(tmp));
+            DispatchKeyValue(prop_ent, "ExplodeDamage", tmp);
+            Format(tmp, sizeof(tmp), "%s,Break,,0,-1", beammdl);
+            DispatchKeyValue(prop_ent, "OnHealthChanged", tmp);
+            Format(tmp, sizeof(tmp), "%s,Kill,,0,-1", beam);
+            DispatchKeyValue(prop_ent, "OnBreak", tmp);
+            //SetEntProp(prop_ent, Prop_Data, "m_takedamage", 2);
+            SetEntProp(prop_ent, Prop_Data, "m_takedamage", 3);
+            AcceptEntityInput(prop_ent, "Enable");
+            HookSingleEntityOutput(prop_ent, "OnBreak", mineBreak, true);
 
-        if (gMineList[client] == INVALID_HANDLE)
-            gMineList[client] = CreateArray();
+            gTripmineModelIndex = GetEntProp(prop_ent,Prop_Send,"m_nModelIndex");
 
-        PushArrayCell(gMineList[client], prop_ent);
-        //LogMessage("Added tripmine %d to %N", prop_ent, client);
+            // create laser beam
+            new beam_ent = CreateEntityByName("env_beam");
+            TeleportEntity(beam_ent, beamend, NULL_VECTOR, NULL_VECTOR);
+            SetEntityModel(beam_ent, MDL_LASER);
+            DispatchKeyValue(beam_ent, "texture", MDL_LASER);
+            DispatchKeyValue(beam_ent, "targetname", beam);
+            DispatchKeyValue(beam_ent, "TouchType", "4");
+            DispatchKeyValue(beam_ent, "LightningStart", beam);
+            DispatchKeyValue(beam_ent, "BoltWidth", "4.0");
+            DispatchKeyValue(beam_ent, "life", "0");
+            DispatchKeyValue(beam_ent, "rendercolor", "0 0 0");
+            DispatchKeyValue(beam_ent, "renderamt", "0");
+            DispatchKeyValue(beam_ent, "HDRColorScale", "1.0");
+            DispatchKeyValue(beam_ent, "decalname", "Bigshot");
+            DispatchKeyValue(beam_ent, "StrikeTime", "0");
+            DispatchKeyValue(beam_ent, "TextureScroll", "35");
+            Format(tmp, sizeof(tmp), "%s,Break,,0,-1", beammdl);
+            DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);   
+            SetEntPropVector(beam_ent, Prop_Data, "m_vecEndPos", end);
+            SetEntPropFloat(beam_ent, Prop_Data, "m_fWidth", 4.0);
+            AcceptEntityInput(beam_ent, "TurnOff");
 
-        // create laser beam
-        new beam_ent = CreateEntityByName("env_beam");
-        TeleportEntity(beam_ent, beamend, NULL_VECTOR, NULL_VECTOR);
-        SetEntityModel(beam_ent, MDL_LASER);
-        DispatchKeyValue(beam_ent, "texture", MDL_LASER);
-        DispatchKeyValue(beam_ent, "targetname", beam);
-        DispatchKeyValue(beam_ent, "TouchType", "4");
-        DispatchKeyValue(beam_ent, "LightningStart", beam);
-        DispatchKeyValue(beam_ent, "BoltWidth", "4.0");
-        DispatchKeyValue(beam_ent, "life", "0");
-        DispatchKeyValue(beam_ent, "rendercolor", "0 0 0");
-        DispatchKeyValue(beam_ent, "renderamt", "0");
-        DispatchKeyValue(beam_ent, "HDRColorScale", "1.0");
-        DispatchKeyValue(beam_ent, "decalname", "Bigshot");
-        DispatchKeyValue(beam_ent, "StrikeTime", "0");
-        DispatchKeyValue(beam_ent, "TextureScroll", "35");
-        Format(tmp, sizeof(tmp), "%s,Break,,0,-1", beammdl);
-        DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);   
-        SetEntPropVector(beam_ent, Prop_Data, "m_vecEndPos", end);
-        SetEntPropFloat(beam_ent, Prop_Data, "m_fWidth", 4.0);
-        AcceptEntityInput(beam_ent, "TurnOff");
+            new Handle:data = CreateDataPack();
+            CreateTimer(GetConVarFloat(cvActTime), TurnBeamOn, data);
+            WritePackCell(data, client);
+            WritePackCell(data, prop_ent);
+            WritePackCell(data, beam_ent);
+            WritePackFloat(data, end[0]);
+            WritePackFloat(data, end[1]);
+            WritePackFloat(data, end[2]);
 
-        new Handle:data = CreateDataPack();
-        CreateTimer(GetConVarFloat(cvActTime), TurnBeamOn, data);
-        WritePackCell(data, client);
-        WritePackCell(data, beam_ent);
-        WritePackFloat(data, end[0]);
-        WritePackFloat(data, end[1]);
-        WritePackFloat(data, end[2]);
+            // play sound
+            EmitSoundToAll(SND_MINEPUT, beam_ent, SNDCHAN_AUTO,
+                           SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+                           100, beam_ent, end, NULL_VECTOR, true, 0.0);
 
-        // play sound
-        EmitSoundToAll(SND_MINEPUT, beam_ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, beam_ent, end, NULL_VECTOR, true, 0.0);
-
-        // send message
-        PrintHintText(client, "Tripmines remaining: %d", gRemaining[client]);
+            // send message
+            PrintHintText(client, "Tripmines remaining: %d", gRemaining[client]);
+        }
+        else
+            LogError("Unable to spawn a prop_ent");
     }
     else
     {
@@ -314,27 +347,53 @@ public Action:TurnBeamOn(Handle:timer, Handle:data)
 
     ResetPack(data);
     new client = ReadPackCell(data);
-    new ent = ReadPackCell(data);
+    new prop_ent = ReadPackCell(data);
+    new beam_ent = ReadPackCell(data);
 
-    if (IsValidEntity(ent))
+    if (IsValidEntity(beam_ent) && IsValidEntity(prop_ent))
     {
-        new team = GetClientTeam(client);
-        if(team == TEAM_T) color = COLOR_T;
-        else if(team == TEAM_CT) color = COLOR_CT;
-        else color = COLOR_DEF;
+        if (IsPlayerAlive(client))
+        {
+            new team = GetClientTeam(client);
+            if(team == TEAM_T) color = COLOR_T;
+            else if(team == TEAM_CT) color = COLOR_CT;
+            else color = COLOR_DEF;
 
-        DispatchKeyValue(ent, "rendercolor", color);
-        AcceptEntityInput(ent, "TurnOn");
+            DispatchKeyValue(beam_ent, "rendercolor", color);
+            AcceptEntityInput(beam_ent, "TurnOn");
 
-        new Float:end[3];
-        end[0] = ReadPackFloat(data);
-        end[1] = ReadPackFloat(data);
-        end[2] = ReadPackFloat(data);
+            new Float:end[3];
+            end[0] = ReadPackFloat(data);
+            end[1] = ReadPackFloat(data);
+            end[2] = ReadPackFloat(data);
 
-        EmitSoundToAll(SND_MINEACT, ent, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 100, ent, end, NULL_VECTOR, true, 0.0);
+            EmitSoundToAll(SND_MINEACT, beam_ent, SNDCHAN_AUTO,
+                           SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+                           100, beam_ent, end, NULL_VECTOR, true, 0.0);
+
+            if (gMineList[client] == INVALID_HANDLE)
+                gMineList[client] = CreateArray();
+
+            PushArrayCell(gMineList[client], prop_ent);
+        }
+        else
+        {
+            //RemoveEdict(prop_ent);
+            //RemoveEdict(beam_ent);
+            UnhookSingleEntityOutput(prop_ent, "OnBreak", mineBreak);
+            AcceptEntityInput(prop_ent, "Kill");
+            AcceptEntityInput(beam_ent, "Kill");
+        }
     }
 
     CloseHandle(data);
+    return Plugin_Stop;
+}
+
+public mineBreak (const String:output[], caller, activator, Float:delay)
+{
+  UnhookSingleEntityOutput(caller, "OnBreak", mineBreak);
+  AcceptEntityInput(caller,"kill");
 }
 
 public bool:FilterAll (entity, contentsMask)
@@ -355,7 +414,36 @@ public Native_GiveTripmine(Handle:plugin,numParams)
     if (numParams >= 1 && numParams <= 2)
     {
         new client = GetNativeCell(1);
-        gRemaining[client] = gAllowed[client] = (numParams >= 2) ? GetNativeCell(2) : GetConVarInt(cvNumMines);
+        gRemaining[client] = gAllowed[client] = (numParams >= 2) ? GetNativeCell(2)
+                                                                 : GetConVarInt(cvNumMines);
+    }
+}
+
+public Native_AddTripmine(Handle:plugin,numParams)
+{
+    if (numParams >= 1 && numParams <= 2)
+    {
+        new client = GetNativeCell(1);
+        new num = (numParams >= 2) ? GetNativeCell(2) : 1;
+        gRemaining[client] += num;
+        gAllowed[client] += num;
+    }
+}
+
+public Native_SubTripmine(Handle:plugin,numParams)
+{
+    if (numParams >= 1 && numParams <= 2)
+    {
+        new client = GetNativeCell(1);
+        new num = (numParams >= 2) ? GetNativeCell(2) : 1;
+
+        gRemaining[client] -= num;
+        if (gRemaining[client] < 0)
+            gRemaining[client] = 0;
+
+        gAllowed[client] -= num;
+        if (gAllowed[client] < 0)
+            gAllowed[client] = 0;
     }
 }
 
@@ -373,12 +461,5 @@ public Native_HasTripmine(Handle:plugin,numParams)
 public Native_SetTripmine(Handle:plugin,numParams)
 {
     if (numParams == 1)
-    {
-        new client = GetNativeCell(1);
-        // call SetMine if any remain in client's inventory
-        if (gRemaining[client]>0)
-            SetMine(client);
-        else
-            PrintHintText(client, "You do not have any tripmines.");
-    }
+        SetMine(GetNativeCell(1));
 }

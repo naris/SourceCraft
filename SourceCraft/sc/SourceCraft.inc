@@ -415,9 +415,9 @@ native RestorePlayer(Handle:player,bool:apply=false);
 native ApplyPlayerSettings();
 
 /**
- * Called when the plugin is ready.
+ * Called when SourceCraft is ready.
  */
-forward OnPluginReady();
+forward OnSourceCraftReady();
  
 /**
  * Gets called when the player has been authed.

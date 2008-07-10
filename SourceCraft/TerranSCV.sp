@@ -15,30 +15,35 @@
 #include <tf2_objects>
 #define REQUIRE_EXTENSIONS
 
-#include "tripmines"
+#undef REQUIRE_PLUGIN
 #include "ammopacks"
-#include "medihancer"
+#include "tripmines"
 #include "tf2teleporter"
+#include "zgrabber"
+#define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"
 #include "sc/util"
-#include "sc/ammo"
 #include "sc/maxhealth"
 #include "sc/weapons"
 #include "sc/screen"
 #include "sc/range"
 #include "sc/trace"
 
-#include "sc/log" // for debugging
+#include "sc/SupplyDepot"
 
-new raceID, supplyID, ammopackID, teleporterID, immunityID, armorID, tripmineID, engineerID;
+new raceID, ammopackID, teleporterID, immunityID, armorID, tripmineID, engineerID;
 
 new g_haloSprite;
 new g_smokeSprite;
 new g_lightningSprite;
 
 new m_Armor[MAXPLAYERS+1];
-new m_Object[MAXPLAYERS+1];
+
+new bool:m_AmmopacksAvailable = false;
+new bool:m_TripminesAvailable = false;
+new bool:m_TeleporterAvailable = false;
+new bool:m_GravgunAvailable = false;
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:liftoffWav[] = "sourcecraft/liftoff.wav";
@@ -58,36 +63,99 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     GetGameType();
-
     HookEvent("player_spawn",PlayerSpawnEvent);
-
-    CreateTimer(5.0,Supply,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
+    m_AmmopacksAvailable = LibraryExists("ammopacks");
+    m_TripminesAvailable = LibraryExists("tripmines");
+    m_TeleporterAvailable = LibraryExists("tf2teleporter");
+    m_GravgunAvailable = LibraryExists("zgrabber");
+
     raceID      = CreateRace("Terran SCV", "scv",
                              "You are now a Terran SCV.",
                              "You will be a Terran SCV when you die or respawn.",
                              48, 20);
 
-    supplyID  = AddUpgrade(raceID,"Supply Depot", "supply", "Provides additional metal or ammo");
+    AddSupplyDepotUpgrade(raceID);
 
-    ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Drop Ammopacks on death and with alt fire of the wrench (at level 2).", false, -1, 2);
+    if (m_AmmopacksAvailable)
+    {
+        ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Drop Ammopacks on death and with alt fire of the wrench (at level 2).", false, -1, 2);
+        ControlAmmopacks(true);
+    }
+    else
+        ammopackID  = AddUpgrade(raceID,"Ammopack", "ammopack", "Not Available", false, 99, 0);
 
-    teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Decreases the recharge rate of your teleporters.");
+    if (m_TeleporterAvailable)
+    {
+        teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Decreases the recharge rate of your teleporters.");
+        ControlTeleporter(true, 1.0);
+    }
+    else
+        teleporterID = AddUpgrade(raceID,"Teleportation", "teleporter", "Not Available", false, 99, 0);
 
     immunityID = AddUpgrade(raceID,"Immunity", "immunity",
                             "Makes you Immune to: Crystal Theft at Level 1,\nUltimates at Level 2,\nMotion Taking at Level 3,\nand Blindness at level 4.");
 
     armorID     = AddUpgrade(raceID,"Armor", "armor", "A suit of Light Armor that takes damage up to 60% until it is depleted.");
 
-    tripmineID   = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
+    if (m_TripminesAvailable)
+    {
+        tripmineID = AddUpgrade(raceID,"Tripmine", "tripmine", "You will be given a tripmine to plant for every level.", true); // Ultimate
+        ControlTripmines(true);
+    }
+    else
+        tripmineID = AddUpgrade(raceID,"Tripmine", "tripmine", "Not Available", true,99,0); // Ultimate
 
-    engineerID   = AddUpgrade(raceID,"Advanced Engineering", "engineer", "Allows you pick up and move objects around.", true, 12); // Ultimate
+    if (m_GravgunAvailable)
+    {
+        engineerID = AddUpgrade(raceID,"Advanced Engineering", "engineer", "Allows you pick up and move objects around.", true, 12, 4); // Ultimate
+        ControlZGrabber(true);
+        HookPickup(OnPickup);
+    }
+    else
+        engineerID = AddUpgrade(raceID,"Advanced Engineering", "engineer", "Not Available", true, 99, 0); // Ultimate
 
-    ControlTeleporter(true, 1.0);
-    ControlAmmopacks(true);
+    CreateSupplyTimer(raceID);
+}
+
+public OnLibraryAdded(const String:name[])
+{
+    if (StrEqual(name, "ammopacks"))
+    {
+        m_AmmopacksAvailable = true;
+        ControlAmmopacks(true);
+    }
+    else if (StrEqual(name, "tf2teleporter"))
+    {
+        m_TeleporterAvailable = true;
+        ControlTeleporter(true, 1.0);
+    }
+    else if (StrEqual(name, "tripmines"))
+    {
+        m_TripminesAvailable = true;
+        ControlTripmines(true);
+    }
+    else if (StrEqual(name, "zgrabber"))
+    {
+        m_GravgunAvailable = true;
+        ControlZGrabber(true);
+        HookPickup(OnPickup);
+    }
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+    if (StrEqual(name, "ammopacks"))
+        m_AmmopacksAvailable = false;
+    else if (StrEqual(name, "tf2teleporter"))
+        m_TeleporterAvailable = false;
+    else if (StrEqual(name, "tripmines"))
+        m_TripminesAvailable = false;
+    else if (StrEqual(name, "zgrabber"))
+        m_GravgunAvailable = false;
 }
 
 public OnMapStart()
@@ -122,12 +190,17 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             if (immunity_level)
                 DoImmunity(client, player, immunity_level,false);
 
-            SetAmmopack(client, 0);
-            SetTeleporter(client, 0.0);
-            GiveTripmine(client, 0);
+            if (m_AmmopacksAvailable)
+                SetAmmopack(client, 0);
 
-            if (m_Object[client] > 0)
-                DropObject(client);
+            if (m_TeleporterAvailable)
+                SetTeleporter(client, 0.0);
+
+            if (m_TripminesAvailable)
+                GiveTripmine(client, 0);
+
+            if (m_GravgunAvailable)
+                TakeGravgun(client);
         }
         else if (race == raceID)
         {
@@ -136,8 +209,11 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             if (immunity_level)
                 DoImmunity(client, player, immunity_level,true);
 
-            new tripmine_level=GetUpgradeLevel(player,race,tripmineID);
-            GiveTripmine(client, tripmine_level);
+            if (m_TripminesAvailable)
+            {
+                new tripmine_level=GetUpgradeLevel(player,race,tripmineID);
+                GiveTripmine(client, tripmine_level);
+            }
 
             new ammopack_level = GetUpgradeLevel(player,raceID,ammopackID);
             if (ammopack_level)
@@ -150,6 +226,10 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             new teleporter_level = GetUpgradeLevel(player,raceID,teleporterID);
             if (teleporter_level)
                 SetupTeleporter(client, teleporter_level);
+
+            new engineer_level=GetUpgradeLevel(player,race,engineerID);
+            if (engineer_level)
+                SetupGravgun(client, engineer_level);
         }
     }
 }
@@ -158,16 +238,21 @@ public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_lev
 {
     if (race == raceID && GetRace(player) == raceID)
     {
-        if (upgrade==ammopackID)
-            SetupAmmopack(client, new_level);
-        else if (upgrade==armorID)
+        if (upgrade==armorID)
             SetupArmor(client, new_level);
-        else if (upgrade==tripmineID)
-            GiveTripmine(client, new_level);
-        else if (upgrade==teleporterID)
-            SetupTeleporter(client, new_level);
         else if (upgrade == immunityID)
             DoImmunity(client, player, new_level,true);
+        else if (upgrade==ammopackID)
+            SetupAmmopack(client, new_level);
+        else if (upgrade==teleporterID)
+            SetupTeleporter(client, new_level);
+        else if (upgrade==engineerID)
+            SetupGravgun(client, new_level);
+        else if (upgrade==tripmineID)
+        {
+            if (m_TripminesAvailable)
+                GiveTripmine(client, new_level);
+        }
     }
 }
 
@@ -178,29 +263,34 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
         new tripmine_level=GetUpgradeLevel(player,race,tripmineID);
         if (tripmine_level)
         {
-            if (!pressed)
+            if (m_TripminesAvailable && !pressed)
                 SetTripmine(client);
+            else
+            {
+                if (pressed)
+                    PrintHintText(client,"Tripmines are not available");
+            }
         }
         else
         {
             new engineer_level=GetUpgradeLevel(player,race,engineerID);
             if (engineer_level)
             {
-                if (pressed)
+                if (m_GravgunAvailable)
                 {
-                    if (m_Object[client] > 0)
-                        DropObject(client);
+                    if (pressed)
+                        StartThrowObject(client);
                     else
-                        PickupObject(client);
+                        ThrowObject(client);
+                }
+                else
+                {
+                    if (pressed)
+                        PrintHintText(client, "Advanced Engineering is not available");
                 }
             }
         }
     }
-}
-
-public OnPlayerAuthed(client,Handle:player)
-{
-    FindMaxHealthOffset(client);
 }
 
 // Events
@@ -241,19 +331,6 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                 attacker_index,Handle:attacker_player,attacker_race,
-                                 assister_index,Handle:assister_player,assister_race,
-                                 damage,const String:weapon[], bool:is_equipment,
-                                 customkill,bool:headshot,bool:backstab,bool:melee)
-{
-    if (victim_index && victim_race == raceID)
-    {
-        if (m_Object[victim_index] > 0)
-            DropObject(victim_index);
-    }
-}
-
 DoImmunity(client, Handle:player, level, bool:value)
 {
     if (level >= 1)
@@ -291,7 +368,7 @@ SetupArmor(client, level)
         case 1: m_Armor[client] = GetMaxHealth(client) / 4;
         case 2: m_Armor[client] = GetMaxHealth(client) / 3;
         case 3: m_Armor[client] = GetMaxHealth(client) / 2;
-        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*0.75); 
+        case 4: m_Armor[client] = RoundFloat(float(GetMaxHealth(client))*0.75);
     }
 }
 
@@ -342,280 +419,81 @@ bool:Armor(damage, victim_index, Handle:victim_player)
             decl String:victimName[64];
             GetClientName(victim_index,victimName,63);
 
-            PrintToChat(victim_index,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+            DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                           "%c[SourceCraft] %s %cyour armor absorbed %d hp",
+                           COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
             return true;
         }
     }
     return false;
 }
 
-PickupObject(client)
-{
-    new target = TraceAimTarget(client);
-    if (target >= 0)
-    {
-        new Float:clientLoc[3];
-        GetClientAbsOrigin(client, clientLoc);
-
-        new Float:targetLoc[3];
-        TR_GetEndPosition(targetLoc);
-
-        if (IsPointInRange(clientLoc,targetLoc,200.0))
-        {
-            decl String:class[32];
-            if (IsValidEntity(target) &&
-                GetEntityNetClass(target,class,sizeof(class)))
-            {
-                new objects:type;
-                if (StrEqual(class, "CObjectSentrygun", false))
-                    type = sentrygun;
-                else if (StrEqual(class, "CObjectDispenser", false))
-                    type = dispenser;
-                else if (StrEqual(class, "CObjectTeleporter", false))
-                    type = objects:GetEntPropEnt(target, Prop_Send, "m_iObjectType");
-                else
-                    type = unknown;
-
-                if (type != unknown)
-                {
-                    //Check to see if the object is still being built
-                    new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
-                    new building = GetEntProp(target, Prop_Send, "m_bBuilding");
-                    new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
-                    if (placing == 0 && building == 0 && complete >= 1.0)
-                    {
-                        new builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
-                        new Handle:player_check=GetPlayerHandle(builder);
-                        if (player_check != INVALID_HANDLE)
-                        {
-                            if (!GetImmunity(player_check,Immunity_Ultimates))
-                            {
-                                m_Object[client] = target;
-                                new parent = GetEntPropEnt(target, Prop_Send, "moveparent");
-                                LogMessage("parent=%d", parent);
-                                SetEntPropEnt(target, Prop_Send, "moveparent", client);
-                                SetEntityMoveType(target, MOVETYPE_FLY);
-
-                                new Float:clientPos[3];
-                                GetClientAbsOrigin(client,clientPos);
-
-                                new Float:targetPos[3];
-                                GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPos);
-
-                                new Float:origin[3];
-                                SubtractVectors(clientPos, targetPos, origin);
-                                origin[2] += 50.0;
-                                TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
-                                EmitSoundFromOrigin(liftoffWav, targetPos);
-                            }
-                            else
-                            {
-                                EmitSoundToClient(client,errorWav);
-                                PrintToChat(client,"%c[SourceCraft] %cTarget is %cimmune%c to ultimates!",
-                                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                            }
-                        }
-                        else
-                            EmitSoundToClient(client,deniedWav);
-                    }
-                    else
-                    {
-                        EmitSoundToClient(client,errorWav);
-                        PrintToChat(client,"%c[SourceCraft] %cTarget is still %cbuilding%c!",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                    }
-                }
-                else
-                {
-                    EmitSoundToClient(client,deniedWav);
-                    PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
-                                COLOR_GREEN,COLOR_DEFAULT);
-                }
-            }
-            else
-            {
-                EmitSoundToClient(client,deniedWav);
-                PrintToChat(client,"%c[SourceCraft] %cInvalid Target!",
-                            COLOR_GREEN,COLOR_DEFAULT);
-            }
-        }
-        else
-        {
-            EmitSoundToClient(client,errorWav);
-            PrintToChat(client,"%c[SourceCraft] %cTarget is too far away!",
-                        COLOR_GREEN,COLOR_DEFAULT);
-        }
-    }
-    else
-        EmitSoundToClient(client,deniedWav);
-}
-
-DropObject(client)
-{
-    new target = m_Object[client];
-    if (target > 0)
-    {
-        m_Object[client] = 0;
-        if (IsValidEntity(target))
-        {
-            new Float:clientPos[3],Float:clientAng[3];
-            GetClientEyePosition(client,clientPos);
-            GetClientEyeAngles(client,clientAng);
-
-            new Float:dir[3],Float:endLoc[3];
-            GetAngleVectors(clientAng,dir,NULL_VECTOR,NULL_VECTOR);
-            ScaleVector(dir, 200.0);
-            AddVectors(clientPos, dir, endLoc);
-            TR_TraceRayFilter(clientPos,endLoc,MASK_PLAYERSOLID_BRUSHONLY,
-                              RayType_EndPoint,TraceRayTryToHit);
-
-            new Float:origin[3];
-            TR_GetEndPosition(origin);
-
-            new Float:vecCheckBelow[3];
-            vecCheckBelow[0] = origin[0];
-            vecCheckBelow[1] = origin[1];
-            vecCheckBelow[2] = origin[2] - 1000.0;
-
-            TR_TraceRayFilter(origin, vecCheckBelow, MASK_PLAYERSOLID,
-                              RayType_EndPoint, TraceRayDontHitSelf, target);
-
-            new parent = -1;
-            if (TR_DidHit(INVALID_HANDLE))
-            {
-                TR_GetEndPosition(origin);
-                parent = TR_GetEntityIndex();
-                if (parent < GetMaxClients())
-                    parent = -1;
-            }
-
-            SetEntPropEnt(target, Prop_Send, "moveparent", parent);
-            SetEntityMoveType(target, MOVETYPE_NONE);
-
-            TeleportEntity(target, origin, NULL_VECTOR, NULL_VECTOR);
-            EmitSoundFromOrigin(landWav, origin);
-        }
-    }
-}
-
 public SetupAmmopack(client, level)
 {
-    if (level)
-        SetAmmopack(client, (level >= 2) ? 3 : 1);
-    else
-        SetAmmopack(client, 0);
+    if (m_AmmopacksAvailable)
+    {
+        if (level)
+            SetAmmopack(client, (level >= 2) ? 3 : 1);
+        else
+            SetAmmopack(client, 0);
+    }
 }
 
 public SetupTeleporter(client, level)
 {
-    switch (level)
+    if (m_TeleporterAvailable)
     {
-        case 0: SetTeleporter(client, 0.0);
-        case 1: SetTeleporter(client, 8.0);
-        case 2: SetTeleporter(client, 6.0);
-        case 3: SetTeleporter(client, 3.0);
-        case 4: SetTeleporter(client, 1.0); 
+        switch (level)
+        {
+            case 0: SetTeleporter(client, 0.0);
+            case 1: SetTeleporter(client, 8.0);
+            case 2: SetTeleporter(client, 6.0);
+            case 3: SetTeleporter(client, 3.0);
+            case 4: SetTeleporter(client, 1.0);
+        }
     }
 }
 
-public Action:Supply(Handle:timer)
+public SetupGravgun(client, level)
 {
-    new maxplayers=GetMaxClients();
-    for(new client=1;client<=maxplayers;client++)
+    if (m_GravgunAvailable)
     {
-        if(IsClientInGame(client))
+        if (level == 0)
+            TakeGravgun(client);
+        else
         {
-            if(IsPlayerAlive(client))
+            new Float:speed = 500.0 * float(level);
+            new Float:duration = 5.0 * float(level);
+            new permissions=HAS_GRABBER|CAN_GRAB_BUILDINGS;
+            switch (level)
             {
-                new Handle:player=GetPlayerHandle(client);
-                if(player != INVALID_HANDLE && GetRace(player) == raceID)
+                case 2: permissions |= CAN_STEAL|CAN_GRAB_OTHER_BUILDINGS;
+                case 3: permissions |= CAN_STEAL|CAN_GRAB_OTHER_BUILDINGS|CAN_THROW_BUILDINGS;
+                case 4:
                 {
-                    new supply_level=GetUpgradeLevel(player,raceID,supplyID);
-                    if (supply_level)
-                    {
-                        if (GameType == tf2)
-                        {
-                            switch (TF2_GetPlayerClass(client))
-                            {
-                                case TFClass_Heavy: 
-                                {
-                                    new ammo = GetAmmo(client, Primary);
-                                    if (ammo < 400.0)
-                                    {
-                                        SetAmmo(client, Primary, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cSupply Depot%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                    }
-                                }
-                                case TFClass_Pyro: 
-                                {
-                                    new ammo = GetAmmo(client, Primary);
-                                    if (ammo < 400.0)
-                                    {
-                                        SetAmmo(client, Primary, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cSupply Depot%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                    }
-                                }
-                                case TFClass_Medic: 
-                                {
-                                    new ammo = GetAmmo(client, Primary);
-                                    if (ammo < 300.0)
-                                    {
-                                        SetAmmo(client, Primary, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cSupply Depot%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                    }
-                                }
-                                case TFClass_Engineer: // Gets Metal instead of Ammo
-                                {
-                                    new ammo = GetAmmo(client, Metal);
-                                    if (ammo < 400.0)
-                                    {
-                                        SetAmmo(client, Metal, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received metal from the %cSupply Depot%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                    }
-                                }
-                                default:
-                                {
-                                    new ammo = GetAmmo(client, Primary);
-                                    if (ammo < 60.0)
-                                    {
-                                        SetAmmo(client, Primary, ammo + (10 * supply_level));
-                                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cSupply Depot%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            new ammoType  = 0;
-                            new curWeapon = GetActiveWeapon(client);
-                            if (curWeapon > 0)
-                                ammoType  = GetAmmoType(curWeapon);
-
-                            if (ammoType > 0)
-                                GiveAmmo(client,ammoType,10,true);
-                            else
-                                SetClip(curWeapon, 5);
-
-                            PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cSupply Depot%c.",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                        }
-                    }
+                    permissions |= CAN_STEAL|CAN_GRAB_OTHER_BUILDINGS|CAN_THROW_BUILDINGS;
+                    duration = 30.0;
                 }
+            }
+            GiveGravgun(client, duration, speed, -1.0, permissions);
+        }
+    }
+}
+
+public Action:OnPickup(client, builder, ent)
+{
+    if (builder != client)
+    {
+        new Handle:player_check=GetPlayerHandle(builder);
+        if (player_check != INVALID_HANDLE)
+        {
+            if (GetImmunity(player_check,Immunity_Ultimates))
+            {
+                PrintToChat(client,"%c[SourceCraft] %cTarget is %cimmune%c to ultimates!",
+                            COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                return Plugin_Stop;
             }
         }
     }
     return Plugin_Continue;
-}
-
-stock EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
-{
-    EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,
-                   SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,
-                   NULL_VECTOR,true,0.0);
 }

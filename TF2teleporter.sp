@@ -22,8 +22,6 @@ public Plugin:myinfo =
 new maxents;
 new maxplayers;
 
-//new TimeOffset, OwnerOffset, TeamOffset, TypeOffset;
-
 new TeleporterList[ MAXPLAYERS ][ 2 ];
 
 new bool:NativeControl = false;
@@ -58,11 +56,6 @@ public OnPluginStart()
     g_cvars[TELEBLUETIME] = CreateConVar("sm_teleblue_time","0.6","Amount of time for blue tele to recharg, 0.0=disable");
     g_cvars[TELEREDTIME] = CreateConVar("sm_telered_time","0.6","Amount of time for red tele to recharg, 0.0=disable");
     g_cvars[TELETIME] = CreateConVar("sm_tele_time","0.0","Amount of time for the recharge timer tick, 0.0=auto");
-
-	//TimeOffset = FindSendPropInfo("CObjectTeleporter", "m_flRechargeTime");
-	//OwnerOffset = FindSendPropInfo("CObjectTeleporter", "m_hBuilder");
-	//TeamOffset = FindSendPropInfo("CObjectTeleporter", "m_iTeamNum");
-	//TypeOffset = FindSendPropInfo("CObjectTeleporter", "m_iObjectType");
 
     HookEvent("player_builtobject", Event_player_builtobject);
 }
@@ -148,7 +141,7 @@ public Action:CheckAllTeles(Handle:timer, any:useless)
                 TeleporterList[i][LIST_OBJECT] = 0;
                 continue;
             }
-            else if( GetEntProp(entity, Prop_Send, "m_hBuilder") != i )
+            else if ( GetEntPropEnt(entity, Prop_Send, "m_hBuilder") != i )
             {
                 TeleporterList[i][LIST_OBJECT] = 0;
                 continue;
@@ -167,16 +160,12 @@ public Action:CheckAllTeles(Handle:timer, any:useless)
         if (time <= 0.0)
             continue;
 
-        //oldtime = GetEntDataFloat(TeleporterList[i][ LIST_SENTRY ], TimeOffset);
         oldtime = GetEntPropFloat(entity, Prop_Send, "m_flRechargeTime");
         if( float(RoundFloat(oldtime)) == oldtime)
             continue;
 
         newtime = oldtime - 10.5 + time;
 
-        LogMessage("Change %0.2f %0.2f %0.2f", newtime, oldtime, GetGameTime());
-
-        //SetEntDataFloat(TeleporterList[i][ LIST_SENTRY ], TimeOffset, float(RoundFloat(newtime)), true);
         SetEntPropFloat(entity, Prop_Send, "m_flRechargeTime", float(RoundFloat(newtime)));
     } 
 }
@@ -202,12 +191,9 @@ public Action:Event_player_builtobject(Handle:event, const String:name[], bool:d
             GetEntityNetClass(i, classname, sizeof(classname));
             if(StrEqual(classname, "CObjectTeleporter"))
             {
-                //if( GetEntData(i, TypeOffset, 4) == 1 ){
                 if( GetEntProp(i, Prop_Send, "m_iObjectType") == 1 )
                 {
-                    //owner = GetEntDataEnt2(i, OwnerOffset);		    
                     owner = GetEntPropEnt(i, Prop_Send, "m_hBuilder");
-                    //TeleporterList[owner][ LIST_TEAM ] = GetEntData(i, TeamOffset, 4);
                     TeleporterList[owner][ LIST_TEAM ] = GetEntProp(i, Prop_Send, "m_iTeamNum");
                     TeleporterList[owner][ LIST_OBJECT ] = i;	
                 }	

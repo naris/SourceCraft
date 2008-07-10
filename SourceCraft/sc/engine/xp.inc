@@ -84,7 +84,7 @@ ReqLevelXP(level)
 
 DoLevelCheck(client,Handle:playerHandle)
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         new bool:m_Go=true;
         while(m_Go)
@@ -143,7 +143,7 @@ DoLevelCheck(client,Handle:playerHandle)
 
 ShowXP(client,Handle:playerHandle)
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         new race=GetRace(playerHandle);
         if (race >= 0)
@@ -175,7 +175,7 @@ ShowXP(client,Handle:playerHandle)
 GiveKillXP(index,Handle:playerHandle,Handle:victim_player,bool:headshot,
            bool:backstab,bool:melee,bool:dominated,bool:revenge,bool:assist)
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         new amount;
         if (victim_player != INVALID_HANDLE)
@@ -270,7 +270,6 @@ TakeObjectBuiltXP(client,Handle:playerHandle,objects:object)
     // Called when a player destroys thier own object
     decl String:msg[128];
     Format(msg, sizeof(msg), "destroying your own %s", TF2_ObjectNames[object]);
-    LogMessage("Destructed the %d", object);
     TakeXP(client,playerHandle,BUILD_XP, msg);
 }
 
@@ -321,7 +320,7 @@ GiveMvpXP(client,Handle:playerHandle,place,points)
 
 GiveXP(client,Handle:playerHandle, amount, const String:reason[])
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         // Called when a player is given XP
         new Action:result;
@@ -349,7 +348,7 @@ GiveXP(client,Handle:playerHandle, amount, const String:reason[])
 
 TakeXP(client,Handle:playerHandle, amount, const String:reason[])
 {
-    if (GetRaceCount() >= 1)
+    if (GetRaceCount() > 1)
     {
         // Called when a player destroys thier own object
         new Action:result;

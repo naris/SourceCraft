@@ -18,7 +18,10 @@
 #include <tftools>
 #define REQUIRE_EXTENSIONS
 
-#include <tripmines>
+#undef REQUIRE_PLUGIN
+#include "tripmines"
+#include "firemines"
+#define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"
 #include "sc/util"
@@ -26,11 +29,11 @@
 #include "sc/maxhealth"
 #include "sc/respawn"
 #include "sc/weapons"
-#include "sc/log"
-
-new Handle:hGameConf      = INVALID_HANDLE;
-
 #include "sc/ammo"
+
+new Handle:hGameConf = INVALID_HANDLE;
+
+#include "sc/giveammo"
 
 // Defines
 
@@ -60,7 +63,8 @@ new Handle:hGameConf      = INVALID_HANDLE;
 #define ITEM_GOGGLES         23 // The Goggles - Immunity to Blindness/etc.!
 #define ITEM_BLINDERS        24 // Blinders - Permanent converts drugs and other obnoxious effects to blindness
 #define ITEM_TRIPMINE        25 // Tripmines - 1 tripmine to plant (using sm_tripmine command/bind)
-#define MAXITEMS             26
+#define ITEM_FIREMINE        26 // Firemines - 1 firemine (spidermine) to plant (using sm_mine command/bind)
+#define MAXITEMS             27
  
 new myWepsOffset;
 
@@ -69,6 +73,9 @@ new Float:spawnLoc[MAXPLAYERS+1][3];
 new bool:usedPeriapt[MAXPLAYERS+1];
 new bool:isMole[MAXPLAYERS+1];
 new Float:gClawTime[MAXPLAYERS+1];
+
+new bool:m_TripminesAvailable = false;
+new bool:m_FireminesAvailable = false;
 
 enum TFClass { none, scout, sniper, soldier, demoman, medic, heavy, pyro, spy, engineer };
 stock String:tfClassNames[10][] = {"", "Scout", "Sniper", "Soldier", "Demoman", "Medic", "Heavy Guy", "Pyro", "Spy", "Engineer" };
@@ -111,8 +118,11 @@ public OnPluginStart()
         CreateTimer(1.0,TrackWeapons,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
+    m_TripminesAvailable = LibraryExists("tripmines");
+    m_FireminesAvailable = LibraryExists("firemines");
+
     shopItem[ITEM_BLINDERS]=CreateShopItem("Blinders", "blinders",
                                            "Converts Hallucination, etc. to blindness.",
                                            0);
@@ -182,9 +192,21 @@ public OnPluginReady()
                                        "You will be given ammo or metal every 10 seconds.",
                                        35);
 
-    shopItem[ITEM_TRIPMINE]=CreateShopItem("Tripmine", "tripmine", 
-                                           "You will be given 1 tripmine to plant.\nBind a key to sm_tripmine to plant the tripmine.",
-                                           65);
+    if (m_TripminesAvailable)
+    {
+        shopItem[ITEM_TRIPMINE]=CreateShopItem("Tripmine", "tripmine", 
+                                               "You will be given 1 tripmine to plant.\nBind a key to sm_tripmine to plant the tripmine.",
+                                               65, 5);
+        ControlTripmines(true);
+    }                                               
+
+    if (m_FireminesAvailable)
+    {
+        shopItem[ITEM_FIREMINE]=CreateShopItem("Mine", "mine", 
+                                               "You will be given 1 mine to plant.\nBind a key to sm_mine to plant the mine.",
+                                               65, 5);
+        ControlMines(true);
+    }                                               
 
     shopItem[ITEM_SACK]=CreateShopItem("Sack of Looting", "sack", 
                                        "Gives you a 55-85% chance to loot up to 25-50% of a corpse's crystals when you kill them.\nAttacking with melee weapons increases the odds and amount of crystals stolen.\nBackstabbing further increases the odds and amount!",
@@ -222,10 +244,7 @@ public OnPluginReady()
                                                  "Keep your Mole Protection and/or Reflection\nafter you die until it is used.",
                                                  15);
 
-    FindClipOffsets();
     LoadSDKToolStuff();
-
-    ControlTripmines(true);
 }
 
 public LoadSDKToolStuff()
@@ -266,6 +285,28 @@ public LoadSDKToolStuff()
     }
 }
 
+public OnLibraryAdded(const String:name[])
+{
+    if (StrEqual(name, "tripmines"))
+    {
+        m_TripminesAvailable = true;
+        ControlTripmines(true);
+    }
+    else if (StrEqual(name, "firemines"))
+    {
+        m_FireminesAvailable = true;
+        ControlMines(true);
+    }
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+    if (StrEqual(name, "tripmines"))
+        m_TripminesAvailable = false;
+    else if (StrEqual(name, "firemines"))
+        m_FireminesAvailable = false;
+}
+
 public OnMapStart()
 {
     SetupSound(bootsWav, true, true);
@@ -273,8 +314,7 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindAmmoOffset(client);
-    FindMaxHealthOffset(client);
+    gClawTime[client] = 0.0;
     if (GameType == cstrike)
         vecPlayerWeapons[client]=CreateArray(ByteCountToCells(128));
 }
@@ -316,8 +356,10 @@ public OnItemPurchase(client,Handle:player,item)
     }
     else if(item==shopItem[ITEM_SOCK])                                  // Sock of the Feather
         SetGravity(player, 0.5, true);
-    else if(item==shopItem[ITEM_TRIPMINE])                              // Tripmine
-        GiveTripmine(client, 1);
+    else if(item==shopItem[ITEM_TRIPMINE] && m_TripminesAvailable)      // Tripmine
+        AddTripmine(client, 1);
+    else if(item==shopItem[ITEM_FIREMINE] && m_FireminesAvailable)      // Firemine
+        AddMine(client, 1);
 }
 
 public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -327,6 +369,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
     if (client)
     {
         GetClientAbsOrigin(client,spawnLoc[client]);
+        gClawTime[client] = 0.0;
 
         new Handle:player=GetPlayerHandle(client);
         if (player != INVALID_HANDLE)
@@ -363,9 +406,6 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if(GetOwnsItem(player,shopItem[ITEM_SOCK]))                            // Sock of the Feather
                 SetGravity(player,0.5);
-
-            if(GetOwnsItem(player,shopItem[ITEM_TRIPMINE]))                        // Tripmine
-                GiveTripmine(client,1);
 
             if(GetOwnsItem(player,shopItem[ITEM_MOLE]))                            // Mole
             {
@@ -463,14 +503,28 @@ public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,
             if(GetOwnsItem(victim_player,shopItem[ITEM_PACK]))
                 SetOwnsItem(victim_player,shopItem[ITEM_PACK],false);
 
-            if(GetOwnsItem(victim_player,shopItem[ITEM_TRIPMINE]))
-                SetOwnsItem(victim_player,shopItem[ITEM_TRIPMINE],false);
+            if (m_TripminesAvailable)
+            {
+                new numTripmines = GetOwnsItem(victim_player,shopItem[ITEM_TRIPMINE]);
+                if (numTripmines > 0)
+                {
+                    SetOwnsItem(victim_player,shopItem[ITEM_TRIPMINE],false);
+                    SubTripmine(victim_index, numTripmines);
+                }
+            }
+
+            if (m_FireminesAvailable)
+            {
+                new numFiremines = GetOwnsItem(victim_player,shopItem[ITEM_FIREMINE]);
+                if (numFiremines > 0)
+                {
+                    SetOwnsItem(victim_player,shopItem[ITEM_FIREMINE],false);
+                    SubTripmine(victim_index, numFiremines);
+                }
+            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_SACK]))
-            {
                 SetOwnsItem(victim_player,shopItem[ITEM_SACK],false);
-                GiveTripmine(victim_index, 0);
-            }
 
             if(GetOwnsItem(victim_player,shopItem[ITEM_LOCKBOX]))
             {
@@ -557,36 +611,40 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                     if (reflection && protection && GetRandomInt(1,100)<=50)
                         new_health += (damage*GetRandomFloat(0.25,0.75));
 
+                    new amount = new_health-victim_health;
+
+                    if (reflection)
+                    {
+                        if(!GetImmunity(attacker_player,Immunity_ShopItems) &&
+                           !GetImmunity(attacker_player,Immunity_HealthTake) &&
+                           !TF2_IsPlayerInvuln(attacker_index))
+                        {
+                            new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
+                            HurtPlayer(attacker_index,reflect,victim_index,"mole_reflection", "Mole Reflection", 10);
+
+                            if (amount < reflect)
+                            {
+                                new_health += reflect - amount;
+                                amount = reflect;
+                            }
+                        }
+
+                        DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                                       "%c[SourceCraft]%c You have received %d hp from %cMole Reflection%c.",
+                                       COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+                    else
+                    {
+                        DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                                       "%c[SourceCraft]%c You have received %d hp from %cMole Protection%c.",
+                                       COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
+                    }
+
                     if (new_health>victim_health)
                     {
                         changed = true;
-                        new amount = new_health-victim_health;
-
-                        if (reflection)
-                        {
-                            if(!GetImmunity(attacker_player,Immunity_ShopItems) &&
-                               !GetImmunity(attacker_player,Immunity_HealthTake) &&
-                               !TF2_IsPlayerInvuln(attacker_index))
-                            {
-                                new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
-                                HurtPlayer(attacker_index,reflect,victim_index,"mole_reflection", "Mole Reflection", 10);
-
-                                if (amount < reflect)
-                                {
-                                    new_health += reflect - amount;
-                                    amount = reflect;
-                                }
-                            }
-
-                            PrintToChat(victim_index,"%c[SourceCraft]%c You have received %d hp from %cMole Reflection%c.",
-                                        COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
-                        }
-                        else
-                        {
-                            PrintToChat(victim_index,"%c[SourceCraft]%c You have received %d hp from %cMole Protection%c.",
-                                        COLOR_GREEN,COLOR_DEFAULT,amount,COLOR_TEAM,COLOR_DEFAULT);
-                        }
-                        SetEntityHealth(victim_index,new_health);
+                        new max_health = TF2_GetPlayerResourceData(victim_index, TFResource_MaxHealth);
+                        SetEntityHealth(victim_index,(new_health>max_health) ? max_health : new_health);
                     }
 
                     if(GetOwnsItem(victim_player,shopItem[ITEM_MOLE_RETENTION]))
@@ -618,13 +676,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                             if (newhealth <= 0)
                             {
                                 newhealth=0;
-                                LogKill(attacker_index, victim_index,
-                                        "item_claws", "Claws of Attack", amount);
+                                DisplayKill(attacker_index, victim_index,
+                                            "item_claws", "Claws of Attack", amount);
                             }
                             else
                             {
-                                LogDamage(attacker_index, victim_index,
-                                          "item_claws", "Claws of Attack", amount);
+                                DisplayDamage(attacker_index, victim_index,
+                                              "item_claws", "Claws of Attack", amount);
                             }
 
                             SetEntityHealth(victim_index,newhealth);
@@ -646,13 +704,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                             if (newhealth <= 0)
                             {
                                 newhealth=0;
-                                LogKill(assister_index, victim_index,
-                                        "item_claws", "Claws of Attack", amount);
+                                DisplayKill(assister_index, victim_index,
+                                            "item_claws", "Claws of Attack", amount);
                             }
                             else
                             {
-                                LogDamage(assister_index, victim_index,
-                                          "item_claws", "Claws of Attack", amount);
+                                DisplayDamage(assister_index, victim_index,
+                                              "item_claws", "Claws of Attack", amount);
                             }
 
                             SetEntityHealth(victim_index,newhealth);
@@ -670,8 +728,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                         SetEntityHealth(attacker_index,newhealth);
                         changed = true;
 
-                        PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
-                                    COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                        DisplayMessage(attacker_index,SC_DISPLAY_DEFENSE,
+                                       "%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
+                                       COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
                     }
                 }
 
@@ -682,8 +741,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                     SetEntityHealth(assister_index,newhealth);
                     changed = true;
 
-                    PrintToChat(attacker_index,"%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
-                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+                    DisplayMessage(attacker_index,SC_DISPLAY_DEFENSE,
+                                   "%c[SourceCraft]%c You have received 2 hp from %N using %cMask of Death%c.",
+                                   COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
                 }
 
                 if (GetOwnsItem(attacker_player,shopItem[ITEM_ORB]) ||
@@ -710,8 +770,9 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
                         StrCat(aname,sizeof(aname), "+");
                         StrCat(aname,sizeof(aname), assister);
                     }
-                    PrintToChat(victim_index,"%c[SourceCraft] %s %chas frozen you with the %cOrb of Frost%c",
-                                COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                    DisplayMessage(victim_index,SC_DISPLAY_ENEMY_MESSAGE,
+                                   "%c[SourceCraft] %s %chas frozen you with the %cOrb of Frost%c",
+                                   COLOR_GREEN,aname,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                 }
             }
         }
@@ -798,70 +859,76 @@ public Action:AmmoPack(Handle:timer)
                         {
                             case TFClass_Heavy: 
                             {
-                                new ammo = GetAmmo(client, Primary) + 20;
+                                new ammo = TF2_GetAmmoAmount(client, Primary) + 20;
                                 if (ammo < 400.0)
                                 {
-                                    SetAmmo(client, Primary, ammo);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from the %cInfinite Ammo Pack%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    TF2_SetAmmoAmount(client, ammo, Primary);
+                                    DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                                                   "%c[SourceCraft]%c You have received ammo from the %cInfinite Ammo Pack%c.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
                             case TFClass_Pyro: 
                             {
-                                new ammo = GetAmmo(client, Primary) + 20;
+                                new ammo = TF2_GetAmmoAmount(client, Primary) + 20;
                                 if (ammo < 400.0)
                                 {
-                                    SetAmmo(client, Primary, ammo);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    TF2_SetAmmoAmount(client, ammo, Primary);
+                                    DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                                                   "%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
                             case TFClass_Medic: 
                             {
-                                new ammo = GetAmmo(client, Primary) + 20;
+                                new ammo = TF2_GetAmmoAmount(client, Primary) + 20;
                                 if (ammo < 300.0)
                                 {
-                                    SetAmmo(client, Primary, ammo);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    TF2_SetAmmoAmount(client, ammo, Primary);
+                                    DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                                                   "%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
                             case TFClass_Engineer: // Gets Metal instead of Ammo
                             {
-                                new ammo = GetAmmo(client, Metal) + 20;
+                                new ammo = TF2_GetAmmoAmount(client, Metal) + 20;
                                 if (ammo < 400.0)
                                 {
-                                    SetAmmo(client, Metal, ammo);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have received metal from %cInfinite Ammo Pack%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    TF2_SetAmmoAmount(client, ammo, Metal);
+                                    DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                                                   "%c[SourceCraft]%c You have received metal from %cInfinite Ammo Pack%c.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
                             default:
                             {
-                                new ammo = GetAmmo(client, Primary) + 20;
+                                new ammo = TF2_GetAmmoAmount(client, Primary) + 20;
                                 if (ammo < 60.0)
                                 {
-                                    SetAmmo(client, Primary, ammo);
-                                    PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    TF2_SetAmmoAmount(client, ammo, Primary);
+                                    DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                                                   "%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                                   COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        new ammoType  = 0;
                         new curWeapon = GetActiveWeapon(client);
                         if (curWeapon > 0)
-                            ammoType  = GetAmmoType(curWeapon);
+                        {
+                            new ammoType = GetAmmoType(curWeapon);
+                            if (ammoType > 0)
+                                GiveAmmo(client,ammoType,10,true);
+                            else
+                                SetClip(curWeapon, 5);
 
-                        if (ammoType > 0)
-                            GiveAmmo(client,ammoType,10,true);
-                        else
-                            SetClip(curWeapon, 5);
-
-                        PrintToChat(client,"%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                            DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
+                                           "%c[SourceCraft]%c You have received ammo from %cInfinite Ammo Pack%c.",
+                                           COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                        }
                     }
                 }
             }
@@ -884,7 +951,7 @@ public Action:TrackWeapons(Handle:timer)
                 new iterOffset=myWepsOffset;
                 for(new y=0;y<48;y++)
                 {
-                    new wepEnt=GetEntDataEnt(x,iterOffset);
+                    new wepEnt=GetEntDataEnt2(x,iterOffset);
                     if(wepEnt>0&&IsValidEdict(wepEnt))
                     {
                         GetEdictClassname(wepEnt,wepName,sizeof(wepName));
@@ -913,7 +980,7 @@ public Action:Ankh(Handle:timer,Handle:pack)
             new iter=myWepsOffset;
             for(new x=0;x<48;x++)
             {
-                new ent=GetEntDataEnt(client,iter);
+                new ent=GetEntDataEnt2(client,iter);
                 if(ent>0&&IsValidEdict(ent))
                 {
                     GetEdictClassname(ent,wepName,sizeof(wepName));

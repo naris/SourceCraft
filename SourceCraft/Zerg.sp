@@ -22,7 +22,6 @@
 #include "sc/trace"
 #include "sc/weapons"
 #include "sc/maxhealth"
-#include "sc/log"
 
 new String:errorWav[] = "sourcecraft/perror.mp3";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
@@ -50,7 +49,7 @@ public OnPluginStart()
     CreateTimer(3.0,Regeneration,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID          = CreateRace("Zerg", "zerg",
                                  "You are now part of the Zerg.",
@@ -63,6 +62,8 @@ public OnPluginReady()
     tentacleID      = AddUpgrade(raceID,"Tentacles", "tentacles", "Reach out and grab an opponent.", true); // Ultimate
 
     ControlHookGrabRope(true);
+    HookGrab(OnGrab);
+    HookDrop(OnDrop);
 }
 
 public OnMapStart()
@@ -88,11 +89,6 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         else if (race == raceID)
             Tentacles(client, player, GetUpgradeLevel(player,race,tentacleID));
     }
-}
-
-public OnPlayerAuthed(client,Handle:player)
-{
-    FindMaxHealthOffset(client);
 }
 
 public Action:Regeneration(Handle:timer)
@@ -309,10 +305,10 @@ public bool:AdrenalGlands(damage, victim_index, Handle:victim_player, index, Han
             if (newhp <= 0)
             {
                 newhp=0;
-                LogKill(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
+                DisplayKill(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
             }
             else
-                LogDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
+                DisplayDamage(index, victim_index, "adrenal_glands", "Adrenal Glands", amount);
 
             SetEntityHealth(victim_index,newhp);
 

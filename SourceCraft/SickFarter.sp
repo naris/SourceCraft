@@ -22,7 +22,6 @@
 #include "sc/trace"
 #include "sc/maxhealth"
 #include "sc/weapons"
-#include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:fart1Wav[] = "sourcecraft/fart.wav";
@@ -60,7 +59,7 @@ public OnPluginStart()
     CreateTimer(2.0,Revulsion,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID       = CreateRace("Sick Fucker", "farter",
                               "You are now a Sick Fucker.",
@@ -107,14 +106,17 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
     m_AllowFart[client]=true;
+    gPickPocketTime[client] = 0.0;
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,newrace)
 {
     if (oldrace == raceID && newrace != raceID)
+    {
         m_AllowFart[client]=true;
+        gPickPocketTime[client] = 0.0;
+    }
 }
 
 public OnUltimateCommand(client,Handle:player,race,bool:pressed)
@@ -143,7 +145,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
         if (attacker_player != INVALID_HANDLE)
         {
-            if (FesteringAbomination(damage, victim_index, attacker_index, attacker_player))
+            if (FesteringAbomination(damage, victim_index, victim_player, attacker_index, attacker_player))
                 changed = true;
         }
 
@@ -156,7 +158,7 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
 
         if (assister_player != INVALID_HANDLE)
         {
-            if (FesteringAbomination(damage, victim_index, assister_index, assister_player))
+            if (FesteringAbomination(damage, victim_index, victim_player, assister_index, assister_player))
                 changed = true;
         }
     }
@@ -164,13 +166,13 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
+public bool:FesteringAbomination(damage, victim_index,Handle:victim_player, index, Handle:player)
 {
     new fa_level = GetUpgradeLevel(player,raceID,festerID);
     if (fa_level > 0)
     {
-        if (!GetImmunity(player,Immunity_HealthTake) &&
-            !TF2_IsPlayerInvuln(index))
+        if (!GetImmunity(victim_player,Immunity_HealthTake) &&
+            !TF2_IsPlayerInvuln(victim_index))
         {
             new chance;
             switch(fa_level)
@@ -204,10 +206,10 @@ public bool:FesteringAbomination(damage, victim_index, index, Handle:player)
                 if (new_health <= 0)
                 {
                     new_health=0;
-                    LogKill(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
+                    DisplayKill(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
                 }
                 else
-                    LogDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
+                    DisplayDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
 
                 SetEntityHealth(victim_index,new_health);
 
@@ -247,7 +249,7 @@ public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle
         if( GetRandomInt(1,100)<=chance &&
             !GetImmunity(victim_player,Immunity_Theft) &&
             !TF2_IsPlayerInvuln(victim_index) &&
-            (!gPickPocketTime[index] ||
+            (gPickPocketTime[index] == 0.0 ||
              GetGameTime() - gPickPocketTime[index] > 0.5))
         {
             new victim_cash=GetCredits(victim_player);

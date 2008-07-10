@@ -22,7 +22,6 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/freeze"
-#include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 
@@ -53,7 +52,7 @@ public OnPluginStart()
     cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID      = CreateRace("Night Elf", "nightelf",
                              "You are now a Night Elf.",
@@ -88,7 +87,6 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    FindMaxHealthOffset(client);
     m_AllowEntangle[client]=true;
 }
 
@@ -103,9 +101,9 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 }
 
 public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-        attacker_index,Handle:attacker_player,attacker_race,
-        assister_index,Handle:assister_player,assister_race,
-        damage)
+                                attacker_index,Handle:attacker_player,attacker_race,
+                                assister_index,Handle:assister_player,assister_race,
+                                damage)
 {
     new bool:changed=false;
     if (victim_race == raceID)
@@ -188,21 +186,25 @@ public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, 
 
             if (attacker_index && attacker_index != victim_index)
             {
-                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                           COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
-                PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                               "%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
+                               COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
+                DisplayMessage(attacker_index,SC_DISPLAY_ENEMY_DEFENDED,
+                               "%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                               COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
             else
             {
-                PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
-                           COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                               "%c[SourceCraft] you %c have %cevaded%c damage!",
+                               COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
 
             if (assister_index)
             {
-                PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                DisplayMessage(assister_index,SC_DISPLAY_ENEMY_DEFENDED,
+                               "%c[SourceCraft] %N %c has %cevaded%c your attack!",
+                               COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
             }
             return true;
         }
@@ -288,10 +290,10 @@ public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:pl
                 if (newhp <= 0)
                 {
                     newhp=0;
-                    LogKill(index, victim_index, "trueshot", "Trueshot Aura", amount);
+                    DisplayKill(index, victim_index, "trueshot", "Trueshot Aura", amount);
                 }
                 else
-                    LogDamage(index, victim_index, "trueshot", "Trueshot Aura", amount);
+                    DisplayDamage(index, victim_index, "trueshot", "Trueshot Aura", amount);
 
                 SetEntityHealth(victim_index,newhp);
 
@@ -354,8 +356,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                                                       0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
                                     TE_SendToAll();
 
-                                    PrintToChat(index,"%c[SourceCraft] %N %chas tied you down with %cEntangled Roots.%c",
-                                                COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                    DisplayMessage(index,SC_DISPLAY_ENEMY_ULTIMATE,
+                                                   "%c[SourceCraft] %N %chas tied you down with %cEntangled Roots.%c",
+                                                   COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
 
                                     FreezeEntity(index);
                                     AuthTimer(10.0,index,UnfreezePlayer);
@@ -370,11 +373,11 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             new Float:cooldown = GetConVarFloat(cvarEntangleCooldown);
             if (count)
             {
-                PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
+                DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
             }
             else
             {
-                PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+                DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
             }
 
             if (cooldown > 0.0)
@@ -396,7 +399,7 @@ public Action:AllowEntangle(Handle:timer,any:index)
         {
             EmitSoundToClient(index, rechargeWav);
             PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cEntangled Roots%c is now available again!",
-                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
         }
     }                
     return Plugin_Stop;

@@ -8,7 +8,7 @@
  */
 
 // Handles
-new Handle:g_OnPluginReadyHandle = INVALID_HANDLE;
+new Handle:g_OnSourceCraftReadyHandle = INVALID_HANDLE;
 new Handle:g_OnPlayerAuthedHandle = INVALID_HANDLE;
 new Handle:g_OnUltimateCommandHandle = INVALID_HANDLE;
 new Handle:g_OnCreditsGivenHandle = INVALID_HANDLE;
@@ -758,7 +758,8 @@ public Native_SetSpeed(Handle:plugin,numParams)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1, Handle:indiceHandle;
-            for(new x=0;x<GetArraySize(temp);x++)
+            new size=GetArraySize(temp);
+            for(new x=0;x<size;x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
                 if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
@@ -811,7 +812,8 @@ public Native_SetGravity(Handle:plugin,numParams)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
-            for(new x=0;x<GetArraySize(temp);x++)
+            new size=GetArraySize(temp);
+            for(new x=0;x<size;x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
                 if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
@@ -892,7 +894,8 @@ public Native_SetVisibility(Handle:plugin,numParams)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
-            for(new x=0;x<GetArraySize(temp);x++)
+            new size=GetArraySize(temp);
+            for(new x=0;x<size;x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
                 if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
@@ -959,7 +962,8 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
-            for(new x=0;x<GetArraySize(temp);x++)
+            new size=GetArraySize(temp);
+            for(new x=0;x<size;x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
                 if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
@@ -1012,7 +1016,8 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
-            for(new x=0;x<GetArraySize(temp);x++)
+            new size=GetArraySize(temp);
+            for(new x=0;x<size;x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
                 if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
@@ -1065,7 +1070,8 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
         {
             new Handle:temp=GetPropertyInfo(player);
             new indice=-1,Handle:indiceHandle;
-            for(new x=0;x<GetArraySize(temp);x++)
+            new size=GetArraySize(temp);
+            for(new x=0;x<size;x++)
             {
                 new Handle:t=GetArrayCell(temp,x);
                 if(plugin==GetArrayCell(t,TRACKING_PLUGIN_HANDLE))
@@ -1116,7 +1122,8 @@ public Native_RestorePlayer(Handle:plugin,numParams)
         if (player != INVALID_HANDLE)
         {
             new Handle:pinfo=GetArrayCell(player,INFO_PROPERTIES);
-            for(new y=0;y<GetArraySize(pinfo);y++)
+            new size=GetArraySize(pinfo);
+            for(new y=0;y<size;y++)
             {
                 new Handle:temp = GetArrayCell(pinfo,y);
                 SetArrayCell(temp,TRACKING_OVERRIDE_SPEED, -1.0);
@@ -1187,7 +1194,7 @@ bool:InitForwards()
 {
     g_OnPlayerAuthedHandle=CreateGlobalForward("OnPlayerAuthed",ET_Ignore,Param_Cell,Param_Cell);
     g_OnUltimateCommandHandle=CreateGlobalForward("OnUltimateCommand",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
-    g_OnPluginReadyHandle=CreateGlobalForward("OnPluginReady",ET_Ignore);
+    g_OnSourceCraftReadyHandle=CreateGlobalForward("OnSourceCraftReady",ET_Ignore);
     g_OnRaceSelectedHandle=CreateGlobalForward("OnRaceSelected",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnUpgradeLevelChangedHandle=CreateGlobalForward("OnUpgradeLevelChanged",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
     g_OnItemPurchaseHandle=CreateGlobalForward("OnItemPurchase",ET_Ignore,Param_Cell,Param_Cell,Param_Cell);

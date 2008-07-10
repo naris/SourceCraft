@@ -21,8 +21,6 @@
 #include "sc/maxhealth"
 #include "sc/weapons"
 
-#include "sc/log" // for debugging
-
 new raceID, u238ID, armorID, stimpackID, jetpackID;
 
 new g_haloSprite;
@@ -47,7 +45,7 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID      = CreateRace("Terran Confederacy", "terran",
                              "You are now part of the Terran Confederacy.",
@@ -55,8 +53,8 @@ public OnPluginReady()
                              32);
 
     u238ID      = AddUpgrade(raceID,"Depleted U-238 Shells", "u238", "Increases damage for non-melee attacks");
-    armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", "A suit of Heavy Armor that takes damage up to 80% until it is depleted.");
-    stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 8-36% faster.");
+    armorID     = AddUpgrade(raceID,"Heavy Armor", "armor", "A suit of Heavy Armor that takes damage up to 80\% until it is depleted.");
+    stimpackID  = AddUpgrade(raceID,"Stimpacks", "stimpacks", "Gives you a speed boost, 10-25\% faster.");
     jetpackID   = AddUpgrade(raceID,"Jetpack", "jetpack", "Allows you to fly until you run out of fuel.", true); // Ultimate
 
     ControlJetpack(true,true);
@@ -141,11 +139,6 @@ public OnItemPurchase(client,Handle:player,item)
             Stimpacks(client, player, level);
         }
     }
-}
-
-public OnPlayerAuthed(client,Handle:player)
-{
-    FindMaxHealthOffset(client);
 }
 
 // Events
@@ -261,8 +254,9 @@ bool:Armor(damage, victim_index, Handle:victim_player)
             decl String:victimName[64];
             GetClientName(victim_index,victimName,63);
 
-            PrintToChat(victim_index,"%c[SourceCraft] %s %cyour armor absorbed %d hp",
-                        COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
+            DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
+                           "%c[SourceCraft] %s %cyour armor absorbed %d hp",
+                           COLOR_GREEN,victimName,COLOR_DEFAULT,amount);
             return true;
         }
     }
@@ -301,10 +295,10 @@ bool:U238Shells(Handle:event, damage, victim_index, Handle:victim_player, index,
                     if (new_health <= 0)
                     {
                         new_health=0;
-                        LogKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
+                        DisplayKill(index, victim_index, "u238_shells", "U238 Shells", health_take);
                     }
                     else
-                        LogDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
+                        DisplayDamage(index, victim_index, "u238_shells", "U238 Shells", health_take);
 
                     SetEntityHealth(victim_index,new_health);
 
@@ -327,14 +321,10 @@ Stimpacks(client, Handle:player, level)
         new Float:speed=1.0;
         switch (level)
         {
-            case 1:
-                speed=1.10;
-            case 2:
-                speed=1.15;
-            case 3:
-                speed=1.20;
-            case 4:
-                speed=1.25;
+            case 1: speed=1.10;
+            case 2: speed=1.15;
+            case 3: speed=1.20;
+            case 4: speed=1.25;
         }
 
         /* If the Player also has the Boots of Speed,

@@ -1,8 +1,9 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <sdktools>
 
-#define PL_VERSION    "0.5"
+#define PL_VERSION    "0.6"
 #define CVAR_DISABLED "OFF"
 #define CVAR_ENABLED  "ON"
 
@@ -287,6 +288,9 @@ public Action:Timer_DisplayAds(Handle:timer) {
 			
 			CloseHandle(hKv);
 		}
+		if (StrContains(sType, "D") != -1) {
+			TFGameText(sText, 10.0);
+		}
 	}
 }
 
@@ -354,4 +358,25 @@ bool:HasFlag(iClient, AdminFlag:fFlagList[16]) {
 		
 		return false;
 	}
+}
+
+TFGameText(const String:message[], Float:time=10.0)
+{
+	new Text_Ent = CreateEntityByName("game_text_tf");
+	DispatchKeyValue(Text_Ent,"message",message);
+	DispatchKeyValue(Text_Ent,"display_to_team","0");
+	DispatchKeyValue(Text_Ent,"icon","leaderboard_dominated");
+	DispatchKeyValue(Text_Ent,"targetname","game_text1");
+	DispatchKeyValue(Text_Ent,"background","0");
+	DispatchSpawn(Text_Ent);
+
+	AcceptEntityInput(Text_Ent, "Display", Text_Ent, Text_Ent);
+
+	CreateTimer(time, Kill_ent, Text_Ent);
+}
+
+public Action:Kill_ent(Handle:timer, any:ent)
+{
+	AcceptEntityInput(ent, "kill");
+	return; //Plugin_Stop;
 }

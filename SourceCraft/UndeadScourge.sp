@@ -19,7 +19,6 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/log"
 
 new String:explodeWav[] = "weapons/explode5.wav";
 
@@ -51,7 +50,7 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawnEvent);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID       = CreateRace("Undead Scourge", "undead",
                               "You are now an Undead Scourge.",
@@ -157,16 +156,15 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
         {
             SetSpeed(player,-1.0);
             SetGravity(player,-1.0);
+            ApplyPlayerSettings();
         }
         else if (race == raceID)
         {
             new unholy_level = GetUpgradeLevel(player,race,unholyID);
-            if (unholy_level)
-                UnholyAura(client, player, unholy_level);
+            UnholyAura(client, player, unholy_level);
 
             new levitation_level = GetUpgradeLevel(player,race,levitationID);
-            if (levitation_level)
-                Levitation(client, player, levitation_level);
+            Levitation(client, player, levitation_level);
 
             if (unholy_level || levitation_level)
                 ApplyPlayerSettings();
@@ -188,12 +186,10 @@ public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadca
             if(race==raceID)
             {
                 new unholy_level = GetUpgradeLevel(player,race,unholyID);
-                if (unholy_level)
-                    UnholyAura(index, player, unholy_level);
+                UnholyAura(index, player, unholy_level);
 
                 new levitation_level = GetUpgradeLevel(player,race,levitationID);
-                if (levitation_level)
-                    Levitation(index, player, levitation_level);
+                Levitation(index, player, levitation_level);
 
                 if (unholy_level || levitation_level)
                     ApplyPlayerSettings();
@@ -269,7 +265,7 @@ UnholyAura(client, Handle:player, level)
 
         new color[4] = { 255, 100, 0, 255 };
         TE_SetupBeamRingPoint(start,20.0,60.0,g_smokeSprite,g_smokeSprite,
-                0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
+                              0, 1, 1.0, 4.0, 0.0 ,color, 10, 0);
         TE_SendToAll();
 
         SetSpeed(player,speed);
@@ -309,7 +305,7 @@ Levitation(client, Handle:player, level)
 
         new color[4] = { 0, 20, 100, 255 };
         TE_SetupBeamRingPoint(start,20.0,50.0,g_lightningSprite,g_lightningSprite,
-                0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
+                              0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
         TE_SendToAll();
 
         SetGravity(player,gravity);
@@ -359,14 +355,15 @@ bool:VampiricAura(damage, index, Handle:player, victim_index, Handle:victim_play
             if (victim_health <= leechhealth)
             {
                 victim_health = 0;
-                LogKill(index, victim_index, "vampiric_aura", "Vampiric Aura", leechhealth);
+                DisplayKill(index, victim_index, "vampiric_aura", "Vampiric Aura", leechhealth);
             }
             else
             {
                 victim_health -= leechhealth;
 
-                PrintToChat(victim_index,"%c[SourceCraft] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
-                        COLOR_GREEN,index,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
+                DisplayMessage(victim_index,SC_DISPLAY_DAMAGE_DONE,
+                               "%c[SourceCraft] %N %chas leeched %d hp from you using %cVampiric Aura%c.",
+                               COLOR_GREEN,index,COLOR_DEFAULT,leechhealth,COLOR_TEAM,COLOR_DEFAULT);
             }
 
             SetEntityHealth(victim_index, victim_health);

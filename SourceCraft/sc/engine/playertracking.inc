@@ -75,58 +75,128 @@ SavePlayer(Handle:playerHandle);
 
 Handle:CreatePlayer(client)
 {
-    new Handle:newPlayer=CreateArray();
+    new raceCount = GetRaceCount();
+    new Handle:newPlayer=arrayPlayers[client];
     if (newPlayer != INVALID_HANDLE)
     {
-        PushArrayCell(newPlayer,client); // The first thing is client index
-        PushArrayCell(newPlayer,-1); // Database Ident
-        PushArrayCell(newPlayer,0); // Saved to Database Flag
-        PushArrayCell(newPlayer,-1); // Player race
-        PushArrayCell(newPlayer,-1); // Pending race
-        PushArrayCell(newPlayer,0); // Pending upgrade reset
-        PushArrayCell(newPlayer,0); // Credits
-        PushArrayCell(newPlayer,0); // Overall Level
+        LogMessage("Recycling player %d", newPlayer);
+        SetArrayCell(newPlayer,INFO_CLIENT_INDEX,client); // The first thing is client index
+        SetArrayCell(newPlayer,INFO_DATABASE_IDENT,-1); // Database Ident
+        SetArrayCell(newPlayer,INFO_DATABASE_SAVED,0); // Saved to Database Flag
+        SetArrayCell(newPlayer,INFO_RACE,-1); // Player race
+        SetArrayCell(newPlayer,INFO_PENDING_RACE,-1); // Pending race
+        SetArrayCell(newPlayer,INFO_PENDING_UPGRADE_RESET,0); // Pending upgrade reset
+        SetArrayCell(newPlayer,INFO_CREDITS,0); // Credits
+        SetArrayCell(newPlayer,INFO_OVERALL_LEVEL,0); // Overall Level
 
-        new Handle:properties=CreateArray(); // Player's properties
-        PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
-
-        new Handle:shopitems=CreateArray(); // Player's shop items
-        PushArrayCell(newPlayer,shopitems);
-        new shopItemCount=GetArraySize(shopVector);
-        for(new x=0;x<shopItemCount;x++)
-            PushArrayCell(shopitems,0);     // Owns item x
-
-        new Handle:immunities=CreateArray(); // Player's immunities
-        PushArrayCell(newPlayer,immunities);
-        for(new x=0;x<IMMUNITY_COUNT;x++)
-            PushArrayCell(immunities,0);     // Has immunity x
-
-        new raceCount = GetRaceCount();
-        for(new race=0;race<raceCount;race++)
+        new Handle:properties=GetArrayCell(newPlayer,INFO_PROPERTIES); // Player's properties
+        if (properties != INVALID_HANDLE)
         {
-            new Handle:raceInfo=CreateArray(); // Player's races
-            PushArrayCell(newPlayer,raceInfo);
-            PushArrayCell(raceInfo,0); // Race's XP
-            PushArrayCell(raceInfo,0); // Race's Level
-            PushArrayCell(raceInfo,-1); // Race's Active Ultimate Upgrade 
-            PushArrayCell(raceInfo,0); // Race Loaded
-            new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
-            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            new numprops=GetArraySize(properties);
+            for(new x=0;x<numprops;x++)
             {
-                PushArrayCell(raceInfo,0); // Upgrade level
-                PushArrayCell(raceInfo,0); // Upgrade level in DB
+                new Handle:indiceHandle=GetArrayCell(properties,x);
+                if (indiceHandle != INVALID_HANDLE)
+                {
+                    //PushArrayCell(indiceHandle,plugin); // plugin handle
+                    SetArrayCell(indiceHandle,TRACKING_OVERRIDE_SPEED,-1.0); // force speed?
+                    SetArrayCell(indiceHandle,TRACKING_OVERRIDE_GRAVITY,-1.0); // force gravity?
+                    SetArrayCell(indiceHandle,TRACKING_OVERRIDE_VISIBILITY,-1); // force visibility?
+                    SetArrayCell(indiceHandle,TRACKING_SPEED,-1.0); // speed
+                    SetArrayCell(indiceHandle,TRACKING_GRAVITY,-1.0); // gravity
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY,-1); // visibility 
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_TYPE,-1); // visibility type
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FACTOR1,-1.0); // visibility factor1 (melee/delay)
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FACTOR2,-1.0); // visibility factor2 (movement/duration)
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_MODE,-1); // visibility render mode
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_FX,-1); // visibility render fx
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_R,-1); // visibility red component
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_G,-1); // visibility green component
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_B,-1); // visibility blue component
+                    SetArrayCell(indiceHandle,TRACKING_VISIBILITY_WEAPONS,false); // visibility color weapons flag
+                }
             }
         }
 
-        // Perform a sanity check.
-        if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
-            arrayPlayers[client] = newPlayer;
-        else
+        new Handle:shopitems=GetArrayCell(newPlayer,INFO_SHOPITEMS); // Player's shop items
+        new shopItemCount=GetArraySize(shopitems);
+        for(new x=0;x<shopItemCount;x++)
+            SetArrayCell(shopitems,x,0);     // Owns item x
+
+        new Handle:immunities=GetArrayCell(newPlayer,INFO_IMMUNITIES); // Player's immunities
+        for(new x=0;x<IMMUNITY_COUNT;x++)
+            PushArrayCell(immunities,0);     // Has immunity x
+
+        for(new race=0;race<raceCount;race++)
         {
-            // Something is really wrong!
-            newPlayer = INVALID_HANDLE;
-            LogError("ERROR: Player %N's data got fubard!", client);
+            new Handle:raceInfo=GetArrayCell(newPlayer,INFO_COUNT+race); // Player's races
+            SetArrayCell(raceInfo,RACEINFO_XP,0); // Race's XP
+            SetArrayCell(raceInfo,RACEINFO_LEVEL,0); // Race's Level
+            SetArrayCell(raceInfo,RACEINFO_ACTIVE_ULTIMATE,-1); // Race's Active Ultimate Upgrade 
+            SetArrayCell(raceInfo,RACEINFO_DATABASE_LOADED,0); // Race Loaded
+            new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            {
+                new upgradePos = RACEINFO_UPGRADES+(upgrade*UPGRADEINFO_COUNT);
+                SetArrayCell(raceInfo,upgradePos,0); // Upgrade level
+                SetArrayCell(raceInfo,upgradePos+UPGRADEINFO_SAVED_LEVEL,0); // Upgrade level in DB
+            }
         }
+    }
+    else
+    {
+        newPlayer=CreateArray();
+        if (newPlayer != INVALID_HANDLE)
+        {
+            PushArrayCell(newPlayer,client); // The first thing is client index
+            PushArrayCell(newPlayer,-1); // Database Ident
+            PushArrayCell(newPlayer,0); // Saved to Database Flag
+            PushArrayCell(newPlayer,-1); // Player race
+            PushArrayCell(newPlayer,-1); // Pending race
+            PushArrayCell(newPlayer,0); // Pending upgrade reset
+            PushArrayCell(newPlayer,0); // Credits
+            PushArrayCell(newPlayer,0); // Overall Level
+
+            new Handle:properties=CreateArray(); // Player's properties
+            PushArrayCell(newPlayer,properties); // (speed,gravity,visibility)
+
+            new Handle:shopitems=CreateArray(); // Player's shop items
+            PushArrayCell(newPlayer,shopitems);
+            new shopItemCount=GetArraySize(shopVector);
+            for(new x=0;x<shopItemCount;x++)
+                PushArrayCell(shopitems,0);     // Owns item x
+
+            new Handle:immunities=CreateArray(); // Player's immunities
+            PushArrayCell(newPlayer,immunities);
+            for(new x=0;x<IMMUNITY_COUNT;x++)
+                PushArrayCell(immunities,0);     // Has immunity x
+
+            for(new race=0;race<raceCount;race++)
+            {
+                new Handle:raceInfo=CreateArray(); // Player's races
+                PushArrayCell(newPlayer,raceInfo);
+                PushArrayCell(raceInfo,0); // Race's XP
+                PushArrayCell(raceInfo,0); // Race's Level
+                PushArrayCell(raceInfo,-1); // Race's Active Ultimate Upgrade 
+                PushArrayCell(raceInfo,0); // Race Loaded
+                new upgradeCount = GetUpgradeCount(GetRaceHandle(race));
+                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                {
+                    PushArrayCell(raceInfo,0); // Upgrade level
+                    PushArrayCell(raceInfo,0); // Upgrade level in DB
+                }
+            }
+        }
+    }
+
+    // Perform a sanity check.
+    if (GetArraySize(newPlayer)==(INFO_COUNT+raceCount))
+        arrayPlayers[client] = newPlayer;
+    else
+    {
+        // Something is really wrong!
+        newPlayer = INVALID_HANDLE;
+        SetFailState("ERROR: Player %N's data got fubard!", client);
     }
     return newPlayer;
 }
@@ -201,6 +271,16 @@ ClearPlayer(Handle:playerHandle)
         new Handle:properties=GetArrayCell(playerHandle,INFO_PROPERTIES);
         if (properties != INVALID_HANDLE)
         {
+            new numprops=GetArraySize(properties);
+            for(new x=0;x<numprops;x++)
+            {
+                new Handle:indiceHandle=GetArrayCell(properties,x);
+                if (indiceHandle != INVALID_HANDLE)
+                {
+                    ClearArray(indiceHandle);
+                    CloseHandle(indiceHandle);
+                }
+            }
             ClearArray(properties);
             CloseHandle(properties);
         }
@@ -401,7 +481,7 @@ SetImmunity(Handle:playerHandle,immunity,imm_state)
 
 GetXP(Handle:playerHandle,race)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -412,7 +492,7 @@ GetXP(Handle:playerHandle,race)
 
 SetXP(Handle:playerHandle,race,xp)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -425,7 +505,7 @@ SetXP(Handle:playerHandle,race,xp)
 
 ResetXP(Handle:playerHandle,race,xp)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         SetArrayCell(raceInfo,RACEINFO_XP,xp);
@@ -440,7 +520,7 @@ ResetXP(Handle:playerHandle,race,xp)
 
 GetLevel(Handle:playerHandle,race)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -451,7 +531,7 @@ GetLevel(Handle:playerHandle,race)
 
 SetLevel(Handle:playerHandle,race,new_level)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -464,7 +544,7 @@ SetLevel(Handle:playerHandle,race,new_level)
 
 ResetLevel(Handle:playerHandle,race,new_level)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -494,7 +574,7 @@ ResetLevel(Handle:playerHandle,race,new_level)
 
 GetActiveUltimate(Handle:playerHandle,race)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -505,7 +585,7 @@ GetActiveUltimate(Handle:playerHandle,race)
 
 SetActiveUltimate(Handle:playerHandle,race,upgrade)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -515,7 +595,7 @@ SetActiveUltimate(Handle:playerHandle,race,upgrade)
 
 GetRaceLoaded(Handle:playerHandle,race)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -526,7 +606,7 @@ GetRaceLoaded(Handle:playerHandle,race)
 
 SetRaceLoaded(Handle:playerHandle,race,loaded)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -536,7 +616,7 @@ SetRaceLoaded(Handle:playerHandle,race,loaded)
 
 GetUpgradeLevel(Handle:playerHandle,race,upgrade)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -550,7 +630,7 @@ GetUpgradeLevel(Handle:playerHandle,race,upgrade)
 
 SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -574,7 +654,7 @@ SetUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 
 IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -602,7 +682,7 @@ IncrementUpgradeLevel(Handle:playerHandle,race,upgrade,bool:isUltimate)
 
 LoadUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -628,7 +708,7 @@ LoadUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 GetUpgradeLevelCount(Handle:playerHandle,race)
 {
     new ret=0;
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -644,7 +724,7 @@ GetUpgradeLevelCount(Handle:playerHandle,race)
 
 GetSavedUpgradeLevel(Handle:playerHandle,race,upgrade)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -658,7 +738,7 @@ GetSavedUpgradeLevel(Handle:playerHandle,race,upgrade)
 
 SetSavedUpgradeLevel(Handle:playerHandle,race,upgrade,level)
 {
-    if (race >= 0 && GetRaceCount() >= 1)
+    if (race >= 0 && GetRaceCount() > 1)
     {
         new Handle:raceInfo=GetArrayCell(playerHandle,INFO_COUNT+race);
         if (raceInfo != INVALID_HANDLE)
@@ -727,9 +807,7 @@ public Action:PlayerProperties(Handle:timer)
                                 overridePlayerSpeed=true;
                             }
                             else if(checkSpeed > speed)
-                            {
                                 speed=checkSpeed;
-                            }
                         }
 
                         if(!overridePlayerGravity)
@@ -752,8 +830,10 @@ public Action:PlayerProperties(Handle:timer)
                         {
                             if(overridevisibility >= 0)
                             {
-                                if (IsPluginDebugging(INVALID_HANDLE))
-                                    LogMessage("%N's Override Visibility=%d", client, overridevisibility);
+                                #if defined _DEBUG
+                                    if (IsPluginDebugging(INVALID_HANDLE))
+                                        LogMessage("%N's Override Visibility=%d", client, overridevisibility);
+                                #endif
 
                                 visibility=overridevisibility;
                                 overridePlayerVisibility=true;
@@ -762,21 +842,25 @@ public Action:PlayerProperties(Handle:timer)
                             else if (checkVisibility >= 0 || _:type >= 0 ||
                                     _:checkFx >= 0 || _:checkMode >= 0)
                             {
-                                if (IsPluginDebugging(INVALID_HANDLE))
-                                {
-                                    LogMessage("%N's Visibility=%d,type=%d,fc=%d,mode=%d",
-                                               client,checkVisibility,type,checkFx,checkMode);
-                                }
+                                #if defined _DEBUG
+                                    if (IsPluginDebugging(INVALID_HANDLE))
+                                    {
+                                        LogMessage("%N's Visibility=%d,type=%d,fx=%d,mode=%d,still=%d",
+                                                   client,checkVisibility,type,checkFx,checkMode,isStill);
+                                    }
+                                #endif
 
                                 new checkRank = CalculateVisibility(client, wepName, isStill, checkVisibility,
                                                                     type, factor1, factor2, checkMode,
                                                                     checkFx, checkR, checkG, checkB);
 
-                                if (IsPluginDebugging(INVALID_HANDLE))
-                                {
-                                    LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fc=%d,mode=%d)",
-                                               client,checkRank,checkVisibility,type,checkFx,checkMode);
-                                }
+                                #if defined _DEBUG
+                                    if (IsPluginDebugging(INVALID_HANDLE))
+                                    {
+                                        LogMessage("%N's Rank=%d (Visibility=%d,type=%d,fx=%d,mode=%d)",
+                                                   client,checkRank,checkVisibility,type,checkFx,checkMode);
+                                    }
+                                #endif
 
                                 if (checkRank >= 0 && (visibilityRank < 0.0 || checkRank < visibilityRank))
                                 {
@@ -823,11 +907,13 @@ public Action:PlayerProperties(Handle:timer)
                         if (GameType == tf2)
                         {
                             new Float:classSpeed = GetClassSpeed(client);
-                            new Float:curSpeed = GetEntDataFloat(client,m_OffsetMaxSpeed);
+                            //new Float:curSpeed = GetEntPropFloat(client, Prop_Send, "m_flMaxspeed");
+                            new Float:curSpeed = GetEntDataFloat(client,FindSendPropInfo("CTFPlayer", "m_flMaxspeed"));
                             new Float:newSpeed = classSpeed * speed;
                             if (curSpeed != newSpeed)
                             {
-                                SetEntDataFloat(client,m_OffsetMaxSpeed, newSpeed);
+                                //SetEntPropFloat(client, Prop_Send, "m_flMaxspeed", newSpeed);
+                                SetEntDataFloat(client,FindSendPropInfo("CTFPlayer", "m_flMaxspeed"), newSpeed);
                                 if (newSpeed == 0.0)
                                     SetEntityMoveType(client, MOVETYPE_NONE);
                                 else if (GetEntityMoveType(client) == MOVETYPE_NONE)
@@ -838,8 +924,8 @@ public Action:PlayerProperties(Handle:timer)
                         }
                         else // not tf2
                         {
-                            if (GetEntDataFloat(client,m_OffsetSpeed)!=speed)
-                                SetEntDataFloat(client,m_OffsetSpeed,speed);
+                            if (GetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue") != speed)
+                                SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
                         }
                     }
 
@@ -867,8 +953,10 @@ public Action:PlayerProperties(Handle:timer)
                             r >= 255 && g >= 255 && b >= 255 &&
                             mode == RENDER_NORMAL && fx == RENDERFX_NONE)
                         {
-                            if (IsPluginDebugging(INVALID_HANDLE))
-                                LogMessage("Reset %N's visibility=%d",client,visibility);
+                            #if defined _DEBUG
+                                if (IsPluginDebugging(INVALID_HANDLE))
+                                    LogMessage("Reset %N's visibility=%d",client,visibility);
+                            #endif
 
                             ResetVisibility(client);
 
@@ -884,8 +972,8 @@ public Action:PlayerProperties(Handle:timer)
                         if (gravity < 0.0)
                             gravity = 1.0;
 
-                        if (GetEntDataFloat(client,m_OffsetGravity[client]) != gravity)
-                            SetEntDataFloat(client,m_OffsetGravity[client], gravity);
+                        if (GetEntityGravity(client) != gravity)
+                            SetEntityGravity(client, gravity);
 
                         if (gravity == 1.0)
                         {
@@ -903,15 +991,15 @@ public Action:PlayerProperties(Handle:timer)
 bool:IsStill(client)
 {
     new Float:vecVelocity[3];
-    GetEntDataVector(client, m_VelocityOffset, vecVelocity);
+    //GetEntPropVector(client, Prop_Send, "m_vecVelocity[0]", vecVelocity);
+    GetEntDataVector(client, FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]"), vecVelocity);
     if (vecVelocity[0] == 0.0 && vecVelocity[1] == 0.0 && vecVelocity[2] == 0.0)
     {
         if (!(GetClientButtons(client) & (IN_FORWARD|IN_BACK|IN_MOVELEFT|
                                           IN_MOVERIGHT|IN_SPEED|IN_JUMP|
                                           IN_ATTACK|IN_ATTACK2|IN_ZOOM)))
         {
-            if (!TF2_IsPlayerSlowed(client) &&
-                !TF2_IsPlayerZoomed(client))
+            if (!TF2_IsPlayerSlowed(client) && !TF2_IsPlayerZoomed(client))
             {
                 if (m_StoppedMoving[client] == 0.0)
                     m_StoppedMoving[client] = GetGameTime();
@@ -932,12 +1020,28 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
     if (type == TimedInvisibility || type == TimedMeleeInvisibility || type == GraduatedEffects)
     {
         if (!isStill)
+        {
+            #if defined _DEBUG
+                if (IsPluginDebugging(INVALID_HANDLE))
+                {
+                    LogMessage("Uncloaking %N (motion)", client);
+                    PrintToChat(client, "Uncloaking (motion)");
+                }
+            #endif
             visibility = 255;
+        }
         else if (m_CloakTime[client] != 0.0) // Currently Cloaked
         {
             // factor2 == duration
             if (factor2 > 0.0 && (GetGameTime() - m_CloakTime[client]) >= factor2)
             {
+                #if defined _DEBUG
+                    if (IsPluginDebugging(INVALID_HANDLE))
+                    {
+                        LogMessage("Uncloaking %N (duration)", client);
+                        PrintToChat(client, "Uncloaking (duration)");
+                    }
+                #endif
                 visibility = 255;
                 if (mode == RENDER_NONE)
                     mode = RENDER_NORMAL;
@@ -946,12 +1050,26 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             }
             else if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
             {
+                #if defined _DEBUG
+                    if (IsPluginDebugging(INVALID_HANDLE))
+                    {
+                        LogMessage("Cloaking %N", client);
+                        PrintToChat(client, "Cloaking");
+                    }
+                #endif
                 visibility = 0;
                 if (mode == RENDER_NORMAL)
                     mode = RENDER_TRANSTEXTURE;
             }
             else
             {
+                #if defined _DEBUG
+                    if (IsPluginDebugging(INVALID_HANDLE))
+                    {
+                        LogMessage("Uncloaking %N (other)", client);
+                        PrintToChat(client, "Uncloaking (other)");
+                    }
+                #endif
                 visibility = 255;
                 if (mode == RENDER_NONE)
                     mode = RENDER_NORMAL;
@@ -966,12 +1084,26 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             {
                 if (type != TimedMeleeInvisibility || IsEquipmentMelee(wepName))
                 {
+                    #if defined _DEBUG
+                        if (IsPluginDebugging(INVALID_HANDLE))
+                        {
+                            LogMessage("Cloaking %N", client);
+                            PrintToChat(client, "Cloaking");
+                        }
+                    #endif
                     visibility = 0;
                     if (mode == RENDER_NORMAL)
                         mode = RENDER_TRANSTEXTURE;
                 }
                 else
                 {
+                    #if defined _DEBUG
+                        if (IsPluginDebugging(INVALID_HANDLE))
+                        {
+                            LogMessage("Uncloaking %N (equip)", client);
+                            PrintToChat(client, "Uncloaking (equip)");
+                        }
+                    #endif
                     visibility = 255;
                     if (mode == RENDER_NONE)
                         mode = RENDER_NORMAL;
@@ -981,6 +1113,13 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
             }
             else
             {
+                #if defined _DEBUG
+                    if (IsPluginDebugging(INVALID_HANDLE))
+                    {
+                        LogMessage("Uncloaking %N (delay)", client);
+                        PrintToChat(client, "Uncloaking (delay)");
+                    }
+                #endif
                 visibility = 255;
                 if (mode == RENDER_NONE)
                     mode = RENDER_NORMAL;
@@ -1048,11 +1187,13 @@ CalculateVisibility(client, const String:wepName[], bool:isStill, &visibility,
 
 SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b, bool:colorWeapons)
 {
-    if (IsPluginDebugging(INVALID_HANDLE))
-    {
-        LogMessage("Set %N's Visibility=%d,mode=%d,fx=%d,r=%d,g=%d,b=%d",
-                   client, visibility, mode, fx, r, g, b);
-    }
+    #if defined _DEBUG
+        if (IsPluginDebugging(INVALID_HANDLE))
+        {
+            LogMessage("Set %N's Visibility=%d,mode=%d,fx=%d,r=%d,g=%d,b=%d",
+                       client, visibility, mode, fx, r, g, b);
+        }
+    #endif
 
     if (visibility == 0)
     {
@@ -1060,36 +1201,25 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b, bool:co
             m_CloakTime[client] = GetGameTime(); // Start cloak timer
     }
     else if (m_CloakTime[client] > 0.0) // && visibility > 0)
-        m_StoppedMoving[client] = 0.0; // Reset moving timer when cloak expires.
-
-    if (m_OwnerOffset != -1)
     {
-        if (colorWeapons || visibility < 255 || mode != RENDER_NORMAL || fx != RENDERFX_NONE)
+        m_CloakTime[client] = 0.0;
+        m_StoppedMoving[client] = 0.0; // Reset moving timer when cloak expires.
+    }
+
+    if (colorWeapons || visibility < 255 || mode != RENDER_NORMAL || fx != RENDERFX_NONE)
+    {
+        new r2 = colorWeapons ? r : 255;
+        new g2 = colorWeapons ? g : 255;
+        new b2 = colorWeapons ? b : 255;
+        new obj = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+        if (obj > 0 && IsValidEntity(obj))
         {
-            new r2 = colorWeapons ? r : 255;
-            new g2 = colorWeapons ? g : 255;
-            new b2 = colorWeapons ? b : 255;
-            new count=GetEntityCount();
-            for (new obj=GetMaxClients()+1; obj < count; obj++)
-            {
-                if (IsValidEdict(obj))
-                {
-                    if (GetEntDataEnt2(obj,m_OwnerOffset) == client)
-                    {
-                        decl String:name[32];
-                        if (!GetEntityNetClass(obj,name,sizeof(name)) ||
-                            (!StrEqual(name, "CCaptureFlag") &&
-                             !StrEqual(name, "CSniperDot")))
-                        {
-                            SetEntityRenderColor(obj,r2,g2,b2,visibility);
-                            SetEntityRenderMode(obj,mode);
-                            SetEntityRenderFx(obj,fx);
-                        }
-                    }
-                }
-            }
+            SetEntityRenderColor(obj,r2,g2,b2,visibility);
+            SetEntityRenderMode(obj,mode);
+            SetEntityRenderFx(obj,fx);
         }
     }
+
     SetEntityRenderColor(client,r,g,b,visibility);
     SetEntityRenderMode(client,mode);
     SetEntityRenderFx(client,fx);
@@ -1097,29 +1227,23 @@ SetVisibility(client, visibility, RenderMode:mode, RenderFx:fx, r, g, b, bool:co
 
 ResetVisibility(client)
 {
-    if (m_OwnerOffset != -1)
+    if (client>0)
     {
-        if (client>0)
-        {
+        #if defined _DEBUG
             if (IsPluginDebugging(INVALID_HANDLE))
                 LogMessage("Reset %N's Visibility", client);
+        #endif
 
-            new count=GetEntityCount();
-            for(new y=GetMaxClients()+1;y<count;y++)
-            {
-                if(IsValidEdict(y))
-                {
-                    if(GetEntDataEnt2(y,m_OwnerOffset)==client)
-                    {
-                        SetEntityRenderColor(y,255,255,255,255);
-                        SetEntityRenderMode(client,RENDER_NORMAL);
-                        SetEntityRenderFx(client,RENDERFX_NONE);
-                    }
-                }
-            }
-            SetEntityRenderColor(client,255,255,255,255);
-            SetEntityRenderMode(client,RENDER_NORMAL);
-            SetEntityRenderFx(client,RENDERFX_NONE);
+        new obj = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+        if (obj > 0 && IsValidEntity(obj))
+        {
+            SetEntityRenderColor(obj,255,255,255,255);
+            SetEntityRenderMode(obj,RENDER_NORMAL);
+            SetEntityRenderFx(obj,RENDERFX_NONE);
         }
+
+        SetEntityRenderColor(client,255,255,255,255);
+        SetEntityRenderMode(client,RENDER_NORMAL);
+        SetEntityRenderFx(client,RENDERFX_NONE);
     }
 }

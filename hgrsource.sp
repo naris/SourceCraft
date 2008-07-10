@@ -102,6 +102,8 @@ new precache_laser;
 
 // Native interface settings
 new bool:g_bNativeOverride = false;
+new bool:g_bGrabHooked = false;
+new bool:g_bDropHooked = false;
 new g_iNativeHooks;
 new g_iNativeGrabs;
 new g_iNativeRopes;
@@ -132,6 +134,8 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 {
     // Register Natives
     CreateNative("ControlHookGrabRope",Native_ControlHookGrabRope);
+    CreateNative("HookGrab",Native_HookGrab);
+    CreateNative("HookDrop",Native_HookDrop);
 
     CreateNative("GiveHook",Native_GiveHook);
     CreateNative("TakeHook",Native_TakeHook);
@@ -154,8 +158,10 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
     CreateNative("Detach",Native_Detach);
     CreateNative("RopeToggle",Native_RopeToggle);
 
-    fwdOnGrab=CreateGlobalForward("OnGrab",ET_Hook,Param_Cell,Param_Cell);
-    fwdOnDrop=CreateGlobalForward("OnDrop",ET_Ignore,Param_Cell,Param_Cell);
+    //fwdOnGrab=CreateGlobalForward("OnGrab",ET_Hook,Param_Cell,Param_Cell);
+    //fwdOnDrop=CreateGlobalForward("OnDrop",ET_Ignore,Param_Cell,Param_Cell);
+    fwdOnGrab=CreateForward(ET_Hook,Param_Cell,Param_Cell);
+    fwdOnDrop=CreateForward(ET_Ignore,Param_Cell,Param_Cell);
 
     RegPluginLibrary("hgrsource");
 
@@ -339,15 +345,33 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Native_ControlHookGrabRope(Handle:plugin,numParams)
 {
-    if (numParams == 0)
-        g_bNativeOverride = true;
-    else if(numParams == 1)
+    if(numParams >= 1)
         g_bNativeOverride = GetNativeCell(1);
+    else
+        g_bNativeOverride = true;
+}
+
+public Native_HookGrab(Handle:plugin,numParams)
+{
+    if(numParams >= 1)
+    {
+        AddToForward(fwdOnGrab, plugin, Function:GetNativeCell(1));
+        g_bGrabHooked = true;
+    }
+}
+
+public Native_HookDrop(Handle:plugin,numParams)
+{
+    if(numParams >= 1)
+    {
+        AddToForward(fwdOnDrop, plugin, Function:GetNativeCell(1));
+        g_bDropHooked = true;
+    }
 }
 
 public Native_Hook(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -357,7 +381,7 @@ public Native_Hook(Handle:plugin,numParams)
 
 public Native_UnHook(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -367,7 +391,7 @@ public Native_UnHook(Handle:plugin,numParams)
 
 public Native_HookToggle(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -382,7 +406,7 @@ public Native_HookToggle(Handle:plugin,numParams)
 
 public Native_Grab(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -392,7 +416,7 @@ public Native_Grab(Handle:plugin,numParams)
 
 public Native_Drop(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -402,7 +426,7 @@ public Native_Drop(Handle:plugin,numParams)
 
 public Native_GrabToggle(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -417,7 +441,7 @@ public Native_GrabToggle(Handle:plugin,numParams)
 
 public Native_Rope(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -427,7 +451,7 @@ public Native_Rope(Handle:plugin,numParams)
 
 public Native_Detach(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -437,7 +461,7 @@ public Native_Detach(Handle:plugin,numParams)
 
 public Native_RopeToggle(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
         if(IsPlayerAlive(client))
@@ -452,106 +476,73 @@ public Native_RopeToggle(Handle:plugin,numParams)
 
 public Native_GiveHook(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 5)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
-        if(IsPlayerAlive(client))
-        {
-            new duration=0,Float:range=0.0,Float:cooldown=0.0,flags=0;
-            if (numParams >= 2)
-                duration = GetNativeCell(2);
-            if (numParams >= 3)
-                range = Float:GetNativeCell(3);
-            if (numParams >= 4)
-                cooldown = Float:GetNativeCell(4);
-            if (numParams >= 5)
-                flags = GetNativeCell(5);
-            if (!ClientAccess(client,Give,Hook,duration,range,cooldown,flags))
-                g_iNativeHooks++;
-        }
+        new duration = (numParams >= 2) ? GetNativeCell(2) : 0;
+        new Float:range = (numParams >= 3) ? (Float:GetNativeCell(3)) : 0.0;
+        new Float:cooldown = (numParams >= 4) ? (Float:GetNativeCell(4)) : 0.0;
+        new flags = (numParams >= 5) ? GetNativeCell(5) : 0;
+        if (!ClientAccess(client,Give,Hook,duration,range,cooldown,flags))
+            g_iNativeHooks++;
     }
 }
 
 public Native_TakeHook(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
-        if(IsPlayerAlive(client))
-        {
-            if (ClientAccess(client,Take,Hook,0,0.0,0.0,0))
-                g_iNativeHooks--;
-        }
+        if (ClientAccess(client,Take,Hook,0,0.0,0.0,0))
+            g_iNativeHooks--;
     }
 }
 
 public Native_GiveGrab(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 5)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
-        if(IsPlayerAlive(client))
-        {
-            new duration=0,Float:range=0.0,Float:cooldown=0.0,flags=0;
-            if (numParams >= 2)
-                duration = GetNativeCell(2);
-            if (numParams >= 3)
-                range = Float:GetNativeCell(3);
-            if (numParams >= 4)
-                cooldown = Float:GetNativeCell(4);
-            if (numParams >= 5)
-                flags = GetNativeCell(5);
-            if (!ClientAccess(client,Give,Grab,duration,range,cooldown,flags))
-                g_iNativeGrabs++;
-        }
+        new duration = (numParams >= 2) ? GetNativeCell(2) : 0;
+        new Float:range = (numParams >= 3) ? (Float:GetNativeCell(3)) : 0.0;
+        new Float:cooldown = (numParams >= 4) ? (Float:GetNativeCell(4)) : 0.0;
+        new flags = (numParams >= 5) ? GetNativeCell(5) : 0;
+        if (!ClientAccess(client,Give,Grab,duration,range,cooldown,flags))
+            g_iNativeGrabs++;
     }
 }
 
 public Native_TakeGrab(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
-        if(IsPlayerAlive(client))
-        {
-            if (ClientAccess(client,Take,Grab,0,0.0,0.0,0))
-                g_iNativeGrabs--;
-        }
+        if (ClientAccess(client,Take,Grab,0,0.0,0.0,0))
+            g_iNativeGrabs--;
     }
 }
 
 public Native_GiveRope(Handle:plugin,numParams)
 {
-    if(numParams >= 1 && numParams <= 5)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
-        if(IsPlayerAlive(client))
-        {
-            new duration=0,Float:range=0.0,Float:cooldown=0.0,flags=0;
-            if (numParams >= 2)
-                duration = GetNativeCell(2);
-            if (numParams >= 3)
-                range = Float:GetNativeCell(3);
-            if (numParams >= 4)
-                cooldown = Float:GetNativeCell(4);
-            if (numParams >= 5)
-                flags = GetNativeCell(5);
-            if (!ClientAccess(client,Give,Rope,duration,range,cooldown,flags))
-                g_iNativeRopes++;
-        }
+        new duration = (numParams >= 2) ? GetNativeCell(2) : 0;
+        new Float:range= (numParams >= 3) ? (Float:GetNativeCell(3)) : 0.0;
+        new Float:cooldown = (numParams >= 4) ? (Float:GetNativeCell(4)) : 0.0;
+        new flags = (numParams >= 5) ? GetNativeCell(5) : 0;
+        if (!ClientAccess(client,Give,Rope,duration,range,cooldown,flags))
+            g_iNativeRopes++;
     }
 }
 
 public Native_TakeRope(Handle:plugin,numParams)
 {
-    if(numParams == 1)
+    if(numParams >= 1)
     {
         new client = GetNativeCell(1);
-        if(IsPlayerAlive(client))
-        {
-            if (ClientAccess(client,Take,Rope,0,0.0,0.0,0))
-                g_iNativeRopes--;
-        }
+        if (ClientAccess(client,Take,Rope,0,0.0,0.0,0))
+            g_iNativeRopes--;
     }
 }
 
@@ -961,7 +952,7 @@ public Action_Hook(client)
                             gStatus[client][ACTION_HOOK]=true; // Tell plugin the player is hooking
                             SetEntPropFloat(client,Prop_Data,"m_flGravity",0.0); // Set gravity to 0 so client floats in a straight line
                             Hook_Push(client);
-                            CreateTimer(0.1,Hooking,client,TIMER_REPEAT); // Create hooking loop
+                            CreateTimer(0.1,Hooking,client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE); // Create hooking loop
                             EmitSoundFromOrigin(hitWav,gHookEndloc[client]); // Emit sound from where the hook landed
                         }
                         else
@@ -1080,7 +1071,7 @@ public Action_Grab(client)
                     {
                         gStatus[client][ACTION_GRAB]=true; // Tell plugin the seeker is grabbing a player
                         EmitSoundToAll(fireWav, client); // Emit fire sound
-                        CreateTimer(0.05,GrabSearch,client,TIMER_REPEAT); // Start a timer that searches for a client to grab
+                        CreateTimer(0.05,GrabSearch,client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE); // Start a timer that searches for a client to grab
                     }
                     else
                     {
@@ -1124,9 +1115,10 @@ public Action_Grab(client)
 
 public Action:GrabSearch(Handle:timer,any:index)
 {
-    PrintCenterText(index,"Searching for a target..."); // Tell client the plugin is searching for a target
     if(IsClientInGame(index)&&IsPlayerAlive(index)&&gStatus[index][ACTION_GRAB]&&!gGrabbed[index])
     {
+        PrintCenterText(index,"Searching for a target..."); // Tell client the plugin is searching for a target
+
         new Float:clientloc[3],Float:clientang[3];
         GetClientEyePosition(index,clientloc); // Get seekers eye coordinate
         GetClientEyeAngles(index,clientang); // Get angle of where the player is looking
@@ -1148,11 +1140,15 @@ public Action:GrabSearch(Handle:timer,any:index)
                 new Float:limit=gAllowedRange[index][ACTION_GRAB];
                 if (limit <= 0.0 || limit >= distance)
                 {
-                    new Action:res;
-                    Call_StartForward(fwdOnGrab);
-                    Call_PushCell(index);
-                    Call_PushCell(target);
-                    Call_Finish(res);
+                    new Action:res = Plugin_Continue;
+                    if (g_bGrabHooked)
+                    {
+                        Call_StartForward(fwdOnGrab);
+                        Call_PushCell(index);
+                        Call_PushCell(target);
+                        Call_Finish(res);
+                    }
+
                     if (res == Plugin_Continue)
                     {
                         gGrabDist[index]=distance; // Tell plugin the distance between the 2 to maintain
@@ -1169,7 +1165,7 @@ public Action:GrabSearch(Handle:timer,any:index)
 
                         gGrabbed[target]=true; // Tell plugin the target is being grabbed
                         gTargetIndex[index]=target;
-                        CreateTimer(0.1,Grabbing,index,TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
+                        CreateTimer(0.1,Grabbing,index,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE); // Start a repeating timer that will reposition the target in the grabber's crosshairs
                         return Plugin_Stop;
                     }
                 }
@@ -1318,11 +1314,14 @@ public Action_Drop(client)
 
         gTargetIndex[client]=-1;
 
-        new Action:res;
-        Call_StartForward(fwdOnDrop);
-        Call_PushCell(client);
-        Call_PushCell(target);
-        Call_Finish(res);
+        if (g_bDropHooked)
+        {
+            new Action:res;
+            Call_StartForward(fwdOnDrop);
+            Call_PushCell(client);
+            Call_PushCell(target);
+            Call_Finish(res);
+        }
     }
     else if(HasAccess(client,Grab) && IsClientInGame(client))
         PrintCenterText(client,"No target found");
@@ -1363,7 +1362,7 @@ public Action_Rope(client)
 
                             gRopeDist[client]=dist;
                             gStatus[client][ACTION_ROPE]=true; // Tell plugin the player is roping
-                            CreateTimer(0.1,Roping,client,TIMER_REPEAT); // Create roping loop
+                            CreateTimer(0.1,Roping,client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE); // Create roping loop
                             EmitSoundFromOrigin(hitWav,gRopeEndloc[client]); // Emit sound from the end of the rope
                         }
                         else

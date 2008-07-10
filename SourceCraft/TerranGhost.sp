@@ -24,8 +24,6 @@
 #include "sc/freeze"
 #include "sc/screen"
 
-#include "sc/log" // for debugging
-
 enum NuclearStatus { Quiescent, Ready, Tracking, LaunchInitiated, LockedOn, Exploding};
 
 new raceID, cloakID, lockdownID, detectorID, nukeID;
@@ -57,7 +55,7 @@ new String:targetWav[] = "sourcecraft/tghlas00.wav";
 new String:launchWav[] = "sourcecraft/tnsfir00.wav";
 new String:detectedWav[] = "sourcecraft/tadupd04.wav";
 new String:lockdownWav[] = "sourcecraft/tghlkd00.wav";
-new String:airRaidWav[] = "sourcecraft/air_raid.wav";
+//new String:airRaidWav[] = "sourcecraft/air_raid.wav";
 new String:explode1Wav[] = "sourcecraft/tnshit00.wav";
 new String:explode2Wav[] = "ambient/explosions/explode_8.wav";
 new String:explode3Wav[] = "sourcecraft/boom2.wav";
@@ -80,8 +78,8 @@ public OnPluginStart()
 {
     GetGameType();
 
-    cvarNuclearLaunchTime=CreateConVar("sc_nuclearlaunchtime","20");
-    cvarNuclearLockTime=CreateConVar("sc_nuclearlocktime","5");
+    cvarNuclearLaunchTime=CreateConVar("sc_nuclearlaunchtime","15");
+    cvarNuclearLockTime=CreateConVar("sc_nuclearlocktime","10");
     cvarNuclearCooldown=CreateConVar("sc_nuclearlaunchcooldown","300");
 
     HookEvent("player_spawn",PlayerSpawnEvent);
@@ -89,7 +87,7 @@ public OnPluginStart()
     CreateTimer(1.0,OcularImplants,INVALID_HANDLE,TIMER_REPEAT);
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID      = CreateRace("Terran Ghost", "ghost",
                              "You are now a Terran Ghost.",
@@ -151,7 +149,7 @@ public OnMapStart()
     SetupSound(readyWav, true, true);
     SetupSound(targetWav, true, true);
     SetupSound(launchWav, true, true);
-    SetupSound(airRaidWav, true, true);
+    //SetupSound(airRaidWav, true, true);
     SetupSound(explode1Wav, true, true);
     SetupSound(explode2Wav, true, true);
     SetupSound(explode3Wav, true, true);
@@ -166,6 +164,7 @@ public OnMapStart()
 public OnPlayerAuthed(client,Handle:player)
 {
     m_NuclearLaunchStatus[client] = Ready;
+    gLockdownTime[client] = 0.0;
 }
 
 public OnClientDisconnect(client)
@@ -184,7 +183,10 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
             ApplyPlayerSettings();
         }
         else if (race == raceID)
+        {
             Cloak(client, player, GetUpgradeLevel(player,race,cloakID));
+            gLockdownTime[client] = 0.0;
+        }
     }
 }
 
@@ -227,6 +229,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
             new race = GetRace(player);
             if (race == raceID)
             {
+                gLockdownTime[client] = 0.0;
                 new cloak_level=GetUpgradeLevel(player,race,cloakID);
                 if (cloak_level)
                     Cloak(client, player, cloak_level);
@@ -435,7 +438,7 @@ public Action:OcularImplants(Handle:timer)
                                             SetOverrideVisiblity(player_check, 255);
                                             if (TF2_GetPlayerClass(index) == TFClass_Spy)
                                             {
-                                                TF2_RemovePlayerDisguise(index);
+                                                //TF2_RemovePlayerDisguise(index);
                                                 TF2_SetPlayerCloak(index, false);
 
                                                 new Float:cloakMeter = TF2_GetCloakMeter(index);
@@ -510,8 +513,7 @@ LaunchNuclearDevice(client,Handle:player)
     ApplyPlayerSettings();
 
     new Float:launchTime = GetConVarFloat(cvarNuclearLaunchTime);
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.",
-                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
+    DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you must now wait %3.1f seconds for the missle to lock on.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, launchTime);
 
     AuthTimer(launchTime,client,NuclearLockOn);
 }
@@ -569,6 +571,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
             PrintToChat(client,"%c[SourceCraft]%c The missle has locked on, you have %3.1f seconds to evacuate.",
                         COLOR_GREEN,COLOR_DEFAULT, lockTime);
 
+            /*
             if (GetRandomInt(1,10) > 5)
             {
                 EmitSoundToAll(airRaidWav,SOUND_FROM_WORLD,SNDCHAN_AUTO,
@@ -576,6 +579,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
                                SNDPITCH_NORMAL,-1,m_NuclearAimPos[client],
                                NULL_VECTOR,true,0.0);
             }
+            */
 
             new Handle:NuclearPack;
             if (CreateDataTimer(lockTime,NuclearImpact,NuclearPack)
@@ -593,7 +597,7 @@ public Action:NuclearLockOn(Handle:timer,Handle:pack)
         new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
         new Float:minutes = cooldown / 60.0;
         new Float:seconds = FloatFraction(minutes) * 60.0;
-        PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
+        DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c without effect, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
         CreateTimer(cooldown,AllowNuclearLaunch,client);
     }
 }
@@ -642,15 +646,15 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                 {
                     case 1:
                     {
-                        damage = 500;
-                        radius = 400.0;
-                        r_int  = 400;
+                        damage = 600;
+                        radius = 500.0;
+                        r_int  = 500;
                         magnitude = 600;
                         scale = 100.0;
                     }
                     case 2:
                     {
-                        damage = 700;
+                        damage = 1000;
                         radius = 800.0;
                         r_int  = 800;
                         magnitude = 1000;
@@ -658,7 +662,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                     case 3:
                     {
-                        damage = 800;
+                        damage = 1500;
                         radius = 1000.0;
                         r_int  = 1000;
                         magnitude = 1500;
@@ -666,7 +670,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
                     }
                     case 4:
                     {
-                        damage = 1000;
+                        damage = 2000;
                         radius = 1500.0;
                         r_int  = 1500;
                         magnitude = 2000;
@@ -787,7 +791,7 @@ public Action:NuclearExplosion(Handle:timer,Handle:pack)
             new Float:cooldown = GetConVarFloat(cvarNuclearCooldown);
             new Float:minutes = cooldown / 60.0;
             new Float:seconds = FloatFraction(minutes) * 60.0;
-            PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
+            DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cNuclear Launch%c, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
 
             m_NuclearLaunchStatus[client]=Quiescent;
             CreateTimer(cooldown,AllowNuclearLaunch,client);

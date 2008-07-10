@@ -23,7 +23,6 @@
 #include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/freeze"
-#include "sc/log"
 
 new String:rechargeWav[] = "sourcecraft/transmission.wav";
 new String:psistormWav[] = "sourcecraft/ptesto00.wav";
@@ -36,15 +35,17 @@ new String:summonWav[][] = { "sourcecraft/parrdy00.wav",
 
 new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationID, archonID;
 
+new g_archonRace = -1;
 new g_lightningSprite;
 new g_smokeSprite;
 new g_haloSprite;
 new g_blueGlow;
 new g_redGlow;
 
-new bool:m_AllowArchon[MAXPLAYERS+1];
-new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
 new gPsionicStormDuration[MAXPLAYERS+1];
+new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
+new bool:m_AllowArchon[MAXPLAYERS+1];
+new Handle:m_ArchonTimer[MAXPLAYERS+1];
 
 new Handle:cvarArchonCooldown = INVALID_HANDLE;
 new Handle:cvarPsionicStormCooldown = INVALID_HANDLE;
@@ -69,7 +70,7 @@ public OnPluginStart()
     cvarArchonCooldown=CreateConVar("sc_archoncooldown","300");
 }
 
-public OnPluginReady()
+public OnSourceCraftReady()
 {
     raceID      = CreateRace("Protoss Templar", "templar",
                              "You are now a Protoss Templar.",
@@ -98,6 +99,8 @@ public OnPluginReady()
 
 public OnMapStart()
 {
+    g_archonRace = -1;
+
     g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
     if (g_lightningSprite == -1)
         SetFailState("Couldn't find lghtning Model");
@@ -126,9 +129,9 @@ public OnMapStart()
 
 public OnPlayerAuthed(client,Handle:player)
 {
-    m_AllowArchon[client]=true;
-    m_AllowPsionicStorm[client]=true;
-    FindMaxHealthOffset(client);
+    m_ArchonTimer[client] = INVALID_HANDLE;
+    m_AllowArchon[client] = true;
+    m_AllowPsionicStorm[client] = true;
 }
 
 public OnRaceSelected(client,Handle:player,oldrace,race)
@@ -152,8 +155,7 @@ public OnRaceSelected(client,Handle:player,oldrace,race)
                 DoImmunity(client, player, immunity_level,true);
 
             new levitation_level = GetUpgradeLevel(player,race,levitationID);
-            if (levitation_level)
-                Levitation(client, player, levitation_level);
+            Levitation(client, player, levitation_level);
         }
     }
 }
@@ -197,8 +199,10 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
             new archon_level = GetUpgradeLevel(player,race,archonID);
             if (archon_level)
             {
-                new archon_race = FindRace("archon");
-                if (archon_race)
+                if (g_archonRace < 0)
+                    g_archonRace = FindRace("archon");
+
+                if (g_archonRace)
                 {
                     new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
                     new Float:minutes = cooldown / 60.0;
@@ -218,9 +222,9 @@ public OnUltimateCommand(client,Handle:player,race,bool:pressed)
                                        5.0,40.0,255);
                     TE_SendToAll();
 
-                    ChangeRace(player, archon_race, true, false);
-                    CreateTimer(cooldown, AllowArchon, client);
-                    m_AllowArchon[client]=false;
+                    ChangeRace(player, g_archonRace, true, false);
+                    m_ArchonTimer[client] = CreateTimer(cooldown, AllowArchon, client, TIMER_FLAG_NO_MAPCHANGE);
+                    m_AllowArchon[client] = false;
                 }
             }
         }
@@ -244,8 +248,7 @@ public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     DoImmunity(client, player, immunity_level,true);
 
                 new levitation_level = GetUpgradeLevel(player,raceID,levitationID);
-                if (levitation_level)
-                    Levitation(client, player, levitation_level);
+                Levitation(client, player, levitation_level);
             }
         }
     }
@@ -259,7 +262,8 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     new bool:changed=false;
     if (attacker_index && attacker_index != victim_index)
     {
-        if (victim_race == raceID && IsPlayerAlive(attacker_index))
+        if (victim_race == raceID && IsPlayerAlive(attacker_index) &&
+            IsPlayerAlive(attacker_index))
         {
             changed = Feedback(event, damage, victim_index, victim_player,
                                attacker_index, attacker_player, assister_index);
@@ -284,6 +288,31 @@ public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,v
     return changed ? Plugin_Changed : Plugin_Continue;
 }
 
+public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
+                                 attacker_index,Handle:attacker_player,attacker_race,
+                                 assister_index,Handle:assister_player,assister_race,
+                                 damage,const String:weapon[], bool:is_equipment,
+                                 customkill,bool:headshot,bool:backstab,bool:melee)
+{
+    if (victim_race == g_archonRace)
+    {
+        // Revert back to Templar upon death os an Archon.
+        ChangeRace(victim_player, raceID, true);
+
+        new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
+        new Float:minutes = cooldown / 60.0;
+        new Float:seconds = FloatFraction(minutes) * 60.0;
+        PrintToChat(victim_index,"%c[SourceCraft]%c You now need to wait %d:%3.1f before using %cSummon Archon%c again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
+
+        // Reset the Archon Timer
+        if (m_ArchonTimer[victim_index] != INVALID_HANDLE)
+            KillTimer(m_ArchonTimer[victim_index]);
+
+        m_ArchonTimer[victim_index] = CreateTimer(cooldown, AllowArchon, victim_index,TIMER_FLAG_NO_MAPCHANGE);
+    }
+    return Plugin_Continue;
+}
+
 public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
                      attacker_index, Handle:attacker_player, assister_index)
 {
@@ -304,29 +333,29 @@ public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
         {
             case 1:
             {
-                percent=0.50;
+                percent=GetRandomFloat(0.10, 0.50);
                 chance=15;
             }
             case 2:
             {
-                percent=0.60;
+                percent=GetRandomFloat(0.10, 0.60);
                 chance=25;
             }
             case 3:
             {
-                percent=0.75;
+                percent=GetRandomFloat(0.10, 0.75);
                 chance=35;
             }
             case 4:
             {
-                percent=0.90;
+                percent=GetRandomFloat(0.10, 0.90);
                 chance=50;
             }
         }
 
         if(GetRandomInt(1,100) <= chance)
         {
-            new amount=RoundToNearest(float(damage)*GetRandomFloat(0.10,percent));
+            new amount=RoundToNearest(float(damage)*percent);
             new newhp=GetClientHealth(victim_index)+amount;
             new maxhp=GetMaxHealth(victim_index);
             if (newhp > maxhp)
@@ -341,6 +370,10 @@ public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
                 !GetImmunity(attacker_player,Immunity_HealthTake) &&
                 !TF2_IsPlayerInvuln(attacker_index))
             {
+                new health=GetClientHealth(attacker_index);
+                if (amount >= health)
+                    amount = RoundToCeil(float(health)*percent)+1;
+
                 HurtPlayer(attacker_index,amount, victim_index,"feedback", "Feedback");
                 EmitSoundToAll(feedbackWav,victim_index);
 
@@ -512,17 +545,17 @@ public PsionicStorm(Handle:player,client,ultlevel)
 {
     gPsionicStormDuration[client] = ultlevel*3;
 
-    new Handle:PsionicStormTimer = CreateTimer(0.4, PersistPsionicStorm, client,TIMER_REPEAT);
+    new Handle:PsionicStormTimer = CreateTimer(0.4, PersistPsionicStorm, client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     TriggerTimer(PsionicStormTimer, true);
 
     new Float:cooldown = GetConVarFloat(cvarPsionicStormCooldown);
 
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %Psionic Storm%c! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
+    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cPsionic Storm%c! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
 
     if (cooldown > 0.0)
     {
         m_AllowPsionicStorm[client]=false;
-        CreateTimer(cooldown,AllowPsionicStorm,client);
+        CreateTimer(cooldown,AllowPsionicStorm,client,TIMER_FLAG_NO_MAPCHANGE);
     }
 }
 
@@ -588,26 +621,43 @@ public Action:PersistPsionicStorm(Handle:timer,any:client)
     return Plugin_Stop;
 }
 
-public Action:AllowPsionicStorm(Handle:timer,any:index)
+public Action:AllowPsionicStorm(Handle:timer,any:client)
 {
-    m_AllowPsionicStorm[index]=true;
-    if (IsClientInGame(index))
+    m_AllowPsionicStorm[client]=true;
+    if (IsClientInGame(client))
     {
-        EmitSoundToClient(index, rechargeWav);
-        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cPsionic Storm%c is now available again!",
+        EmitSoundToClient(client, rechargeWav);
+        PrintToChat(client,"%c[SourceCraft] %cYour your ultimate %cPsionic Storm%c is now available again!",
                     COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
     }
     return Plugin_Stop;
 }
 
-public Action:AllowArchon(Handle:timer,any:index)
+public Action:AllowArchon(Handle:timer,any:client)
 {
-    m_AllowArchon[index]=true;
-    if (IsClientInGame(index))
+    new Handle:player=GetPlayerHandle(client);
+    if (player != INVALID_HANDLE && IsPlayerAlive(client))
     {
-        EmitSoundToClient(index, rechargeWav);
-        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cSummon Archon%c is now available again!",
-                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+        if (GetRace(player) == g_archonRace)
+        {
+            new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
+            new Float:minutes = cooldown / 60.0;
+            new Float:seconds = FloatFraction(minutes) * 60.0;
+            PrintToChat(client,"%c[SourceCraft]%c You are no longer an %cArchon%c, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
+            ChangeRace(player, raceID, true, false);
+            m_ArchonTimer[client] = CreateTimer(cooldown, AllowArchon, client,TIMER_FLAG_NO_MAPCHANGE);
+        }
+        else
+        {
+            m_ArchonTimer[client] = INVALID_HANDLE;
+            m_AllowArchon[client] = true;
+            if (IsClientInGame(client))
+            {
+                EmitSoundToClient(client, rechargeWav);
+                PrintToChat(client,"%c[SourceCraft] %cYour your ultimate %cSummon Archon%c is now available again!",
+                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+            }
+        }
     }
     return Plugin_Stop;
 }

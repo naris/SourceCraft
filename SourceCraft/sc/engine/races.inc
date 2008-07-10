@@ -390,11 +390,12 @@ ResetUpgradesNow(client,Handle:playerHandle)
     new race=GetRace(playerHandle);
     SetActiveUltimate(playerHandle,race,-1);
 
+    //SetDatabaseSaved(playerHandle,0);
     new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
     for(new upgrade=0;upgrade<upgradeCount;upgrade++)
     {
         SetUpgradeLevel(playerHandle,race,upgrade,0);
-        SetSavedUpgradeLevel(playerHandle,race,upgrade,-1);
+        //SetSavedUpgradeLevel(playerHandle,race,upgrade,-1);
     }
 
     PrintToChat(client,"%c[SourceCraft] %cYour upgrades have been reset for your current race.",

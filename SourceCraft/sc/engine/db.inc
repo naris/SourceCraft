@@ -329,8 +329,8 @@ LoadPlayerRaceData(client, Handle:playerHandle, raceId)
                             while (SQL_FetchRow(upgradeQuery))
                             {
                                 LoadUpgradeLevel(playerHandle, raceId,
-                                        SQL_FetchInt(upgradeQuery,0),
-                                        SQL_FetchInt(upgradeQuery,1));
+                                                 SQL_FetchInt(upgradeQuery,0),
+                                                 SQL_FetchInt(upgradeQuery,1));
                             }
                         }
                         CloseHandle(upgradeQuery);
@@ -431,15 +431,18 @@ bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
                 ResetPack(dataPack);
                 SQL_TQuery(DBIDB, SQL_UpdatePlayer, SQLString, dataPack);
 
-                // Assume save will work and mark playerHandle data saved.
-                new raceId = GetRace(playerHandle);
-                new upgradeCount = GetUpgradeCount(raceHandle);
-                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                if (playerData != playerHandle)
                 {
-                    new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
-                    SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                    // Assume save will work and mark playerHandle data saved.
+                    new raceId = GetRace(playerHandle);
+                    new upgradeCount = GetUpgradeCount(raceHandle);
+                    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                    {
+                        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
+                        SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
+                    }
+                    SetDatabaseSaved(playerHandle,1);
                 }
-                SetDatabaseSaved(playerHandle,1);
                 return false;
             }
             else

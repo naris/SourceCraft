@@ -9,6 +9,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+//#include <hooker>
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
@@ -20,22 +21,12 @@
 #include "sc/util"
 #include "sc/range"
 #include "sc/trace"
-#include "sc/log"
 
-//#include "sc/MindControl"
+enum disposition { update, remove, reset };
 
 new String:errorWav[] = "sourcecraft/perror.mp3";
 new String:deniedWav[] = "sourcecraft/buzz.wav";
 new String:controlWav[] = "sourcecraft/pteSum00.wav";
-
-new m_SkinOffset;
-new m_BuilderOffset;
-new m_BuildingOffset;
-new m_PlacingOffset;
-new m_ObjectTypeOffset;
-new m_PercentConstructedOffset;
-
-new m_ObjectFlagsOffset;
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
 
@@ -65,48 +56,10 @@ public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
 
 public OnPluginStart()
 {
-    GetGameType();
+    if(!HookEvent("player_builtobject", PlayerBuiltObject))
+        SetFailState("Could not hook the player_builtobject event.");
 
-    if (GameType == tf2)
-    {
-        if(!HookEvent("player_builtobject", PlayerBuiltObject))
-            SetFailState("Could not hook the player_builtobject event.");
-    }
-}
-
-public OnPluginReady()
-{
-    if (GameType == tf2)
-    {
-        m_SkinOffset = FindSendPropInfo("CObjectSentrygun","m_nSkin");
-        if(m_SkinOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Skin offset.");
-
-        m_BuilderOffset = FindSendPropInfo("CObjectSentrygun","m_hBuilder");
-        if(m_BuilderOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Builder offset.");
-
-        m_BuildingOffset = FindSendPropInfo("CObjectSentrygun","m_bBuilding");
-        if(m_BuildingOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Building offset.");
-
-        m_PercentConstructedOffset = FindSendPropInfo("CObjectSentrygun","m_flPercentageConstructed");
-        if(m_PercentConstructedOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun PercentConstructed offset.");
-
-        m_PlacingOffset = FindSendPropInfo("CObjectSentrygun","m_bPlacing");
-        if(m_PlacingOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun Placing offset.");
-
-        m_ObjectTypeOffset = FindSendPropInfo("CObjectSentrygun","m_iObjectType");
-        if(m_ObjectTypeOffset == -1)
-            SetFailState("[SourceCraft] Error finding Sentrygun ObjectType offset.");
-
-        //
-        m_ObjectFlagsOffset = FindSendPropInfo("CObjectSentrygun","m_fObjectFlags");
-        if(m_ObjectFlagsOffset == -1)
-            LogError("[SourceCraft] Error finding Sentrygun ObjectFlags offset.");
-    }
+    //RegisterHook(HK_EventKilled, ObjectDestroyed, false);
 }
 
 public OnMapStart()
@@ -138,6 +91,7 @@ public OnMapStart()
 
 public OnClientDisconnect(client)
 {
+    LogMessage("%d disconnected", client);
     ResetMindControlledObjects(client, false);
 }
 
@@ -150,18 +104,28 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         if (index > 0)
         {
             new objects:type = objects:GetEventInt(event,"object");
-            UpdateMindControlledObject(-1, index, type, false);
+            LogMessage("%N build a %s", index, TF2_ObjectNames[type]);
+            UpdateMindControlledObject(-1, index, type, update);
         }
     }
 }
 
+public Action:ObjectDestroyed(entity, &inflictor, &attacker, &Float:Damage, &DamageType, &AmmoType)
+{
+    LogMessage("entity %d was destroyed", entity);
+    UpdateMindControlledObject(entity, -1, unknown, reset);
+    return Plugin_Continue;
+}
+
 public OnObjectKilled(attacker, builder, objects:type)
 {
-    UpdateMindControlledObject(-1, builder, type, true);
+    LogMessage("%N's %s was killed", builder, TF2_ObjectNames[type]);
+    UpdateMindControlledObject(-1, builder, type, remove);
 }
 
 bool:MindControl(client, Float:range, percent, &builder, &objects:type)
 {
+    LogMessage("%N is attempting MindControl", client);
     new target = TraceAimTarget(client);
     if (target >= 0)
     {
@@ -180,31 +144,16 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                 if (IsValidEntity(target) &&
                     GetEntityNetClass(target,class,sizeof(class)))
                 {
-                    if (StrEqual(class, "CObjectSentrygun", false))
-                        type = sentrygun;
-                    else if (StrEqual(class, "CObjectDispenser", false))
-                        type = dispenser;
-                    else if (StrEqual(class, "CObjectTeleporter", false))
-                    {
-                        //type = objects:GetEntData(target, m_ObjectTypeOffset);
-                        type = objects:GetEntPropEnt(target, Prop_Send, "m_iObjectType");
-                    }
-                    else
-                        type = unknown;
-
+                    type = GetObjectTypeFromNetClass(target, class);
                     if (type == sentrygun || type == dispenser)
                     {
                         //Check to see if the object is still being built
-                        //new placing = GetEntData(target, m_PlacingOffset);
                         new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
-                        //new building = GetEntData(target, m_BuildingOffset);
                         new building = GetEntProp(target, Prop_Send, "m_bBuilding");
-                        //new Float:complete = GetEntDataFloat(target,m_PercentConstructedOffset);
                         new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
                         if (placing == 0 && building == 0 && complete >= 1.0)
                         {
                             //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                            //builder = GetEntDataEnt2(target, m_BuilderOffset); // Get the current owner of the object.
                             builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
 
                             //LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
@@ -217,19 +166,17 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                                 {
                                     new builderTeam = GetClientTeam(builder);
                                     new team = GetClientTeam(client);
-                                    if (builderTeam != team)
+                                    if (builderTeam != team || true)
                                     {
                                         // Check to see if this target has already been controlled.
-                                        builder = UpdateMindControlledObject(target, builder, type, true);
+                                        builder = UpdateMindControlledObject(target, builder, type, update);
 
                                         LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
 
                                         // Change the builder to client
-                                        //SetEntDataEnt2(target, m_BuilderOffset, client, true);
                                         SetEntPropEnt(target, Prop_Send, "m_hBuilder", client);
 
                                         //paint red or blue
-                                        //SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
                                         SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
 
                                         //Change TeamNum
@@ -239,6 +186,9 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
                                         //Same thing again but we are changing SetTeam
                                         SetVariantInt(team);
                                         AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+
+                                        //HookEntity(HKE_CBaseEntity, target);
+                                        LogMessage("entity %d was mind controlled", target);
 
                                         EmitSoundToAll(controlWav,target);
 
@@ -339,9 +289,9 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
     return false;
 }
 
-UpdateMindControlledObject(object, builder, objects:type, bool:remove)
+UpdateMindControlledObject(object, builder, objects:type, disposition:disp)
 {
-    //LogMessage("UpdateMindControlledObject() of %N, object=%d, type=%d, remove=%d", builder, object, type, remove);
+    LogMessage("UpdateMindControlledObject() of %d, object=%d, type=%d, disp=%d", builder, object, type, disp);
     if (object > 0 || builder > 0)
     {
         new maxplayers=GetMaxClients();
@@ -371,11 +321,14 @@ UpdateMindControlledObject(object, builder, objects:type, bool:remove)
                             //LogMessage("Object Found in %x", pack);
                             CloseHandle(pack);
 
-                            if (remove || !IsValidEntity(pack_target))
+                            if (disp == remove || !IsValidEntity(pack_target)
+                                               || GetObjectType(pack_target) != pack_type)
                             {
                                 //LogMessage("Removing %x", pack);
                                 RemoveFromArray(m_StolenObjectList[client], index);
                             }
+                            else if (disp == reset)
+                                ResetObject(-1, pack_target, pack_builder, pack_type, false);
                             else
                             {
                                 //LogMessage("Updating %x", pack);
@@ -397,9 +350,9 @@ UpdateMindControlledObject(object, builder, objects:type, bool:remove)
     return builder;
 }
 
-ResetMindControlledObjects(client, bool:remove)
+ResetMindControlledObjects(client, bool:kill)
 {
-    //LogMessage("ResetMindControlledObject() for %d, remove=%d", client, remove);
+    LogMessage("ResetMindControlledObject() for %d, kill=%d", client, kill);
     if (m_StolenObjectList[client] != INVALID_HANDLE)
     {
         new size = GetArraySize(m_StolenObjectList[client]);
@@ -412,83 +365,64 @@ ResetMindControlledObjects(client, bool:remove)
                 new builder = ReadPackCell(pack);
                 new objects:type = objects:ReadPackCell(pack);
                 new target = ReadPackCell(pack);
-
-                if (IsValidEntity(target))
-                {
-                    decl String:class[32];
-                    if (GetEntityNetClass(target,class,sizeof(class)))
-                    {
-                        new objects:current_type;
-                        if (StrEqual(class, "CObjectSentrygun", false))
-                            current_type = sentrygun;
-                        else if (StrEqual(class, "CObjectDispenser", false))
-                            current_type = dispenser;
-                        else if (StrEqual(class, "CObjectTeleporter", false))
-                        {
-                            //current_type = objects:GetEntData(target, m_ObjectTypeOffset);
-                            current_type = objects:GetEntPropEnt(target, Prop_Send, "m_iObjectType");
-                        }
-                        else
-                            current_type = unknown;
-
-                        // Is the object still what we stole?
-                        if (current_type == type)
-                        {
-                            // Do we still own it?
-                            //if (GetEntDataEnt2(target, m_BuilderOffset) == client)
-                            if (GetEntPropEnt(target, Prop_Send, "m_hBuilder") ==  client)
-                            {
-                                // Is the round not ending and the builder valid?
-                                if (remove || builder <= 0)
-                                {
-                                    //LogMessage("Orphaned object %x", target);
-                                    AcceptEntityInput(target, "Kill", -1, -1, 0);
-                                    //RemoveEdict(target); // Remove the object.
-                                }
-                                else
-                                {
-                                    // Is the original builder still around and still an engie?
-                                    if (IsClientInGame(builder) &&
-                                        TF2_GetPlayerClass(builder) == TFClass_Engineer)
-                                    {
-                                        // Give it back.
-                                        new team = GetClientTeam(builder);
-
-                                        // Change the builder back
-                                        //SetEntDataEnt2(target, m_BuilderOffset, builder, true);
-                                        SetEntPropEnt(target, Prop_Send, "m_hBuilder", builder);
-
-                                        //paint red or blue
-                                        //SetEntData(target, m_SkinOffset, (team==3)?1:0, 1, true);
-                                        SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
-
-                                        //Change TeamNum
-                                        SetVariantInt(team);
-                                        AcceptEntityInput(target, "TeamNum", -1, -1, 0);
-
-                                        //Same thing again but we are changing SetTeam
-                                        SetVariantInt(team);
-                                        AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-                                    }
-                                    else // Zap it.
-                                    {
-                                        //LogMessage("Orphaned object %x", target);
-                                        //AcceptEntityInput(target, "Kill", -1, -1, 0);
-                                        RemoveEdict(target); // Remove the object.
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
                 CloseHandle(pack);
+
+                ResetObject(client, target, builder, type, kill);
                 //SetArrayCell(m_StolenObjectList[client], index, INVALID_HANDLE);
             }
         }
         ClearArray(m_StolenObjectList[client]);
         CloseHandle(m_StolenObjectList[client]);
         m_StolenObjectList[client] = INVALID_HANDLE;
+    }
+}
+
+ResetObject(client, target, builder, objects:type, bool:kill)
+{
+    if (IsValidEntity(target))
+    {
+        decl String:class[32];
+        if (GetEntityNetClass(target,class,sizeof(class)))
+        {
+            new objects:current_type = GetObjectTypeFromNetClass(target, class);
+
+            // Is the object still what we stole?
+            if (current_type == type)
+            {
+                // Do we still own it?
+                if (client <= 0 || GetEntPropEnt(target, Prop_Send, "m_hBuilder") ==  client)
+                {
+                    // Is the round not ending and the builder valid?
+                    // (still around and still an engie)?
+                    if (kill || builder <= 0 || !IsClientInGame(builder) ||
+                        TF2_GetPlayerClass(builder) != TFClass_Engineer)
+                    {
+                        //LogMessage("Orphaned object %x", target);
+                        AcceptEntityInput(target, "Kill", -1, -1, 0);
+                        //RemoveEdict(target); // Remove the object.
+                    }
+                    else
+                    {
+                        // Give it back.
+                        new team = GetClientTeam(builder);
+
+                        // Change the builder back
+                        SetEntPropEnt(target, Prop_Send, "m_hBuilder", builder);
+
+                        //paint red or blue
+                        SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
+
+                        //Change TeamNum
+                        SetVariantInt(team);
+                        AcceptEntityInput(target, "TeamNum", -1, -1, 0);
+
+                        //Same thing again but we are changing SetTeam
+                        SetVariantInt(team);
+                        AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -511,8 +445,8 @@ public Native_MindControl(Handle:plugin,numParams)
 public Native_ResetMindControlledObjs(Handle:plugin,numParams)
 {
     new client = GetNativeCell(1);
-    new bool:remove = bool:GetNativeCell(2);
-    ResetMindControlledObjects(client,remove);
+    new bool:kill = bool:GetNativeCell(2);
+    ResetMindControlledObjects(client,kill);
 }
 
 stock EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
