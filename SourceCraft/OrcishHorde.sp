@@ -10,497 +10,664 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <raytrace>
+#include <range>
 
 #undef REQUIRE_EXTENSIONS
-#include <cstrike>
+#include <tf2>
 #include <tf2_player>
+#include <cstrike>
 #define REQUIRE_EXTENSIONS
 
+// Define _TRACE to enable trace logging for debugging
+//#define _TRACE
+#include <trace>
+
 #include "sc/SourceCraft"
-#include "sc/util"
-#include "sc/range"
-#include "sc/trace"
-#include "sc/authtimer"
-#include "sc/maxhealth"
+#include "sc/MissileAttack"
+#include "sc/ShopItems"
 #include "sc/respawn"
 #include "sc/weapons"
+#include "sc/sounds"
 
-new String:thunderWav[] = "sourcecraft/thunder1long.mp3";
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
+#include "effect/Lightning"
+#include "effect/HaloSprite"
+#include "effect/PurpleGlow"
+#include "effect/SendEffects"
+#include "effect/FlashScreen"
+#include "effect/BloodSprite"
 
-new raceID, strikeID, grenadeID, reincarnationID, lightningID;
+new const String:thunderWav[]       = "sc/thunder1long.mp3";
 
-new bool:m_AllowChainLightning[MAXPLAYERS+1];
+new g_ReincarnationChance[]         = { 0, 15, 37, 59, 80 };
+
+new Float:g_StrikePercent[]         = { 0.0, 0.40, 0.60, 0.90, 1.20 };
+
+new Float:g_ChainRange[]            = { 0.0, 300.0, 450.0, 650.0, 800.0 };
+
+new g_MissileAttackChance[]         = { 0, 15, 15, 15, 15 };
+new Float:g_MissileAttackPercent[]  = { 0.0, 0.15, 0.30, 0.40, 0.50 };
+
+new cfgMaxRespawns                  = 4;
+
+new raceID, strikeID, missileID, reincarnationID, lightningID;
+
 new bool:m_HasRespawned[MAXPLAYERS+1];
-
-new Handle:cvarChainCooldown = INVALID_HANDLE;
-
-new g_haloSprite;
-new g_purpleGlow;
-new g_crystalSprite;
-new g_lightningSprite;
 
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Orcish Horde",
-    author = "PimpinJuice",
+    author = "-=|JFH|=-Naris with credits to PimpinJuice",
     description = "The Orcish Horde race for SourceCraft.",
-    version = "1.0.0.0",
-    url = "http://pimpinjuice.net/"
+    version = SOURCECRAFT_VERSION,
+    url = "http://www.jigglysfunhouse.net/"
 };
-
-public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
-{
-    SetupRespawn();
-    return true;
-}
 
 public OnPluginStart()
 {
-    GetGameType();
+    LoadTranslations("sc.reincarnate.phrases.txt");
+    LoadTranslations("sc.common.phrases.txt");
+    LoadTranslations("sc.orc.phrases.txt");
 
-    cvarChainCooldown=CreateConVar("sc_chainlightningcooldown","30");
-
-    if (!HookEvent("player_spawn",PlayerSpawnEvent))
-        SetFailState("Couldn't hook the player_spawn event.");
-
-    if(!HookEvent("player_team",PlayerChangeClassEvent))
-        SetFailState("Could not hook the player_team event.");
-
-    if (GameType == cstrike)
+    if (GetGameType() == tf2)
     {
-        if (!HookEvent("round_start",RoundStartEvent,EventHookMode_PostNoCopy))
-            SetFailState("Couldn't hook the round_start event.");
+        if (!HookEvent("teamplay_round_start",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_start event.");
+
+        if (!HookEventEx("teamplay_round_active",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the teamplay_round_active event.");
+
+        if(!HookEventEx("teamplay_round_win",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_win event.");
+
+        if(!HookEventEx("teamplay_round_stalemate",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_stalemate event.");
+
+        if (!HookEventEx("arena_round_start",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the arena_round_start event.");
+
+        if (!HookEventEx("arena_win_panel",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the arena_win_panel event.");
+
+        if (!HookEvent("teamplay_suddendeath_begin",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_suddendeath_begin event.");
     }
     else if (GameType == dod)
     {
-        if (!HookEvent("dod_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
+        if (!HookEvent("dod_round_start",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the dod_round_start event.");
+
+        if (!HookEventEx("dod_round_active",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the dod_round_active event.");
+
+        if (!HookEvent("dod_round_win",RoundEndEvent,EventHookMode_PostNoCopy))
             SetFailState("Couldn't hook the dod_round_start event.");
     }
-    else if (GameType == tf2)
+    else if (GameTypeIsCS())
     {
-        if (!HookEvent("player_changeclass",PlayerChangeClassEvent))
-            SetFailState("Couldn't hook the player_changeclass event.");
+        if (!HookEvent("round_start",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the round_start event.");
 
-        if (!HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy))
-            SetFailState("Couldn't hook the teamplay_round_start event.");
+        if (!HookEventEx("round_active",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the round_active event.");
 
-        if (!HookEvent("teamplay_suddendeath_begin",RoundStartEvent,EventHookMode_PostNoCopy))
-            SetFailState("Couldn't hook the teamplay_suddendeath_begin event.");
+        if (!HookEvent("round_end",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the round_end event.");
     }
+
+    if (IsSourceCraftLoaded())
+        OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID          = CreateRace("Orcish Horde", "orc",
-                                 "You are now an Orcish Horde.",
-                                 "You will be an Orcish Horde when you die or respawn.");
+    raceID          = CreateRace("orc", .faction=OrcishHorde, .type=Biological);
 
-    strikeID        = AddUpgrade(raceID,"Acute Strike", "acute_strike",
-                                 "Gives you a 25% chance of doing\n40-120% more damage.");
+    strikeID        = AddUpgrade(raceID, "acute_strike", .energy=2.0);
+    missileID       = AddUpgrade(raceID, "acute_grenade", .energy=2.0);
 
-    grenadeID       = AddUpgrade(raceID,"Acute Grenade", "acute_grenade",
-                                 "Grenades and Rockets have a 15% chance of doing 35-100%\nmore damage.");
+    cfgMaxRespawns  = GetConfigNum("max_respawns", cfgMaxRespawns);
+    reincarnationID = AddUpgrade(raceID, "reincarnation", .max_level=cfgMaxRespawns, .energy=10.0);
 
-    reincarnationID = AddUpgrade(raceID,"Reincarnation", "reincarnation",
-                                 "Gives you a 15-80% chance of respawning\nonce.");
+    if (cfgMaxRespawns < 1)
+    {
+        SetUpgradeDisabled(raceID, reincarnationID, true);
+        LogMessage("Disabling Orcish Horde:Reincarnation due to configuration: sc_maxrespawns=%d",
+                   cfgMaxRespawns);
+    }
 
-    lightningID     = AddUpgrade(raceID,"Chain Lightning", "lightning",
-                                 "Discharges a bolt of lightning that jumps\non up to 4 nearby enemies 150-300 units in range,\ndealing each 32 damage.", true); // Ultimate
+    // Ultimate 1
+    lightningID     = AddUpgrade(raceID, "lightning", 1, .energy=30.0, .cooldown=2.0);
+
+    // Get Configuration Data
+    GetConfigArray("chance", g_ReincarnationChance, sizeof(g_ReincarnationChance),
+                   g_ReincarnationChance, raceID, reincarnationID);
+
+    GetConfigArray("chance", g_MissileAttackChance, sizeof(g_MissileAttackChance),
+                   g_MissileAttackChance, raceID, missileID);
+
+    GetConfigFloatArray("damage_percent",  g_MissileAttackPercent, sizeof(g_MissileAttackPercent),
+                        g_MissileAttackPercent, raceID, missileID);
+
+    GetConfigFloatArray("damage_percent",  g_StrikePercent, sizeof(g_StrikePercent),
+                        g_StrikePercent, raceID, strikeID);
+
+    GetConfigFloatArray("range",  g_ChainRange, sizeof(g_ChainRange),
+                        g_ChainRange, raceID, lightningID);
 }
 
 public OnMapStart()
 {
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
+    SetupRespawn();
+    SetupLightning();
+    SetupBloodDrop();
+    SetupBloodSpray();
+    SetupHaloSprite();
+    SetupPurpleGlow();
+    SetupMissileAttack("");
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
+    SetupDeniedSound();
 
-    g_crystalSprite = SetupModel("materials/sprites/crystal_beam1.vmt");
-    if (g_crystalSprite == -1)
-        SetFailState("Couldn't find crystal_beam Model");
+    SetupSound(thunderWav);
+}
 
-    g_purpleGlow = SetupModel("materials/sprites/purpleglow1.vmt");
-    if (g_purpleGlow == -1)
-        SetFailState("Couldn't find purpleglow Model");
+public OnPlayerAuthed(client)
+{
+    m_HasRespawned[client]=false;
+    m_IsRespawning[client]=false;
+    m_ReincarnationCount[client]=0;
 
-    SetupSound(thunderWav,true,true);
-    SetupSound(rechargeWav,true,true);
+    #if defined _TRACE
+        m_SpawnCount[client]=0;
+    #endif
+}
 
-    for(new x=1;x<=MAXPLAYERS;x++)
+public Action:OnRaceDeselected(client,oldrace,newrace)
+{
+    if (oldrace == raceID)
     {
-        m_HasRespawned[x]=false;
-        m_IsRespawning[x]=false;
-        m_IsChangingClass[x]=false;
-        m_ReincarnationCount[x]=0;
+        TraceInto("OrcishHorde", "OnRaceDeselected", "client=%d:%N, oldrace=%d, newrace=%d", \
+                  client,ValidClientIndex(client), oldrace, newrace);
+
+        m_IsRespawning[client]=false;
+        m_ReincarnationCount[client]=0;
+
+        #if defined _TRACE
+            m_SpawnCount[client]=0;
+        #endif
+
+        TraceReturn();
+        return Plugin_Handled;
     }
+    else
+        return Plugin_Continue;
 }
 
-public OnPlayerAuthed(client,Handle:player)
+public Action:OnRaceSelected(client,oldrace,newrace)
 {
-    m_AllowChainLightning[client]=true;
-}
-
-public OnRaceSelected(client,Handle:player,oldrace,newrace)
-{
-    if (oldrace == raceID && newrace != raceID)
+    if (newrace == raceID)
     {
-        m_AllowChainLightning[client]=true;
+        TraceInto("OrcishHorde", "OnRaceSelected", "client=%d:%N, oldrace=%d, newrace=%d", \
+                  client, ValidClientIndex(client), oldrace, newrace);
+
         m_HasRespawned[client]=false;
         m_IsRespawning[client]=false;
-        m_IsChangingClass[client] = false;
+        m_ReincarnationCount[client]=0;
+
+        #if defined _TRACE
+            m_SpawnCount[client]=0;
+        #endif
+
+        TraceReturn();
+        return Plugin_Handled;
     }
+    else
+        return Plugin_Continue;
 }
 
-public OnUltimateCommand(client,Handle:player,race,bool:pressed)
+public OnUltimateCommand(client,race,bool:pressed,arg)
 {
-    if (pressed && m_AllowChainLightning[client] &&
-        race == raceID && IsPlayerAlive(client))
+    if (pressed && race == raceID && IsValidClientAlive(client))
     {
-        new lightning_level = GetUpgradeLevel(player,race,lightningID);
-        if (lightning_level)
-            ChainLightning(client,lightning_level);
+        TraceInto("OrcishHorde", "OnUltimateCommand", "client=%d:%N, race=%d, pressed=%d, arg=%d", \
+                  client, ValidClientIndex(client), race, pressed, arg);
+
+        new lightning_level = GetUpgradeLevel(client,race,lightningID);
+        if (lightning_level > 0)
+        {
+            if (GetRestriction(client,Restriction_NoUltimates) ||
+                GetRestriction(client,Restriction_Stunned))
+            {
+                decl String:upgradeName[64];
+                GetUpgradeName(raceID, lightningID, upgradeName, sizeof(upgradeName), client);
+                PrepareAndEmitSoundToClient(client,deniedWav);
+                DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
+            }
+            else if (CanInvokeUpgrade(client, raceID, lightningID))
+            {
+                if (GameType == tf2)
+                {
+                    if (TF2_IsPlayerDisguised(client))
+                        TF2_RemovePlayerDisguise(client);
+                }
+
+                ChainLightning(client,lightning_level);
+            }
+        }
+
+        TraceReturn();
     }
 }
 
 // Events
-public RoundStartEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public RoundEndEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    for(new x=1;x<=MAXPLAYERS;x++)
+    for (new index=1;index<=MaxClients;index++)
     {
-        m_HasRespawned[x]=false;
-        m_IsRespawning[x]=false;
-        m_IsChangingClass[x]=false;
-        m_ReincarnationCount[x]=0;
+        m_HasRespawned[index]=false;
+        m_IsRespawning[index]=false;
+        m_ReincarnationCount[index]=0;
+
+        #if defined _TRACE
+            m_SpawnCount[index]=0;
+        #endif
     }
 }
 
-public Action:PlayerChangeClassEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public OnPlayerSpawnEvent(Handle:event, client, race)
 {
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
+    if (race == raceID)
     {
-        new Handle:player = GetPlayerHandle(client);
-        if (player != INVALID_HANDLE)
+        TraceInto("OrcishHorde", "OnPlayerSpawnEvent", "client=%d:%N, raceID=%d", \
+                  client, ValidClientIndex(client), raceID);
+
+        Respawned(client,true);
+
+        TraceReturn();
+    }
+}
+
+public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race,
+                                attacker_index, attacker_race, damage,
+                                absorbed, bool:from_sc)
+{
+    new bool:handled=false;
+
+    if (!from_sc && attacker_index > 0 &&
+        victim_index != attacker_index &&
+        attacker_race == raceID)
+    {
+        damage += absorbed;
+
+        new missile_level = GetUpgradeLevel(attacker_index,raceID,missileID);
+        if (missile_level > 0)
         {
-            if (GetRace(player) == raceID && IsPlayerAlive(client))
-                m_IsChangingClass[client] = true;
+            handled = MissileAttack(raceID, missileID, missile_level, event, damage, victim_index,
+                                    attacker_index, victim_index, true, sizeof(g_MissileAttackPercent),
+                                    g_MissileAttackPercent, g_MissileAttackChance, "",
+                                    "sc_acute_grenade");
         }
-    }
-    return Plugin_Continue;
-}
 
-public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
-    {
-        new Handle:player=GetPlayerHandle(client);
-        if (player != INVALID_HANDLE)
-        {
-            if (GetRace(player)==raceID)
-            {
-                if (m_IsChangingClass[client])
-                    m_IsChangingClass[client] = false;
-                else if (m_IsRespawning[client])
-                {
-                    Reposition(client);
-                    TE_SetupGlowSprite(m_DeathLoc[client],g_purpleGlow,1.0,3.5,150);
-                    TE_SendToAll();
-                }
-            }
-        }
-    }
-    return Plugin_Continue;
-}
-
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                attacker_index,Handle:attacker_player,attacker_race,
-                                assister_index,Handle:assister_player,assister_race,
-                                damage)
-{
-    new bool:changed=false;
-    if (attacker_index)
-    {
-        if (attacker_race == raceID && victim_index != attacker_index)
+        if (!handled)
         {
             decl String:weapon[64];
-            GetWeapon(event, attacker_index, weapon, sizeof(weapon));
-
-            if (AcuteGrenade(damage, victim_index, victim_player,
-                             attacker_index, attacker_player, weapon))
+            new bool:is_equipment=GetWeapon(event,attacker_index,weapon,sizeof(weapon));
+            if (!IsGrenadeOrRocket(weapon, is_equipment))
             {
-                changed = true;
-            }
-            else if (AcuteStrike(damage, victim_index, victim_player,
-                                 attacker_index, attacker_player))
-            {
-                changed = true;
-            }
-        }
-
-        if (assister_race == raceID && victim_index != assister_index)
-        {
-            if (AcuteStrike(damage, victim_index, victim_player,
-                            assister_index, assister_player))
-            {
-                changed = true;
+                handled = AcuteStrike(damage, victim_index, attacker_index);
             }
         }
     }
-    return changed ? Plugin_Changed : Plugin_Continue;
+
+    return handled ? Plugin_Handled : Plugin_Continue;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                 attacker_index,Handle:attacker_player,attacker_race,
-                                 assister_index,Handle:assister_player,assister_race,
-                                 damage,const String:weapon[], bool:is_equipment,
-                                 customkill,bool:headshot,bool:backstab,bool:melee)
+public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
+                                  assister_index, assister_race, damage,
+                                  absorbed)
 {
-    if (victim_race==raceID && !m_IsChangingClass[victim_index] &&
-        (!m_HasRespawned[victim_index] || GameType != cstrike))
+    if (assister_race == raceID)
     {
-        new reincarnation_level=GetUpgradeLevel(victim_player,victim_race,reincarnationID);
-        if (reincarnation_level)
+        if (AcuteStrike(damage + absorbed, victim_index, assister_index))
+            return Plugin_Handled;
+    }
+
+    return Plugin_Continue;
+}
+
+public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_index,
+                          attacker_race, assister_index, assister_race, damage,
+                          const String:weapon[], bool:is_equipment, customkill,
+                          bool:headshot, bool:backstab, bool:melee)
+{
+    if (victim_race==raceID && (GameType != cstrike || !m_HasRespawned[victim_index]))
+    {
+        TraceInto("OrcishHorde", "OnPlayerDeathEvent", "victim_index=%d:%N, victim_race=%d, attacker_index=%d:%N, attacker_race=%d", \
+                  victim_index, ValidClientIndex(victim_index), victim_race, \
+                  attacker_index, ValidClientIndex(attacker_index), attacker_race);
+
+        if (m_IsRespawning[victim_index])
         {
-            new percent, times;
-            switch (reincarnation_level)
+            Trace("%N died again while respawning", victim_index);
+        }
+        else if (IsChangingClass(victim_index))
+        {
+            m_ReincarnationCount[victim_index] = 0;
+
+            #if defined _TRACE
+                m_SpawnCount[victim_index]=0;
+            #endif
+
+            Trace("%N changed class", victim_index);
+        }
+        else if (IsMole(victim_index))
+        {
+            PrepareAndEmitSoundToClient(victim_index,deniedWav);
+
+            decl String:upgradeName[64];
+            GetUpgradeName(raceID, reincarnationID, upgradeName, sizeof(upgradeName), victim_index);
+            DisplayMessage(victim_index, Display_Message, "%t", "NotAsMole", upgradeName);
+            m_ReincarnationCount[victim_index] = 0;
+
+            #if defined _TRACE
+                m_SpawnCount[victim_index]=0;
+            #endif
+
+            Trace("%N died while a mole", \
+                  ValidClientIndex(victim_index));
+        }
+        else if (GetImmunity(attacker_index,Immunity_Silver))
+        {
+            PrepareAndEmitSoundToClient(victim_index,deniedWav);
+            m_ReincarnationCount[victim_index] = 0;
+
+            if (attacker_index != victim_index && IsValidClient(attacker_index))
             {
-                case 1:
-                {
-                    percent=15;
-                    times=2;
-                }
-                case 2:
-                {
-                    percent=37;
-                    times=3;
-                }
-                case 3:
-                {
-                    percent=59;
-                    times=4;
-                }
-                case 4:
-                {
-                    percent=80;
-                    times=5;
-                }
-            }
-            if (GetRandomInt(1,100)<=percent &&
-                m_ReincarnationCount[victim_index] <= times)
-            {
-                Respawn(victim_index);
-                m_HasRespawned[victim_index]=true;
-                TE_SetupGlowSprite(m_DeathLoc[victim_index],g_purpleGlow,1.0,3.5,150);
-                TE_SendToAll();
+                DisplayMessage(victim_index, Display_Message, "%t", "PreventedFromReincarnatingBySilver", attacker_index);
+                DisplayMessage(attacker_index, Display_Enemy_Message, "%t", "ReincarnateWasPreventedBySilver", victim_index);
             }
             else
-                m_ReincarnationCount[victim_index] = 0;
+            {
+                DisplayMessage(victim_index, Display_Message, "%t", "ReincarnatePreventedBySilver");
+            }
 
+            #if defined _TRACE
+                m_SpawnCount[victim_index]=0;
+            #endif
+
+            Trace("%d:%N died due to %d:%N's silver!", \
+                  victim_index, ValidClientIndex(victim_index), \
+                  attacker_index, ValidClientIndex(attacker_index));
+        }
+        else if (assister_index > 0 && GetImmunity(assister_index,Immunity_Silver))
+        {
+            PrepareAndEmitSoundToClient(victim_index,deniedWav);
+            m_ReincarnationCount[victim_index] = 0;
+
+            if (attacker_index > 0 && IsValidClient(assister_index))
+            {
+                DisplayMessage(victim_index, Display_Message, "%t", "PreventedFromReincarnatingBySilver", assister_index);
+                DisplayMessage(assister_index, Display_Enemy_Message, "%t", "ReincarnateWasPreventedBySilver", victim_index);
+            }
+            else
+            {
+                DisplayMessage(victim_index, Display_Message, "%t", "ReincarnatePreventedBySilver");
+            }
+
+            #if defined _TRACE
+                m_SpawnCount[victim_index]=0;
+            #endif
+
+            Trace("%d:%N died due to %d:%N's silver!", \
+                  victim_index, ValidClientIndex(victim_index), \
+                  assister_index, ValidClientIndex(assister_index));
+        }
+        else if (GetRestriction(victim_index,Restriction_NoRespawn) ||
+                 GetRestriction(victim_index,Restriction_NoUpgrades) ||
+                 GetRestriction(victim_index,Restriction_Stunned))
+        {
+            PrepareAndEmitSoundToClient(victim_index,deniedWav);
+            DisplayMessage(victim_index, Display_Message, "%t", "ReincarnatePrevented");
+            m_ReincarnationCount[victim_index] = 0;
+
+            #if defined _TRACE
+                m_SpawnCount[victim_index]=0;
+            #endif
+
+            Trace("%d:%N died due to restrictions!", \
+                  victim_index, ValidClientIndex(victim_index));
         }
         else
-            m_ReincarnationCount[victim_index] = 0;
+        {
+            new count = m_ReincarnationCount[victim_index];
+            new reincarnation_level=GetUpgradeLevel(victim_index,victim_race,reincarnationID);
+            if (reincarnation_level > 0 && count < cfgMaxRespawns && count < reincarnation_level)
+            {
+                if (GetRandomInt(1,100)<=g_ReincarnationChance[reincarnation_level])
+                {
+                    if (CanInvokeUpgrade(victim_index, victim_race, reincarnationID, .notify=false))
+                    {
+                        m_HasRespawned[victim_index]=true;
+                        Respawn(victim_index);
+
+                        decl String:suffix[3];
+                        count = m_ReincarnationCount[victim_index];
+                        GetNumberSuffix(count, suffix, sizeof(suffix));
+
+                        if (GameType == dod)
+                        {
+                            DisplayMessage(victim_index, Display_Message, "%t",
+                                           "WillReincarnate", count, suffix);
+                        }
+                        else
+                        {
+                            TE_SetupGlowSprite(m_DeathLoc[victim_index],PurpleGlow(),1.0,3.5,150);
+                            TE_SendEffectToAll();
+
+                            DisplayMessage(victim_index, Display_Message,"%t",
+                                           "YouAreReincarnating",  count, suffix);
+                            if (attacker_index != victim_index && IsValidClient(attacker_index))
+                            {
+                                DisplayMessage(attacker_index,Display_Enemy_Message,"%t",
+                                               "IsReincarnating",  victim_index, count, suffix);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        m_ReincarnationCount[victim_index] = 0;
+
+                        #if defined _TRACE
+                            m_SpawnCount[victim_index]=0;
+                        #endif
+
+                        Trace("%N died due to lack of energy", victim_index);
+                    }
+                }
+                else
+                {
+                    m_ReincarnationCount[victim_index] = 0;
+
+                    #if defined _TRACE
+                        m_SpawnCount[victim_index]=0;
+                    #endif
+
+                    Trace("%N died due to fate", victim_index);
+                }
+            }
+            else
+            {
+                m_ReincarnationCount[victim_index] = 0;
+
+                #if defined _TRACE
+                    m_SpawnCount[victim_index]=0;
+                #endif
+
+                Trace("%N died due to lack of levels(=%d, count=%d)", \
+                      victim_index, reincarnation_level, count);
+            }
+        }
+
+        TraceReturn();
     }
 }
 
-bool:AcuteStrike(damage, victim_index, Handle:victim_player, index, Handle:player)
+bool:AcuteStrike(damage, victim_index, index)
 {
-    new strike_level = GetUpgradeLevel(player,raceID,strikeID);
-    if (strike_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
-                         && !TF2_IsPlayerInvuln(victim_index))
+    new strike_level = GetUpgradeLevel(index,raceID,strikeID);
+    if (strike_level > 0 && !GetRestriction(index,Restriction_NoUpgrades) &&
+        !GetRestriction(index,Restriction_Stunned) &&
+        !GetImmunity(victim_index,Immunity_HealthTaking) &&
+        !GetImmunity(victim_index,Immunity_Upgrades) &&
+        !IsInvulnerable(victim_index))
     {
-        if(GetRandomInt(1,100)<=25)
+        if (GetRandomInt(1,100) <= 25 &&
+            CanInvokeUpgrade(index, raceID, strikeID, .notify=false))
         {
-            new Float:percent;
-            switch(strike_level)
-            {
-                case 1:
-                    percent=0.40;
-                case 2:
-                    percent=0.60;
-                case 3:
-                    percent=0.90;
-                case 4:
-                    percent=1.20;
-            }
+            new Float:indexLoc[3];
+            GetClientAbsOrigin(index, indexLoc);
+            indexLoc[2] += 50.0;
 
-            new health_take=RoundFloat(float(damage)*percent);
-            new new_health=GetClientHealth(victim_index)-health_take;
-            if (new_health <= 0)
-            {
-                new_health=0;
-                DisplayKill(index, victim_index, "acute_strike", "Acute Strike", health_take);
-            }
-            else
-                DisplayDamage(index, victim_index, "acute_strike", "Acute Strike", health_take);
+            new Float:victimLoc[3];
+            GetEntityAbsOrigin(victim_index, victimLoc);
+            victimLoc[2] += 50.0;
 
-            SetEntityHealth(victim_index,new_health);
+            static const color[4] = { 100, 255, 55, 255 };
+            TE_SetupBeamPoints(indexLoc, victimLoc, Lightning(), HaloSprite(),
+                               0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+            TE_SendQEffectToAll(index,victim_index);
+            FlashScreen(victim_index,RGBA_COLOR_RED);
 
-            new color[4] = { 100, 255, 55, 255 };
-            TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                              0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-            TE_SendToAll();
+            new health_take = RoundFloat(float(damage)*g_StrikePercent[strike_level]);
+            if (health_take < 1)
+                health_take = 1;
+
+            HurtPlayer(victim_index, health_take, index, "sc_acute_strike",
+                       .type=DMG_BULLET, .in_hurt_event=true);
             return true;
         }
     }
     return false;
 }
 
-bool:AcuteGrenade(damage, victim_index, Handle:victim_player, index, Handle:player, const String:weapon[])
-{
-    if (StrEqual(weapon,"hegrenade",false) ||
-        StrEqual(weapon,"tf_projectile_pipe",false) ||
-        StrEqual(weapon,"tf_projectile_pipe_remote",false) ||
-        StrEqual(weapon,"tf_weapon_rocketlauncher",false) ||
-        StrEqual(weapon,"tf_projectile_rocket",false) ||
-        StrEqual(weapon,"weapon_frag_us",false) ||
-        StrEqual(weapon,"weapon_frag_ger",false) ||
-        StrEqual(weapon,"weapon_bazooka",false) ||
-        StrEqual(weapon,"weapon_pschreck",false))
-    {
-        new grenade_level = GetUpgradeLevel(player,raceID,grenadeID);
-        if (grenade_level > 0 && !GetImmunity(victim_player,Immunity_HealthTake)
-                              && !TF2_IsPlayerInvuln(victim_index))
-        {
-            if(GetRandomInt(1,100)<=15)
-            {
-                new Float:percent;
-                switch(grenade_level)
-                {
-                    case 1:
-                        percent=0.35;
-                    case 2:
-                        percent=0.60;
-                    case 3:
-                        percent=0.80;
-                    case 4:
-                        percent=1.00;
-                }
-
-                new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetClientHealth(victim_index)-health_take;
-                if (new_health <= 0)
-                {
-                    new_health=0;
-                    DisplayKill(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
-                }
-                else
-                    DisplayDamage(index, victim_index, "acute_grenade", "Acute Grenade", health_take);
-
-                SetEntityHealth(victim_index,new_health);
-
-                new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
-                Origin[2] += 5;
-
-                TE_SetupGlowSprite(Origin,g_crystalSprite,0.7,3.0,200);
-                TE_SendToAll();
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
 ChainLightning(client,ultlevel)
 {
-    new dmg;
-    new Float:range;
-    switch(ultlevel)
-    {
-        case 1:
-        {
-            dmg=GetRandomInt(20,50);
-            range=300.0;
-        }
-        case 2:
-        {
-            dmg=GetRandomInt(30,80);
-            range=450.0;
-        }
-        case 3:
-        {
-            dmg=GetRandomInt(40,100);
-            range=650.0;
-        }
-        case 4:
-        {
-            dmg=GetRandomInt(50,120);
-            range=800.0;
-        }
-    }
-    new count=0;
-    new last=client;
+    new factor = ultlevel * 10;
+    new dmg=GetRandomInt(10+factor,30+(factor*2));
+    new Float:range = g_ChainRange[ultlevel];
+
+    new Float:lastLoc[3];
     new Float:indexLoc[3];
     new Float:clientLoc[3];
     GetClientAbsOrigin(client, clientLoc);
-    new maxplayers=GetMaxClients();
-    for(new index=1;index<=maxplayers;index++)
-    {
-        if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
-            GetClientTeam(client) != GetClientTeam(index))
-        {
-            new Handle:player_check=GetPlayerHandle(index);
-            if (player_check != INVALID_HANDLE)
-            {
-                if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                    !GetImmunity(player_check,Immunity_HealthTake) &&
-                    !TF2_IsPlayerInvuln(index))
-                {
-                    GetClientAbsOrigin(index, indexLoc);
-                    if (IsPointInRange(clientLoc,indexLoc,range))
-                    {
-                        if (TraceTarget(client, index, clientLoc, indexLoc))
-                        {
-                            new color[4] = { 10, 200, 255, 255 };
-                            TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
-                                              0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                            TE_SendToAll();
+    clientLoc[2] += 50.0; // Adjust trace position to the middle of the person instead of the feet.
+    lastLoc = clientLoc;
 
-                            HurtPlayer(index,dmg,client,"chain_lightning", "Chain Lightning", 5+ultlevel);
-                            last=index;
-                        }
-                    }
+    new lightning  = Lightning();
+    new haloSprite = HaloSprite();
+    static const lightningColor[4] = { 10, 200, 255, 255 };
+
+    new b_count=0;
+    new alt_count=0;
+    new list[MaxClients+1];
+    new alt_list[MaxClients+1];
+    SetupOBeaconLists(list, alt_list, b_count, alt_count, client);
+
+    if (b_count > 0)
+    {
+        TE_SetupBeamRingPoint(clientLoc, 10.0, range, lightning, haloSprite,
+                              0, 15, 0.5, 5.0, 0.0, lightningColor, 10, 0);
+
+        TE_Send(list, b_count, 0.0);
+    }
+
+    if (alt_count > 0)
+    {
+        TE_SetupBeamRingPoint(clientLoc, range-10.0, range, lightning, haloSprite,
+                              0, 15, 0.5, 5.0, 0.0, lightningColor, 10, 0);
+
+        TE_Send(alt_list, alt_count, 0.0);
+    }
+    
+    PrepareAndEmitSoundToAll(thunderWav,client);
+
+    new count=0;
+    new last=client;
+    new team=GetClientTeam(client);
+    new bool:hitVector[MAXPLAYERS] = {false, ...};
+
+    do
+    {
+        new index = FindClosestTarget(client, team, range, clientLoc, indexLoc, hitVector);
+        if (index == 0)
+            break;
+        else
+        {
+            TE_SetupBeamPoints(lastLoc, indexLoc, lightning, haloSprite,
+                               0, 15, 1.0, 40.0,40.0,0,40.0,lightningColor,40);
+            TE_SendQEffectToAll(last,index);
+
+            decl Float:vecAngles[3];
+            GetClientEyeAngles(index,vecAngles);
+            TE_SetupBloodSprite(indexLoc, vecAngles, {200, 20, 20, 255}, 28, BloodSpray(), BloodDrop());
+            TE_SendEffectToAll();
+
+            FlashScreen(index,RGBA_COLOR_RED);
+
+            HurtPlayer(index, dmg, client, "sc_chain_lightning",
+                       .xp=5+ultlevel, .type=DMG_ENERGYBEAM);
+
+            hitVector[index] = true;
+            lastLoc = indexLoc;
+            last = index;
+            count++;
+        }
+    } while (dmg > 0);
+
+    decl String:upgradeName[64];
+    GetUpgradeName(raceID, lightningID, upgradeName, sizeof(upgradeName), client);
+
+    if (count)
+    {
+        DisplayMessage(client, Display_Ultimate, "%t",
+                       "ToDamageEnemies", upgradeName, count);
+    }
+    else
+    {
+        DisplayMessage(client, Display_Ultimate, "%t",
+                       "WithoutEffect", upgradeName);
+    }
+
+    CreateCooldown(client, raceID, lightningID);
+}
+
+FindClosestTarget(client, team, Float:range, Float:clientLoc[3],
+                  Float:indexLoc[3], bool:hitVector[MAXPLAYERS])
+{
+    new target = 0;
+    for(new index=1;index<=MaxClients;index++)
+    {
+        if (client != index && !hitVector[index] &&
+            IsClientInGame(index) && IsPlayerAlive(index) &&
+            GetClientTeam(index) != team)
+        {
+            if (!GetImmunity(index,Immunity_Ultimates) &&
+                !GetImmunity(index,Immunity_HealthTaking) &&
+                !IsInvulnerable(index))
+            {
+                GetClientAbsOrigin(index, indexLoc);
+                indexLoc[2] += 50.0;
+
+                new Float:distance = GetVectorDistance(clientLoc,indexLoc);
+                if (distance <= range &&
+                    TraceTargetIndex(client, index, clientLoc, indexLoc))
+                {
+                    target = index;
+                    range = distance;
                 }
             }
         }
     }
-    EmitSoundToAll(thunderWav,client);
-    new Float:cooldown = GetConVarFloat(cvarChainCooldown);
-    if (count)
-    {
-        DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c to damage %d enemies, you now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
-    }
-    else
-    {
-        DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cChained Lightning%c, which did no damage! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-    }
-    if (cooldown > 0.0)
-    {
-        m_AllowChainLightning[client]=false;
-        CreateTimer(cooldown,AllowChainLightning,client);
-    }
-}
-
-public Action:AllowChainLightning(Handle:timer,any:index)
-{
-    m_AllowChainLightning[index]=true;
-
-    if (IsClientInGame(index) && IsPlayerAlive(index))
-    {
-        if (GetRace(GetPlayerHandle(index)) == raceID)
-        {
-            EmitSoundToClient(index, rechargeWav);
-            PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cChained Lightning%c is now available again!",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-        }
-    }                
-    return Plugin_Stop;
+    return target;
 }
 

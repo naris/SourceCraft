@@ -2,57 +2,44 @@
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: menus.inc
  * Description: This file handles most of the menus.
- * Author(s): Anthony Iacono  
- * Modifications by: Naris (Murray Wilson)
+ * Author: Naris (Murray Wilson) 
+ * Credits: Anthony Iacono 
  */
 
-new bool:gShopMenuMode[MAXPLAYERS+1];
-new bool:gRaceMenuMode[MAXPLAYERS+1];
-new gShowItemsTarget[MAXPLAYERS+1];
-
-new Handle:g_IntroMenu   = INVALID_HANDLE;
-new Handle:g_MainMenu    = INVALID_HANDLE;
-
-CleanupMenus()
-{
-    if (g_IntroMenu != INVALID_HANDLE)
-    {
-        CloseHandle(g_IntroMenu);
-        g_IntroMenu = INVALID_HANDLE;
-    }
-
-    if (g_MainMenu != INVALID_HANDLE)
-    {
-        CloseHandle(g_MainMenu);
-        g_MainMenu = INVALID_HANDLE;
-    }
-}
+new MenuMode:gShopMenuMode[MAXPLAYERS+1];
+new MenuMode:gRaceMenuMode[MAXPLAYERS+1];
+new MenuMode:gUpgradeMenuMode[MAXPLAYERS+1];
+new gFactionMenuRace[MAXPLAYERS+1];
+new gUpgradeMenuRace[MAXPLAYERS+1];
+new gShopMenuTarget[MAXPLAYERS+1];
 
 IntroMenu(client)
 {
-    if (g_IntroMenu == INVALID_HANDLE)
+    if (IsValidClient(client) && !IsFakeClient(client))
     {
-        g_IntroMenu=CreateMenu(IntroMenu_Action);
-        SetMenuExitButton(g_IntroMenu,false);
+        new Handle:introMenu=CreateMenu(IntroMenu_Action);
+        SetMenuExitButton(introMenu,false);
         if (GetRaceCount() > 1)
         {
             if (GetShopItemCount() >= 1)
             {
-                SetMenuTitle(g_IntroMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience and/or Crystals for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to\nlevel up. Purchase items in the Shopmenu with your Crystals.\nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+                SetMenuTitle(introMenu,"%T", "WelcomeToSourceCraft", client, SOURCECRAFT_VERSION);
             }
             else
             {
-                SetMenuTitle(g_IntroMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Experience for completing objectives.\nFor each level gained from Experience, you may choose an Upgrade to level up. \nFor a command list, type help in chat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+                SetMenuTitle(introMenu,"%T", "WelcomeToSourceCraftNoShop", client, SOURCECRAFT_VERSION);
             }
         }
         else
         {
-            SetMenuTitle(g_IntroMenu,"Welcome to this SourceCraft *BETA TEST* server!\nYou get Crystals for completing objectives.\nPurchase items in the Shopmenu with your Crystals.\nFor a command list, type help in\nchat or menu to use the menu system.\nPlease report any bugs you notice to www.jigglysfunhouse.net\nBETA %s",VERSION);
+            SetMenuTitle(introMenu,"%T", "WelcomeToShopMenu", client, SOURCECRAFT_VERSION);
         }
-        SetMenuExitButton(g_IntroMenu,true);
-        AddMenuItem(g_IntroMenu,"","Exit");
+
+        SetMenuExitButton(introMenu,true);
+        AddMenuItem(introMenu,"","Exit");
+
+        DisplayMenu(introMenu,client, 20);
     }
-    DisplayMenu(g_IntroMenu,client, 20);
 }
 
 public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
@@ -62,489 +49,1016 @@ public IntroMenu_Action(Handle:menu,MenuAction:action,client,param)
         && (param == MenuCancel_Timeout ||
             param == MenuCancel_Exit)))
     {
-        if (m_FirstSpawn[client] > 1 && GetRaceCount() > 1)
-            RaceMenu(client, true, false);
+        if (GetRaceCount() > 1 &&
+            GetDatabaseLoaded(client) == DataNotFound)
+        {
+            RaceMenu(client, ChangeRaceMode);
+        }
 
-        m_FirstSpawn[client]=0;
+        g_FirstSpawn[client]=false;
     }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
 }
 
 MainMenu(client)
 {
-    if (g_MainMenu == INVALID_HANDLE)
+    if (IsValidClient(client) && !IsFakeClient(client))
     {
-        g_MainMenu=CreateMenu(Menu_Select);
-        SetMenuExitButton(g_MainMenu,true);
-        SetMenuTitle(g_MainMenu,"[SourceCraft] Choose a task.");
-        new race_style = (GetRaceCount() > 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
-        new shop_style = (GetArraySize(shopVector) >= 1) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
-        AddMenuItem(g_MainMenu,"0","Bring up the shopmenu",shop_style);
-        AddMenuItem(g_MainMenu,"1","Change your race",race_style);
-        AddMenuItem(g_MainMenu,"2","View your race's upgrade information",race_style);
-        AddMenuItem(g_MainMenu,"3","Reset your upgrades",race_style);
-        AddMenuItem(g_MainMenu,"4","Spend unused upgrade points",race_style);
-        AddMenuItem(g_MainMenu,"5","Show current upgrade levels",race_style);
-        AddMenuItem(g_MainMenu,"6","Show current items owned",shop_style);
-        AddMenuItem(g_MainMenu,"7","View command list");
-        AddMenuItem(g_MainMenu,"8","Change Settings");
+        new Handle:mainMenu=CreateMenu(Menu_Select);
+        SetMenuExitButton(mainMenu,true);
+        SetMenuTitle(mainMenu,"[SC] %T", "ChooseTask", client);
+
+        new bool:shopAvailable = (GetShopItemCount() >= 1);
+        if (shopAvailable)
+        {
+            AddMenuItemT(mainMenu,"0","ShowShopMenu",client);
+        }
+
+        if (GetRaceCount() > 1)
+        {
+            AddMenuItemT(mainMenu,"1","ChangeRace",client);
+            AddMenuItemT(mainMenu,"2","ShowUpgradeLevels",client);
+            AddMenuItemT(mainMenu,"3","ResetUpgrades",client);
+            AddMenuItemT(mainMenu,"4","SpendPoints",client);
+            AddMenuItemT(mainMenu,"5","ViewUpgrades",client);
+        }
+
+        AddMenuItemT(mainMenu,"6","ChangeSettings",client);
+
+        if (shopAvailable)
+        {
+            AddMenuItemT(mainMenu,"7","ShowItems",client);
+        }
+
+        AddMenuItemT(mainMenu,"8","ViewCommands",client);
+        AddMenuItemT(mainMenu,"9","ViewOtherPlayer",client);
+        AddMenuItemT(mainMenu,"10","ViewSCInfo",client);
+        AddMenuItemT(mainMenu,"11","ViewWiki",client);
+        AddMenuItemT(mainMenu,"12","ViewUpdates",client);
+
+        DisplayMenu(mainMenu,client,MENU_TIME_FOREVER);
     }
-    DisplayMenu(g_MainMenu,client,MENU_TIME_FOREVER);
 }
 
 public Menu_Select(Handle:menu,MenuAction:action,client,selection)
 {
+    TraceInto("Menus", "Menu_Select", "client=%d:%N, menu=%d, action=%d, selection=%d", \
+              client, ValidClientIndex(client), menu, action, selection);
+
     if (action == MenuAction_Select)
     {
-        EmitSoundToClient(client,buttonWav);
-        switch(selection)
+        PrepareAndEmitSoundToClient(client,buttonWav);
+
+        decl String:SelectionInfo[SMALL_STRING_LENGTH];
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
+        switch(StringToInt(SelectionInfo))
         {
-            case 0: // shopmenu
-                ShopMenu(client,true,true);
-            case 1: // changerace
-                RaceMenu(client,true, true);
-            case 2: // upgradesinfo
+            case 0: ShopMenu(client,client,PurchaseItemMode|FromMainMenu);
+            case 1: RaceMenu(client,ChangeRaceMode|FromMainMenu);
+            case 2: UpgradesInfo(client,client,GetRace(client),InfoMode|FromMainMenu); // showupgrades
+            case 3: // reset
             {
-                new Handle:playerHandle=GetPlayerHandle(client);
-                if (playerHandle != INVALID_HANDLE)
-                {
-                    UpgradesInfo(client,GetRace(playerHandle),false);
-                }
-            }
-            case 3: // resetupgrades
-            {
-                new Handle:playerHandle=GetPlayerHandle(client);
-                if (playerHandle != INVALID_HANDLE)
-                {
-                    ResetUpgrades(client,playerHandle);
-                }
+                ResetUpgrades(client);
                 MainMenu(client);
             }
-            case 4: // spendupgrades
+            case 4: // upgrade
             {
-                new Handle:playerHandle=GetPlayerHandle(client);
-                new race=GetRace(playerHandle);
-                if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                    UpgradeMenu(client, playerHandle, true);
+                new race=GetRace(client);
+                if (GetUpgradeLevelCount(client,race)<GetLevel(client,race))
+                    UpgradeMenu(client, UpgradeMode|FromMainMenu, true);
                 else
                 {
-                    PrintToChat(client, "%c[SourceCraft] %cYou don't have any upgrade points to spend, if you want to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT);
+                    CPrintToChat(client, "{green}[SC]{default} %t", "NoPoints");
                     MainMenu(client);
                 }
             }
-            case 5: // showupgrades
+            case 5: UpgradesInfo(client,client,GetRace(client),FromMainMenu); // upgradeinfo
+            case 6: ChangeSettings(client,true);
+            case 7: ShopMenu(client,client,InfoMode|FromMainMenu);
+            case 8: Help(client);
+            case 9: PlayerInfoMenu(client,FromMainMenu);
+            case 10: ShowInfo(client);
+            case 11: ShowWiki(client);
+            case 12: ShowUpdates(client);
+        }
+    }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
+
+    TraceReturn();
+}
+
+RaceMenu(client,MenuMode:mode)
+{
+    if (IsValidClient(client) && !IsFakeClient(client))
+    {
+        new indexCount = GetRaceIndexCount();
+        if (indexCount > 1)
+        {
+            new bool:change   = bool:(mode & ChangeRaceMode);
+            new Handle:crMenu = CreateMenu(Faction_Selected);
+
+            if (change)
+                SetMenuTitle(crMenu, "[SC] %T", "ChooseRace", client, "");
+            else
+                SetMenuTitle(crMenu, "[SC] %T", "ViewRace", client, "");
+
+            SetMenuExitButton(crMenu,true);
+            if (mode & EnableMenuExitBack)
+                SetMenuExitBackButton(crMenu,true);
+
+            new level = GetOverallLevel(client);
+            new Faction:lastFaction = Unassigned;
+            for(new index=1; index < indexCount; index++)
             {
-                new Handle:playerHandle=GetPlayerHandle(client);
-                if (playerHandle != INVALID_HANDLE)
+                new Handle:raceHandle = GetRaceIndexHandle(index);
+                new Faction:faction   = GetRaceFaction(raceHandle);
+                if (faction != lastFaction)
                 {
-                    ShowUpgrades(client,client,playerHandle);
+                    lastFaction = faction;
+                    if (index < indexCount)
+                    {
+                        new Handle:nextHandle   = GetRaceIndexHandle(index+1);
+                        new Faction:nextFaction = GetRaceFaction(nextHandle);
+                        if (nextFaction != faction)
+                        {
+                            decl String:item[ITEM_STRING_LENGTH];
+                            new reqLevel = GetRaceRequiredLevel(raceHandle);
+                            new bool:disable = (level < reqLevel || reqLevel < 0);
+                            GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
+                            if (item[0] != 0)
+                            {
+                                decl String:rbuf[SMALL_STRING_LENGTH];
+                                Format(rbuf,sizeof(rbuf),"%d",GetRaceId(raceHandle));
+                                new style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                                AddMenuItem(crMenu,rbuf,item,style);
+                                continue;
+                            }
+                        }
+                    }
+
+                    decl String:name[NAME_STRING_LENGTH];
+                    GetFactionName(faction,name,sizeof(name), client);
+                    if (name[0] == '\0')
+                        Format(name, sizeof(name), "%T", "Miscellaneous", client);
+
+                    decl String:item[ITEM_STRING_LENGTH];
+                    Format(item, sizeof(item), "%T", "FactionItem", client, name);
+
+                    decl String:rbuf[SMALL_STRING_LENGTH];
+                    Format(rbuf,sizeof(rbuf),"%d",-index);
+                    AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DEFAULT);
                 }
             }
-            case 6: // showitems
-                ShopMenu(client,false,true);
-            case 7: // help
-                Help(client);
-            case 8: // settings
-                ChangeSettings(client,true);
+            gRaceMenuMode[client]=mode;
+            DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
+        }
+        else
+        {
+            CPrintToChat(client, "{green}[SC]{default} %t", "NoRaces");
+
+            if (mode & FromMainMenu)
+                MainMenu(client);
         }
     }
 }
 
-RaceMenu(client,bool:change, bool:fromMain)
+public Faction_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if (GetRaceCount() > 1)
+    if (action == MenuAction_Select)
     {
-        new Handle:crMenu=CreateMenu(RaceMenu_Selected);
+        decl String:SelectionInfo[SMALL_STRING_LENGTH];
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
+        new sel = StringToInt(SelectionInfo);
+        if (sel < 0)
+            FactionMenu(client, -sel);
+        else            
+            UpgradesInfo(client,client,sel,gRaceMenuMode[client]|FromRaceMenu);
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+        {
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            RaceMenu(client,gRaceMenuMode[client]);
+        }
+    }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
+}
+
+FactionMenu(client, start=-1)
+{
+    if (start < 0)
+        start = gFactionMenuRace[client];
+    else
+        gFactionMenuRace[client]=start;
+
+    new indexCount = GetRaceIndexCount();
+    if (start > 0 && start < indexCount)
+    {
+        new bool:change        = bool:(gRaceMenuMode[client] & ChangeRaceMode);
+        new Handle:crMenu      = CreateMenu(RaceMenu_Selected);
+        new Faction:theFaction = GetRaceFaction(GetRaceIndexHandle(start));
+
+        decl String:factionName[NAME_STRING_LENGTH];
+        GetFactionName(theFaction,factionName,sizeof(factionName), client);
 
         if (change)
-            SetMenuTitle(crMenu, "[SourceCraft] Select your desired race.\n");
+            SetMenuTitle(crMenu, "[SC] %T", "ChooseRace", client, factionName);
         else
-            SetMenuTitle(crMenu, "[SourceCraft] Select a race to view.");
+            SetMenuTitle(crMenu, "[SC] %T", "ViewRace", client, factionName);
 
         SetMenuExitButton(crMenu,true);
-        if (fromMain)
-            SetMenuExitBackButton(crMenu,true);
+        SetMenuExitBackButton(crMenu,true);
 
-        // Iterate through the races and print them out
-        new Handle:raceHandle;
-        decl String:rbuf[11];
-        decl String:name[64];
-        decl String:item[256];
-        new bool:disable, reqLevel, level, style;
-        new raceCount = GetRaceCount();
-        for(new race=0;race<raceCount;race++)
+        new level = GetOverallLevel(client);
+        for(new index = start; index < indexCount; index++)
         {
-            raceHandle=GetRaceHandle(race);
-            reqLevel = GetRaceRequiredLevel(raceHandle);
-            if (reqLevel == 0)
-            {
-                style = ITEMDRAW_DEFAULT;
-                GetRaceName(raceHandle,item,sizeof(item));
-            }
+            new Handle:raceHandle=GetRaceIndexHandle(index);
+            if (GetRaceFaction(raceHandle) != theFaction)
+                break;
             else
             {
-                level = GetOverallLevel(GetPlayerHandle(client));
-                disable = (level < reqLevel || reqLevel < 0);
-                style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                if (disable || !change)
+                decl String:item[ITEM_STRING_LENGTH];
+                new reqLevel = GetRaceRequiredLevel(raceHandle);
+                new bool:disable = (level < reqLevel || reqLevel < 0);
+                GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
+                if (item[0] != 0)
                 {
-                    GetRaceName(raceHandle,name,sizeof(name));
-                    if (name[0] != 0)
-                    {
-                        if (reqLevel > 0)
-                        {
-                            Format(item,sizeof(item),"%s (overall level must be >= %d)",
-                                   name, reqLevel);
-                        }
-                        else
-                            Format(item,sizeof(item),"%s (locked)", name);
-                    }
-                    else
-                        item[0] = 0;
+                    decl String:rbuf[SMALL_STRING_LENGTH];
+                    Format(rbuf,sizeof(rbuf),"%d",GetRaceId(raceHandle));
+                    new style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                    AddMenuItem(crMenu,rbuf,item,style);
                 }
-                else
-                    GetRaceName(raceHandle,item,sizeof(item));
-            }
-
-            if (item[0] != 0)
-            {
-                /*
-                new upgradeCount = GetUpgradeCount(raceHandle);
-                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-                {
-                    if (upgrade == 0)
-                        strcopy(item,sizeof(item),"   (");
-                    else
-                        StrCat(item,sizeof(item),",");
-
-                    GetUpgradeName(raceHandle, upgrade, name, sizeof(name));
-                    StrCat(item,sizeof(item),name);
-                    if (IsUpgradeUltimate(raceHandle, upgrade) > 0)
-                        StrCat(item,sizeof(item),"[U]");
-                }
-                StrCat(item,sizeof(item),")");
-                Format(rbuf,sizeof(rbuf),"%d",race);
-                AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DISABLED|ITEMDRAW_RAWLINE);
-                */
-
-                Format(rbuf,sizeof(rbuf),"%d",race);
-                AddMenuItem(crMenu,rbuf,item,style);
             }
         }
-        gRaceMenuMode[client]=change;
         DisplayMenu(crMenu,client,MENU_TIME_FOREVER);
     }
+}
+
+GetRaceMenuItem(String:item[], maxlength, client, Handle:raceHandle, reqLevel, bool:disable)
+{
+    new  String:flag[3] = " ";
+    new id = GetRaceId(raceHandle);
+    if (id == GetRace(client))
+        flag[0] = '>';
+    else if (id == GetPendingRace(client))
+        flag[0] = '<';
+
+    decl String:name[NAME_STRING_LENGTH];
+    GetRaceName(raceHandle,name,sizeof(name), client);
+    if (name[0] == '\0')
+        item[0] = '\0';
+    else if (reqLevel > 0)
+    {
+        Format(item, maxlength, "%s%T", flag,
+               "RaceRequiredLevel", client, name, reqLevel);
+    }
     else
-        PrintToChat(client, "%c[SourceCraft] %cThere are no races to choose!",
-                COLOR_GREEN,COLOR_DEFAULT);
+    {
+        decl String:parent[NAME_STRING_LENGTH];
+        GetRaceParentName(raceHandle,parent,sizeof(parent));
+        if (parent[0] != '\0')
+        {
+            new pRace = FindRace(parent);
+            if (pRace >= 0)
+            {
+                new Handle:pHandle = GetRaceHandle(pRace);
+                if (pHandle != INVALID_HANDLE)
+                    GetRaceName(pHandle,parent,sizeof(parent),client);
+            }
+
+            Format(item, maxlength, "%s%T", flag,
+                   "RaceSummoned", client, name, parent);
+        }
+        else if (disable)
+        {
+            Format(item, maxlength, "%s%T", flag,
+                   "RaceLocked", client, name);
+        }
+        else
+        {
+            Format(item, maxlength, "%s%s", flag, name);
+        }
+    }
 }
 
 public RaceMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        decl String:SelectionInfo[11];
-        decl String:SelectionDispText[256];
-        new SelectionStyle;
-        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
-                    SelectionDispText,sizeof(SelectionDispText));
+        decl String:SelectionInfo[SMALL_STRING_LENGTH];
+        GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
         if (SelectionInfo[0])
         {
-            EmitSoundToClient(client,buttonWav);
-            UpgradesInfo(client,StringToInt(SelectionInfo),gRaceMenuMode[client]);
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            UpgradesInfo(client,client,StringToInt(SelectionInfo),gRaceMenuMode[client]|FromFactionMenu);
         }
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
-            EmitSoundToClient(client,buttonWav);
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            RaceMenu(client,gRaceMenuMode[client]);
+        }
+    }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
+}
+
+UpgradeMenu(client, MenuMode:mode, bool:interactive)
+{
+    TraceInto("Menus", "UpgradeMenu", "client=%d:%N, mode=%d", \
+              client, ValidClientIndex(client), mode);
+
+    if (IsValidClient(client) && !IsFakeClient(client))
+    {
+        new bool:fromMain = bool:(mode & FromMainMenu);
+        if (GetRaceCount() <= 1)
+        {
+            CPrintToChat(client, "{green}[SC]{default} %t", "NoRacesOrUpgrades");
+
+            if (fromMain)
+                MainMenu(client);
+        }
+        else if (GetDatabaseLoaded(client) == DataLoading)
+        {
+            CPrintToChat(client, "{green}[SC]{default} %t", "StillLoadingUnableToUpgrade");
+
+            if (fromMain)
+                MainMenu(client);
+        }
+        else
+        {
+            new bool:needVespene=false;
+            new bool:needCrystals=false;
+            new Handle:sMenu=CreateMenu(UpgradeMenu_Selected);
+            new race=GetRace(client);
+            new Handle:raceHandle=GetRaceHandle(race);
+            new upgradecount=GetUpgradeLevelCount(client,race);
+            new level=GetLevel(client,race);
+            new vespene=GetVespene(client);
+
+            new funds, extra = 0;
+            if (g_bUseMoney)
+            {
+                funds = GetMoney(client);
+                SetMenuTitle(sMenu, "[SC] %T", "ChooseUpgradeMoney", client,
+                             upgradecount, level, funds, vespene);
+            }
+            else
+            {
+                funds = GetCrystals(client);
+                extra = GetPCrystals(client);
+                SetMenuTitle(sMenu, "[SC] %T", "ChooseUpgrade", client,
+                             upgradecount, level, funds, extra, vespene);
+            }
+
+            SetMenuExitButton(sMenu,true);
+            if (mode & EnableMenuExitBack)
+                SetMenuExitBackButton(sMenu,true);
+
+            new style;
+            decl String:sbuf[SMALL_STRING_LENGTH];
+            decl String:item[ITEM_STRING_LENGTH];
+            new maxLevel = GetRaceMaxLevel(raceHandle);
+            new raceLevel = GetLevel(client,race);
+
+            new activeUltimate[MAX_ULTIMATE_CATEGORY+1];
+            for (new i=1;i<sizeof(activeUltimate);i++)
+                activeUltimate[i] = GetActiveUltimate(client,race,i);
+
+            new activeItems = 0;
+            new upgradeCount = GetUpgradeCount(raceHandle);
+            for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+            {
+                new upgradeCategory = GetUpgradeCategory(raceHandle, upgrade);
+                if (upgradeCategory >= 1)
+                {
+                    if (upgradeCategory == 1)
+                    {
+                        Format(item, sizeof(item), "%T:", "Ultimate", client);
+                    }
+                    else
+                    {
+                        Format(item, sizeof(item), "%T:", "UltimateN",
+                               client, upgradeCategory);
+                    }
+
+                    if (upgradeCategory <= MAX_ULTIMATE_CATEGORY &&
+                        activeUltimate[upgradeCategory] >= 0 &&
+                        activeUltimate[upgradeCategory] != upgrade)
+                    {
+                        style = ITEMDRAW_DISABLED;
+                    }
+                }
+                else
+                    item[0] = 0;
+
+                decl String:upgradeName[NAME_STRING_LENGTH];
+                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                StrCat(item, sizeof(item), upgradeName);
+
+                new upgradeLevel    = GetUpgradeLevel(client,race,upgrade);
+                new maxUpgradeLevel = GetUpgradeMaxLevel(raceHandle,upgrade);
+                new requiredLevel   = GetUpgradeRequiredLevel(raceHandle,upgrade);
+                new bool:disabled   = GetUpgradeDisabled(raceHandle,upgrade);
+                if (disabled || requiredLevel > maxLevel || maxUpgradeLevel <= 0)
+                {
+                    new len=strlen(item);
+                    Format(item[len], sizeof(item)-len," [%T]", "NotAvailable", client);
+                    style = ITEMDRAW_DISABLED;
+                }
+                else if (raceLevel < requiredLevel)
+                {
+                    new len=strlen(item);
+                    Format(item[len], sizeof(item)-len," [%T]", "MinimumLevel", client, requiredLevel);
+                    style = ITEMDRAW_DISABLED;
+                }
+                else if (upgradeLevel >= maxUpgradeLevel)
+                    style = ITEMDRAW_DISABLED;
+                else
+                    style = ITEMDRAW_DEFAULT;
+
+                new vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
+                if (vespene_cost < 0)
+                    vespene_cost = g_iUpgradeVespeneCost;
+
+                new cost = GetUpgradeCostCrystals(raceHandle,upgrade);
+                if (cost < 0)
+                    cost = g_iUpgradeCrystalsCost;
+
+                if (g_bUseMoney)
+                    cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
+
+                if (cost > 0)
+                {
+                    new len=strlen(item);
+
+                    if (vespene_cost > 0)
+                    {
+                        if (g_bUseMoney)
+                        {
+                            Format(item[len], sizeof(item)-len, " {%T}",
+                                   "CostMoneyAndVespene", client,
+                                   cost, vespene_cost);
+                        }
+                        else
+                        {
+                            Format(item[len], sizeof(item)-len, " {%T}",
+                                   "CostCrystalsAndVespene", client,
+                                   cost, vespene_cost);
+                        }
+
+                        if (vespene_cost > vespene)
+                        {
+                            needVespene=true;
+                            style = ITEMDRAW_DISABLED;
+                        }
+                    }
+                    else if (g_bUseMoney)
+                    {
+                        Format(item[len], sizeof(item)-len, " {%T}",
+                               "CostMoney", client, cost);
+                    }
+                    else
+                    {
+                        Format(item[len], sizeof(item)-len, " {%T}",
+                               "CostCrystals", client, cost);
+                    }
+
+                    if (cost > funds + extra)
+                    {
+                        needCrystals=true;
+                        style = ITEMDRAW_DISABLED;
+                    }
+                }
+                else if (vespene_cost > 0)
+                {
+                    new len=strlen(item);
+                    Format(item[len], sizeof(item)-len, " {%T}",
+                           "CostVespene", client, vespene_cost);
+
+                    if (vespene_cost > vespene)
+                    {
+                        needVespene=true;
+                        style = ITEMDRAW_DISABLED;
+                    }
+                }
+
+                if (style == ITEMDRAW_DEFAULT)
+                {
+                    activeItems++;
+                    new len=strlen(item);
+                    Format(item[len], sizeof(item)-len,
+                           " (%T)", "UpgradeLevel",
+                           client, upgradeLevel+1);
+                }
+
+                Format(sbuf,sizeof(sbuf),"%d",upgrade);
+                AddMenuItem(sMenu,sbuf,item,style);
+            }
+
+            if (activeItems > 0)
+            {
+                gUpgradeMenuRace[client]=race;
+                gUpgradeMenuMode[client]=mode;
+                DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
+            }
+            else if (interactive)
+            {
+                CPrintToChat(client, "{green}[SC]{default} %t",
+                             needCrystals ? "NeedMoreCrystals" :
+                             needVespene  ? "NeedMoreVespene"
+                                          : "NoUpgrades");
+            }
+        }
+    }
+
+    TraceReturn();
+}
+
+public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
+{
+    TraceInto("Menus", "UpgradeMenu_Selected", "client=%d, menu=%d, action=%d, selection=%d", \
+              client, menu, action, selection);
+
+    if (action == MenuAction_Select)
+    {
+        PrepareAndEmitSoundToClient(client,buttonWav);
+        if (IsValidClient(client))
+        {
+            new race = gUpgradeMenuRace[client]; //GetRace(client);
+            new Handle:raceHandle=GetRaceHandle(race);
+            new upgradeCount=GetUpgradeCount(raceHandle);
+
+            decl String:SelectionInfo[SMALL_STRING_LENGTH];
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
+            new upgrade=StringToInt(SelectionInfo);
+            if (upgrade >= 0 && upgrade < upgradeCount)
+            {
+                PrepareAndEmitSoundToClient(client,buttonWav);
+
+                // Okay, they selected a valid upgrade
+                new level = GetLevel(client,race);
+                new vespene = GetVespene(client);
+
+                new vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
+                if (vespene_cost < 0)
+                    vespene_cost = g_iUpgradeVespeneCost;
+
+                new cost = GetUpgradeCostCrystals(raceHandle,upgrade);
+                if (cost < 0)
+                    cost = g_iUpgradeCrystalsCost;
+
+                new funds, pcrystals;
+                if (g_bUseMoney)
+                {
+                    cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
+                    funds = GetMoney(client);
+                    pcrystals = 0;
+                }
+                else
+                {
+                    funds = GetCrystals(client);
+                    pcrystals = GetPCrystals(client);
+                }
+
+                if (GetUpgradeLevelCount(client,race)>=level)
+                {
+                    CPrintToChat(client, "{green}[SC]{default} %t", "NeedMoreLevels");
+                }
+                else if (cost > 0 && funds + pcrystals < cost)
+                {
+                    EmitCrystalSoundToClient(client, GetRaceFactionId(raceHandle));
+                    if (g_bUseMoney)
+                        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientMoney", cost);
+                    else
+                        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientCrystals", cost);
+                }
+                else if (vespene_cost > 0 && vespene < vespene_cost)
+                {
+                    EmitVespeneSoundToClient(client, GetRaceFactionId(raceHandle));
+                    CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientVespene", vespene_cost);
+                }
+                else
+                {
+                    new minLevel = GetUpgradeRequiredLevel(raceHandle,upgrade);
+                    if (level < minLevel)
+                    {
+                        decl String:upgradeName[NAME_STRING_LENGTH];
+                        GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientLevels",
+                                    minLevel, upgradeName);
+                    }
+                    else
+                    {
+                        new upgradeCategory = GetUpgradeCategory(raceHandle, upgrade);
+                        new activeUltimate = GetActiveUltimate(client,race,upgradeCategory);
+                        if (activeUltimate >= 0 && activeUltimate != upgrade)
+                        {
+                            decl String:activename[NAME_STRING_LENGTH];
+                            GetUpgradeName(raceHandle, activeUltimate, activename, sizeof(activename), client);
+                            CPrintToChat(client, "{green}[SC]{default} %t", "UltimateTaken", activename, upgradeCategory);
+                        }
+                        else
+                        {
+                            new maxLevel = GetUpgradeMaxLevel(raceHandle,upgrade);
+                            if (!IncrementUpgradeLevel(client,race,upgrade,upgradeCategory,maxLevel))
+                            {
+                                decl String:upgradeName[NAME_STRING_LENGTH];
+                                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                                CPrintToChat(client, "{green}[SC]{default} %t", "UpgradeMaxed", upgradeName, maxLevel);
+                            }
+                            else
+                            {
+                                if (cost > 0)
+                                {
+                                    if (g_bUseMoney)
+                                        SetMoney(client,funds-cost);
+                                    else
+                                    {
+                                        pcrystals -= cost;
+                                        if (pcrystals < 0)
+                                        {
+                                            cost = pcrystals * -1;
+                                            pcrystals = 0;
+                                        }
+                                        else
+                                            cost = 0;
+
+                                        SetPCrystals(client, pcrystals);
+
+                                        if (cost > 0)
+                                            SetCrystals(client,funds-cost);
+                                    }
+                                }
+
+                                if (vespene_cost > 0)
+                                    SetVespene(client,vespene-vespene_cost);
+
+                                decl String:upgradeName[NAME_STRING_LENGTH];
+                                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                                CPrintToChat(client, "{green}[SC]{default} %s is now level %d.",
+                                             upgradeName, GetUpgradeLevel(client,race,upgrade));
+                            }
+                        }
+                    }
+
+                    if (GetUpgradeLevelCount(client,race)<GetLevel(client,race))
+                        UpgradeMenu(client, gUpgradeMenuMode[client], false);
+                    else if (g_bSaveXP && !GetDatabaseSaved(client) &&
+                             GetPlayerStatus(client) != PlayerDisabled &&
+                             GetDatabaseLoaded(client) >= DataOK &&
+                             GetRaceLoaded(client, race) >= DataOK)
+                    {
+                        if (g_bDatabaseConnected)
+                            SavePlayerData(client);
+                        else
+                        {
+                            LogError("Database not available to save %N's levels", client);
+                            PrintHintText(client, "%t", "NoDatabaseForSave");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+        {
+            PrepareAndEmitSoundToClient(client,buttonWav);
             MainMenu(client);
         }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
+
+    TraceReturn();
 }
 
-UpgradeMenu(client, Handle:playerHandle, bool:fromMain)
+ShopMenu(client, target, MenuMode:mode)
 {
-    if (GetRaceCount() > 1)
+    if (IsValidClient(client) && !IsFakeClient(client))
     {
-        new Handle:sMenu=CreateMenu(UpgradeMenu_Selected);
-        new race=GetRace(playerHandle);
-        new Handle:raceHandle=GetRaceHandle(race);
-        new upgradecount=GetUpgradeLevelCount(playerHandle,race);
-        new level=GetLevel(playerHandle,race);
-        SetMenuTitle(sMenu,"[SourceCraft] Select your desired upgrade. (%d/%d)",upgradecount,level);
-
-        SetMenuExitButton(sMenu,true);
-        if (fromMain)
-            SetMenuExitBackButton(sMenu,true);
-
-        new upgradeLevel, maxUpgradeLevel, requiredLevel, style;
-        decl String:sbuf[11];
-        decl String:buf[192];
-        decl String:minLevel[64];
-        decl String:toLevel[64];
-        decl String:upgradename[64];
-        new String:ult[] = "Ultimate:";
-        new maxLevel = GetRaceMaxLevel(raceHandle);
-        new raceLevel = GetLevel(playerHandle,race);
-        new activeUltimate = GetActiveUltimate(playerHandle,race);
-        new upgradeCount = GetUpgradeCount(raceHandle);
-        for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+        new shopItemCount = GetShopItemCount();
+        if (shopItemCount >= 1)
         {
-            upgradeLevel=GetUpgradeLevel(playerHandle,race,upgrade);
-            requiredLevel=GetUpgradeRequiredLevel(raceHandle,upgrade);
-            maxUpgradeLevel=GetUpgradeMaxLevel(raceHandle,upgrade);
+            new count = 0;
+            new Handle:shopMenu;
+            new Handle:itemHandle;
+            decl String:itembuf[SMALL_STRING_LENGTH];
 
-            if (requiredLevel > maxLevel || maxUpgradeLevel <= 0)
+            if (client != target || (mode & InfoMode))
             {
-                style = ITEMDRAW_DISABLED;
-                Format(minLevel,sizeof(minLevel)," [Not Available]");
-            }
-            else if (raceLevel < requiredLevel)
-            {
-                style = ITEMDRAW_DISABLED;
-                Format(minLevel,sizeof(minLevel)," [Minimum Level %d]", requiredLevel);
-            }
-            else
-            {
-                minLevel[0] = 0;
-                if (upgradeLevel >= maxUpgradeLevel)
-                    style = ITEMDRAW_DISABLED;
-                else
-                    style = ITEMDRAW_DEFAULT;
-            }
+                decl id;
+                decl String:itemName[NAME_STRING_LENGTH];
 
-            if (IsUpgradeUltimate(raceHandle, upgrade))
-            {
-                ult[0] = 'U';
-                if (activeUltimate >= 0 && activeUltimate != upgrade)
-                    style = ITEMDRAW_DISABLED;
-            }
-            else
-                ult[0] = 0;
+                shopMenu = CreateMenu(ShopMenu_Selected);
+                SetMenuTitle(shopMenu, "[SC] %T", "ListItems", client, target);
 
-            if (style == ITEMDRAW_DEFAULT)
-                Format(toLevel,sizeof(toLevel)," (Upgrade Level %d)", upgradeLevel+1);
-            else
-                toLevel[0] = 0;
-
-            GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
-            Format(buf,sizeof(buf),"%s%s%s%s",ult,upgradename,minLevel,toLevel);
-            Format(sbuf,sizeof(sbuf),"%d",upgrade);
-            AddMenuItem(sMenu,sbuf,buf,style);
-        }
-        DisplayMenu(sMenu,client,MENU_TIME_FOREVER);
-    }
-    else
-        PrintToChat(client, "%c[SourceCraft] %cThere are no races or upgrades to choose!",
-                    COLOR_GREEN,COLOR_DEFAULT);
-}
-
-public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
-{
-    if (action == MenuAction_Select)
-    {
-        EmitSoundToClient(client,buttonWav);
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE)
-        {
-            new race = GetRace(playerHandle);
-            new Handle:raceHandle=GetRaceHandle(race);
-            new upgradeCount=GetUpgradeCount(raceHandle);
-
-            decl String:SelectionInfo[11];
-            decl String:SelectionDispText[256];
-            new SelectionStyle;
-            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
-                        SelectionDispText,sizeof(SelectionDispText));
-            new upgrade=StringToInt(SelectionInfo);
-            if (upgrade >= 0 && upgrade < upgradeCount)
-            {
-                // Okay, they selected a valid upgrade
-                new level = GetLevel(playerHandle,race);
-                if (GetUpgradeLevelCount(playerHandle,race)>=level)
+                for (new x=0;x<shopItemCount;x++)
                 {
-                    PrintToChat(client, "%c[SourceCraft] %cYou can not choose a upgrade without gaining another level.",
-                                COLOR_GREEN,COLOR_DEFAULT);
-                }
-                else
-                {
-                    new minLevel = GetUpgradeRequiredLevel(raceHandle,upgrade);
-                    if (level >= minLevel)
+                    itemHandle=GetItemIndexHandle(x);
+                    id=GetShopId(itemHandle);
+                    if (GetOwnsItem(client,id))
                     {
-                        if (IsUpgradeUltimate(raceHandle, upgrade))
-                        {
-                            new activeUltimate = GetActiveUltimate(playerHandle,race);
-                            if (activeUltimate < 0 || activeUltimate == upgrade)
-                            {
-                                IncrementUpgradeLevel(playerHandle,race,upgrade,true);
-                                decl String:upgradename[64];
-                                GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
-                                PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                            COLOR_GREEN,COLOR_DEFAULT,upgradename,
-                                            GetUpgradeLevel(playerHandle,race,upgrade));
-                            }
-                            else
-                            {
-                                decl String:activename[64];
-                                GetUpgradeName(raceHandle, activeUltimate, activename, sizeof(activename));
-                                PrintToChat(client, "%c[SourceCraft] %cYou have already chosen \"%s\" as your ultimate, to reset your upgrades use resetupgrades.", COLOR_GREEN,COLOR_DEFAULT,activename);
-                            }
-                        }
-                        else
-                        {
-                            IncrementUpgradeLevel(playerHandle,race,upgrade,false);
-                            decl String:upgradename[64];
-                            GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
-                            PrintToChat(client, "%c[SourceCraft] %c\"%s\" is now level %d.",
-                                        COLOR_GREEN,COLOR_DEFAULT,upgradename,
-                                        GetUpgradeLevel(playerHandle,race,upgrade));
-                        }
-
-                        if (GetUpgradeLevelCount(playerHandle,race)<GetLevel(playerHandle,race))
-                            UpgradeMenu(client, playerHandle, false);
-                    }
-                    else
-                    {
-                        decl String:upgradename[64];
-                        GetUpgradeName(raceHandle, upgrade, upgradename, sizeof(upgradename));
-                        PrintToChat(client, "%c[SourceCraft] %cYou need to be at least level %d to choose %s.",
-                                COLOR_GREEN,COLOR_DEFAULT,minLevel,upgradename);
+                        count++;
+                        Format(itembuf,sizeof(itembuf),"%d",id);
+                        GetItemName(itemHandle, itemName, sizeof(itemName),client);
+                        AddMenuItem(shopMenu,itembuf,itemName);
                     }
                 }
             }
-        }
-    }
-    else if (action == MenuAction_End)
-    {
-        CloseHandle(menu);
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE)
-        {
-            if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
-                SavePlayerData(client,playerHandle,false);
-        }
-    }
-}
+            else
+            {
+                decl String:lastCategory[NAME_STRING_LENGTH];
+                decl String:itemCategory[NAME_STRING_LENGTH];
 
-ShopMenu(client, bool:shopmenu, bool:fromMain)
-{
-    new shopItemCount = GetArraySize(shopVector);
-    if (shopItemCount >= 1)
-    {
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE)
-        {
-            new credits=GetCredits(playerHandle);
-            new Handle:shopMenu=CreateMenu(ShopMenu_Selected);
+                mode    |= FromShopMenu;
+                shopMenu = CreateMenu(Category_Selected);
+
+                if (g_bUseMoney)
+                {
+                    SetMenuTitle(shopMenu, "[SC] %T", (mode & PurchaseItemMode) ? "ShopMenuMoney" : "ShopItemsMoney",
+                                 client, GetMoney(client), GetVespene(client));
+                }
+                else
+                {
+                    SetMenuTitle(shopMenu, "[SC] %T", (mode & PurchaseItemMode) ? "ShopMenu" : "ShopItems",
+                                 client, GetCrystals(client), GetPCrystals(client), GetVespene(client));
+                }
+
+                lastCategory[0] = '\0';
+                for (new x=0;x<shopItemCount;x++)
+                {
+                    itemHandle=GetItemIndexHandle(x);
+                    GetItemCategory(itemHandle, itemCategory, sizeof(itemCategory),client);
+
+                    if (strcmp(itemCategory, lastCategory, false) != 0)
+                    {
+                        if (itemCategory[0] == '\0')
+                        {
+                            Format(itemCategory,sizeof(itemCategory),
+                                   "%T", "MiscellaneousItems", client);
+                        }
+
+                        Format(itembuf,sizeof(itembuf),"%d",x);
+                        AddMenuItem(shopMenu,itembuf,itemCategory);
+                        strcopy(lastCategory, sizeof(lastCategory), itemCategory);
+                        count++;
+                    }
+                }
+            }
+
+            if (count == 0)
+            {
+                AddMenuItemT(shopMenu,"","NoInventory",client,ITEMDRAW_DISABLED);
+            }
+
             SetMenuExitButton(shopMenu,true);
-            if (fromMain)
+            if (mode & EnableMenuExitBack)
                 SetMenuExitBackButton(shopMenu,true);
 
-            if (shopmenu)
-                SetMenuTitle(shopMenu,"[SourceCraft] Select an item to look at. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
-            else
-                SetMenuTitle(shopMenu,"[SourceCraft] Here is a list of the items you currently have. - You have %d %s",credits,(credits == 1) ? "crystal" : "crystals");
-
-            new Handle:itemHandle;
-            decl String:itemname[64];
-            decl String:shortname[16];
-            decl String:itembuf[11];
-            decl String:linestr[96];
-            decl cost;
-
-            new count = 0;
-            for(new x=0;x<shopItemCount;x++)
-            {
-                if (shopmenu || GetOwnsItem(playerHandle,x))
-                {
-                    count++;
-                    Format(itembuf,sizeof(itembuf),"%d",x);
-                    itemHandle=GetShopItemHandle(x);
-                    GetItemName(itemHandle, itemname, sizeof(itemname));
-                    if (shopmenu)
-                    {
-                        cost = GetItemCost(itemHandle);
-                        GetItemShortName(itemHandle, shortname, sizeof(shortname));
-                        Format(linestr,sizeof(linestr),"%s (%s) - %d crystals",
-                               itemname,shortname,cost);
-                        AddMenuItem(shopMenu,itembuf,linestr);
-                    }
-                    else
-                        AddMenuItem(shopMenu,itembuf,itemname);
-                }
-            }
-
-            if (count)
-            {
-                gShopMenuMode[client] = shopmenu;
-                DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
-            }
-            else
-                ShowItems(client,client,playerHandle);
+            gShopMenuMode[client]   = mode;
+            gShopMenuTarget[client] = target;
+            DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
         }
         else
         {
-            PrintToChat(client, "%c[SourceCraft] %cThere are no items in the shopmenu!",
-                        COLOR_GREEN,COLOR_DEFAULT);
+            CPrintToChat(client, "{green}[SC]{default} %t", "NoItems");
         }
     }
+}
+
+public Category_Selected(Handle:menu,MenuAction:action,client,selection)
+{
+    if (action == MenuAction_Select)
+    {
+        if (IsValidClient(client))
+        {
+            PrepareAndEmitSoundToClient(client,buttonWav);
+
+            decl String:SelectionInfo[SMALL_STRING_LENGTH];
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
+            new index=StringToInt(SelectionInfo);
+            new shopItemCount = GetShopIndexCount();
+            if (index >= 0 && index < shopItemCount)
+            {
+                decl String:item[ITEM_STRING_LENGTH];
+                decl String:theCategory[NAME_STRING_LENGTH];
+                decl String:itemCategory[NAME_STRING_LENGTH];
+
+                new MenuMode:mode     = gShopMenuMode[client];
+                new Handle:shopMenu   = CreateMenu(ShopMenu_Selected);
+
+                if (g_bUseMoney)
+                {
+                    SetMenuTitle(shopMenu, "[SC] %T", (mode & PurchaseItemMode) ? "ShopMenuMoney" : "ShopItemsMoney",
+                                 client, GetMoney(client), GetVespene(client));
+                }
+                else
+                {
+                    SetMenuTitle(shopMenu, "[SC] %T", (mode & PurchaseItemMode) ? "ShopMenu" : "ShopItems",
+                                 client, GetCrystals(client), GetPCrystals(client), GetVespene(client));
+                }
+
+                GetItemCategory(GetItemIndexHandle(index), theCategory, sizeof(theCategory), client);
+
+                new count = 0;
+                for (new x=index;x<shopItemCount;x++)
+                {
+                    new Handle:itemHandle=GetItemIndexHandle(x);
+                    GetItemCategory(itemHandle, itemCategory, sizeof(itemCategory),client);
+                    if (strcmp(itemCategory,theCategory,false) != 0)
+                        break;
+                    else
+                    {
+                        new id=GetShopId(itemHandle);
+                        decl String:itembuf[SMALL_STRING_LENGTH];
+                        Format(itembuf,sizeof(itembuf),"%d",id);
+
+                        decl String:itemName[NAME_STRING_LENGTH];
+                        GetItemName(itemHandle, itemName, sizeof(itemName),client);
+                        count++;
+
+                        decl String:shortName[SHORT_STRING_LENGTH];
+                        GetItemShortName(itemHandle, shortName, sizeof(shortName));
+
+                        new cost = GetItemCrystals(itemHandle);
+                        if (g_bUseMoney)
+                            cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
+
+                        new vespene_cost = GetItemVespene(itemHandle);
+                        if (vespene_cost)
+                        {
+                            if (g_bUseMoney)
+                            {
+                                Format(item,sizeof(item),"%s (%s) - %T", itemName, shortName,
+                                       "CostMoneyAndVespene", client, cost, vespene_cost);
+                            }
+                            else
+                            {
+                                Format(item,sizeof(item),"%s (%s) - %T", itemName, shortName,
+                                       "CostCrystalsAndVespene", client, cost, vespene_cost);
+                            }
+                        }
+                        else if (g_bUseMoney)
+                        {
+                            Format(item,sizeof(item),"%s (%s) - %T", itemName, shortName,
+                                   "CostMoney", client, cost);
+                        }
+                        else
+                        {
+                            Format(item,sizeof(item),"%s (%s) - %T", itemName, shortName,
+                                   (GetItemCanUsePCrystals(itemHandle))
+                                   ? "CostPCrystals" : "CostCrystals",
+                                   client, cost);
+                        }
+
+                        AddMenuItem(shopMenu,itembuf,item);
+                    }
+                }
+
+                if (count > 0)
+                {
+                    SetMenuExitButton(shopMenu,true);
+                    SetMenuExitBackButton(shopMenu,true);
+                    DisplayMenu(shopMenu,client,MENU_TIME_FOREVER);
+                }
+                else
+                {
+                    CancelMenu(shopMenu);
+                    CPrintToChat(client, "{green}[SC]{default} %t", "NoItems");
+                    ShopMenu(client, gShopMenuTarget[client], gShopMenuMode[client]);
+                }
+            }
+            else
+            {
+                CPrintToChat(client, "{green}[SC]{default} %t", "NoItems");
+                ShopMenu(client, gShopMenuTarget[client], gShopMenuMode[client]);
+            }
+        }
+    }
+    else if (action == MenuAction_Cancel)
+    {
+        if (selection == MenuCancel_ExitBack)
+        {
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            new MenuMode:mode = gShopMenuMode[client];
+            if (mode & FromPlayerInfo)
+            {
+                PlayerInfo(client,gShopMenuTarget[client],
+                           gShopMenuMode[client]);
+            }
+            else if (mode & FromAdminMenu)
+                AdminMenu(client,gShopMenuTarget[client]);
+            else if (mode & FromMainMenu)
+                MainMenu(client);
+        }
+    }
+    else if (action == MenuAction_End)
+        CloseHandle(menu);
 }
 
 public ShopMenu_Selected(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        EmitSoundToClient(client,buttonWav);
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE)
+        if (IsValidClient(client))
         {
-            decl String:SelectionInfo[11];
-            decl String:SelectionDispText[256];
-            new SelectionStyle;
-            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),SelectionStyle,
-                        SelectionDispText,sizeof(SelectionDispText));
+            PrepareAndEmitSoundToClient(client,buttonWav);
+
+            decl String:SelectionInfo[SMALL_STRING_LENGTH];
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
+
             new item=StringToInt(SelectionInfo);
-            if(item>-1 && item<GetArraySize(shopVector))
-                ShopMenu_Item(client,playerHandle,item);
+            if (item >= 0 && item < GetShopItemCount())
+            {
+                PrepareAndEmitSoundToClient(client,buttonWav);
+                ShopMenu_Item(client,item);
+            }
         }
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
-            EmitSoundToClient(client,buttonWav);
-            MainMenu(client);
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            new MenuMode:mode = gShopMenuMode[client];
+            if (mode & FromPlayerInfo)
+            {
+                PlayerInfo(client,gShopMenuTarget[client],
+                           gShopMenuMode[client]);
+            }
+            else if (mode & FromShopMenu)
+            {
+                ShopMenu(client, gShopMenuTarget[client],
+                         gShopMenuMode[client]);
+            }
+            else if (mode & FromAdminMenu)
+                AdminMenu(client,gShopMenuTarget[client]);
+            else if (mode & FromMainMenu)
+                MainMenu(client);
         }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
 }
 
-public ShopMenu_Item(client,Handle:playerHandle,item)
+public ShopMenu_Item(client,item)
 {
-    new credits=GetCredits(playerHandle);
     new Handle:shopMenu_Item=CreateMenu(ShopMenu_Item_Select);
     SetMenuExitButton(shopMenu_Item,true);
     SetMenuExitBackButton(shopMenu_Item,true);
+
     new Handle:itemHandle=GetShopItemHandle(item);
-    decl String:itemname[64];
-    GetItemName(itemHandle, itemname, sizeof(itemname));
-    decl String:desc[300];
+
+    decl String:itemName[NAME_STRING_LENGTH];
+    GetItemName(itemHandle, itemName, sizeof(itemName),client);
+
+    decl String:desc[LONG_STRING_LENGTH];
     GetItemDescription(itemHandle, desc, sizeof(desc));
-    Format(desc,sizeof(desc),"Description: %s",desc);
-    new cost = GetItemCost(itemHandle);
-    SetMenuTitle(shopMenu_Item,"[SourceCraft] Shop Item - %s - You have %d %s\n%s\nCost: %d crystals",
-                 itemname,credits,(credits == 1) ? "crystal" : "crystals",desc,cost);
-    decl String:buf[11];
-    Format(buf,sizeof(buf),"%d",item);
 
-    if (gShopMenuMode[client])
-        AddMenuItem(shopMenu_Item,buf,"Purchase");
+    new vespene = GetVespene(client);
+    new vespene_cost = GetItemVespene(itemHandle);
+    new cost = GetItemCrystals(itemHandle);
 
-    AddMenuItem(shopMenu_Item,buf,"Back to items");
+    if (g_bUseMoney)
+    {
+        new funds = GetMoney(client);
+        cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
+        SetMenuTitle(shopMenu_Item,"[SC] %T", "ShopItemTitleMoney", client,
+                     itemName, funds, vespene, desc, cost, vespene_cost);
+    }
+    else
+    {
+        new funds = GetCrystals(client);
+        if (GetItemCanUsePCrystals(itemHandle))
+        {
+            SetMenuTitle(shopMenu_Item,"[SC] %T", "ShopItemTitlePCrystals", client,
+                         itemName, funds, GetPCrystals(client), vespene, desc, cost, vespene_cost);
+        }
+        else
+        {
+            funds=GetCrystals(client);
+            SetMenuTitle(shopMenu_Item,"[SC] %T", "ShopItemTitle", client,
+                         itemName, funds, vespene, desc, cost, vespene_cost);
+        }
+    }
+
+    if (gShopMenuMode[client] & PurchaseItemMode)
+    {
+        decl String:buf[SMALL_STRING_LENGTH];
+        Format(buf,sizeof(buf),"%d",item);
+        AddMenuItemT(shopMenu_Item,buf,"Purchase", client);
+    }
+
+    AddMenuItemT(shopMenu_Item,"","BackToItems", client);
     DisplayMenu(shopMenu_Item,client,MENU_TIME_FOREVER);
 }
 
@@ -552,70 +1066,36 @@ public ShopMenu_Item_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)
     {
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE)
+        if (IsValidClient(client))
         {
-            EmitSoundToClient(client,buttonWav);
-            if(selection==0)
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            if (selection==0 && client == gShopMenuTarget[client] &&
+                (gShopMenuMode[client] & PurchaseItemMode))
             {
-                new SelectionStyle;
-                decl String:SelectionInfo[11];
-                decl String:SelectionDispText[256];
-                GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo),
-                            SelectionStyle, SelectionDispText,sizeof(SelectionDispText));
+                decl String:SelectionInfo[SMALL_STRING_LENGTH];
+                GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
 
-                PurchaseShopItem(client, playerHandle, StringToInt(SelectionInfo));
+                if (SelectionInfo[0] &&
+                    PurchaseShopItem(client, StringToInt(SelectionInfo)))
+                {
+                    if (gShopMenuMode[client] & FromMainMenu)
+                        MainMenu(client);
+                }
+                else
+                    ShopMenu(client, gShopMenuTarget[client], gShopMenuMode[client]);
             }
-            else if(selection==1)
-                ShopMenu(client, gShopMenuMode[client], false);
+            else
+                ShopMenu(client, gShopMenuTarget[client], gShopMenuMode[client]);
         }
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
-            EmitSoundToClient(client,buttonWav);
-            ShopMenu(client,gShopMenuMode[client],false);
+            PrepareAndEmitSoundToClient(client,buttonWav);
+            ShopMenu(client, gShopMenuTarget[client], gShopMenuMode[client]);
         }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
-}
-
-ShowItems(client,target,Handle:playerHandle)
-{
-    new Handle:panel=CreatePanel();
-
-    if (client == target)
-        SetPanelTitle(panel,"[SourceCraft] Here are your shop items.");
-    else
-    {
-        decl String:buffer[256];
-        Format(buffer,sizeof(buffer),"[SourceCraft] Here are %N's items.", target);
-        SetPanelTitle(panel,buffer);
-    }
-
-    decl String:itemname[64];
-    new Handle:itemHandle;
-    DrawPanelText(panel,"-----------------------------");
-    new shopItemCount = GetArraySize(shopVector);
-    for(new x=0;x<shopItemCount;x++)
-    {
-        if (GetOwnsItem(playerHandle,x))
-        {
-            itemHandle=GetShopItemHandle(x);
-            GetItemName(itemHandle, itemname, sizeof(itemname));
-            DrawPanelText(panel,itemname);
-        }
-    }
-    DrawPanelText(panel,"-----------------------------");
-    DrawPanelItem(panel,"Close");
-
-    gShowItemsTarget[client]=target;
-    SendPanelToClient(panel,client,ShowItems_Selected,0);
-    CloseHandle(panel);
-}
-
-public ShowItems_Selected(Handle:menu,MenuAction:action,client,selection)
-{
 }

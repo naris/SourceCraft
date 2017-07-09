@@ -9,656 +9,595 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <raytrace>
+#include <range>
 
 #undef REQUIRE_EXTENSIONS
+#include <tf2>
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
-#include "drug"
+#undef REQUIRE_PLUGIN
+#include <sidewinder>
+#include <hgrsource>
+#define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"
-#include "sc/util"
-#include "sc/range"
-#include "sc/trace"
-#include "sc/authtimer"
+#include "sc/Hallucinate"
+#include "sc/Levitation"
 #include "sc/maxhealth"
+#include "sc/Feedback"
+#include "sc/dissolve"
+#include "sc/plugins"
+#include "sc/shields"
 #include "sc/freeze"
+#include "sc/sounds"
 
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
-new String:psistormWav[] = "sourcecraft/ptesto00.wav";
-new String:feedbackWav[] = "sourcecraft/mind.wav"; // "sourcecraft/feedback.wav";
-new String:hallucinateWav[] = "sourcecraft/ptehal00.wav";
-new String:cureWav[] = "sourcecraft/ptehal01.wav";
+#include "effect/Smoke"
+#include "effect/RedGlow"
+#include "effect/BlueGlow"
+#include "effect/Lightning"
+#include "effect/HaloSprite"
+#include "effect/SendEffects"
+#include "effect/FlashScreen"
 
-new String:summonWav[][] = { "sourcecraft/parrdy00.wav",
-                             "sourcecraft/parwht03.wav" };
+new const String:deathWav[]         = "sc/ptedth00.wav";
+new const String:spawnWav[]         = "sc/pterdy00.wav";
+new const String:psistormWav[]      = "sc/ptesto00.wav";
 
-new raceID, immunityID, levitationID, feedbackID, psionicStormID, hallucinationID, archonID;
+new const String:g_FeedbackSound[]  = "sc/mind.mp3";
+
+new raceID, immunityID, levitationID, psionicStormID;
+new feedbackID, hallucinationID, shieldsID, amuletID;
+new archonID;
+
+new g_FeedbackChance[]              = { 0, 15, 25, 35, 50 };
+new Float:g_FeedbackPercent[][2]    = { {0.00, 0.00},
+                                        {0.05, 0.20},
+                                        {0.10, 0.30},
+                                        {0.15, 0.40},
+                                        {0.20, 0.50} };
+
+new g_HallucinateChance[]           = { 0, 15, 25, 35, 50 };
+
+new Float:g_PsionicStormRange[]     = { 0.0, 250.0, 400.0, 550.0, 650.0 };
+
+new Float:g_LevitationLevels[]      = { 1.0, 0.92, 0.733, 0.5466, 0.36 };
+
+new Float:g_InitialShields[]        = { 0.0, 0.10, 0.20, 0.30, 0.40 };
+new Float:g_ShieldsPercent[][2]     = { {0.00, 0.00},
+                                        {0.00, 0.05},
+                                        {0.02, 0.10},
+                                        {0.05, 0.15},
+                                        {0.08, 0.20} };
 
 new g_archonRace = -1;
-new g_lightningSprite;
-new g_smokeSprite;
-new g_haloSprite;
-new g_blueGlow;
-new g_redGlow;
 
 new gPsionicStormDuration[MAXPLAYERS+1];
-new bool:m_AllowPsionicStorm[MAXPLAYERS+1];
-new bool:m_AllowArchon[MAXPLAYERS+1];
-new Handle:m_ArchonTimer[MAXPLAYERS+1];
-
-new Handle:cvarArchonCooldown = INVALID_HANDLE;
-new Handle:cvarPsionicStormCooldown = INVALID_HANDLE;
 
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Protoss Templar",
     author = "-=|JFH|=-Naris",
     description = "The Protoss Templar race for SourceCraft.",
-    version = "1.0.0.0",
+    version = SOURCECRAFT_VERSION,
     url = "http://jigglysfunhouse.net/"
 };
 
 public OnPluginStart()
 {
-    GetGameType();
+    LoadTranslations("sc.common.phrases.txt");
+    LoadTranslations("sc.templar.phrases.txt");
+    LoadTranslations("sc.hallucinate.phrases.txt");
 
-    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
-        SetFailState("Couldn't hook the player_spawn event.");
-
-    cvarPsionicStormCooldown=CreateConVar("sc_psionicstormcooldown","60");
-    cvarArchonCooldown=CreateConVar("sc_archoncooldown","300");
+    if (IsSourceCraftLoaded())
+        OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID      = CreateRace("Protoss Templar", "templar",
-                             "You are now a Protoss Templar.",
-                             "You will be a Protoss Templar when you die or respawn.",
-                             48);
+    raceID          = CreateRace("templar", 48, 0, 29, .energy_rate=2.0,
+                                 .faction=Protoss, .type=Biological);
 
-    immunityID  = AddUpgrade(raceID,"Immunity", "immunity",
-                             "Makes you Immune to: Decloaking at Level 1,\nMotion Taking at Level 2,\nCrystal Theft at level 3,\nand ShopItems at Level 4.");
+    immunityID      = AddUpgrade(raceID, "immunity");
+    levitationID    = AddUpgrade(raceID, "levitation");
+    feedbackID      = AddUpgrade(raceID, "feedback", .energy=2.0);
+    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0);
 
-    levitationID = AddUpgrade(raceID,"Levitation", "levitation",
-                              "Allows you to jump higher by \nreducing your gravity by 8-64%.");
+    // Ultimate 1
+    psionicStormID = AddUpgrade(raceID, "psistorm", 1,
+                                .energy=60.0, .cooldown=2.0);
 
-    feedbackID  = AddUpgrade(raceID,"Feedback", "feedback",
-                             "Gives you 5-50% chance of reflecting a portion of the damage back to the attacker.");
+    shieldsID       = AddUpgrade(raceID, "shields", .energy=1.0);
+    amuletID        = AddUpgrade(raceID, "amulet");
 
-    hallucinationID = AddUpgrade(raceID,"Hallucination", "hallucination",
-                                 "Gives you a 15-50% chance to cause temporary hallucinations in an enemy.");
+    // Ultimate 2
+    archonID        = AddUpgrade(raceID, "archon", 2, 12,1,
+                                 .energy=300.0, .cooldown=30.0,
+                                 .accumulated=true);
 
-    psionicStormID = AddUpgrade(raceID,"Psionic Storm", "psistorm", 
-                                "Every enemy in 25-60 feet range will \nbe damaged continously while in range",
-                                true); // Ultimate
+    // Set the Sidewinder available flag
+    IsSidewinderAvailable();
 
-    archonID = AddUpgrade(raceID,"Summon Archon", "archon", "You become an Archon until you die",
-                          true, 12,1); // Ultimate
+    // Get Configuration Data
+    GetConfigFloatArray("shields_amount", g_InitialShields, sizeof(g_InitialShields),
+                        g_InitialShields, raceID, shieldsID);
+
+    for (new level=0; level < sizeof(g_ShieldsPercent); level++)
+    {
+        decl String:key[32];
+        Format(key, sizeof(key), "shields_percent_level_%d", level);
+        GetConfigFloatArray(key, g_ShieldsPercent[level], sizeof(g_ShieldsPercent[]),
+                            g_ShieldsPercent[level], raceID, shieldsID);
+    }
+
+    GetConfigArray("chance", g_FeedbackChance, sizeof(g_FeedbackChance),
+                   g_FeedbackChance, raceID, feedbackID);
+
+    for (new level=0; level < sizeof(g_ShieldsPercent); level++)
+    {
+        decl String:key[32];
+        Format(key, sizeof(key), "damage_percent_level_%d", level);
+        GetConfigFloatArray(key, g_FeedbackPercent[level], sizeof(g_FeedbackPercent[]),
+                            g_FeedbackPercent[level], raceID, feedbackID);
+    }
+
+    GetConfigFloatArray("gravity",  g_LevitationLevels, sizeof(g_LevitationLevels),
+                        g_LevitationLevels, raceID, levitationID);
+
+    GetConfigArray("chance", g_HallucinateChance, sizeof(g_HallucinateChance),
+                   g_HallucinateChance, raceID, hallucinationID);
+
+    GetConfigFloatArray("range",  g_PsionicStormRange, sizeof(g_PsionicStormRange),
+                        g_PsionicStormRange, raceID, psionicStormID);
+}
+
+public OnLibraryAdded(const String:name[])
+{
+    if (StrEqual(name, "sidewinder"))
+        IsSidewinderAvailable(true);
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+    if (StrEqual(name, "sidewinder"))
+        m_SidewinderAvailable = false;
 }
 
 public OnMapStart()
 {
     g_archonRace = -1;
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
+    SetupHallucinate();
+    SetupSmokeSprite();
+    SetupHaloSprite();
+    SetupLevitation();
+    SetupLightning();
+    SetupBlueGlow();
+    SetupRedGlow();
 
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
+    SetupDeniedSound();
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
-
-    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
-    if (g_blueGlow == -1)
-        SetFailState("Couldn't find blueglow Model");
-
-    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
-    if (g_redGlow == -1)
-        SetFailState("Couldn't find redglow Model");
-
-    SetupSound(rechargeWav,true,true);
-    SetupSound(psistormWav,true,true);
-    SetupSound(summonWav[0],true,true);
-    SetupSound(summonWav[1],true,true);
+    SetupSound(spawnWav);
+    SetupSound(deathWav);
+    SetupSound(psistormWav);
+    SetupSound(g_FeedbackSound);
 }
 
-public OnPlayerAuthed(client,Handle:player)
+public Action:OnRaceDeselected(client,oldrace,newrace)
 {
-    m_ArchonTimer[client] = INVALID_HANDLE;
-    m_AllowArchon[client] = true;
-    m_AllowPsionicStorm[client] = true;
-}
-
-public OnRaceSelected(client,Handle:player,oldrace,race)
-{
-    if (race != oldrace)
+    if (oldrace == raceID)
     {
-        if (oldrace == raceID)
-        {
-            SetGravity(player,-1.0, true);
+        ResetShields(client);
+        SetInitialEnergy(client, -1.0);
+        SetGravity(client,-1.0, true);
 
-            // Turn off Immunities
-            new immunity_level=GetUpgradeLevel(player,race,immunityID);
-            if (immunity_level)
-                DoImmunity(client, player, immunity_level,false);
-        }
-        else if (race == raceID)
-        {
-            // Turn on Immunities
-            new immunity_level=GetUpgradeLevel(player,race,immunityID);
-            if (immunity_level)
-                DoImmunity(client, player, immunity_level,true);
+        // Turn off Immunities
+        new immunity_level=GetUpgradeLevel(client,raceID,immunityID);
+        DoImmunity(client, immunity_level, false);
 
-            new levitation_level = GetUpgradeLevel(player,race,levitationID);
-            Levitation(client, player, levitation_level);
+        return Plugin_Handled;
+    }
+    else
+    {
+        if (g_archonRace < 0)
+            g_archonRace = FindRace("archon");
+
+        if (oldrace == g_archonRace &&
+            GetCooldownExpireTime(client, raceID, archonID) <= 0.0)
+        {
+            CreateCooldown(client, raceID, archonID,
+                           .type=Cooldown_CreateNotify
+                                |Cooldown_AlwaysNotify);
         }
+        return Plugin_Continue;
     }
 }
 
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
+public Action:OnRaceSelected(client,oldrace,newrace)
 {
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    if (newrace == raceID)
+    {
+        // Turn on Immunities
+        new immunity_level=GetUpgradeLevel(client,raceID,immunityID);
+        DoImmunity(client, immunity_level, true);
+
+        new levitation_level = GetUpgradeLevel(client,raceID,levitationID);
+        SetLevitation(client, levitation_level, true, g_LevitationLevels);
+
+        new shields_level = GetUpgradeLevel(client,raceID,shieldsID);
+        SetupShields(client, shields_level, g_InitialShields, g_ShieldsPercent);
+
+        new amulet_level = GetUpgradeLevel(client,raceID,amuletID);
+        if (amulet_level > 0)
+            SetInitialEnergy(client, (float(amulet_level+1)*30.0));
+
+        if (IsValidClientAlive(client))
+        {
+            PrepareAndEmitSoundToAll(spawnWav,client);
+        }
+
+        return Plugin_Handled;
+    }
+    else
+        return Plugin_Continue;
+}
+
+public OnUpgradeLevelChanged(client,race,upgrade,new_level)
+{
+    if (race == raceID && GetRace(client) == raceID)
     {
         if (upgrade == immunityID)
-            DoImmunity(client, player, new_level,true);
+            DoImmunity(client, new_level, true);
         else if (upgrade==levitationID)
-            Levitation(client, player, new_level);
-    }
-}
-
-public OnItemPurchase(client,Handle:player,item)
-{
-    new race=GetRace(player);
-    if (race == raceID && IsPlayerAlive(client))
-    {
-        if (item == FindShopItem("sock"))
+            SetLevitation(client, new_level, true, g_LevitationLevels);
+        else if (upgrade==amuletID)
+            SetInitialEnergy(client, (float(new_level+1)*30.0));
+        else if (upgrade==shieldsID)
         {
-            new levitation_level = GetUpgradeLevel(player,race,levitationID);
-            Levitation(client,player, levitation_level);
+            SetupShields(client, new_level, g_InitialShields,
+                         g_ShieldsPercent, .upgrade=true);
         }
     }
 }
 
-public OnUltimateCommand(client,Handle:player,race,bool:pressed)
+public OnItemPurchase(client,item)
 {
-    if (pressed && race == raceID && IsPlayerAlive(client))
+    if (GetRace(client) == raceID && IsValidClientAlive(client))
     {
-        new ps_level = GetUpgradeLevel(player,race,psionicStormID);
-        if (ps_level)
+        if (g_sockItem < 0)
+            g_sockItem = FindShopItem("sock");
+
+        if (item == g_sockItem)
         {
-            if (m_AllowPsionicStorm[client])
-                PsionicStorm(player,client,ps_level);
-        }
-        else if (m_AllowArchon[client])
-        {
-            new archon_level = GetUpgradeLevel(player,race,archonID);
-            if (archon_level)
-            {
-                if (g_archonRace < 0)
-                    g_archonRace = FindRace("archon");
-
-                if (g_archonRace)
-                {
-                    new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
-                    new Float:minutes = cooldown / 60.0;
-                    new Float:seconds = FloatFraction(minutes) * 60.0;
-                    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cSummon Archon%c to become an Archon, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
-
-                    EmitSoundToAll(summonWav[GetRandomInt(0,1)],client);
-
-                    new Float:clientLoc[3];
-                    GetClientAbsOrigin(client, clientLoc);
-                    clientLoc[2] += 40.0; // Adjust position to the middle
-
-                    TE_SetupSmoke(clientLoc,g_smokeSprite,8.0,2);
-                    TE_SendToAll();
-
-                    TE_SetupGlowSprite(clientLoc,(GetClientTeam(client) == 3) ? g_blueGlow : g_redGlow,
-                                       5.0,40.0,255);
-                    TE_SendToAll();
-
-                    ChangeRace(player, g_archonRace, true, false);
-                    m_ArchonTimer[client] = CreateTimer(cooldown, AllowArchon, client, TIMER_FLAG_NO_MAPCHANGE);
-                    m_AllowArchon[client] = false;
-                }
-            }
+            new levitation_level = GetUpgradeLevel(client,raceID,levitationID);
+            SetLevitation(client, levitation_level, true, g_LevitationLevels);
         }
     }
 }
 
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public Action:OnDropPlayer(client, target)
 {
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client>0)
+    if (IsValidClientAlive(target) && GetRace(target) == raceID)
     {
-        m_AllowPsionicStorm[client]=true;
-        new Handle:player=GetPlayerHandle(client);
-        if (player != INVALID_HANDLE)
-        {
-            if (GetRace(player) == raceID)
-            {
-                new immunity_level=GetUpgradeLevel(player,raceID,immunityID);
-                if (immunity_level)
-                    DoImmunity(client, player, immunity_level,true);
-
-                new levitation_level = GetUpgradeLevel(player,raceID,levitationID);
-                Levitation(client, player, levitation_level);
-            }
-        }
-    }
-}
-
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                attacker_index,Handle:attacker_player,attacker_race,
-                                assister_index,Handle:assister_player,assister_race,
-                                damage)
-{
-    new bool:changed=false;
-    if (attacker_index && attacker_index != victim_index)
-    {
-        if (victim_race == raceID && IsPlayerAlive(attacker_index) &&
-            IsPlayerAlive(attacker_index))
-        {
-            changed = Feedback(event, damage, victim_index, victim_player,
-                               attacker_index, attacker_player, assister_index);
-        }
-
-        if (attacker_race == raceID)
-        {
-            Hallucinate(victim_index, victim_player,
-                        attacker_index, attacker_player);
-        }
-    }
-
-    if (assister_index && assister_index != victim_index)
-    {
-        if (assister_race == raceID)
-        {
-            Hallucinate(victim_index, victim_player,
-                        assister_index, assister_player);
-        }
-    }
-
-    return changed ? Plugin_Changed : Plugin_Continue;
-}
-
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                 attacker_index,Handle:attacker_player,attacker_race,
-                                 assister_index,Handle:assister_player,assister_race,
-                                 damage,const String:weapon[], bool:is_equipment,
-                                 customkill,bool:headshot,bool:backstab,bool:melee)
-{
-    if (victim_race == g_archonRace)
-    {
-        // Revert back to Templar upon death os an Archon.
-        ChangeRace(victim_player, raceID, true);
-
-        new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
-        new Float:minutes = cooldown / 60.0;
-        new Float:seconds = FloatFraction(minutes) * 60.0;
-        PrintToChat(victim_index,"%c[SourceCraft]%c You now need to wait %d:%3.1f before using %cSummon Archon%c again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
-
-        // Reset the Archon Timer
-        if (m_ArchonTimer[victim_index] != INVALID_HANDLE)
-            KillTimer(m_ArchonTimer[victim_index]);
-
-        m_ArchonTimer[victim_index] = CreateTimer(cooldown, AllowArchon, victim_index,TIMER_FLAG_NO_MAPCHANGE);
+        new levitation_level = GetUpgradeLevel(target,raceID,levitationID);
+        SetLevitation(target, levitation_level, true, g_LevitationLevels);
     }
     return Plugin_Continue;
 }
 
-public bool:Feedback(Handle:event, damage, victim_index, Handle:victim_player,
-                     attacker_index, Handle:attacker_player, assister_index)
+public OnUltimateCommand(client,race,bool:pressed,arg)
 {
-    decl String:weapon[64];
-    if (GetEventString(event, "weapon", weapon, sizeof(weapon)) &&
-        (strcmp(weapon, "feedback") == 0 ||
-         strcmp(weapon, "thorns") == 0))
+    if (race == raceID && IsValidClientAlive(client))
     {
-        // Make sure not to loop damage from feedback or thorns
-        return false;
-    }
-
-    new feedback_level = GetUpgradeLevel(victim_player,raceID,feedbackID);
-    if (feedback_level)
-    {
-        new Float:percent, chance;
-        switch(feedback_level)
+        if (arg >= 2)
         {
-            case 1:
+            if (!pressed)
             {
-                percent=GetRandomFloat(0.10, 0.50);
-                chance=15;
-            }
-            case 2:
-            {
-                percent=GetRandomFloat(0.10, 0.60);
-                chance=25;
-            }
-            case 3:
-            {
-                percent=GetRandomFloat(0.10, 0.75);
-                chance=35;
-            }
-            case 4:
-            {
-                percent=GetRandomFloat(0.10, 0.90);
-                chance=50;
+                new archon_level = GetUpgradeLevel(client,race,archonID);
+                if (archon_level > 0)
+                    SummonArchon(client);
             }
         }
-
-        if(GetRandomInt(1,100) <= chance)
+        else
         {
-            new amount=RoundToNearest(float(damage)*percent);
-            new newhp=GetClientHealth(victim_index)+amount;
-            new maxhp=GetMaxHealth(victim_index);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetEntityHealth(victim_index,newhp);
-
-            LogToGame("[SourceCraft] Feedback prevented damage to %N from %N!\n",
-                      victim_index, attacker_index);
-
-            if (attacker_index && attacker_index != victim_index &&
-                !GetImmunity(attacker_player,Immunity_HealthTake) &&
-                !TF2_IsPlayerInvuln(attacker_index))
+            new ps_level = GetUpgradeLevel(client,race,psionicStormID);
+            if (ps_level > 0)
             {
-                new health=GetClientHealth(attacker_index);
-                if (amount >= health)
-                    amount = RoundToCeil(float(health)*percent)+1;
-
-                HurtPlayer(attacker_index,amount, victim_index,"feedback", "Feedback");
-                EmitSoundToAll(feedbackWav,victim_index);
-
-                new Float:Origin[3];
-                GetClientAbsOrigin(attacker_index, Origin);
-                Origin[2] += 5;
-
-                TE_SetupSparks(Origin,Origin,255,1);
-                TE_SendToAll();
-                return true;
+                if (pressed)
+                    PsionicStorm(client,ps_level);
             }
-            else
+            else if (!pressed)
             {
-                if (attacker_index && attacker_index != victim_index)
-                {
-                    PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
-                    PrintToChat(attacker_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                                COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-                }
-                else
-                {
-                    PrintToChat(victim_index,"%c[SourceCraft] you %c have %cevaded%c damage!",
-                                COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-                }
+                new archon_level = GetUpgradeLevel(client,race,archonID);
+                if (archon_level > 0)
+                    SummonArchon(client);
             }
-
-            if (assister_index)
-            {
-                PrintToChat(assister_index,"%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                            COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-            }
-        }
-    }
-    return false;
-}
-
-DoImmunity(client, Handle:player, level, bool:value)
-{
-    if (level >= 1)
-    {
-        SetImmunity(player,Immunity_Uncloaking,value);
-        if (level >= 2)
-        {
-            SetImmunity(player,Immunity_MotionTake,value);
-            if (level >= 3)
-            {
-                SetImmunity(player,Immunity_Theft,value);
-                if (level >= 4)
-                    SetImmunity(player,Immunity_ShopItems,value);
-            }
-        }
-
-        if (value)
-        {
-            new Float:start[3];
-            GetClientAbsOrigin(client, start);
-
-            new color[4] = { 0, 255, 50, 128 };
-            TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                                  0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
-            TE_SendToAll();
         }
     }
 }
 
-Levitation(client, Handle:player, level)
+public OnPlayerSpawnEvent(Handle:event, client, race)
 {
-    if (level > 0)
+    if (race == raceID)
     {
-        new Float:gravity=1.0;
-        switch (level)
+        PrepareAndEmitSoundToAll(spawnWav,client);
+
+        new immunity_level=GetUpgradeLevel(client,raceID,immunityID);
+        DoImmunity(client, immunity_level, true);
+
+        new levitation_level = GetUpgradeLevel(client,raceID,levitationID);
+        SetLevitation(client, levitation_level, true, g_LevitationLevels);
+
+        new amulet_level = GetUpgradeLevel(client,raceID,amuletID);
+        if (amulet_level > 0)
         {
-            case 1:
-                gravity=0.92;
-            case 2:
-                gravity=0.733;
-            case 3:
-                gravity=0.5466;
-            case 4:
-                gravity=0.36;
+            new Float:initial = float(amulet_level+1) * 30.0;
+            SetInitialEnergy(client, initial);
+            if (GetEnergy(client, true) < initial)
+                SetEnergy(client, initial, true);
         }
 
-        /* If the Player also has the Sock of the Feather,
-         * Decrease the gravity further.
-         */
-        new sock = FindShopItem("sock");
-        if (sock != -1 && GetOwnsItem(player,sock))
+        new shields_level = GetUpgradeLevel(client,raceID,shieldsID);
+        SetupShields(client, shields_level, g_InitialShields, g_ShieldsPercent);
+    }
+}
+
+public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
+                                attacker_race, damage, absorbed, bool:from_sc)
+{
+    new Action:returnCode = Plugin_Continue;
+
+    if (!from_sc && attacker_index > 0 &&
+        attacker_index != victim_index)
+    {
+        if (victim_race == raceID && IsValidClientAlive(attacker_index))
         {
-            gravity *= 0.8;
+            new feedback_level = GetUpgradeLevel(victim_index,raceID,feedbackID);
+            if (Feedback(raceID, feedbackID, feedback_level, damage, absorbed, victim_index,
+                         attacker_index, g_FeedbackPercent, g_FeedbackChance, g_FeedbackSound))
+            {
+                returnCode = Plugin_Changed;
+            }
         }
 
+        if (attacker_race == raceID)
+        {
+            new Float:amount = GetUpgradeEnergy(raceID,hallucinationID);
+            new level = GetUpgradeLevel(attacker_index,raceID,hallucinationID);
+            if (Hallucinate(victim_index, attacker_index, level, amount, g_HallucinateChance))
+                returnCode = Plugin_Handled;
+        }
+    }
+
+    return returnCode;
+}
+
+public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
+                                  assister_index, assister_race, damage,
+                                  absorbed)
+{
+    if (assister_race == raceID)
+    {
+        new Float:amount = GetUpgradeEnergy(raceID,hallucinationID);
+        new level = GetUpgradeLevel(assister_index,raceID,hallucinationID);
+        if (Hallucinate(victim_index, assister_index, level, amount, g_HallucinateChance))
+            return Plugin_Handled;
+    }
+
+    return Plugin_Continue;
+}
+
+public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_index,
+                          attacker_race, assister_index, assister_race, damage,
+                          const String:weapon[], bool:is_equipment, customkill,
+                          bool:headshot, bool:backstab, bool:melee)
+{
+    if (victim_race == raceID)
+    {
+        PrepareAndEmitSoundToAll(deathWav,victim_index);
+        DissolveRagdoll(victim_index, 0.2);
+    }
+    else
+    {
+        if (g_archonRace < 0)
+            g_archonRace = FindRace("archon");
+
+        if (victim_race == g_archonRace &&
+            GetCooldownExpireTime(victim_index, raceID, archonID) <= 0.0)
+        {
+            CreateCooldown(victim_index, raceID, archonID,
+                           .type=Cooldown_CreateNotify
+                                |Cooldown_AlwaysNotify);
+        }
+    }
+}
+
+DoImmunity(client, level, bool:value)
+{
+    if (value && level >= 1)
+    {
+        SetImmunity(client,Immunity_Uncloaking, true);
+        SetImmunity(client,Immunity_Detection, true);
+
+        if (m_SidewinderAvailable)
+            SidewinderCloakClient(client, true);
+    }
+    else
+    {
+        SetImmunity(client,Immunity_Uncloaking, false);
+
+        if (m_SidewinderAvailable &&
+            !GetImmunity(client,Immunity_Uncloaking) &&
+            !GetImmunity(client,Immunity_Detection))
+        {
+            SidewinderCloakClient(client, false);
+        }
+    }
+
+    SetImmunity(client,Immunity_MotionTaking, (value && level >= 2));
+    SetImmunity(client,Immunity_Theft, (value && level >= 3));
+    SetImmunity(client,Immunity_ShopItems, (value && level >= 4));
+
+    if (value && IsValidClientAlive(client))
+    {
         new Float:start[3];
         GetClientAbsOrigin(client, start);
 
-        new color[4] = { 0, 20, 100, 255 };
-        TE_SetupBeamRingPoint(start,20.0,50.0,g_lightningSprite,g_lightningSprite,
-                              0, 1, 2.0, 60.0, 0.8 ,color, 10, 1);
-        TE_SendToAll();
-
-        SetGravity(player,gravity);
+        static const color[4] = { 0, 255, 50, 128 };
+        TE_SetupBeamRingPoint(start, 30.0, 60.0, Lightning(), HaloSprite(),
+                              0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+        TE_SendEffectToAll();
     }
-    else
-        SetGravity(player,-1.0);
 }
 
-public Hallucinate(victim_index, Handle:victim_player, index, Handle:player)
+public PsionicStorm(client,ultlevel)
 {
-    new level = GetUpgradeLevel(player,raceID,hallucinationID);
-    if (level)
+    decl String:upgradeName[64];
+    GetUpgradeName(raceID, psionicStormID, upgradeName, sizeof(upgradeName), client);
+
+    if (GetRestriction(client,Restriction_NoUltimates) ||
+        GetRestriction(client,Restriction_Stunned))
     {
-        new chance;
-        switch(level)
+        PrepareAndEmitSoundToClient(client,deniedWav);
+        DisplayMessage(client, Display_Ultimate, "%t",
+                       "Prevented", upgradeName);
+    }
+    else if (CanInvokeUpgrade(client, raceID, psionicStormID))
+    {
+        if (GameType == tf2)
         {
-            case 1: chance=15;
-            case 2: chance=25;
-            case 3: chance=35;
-            case 4: chance=50;
+            if (TF2_IsPlayerDisguised(client))
+                TF2_RemovePlayerDisguise(client);
         }
 
-        if (!GetImmunity(victim_player,Immunity_Blindness))
-        {
-            if (GetRandomInt(1,100) <= chance)
-            {
-                if (GetImmunity(victim_player,Immunity_Drugs))
-                {
-                    PerformBlind(victim_index, 255);
-                    CreateTimer(float(level)*2.0,UnblindPlayer,victim_index,TIMER_FLAG_NO_MAPCHANGE);
-                }
-                else
-                {
-                    if (PerformDrug(victim_index, 1))
-                    {
-                        PrintToChat(victim_index,"%c[SourceCraft] %c %N has caused you to %challucinate%c!",
-                                COLOR_GREEN,COLOR_DEFAULT,index,COLOR_TEAM,COLOR_DEFAULT);
-                        PrintToChat(index,"%c[SourceCraft] %c %N is now %challucinating%c!",
-                                COLOR_GREEN,COLOR_DEFAULT,victim_index,COLOR_TEAM,COLOR_DEFAULT);
+        gPsionicStormDuration[client] = ultlevel*3;
 
-                        EmitSoundToAll(hallucinateWav,index);
-                        CreateTimer(float(level)*2.0,CurePlayer,victim_index,TIMER_FLAG_NO_MAPCHANGE);
-                    }
-                }
-            }
-        }
+        new Handle:PsionicStormTimer = CreateTimer(0.4, PersistPsionicStorm, GetClientUserId(client),
+                                                   TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        TriggerTimer(PsionicStormTimer, true);
+
+        DisplayMessage(client,Display_Ultimate, "%t", "Invoked", upgradeName);
+        CreateCooldown(client, raceID, psionicStormID);
     }
 }
 
-public Action:CurePlayer(Handle:timer,any:client)
+public Action:PersistPsionicStorm(Handle:timer,any:userid)
 {
-    if(client)
+    new client = GetClientOfUserId(userid);
+    if (IsValidClientAlive(client) &&
+        !GetRestriction(client,Restriction_NoUltimates) &&
+        !GetRestriction(client,Restriction_Stunned))
     {
-        EmitSoundToAll(cureWav,client);
-        PerformDrug(client, 0);
-    }
-    return Plugin_Stop;
-}
+        new level = GetUpgradeLevel(client,raceID,psionicStormID);
+        new Float:range = g_PsionicStormRange[level];
 
-public Action:UnblindPlayer(Handle:timer,any:client)
-{
-    if(client)
-    {
-        EmitSoundToAll(cureWav,client);
-        PerformBlind(client, 0);
-    }
-    return Plugin_Stop;
-}
-
-public PsionicStorm(Handle:player,client,ultlevel)
-{
-    gPsionicStormDuration[client] = ultlevel*3;
-
-    new Handle:PsionicStormTimer = CreateTimer(0.4, PersistPsionicStorm, client,TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-    TriggerTimer(PsionicStormTimer, true);
-
-    new Float:cooldown = GetConVarFloat(cvarPsionicStormCooldown);
-
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cPsionic Storm%c! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-
-    if (cooldown > 0.0)
-    {
-        m_AllowPsionicStorm[client]=false;
-        CreateTimer(cooldown,AllowPsionicStorm,client,TIMER_FLAG_NO_MAPCHANGE);
-    }
-}
-
-public Action:PersistPsionicStorm(Handle:timer,any:client)
-{
-    new Handle:player=GetPlayerHandle(client);
-    if (player != INVALID_HANDLE && IsPlayerAlive(client))
-    {
-        new Float:range;
-        new level = GetUpgradeLevel(player,raceID,psionicStormID);
-        switch(level)
-        {
-            case 1: range=250.0;
-            case 2: range=400.0;
-            case 3: range=550.0;
-            case 4: range=650.0;
-        }
-
-        EmitSoundToAll(psistormWav,client);
-
+        new Float:lastLoc[3];
         new Float:indexLoc[3];
         new Float:clientLoc[3];
         GetClientAbsOrigin(client, clientLoc);
 
+        new b_count=0;
+        new alt_count=0;
+        new list[MaxClients+1];
+        new alt_list[MaxClients+1];
+        SetupOBeaconLists(list, alt_list, b_count, alt_count, client);
+
+        static const psistormColor[4] = { 10, 200, 255, 255 };
+
+        if (b_count > 0)
+        {
+            TE_SetupBeamRingPoint(clientLoc, 10.0, range, Lightning(), HaloSprite(),
+                                  0, 15, 0.5, 5.0, 0.0, psistormColor, 10, 0);
+
+            TE_Send(list, b_count, 0.0);
+        }
+
+        if (alt_count > 0)
+        {
+            TE_SetupBeamRingPoint(clientLoc, range-10.0, range, Lightning(), HaloSprite(),
+                                  0, 15, 0.5, 5.0, 0.0, psistormColor, 10, 0);
+
+            TE_Send(alt_list, alt_count, 0.0);
+        }
+        
+        clientLoc[2] += 50.0; // Adjust trace position to the middle of the person instead of the feet.
+        lastLoc = clientLoc;
+
+        PrepareAndEmitSoundToAll(psistormWav,client);
+
         new last=client;
         new minDmg=level;
         new maxDmg=level*5;
-        new maxplayers=GetMaxClients();
-        for(new index=1;index<=maxplayers;index++)
+        new team=GetClientTeam(client);
+        for(new index=1;index<=MaxClients;index++)
         {
-            if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
-                GetClientTeam(client) != GetClientTeam(index))
+            if (client != index && IsClientInGame(index) &&
+                IsPlayerAlive(index) && GetClientTeam(index) != team)
             {
-                new Handle:player_check=GetPlayerHandle(index);
-                if (player_check != INVALID_HANDLE)
+                if (!GetImmunity(index,Immunity_Ultimates) &&
+                    !GetImmunity(index,Immunity_HealthTaking) &&
+                    !IsInvulnerable(index))
                 {
-                    if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                        !GetImmunity(player_check,Immunity_HealthTake) &&
-                        !TF2_IsPlayerInvuln(index))
-                    {
-                        GetClientAbsOrigin(index, indexLoc);
-                        if ( IsPointInRange(clientLoc,indexLoc,range))
-                        {
-                            if (TraceTarget(client, index, clientLoc, indexLoc))
-                            {
-                                new color[4] = { 10, 200, 255, 255 };
-                                TE_SetupBeamLaser(last,index,g_lightningSprite,g_haloSprite,
-                                                  0, 1, 10.0, 10.0,10.0,2,50.0,color,255);
-                                TE_SendToAll();
+                    GetClientAbsOrigin(index, indexLoc);
+                    indexLoc[2] += 50.0;
 
-                                new amt=GetRandomInt(minDmg,maxDmg);
-                                HurtPlayer(index,amt,client,"psistorm", "Psionic Storm");
-                                last=index;
-                            }
-                        }
+                    if (IsPointInRange(clientLoc,indexLoc,range) &&
+                        TraceTargetIndex(client, index, clientLoc, indexLoc))
+                    {
+                        TE_SetupBeamPoints(lastLoc, indexLoc, Lightning(), HaloSprite(),
+                                           0, 1, 10.0, 10.0,10.0,2,50.0,psistormColor,255);
+                        TE_SendQEffectToAll(last, index);
+                        FlashScreen(index,RGBA_COLOR_RED);
+
+                        new amt=GetRandomInt(minDmg,maxDmg);
+                        HurtPlayer(index, amt, client, "sc_psistorm",
+                                   .xp=level+5, .type=DMG_ENERGYBEAM);
+                        last=index;
+                        lastLoc = indexLoc;
                     }
                 }
             }
         }
+
         if (--gPsionicStormDuration[client] > 0)
             return Plugin_Continue;
     }
     return Plugin_Stop;
 }
 
-public Action:AllowPsionicStorm(Handle:timer,any:client)
+SummonArchon(client)
 {
-    m_AllowPsionicStorm[client]=true;
-    if (IsClientInGame(client))
-    {
-        EmitSoundToClient(client, rechargeWav);
-        PrintToChat(client,"%c[SourceCraft] %cYour your ultimate %cPsionic Storm%c is now available again!",
-                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-    }
-    return Plugin_Stop;
-}
+    if (g_archonRace < 0)
+        g_archonRace = FindRace("archon");
 
-public Action:AllowArchon(Handle:timer,any:client)
-{
-    new Handle:player=GetPlayerHandle(client);
-    if (player != INVALID_HANDLE && IsPlayerAlive(client))
+    if (g_archonRace < 0)
     {
-        if (GetRace(player) == g_archonRace)
-        {
-            new Float:cooldown = GetConVarFloat(cvarArchonCooldown);
-            new Float:minutes = cooldown / 60.0;
-            new Float:seconds = FloatFraction(minutes) * 60.0;
-            PrintToChat(client,"%c[SourceCraft]%c You are no longer an %cArchon%c, you now need to wait %d:%3.1f before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, RoundToFloor(minutes), seconds);
-            ChangeRace(player, raceID, true, false);
-            m_ArchonTimer[client] = CreateTimer(cooldown, AllowArchon, client,TIMER_FLAG_NO_MAPCHANGE);
-        }
-        else
-        {
-            m_ArchonTimer[client] = INVALID_HANDLE;
-            m_AllowArchon[client] = true;
-            if (IsClientInGame(client))
-            {
-                EmitSoundToClient(client, rechargeWav);
-                PrintToChat(client,"%c[SourceCraft] %cYour your ultimate %cSummon Archon%c is now available again!",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-            }
-        }
+        decl String:upgradeName[64];
+        GetUpgradeName(raceID, archonID, upgradeName, sizeof(upgradeName), client);
+        DisplayMessage(client, Display_Ultimate, "%t", "IsNotAvailable", upgradeName);
+        LogError("***The Protoss Archon race is not Available!");
+        PrepareAndEmitSoundToClient(client,deniedWav);
     }
-    return Plugin_Stop;
-}
+    else if (GetRestriction(client,Restriction_NoUltimates) ||
+             GetRestriction(client,Restriction_Stunned))
+    {
+        DisplayMessage(client, Display_Ultimate, "%t", "PreventedFromSummoningArchon");
+        PrepareAndEmitSoundToClient(client,deniedWav);
+    }
+    else if (CanInvokeUpgrade(client, raceID, archonID))
+    {
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
+        clientLoc[2] += 40.0; // Adjust position to the middle
 
+        TE_SetupSmoke(clientLoc, SmokeSprite(), 8.0, 2);
+        TE_SendEffectToAll();
+
+        TE_SetupGlowSprite(clientLoc,(GetClientTeam(client) == 3) ? BlueGlow() : RedGlow(),
+                           5.0,40.0,255);
+        TE_SendEffectToAll();
+
+        ChangeRace(client, g_archonRace, true, false);
+    }
+}

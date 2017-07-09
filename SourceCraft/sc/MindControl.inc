@@ -13,16 +13,43 @@
 #include <tf2_objects>
 
 /**
- * MindControl an Object.
+ * MindControl a Targetted Object.
  *
  * @param client 	Client index
  * @param range     Range of MindControl
- * @param percent   Percent change of sucess.
+ * @param percent   Percent change of success.
  * @param builder   Set to builder of object controlled.
- * @param type      Setto type of object controlled.
+ * @param type      Set to type of object controlled.
+ * @param replace   Set to true to replace the object instead of changing the Team.
+ * @return			returns true for success.
+ */
+native bool:MindControl(client, Float:range, percent, &builder=0,
+                        &TFExtObjectType:type=TFExtObject_Unknown,
+                        bool:replace=false);
+
+/**
+ * MindControl a Specified Object.
+ *
+ * @param client 	Client index
+ * @param target    Enitity ID of object to control.
+ * @param builder   Set to builder of object controlled.
+ * @param type      Set to type of object controlled.
  * @return			returns true for sucess.
  */
-native bool:MindControl(client, Float:range, percent, &builder, &objects:type);
+native bool:ControlObject(client, target, &builder=0,
+                          &TFObjectType:type=TFObject_Unknown);
+
+/**
+ * Replace a Specified Object with one owned by the client.
+ *
+ * @param client 	Client index
+ * @param target    Enitity ID of object to control.
+ * @param builder   Set to builder of object controlled.
+ * @param type      Set to type of object controlled.
+ * @return			returns true for sucess.
+ */
+native bool:ReplaceObject(client, target, &builder=0,
+                          &TFObjectType:type=TFObject_Unknown);
 
 /**
  * Reset Mind Controlled Objects.
@@ -50,6 +77,8 @@ public SharedPlugin:__pl_MindControl =
 public __pl_MindControl_SetNTVOptional()
 {
 	MarkNativeAsOptional("MindControl");
+	MarkNativeAsOptional("ControlObject");
+	MarkNativeAsOptional("ReplaceObject");
 	MarkNativeAsOptional("ResetMindControlledObjects");
 }
 #endif

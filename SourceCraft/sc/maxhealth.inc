@@ -10,18 +10,45 @@
 #endif
 #define _maxhealth_included
 
-#undef REQUIRE_EXTENSIONS
-#include <tf2_stocks>
-#define REQUIRE_EXTENSIONS
+#include <tf2_player>
+#include <gametype>
 
-stock maxHealth[MAXPLAYERS+1];
+#include "sc/client"
+#include "sc/HealthParticle"
+
+#define HEALTH_ADDS_ARMOR
+#if defined HEALTH_ADDS_ARMOR
+    stock g_addHealth[MAXPLAYERS+1];
+#endif
+
+stock g_maxHealth[MAXPLAYERS+1];
+
+stock GetPlayerMaxHealth(entity)
+{
+    if (IsClient(entity))
+    {
+        if (GetGameType() == tf2)
+            return TF2_GetPlayerMaxHealth(entity);
+        else
+            return 100;
+    }
+    else
+    {
+        //new offset = GetEntSendPropOffs(entity, "m_iMaxHealth", true);
+        //return (offset > 0) ? GetEntData(entity, offset) : -1;
+        return GetEntProp(entity, Prop_Data, "m_iMaxHealth");
+    }
+}
 
 stock GetMaxHealth(entity)
 {
-    if (GameType == tf2)
+    if (GetGameType() == tf2)
         return GetEntProp(entity, Prop_Data, "m_iMaxHealth");
     else
-        return maxHealth[entity];
+    {
+        new max = g_maxHealth[entity];
+        return (max > 0) ? max : 100;
+    }
 }
 
 stock SetMaxHealth(entity,amount)
@@ -29,27 +56,67 @@ stock SetMaxHealth(entity,amount)
     if (GameType == tf2)
         SetEntProp(entity, Prop_Data, "m_iMaxHealth", amount);
     else
-        maxHealth[entity] = amount;
+        g_maxHealth[entity] = amount;
+}
+
+stock SetIncreasedHealth(client, amount, armor=0, const String:name[]="")
+{
+    new maxhp = GetMaxHealth(client);
+    new health = GetClientHealth(client)+amount;
+    if (health > maxhp)
+    {
+        SetMaxHealth(client, health);
+
+        #if defined HEALTH_ADDS_ARMOR
+            amount = health - maxhp;
+            g_addHealth[client] = amount;
+            SetArmorAmount(client, armor+amount);
+
+            if (name[0])
+                SetArmorName(client, name);
+        #else
+            #pragma unused armor, name
+        #endif
+    }
+
+    SetEntityHealth(client, health);
+    ShowHealthParticle(client);
 }
 
 stock IncreaseHealth(client, amount)
 {
+    new maxhp = GetMaxHealth(client);
+    new classmax = GetPlayerMaxHealth(client)+amount;
     new health = GetClientHealth(client)+amount;
-    if (GameType == tf2)
+    if (health > classmax)
+        health = classmax;
+    if (health > maxhp)
     {
-        if (health > GetMaxHealth(client))
-            SetMaxHealth(client, health);
+        SetMaxHealth(client, health);
+
+        #if defined HEALTH_ADDS_ARMOR
+            amount = health - maxhp;
+            g_addHealth[client] += amount;
+            IncrementArmor(client, amount);
+        #endif
     }
+
     SetEntityHealth(client, health);
+    ShowHealthParticle(client);
 }
 
 stock ResetMaxHealth(client)
 {
-    if (GameType == tf2)
+    if (GameType == tf2 && IsClientInGame(client))
     {
-        new max=TF2_GetPlayerResourceData(client,TFResource_MaxHealth);
-        SetMaxHealth(client, max);
+        new maxhp = GetPlayerMaxHealth(client); // TF2_GetPlayerResourceData(client,TFResource_MaxHealth);
+        SetMaxHealth(client, maxhp);
+
+        #if defined HEALTH_ADDS_ARMOR
+            DecrementArmor(client, g_addHealth[client]);
+            g_addHealth[client] = 0;
+        #endif
     }
     else
-        maxHealth[client] = 100;
+        g_maxHealth[client] = 100;
 }

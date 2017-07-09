@@ -10,20 +10,43 @@
 #endif
 #define _freeze_included
 
-stock FreezeEntity(entity)
+#include <ResourceManager>
+
+#undef REQUIRE_PLUGIN
+#include <jetpack>
+#define REQUIRE_PLUGIN
+
+#include "sc/burrow"
+
+stock FreezeEntity(entity, id=0)
 {
-    SetEntityMoveType(entity,MOVETYPE_NONE); // Freeze client
+    if (entity <= MAXPLAYERS)
+    {
+        SetRestriction(entity, Restriction_Grounded, true);
+        SetMoveType(entity, MOVETYPE_NONE,.id=id);
+    }
+    else
+        SetEntityMoveType(entity,MOVETYPE_NONE);
 }
 
-stock UnFreezeEntity(entity)
+stock UnFreezeEntity(entity, id=0)
 {
-    SetEntityMoveType(entity,MOVETYPE_WALK); // Unfreeze client
+    if (entity <= MAXPLAYERS)
+    {
+        SetRestriction(entity, Restriction_Grounded, false);
+
+        if (!IsBurrowed(entity))
+            SetMoveType(entity, MOVETYPE_WALK,.id=id);
+    }
+    else
+        SetEntityMoveType(entity,MOVETYPE_DEFAULT);
 }
 
-public Action:UnfreezePlayer(Handle:timer,Handle:pack)
+public Action:UnfreezePlayer(Handle:timer,any:userid)
 {
-    new client=ClientOfAuthTimer(pack);
-    if(client)
+    new client = GetClientOfUserId(userid);
+    if (client)
         UnFreezeEntity(client);
+
     return Plugin_Stop;
 }

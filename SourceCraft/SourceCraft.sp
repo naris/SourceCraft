@@ -2,168 +2,261 @@
  * vim: set ai et ts=4 sw=4 :
  * File: SourceCraft.sp
  * Description: The main file for SourceCraft.
- * Author(s): Anthony Iacono 
- * Modifications by: Naris (Murray Wilson)
+ * Author: Naris (Murray Wilson)
+ * Credits: Anthony Iacono 
  *
- * $Id$
+ * $Id: SourceCraft.sp 1233 2008-05-15 15:38:07Z Naris $
  */
 
 #pragma semicolon 1
 
 // Pump up the memory!
-#pragma dynamic 65536 
+#pragma dynamic 131072
 
 #include <sourcemod>
 #include <keyvalues>
 #include <sdktools>
-#include <regex>
+#include <sdkhooks>
+
+#include <colors>
+#include <gametype>
+#include <ResourceManager>
 
 #undef REQUIRE_EXTENSIONS
-#include <cstrike>
+#include <tf2>
 #include <tf2_stocks>
 #include <tf2_player>
-#include <tf2_class>
-#include <tftools>
+#include <tf2_meter>
+#include <cstrike>
 #define REQUIRE_EXTENSIONS
 
-new m_FirstSpawn[MAXPLAYERS + 1] = {1, ...}; // Cheap trick
-#define VERSION     "2.3.0 $Revision$ beta"
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+#include <jetpack>
+#define REQUIRE_PLUGIN
 
-// ConVar definitions
-new Handle:m_SaveXPConVar         = INVALID_HANDLE;
-new Handle:m_MinimumUltimateLevel = INVALID_HANDLE;
-new Handle:m_MaxCredits           = INVALID_HANDLE;
+// Define _TRACE to enable trace logging for debugging
+//#define _TRACE
+#include <trace>
 
-// Global Timers
-new Handle:m_PlayerPropertiesTimer = INVALID_HANDLE;
+// Define TRACK_DAMAGE to enable damage tracking
+// Required for mods that don't report damage
+// in player_hurt events such as hl2dm.
+//#define TRACK_DAMAGE
+
+// SourceCraft defines & enums
+#include "sc/defines"
+#include "sc/version"
+#include "sc/faction"
+#include "sc/immunity"
+#include "sc/settings"
+#include "sc/visibility"
+#include "sc/round_state"
+#include "sc/armor_flags"
+
+#define SAVE_ENABLED                (g_bDatabaseConnected && g_bSaveXP && GetRaceCount() > 1)
+
+#define DEFAULT_MAX_LEVELS          16
+
+// Models
+new const String:mdlPackage[][] = { "models/items/currencypack_small.mdl",  "models/items/currencypack_medium.mdl",
+                                    "models/items/currencypack_large.mdl",  "models/items/tf_gift.mdl" };
 
 // Sound Files
-new String:buttonWav[] = "play buttons/button14.wav";
-new String:notEnoughWav[] = "sourcecraft/taderr00.wav";
+new const String:sndPickup[]  = "items/gift_pickup.wav";
+new const String:sndPain[][]  = { "player/pl_pain5.wav", "player/pl_pain6.wav",
+                                  "player/pl_pain7.wav", "player/pain.wav" };
 
-#define SAVE_ENABLED       (GetConVarInt(m_SaveXPConVar)==1 && GetRaceCount() > 1)
-#define MIN_ULTIMATE_LEVEL GetConVarInt(m_MinimumUltimateLevel)
-#define MAX_LEVELS         16
+new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://sc.jigglysfunhouse.net/sc/sc/player/show/steamid/%s";
+new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://sc.jigglysfunhouse.net/sc/sc/";
+new String:g_UpdateURL[LONG_STRING_LENGTH]   = "http://www.jigglysfunhouse.net/Wiki/index.php/Updates";
+new String:g_WikiURL[LONG_STRING_LENGTH]     = "http://www.jigglysfunhouse.net/Wiki/index.php/SourceCraft";
+new String:g_BugURL[LONG_STRING_LENGTH]      = "http://www.jigglysfunhouse.net/thebuggenie";
+
+new bool:g_bSourceCraftLoaded     = false;
+new bool:g_bDatabaseConnected     = true;
+new bool:g_bUseMoney              = false;
+new bool:g_bUpdate                = false;
+new bool:g_bCreate                = false;
+new bool:g_bSaveXP                = true;
+new bool:g_bSaveUpgrades          = false;
+
+new g_iMaxCrystals                = 100;
+new g_iMaxVespene                 = 5000;
+new g_iMinPlayers                 = 4;
+new g_iMinUltimate                = 8;
+
+new g_iUpgradeCrystalsCost        = 75;
+new g_iUpgradeVespeneCost         = 0;
+
+new Float:g_fEnergyFactor         = 0.1;
+new Float:g_fEnergyRate           = 1.0;
+
+new Float:g_fMvMEnergyFactor      = 0.1;
+new Float:g_fMvMEnergyRate        = 1.0;
+
+new Float:g_fCrystalSellRate      = 5.0;
+new Float:g_fCrystalBuyRate       = 1.0;
+
+new g_iMaxDropXP                  = 500;
+new g_iDropXPBias                 = -50;
+new g_iMaxDropMoney               = 500;
+new g_iDropMoneyBias              = -50;
+new g_iMaxDropCrystals            = 50;
+new g_iDropCrystalBias            = -5;
+new g_iMaxDropPCrystals           = 500;
+new g_iDropPCrystalsBias          = -10;
+new g_iMaxPackages                = 50;
+new Float:g_fPackageDuration      = 30.0;
+
+new bool:g_IsInSpawn[MAXPLAYERS+1]     = { false, ... };
+new bool:g_FirstSpawn[MAXPLAYERS + 1]  = { true,  ... };
 
 // SourceCraft Includes
-#include "sc/util"
+#include "sc/menuitemt"
 #include "sc/weapons"
-#include "sc/immunity"
-#include "sc/visibility"
-#include "sc/maxhealth"
-#include "sc/display_flags"
+#include "sc/client"
+#include "sc/invuln"
+#include "sc/sounds"
 
 #include "sc/engine/help"
-#include "sc/engine/damage"
+#include "sc/engine/offsets"
+#include "sc/engine/menumode"
+#include "sc/engine/get_damage"
+#include "sc/engine/playerinfo"
+#include "sc/engine/factions"
 #include "sc/engine/races"
 #include "sc/engine/shopitems"
+#include "sc/engine/config"
+#include "sc/engine/info"
+#include "sc/engine/cooldown"
+#include "sc/engine/attribute"
 #include "sc/engine/playertracking"
+#include "sc/engine/playerproperties"
 #include "sc/engine/db"
+#include "sc/engine/display"
 #include "sc/engine/natives"
 #include "sc/engine/credits"
 #include "sc/engine/xp"
-#include "sc/engine/display"
 #include "sc/engine/hooks"
 #include "sc/engine/console"
 #include "sc/engine/adminmenus"
 #include "sc/engine/menus"
-#include "sc/engine/settings"
+#include "sc/engine/changesettings"
 #include "sc/engine/events"
 #include "sc/engine/events_tf2"
+#include "sc/engine/events_dod"
 #include "sc/engine/events_cstrike"
-#include "sc/engine/strtoken"
-
-new bool:m_CalledReady=false;
 
 public Plugin:myinfo= 
 {
     name="SourceCraft",
-    author="Naris",
+    author = "-=|JFH|=-Naris",
     description="StarCraft/WarCraft for the Source engine.",
-    version=VERSION,
+    version=SOURCECRAFT_VERSION,
     url="http://www.jigglysfunhouse.net/"
 };
 
-public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-    if(!InitNatives())
+    InitNatives();
+    InitForwards();
+
+    if(!InitRaceArray())
     {
-        LogError("There was a failure in creating the native based functions.");
-        return false;
-    }
-    else if(!InitForwards())
-    {
-        LogError("There was a failure in creating the forward based functions.");
-        return false;
-    }
-    else if(!InitRaceArray())
-    {
-        LogError("There was a failure in creating the race vector.");
-        return false;
+        LogError("There was a failure creating the race vector.");
+        return APLRes_Failure;
     }
     else
-        return true;
+        return APLRes_Success;
 }
 
 public OnPluginStart()
 {
-    LogMessage("[SourceCraft] Plugin loading...\n-------------------------------------------------------------------------");
-    PrintToServer("[SourceCraft] Plugin loading...\n-------------------------------------------------------------------------");
+    LogMessage("[SC] Plugin loading...\n-------------------------------------------------------------------------");
+    PrintToServer("[SC] Plugin loading...\n-------------------------------------------------------------------------");
+
+    // Load SourceMod translations
+    LoadTranslations("common.phrases");
+
+    // Load SourceCraft translations
+    LoadTranslations("SourceCraft.phrases");
+    LoadTranslations("sc.weapons.phrases");
+    LoadTranslations("sc.common.phrases");
+    LoadTranslations("sc.entity.phrases");
+    LoadTranslations("sc.unit.phrases");
+    LoadFactionTranslations();
+
+    // Load War3Source translations for emulation
+    LoadTranslations("w3s._common.phrases");
 
     GetGameType();
 
-    if(!InitRaceArray())
-        SetFailState("There was a failure in creating the race vector.");
+    InitCVars();
+    InitHooks();
+    InitHud();
 
-    if(!ConnectToDatabase())
-        LogMessage("Saving DISABLED!");
+    if(!InitOffsets())
+        SetFailState("There was a failure finding the offsets required.");
+
+    if (!ParseSettings())
+        SetFailState("There was a failure parsing the configuration file.");
+
+    g_bDatabaseConnected = InitDatabase();
+    if (!g_bDatabaseConnected)
+        LogError("Saving DISABLED!");
     
-    if(!InitShopVector())
-        SetFailState("There was a failure in creating the shop vector.");
-    if(!InitHelpVector())
-        SetFailState("There was a failure in creating the help vector.");
+    if (!InitShopVector())
+        SetFailState("There was a failure creating the shop vector.");
 
-    if(!HookEvents())
-        SetFailState("There was a failure in initializing event hooks.");
+    if (!InitHelpVector())
+        SetFailState("There was a failure creating the help vector.");
+
+    if (!HookEvents())
+        SetFailState("There was a failure initializing event hooks.");
 
     if (GameType == tf2)
     {
         if(!HookTFEvents())
-            SetFailState("There was a failure in initializing tf2 event hooks.");
+            SetFailState("There was a failure initializing tf2 event hooks.");
     }
-    else if(GameType == cstrike)
+    else if (GameType == dod)
+    {
+        if(!HookDodEvents())
+            SetFailState("There was a failure initializing dod event hooks.");
+    }
+    else if (GameTypeIsCS())
     {
         if(!HookCStrikeEvents())
-            SetFailState("There was a failure in initializing cstrike event hooks.");
+            SetFailState("There was a failure initializing cstrike event hooks.");
     }
 
-    if(!InitCVars())
-        SetFailState("There was a failure in initializing console variables.");
-    if(!InitAdminMenu())
-        SetFailState("There was a failure in initializing admin menus.");
-    if(!ParseSettings())
-        SetFailState("There was a failure in parsing the configuration file.");
-
-    InitHooks();
-
-    // MaxSpeed/MinGravity/OverrideSpeed/OverrideGravity
-    m_PlayerPropertiesTimer = CreateTimer(2.0,PlayerProperties,INVALID_HANDLE,TIMER_REPEAT);
-
-    PrintToServer("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
-    LogMessage("[SourceCraft] Plugin finished loading.\n-------------------------------------------------------------------------");
-}
-
-public OnAllPluginsLoaded()
-{
-    if(!m_CalledReady)
-    {
-        Call_StartForward(g_OnSourceCraftReadyHandle);
-        new res;
-        Call_Finish(res);
-        m_CalledReady=true;
-    }
+    if (!InitAdminMenu())
+        SetFailState("There was a failure initializing admin menus.");
 
     InitHelpCommands();
+    InitCookies();
+    InitHint();
+
+    PrintToServer("[SC] Plugin finished loading.\n-------------------------------------------------------------------------");
+    LogMessage("[SC] Plugin finished loading.\n-------------------------------------------------------------------------");
+}
+
+public OnConfigsExecuted()
+{
+    TraceInto("SourceCraft", "OnConfigsExecuted");
+
+    if (!g_bSourceCraftLoaded)
+    {
+        new res;
+        Call_StartForward(g_OnSourceCraftReadyHandle);
+        Call_Finish(res);
+        g_bSourceCraftLoaded=true;
+
+        CompleteConfigs();
+    }
+
+    TraceReturn();
 }
 
 public OnPluginEnd()
@@ -172,175 +265,285 @@ public OnPluginEnd()
     ClearShopVector();
     ClearHelpVector();
     ClearRaceArray();
-    CleanupMenus();
-    LogMessage("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
-    PrintToServer("[SourceCraft] Plugin shutdown.\n-------------------------------------------------------------------------");
+    ClearDatabase();
+    CloseHud();
+
+    LogMessage("[SC] Plugin shutdown.\n-------------------------------------------------------------------------");
+    PrintToServer("[SC] Plugin shutdown.\n-------------------------------------------------------------------------");
 }
 
 public OnMapStart()
 {
+    TraceInto("SourceCraft", "OnMapStart");
+
     g_MapChanging = false;
-    SetupSound(buttonWav,true,true);
-    SetupSound(notEnoughWav,true,true);
+    g_PackageCount = 0;
     SetupLevelUpEffect();
+
+    for (new i = 0; i < sizeof(mdlPackage); i++)
+        SetupModel(mdlPackage[i]);
+    
+    SetupDeniedSound();
+    SetupButtonSound();
+    SetupRechargeSound();
+
+    SetupSound(sndPickup, true, DONT_DOWNLOAD, true, true);
+
+    decl String:factionWav[NAME_STRING_LENGTH];
+    for (new Faction:f = Generic; f < Faction; f++)
+    {
+        GetFactionLevelSound(f, factionWav, sizeof(factionWav));
+        SetupSound(factionWav, true, ALWAYS_DOWNLOAD, true, true);
+
+        GetFactionCrystalSound(f, factionWav, sizeof(factionWav));
+        SetupSound(factionWav, true, ALWAYS_DOWNLOAD, true, true);
+
+        GetFactionVespeneSound(f, factionWav, sizeof(factionWav));
+        SetupSound(factionWav, true, ALWAYS_DOWNLOAD, true, true);
+
+        GetFactionEnergySound(f, factionWav, sizeof(factionWav));
+        SetupSound(factionWav, true, ALWAYS_DOWNLOAD, true, true);
+    }
+
+    for (new i = 0; i < sizeof(sndPain); i++)
+        SetupSound(sndPain[i], false, DONT_DOWNLOAD, false, false);
+
+    // If the database is not available
+    if (!g_bDatabaseConnected)
+    {
+        // Retry connecting to it
+        g_bDatabaseConnected = InitDatabase();
+        if (!g_bDatabaseConnected)
+            LogError("Saving Still DISABLED!");
+    }
+
+    TraceReturn();
+}
+
+public OnMapEnd()
+{
+    TraceInto("SourceCraft", "OnMapEnd");
+
+    #if defined TRACK_DAMAGE
+        ResetAllHealthTimers();
+    #endif
+
+    CleanupDamageEntity();
+    ResetAllPropertyTimers();
+    ResetAllHUDTimers();
+    ResetAllCooldowns();
+    ResetGameMode();
+
+    CompleteConfigs();
+    CloseDatabase();
+
+    TraceReturn();
 }
 
 public OnClientPutInServer(client)
 {
-    if (client>0 && !IsFakeClient(client))
+    SetTraceCategory("Connect");
+    TraceInto("SourceCraft", "OnClientPutInServer", "client=%d:%L", \
+              client, ValidClientIndex(client));
+
+    SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+
+    if (GameType == tf2)
+        SDKHook(client, SDKHook_WeaponSwitch, OnWeaponSwitch);
+
+    ResetPlayer(client, true);
+    RemoveAllAttributes(client);
+
+    m_CloakTime[client] = 0.0;
+
+    TraceReturn();
+}
+
+public Action:OnClientPreAdminCheck(client)
+{
+    SetTraceCategory("Connect");
+    TraceInto("SourceCraft", "OnClientPreAdminCheck", "client=%d:%L", \
+              client, ValidClientIndex(client));
+
+    // Load players in OnClientPreAdminCheck() to ensure
+    // they have been PutInServer and Authorized.
+
+    if (client > 0)
     {
-        m_CloakTime[client] = 0.0;
-
-        new Handle:playerHandle=CreatePlayer(client);
-        if (playerHandle != INVALID_HANDLE)
+        new last_race = GetRaceCount()-1;
+        if (last_race > 0)
         {
-            new res;
-            Call_StartForward(g_OnPlayerAuthedHandle);
-            Call_PushCell(client);
-            Call_PushCell(playerHandle);
-            Call_Finish(res);
-
-            if (GetRaceCount() > 1)
+            if (IsFakeClient(client))
             {
-                if(DBIDB && GetConVarInt(m_SaveXPConVar)==1)
-                    m_FirstSpawn[client]=LoadPlayerData(client,playerHandle);
-                else
-                    m_FirstSpawn[client]=2;
+                // Assign bots a random race and level
+                new race;
+                new required;
+                new Handle:raceHandle;
+                new overall = GetRandomInt(1,200);
 
-                // Default race to human for new players.
-                if (GetRace(playerHandle) < 0)
+                do
                 {
-                    new firstSpawn = m_FirstSpawn[client];
-                    new race = FindRace("human");
-                    SetRace(playerHandle, (race >= 0) ? race : 0);
-                    m_FirstSpawn[client] = firstSpawn;
-                    LogMessage("Restore Firstspawn to %d in PutInServer()", firstSpawn);
+                    race = GetRandomInt(1,last_race);
+                    raceHandle = GetRaceHandle(race);
+                    required = GetRaceRequiredLevel(raceHandle);
+                } while (required < 0 || required > overall);
+
+                SetOverallLevel(client,overall);
+                SetRace(client,race);
+
+                new max = GetRaceMaxLevel(raceHandle);
+                if (required > 0)
+                {
+                    max -= required;
+                    if (max < 1)
+                        max = 1;
+                }
+
+                if (max > overall)
+                    max = overall;
+
+                new level = GetRandomInt(1, max);
+                SetLevel(client, race, level, false);
+
+                new count = GetUpgradeCount(raceHandle)-1;
+                if (count >= 0 )
+                {
+                    while (level > 0)
+                    {
+                        new upgrade = GetRandomInt(0, count);
+                        new ulevel = GetUpgradeLevel(client, race, upgrade);
+                        new maxLevel = GetUpgradeMaxLevel(raceHandle,upgrade);
+                        if (ulevel < maxLevel)
+                        {
+                            SetUpgradeLevel(client, race, upgrade, ++ulevel);
+                        }
+                        level--;
+                    }
                 }
             }
             else
-                m_FirstSpawn[client]=2;
+            {
+                // Default race to human for new players.
+                if (GetRace(client) < 0)
+                {
+                    new race = FindRace("human");
+                    SetRace(client, (race >= 0) ? race : 0);
+                }
+
+                if (g_bSaveXP && GetRaceCount() > 1)
+                {
+                    if (g_bDatabaseConnected)
+                        LoadPlayerData(client);
+                    else
+                    {
+                        LogError("Database not available to load %N's levels!", client);
+                        PrintHintText(client, "%t", "NoDatabaseForLoad");
+                    }                        
+                }
+            }
         }
-        else
-            SetFailState("There was a failure processing client %d-%N.", client, client);
     }
+
+    new res;
+    Call_StartForward(g_OnPlayerAuthedHandle);
+    Call_PushCell(client);
+    Call_Finish(res);
+
+    TraceReturn();
+    return Plugin_Continue;
 }
 
 public OnClientDisconnect(client)
 {
-    if (client>0 && !IsFakeClient(client))
+    SetTraceCategory("Connect");
+    TraceInto("SourceCraft", "OnClientDisconnect", "client=%d:%L", \
+              client, ValidClientIndex(client));
+
+    g_IsInSpawn[client]  = false;
+    g_FirstSpawn[client] = true;
+
+    // Clear HUD Message
+    m_HudMessage[client][0] = '\0';
+
+    SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+
+    if (GameType == tf2)
+        SDKUnhook(client, SDKHook_WeaponSwitch, OnWeaponSwitch);
+
+    KillHUDTimer(client);
+    KillPropertyTimer(client);
+    CooldownDisconnect(client);
+
+    #if defined TRACK_DAMAGE
+        KillHealthTimer(client);
+    #endif
+
+    if (!IsFakeClient(client))
     {
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE)
+        //if (!GetDatabaseSaved(client) && 
+        if (g_bSaveXP && GetRaceCount() > 1 &&
+            GetPlayerStatus(client) != PlayerDisabled &&
+            GetDatabaseLoaded(client) >= DataOK)
         {
-            new bool:freePlayer = true;
-            if (GetRaceCount() > 1 && DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
-                freePlayer = SavePlayerData(client,playerHandle,true);
-
-            if (freePlayer)
-                ClearPlayer(playerHandle);
-
-            arrayPlayers[client] = INVALID_HANDLE;
-            m_FirstSpawn[client] = 2;
+            new race = GetRace(client);
+            if (race <= 0 || GetRaceLoaded(client, race) >= DataOK)
+            {
+                if (g_bDatabaseConnected)
+                    SavePlayerData(client);
+                else
+                    LogError("Database not available to save %d's levels", client);
+            }
         }
     }
+
+    TraceReturn();
 }
 
-public OnGameFrame()
-{
-    SaveAllHealth();
-}
+#if defined _TRACE
+    public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
+    {
+        SetTraceCategory("Connect");
+        TraceInto("SourceCraft", "OnClientConnect", "client=%d:%L", \
+                  client, ValidClientIndex(client));
 
-public bool:ParseSettings()
-{
-    new Handle:keyValue=CreateKeyValues("SourceCraftSettings");
-    decl String:path[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM,path,sizeof(path),"configs/sourcecraft.ini");
-    FileToKeyValues(keyValue,path);
+        TraceReturn();
+        return true;
+    }
 
-    // Load level configuration
-    KvRewind(keyValue);
-    vecLevelConfiguration=CreateArray();
-    if(!KvJumpToKey(keyValue,"levels"))
+    public OnClientConnected(client)
     {
-        LogError("KvJumpToKey failed in ParseSettings");
-        return false;
+        SetTraceCategory("Connect");
+        TraceInto("SourceCraft", "OnClientConnect", "client=%d:%L", \
+                  client, ValidClientIndex(client));
+
+        TraceReturn();
     }
-    new Handle:longterm_required=CreateArray();
-    new Handle:longterm_killxp=CreateArray();
-    new Handle:shortterm_required=CreateArray();
-    new Handle:shortterm_killxp=CreateArray();
-    decl String:temp[2048];
-    if(!KvGotoFirstSubKey(keyValue))
+
+    public OnClientAuthorized(client, const String:auth[])
     {
-        LogError("KvJumpToKey failed in ParseSettings");
-        return false;
+        SetTraceCategory("Connect");
+        TraceInto("SourceCraft", "OnClientAuthorized", "client=%d:%L Authorized as %s", \
+                  client, ValidClientIndex(client), auth);
+
+        TraceReturn();
     }
-    // required xp, long term
-    KvGetString(keyValue,"required_xp",temp,2047);
-    new tokencount=StrTokenCount(temp);
-    if(tokencount!=MAX_LEVELS+1)
+
+    public OnClientPostAdminCheck(client)
     {
-        LogError("Invalid tokencount for required xp, long term in ParseSettings");
-        return false;
+        SetTraceCategory("Connect");
+        TraceInto("SourceCraft", "OnClientPostAdminCheck", "client=%d:%L", \
+                  client, ValidClientIndex(client));
+
+        TraceReturn();
     }
-    decl String:temp_iter[16];
-    for(new x=1;x<=tokencount;x++)
+
+    public OnClientDisconnect_Post(client)
     {
-        // store it
-        StrToken(temp,x,temp_iter,15);
-        PushArrayCell(longterm_required,StringToInt(temp_iter));
+        SetTraceCategory("Connect");
+        TraceInto("SourceCraft", "OnClientDisconnect_Post", "client=%d", \
+                  client);
+
+        TraceReturn();
     }
-    // kill xp, long term
-    KvGetString(keyValue,"kill_xp",temp,2047);
-    tokencount=StrTokenCount(temp);
-    if(tokencount!=MAX_LEVELS+1)
-    {
-        LogError("Invalid tokencount for kill xp, long term in ParseSettings");
-        return false;
-    }
-    for(new x=1;x<=tokencount;x++)
-    {
-        // store it
-        StrToken(temp,x,temp_iter,15);
-        PushArrayCell(longterm_killxp,StringToInt(temp_iter));
-    }
-    if(!KvGotoNextKey(keyValue))
-    {
-        LogError("KvGotoNextKey failed in ParseSettings");
-        return false;
-    }
-    // required xp, short term
-    KvGetString(keyValue,"required_xp",temp,2047);
-    tokencount=StrTokenCount(temp);
-    if(tokencount!=MAX_LEVELS+1)
-    {
-        LogError("Invalid tokencount for required xp, short term in ParseSettings");
-        return false;
-    }
-    for(new x=1;x<=tokencount;x++)
-    {
-        // store it
-        StrToken(temp,x,temp_iter,15);
-        PushArrayCell(shortterm_required,StringToInt(temp_iter));
-    }
-    // kill xp, short term
-    KvGetString(keyValue,"kill_xp",temp,2047);
-    tokencount=StrTokenCount(temp);
-    if(tokencount!=MAX_LEVELS+1)
-    {
-        LogError("Invalid tokencount for kill xp, short term in ParseSettings");
-        return false;
-    }
-    for(new x=1;x<=tokencount;x++)
-    {
-        // store it
-        StrToken(temp,x,temp_iter,15);
-        PushArrayCell(shortterm_killxp,StringToInt(temp_iter));
-    }
-    PushArrayCell(vecLevelConfiguration,longterm_required);
-    PushArrayCell(vecLevelConfiguration,longterm_killxp);
-    PushArrayCell(vecLevelConfiguration,shortterm_required);
-    PushArrayCell(vecLevelConfiguration,shortterm_killxp);
-    return true;
-}
+#endif
 
