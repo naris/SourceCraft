@@ -113,7 +113,7 @@ GetRadioStationsFromFile ()
     static iIndex = 0, iPos = -1, iNumOfStations = 0;
     new Handle:hMapFile = INVALID_HANDLE;
 
-    LogMessage ("[SM-RADIO] Loading the radio stations from \"%s\"", STATIONSFILE);
+    LogToGame ("[SM-RADIO] Loading the radio stations from \"%s\"", STATIONSFILE);
 
     ClearArray (g_hArrayRadioStationNames);
     ClearArray (g_hArrayRadioStationURLs);
@@ -147,11 +147,11 @@ GetRadioStationsFromFile ()
         }
 
         CloseHandle (hMapFile);
-        LogMessage ("[SM-RADIO] Finishing parsing \"%s\" - Found %d radio stations", STATIONSFILE, iNumOfStations);
+        LogToGame ("[SM-RADIO] Finishing parsing \"%s\" - Found %d radio stations", STATIONSFILE, iNumOfStations);
         return;
     }
 
-    LogMessage ("[SM-RADIO] Unable to open \"%s\"", STATIONSFILE);
+    LogError ("[SM-RADIO] Unable to open \"%s\"", STATIONSFILE);
     SetFailState ("SM-RADIO] Unable to open the radiostations.ini file");
     return;
 }

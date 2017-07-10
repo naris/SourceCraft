@@ -50,7 +50,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    cvarTrack=CreateConVar("sm_track_tf2","0");
+    cvarTrack=CreateConVar("sm_track_tf2","1");
     RegConsoleCmd("ent_remove",EntityRemoved);
     AddGameLogHook(InterceptLog);
 
@@ -120,8 +120,8 @@ public Action:TrackVariables(Handle:timer)
                 new airDash = m_OffsetAirDash>0 ? GetEntData(client,m_OffsetAirDash) : -99;
                 new Float:maxSpeed= m_OffsetMaxspeed>0 ? GetEntDataFloat(client,m_OffsetMaxspeed) : -99.9;
 
-                LogMessage("client=%d(%N),tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,playerCond=%d,poisoned=%d,wearingSuit=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d,maxSpeed=%f",client,client,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,playerCond,poisened,wearingSuit,bonusProgress,bonusChallenge,airDash,maxSpeed);
-                PrintToChat( client,"plrState=%d,plrCond=%d,bP=%d,bC=%d,aD=%d",playerState,playerCond,bonusProgress,bonusChallenge,airDash);
+                LogMessage("client=%d(%N),playerCond=%08x,tfClass=%d,class=%d,cloakMeter=%f,disguiseTeam=%d,disguiseClass=%d,disguiseTarget=%d,disguiseHealth=%d,desiredDisguiseTeam=%d,desiredDisguiseClass=%d,invisChangeCompleteTime=%f,critMult=%d,stealthNoAttackExpire=%f,stealthNextChangeTime=%f,playerState=%d,numHealers=%d,poisoned=%d,wearingSuit=%d,bonusProgress=%d,bonusChallenge=%d,airDash=%d,maxSpeed=%f",client,client,playerCond,tfClass,class,cloakMeter,disguiseTeam,disguiseClass,disguiseTarget,disguiseHealth,desiredDisguiseTeam,desiredDisguiseClass,invisChangeCompleteTime,critMult,stealthNoAttackExpire,stealthNextChangeTime,playerState,numHealers,poisened,wearingSuit,bonusProgress,bonusChallenge,airDash,maxSpeed);
+                PrintToChat( client,"plrState=%d,plrCond=%08x,bP=%d,bC=%d,aD=%d",playerState,playerCond,bonusProgress,bonusChallenge,airDash);
             }
         }
     }
@@ -136,8 +136,8 @@ public OnUltimateCommand(client,player,race,bool:pressed)
         new iterOffset=m_OffsetMyWepons;
         for(new y=0;y<48;y++)
         {
-            new wepEnt=GetEntDataEnt(client,iterOffset);
-            if(wepEnt>0&&IsValidEdict(wepEnt))
+            new wepEnt=GetEntDataEnt2(client,iterOffset);
+            if (wepEnt>0&&IsValidEdict(wepEnt))
             {
                 GetEdictClassname(wepEnt,wepName,sizeof(wepName));
                 PrintToChat(client, wepName);
@@ -231,4 +231,12 @@ public OnObjectKilled(attacker, builder,const String:object[])
     LogMessage("objectkilled: builder=%d, type=%d, object=%s",
                builder, type, object);
 }
+
+public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
+{
+    PrintToChat(client, "weaponname=%s", weaponname);
+    LogMessage("TF2_CalcIsAttackCritical: client=%d, weapon=%d, weaponname=%s",
+               client, weapon, weaponname);
+    return Plugin_Continue;
+}  
 
