@@ -14,10 +14,9 @@
  * Assume control of the TF2 Teleporter plugin
  *
  * @param plugin_only 	Set to 1 to assume complete control of the Teleporter plugin.
- * @param time          Amount of time for the recharge timer, 0.0 = leave at default.
  * @return		    	none
  */
-native ControlTeleporter(bool:plugin_only=true, Float:time=0.0);
+native ControlTeleporter(bool:plugin_only=true);
 
 /**
  * Enable Teleporter Recharger for a player.
@@ -30,9 +29,9 @@ native SetTeleporter(client,Float:recharge);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
-public SharedPlugin:__pl_tf2teleporter = 
+public SharedPlugin:__pl_teleporter = 
 {
-	name = "tf2teleporter",
+	name = "teleporter",
 	file = "tf2teleporter.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
@@ -42,7 +41,7 @@ public SharedPlugin:__pl_tf2teleporter =
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_tf2teleporter_SetNTVOptional()
+public __pl_teleporter_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlTeleporter");
 	MarkNativeAsOptional("SetTeleporter");

@@ -1,6 +1,6 @@
 /**
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
- * File: teopmessage.inc
+ * File: topmessage.inc
  * Description: stock for SendTopMessage
  * Author(s): -=|JFH|=-Naris
  */

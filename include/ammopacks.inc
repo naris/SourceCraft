@@ -13,7 +13,7 @@
 /**
  * Assume control of the TF2 Ammopacks plugin
  *
- * @param plugin_only 	Set to 1 to assume complete control of the Medipacks plugin.
+ * @param plugin_only 	Set to 1 to assume complete control of the Ammopacks plugin.
  * @return		    	none
  */
 native ControlAmmopacks(bool:plugin_only=true);
@@ -27,6 +27,15 @@ native ControlAmmopacks(bool:plugin_only=true);
  * @return			none
  */
 native SetAmmopack(client,enable=3);
+
+/**
+ * Drop a Ammopack.
+ *
+ * @param index 	Client index
+ * @param charge    Set to amount of metal to use for ammopack (-1=use actual metal level).
+ * @return			true if a ammopack was successfully dropped
+ */
+native bool:DropAmmopack(client,charge=-1);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -46,5 +55,6 @@ public __pl_ammopacks_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlAmmopacks");
 	MarkNativeAsOptional("SetAmmopack");
+	MarkNativeAsOptional("DropAmmopack");
 }
 #endif

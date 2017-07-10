@@ -24,38 +24,89 @@ native ControlMedicInfect(bool:plugin_only=true);
  * @param index 	Client index
  * @param arm       Set to true to enable Medic Infections for Client when a Medic.
  * @param amount    Set to amount of damage per heartbeat, 0 = default amount from convar.
+ * @param chance    Set to % chance of infection per hit, 100 = default to always infect.
  * @return			none
  */
-native SetMedicInfect(client,bool:arm=true,amount=0);
+native SetMedicInfect(client,bool:arm=true,amount=0,chance=100);
 
 /**
- * Infect a player.
+ * Infect a player within the prescribed distance and parameters for Infection.
  *
- * @param index 	Client index of infector
  * @param target    Client index of target
+ * @param client 	Client index of infector
  * @param allow     Set to true to enable Medic Infections for targets on the same team.
+ * @param irradiate Set to true for Irradiatation instead of Infection.
  * @return			none
  */
-native MedicInfect(client,target,bool:allow=false);
+native MedicInfect(target, client=0, bool:allow=false, bool:irradiate=false);
+
+/**
+ * Infect a player unconditionally, without checking any parameters
+ * (other than allow friendly as specified below) 
+ *
+ * @param target    Client index of target
+ * @param client 	Client index of infector
+ * @param allow     Set to true to enable Medic Infections for targets on the same team.
+ * @param irradiate Set to true for Irradiatation instead of Infection.
+ * @return			none
+ */
+native Infect(target, client=0, bool:allow=false, bool:irradiate=false);
 
 /**
  * Heal a player.
  *
- * @param index 	Client index of infector
  * @param target    Client index of target
+ * @param index 	Client index of healer
  * @return			none
  */
-native HealInfect(client,target);
+native HealInfect(target,client=0);
+
+
+/**
+ * IsInfected
+ *
+ * @param target    Client index of target
+ * @return			Returns true if the target is infected.
+ */
+native bool:IsInfected(target);
 
 /**
  * Gets called when a player is infected or healed
  * @param victim: The victim's index.
  * @param infector: The infector's index.
+ * @param source: The source's (original infecting medic's) index. 
  * @param player: The player handle of the client.
  * @param infected: Set true when infected and false when healed.
  * @param color: Array for color player was turned (r,b,g,a).
+ * @return		false to prevent infection, true to allow infection.
  */
-forward OnInfected(victim,infector,bool:infected,const color[4]);
+functag OnInfectedFunc Action:public(victim,infector,source,bool:infected,const color[4]);
+
+/**
+ * Gets called when a player takes damage from infection
+ * @param victim: The victim's index.
+ * @param infector: The infector's index.
+ * @param player: The player handle of the client.
+ * @param amount: Reference for the amount of damage to do, can be altered.
+ * @return		false to prevent infection, true to allow infection.
+ */
+functag OnInfectionHurtFunc Action:public(victim,infector,&amount);
+
+/**
+ * Hook Infections and Heals
+ *
+ * @param func 	Function to call when infections and heals happen.
+ * @return		none
+ */
+native HookInfection(OnInfectedFunc:func);
+
+/**
+ * Hook Damage from Infection
+ *
+ * @param func 	Function to call when damaging a player due to infection
+ * @return		none
+ */
+native HookInfectionHurt(OnInfectionHurtFunc:func);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -74,8 +125,11 @@ public SharedPlugin:__pl_MedicInfect =
 public __pl_MedicInfect_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlMedicInfect");
+	MarkNativeAsOptional("HookInfection");
+	MarkNativeAsOptional("HookInfectionHurt");
 	MarkNativeAsOptional("SetMedicInfect");
 	MarkNativeAsOptional("MedicInfect");
 	MarkNativeAsOptional("HealInfect");
+	MarkNativeAsOptional("IsInfected");
 }
 #endif
