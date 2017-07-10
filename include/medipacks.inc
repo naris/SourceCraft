@@ -22,12 +22,23 @@ native ControlMedipacks(bool:plugin_only=true);
  * Enable Medipacks for a player.
  *
  * @param index 	Client index
- * @param enable    Enable/Disable medipacks for client (0 = disabled   | 1 = on death |
- *                                                       2 = on command | 3 = on death and command)
+ * @param enable    Enable/Disable medipacks for client (0=disabled   | 1=on death |
+ *                                                       2=on command | 3=on death and command)
  * @param amount    Set to amount of initial uber when a medic.
+ * @param type      What type of medipack to drop (0=default | TFHoliday_Birthday | TFHoliday_Halloween)
  * @return			none
  */
-native SetMedipack(client,enable=3,amount=0);
+native SetMedipack(client, enable=3, amount=0, TFHoliday:type=TFHoliday:0);
+
+/**
+ * Drop a Medipack.
+ *
+ * @param index 	Client index
+ * @param charge    Set to amount of uber to use for medipack (-1=use actual uber level).
+ * @param type      What type of medipack to drop (0=default | TFHoliday_Birthday | TFHoliday_Halloween)
+ * @return			true if a medipack was successfully dropped
+ */
+native bool:DropMedipack(client, charge=-1, TFHoliday:type=TFHoliday:0);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -47,5 +58,6 @@ public __pl_medipacks_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlMedipacks");
 	MarkNativeAsOptional("SetMedipack");
+	MarkNativeAsOptional("DropMedipack");
 }
 #endif
