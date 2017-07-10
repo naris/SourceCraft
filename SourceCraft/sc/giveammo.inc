@@ -10,11 +10,13 @@
 #endif
 #define _giveammo_included
 
+#include <gametype>
+
 stock Handle:hGiveAmmo = INVALID_HANDLE;
 
 stock GiveAmmo(client,ammotype,amount,bool:suppress)
 {
-    if (GameType != tf2)
+    if (GetGameType() == tf2)
     {
         if (hGiveAmmo == INVALID_HANDLE)
         {
@@ -28,5 +30,7 @@ stock GiveAmmo(client,ammotype,amount,bool:suppress)
 
         if (hGiveAmmo != INVALID_HANDLE)
             SDKCall(hGiveAmmo,client,amount,ammotype,suppress);
+        else
+            LogError("Unable to GiveAmmo!");
     }
 }

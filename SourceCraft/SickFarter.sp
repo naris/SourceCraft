@@ -9,323 +9,538 @@
 
 #include <sourcemod>
 #include <sdktools>
+
 #include <new_tempents_stocks>
+#include <raytrace>
+#include <range>
 
 #undef REQUIRE_EXTENSIONS
+#include <tf2>
 #include <tf2_stocks>
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
+// Define _TRACE to enable trace logging for debugging
+//#define _TRACE
+#include <trace>
+
 #include "sc/SourceCraft"
-#include "sc/util"
-#include "sc/range"
-#include "sc/trace"
+#include "sc/clienttimer"
 #include "sc/maxhealth"
 #include "sc/weapons"
+#include "sc/sounds"
 
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
-new String:fart1Wav[] = "sourcecraft/fart.wav";
-new String:fart2Wav[] = "sourcecraft/fart3.wav";
-new String:fart3Wav[] = "sourcecraft/poot.mp3";
+#include "effect/Smoke"
+#include "effect/Bubble"
+#include "effect/RedGlow"
+#include "effect/BlueGlow"
+#include "effect/Lightning"
+#include "effect/HaloSprite"
+#include "effect/BeamSprite"
+#include "effect/SendEffects"
+#include "effect/FlashScreen"
 
-new raceID, festerID, pickPocketID, revulsionID, fartID;
+new const String:fartWav[][]    = { "sc/fart.wav",
+                                    "sc/fart3.wav",
+                                    "sc/poot.mp3" };
 
-new Float:gPickPocketTime[MAXPLAYERS+1];
-new bool:m_AllowFart[MAXPLAYERS+1];
+new g_FesterChance[]            = { 0, 10, 15, 20, 25 };
+new Float:g_FesterPercent[]     = { 0.0, 0.15, 0.30, 0.40, 0.50 };
+
+new Float:g_FartRange[]         = { 0.0, 400.0, 550.0, 850.0, 1000.0 };
+new Float:g_RevulsionRange[]    = { 0.0, 300.0, 450.0, 650.0, 800.0 };
+
+new g_PickPocketChance[][]      = { {  0,  0 },
+                                    { 10, 20 },
+                                    { 20, 30 },
+                                    { 30, 40 },
+                                    { 40, 50 }};
+
+
+
+new raceID, festerID, pickPocketID, revulsionID, fartID, hunterID;
+
+new g_hunterRace = -1;
+
 new gFartDuration[MAXPLAYERS+1];
-
-new Handle:cvarFartCooldown = INVALID_HANDLE;
-
-new g_haloSprite;
-new g_smokeSprite;
-new g_bubbleModel;
-new g_lightningSprite;
+new Float:gPickPocketTime[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Sick Farter",
     author = "Naris",
     description = "The Sick Farter race for SourceCraft.",
-    version = "1.0.0.0",
+    version = SOURCECRAFT_VERSION,
     url = "http://www.jigglysfunhouse.net/"
 };
 
 public OnPluginStart()
 {
+    LoadTranslations("sc.common.phrases.txt");
+    LoadTranslations("sc.farter.phrases.txt");
+
     GetGameType();
-
-    cvarFartCooldown=CreateConVar("sc_fartcooldown","30");
-
-    CreateTimer(2.0,Revulsion,INVALID_HANDLE,TIMER_REPEAT);
+    if (IsSourceCraftLoaded())
+        OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID       = CreateRace("Sick Fucker", "farter",
-                              "You are now a Sick Fucker.",
-                              "You will be a Sick Fucker when you die or respawn.",
-                              16);
+    raceID       = CreateRace("farter", 16, 0, 17, .faction=UndeadScourge, .type=Undead);
 
-    festerID     = AddUpgrade(raceID,"Festering Abomination", "abomination",
-                              "Gives you a 15% chance of doing\n40-240% more damage.");
+    festerID     = AddUpgrade(raceID, "abomination", .energy=1.0);
+    pickPocketID = AddUpgrade(raceID, "pickpocket", .energy=1.0);
+    revulsionID  = AddUpgrade(raceID, "revulsion", .energy=1.0);
 
-    pickPocketID = AddUpgrade(raceID,"Pickpocket", "pickpocket",
-                              "Gives you a 15-80% chance of stealing up to 5-15% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen.");
+    // Ultimate 1
+    fartID       = AddUpgrade(raceID, "flatulence", 1,
+                              .energy=30.0, .cooldown=2.0);
 
-    revulsionID  = AddUpgrade(raceID,"Revulsion", "revulsion",
-                              "Your level of Revulsion is so high, all enemies quake as you approach.");
+    // Ultimate 2
+    hunterID     = AddUpgrade(raceID, "hunter", 2, 16,1,
+                              .energy=300.0, .cooldown=60.0,
+                              .accumulated=true);
 
-    fartID       = AddUpgrade(raceID,"Flatulence", "fart", 
-                              "Farts a cloud of noxious gasses that\ndamages enemies 150-300 units in range.",
-                              true); // Ultimate
+    // Get Configuration Data
+    GetConfigArray("chance", g_FesterChance, sizeof(g_FesterChance),
+                   g_FesterChance, raceID, festerID);
+
+    GetConfigFloatArray("damage_percent", g_FesterPercent, sizeof(g_FesterPercent),
+                        g_FesterPercent, raceID, festerID);
+
+    GetConfigFloatArray("range", g_RevulsionRange, sizeof(g_RevulsionRange),
+                        g_RevulsionRange, raceID, revulsionID);
+
+    GetConfigFloatArray("range", g_FartRange, sizeof(g_FartRange),
+                        g_FartRange, raceID, fartID);
+
+    for (new level=0; level < sizeof(g_PickPocketChance); level++)
+    {
+        decl String:key[32];
+        Format(key, sizeof(key), "chance_level_%d", level);
+        GetConfigArray(key, g_PickPocketChance[level], sizeof(g_PickPocketChance[]),
+                       g_PickPocketChance[level], raceID, pickPocketID);
+    }
 }
 
 public OnMapStart()
 {
-    g_bubbleModel = SetupModel("materials/effects/bubble.vmt", true);
-    if (g_bubbleModel == -1)
-        SetFailState("Couldn't find bubble Model");
+    SetupLightning();
+    SetupBeamSprite();
+    SetupHaloSprite();
+    SetupSmokeSprite();
+    SetupBubbleModel();
+    SetupBlueGlow();
+    SetupRedGlow();
 
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
+    SetupDeniedSound();
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
-
-    SetupSound(rechargeWav, true, true);
-    SetupSound(fart1Wav, true, true);
-    SetupSound(fart2Wav, true, true);
-    SetupSound(fart3Wav, true, true);
+    for (new i = 0; i < sizeof(fartWav); i++)
+        SetupSound(fartWav[i]);
 }
 
-public OnPlayerAuthed(client,Handle:player)
+public OnMapEnd()
 {
-    m_AllowFart[client]=true;
+    ResetAllClientTimers();
+}
+
+public OnPlayerAuthed(client)
+{
     gPickPocketTime[client] = 0.0;
 }
 
-public OnRaceSelected(client,Handle:player,oldrace,newrace)
+public OnClientDisconnect(client)
 {
-    if (oldrace == raceID && newrace != raceID)
+    KillClientTimer(client);
+}
+
+public Action:OnRaceDeselected(client,oldrace,newrace)
+{
+    if (oldrace == raceID)
     {
-        m_AllowFart[client]=true;
-        gPickPocketTime[client] = 0.0;
+        TraceInto("SickFarter", "OnRaceDeselected", "client=%d, oldrace=%d, newrace=%d", \
+                  client, oldrace, newrace);
+
+        KillClientTimer(client);
+
+        new maxCrystals = GetMaxCrystals();
+        if (GetCrystals(client) > maxCrystals)
+        {
+            SetCrystals(client, maxCrystals);
+            DisplayMessage(client, Display_Crystals, "%t",
+                           "CrystalsReduced", maxCrystals);
+        }
+
+        TraceReturn();
+        return Plugin_Handled;
+    }
+    else
+    {
+        if (g_hunterRace < 0)
+            g_hunterRace = FindRace("hunter");
+
+        if (oldrace == g_hunterRace &&
+            GetCooldownExpireTime(client, raceID, hunterID) <= 0.0)
+        {
+            CreateCooldown(client, raceID, hunterID,
+                           .type=Cooldown_CreateNotify
+                                |Cooldown_AlwaysNotify);
+        }
+
+        return Plugin_Continue;
     }
 }
 
-public OnUltimateCommand(client,Handle:player,race,bool:pressed)
+public Action:OnRaceSelected(client,oldrace,newrace)
 {
-    if (pressed && m_AllowFart[client] &&
-        race == raceID && IsPlayerAlive(client))
+    if (newrace == raceID)
     {
-        new fart_level = GetUpgradeLevel(player,race,fartID);
-        if (fart_level)
-            Fart(player,client,fart_level);
+        TraceInto("SickFarter", "OnRaceSelected", "client=%d, oldrace=%d, newrace=%d", \
+                  client, oldrace, newrace);
+
+        gPickPocketTime[client] = 0.0;
+
+        new revulsion_level=GetUpgradeLevel(client,raceID,revulsionID);
+        if (revulsion_level && IsValidClientAlive(client))
+            CreateClientTimer(client, 2.0, Revulsion, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+
+        TraceReturn();
+        return Plugin_Handled;
+    }
+    else
+        return Plugin_Continue;
+}
+
+public OnUpgradeLevelChanged(client,race,upgrade,new_level)
+{
+    if (race == raceID && GetRace(client) == raceID)
+    {
+        if (upgrade==revulsionID)
+        {
+            if (new_level > 0)
+            {
+                if (IsValidClientAlive(client))
+                {
+                    CreateClientTimer(client, 2.0, Revulsion,
+                                      TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+                }
+            }
+            else
+                KillClientTimer(client);
+        }
+    }
+}
+
+public OnUltimateCommand(client,race,bool:pressed,arg)
+{
+    if (race == raceID && IsValidClientAlive(client))
+    {
+        TraceInto("SickFarter", "OnUltimateCommand", "client=%N(%d), race=%d, pressed=%d, arg=%d", \
+                  client, client, race, pressed, arg);
+
+        if (arg >= 2)
+        {
+            new hunter_level=GetUpgradeLevel(client,race,hunterID);
+            if (hunter_level > 0)
+            {
+                if (!pressed)
+                    SummonHunter(client);
+            }
+        }
+        else if (pressed)
+        {
+            new fart_level = GetUpgradeLevel(client,race,fartID);
+            if (fart_level > 0)
+            {
+                if (GetRestriction(client,Restriction_NoUltimates) ||
+                    GetRestriction(client,Restriction_Stunned))
+                {
+                    PrepareAndEmitSoundToClient(client,deniedWav);
+
+                    decl String:upgradeName[64];
+                    GetUpgradeName(raceID, fartID, upgradeName, sizeof(upgradeName), client);
+                    DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
+                }
+                else if (CanInvokeUpgrade(client, raceID, fartID))
+                {
+                    if (GameType == tf2)
+                    {
+                        if (TF2_IsPlayerDisguised(client))
+                            TF2_RemovePlayerDisguise(client);
+                    }
+
+                    gFartDuration[client] = fart_level * 3;
+
+                    new Handle:FartTimer = CreateTimer(0.4, PersistFart, GetClientUserId(client),
+                                                       TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+                    TriggerTimer(FartTimer, true);
+
+                    decl String:upgradeName[64];
+                    GetUpgradeName(raceID, fartID, upgradeName, sizeof(upgradeName), client);
+                    DisplayMessage(client,Display_Ultimate, "%t", "Invoked", upgradeName);
+                    CreateCooldown(client, raceID, fartID);
+                }
+            }
+        }
+
+        TraceReturn();
     }
 }
 
 // Events
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                attacker_index,Handle:attacker_player,attacker_race,
-                                assister_index,Handle:assister_player,assister_race,
-                                damage)
+public OnPlayerSpawnEvent(Handle:event, client, race)
 {
-    new bool:changed=false;
-
-    if (attacker_race == raceID && attacker_index != victim_index)
+    if (race == raceID)
     {
-        if (victim_player != INVALID_HANDLE)
-            PickPocket(event, victim_index, victim_player, attacker_index, attacker_player);
+        TraceInto("SickFarter", "OnPlayerSpawnEvent", "client=%N(%d), raceID=%d", \
+                  client, client, raceID);
 
-        if (attacker_player != INVALID_HANDLE)
+        new revulsion_level=GetUpgradeLevel(client,raceID,revulsionID);
+        if (revulsion_level > 0)
         {
-            if (FesteringAbomination(damage, victim_index, victim_player, attacker_index, attacker_player))
-                changed = true;
+            CreateClientTimer(client, 2.0, Revulsion,
+                              TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
         }
 
+        TraceReturn();
     }
-
-    if (assister_race == raceID && assister_index != victim_index)
-    {
-        if (victim_player != INVALID_HANDLE)
-            PickPocket(event, victim_index, victim_player, assister_index, assister_player);
-
-        if (assister_player != INVALID_HANDLE)
-        {
-            if (FesteringAbomination(damage, victim_index, victim_player, assister_index, assister_player))
-                changed = true;
-        }
-    }
-
-    return changed ? Plugin_Changed : Plugin_Continue;
 }
 
-public bool:FesteringAbomination(damage, victim_index,Handle:victim_player, index, Handle:player)
+public Action:OnEntityHurtEvent(Handle:event, victim_index, attacker_index, attacker_race, damage)
 {
-    new fa_level = GetUpgradeLevel(player,raceID,festerID);
+    if (attacker_race == raceID)
+    {
+        FesteringAbomination(damage, victim_index, attacker_index);
+        return Plugin_Handled;
+    }
+    else
+        return Plugin_Continue;
+}
+
+public Action:OnEntityAssistEvent(Handle:event, victim_index, assister_index, assister_race, damage)
+{
+    if (assister_race == raceID)
+    {
+        FesteringAbomination(damage, victim_index, assister_index);
+        return Plugin_Handled;
+    }
+    else
+        return Plugin_Continue;
+}
+
+public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
+                                attacker_race, damage, absorbed, bool:from_sc)
+{
+    new Action:returnCode = Plugin_Continue;
+
+    if (!from_sc && attacker_index > 0 &&
+        attacker_index != victim_index &&
+        attacker_race == raceID)
+    {
+        if (PickPocket(event, victim_index, attacker_index))
+            returnCode = Plugin_Handled;
+
+        if (FesteringAbomination(damage + absorbed, victim_index, attacker_index))
+            returnCode = Plugin_Handled;
+    }
+
+    return returnCode;
+}
+
+public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
+                                  assister_index, assister_race, damage,
+                                  absorbed)
+{
+    new Action:returnCode = Plugin_Continue;
+
+    if (assister_race == raceID)
+    {
+        if (PickPocket(event, victim_index, assister_index))
+            returnCode = Plugin_Handled;
+
+        if (FesteringAbomination(damage + absorbed, victim_index, assister_index))
+            returnCode = Plugin_Handled;
+    }
+
+    return returnCode;
+}
+
+public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_index,
+                          attacker_race, assister_index, assister_race, damage,
+                          const String:weapon[], bool:is_equipment, customkill,
+                          bool:headshot, bool:backstab, bool:melee)
+{
+    KillClientTimer(victim_index);
+
+    if (g_hunterRace < 0)
+        g_hunterRace = FindRace("hunter");
+
+    if (victim_race == g_hunterRace &&
+        GetCooldownExpireTime(victim_index, raceID, hunterID) <= 0.0)
+    {
+        CreateCooldown(victim_index, raceID, hunterID,
+                       .type=Cooldown_CreateNotify
+                            |Cooldown_AlwaysNotify);
+    }
+}
+
+bool:FesteringAbomination(damage, victim_index, index)
+{
+    TraceInto("SickFarter", "FesteringAbomination", "index=%N(%d), victim_index=%N(%d), damage=%d", \
+              index, index, victim_index, victim_index, damage);
+
+    new fa_level = GetUpgradeLevel(index, raceID, festerID);
+    if (fa_level >= sizeof(g_FesterChance))
+    {
+        LogError("%d:%N has too many levels in SickFarter::FesteringAbomination level=%d, max=%d",
+                 index, index, fa_level, sizeof(g_FesterChance));
+
+        fa_level = sizeof(g_FesterChance)-1;
+    }
     if (fa_level > 0)
     {
-        if (!GetImmunity(victim_player,Immunity_HealthTake) &&
-            !TF2_IsPlayerInvuln(victim_index))
+        if (!GetRestriction(index, Restriction_NoUpgrades) &&
+            !GetRestriction(index, Restriction_Stunned) &&
+            !GetImmunity(victim_index,Immunity_HealthTaking) &&
+            !GetImmunity(victim_index,Immunity_Upgrades) &&
+            !IsInvulnerable(victim_index))
         {
-            new chance;
-            switch(fa_level)
+            new health_take = RoundFloat(float(damage)*g_FesterPercent[fa_level]);
+            if (health_take > 0 && GetRandomInt(1,100) <= g_FesterChance[fa_level] &&
+                CanInvokeUpgrade(index, raceID, festerID, .notify=false))
             {
-                case 1:
-                    chance=10;
-                case 2:
-                    chance=15;
-                case 3:
-                    chance=20;
-                case 4:
-                    chance=25;
-            }
-            if(GetRandomInt(1,100)<=chance)
-            {
-                new Float:percent;
-                switch(fa_level)
-                {
-                    case 1:
-                        percent=0.10;
-                    case 2:
-                        percent=0.27;
-                    case 3:
-                        percent=0.47;
-                    case 4:
-                        percent=0.67;
-                }
+                new Float:indexLoc[3];
+                GetClientAbsOrigin(index, indexLoc);
+                indexLoc[2] += 50.0;
 
-                new health_take=RoundFloat(float(damage)*percent);
-                new new_health=GetClientHealth(victim_index)-health_take;
-                if (new_health <= 0)
-                {
-                    new_health=0;
-                    DisplayKill(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
-                }
-                else
-                    DisplayDamage(index, victim_index, "festering_abomination", "Festering Abomination", health_take);
+                new Float:victimLoc[3];
+                GetEntityAbsOrigin(victim_index, victimLoc);
+                victimLoc[2] += 50.0;
 
-                SetEntityHealth(victim_index,new_health);
+                static const color[4] = { 100, 255, 55, 255 };
+                TE_SetupBeamPoints(indexLoc, victimLoc, Lightning(), HaloSprite(),
+                                   0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+                TE_SendQEffectToAll(index, victim_index);
+                FlashScreen(victim_index,RGBA_COLOR_RED);
 
-                new color[4] = { 100, 255, 55, 255 };
-                TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                                  0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-                TE_SendToAll();
+                HurtPlayer(victim_index, health_take, index,
+                           "sc_festering_abomination",
+                           .type=DMG_NERVEGAS,
+                           .in_hurt_event=true);
+
+                TraceReturn();
                 return true;
             }
         }
     }
+
+    TraceReturn();
     return false;
 }
 
-public PickPocket(Handle:event,victim_index, Handle:victim_player, index, Handle:player)
+bool:PickPocket(Handle:event,victim_index, index)
 {
-    new pp_level = GetUpgradeLevel(player,raceID,pickPocketID);
+    TraceInto("SickFarter", "PickPocket", "index=%N(%d), victim_index=%N(%d), event=%x", \
+              index, index, victim_index, victim_index, event);
+
+    new pp_level = GetUpgradeLevel(index, raceID, pickPocketID);
     if (pp_level > 0)
     {
         decl String:weapon[64];
         new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
         new bool:is_melee=IsMelee(weapon, is_equipment,index,victim_index);
 
-        new chance;
-        switch(pp_level)
+        if ((gPickPocketTime[index] == 0.0 || GetGameTime() - gPickPocketTime[index] > 1.0) &&
+            GetRandomInt(1,100) <= g_PickPocketChance[pp_level][is_melee] &&
+            !GetRestriction(index, Restriction_NoUpgrades) &&
+            !GetRestriction(index, Restriction_Stunned) &&
+            !GetImmunity(victim_index,Immunity_Upgrades) &&
+            !GetImmunity(victim_index,Immunity_Theft) &&
+            !IsInvulnerable(victim_index))
         {
-            case 1:
-                chance=is_melee ? 25 : 15;
-            case 2:
-                chance=is_melee ? 40 : 25;
-            case 3:
-                chance=is_melee ? 60 : 40;
-            case 4:
-                chance=is_melee ? 80 : 60;
-        }
-
-        if( GetRandomInt(1,100)<=chance &&
-            !GetImmunity(victim_player,Immunity_Theft) &&
-            !TF2_IsPlayerInvuln(victim_index) &&
-            (gPickPocketTime[index] == 0.0 ||
-             GetGameTime() - gPickPocketTime[index] > 0.5))
-        {
-            new victim_cash=GetCredits(victim_player);
-            if (victim_cash > 0)
+            new victim_cash = GetCrystals(victim_index);
+            if (victim_cash > 0 && CanInvokeUpgrade(index, raceID, pickPocketID))
             {
                 new Float:percent=GetRandomFloat(0.0,is_melee ? 0.15 : 0.05);
-                new cash=GetCredits(player);
-                new amount = RoundToCeil(float(victim_cash) * percent);
+                new cash=GetCrystals(index);
+                new plunder = RoundToCeil(float(victim_cash) * percent);
 
-                SetCredits(victim_player,victim_cash-amount);
-                SetCredits(player,cash+amount);
+                SetCrystals(victim_index,victim_cash-plunder,false);
+                SetCrystals(index,cash+plunder,false);
                 gPickPocketTime[index] = GetGameTime();
 
-                new color[4] = { 100, 255, 55, 255 };
-                TE_SetupBeamLaser(index,victim_index,g_lightningSprite,g_haloSprite,
-                                  0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
-                TE_SendToAll();
+                new Float:indexLoc[3];
+                GetClientAbsOrigin(index, indexLoc);
+                indexLoc[2] += 50.0;
 
-                LogToGame("%N stole %d crystal(s) from %N", index, amount, victim_index);
+                new Float:victimLoc[3];
+                GetClientAbsOrigin(victim_index, victimLoc);
+                victimLoc[2] += 50.0;
 
-                PrintToChat(index,"%c[SourceCraft]%c You have stolen %d %s from %N!",
-                            COLOR_GREEN,COLOR_DEFAULT,amount,
-                            (amount == 1) ? "crystal" : "crystals",
-                            victim_index);
+                static const color[4] = { 100, 255, 55, 255 };
+                TE_SetupBeamPoints(indexLoc, victimLoc, Lightning(), HaloSprite(),
+                                   0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
+                TE_SendQEffectToAll(index, victim_index);
 
-                PrintToChat(victim_index,"%c[SourceCraft]%c %N stole %d %s from you!",
-                            COLOR_GREEN,COLOR_DEFAULT,index,amount,
-                            (amount == 1) ? "crystal" : "crystals");
+                LogToGame("%N stole %d crystal(s) from %N", index, plunder, victim_index);
+                DisplayMessage(index, Display_Damage, "%t", "YouHaveStolenCrystals", plunder, victim_index);
+                DisplayMessage(victim_index, Display_Injury, "%t", "StoleYourCrystals", index, plunder);
+
+                TraceReturn();
+                return true;
             }
         }
     }
+
+    TraceReturn();
+    return false;
 }
 
-public Fart(Handle:player,client,ultlevel)
+public Action:PersistFart(Handle:timer,any:userid)
 {
-    gFartDuration[client] = ultlevel*3;
-
-    new Handle:FartTimer = CreateTimer(0.4, PersistFart, client,TIMER_REPEAT);
-    TriggerTimer(FartTimer, true);
-
-    new Float:cooldown = GetConVarFloat(cvarFartCooldown);
-
-    PrintToChat(client,"%c[SourceCraft]%c You have used your ultimate %cFlatulence%c! You now need to wait %2.0f seconds before using it again.",COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-
-    if (cooldown > 0.0)
+    new client = GetClientOfUserId(userid);
+    if (IsValidClientNotSpec(client) && GetRace(client) == raceID &&
+        !GetRestriction(client,Restriction_NoUltimates) &&
+        !GetRestriction(client,Restriction_Stunned))
     {
-        m_AllowFart[client]=false;
-        CreateTimer(cooldown,AllowFart,client);
-    }
-}
+        TraceInto("SickFarter", "PersistFart", "client=%d, timer=%x", \
+                  client, timer);
 
-public Action:PersistFart(Handle:timer,any:client)
-{
-    new Handle:player=GetPlayerHandle(client);
-    if (player != INVALID_HANDLE)
-    {
-        new Float:range;
-        new fart_level = GetUpgradeLevel(player,raceID,fartID);
-        switch(fart_level)
+        if (GameType == tf2)
         {
-            case 1: range=400.0;
-            case 2: range=550.0;
-            case 3: range=850.0;
-            case 4: range=1000.0;
+            if (TF2_IsPlayerTaunting(client) ||
+                TF2_IsPlayerDazed(client))
+            {
+                PrepareAndEmitSoundToClient(client,deniedWav);
+                TraceReturn();
+                return Plugin_Stop;
+            }
+            //case TFClass_Scout:
+            else if (TF2_IsPlayerBonked(client))
+            {
+                PrepareAndEmitSoundToClient(client,deniedWav);
+                TraceReturn();
+                return Plugin_Stop;
+            }
+            //case TFClass_Spy:
+            else if (TF2_IsPlayerCloaked(client) ||
+                     TF2_IsPlayerDeadRingered(client))
+            {
+                PrepareAndEmitSoundToClient(client,deniedWav);
+                TraceReturn();
+                return Plugin_Stop;
+            }
+            else if (TF2_IsPlayerDisguised(client))
+                TF2_RemovePlayerDisguise(client);
         }
 
-        switch(GetRandomInt(1,3))
-        {
-            case 1: EmitSoundToAll(fart1Wav,client);
-            case 2: EmitSoundToAll(fart2Wav,client);
-            case 3: EmitSoundToAll(fart3Wav,client);
-        }
+        new fart_level = GetUpgradeLevel(client,raceID,fartID);
+        new Float:range = g_FartRange[fart_level];
 
         new Float:indexLoc[3];
         new Float:clientLoc[3];
         GetClientAbsOrigin(client, clientLoc);
+        clientLoc[2] += 50.0; // Adjust trace position to the middle of the person instead of the feet.
 
         new Float:maxLoc[3];
         maxLoc[0] = clientLoc[0] + 256.0;
@@ -334,146 +549,202 @@ public Action:PersistFart(Handle:timer,any:client)
 
         new bubble_count = RoundToNearest(range/4.0);
 
-        TE_SetupBubbles(clientLoc, maxLoc, g_bubbleModel, range, bubble_count, 2.0);
-        TE_SendToAll();
+        TE_SetupBubbles(clientLoc, maxLoc, BubbleModel(), range,
+                        bubble_count, 2.0);
+        TE_SendEffectToAll();
 
-        TE_SetupBubbleTrail(clientLoc, maxLoc, g_bubbleModel, range, bubble_count, 8.0);
-        TE_SendToAll();
+        TE_SetupBubbleTrail(clientLoc, maxLoc, g_bubbleModel,
+                            range, bubble_count, 8.0);
+        TE_SendEffectToAll();
 
-        TE_SetupSmoke(clientLoc,g_smokeSprite,range,400);
-        TE_SendToAll();
+        TE_SetupSmoke(clientLoc, SmokeSprite(),range,400);
+        TE_SendEffectToAll();
+
+        new snd = GetRandomInt(0,sizeof(fartWav)-1);
+        PrepareAndEmitSoundToAll(fartWav[snd], client);
 
         new count=0;
         new num=fart_level*3;
+        new team = GetClientTeam(client);
         new minDmg=fart_level*2;
         new maxDmg=fart_level*4;
-        new maxplayers=GetMaxClients();
-        for(new index=1;index<=maxplayers;index++)
+        for (new index=1;index<=MaxClients;index++)
         {
-            if (client != index && IsClientInGame(index) && IsPlayerAlive(index) && 
-                GetClientTeam(client) != GetClientTeam(index))
+            if (client != index && IsClientInGame(index) &&
+                IsPlayerAlive(index) && GetClientTeam(index) != team)
             {
-                new Handle:player_check=GetPlayerHandle(index);
-                if (player_check != INVALID_HANDLE)
+                if (!IsInvulnerable(index) &&
+                    !GetImmunity(index,Immunity_Ultimates) &&
+                    !GetImmunity(index,Immunity_HealthTaking))
                 {
-                    if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                        !GetImmunity(player_check,Immunity_HealthTake) &&
-                        !TF2_IsPlayerInvuln(index))
+                    GetClientAbsOrigin(index, indexLoc);
+                    if (IsPointInRange(clientLoc,indexLoc,range) &&
+                        TraceTargetIndex(client, index, clientLoc, indexLoc))
                     {
-                        GetClientAbsOrigin(index, indexLoc);
-                        if ( IsPointInRange(clientLoc,indexLoc,range))
-                        {
-                            if (TraceTarget(client, index, clientLoc, indexLoc))
-                            {
-                                new amt=GetRandomInt(minDmg,maxDmg);
-                                HurtPlayer(index,amt,client,"flatulence", "Flatulence", 5+fart_level);
-                                if (++count > num)
-                                    break;
-                            }
-                        }
+                        new amt=GetRandomInt(minDmg,maxDmg);
+                        FlashScreen(index,RGBA_COLOR_BROWN);
+                        HurtPlayer(index,amt,client,"sc_flatulence",
+                                   .xp=5+fart_level, .type=DMG_NERVEGAS);
+
+                        if (++count > num)
+                            break;
                     }
                 }
             }
         }
         if (--gFartDuration[client] > 0)
         {
+            TraceReturn();
             return Plugin_Continue;
         }
+
+        TraceReturn();
     }
+
     return Plugin_Stop;
 }
 
-public Action:AllowFart(Handle:timer,any:index)
+public Action:Revulsion(Handle:timer, any:userid)
 {
-    if (IsClientInGame(index))
+    new client = GetClientOfUserId(userid);
+    if (IsValidClientAlive(client) &&
+        !GetRestriction(client, Restriction_NoUpgrades) &&
+        !GetRestriction(client, Restriction_Stunned))
     {
-        EmitSoundToClient(index, rechargeWav);
-        PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cFlatulence%c is now available again!",
-                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-    }
-    m_AllowFart[index]=true;
-    return Plugin_Stop;
-}
+        TraceInto("SickFarter", "Revulsion", "client=%N(%d), timer=%x", \
+                  client, client, timer);
 
-public Action:Revulsion(Handle:timer)
-{
-    new maxplayers=GetMaxClients();
-    for(new client=1;client<=maxplayers;client++)
-    {
-        if(IsClientInGame(client))
+        if (GetRace(client) == raceID)
         {
-            if (IsPlayerAlive(client))
+            new revulsion_level=GetUpgradeLevel(client,raceID,revulsionID);
+            if (revulsion_level > 0)
             {
-                new Handle:player=GetPlayerHandle(client);
-                if(player != INVALID_HANDLE && GetRace(player) == raceID)
+                new health;
+                new Float:range = g_RevulsionRange[revulsion_level];
+                switch(revulsion_level)
                 {
-                    new revulsion_level=GetUpgradeLevel(player,raceID,revulsionID);
-                    if (revulsion_level)
+                    case 1: health=0;
+                    case 2: health=GetRandomInt(0,1);
+                    case 3: health=GetRandomInt(0,3);
+                    case 4: health=GetRandomInt(0,5);
+                }
+
+                new Float:indexLoc[3];
+                new Float:clientLoc[3];
+                GetClientAbsOrigin(client, clientLoc);
+                clientLoc[2] += 50.0; // Adjust trace position to the middle of the person instead of the feet.
+
+                new lightning  = Lightning();
+                new haloSprite = HaloSprite();
+                static const revulsionColor[4] = {255, 10, 55, 255};
+
+                new count=0;
+                new alt_count=0;
+                new list[MaxClients+1];
+                new alt_list[MaxClients+1];
+                new team=GetClientTeam(client);
+                for (new index=1;index<=MaxClients;index++)
+                {
+                    if (index != client && IsClientInGame(index)
+                                        && IsPlayerAlive(index))
                     {
-                        new num=revulsion_level*3;
-                        new Float:range;
-                        new health;
-                        switch(revulsion_level)
+                        if (GetClientTeam(index) != team)
                         {
-                            case 1:
+                            if (!IsInvulnerable(index))
                             {
-                                range=300.0;
-                                health=0;
-                            }
-                            case 2:
-                            {
-                                range=450.0;
-                                health=GetRandomInt(0,1);
-                            }
-                            case 3:
-                            {
-                                range=650.0;
-                                health=GetRandomInt(0,3);
-                            }
-                            case 4:
-                            {
-                                range=800.0;
-                                health=GetRandomInt(0,5);
-                            }
-                        }
-                        new count=0;
-                        new Float:clientLoc[3];
-                        GetClientAbsOrigin(client, clientLoc);
-                        for (new index=1;index<=maxplayers;index++)
-                        {
-                            if (index != client && IsClientInGame(index))
-                            {
-                                if (IsPlayerAlive(index) && GetClientTeam(index) != GetClientTeam(client))
+                                GetClientAbsOrigin(index, indexLoc);
+                                indexLoc[2] += 50.0;
+
+                                if (IsPointInRange(clientLoc,indexLoc,range) &&
+                                    TraceTargetIndex(client, index, clientLoc, indexLoc))
                                 {
-                                    new Handle:player_check=GetPlayerHandle(index);
-                                    if (player_check != INVALID_HANDLE)
+                                    TE_SetupBeamPoints(clientLoc, indexLoc, lightning, haloSprite,
+                                                       0, 1, 3.0, 10.0,10.0,5,50.0,revulsionColor,255);
+                                    TE_SendQEffectToAll(client, index);
+
+                                    SlapPlayer(index,health);
+
+                                    if (!GetSetting(index, Disable_OBeacons) &&
+                                        !GetSetting(index, Remove_Queasiness))
                                     {
-                                        if (IsInRange(client,index,range))
-                                        {
-                                            new Float:indexLoc[3];
-                                            GetClientAbsOrigin(index, indexLoc);
-                                            if (TraceTarget(client, index, clientLoc, indexLoc))
-                                            {
-                                                new color[4] = { 255, 10, 55, 255 };
-                                                TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                        0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                                TE_SendToAll();
-
-                                                SlapPlayer(index,health);
-
-                                                if (++count > num)
-                                                    break;
-                                            }
-                                        }
+                                        if (GetSetting(index, Reduce_Queasiness))
+                                            alt_list[alt_count++] = index;
+                                        else
+                                            list[count++] = index;
                                     }
                                 }
                             }
                         }
                     }
                 }
+
+                if (!GetSetting(client, Disable_Beacons) &&
+                    !GetSetting(client, Remove_Queasiness))
+                {
+                    if (GetSetting(client, Reduce_Queasiness))
+                        alt_list[alt_count++] = client;
+                    else
+                        list[count++] = client;
+                }
+
+                clientLoc[2] -= 50.0; // Adjust position back to the feet.
+
+                if (count > 0)
+                {
+                    TE_SetupBeamRingPoint(clientLoc, 10.0, range, BeamSprite(), haloSprite,
+                                          0, 10, 0.6, 10.0, 0.5, revulsionColor, 10, 0);
+
+                    TE_Send(list, count, 0.0);
+                }
+
+                if (alt_count > 0)
+                {
+                    TE_SetupBeamRingPoint(clientLoc, range-10.0, range, BeamSprite(), haloSprite,
+                                          0, 10, 0.6, 10.0, 0.5, revulsionColor, 10, 0);
+
+                    TE_Send(alt_list, alt_count, 0.0);
+                }
             }
         }
+
+        TraceReturn();
     }
     return Plugin_Continue;
+}
+
+SummonHunter(client)
+{
+    if (g_hunterRace < 0)
+        g_hunterRace = FindRace("titty_hunter");
+
+    if (g_hunterRace < 0)
+    {
+        decl String:upgradeName[64];
+        GetUpgradeName(raceID, hunterID, upgradeName, sizeof(upgradeName), client);
+        DisplayMessage(client, Display_Ultimate, "%t", "IsNotAvailable", upgradeName);
+        LogError("***The Titty Hunter race is not Available!");
+        PrepareAndEmitSoundToClient(client,deniedWav);
+    }
+    else if (GetRestriction(client,Restriction_NoUltimates) ||
+             GetRestriction(client,Restriction_Stunned))
+    {
+        DisplayMessage(client, Display_Ultimate, "%t", "PreventedFromSummoningHunter");
+        PrepareAndEmitSoundToClient(client,deniedWav);
+    }
+    else if (CanInvokeUpgrade(client, raceID, hunterID))
+    {
+        new Float:clientLoc[3];
+        GetClientAbsOrigin(client, clientLoc);
+        clientLoc[2] += 40.0; // Adjust position to the middle
+
+        TE_SetupSmoke(clientLoc, SmokeSprite(), 8.0, 2);
+        TE_SendEffectToAll();
+
+        TE_SetupGlowSprite(clientLoc,(GetClientTeam(client) == 3) ? BlueGlow() : RedGlow(),
+                           5.0, 40.0, 255);
+        TE_SendEffectToAll();
+
+        ChangeRace(client, g_hunterRace, true, false);
+    }
 }
 

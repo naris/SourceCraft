@@ -1,13 +1,13 @@
 /*
  * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
  * File: xp.inc
- * Description: The name of the file is somewhat deciving... it is basically the
- *              file that handles all the XP you get for killing people and other
- *              stuff as well. 
- * Author(s): Anthony Iacono  
- * Modifications by: Naris (Murray Wilson)
+ * Description: Routines to manipulate XP and leveling.
+ * Author: -=|JFH|=-Naris (Murray Wilson)
+ * Credits: Anthony Iacono  
  */
 
+#include <particle>
+#include <entlimit>
 #include <tf2_objects>
 
 #define HEADSHOT_XP         10
@@ -19,358 +19,518 @@
 
 #define BUILD_XP            15
 #define DESTROY_XP          15
+#define UPGRADE_XP           5
 #define CHARGE_XP           30
 
-#define DEFUSE_XP           20
 #define PLANT_XP            20
+#define DEFUSE_XP           20
+#define EXPLODE_XP          20
 #define HOSTAGERESCUED_XP   20
 
-#define BLOCK_XP             5
-#define CAPTURE_FLAG_XP     20
-#define CAPTURE_POINT_XP    20
+#define KILL_DEFUSER_XP     10
+#define KILL_PLANTER_XP     10
+
+#define STUN_BOSS_XP        50
+#define KILL_BOSS_XP       100
+#define BOSS_LEVEL_XP       20
+
+#define BLOCK_XP            20
+#define ESCORT_XP           10
+#define CAPTURE_FLAG_XP     10 // Multiplied by KillXP()
+#define CAPTURE_POINT_XP     5 // Multiplied by KillXP()
 
 #define ROUND_WIN_XP        20
+#define DOOMSDAY_XP         30
 #define GAME_WIN_XP         10 // Multiplied by score
-#define MVP_XP               5 // Multiplied by place * points
+#define MVP_XP               2 // Multiplied by place * points
 
-new String:levelUpWav[] = "sourcecraft/upgrade_complete.wav"; // "ambient/machines/teleport1.wav";
-new String:levelUpSpriteVmt[] = "sprites/steam1.vmt";
-new g_levelUpSprite;
+#include "effect/SteamSprite"
+#include "effect/HaloSprite"
 
 SetupLevelUpEffect()
 {
-    SetupSound(levelUpWav,true,true);
-    g_levelUpSprite = PrecacheModel(levelUpSpriteVmt);
+    SetupSteamSprite();
+    SetupHaloSprite();
 }
 
 KillXP(level)
 {
     new Handle:temp;
-    if(SAVE_ENABLED)
+    if (SAVE_ENABLED)
         temp=GetArrayCell(vecLevelConfiguration,1);
     else
         temp=GetArrayCell(vecLevelConfiguration,3);
 
-    if(GetArraySize(temp)==MAX_LEVELS+1)
+    new maxLevels = GetArraySize(temp);
+    if (level < maxLevels)
         return GetArrayCell(temp,level);
     else
-        return 0;
+    {
+        // Calculate XP given for levels
+        // beyond the configuration table.
+        new maxAmt = GetArrayCell(temp,maxLevels-1);
+        new delta  = maxAmt - GetArrayCell(temp,maxLevels-2);
+        return maxAmt + ((level-maxLevels) * delta);
+    }
 }
 
 ReqLevelXP(level)
 {
     new Handle:temp;
-    if(SAVE_ENABLED)
+    if (SAVE_ENABLED)
         temp=GetArrayCell(vecLevelConfiguration,0);
     else
         temp=GetArrayCell(vecLevelConfiguration,2);
 
-    if(GetArraySize(temp)==MAX_LEVELS+1)
-    {
-        if (level <= MAX_LEVELS)
-            return GetArrayCell(temp,level);
-        else
-        {
-            // Calculate XP required for levels
-            // beyond the configuration table.
-            new maxReq = GetArrayCell(temp,MAX_LEVELS);
-            new delta  = maxReq - GetArrayCell(temp,MAX_LEVELS-1);
-            return maxReq + ((level-MAX_LEVELS) * delta);
-        }
-    }
+    new maxLevels = GetArraySize(temp);
+    if (level < 0)
+        return GetArrayCell(temp,0);
+    else if (level < maxLevels)
+        return GetArrayCell(temp,level);
     else
-        return 0;
+    {
+        // Calculate XP required for levels
+        // beyond the configuration table.
+        new maxReq = GetArrayCell(temp,maxLevels-1);
+        new delta  = maxReq - GetArrayCell(temp,maxLevels-2);
+        return maxReq + ((level-maxLevels) * delta);
+    }
 }
 
-DoLevelCheck(client,Handle:playerHandle)
+DoLevelCheck(client)
 {
-    if (GetRaceCount() > 1)
+    TraceInto("XP", "DoLevelCheck", "Check %d:%N's level", \
+              client, ValidClientIndex(client));
+
+    if (GetRaceCount() > 1 &&
+        GetDatabaseLoaded(client) != DataLoading)
     {
-        new bool:m_Go=true;
-        while(m_Go)
+        new bool:moreLevels=true;
+        while (moreLevels)
         {
-            new race = GetRace(playerHandle);
+            new race = GetRace(client);
             new Handle:raceHandle=GetRaceHandle(race);
-            new level = GetLevel(playerHandle,race);
+            new level = GetLevel(client,race);
             if (level < GetRaceMaxLevel(raceHandle))
             {
-                new curXP = GetXP(playerHandle,race);
+                new curXP = GetXP(client,race);
                 new reqXP = ReqLevelXP(++level);
                 if (curXP >= reqXP)
                 {
-                    new oLevel = GetOverallLevel(playerHandle);
-                    SetOverallLevel(playerHandle, ++oLevel);
-                    SetLevel(playerHandle,race,level);
+                    new oLevel = GetOverallLevel(client);
 
-                    decl String:raceName[64];
-                    GetRaceName(raceHandle,raceName,sizeof(raceName));
-                    PrintToChat(client,"%c[SourceCraft] %cYou are now a level %d %s (level %d overall).",
-                                COLOR_GREEN,COLOR_DEFAULT,level, raceName, oLevel);
-                    SetXP(playerHandle,race,curXP-reqXP);
+                    Trace("Increase %d:%N's race %d level=%d, overall=%d,  xp=%d", \
+                          client, ValidClientIndex(client), race, level+1, oLevel+1, curXP-reqXP);
+
+                    SetLevel(client,race,level, true);
+                    SetXP(client,race,curXP-reqXP);
 
                     new Float:vec[3];
                     GetClientAbsOrigin(client, vec);
                     vec[2] += 50;
-                    new color[4] = {255, 200, 0, 200};
-                    TE_SetupBeamRingPoint(vec, 20.0, 50.0, g_levelUpSprite, g_levelUpSprite, 0, 15, 3.0, 20.0, 0.0, color, 1, 0);
+
+                    static const color[4] = {255, 200, 0, 200};
+                    TE_SetupBeamRingPoint(vec, 20.0, 50.0, SteamSprite(), HaloSprite(),
+                                          0, 15, 3.0, 20.0, 0.0, color, 1, 0);
                     TE_SendToAll();
 
-                    EmitSoundToClient(client,levelUpWav);
+                    if ((GetGameType() == tf2 || GameType == dod) &&
+                        !IsEntLimitReached(.client=client,
+                                           .message="Unable to spawn anymore achievement particles"))
+                    {
+                        CreateParticle("Achieved", 5.0, client, Attach, "head");
+                    }
 
-                    UpgradeMenu(client, playerHandle, false);
+                    decl String:raceName[64];
+                    GetRaceName(raceHandle,raceName,sizeof(raceName));
+
+                    if (IsFakeClient(client))
+                    {
+                        LogToGame("[Bot]%N is now a level %d %s (level %d overall).",
+                                  client, level, raceName, oLevel);
+                    }
+                    else
+                    {
+                        LogToGame("%N is now a level %d %s (level %d overall).",
+                                  client, level, raceName, oLevel);
+
+                        EmitLevelSoundToClient(client, GetRaceFactionId(raceHandle));
+                        DisplayMessage(client, Display_XP, "%t", "LeveledUp", level, raceName, oLevel);
+                        UpgradeMenu(client, UpgradeMode, false);
+                    }
                 }
                 else
                 {
-                    m_Go=false;
+                    moreLevels=false;
+
                     /*
-                    if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
+                    Trace("Check %d:%N's race %d xp=%d(%d required), level=%d, overall=%d", \
+                          client, ValidClientIndex(client), race, curXP, reqXP, level, \
+                          GetOverallLevel(client));
+
+                    new bool:saveEnabled = (g_bSaveXP && GetRaceCount() > 1 &&
+                                            GetPlayerStatus(client) != PlayerDisabled);
+
+                    if (saveEnabled && GetDatabaseLoaded(client) >= DataOK &&
+                        GetRaceLoaded(client, race) >= DataOK &&
+                        !GetDatabaseSaved(client))
                     {
-                        new savedXP = GetSavedXP(playerHandle, race);
-                        if (savedXP > curXP || curXP - savedXP > 1000)
+                        // Save after about 50 kills (or 5 caps) worth of XP gained
+                        // and > 1000 XP and more than 10 minutes since last save.
+                        new Handle:raceInfo = GetRaceInfo(client, race);
+                        if (raceInfo != INVALID_HANDLE)
                         {
-                            SetSavedXP(playerHandle,race,curXP);
-                            SavePlayerData(client,playerHandle,false);
+                            new unsavedXP = curXP - GetRaceInfoSavedXP(raceInfo);
+                            if (unsavedXP > 1000 && unsavedXP > KillXP(level) * 50 &&
+                                GetGameTime() - GetDatabaseSaveTime(client) > 600)
+                            {
+                                SetRaceInfoSavedXP(raceInfo,curXP);
+                                SavePlayerData(client);
+                            }
                         }
                     }
                     */
                 }
             }
             else
-                m_Go=false;
+                moreLevels=false;
         }
     }
+    TraceReturn();
 }
 
-ShowXP(client,Handle:playerHandle)
+ShowXP(client, Display:displayFlags=Display_XP)
 {
-    if (GetRaceCount() > 1)
+    if (GetRaceCount() > 1 && !IsFakeClient(client))
     {
-        new race=GetRace(playerHandle);
+        new race=GetRace(client);
         if (race >= 0)
         {
             new Handle:raceHandle=GetRaceHandle(race);
             if (raceHandle != INVALID_HANDLE)
             {
-                new level=GetLevel(playerHandle,race);
                 decl String:racename[64];
                 GetRaceName(raceHandle,racename,sizeof(racename));
-                if (level<GetRaceMaxLevel(raceHandle))
+                new level=GetLevel(client,race);
+                new maxLevel=GetRaceMaxLevel(raceHandle);
+                if (level < maxLevel)
                 {
-                    PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d / %d. (Overall Level %d)",
-                                COLOR_GREEN,COLOR_DEFAULT,racename,level,
-                                GetXP(playerHandle,race),ReqLevelXP(level+1),
-                                GetOverallLevel(playerHandle));
+                    DisplayMessage(client, displayFlags, "%t", "ShowXP",
+                                   racename, level, maxLevel, GetXP(client,race),
+                                   ReqLevelXP(level+1), GetOverallLevel(client));
                 }
                 else
                 {
-                    PrintToChat(client,"%c[SourceCraft] %c%s - Level %d - Experience %d. (Overall Level %d)",
-                                COLOR_GREEN,COLOR_DEFAULT,racename,level,
-                                GetXP(playerHandle,race),GetOverallLevel(playerHandle));
+                    DisplayMessage(client, displayFlags, "%t", "ShowMaxXP",
+                                   racename, level, GetXP(client,race),
+                                   GetOverallLevel(client));
                 }
             }
         }
     }
 }
 
-GiveKillXP(index,Handle:playerHandle,Handle:victim_player,bool:headshot,
-           bool:backstab,bool:melee,bool:dominated,bool:revenge,bool:assist)
+GiveKillXP(index, victim, bool:headshot, bool:backstab, bool:melee,
+           bool:dominated, bool:revenge, bool:assist)
 {
-    if (GetRaceCount() > 1)
+    if (GetRaceCount() > 1 && CheckClientCount(g_iMinPlayers, COUNT_ACTIVE, true))
     {
         new amount;
-        if (victim_player != INVALID_HANDLE)
-            amount=KillXP(GetLevel(victim_player,GetRace(victim_player)));
+        if (victim > 0 && !IsFakeClient(victim))
+        {
+            amount=KillXP(GetLevel(victim,GetRace(victim)));
+            new level=GetOverallLevel(index);
+            new victim_level=GetOverallLevel(victim);
+            if (level < victim_level)
+            {
+                amount += (victim_level - level);
+                new cap = ReqLevelXP(level+1);
+                if (amount > cap)
+                    amount = cap;
+            }
+        }
         else
-            amount=KillXP(GetLevel(playerHandle,GetRace(playerHandle)));
+            amount=KillXP(GetLevel(index,GetRace(index)));
 
         if (headshot)
         {
             amount+=HEADSHOT_XP;
-            DisplayMessage(index,SC_DISPLAY_DETAILS,
-                           "%c[SourceCraft] %cYou get %d additional experience for a headshot.",
-                           COLOR_GREEN,COLOR_DEFAULT,HEADSHOT_XP);
+            DisplayMessage(index,Display_Details, "%t", "HeadshotBonus", HEADSHOT_XP);
         }
         else if (backstab)
         {
             amount+=BACKSTAB_XP;
-            DisplayMessage(index,SC_DISPLAY_DETAILS,
-                           "%c[SourceCraft] %cYou get %d additional experience for a backstab.",
-                           COLOR_GREEN,COLOR_DEFAULT,BACKSTAB_XP);
+            DisplayMessage(index,Display_Details, "%t", "BackstabBonus", BACKSTAB_XP);
         }
         else if (melee)
         {
             amount+=MELEE_XP;
-            DisplayMessage(index,SC_DISPLAY_DETAILS,
-                           "%c[SourceCraft] %cYou get %d additional experience for a knife/shovel/wrench/etc kill.",
-                           COLOR_GREEN,COLOR_DEFAULT,MELEE_XP);
+            DisplayMessage(index,Display_Details, "%t", "MeleeBonus", MELEE_XP);
         }
 
         if (dominated)
         {
             amount+=DOMINATED_XP;
-            DisplayMessage(index,SC_DISPLAY_DETAILS,
-                           "%c[SourceCraft] %cYou get %d additional experience for domination!",
-                           COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
+            DisplayMessage(index,Display_Details, "%t", "DominationBonus", DOMINATED_XP);
         }
 
         if (revenge)
         {
             amount+=REVENGE_XP;
-            DisplayMessage(index,SC_DISPLAY_DETAILS,
-                           "%c[SourceCraft] %cYou get %d additional experience for a revenge kill!",
-                           COLOR_GREEN,COLOR_DEFAULT,DOMINATED_XP);
+            DisplayMessage(index,Display_Details, "%t", "RevengeBonus", DOMINATED_XP);
         }
 
         if (assist)
         {
             amount+=ASSIST_XP;
-            DisplayMessage(index,SC_DISPLAY_DETAILS,
-                           "%c[SourceCraft] %cYou get %d additional experience for assisting a kill.",
-                           COLOR_GREEN,COLOR_DEFAULT,ASSIST_XP);
+            DisplayMessage(index,Display_Details, "%t", "AssistBonus", ASSIST_XP);
         }
 
-        GiveXP(index,playerHandle,amount, assist ? "assisting a kill" : "getting a kill");
+        GiveXP(index,amount, assist ? "Assist" : "Kill");
     }
 }
 
-GiveDefuseXP(client,Handle:playerHandle)
+GiveBossStunXP(index, level, bool:assist)
+{
+    new amount = STUN_BOSS_XP + (BOSS_LEVEL_XP * level);
+
+    if (assist)
+    {
+        amount+=ASSIST_XP;
+        DisplayMessage(index,Display_Details, "%t", "AssistBonus", ASSIST_XP);
+    }
+
+    GiveXP(index, amount, "BossStun");
+}
+
+GiveBossKillXP(index, level, bool:assist)
+{
+    new amount = KILL_BOSS_XP + (BOSS_LEVEL_XP * level);
+
+    if (assist)
+    {
+        amount+=ASSIST_XP;
+        DisplayMessage(index,Display_Details, "%t", "AssistBonus", ASSIST_XP);
+    }
+
+    GiveXP(index, amount, "BossKill");
+}
+
+GiveDefuseXP(client)
 {
     // Called when a player defuses the bomb
-    GiveXP(client,playerHandle,DEFUSE_XP, "defusing the bomb");
+    GiveXP(client,DEFUSE_XP, "DefuseBomb");
 }
 
-GivePlantXP(client,Handle:playerHandle)
+GivePlantXP(client)
 {
     // Called when a player plants the bomb
-    GiveXP(client,playerHandle,PLANT_XP, "planting the bomb");
+    GiveXP(client,PLANT_XP, "PlantBomb");
 }
 
-GiveHostageRescuedXP(client,Handle:playerHandle)
+GiveExplodeXP(client)
+{
+    // Called when the bomb explode
+    GiveXP(client,EXPLODE_XP, "ExplodeBomb");
+}
+
+GiveKillDefuserXP(client)
+{
+    // Called when a player defuses the bomb
+    GiveXP(client,KILL_DEFUSER_XP, "KillDefuser");
+}
+
+GiveKillPlanterXP(client)
+{
+    // Called when a player plants the bomb
+    GiveXP(client,KILL_PLANTER_XP, "KillBomber");
+}
+
+GiveHostageRescuedXP(client)
 {
     // Called when a player rescues a hostage
-    GiveXP(client,playerHandle,HOSTAGERESCUED_XP, "rescuing a hostage");
+    GiveXP(client,HOSTAGERESCUED_XP, "RescueHostage");
 }
 
-GiveChargeDeployedXP(client,Handle:playerHandle)
+GiveChargeDeployedXP(client)
 {
     // Called when a player deploys thier charge (medic goes uber)
-    GiveXP(client,playerHandle,CHARGE_XP, "deploying Ubercharge");
+    GiveXP(client,CHARGE_XP, "DeployUber");
 }
 
-GiveObjectBuiltXP(client,Handle:playerHandle,objects:object)
+GiveObjectBuiltXP(client,TFObjectType:object)
 {
     // Called when a player builds an object
-    decl String:msg[128];
-    Format(msg, sizeof(msg), "building a %s", TF2_ObjectNames[object]);
-    GiveXP(client,playerHandle,BUILD_XP, msg);
+    GiveXP(client, BUILD_XP, "Building",
+           .object=object);
 }
 
-TakeObjectBuiltXP(client,Handle:playerHandle,objects:object)
+GiveObjectUpgradedXP(client,TFObjectType:object, bool:isBuilder)
+{
+    // Called when a player upgrades an object
+    GiveXP(client, isBuilder ? UPGRADE_XP : UPGRADE_XP*2,
+           "Upgrading", .object=object);
+}
+
+TakeObjectBuiltXP(client,TFObjectType:object)
 {
     // Called when a player destroys thier own object
-    decl String:msg[128];
-    Format(msg, sizeof(msg), "destroying your own %s", TF2_ObjectNames[object]);
-    TakeXP(client,playerHandle,BUILD_XP, msg);
+    TakeXP(client,BUILD_XP, "DestroyingOwn",
+           .object=object);
 }
 
-GiveObjectDestroyedXP(client,Handle:playerHandle,objects:object)
+GiveObjectDestroyedXP(client,TFObjectType:object)
 {
     // Called when a player destroys an object
-    decl String:msg[128];
-    Format(msg, sizeof(msg), "destroying a %s", TF2_ObjectNames[object]);
-    GiveXP(client,playerHandle,DESTROY_XP, msg);
+    GiveXP(client,DESTROY_XP, "Destroying",
+           .object=object);
 }
 
-GiveFlagCapturedXP(client,Handle:playerHandle)
+GiveFlagCapturedXP(client)
 {
     // Called when a player captures a flag
-    GiveXP(client,playerHandle,CAPTURE_FLAG_XP, "capturing the intelligence");
+    new amount=KillXP(GetLevel(client,GetRace(client))) * CAPTURE_FLAG_XP;
+    GiveXP(client,amount, "CapIntel");
 }
 
-GivePointCapturedXP(client,Handle:playerHandle)
+GivePointCapturedXP(client)
 {
     // Called when a player captures a point
-    GiveXP(client,playerHandle,CAPTURE_POINT_XP, "capturing a point");
+    new amount=KillXP(GetLevel(client,GetRace(client))) * CAPTURE_POINT_XP;
+    GiveXP(client,amount, "CapPoint");
 }
 
-GiveCaptureBlockedXP(client,Handle:playerHandle)
+GiveCapBlockedXP(client)
 {
     // Called when a player blocks a capture
-    GiveXP(client,playerHandle,BLOCK_XP, "blocking a point");
+    GiveXP(client,BLOCK_XP, "BlockPoint");
 }
 
-GiveRoundWinXP(client,Handle:playerHandle)
+GiveEscortXP(client, points)
+{
+    // Called when a player escorts the cart
+    GiveXP(client,ESCORT_XP*points, "Escort");
+}
+
+GiveRoundWinXP(client)
 {
     // Called when a team wins a round
-    GiveXP(client,playerHandle,ROUND_WIN_XP, "winning a round");
+    GiveXP(client,ROUND_WIN_XP, "WinRound");
 }
 
-GiveGameWinXP(client,Handle:playerHandle,score)
+GiveDoomsdayXP(client)
+{
+    // Called when a team opens the doomsday rocket
+    GiveXP(client,DOOMSDAY_XP, "Doomsday");
+}
+
+GiveGameWinXP(client,score)
 {
     // Called when a team wins a round
-    GiveXP(client,playerHandle,GAME_WIN_XP*score, "winning the game");
+    GiveXP(client,GAME_WIN_XP*score, "WinGame");
 }
 
-GiveMvpXP(client,Handle:playerHandle,place,points)
+GiveMvpXP(client, place, points)
 {
-    new String:reason[64];
-    Format(reason,sizeof(reason),"being MVP #%d with %d points",place, points);
-    GiveXP(client,playerHandle,points*(4-place)*MVP_XP,reason);
+    GiveXP(client,points*(7-place)*MVP_XP,
+           "BeingMVP", place, points);
 }
 
-GiveXP(client,Handle:playerHandle, amount, const String:reason[])
+GiveXP(client, amount, const String:phrase[], place=-1,
+       points=-1, TFObjectType:object=TFObject_Unknown)
 {
-    if (GetRaceCount() > 1)
+    if (GetRaceCount() > 1 && GetClientCount() >= g_iMinPlayers)
     {
         // Called when a player is given XP
-        new Action:result;
+        new Action:result = Plugin_Continue;
         Call_StartForward(g_OnXPGivenHandle);
         Call_PushCell(client);
-        Call_PushCell(playerHandle);
         Call_PushCellRef(amount);
         Call_PushCell(false);
         Call_Finish(result);
 
         if (result != Plugin_Stop)
         {
-            new race=GetRace(playerHandle);
-            new newxp=GetXP(playerHandle,race)+amount;
-            SetXP(playerHandle,race,newxp);
+            new String:reason[NAME_STRING_LENGTH];
+            if (place >= 0 || points >= 0)
+            {
+                Format(reason, sizeof(reason), "%T",
+                       phrase, client, place, points);
+            }
+            else if (object != TFObject_Unknown)
+            {
+                Format(reason, sizeof(reason), "%T",
+                       phrase, client, TF2_ObjectNames[object]);
+            }
+            else
+            {
+                Format(reason, sizeof(reason), "%T",
+                       phrase, client);
+            }
+
+            new race=GetRace(client);
+            new newxp=GetXP(client,race)+amount;
+            SetXP(client,race,newxp);
             LogToGame("%N gained %d experience for %s", client, amount, reason);
-            DisplayMessage(client, SC_DISPLAY_XP,
-                           "%c[SourceCraft] %cYou have gained %d experience for %s.",
-                           COLOR_GREEN,COLOR_DEFAULT,amount, reason);
-            if(GetLevel(playerHandle,race)<MAX_LEVELS)
-                DoLevelCheck(client,playerHandle);
+            DisplayMessage(client, Display_XP, "%t", "GainedXP", amount, reason);
+
+            if (race > 0)
+            {
+                new Handle:raceHandle=GetRaceHandle(race);
+                if (raceHandle != INVALID_HANDLE &&
+                    GetLevel(client,race) < GetRaceMaxLevel(raceHandle))
+                {
+                    DoLevelCheck(client);
+                }
+            }
         }
     }
 }
 
-TakeXP(client,Handle:playerHandle, amount, const String:reason[])
+TakeXP(client, amount, const String:phrase[], place=-1,
+       points=-1, TFObjectType:object=TFObject_Unknown)
 {
-    if (GetRaceCount() > 1)
+    if (GetRaceCount() > 1 && GetClientCount() >= g_iMinPlayers)
     {
-        // Called when a player destroys thier own object
-        new Action:result;
+        new Action:result = Plugin_Continue;
         Call_StartForward(g_OnXPGivenHandle);
         Call_PushCell(client);
-        Call_PushCell(playerHandle);
         Call_PushCellRef(amount);
         Call_PushCell(true);
         Call_Finish(result);
 
         if (result != Plugin_Stop)
         {
-            new race=GetRace(playerHandle);
-            new newxp=GetXP(playerHandle,race)-amount;
-            SetXP(playerHandle,race,newxp);
+            new String:reason[NAME_STRING_LENGTH];
+            if (place >= 0 || points >= 0)
+            {
+                Format(reason, sizeof(reason), "%T",
+                       phrase, client, place, points);
+            }
+            else if (object != TFObject_Unknown)
+            {
+                Format(reason, sizeof(reason), "%T",
+                       phrase, client, TF2_ObjectNames[object]);
+            }
+            else
+            {
+                Format(reason, sizeof(reason), "%T",
+                       phrase, client);
+            }
+
+            new race=GetRace(client);
+            new newxp=GetXP(client,race)-amount;
+            SetXP(client,race,newxp);
             LogToGame("%N lost %d experience for %s", client, amount, reason);
-            PrintToChat(client,"%c[SourceCraft] %cYou have lost %d experience for %s.",
-                        COLOR_GREEN,COLOR_DEFAULT,amount, reason);
+            DisplayMessage(client, Display_XP, "%t", "LostXP", amount, reason);
 
             new Handle:raceHandle=GetRaceHandle(race);
-            if(GetLevel(playerHandle,race)<GetRaceMaxLevel(raceHandle))
-                DoLevelCheck(client,playerHandle);
+            if (raceHandle != INVALID_HANDLE &&
+                GetLevel(client,race) < GetRaceMaxLevel(raceHandle))
+            {
+                DoLevelCheck(client);
+            }
         }
     }
 }
+

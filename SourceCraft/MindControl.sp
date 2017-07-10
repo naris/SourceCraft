@@ -9,123 +9,153 @@
 
 #include <sourcemod>
 #include <sdktools>
-//#include <hooker>
+#include <raytrace>
+#include <remote>
+#include <range>
 
-#undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #include <tf2_player>
 #include <tf2_objects>
-#define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
-#include "sc/util"
-#include "sc/range"
-#include "sc/trace"
+#include "sc/sounds"
 
-enum disposition { update, remove, reset };
+#include "effect/Smoke"
+#include "effect/RedGlow"
+#include "effect/BlueGlow"
+#include "effect/Lightning"
+#include "effect/HaloSprite"
+#include "effect/SendEffects"
 
-new String:errorWav[] = "sourcecraft/perror.mp3";
-new String:deniedWav[] = "sourcecraft/buzz.wav";
-new String:controlWav[] = "sourcecraft/pteSum00.wav";
+enum command { update, remove, reset, find_controller, find_builder };
+
+new const String:controlWav[] = "sc/pteSum00.wav";
 
 new Handle:m_StolenObjectList[MAXPLAYERS+1] = { INVALID_HANDLE, ... };
-
-new g_redGlow;
-new g_blueGlow;
-new g_haloSprite;
-new g_smokeSprite;
-new g_lightningSprite;
 
 public Plugin:myinfo = 
 {
     name = "SourceCraft Upgrade - MindControl",
     author = "-=|JFH|=-Naris",
     description = "The MindControl upgrade for SourceCraft.",
-    version = "1.0.0.0",
+    version=SOURCECRAFT_VERSION,
     url = "http://jigglysfunhouse.net/"
 };
 
-public bool:AskPluginLoad(Handle:myself,bool:late,String:error[],err_max)
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	// Register Natives
-	CreateNative("MindControl",Native_MindControl);
-	CreateNative("ResetMindControlledObjects",Native_ResetMindControlledObjs);
-	RegPluginLibrary("MindControl");
-	return true;
+    // Only load when running TF2
+    if (GetGameType() == tf2)
+    {
+        // Register Natives
+        CreateNative("MindControl",Native_MindControl);
+        CreateNative("ControlObject",Native_ControlObject);
+        CreateNative("ReplaceObject",Native_ReplaceObject);
+        CreateNative("ResetMindControlledObjects",Native_ResetMindControlledObjs);
+        RegPluginLibrary("MindControl");
+        return APLRes_Success;
+    }
+    else
+    {
+        strcopy(error, err_max, "Cannot Load MindControl on mods other than TF2");
+        return APLRes_SilentFailure;
+    }
 }
 
 public OnPluginStart()
 {
-    if(!HookEvent("player_builtobject", PlayerBuiltObject))
-        SetFailState("Could not hook the player_builtobject event.");
+    LoadTranslations("sc.common.phrases.txt");
+    LoadTranslations("sc.mind_control.phrases.txt");
 
-    //RegisterHook(HK_EventKilled, ObjectDestroyed, false);
+    if (GetGameType() == tf2)
+    {
+        if(!HookEvent("object_removed", ObjectDestroyed))
+            SetFailState("Could not hook the object_removed event.");
+
+        if(!HookEvent("object_destroyed", ObjectDestroyed))
+            SetFailState("Could not hook the object_destroyed event.");
+
+        if(!HookEventEx("player_death",CorrectDeathEvent, EventHookMode_Pre))
+            SetFailState("Could not hook the player_death pre event.");
+    }
 }
 
 public OnMapStart()
 {
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt");
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
+    SetupLightning();
+    SetupHaloSprite();
+    SetupSmokeSprite();
+    SetupBlueGlow();
+    SetupRedGlow();
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt");
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
+    SetupErrorSound();
+    SetupDeniedSound();
 
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt");
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
-
-    g_blueGlow = SetupModel("materials/sprites/blueglow1.vmt");
-    if (g_blueGlow == -1)
-        SetFailState("Couldn't find blueglow Model");
-
-    g_redGlow = SetupModel("materials/sprites/redglow1.vmt");
-    if (g_redGlow == -1)
-        SetFailState("Couldn't find redglow Model");
-
-    SetupSound(errorWav, true, true);
-    SetupSound(deniedWav, true, true);
-    SetupSound(controlWav, true, true);
+    SetupSound(controlWav);
 }
 
 public OnClientDisconnect(client)
 {
-    LogMessage("%d disconnected", client);
     ResetMindControlledObjects(client, false);
 }
 
-public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
+public ObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new userid = GetEventInt(event,"userid");
-    if (userid > 0)
-    {
-        new index = GetClientOfUserId(userid);
-        if (index > 0)
-        {
-            new objects:type = objects:GetEventInt(event,"object");
-            LogMessage("%N build a %s", index, TF2_ObjectNames[type]);
-            UpdateMindControlledObject(-1, index, type, update);
-        }
-    }
+    new index = GetClientOfUserId(GetEventInt(event,"userid"));
+    new object = GetEventInt(event,"index");
+    new TFExtObjectType:type = TFExtObjectType:GetEventInt(event,"objecttype");
+    ProcessMindControlledObjects(remove, object, index, type, INVALID_HANDLE);
 }
 
-public Action:ObjectDestroyed(entity, &inflictor, &attacker, &Float:Damage, &DamageType, &AmmoType)
+public Action:CorrectDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    LogMessage("entity %d was destroyed", entity);
-    UpdateMindControlledObject(entity, -1, unknown, reset);
+    new attacker = GetClientOfUserId(GetEventInt(event,"attacker"));
+    if (attacker > 0)
+    {
+        decl String:weapon[64];
+        GetEventString(event, "weapon", weapon, sizeof(weapon));
+
+        if (StrEqual(weapon, "obj_sentrygun"))
+        {
+            new controller = ProcessMindControlledObjects(find_controller, -1, attacker, TFExtObject_Sentry);
+            if (controller != attacker && IsValidClient(controller))
+            {
+                SetEventInt(event,"attacker",GetClientUserId(controller));
+                return Plugin_Changed;
+            }
+        }
+    }
     return Plugin_Continue;
 }
 
-public OnObjectKilled(attacker, builder, objects:type)
+bool:MindControl(client, Float:range, percent, &builder, &TFExtObjectType:type, bool:replace=false)
 {
-    LogMessage("%N's %s was killed", builder, TF2_ObjectNames[type]);
-    UpdateMindControlledObject(-1, builder, type, remove);
-}
+    if (GetGameType() == tf2)
+    {
+        switch (TF2_GetPlayerClass(client))
+        {
+            case TFClass_Spy:
+            {
+                if (TF2_IsPlayerCloaked(client) ||
+                    TF2_IsPlayerDeadRingered(client))
+                {
+                    PrepareAndEmitSoundToClient(client,deniedWav);
+                    return false;
+                }
+                else if (TF2_IsPlayerDisguised(client))
+                    TF2_RemovePlayerDisguise(client);
+            }
+            case TFClass_Scout:
+            {
+                if (TF2_IsPlayerBonked(client))
+                {
+                    PrepareAndEmitSoundToClient(client,deniedWav);
+                    return false;
+                }
+            }
+        }
+    }
 
-bool:MindControl(client, Float:range, percent, &builder, &objects:type)
-{
-    LogMessage("%N is attempting MindControl", client);
     new target = TraceAimTarget(client);
     if (target >= 0)
     {
@@ -137,277 +167,162 @@ bool:MindControl(client, Float:range, percent, &builder, &objects:type)
 
         if (IsPointInRange(clientLoc,targetLoc,range))
         {
-            new Float:distance=DistanceBetween(clientLoc,targetLoc);
+            new Float:distance=GetVectorDistance(clientLoc,targetLoc);
             if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
             {
-                decl String:class[32];
-                if (IsValidEntity(target) &&
-                    GetEntityNetClass(target,class,sizeof(class)))
-                {
-                    type = GetObjectTypeFromNetClass(target, class);
-                    if (type == sentrygun || type == dispenser)
-                    {
-                        //Check to see if the object is still being built
-                        new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
-                        new building = GetEntProp(target, Prop_Send, "m_bBuilding");
-                        new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
-                        if (placing == 0 && building == 0 && complete >= 1.0)
-                        {
-                            //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
-                            builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
-
-                            //LogMessage("Target Builder=%d, Percent=%f, ObjectType=%d, building=%d, placing=%d, Class=%s",
-                            //           builder, complete, type, building, placing, class);
-
-                            new Handle:player_check=GetPlayerHandle(builder);
-                            if (player_check != INVALID_HANDLE)
-                            {
-                                if (!GetImmunity(player_check,Immunity_Ultimates))
-                                {
-                                    new builderTeam = GetClientTeam(builder);
-                                    new team = GetClientTeam(client);
-                                    if (builderTeam != team || true)
-                                    {
-                                        // Check to see if this target has already been controlled.
-                                        builder = UpdateMindControlledObject(target, builder, type, update);
-
-                                        LogMessage("Mind Control the object=%d, type=%d, builder=%d", target, type, builder);
-
-                                        // Change the builder to client
-                                        SetEntPropEnt(target, Prop_Send, "m_hBuilder", client);
-
-                                        //paint red or blue
-                                        SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
-
-                                        //Change TeamNum
-                                        SetVariantInt(team);
-                                        AcceptEntityInput(target, "TeamNum", -1, -1, 0);
-
-                                        //Same thing again but we are changing SetTeam
-                                        SetVariantInt(team);
-                                        AcceptEntityInput(target, "SetTeam", -1, -1, 0);
-
-                                        //HookEntity(HKE_CBaseEntity, target);
-                                        LogMessage("entity %d was mind controlled", target);
-
-                                        EmitSoundToAll(controlWav,target);
-
-                                        new color[4] = { 0, 0, 0, 255 };
-                                        if (team == 3)
-                                            color[2] = 255; // Blue
-                                        else
-                                            color[0] = 255; // Red
-
-                                        TE_SetupBeamPoints(clientLoc,targetLoc,g_lightningSprite,g_haloSprite,
-                                                           0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
-                                        TE_SendToAll();
-
-                                        TE_SetupSmoke(targetLoc,g_smokeSprite,8.0,2);
-                                        TE_SendToAll();
-
-                                        TE_SetupGlowSprite(targetLoc,(team == 3) ? g_blueGlow : g_redGlow,
-                                                           5.0,5.0,255);
-                                        TE_SendToAll();
-
-                                        new Float:splashDir[3];
-                                        splashDir[0] = 0.0;
-                                        splashDir[1] = 0.0;
-                                        splashDir[2] = 100.0;
-                                        TE_SetupEnergySplash(targetLoc, splashDir, true);
-
-                                        // Create the Tracking Package
-                                        //LogMessage("Track the target=%d, type=%d, builder=%d", target, type, builder);
-                                        new Handle:pack = CreateDataPack();
-                                        WritePackCell(pack, builder);
-                                        WritePackCell(pack, type);
-                                        WritePackCell(pack, target);
-
-                                        // And add it to the list
-                                        if (m_StolenObjectList[client] == INVALID_HANDLE)
-                                        {
-                                            //LogMessage("Create %N's object List", client);
-                                            m_StolenObjectList[client] = CreateArray();
-                                        }
-
-                                        //LogMessage("Push Pack onto %N's List; list=%x, pack=%x",
-                                        //           client, m_StolenObjectList[client], pack);
-
-                                        PushArrayCell(m_StolenObjectList[client], pack);
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        EmitSoundToClient(client,errorWav);
-                                        PrintToChat(client,"%c[MindControl] %cTarget belongs to a teammate!",
-                                                    COLOR_GREEN,COLOR_DEFAULT);
-                                    }
-                                }
-                                else
-                                {
-                                    EmitSoundToClient(client,errorWav);
-                                    PrintToChat(client,"%c[MindControl] %cTarget is %cimmune%c to ultimates!",
-                                                COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                                }
-                            }
-                            else
-                                EmitSoundToClient(client,deniedWav);
-                        }
-                        else
-                        {
-                            EmitSoundToClient(client,errorWav);
-                            PrintToChat(client,"%c[MindControl] %cTarget is still %cbuilding%c!",
-                                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                        }
-                    }
-                    else
-                    {
-                        EmitSoundToClient(client,deniedWav);
-                        PrintToChat(client,"%c[MindControl] %cInvalid Target!",
-                                    COLOR_GREEN,COLOR_DEFAULT);
-                    }
-                }
-                else
-                {
-                    EmitSoundToClient(client,deniedWav);
-                    PrintToChat(client,"%c[MindControl] %cInvalid Target!",
-                                COLOR_GREEN,COLOR_DEFAULT);
-                }
+                return replace ? ReplaceObject(client, target, builder, type)
+                               : ControlObject(client, target, builder, type);
             }
             else
-                EmitSoundToClient(client,errorWav); // Chance check failed.
+            {
+                PrepareAndEmitSoundToClient(client,errorWav); // Chance check failed.
+            }
         }
         else
         {
-            EmitSoundToClient(client,errorWav);
-            PrintToChat(client,"%c[MindControl] %cTarget is too far away!",
-                        COLOR_GREEN,COLOR_DEFAULT);
+            PrepareAndEmitSoundToClient(client,errorWav);
+            DisplayMessage(client, Display_Ultimate,
+                           "%t", "TargetIsTooFar");
         }
     }
     else
-        EmitSoundToClient(client,deniedWav);
+    {
+        PrepareAndEmitSoundToClient(client,deniedWav);
+    }
 
     return false;
 }
 
-UpdateMindControlledObject(object, builder, objects:type, disposition:disp)
+bool:ReplaceObject(client, target, &builder=0, &TFExtObjectType:type=TFExtObject_Unknown)
 {
-    LogMessage("UpdateMindControlledObject() of %d, object=%d, type=%d, disp=%d", builder, object, type, disp);
-    if (object > 0 || builder > 0)
+    if (IsValidEntity(target) && IsValidEdict(target))
     {
-        new maxplayers=GetMaxClients();
-        for (new client=1;client<=maxplayers;client++)
+        type = TF2_GetExtObjectType(target, true);
+        if (type != TFExtObject_Unknown)
         {
-            if (m_StolenObjectList[client] != INVALID_HANDLE)
+            //Check to see if the object is still being built
+            new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
+            new building = GetEntProp(target, Prop_Send, "m_bBuilding");
+            new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
+            if (placing == 0 && building == 0 && complete >= 1.0)
             {
-                new size = GetArraySize(m_StolenObjectList[client]);
-                for (new index = 0; index < size; index++)
+                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
+                builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
+
+                if (builder > 0 && !GetImmunity(builder,Immunity_Ultimates))
                 {
-                    new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
-                    if (pack != INVALID_HANDLE)
+                    new team = GetClientTeam(client);
+                    if (GetEntProp(target, Prop_Send, "m_iTeamNum") != team)
                     {
-                        ResetPack(pack);
-                        new pack_builder      = ReadPackCell(pack);
-                        new objects:pack_type = objects:ReadPackCell(pack);
-                        new pack_target       = ReadPackCell(pack);
+                        new Float:pos[3];
+                        GetEntPropVector(target, Prop_Send, "m_vecOrigin", pos);
 
-                        new bool:found;
-                        if (object > 0)
-                            found = (object == pack_target);
-                        else
-                            found = (builder == pack_builder && type == pack_type);
+                        new Float:angles[3];
+                        GetEntPropVector(target, Prop_Send, "m_angRotation", angles);
 
-                        if (found)
+                        new iMaxHealth = GetEntProp(target, Prop_Data, "m_iMaxHealth");
+                        new iHealth = GetEntProp(target, Prop_Send, "m_iHealth");
+                        new iLevel = GetEntProp(target, Prop_Send, "m_iUpgradeLevel");
+
+                        AcceptEntityInput(target, "kill");
+
+                        new object;
+                        switch (type)
                         {
-                            //LogMessage("Object Found in %x", pack);
-                            CloseHandle(pack);
-
-                            if (disp == remove || !IsValidEntity(pack_target)
-                                               || GetObjectType(pack_target) != pack_type)
+                            case TFExtObject_Sentry:
                             {
-                                //LogMessage("Removing %x", pack);
-                                RemoveFromArray(m_StolenObjectList[client], index);
+                                object = BuildSentry(client, pos, angles, iLevel, false, false,
+                                                     false, iHealth, iMaxHealth);
                             }
-                            else if (disp == reset)
-                                ResetObject(-1, pack_target, pack_builder, pack_type, false);
-                            else
+                            case TFExtObject_MiniSentry:
                             {
-                                //LogMessage("Updating %x", pack);
-                                // Update the tracking package
-                                pack = CreateDataPack();
-                                WritePackCell(pack, -1);
-                                WritePackCell(pack, type);
-                                WritePackCell(pack, pack_target);
-                                SetArrayCell(m_StolenObjectList[client], index, pack);
+                                object = BuildSentry(client, pos, angles, iLevel, false, true,
+                                                     false, iHealth, iMaxHealth);
                             }
-                            //LogMessage("Original owner=%d", pack_builder);
-                            return pack_builder;
+                            case TFExtObject_Teleporter, TFExtObject_TeleporterEntry:
+                            {
+                                object = BuildTeleporterEntry(client, pos, angles, iLevel, false,
+                                                              iHealth, iMaxHealth);
+                            }
+                            case TFExtObject_TeleporterExit:
+                            {
+                                object = BuildTeleporterExit(client, pos, angles, iLevel, false,
+                                                             iHealth, iMaxHealth);
+                            }
+                            case TFExtObject_Dispenser, TFExtObject_Amplifier, TFExtObject_RepairNode:
+                            {
+                                object = BuildDispenser(client, pos, angles, iLevel, false,
+                                                        iHealth, iMaxHealth, .type=type);
+                            }
                         }
-                    }
-                }
-            }
-        }
-    }
-    return builder;
-}
-
-ResetMindControlledObjects(client, bool:kill)
-{
-    LogMessage("ResetMindControlledObject() for %d, kill=%d", client, kill);
-    if (m_StolenObjectList[client] != INVALID_HANDLE)
-    {
-        new size = GetArraySize(m_StolenObjectList[client]);
-        for (new index = 0; index < size; index++)
-        {
-            new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
-            if (pack != INVALID_HANDLE)
-            {
-                ResetPack(pack);
-                new builder = ReadPackCell(pack);
-                new objects:type = objects:ReadPackCell(pack);
-                new target = ReadPackCell(pack);
-                CloseHandle(pack);
-
-                ResetObject(client, target, builder, type, kill);
-                //SetArrayCell(m_StolenObjectList[client], index, INVALID_HANDLE);
-            }
-        }
-        ClearArray(m_StolenObjectList[client]);
-        CloseHandle(m_StolenObjectList[client]);
-        m_StolenObjectList[client] = INVALID_HANDLE;
-    }
-}
-
-ResetObject(client, target, builder, objects:type, bool:kill)
-{
-    if (IsValidEntity(target))
-    {
-        decl String:class[32];
-        if (GetEntityNetClass(target,class,sizeof(class)))
-        {
-            new objects:current_type = GetObjectTypeFromNetClass(target, class);
-
-            // Is the object still what we stole?
-            if (current_type == type)
-            {
-                // Do we still own it?
-                if (client <= 0 || GetEntPropEnt(target, Prop_Send, "m_hBuilder") ==  client)
-                {
-                    // Is the round not ending and the builder valid?
-                    // (still around and still an engie)?
-                    if (kill || builder <= 0 || !IsClientInGame(builder) ||
-                        TF2_GetPlayerClass(builder) != TFClass_Engineer)
-                    {
-                        //LogMessage("Orphaned object %x", target);
-                        AcceptEntityInput(target, "Kill", -1, -1, 0);
-                        //RemoveEdict(target); // Remove the object.
+                        return (object > 0);
                     }
                     else
                     {
-                        // Give it back.
-                        new team = GetClientTeam(builder);
+                        PrepareAndEmitSoundToClient(client,errorWav);
+                        DisplayMessage(client, Display_Ultimate,
+                                       "%t", "TargetBelongsToTeammate");
+                    }
+                }
+                else
+                {
+                    PrepareAndEmitSoundToClient(client,errorWav);
+                    DisplayMessage(client, Display_Ultimate,
+                                   "%t", "TargetIsImmune");
+                }
+            }
+            else
+            {
+                PrepareAndEmitSoundToClient(client,errorWav);
+                DisplayMessage(client, Display_Ultimate,
+                               "%t", "TargetNotComplete");
+            }
+        }
+        else
+        {
+            PrepareAndEmitSoundToClient(client,deniedWav);
+            DisplayMessage(client, Display_Ultimate,
+                           "%t", "TargetInvalid");
+        }
+    }
+    else
+    {
+        PrepareAndEmitSoundToClient(client,deniedWav);
+        DisplayMessage(client, Display_Ultimate,
+                       "%t", "TargetInvalid");
+    }
+    return false;
+}
 
-                        // Change the builder back
-                        SetEntPropEnt(target, Prop_Send, "m_hBuilder", builder);
+
+bool:ControlObject(client, target, &builder=0, &TFExtObjectType:type=TFExtObject_Unknown)
+{
+    if (IsValidEntity(target) && IsValidEdict(target))
+    {
+        type = TF2_GetExtObjectType(target);
+        if (type != TFExtObject_Unknown)
+        {
+            //Check to see if the object is still being built
+            new placing = GetEntProp(target, Prop_Send, "m_bPlacing");
+            new building = GetEntProp(target, Prop_Send, "m_bBuilding");
+            new Float:complete = GetEntPropFloat(target, Prop_Send, "m_flPercentageConstructed");
+            if (placing == 0 && building == 0 && complete >= 1.0)
+            {
+                //Find the owner of the object m_hBuilder holds the client index 1 to Maxplayers
+                builder = GetEntPropEnt(target, Prop_Send, "m_hBuilder");
+
+                if (builder > 0 && !GetImmunity(builder,Immunity_Ultimates))
+                {
+                    new team = GetClientTeam(client);
+                    if (GetEntProp(target, Prop_Send, "m_iTeamNum") != team)
+                    {
+                        // Check to see if this target has already been controlled.
+                        builder = ProcessMindControlledObjects(update, target, builder, type);
+
+                        // Change the builder to client
+                        // But, that seems to cause crashes when
+                        // the "real" owner pushes the destruct button :(
+                        //SetEntPropEnt(target, Prop_Send, "m_hBuilder", client);
 
                         //paint red or blue
                         SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
@@ -419,8 +334,256 @@ ResetObject(client, target, builder, objects:type, bool:kill)
                         //Same thing again but we are changing SetTeam
                         SetVariantInt(team);
                         AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+
+                        //If the gun is controlled, disable it.
+                        if (type == TFExtObject_Sentry &&
+                            GetEntProp(target, Prop_Send, "m_bPlayerControlled"))
+                        {
+                            SetEntProp(target, Prop_Send, "m_bDisabled", 1);
+                        }
+
+                        PrepareAndEmitSoundToAll(controlWav,target);
+
+                        new color[4] = { 0, 0, 0, 255 };
+                        if (team == 3)
+                            color[2] = 255; // Blue
+                        else
+                            color[0] = 255; // Red
+
+                        new Float:clientLoc[3];
+                        GetClientAbsOrigin(client, clientLoc);
+
+                        new Float:targetLoc[3];
+                        GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetLoc);
+
+                        TE_SetupBeamPoints(clientLoc, targetLoc, Lightning(), HaloSprite(),
+                                           0, 1, 2.0, 10.0,10.0,2,50.0,color,255);
+                        TE_SendEffectToAll();
+
+                        TE_SetupSmoke(targetLoc,SmokeSprite(),8.0,2);
+                        TE_SendEffectToAll();
+
+                        TE_SetupGlowSprite(targetLoc,(team == 3) ? BlueGlow() : RedGlow(),
+                                           5.0,5.0,255);
+                        TE_SendEffectToAll();
+
+                        new Float:splashDir[3];
+                        splashDir[0] = 0.0;
+                        splashDir[1] = 0.0;
+                        splashDir[2] = 100.0;
+                        TE_SetupEnergySplash(targetLoc, splashDir, true);
+
+                        new target_ref = EntIndexToEntRef(target);
+                        new Handle:timer = INVALID_HANDLE;
+                        if (type == TFExtObject_Sentry)
+                        {
+                            timer = CreateTimer(0.1, CheckSentries, target_ref,
+                                                TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+                        }
+
+                        // Create the Tracking Package
+                        new Handle:pack = CreateDataPack();
+                        WritePackCell(pack, target_ref);
+                        WritePackCell(pack, builder);
+                        WritePackCell(pack, _:timer);
+                        WritePackCell(pack, _:type);
+
+                        // And add it to the list
+                        if (m_StolenObjectList[client] == INVALID_HANDLE)
+                            m_StolenObjectList[client] = CreateArray();
+
+                        PushArrayCell(m_StolenObjectList[client], pack);
+
+                        return true;
+                    }
+                    else
+                    {
+                        PrepareAndEmitSoundToClient(client,errorWav);
+                        DisplayMessage(client, Display_Ultimate,
+                                       "%t", "TargetBelongsToTeammate");
                     }
                 }
+                else
+                {
+                    PrepareAndEmitSoundToClient(client,errorWav);
+                    DisplayMessage(client, Display_Ultimate,
+                                   "%t", "TargetIsImmune");
+                }
+            }
+            else
+            {
+                PrepareAndEmitSoundToClient(client,errorWav);
+                DisplayMessage(client, Display_Ultimate,
+                               "%t", "TargetNotComplete");
+            }
+        }
+        else
+        {
+            PrepareAndEmitSoundToClient(client,deniedWav);
+            DisplayMessage(client, Display_Ultimate,
+                           "%t", "TargetInvalid");
+        }
+    }
+    else
+    {
+        PrepareAndEmitSoundToClient(client,deniedWav);
+        DisplayMessage(client, Display_Ultimate,
+                       "%t", "TargetInvalid");
+    }
+    return false;
+}
+
+public Action:CheckSentries(Handle:timer,any:ref)
+{
+    new object = EntRefToEntIndex(ref);
+    if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+    {
+        // disable the sentry if it is controlled.
+        if (GetEntProp(object, Prop_Send, "m_bPlayerControlled"))
+            SetEntProp(object, Prop_Send, "m_bDisabled", 1);
+        else            
+            SetEntProp(object, Prop_Send, "m_bDisabled", 0);
+
+        return Plugin_Continue;
+    }
+
+    ProcessMindControlledObjects(remove, .timer=timer);
+    return Plugin_Stop;
+}
+
+ProcessMindControlledObjects(command:cmd, object=-1, builder=-1,
+                             TFExtObjectType:type=TFExtObject_Unknown,
+                             Handle:timer=INVALID_HANDLE)
+{
+    if (object > 0 || builder > 0)
+    {
+        for (new client=1;client<=MaxClients;client++)
+        {
+            if (m_StolenObjectList[client] != INVALID_HANDLE)
+            {
+                new size = GetArraySize(m_StolenObjectList[client]);
+                for (new index = 0; index < size; index++)
+                {
+                    new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
+                    if (pack != INVALID_HANDLE)
+                    {
+                        ResetPack(pack);
+                        new pack_ref = ReadPackCell(pack);
+                        new pack_target = EntRefToEntIndex(pack_ref);
+                        new pack_builder = ReadPackCell(pack);
+                        new Handle:pack_timer = Handle:ReadPackCell(pack);
+                        new TFExtObjectType:pack_type = TFExtObjectType:ReadPackCell(pack);
+
+                        new bool:found;
+                        if (object > 0)
+                            found = (object == pack_target);
+                        else if (timer != INVALID_HANDLE)
+                            found = (timer == pack_timer);
+                        else
+                            found = (builder == pack_builder && type == pack_type);
+
+                        if (found)
+                        {
+                            if (cmd == remove || pack_target < 0)
+                            {
+                                CloseHandle(pack);
+                                RemoveFromArray(m_StolenObjectList[client], index);
+                                if (pack_timer != INVALID_HANDLE && pack_target > 0)
+                                    KillTimer(pack_timer);
+                            }
+                            else if (cmd == reset)
+                            {
+                                CloseHandle(pack);
+                                RemoveFromArray(m_StolenObjectList[client], index);
+                                ResetObject(-1, pack_target, pack_builder, false);
+                                if (pack_timer != INVALID_HANDLE && pack_target > 0)
+                                    KillTimer(pack_timer);
+                            }
+                            else if (cmd == update)
+                            {
+                                // Update the tracking package
+                                CloseHandle(pack);
+                                pack = CreateDataPack();
+                                WritePackCell(pack, pack_ref);
+                                WritePackCell(pack, -1);
+                                WritePackCell(pack, _:pack_timer);
+                                WritePackCell(pack, _:type);
+                                SetArrayCell(m_StolenObjectList[client], index, pack);
+                            }
+                            return (cmd == find_controller) ? index : pack_builder;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return (cmd == find_controller) ? 0 : builder;
+}
+
+ResetMindControlledObjects(client, bool:kill)
+{
+    if (m_StolenObjectList[client] != INVALID_HANDLE)
+    {
+        new size = GetArraySize(m_StolenObjectList[client]);
+        for (new index = 0; index < size; index++)
+        {
+            new Handle:pack = GetArrayCell(m_StolenObjectList[client], index);
+            if (pack != INVALID_HANDLE)
+            {
+                ResetPack(pack);
+                new target = EntRefToEntIndex(ReadPackCell(pack));
+                new builder = ReadPackCell(pack);
+                new Handle:timer = Handle:ReadPackCell(pack);
+                CloseHandle(pack);
+
+                ResetObject(client, target, builder, kill);
+                //SetArrayCell(m_StolenObjectList[client], index, INVALID_HANDLE);
+                if (timer != INVALID_HANDLE && target > 0)
+                    KillTimer(timer);
+            }
+        }
+        ClearArray(m_StolenObjectList[client]);
+        CloseHandle(m_StolenObjectList[client]);
+        m_StolenObjectList[client] = INVALID_HANDLE;
+    }
+}
+
+ResetObject(client, target, builder, bool:kill)
+{
+    if (target > 0 && IsValidEntity(target) && IsValidEdict(target))
+    {
+        // Do we still own it?
+        if (client <= 0 || GetEntPropEnt(target, Prop_Send, "m_hBuilder") ==  client)
+        {
+            // Is the round not ending and the builder valid?
+            // (still around and still an engie)?
+            if (kill || !IsValidClientNotSpec(builder) ||
+                TF2_GetPlayerClass(builder) != TFClass_Engineer)
+            {
+                AcceptEntityInput(target, "Kill", -1, -1, 0);
+                //RemoveEdict(target); // Remove the object.
+            }
+            else
+            {
+                // Give it back.
+                new team = GetClientTeam(builder);
+
+                // Change the builder back
+                SetEntPropEnt(target, Prop_Send, "m_hBuilder", builder);
+
+                //paint red or blue
+                SetEntProp(target, Prop_Send, "m_nSkin", (team==3)?1:0);
+
+                //Change TeamNum
+                SetVariantInt(team);
+                AcceptEntityInput(target, "TeamNum", -1, -1, 0);
+
+                //Same thing again but we are changing SetTeam
+                SetVariantInt(team);
+                AcceptEntityInput(target, "SetTeam", -1, -1, 0);
+
+                //Make sure the gun is enabled, in case it was controlled.
+                SetEntProp(target, Prop_Send, "m_bDisabled", 0);
             }
         }
     }
@@ -432,12 +595,43 @@ public Native_MindControl(Handle:plugin,numParams)
     new Float:range = Float:GetNativeCell(2);
     new percent = GetNativeCell(3);
     new builder = GetNativeCellRef(4);
-    new objects:type = GetNativeCellRef(5);
-    new bool:success=MindControl(client,range,percent, builder, type);
+    new TFExtObjectType:type = GetNativeCellRef(5);
+    new bool:replace = GetNativeCell(6);
+    new bool:success = MindControl(client,range,percent, builder, type, replace);
     if (success)
     {
         SetNativeCellRef(4, builder);
         SetNativeCellRef(5, type);
+    }
+    return success;
+}
+
+public Native_ControlObject(Handle:plugin,numParams)
+{
+    new client = GetNativeCell(1);
+    new target = GetNativeCell(2);
+    new builder = GetNativeCellRef(3);
+    new TFExtObjectType:type = GetNativeCellRef(4);
+    new bool:success = ControlObject(client,target, builder, type);
+    if (success)
+    {
+        SetNativeCellRef(3, builder);
+        SetNativeCellRef(4, type);
+    }
+    return success;
+}
+
+public Native_ReplaceObject(Handle:plugin,numParams)
+{
+    new client = GetNativeCell(1);
+    new target = GetNativeCell(2);
+    new builder = GetNativeCellRef(3);
+    new TFExtObjectType:type = GetNativeCellRef(4);
+    new bool:success = ReplaceObject(client,target, builder, type);
+    if (success)
+    {
+        SetNativeCellRef(3, builder);
+        SetNativeCellRef(4, type);
     }
     return success;
 }
@@ -448,11 +642,3 @@ public Native_ResetMindControlledObjs(Handle:plugin,numParams)
     new bool:kill = bool:GetNativeCell(2);
     ResetMindControlledObjects(client,kill);
 }
-
-stock EmitSoundFromOrigin(const String:sound[],const Float:orig[3])
-{
-    EmitSoundToAll(sound,SOUND_FROM_WORLD,SNDCHAN_AUTO,SNDLEVEL_NORMAL,
-                   SND_NOFLAGS,SNDVOL_NORMAL,SNDPITCH_NORMAL,-1,orig,
-                   NULL_VECTOR,true,0.0);
-}
-

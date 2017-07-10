@@ -3,493 +3,404 @@
  * File: HumanAlliance.sp
  * Description: The Human Alliance race for SourceCraft.
  * Author(s): Anthony Iacono 
- * Modifications by: Naris (Murray Wilson)
+ * Refactored by: -=|JFH|=-Naris (Murray Wilson)
  */
  
 #pragma semicolon 1
 
 #include <sourcemod>
 #include <sdktools>
+#include <raytrace>
+#include <range>
 
 #include "sc/SourceCraft"
-
-#include "sc/util"
-#include "sc/range"
-#include "sc/trace"
-#include "sc/authtimer"
 #include "sc/maxhealth"
+#include "sc/Teleport"
 #include "sc/freeze"
+#include "sc/burrow"
 
-#define TELEPORT_MAX_CHARGE_TIME 2.0
+#include "effect/Lightning"
+#include "effect/HaloSprite"
+#include "effect/BeamSprite"
+#include "effect/PhysCannonGlow"
+#include "effect/SendEffects"
+#include "effect/FlashScreen"
 
-new String:teleportWav[] = "ambient/machines/teleport1.wav"; //"beams/beamstart5.wav";
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
+new const String:teleportWav[]      = "war3source/blinkarrival.wav";
+//                                    "ambient/machines/teleport1.wav";
+//                                    "beams/beamstart5.wav";
+//                                    "sc/MassTeleportTarget.wav";
 
 new raceID, immunityID, devotionID, bashID, teleportID;
 
-new g_haloSprite;
-new g_smokeSprite;
-new g_lightningSprite;
+new g_BashChance[]                  = { 0, 15, 21, 27, 32 };
 
-new Handle:cvarTeleportCooldown = INVALID_HANDLE;
+new Float:g_DevotionHealthPercent[] = { 0.0, 0.15, 0.26, 0.38, 0.50 };
 
-new m_TeleportCount[MAXPLAYERS+1];
-new Float:m_UltimatePressed[MAXPLAYERS+1];
+new Float:g_TeleportDistance[]      = { 0.0, 300.0, 500.0, 800.0, 1500.0 };
 
-new Float:spawnLoc[MAXPLAYERS+1][3];
-new Float:teleportLoc[MAXPLAYERS+1][3];
+new bool:cfgAllowTeleport           = true;
+
+new Float:cfgBashFactor             = 0.0;
+new Float:cfgBashDuration           = 1.0;
 
 new Float:gBashTime[MAXPLAYERS+1];
 
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Human Alliance",
-    author = "PimpinJuice",
+    author = "-=|JFH|=-Naris with credits to PimpinJuice",
     description = "The Human Alliance race for SourceCraft.",
-    version = "1.0.0.0",
-    url = "http://pimpinjuice.net/"
+    version = SOURCECRAFT_VERSION,
+    url = "http://www.jigglysfunhouse.net/"
 };
 
 public OnPluginStart()
 {
+    LoadTranslations("sc.human.phrases.txt");
+    LoadTranslations("sc.common.phrases.txt");
+    LoadTranslations("sc.teleport.phrases.txt");
     GetGameType();
 
-    cvarTeleportCooldown=CreateConVar("sc_teleportcooldown","10");
-
-    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
-        SetFailState("Couldn't hook the player_spawn event.");
+    if (IsSourceCraftLoaded())
+        OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID     = CreateRace("Human Alliance", "human",
-                            "You are now part of the Human Alliance.",
-                            "You will be part of the Human Alliance when you die or respawn.");
+    raceID     = CreateRace("human", .faction=HumanAlliance, .type=Biological);
+    immunityID = AddUpgrade(raceID, "immunity");
+    devotionID = AddUpgrade(raceID, "devotion");
+    bashID     = AddUpgrade(raceID, "bash", .energy=2.0);
 
-    immunityID = AddUpgrade(raceID,"Immunity", "immunity",
-                            "Makes you Immune to: ShopItems at Level 1,\nExplosions at Level 2,\nHealthTaking/Extra Damage at level 3,\nand Ultimates at Level 4.");
+    cfgAllowTeleport = bool:GetConfigNum("allow_teleport", cfgAllowTeleport);
+    if (cfgAllowTeleport)
+    {
+        // Ultimate 1
+        teleportID = AddUpgrade(raceID, "teleport", 1, .energy=20.0, .cooldown=2.0);
 
-    devotionID = AddUpgrade(raceID,"Devotion Aura", "devotion",
-                            "Gives you additional 15-50 health each round.");
+        GetConfigFloatArray("range",  g_TeleportDistance, sizeof(g_TeleportDistance),
+                            g_TeleportDistance, raceID, teleportID);
+    }
+    else
+    {
+        // Ultimate 1
+        teleportID = AddUpgrade(raceID, "teleport", 1, 99, 0);
+        LogMessage("Disabling Human Alliance:Teleport due to configuration: sc_allow_teleport=%d",
+                   cfgAllowTeleport);
+    }
 
-    bashID     = AddUpgrade(raceID,"Bash", "bash", 
-                            "Gives you a 15-32\% chance to render an \nenemy immobile for 1 second.");
+    // Get Configuration Data
+    GetConfigArray("chance", g_BashChance, sizeof(g_BashChance),
+                   g_BashChance, raceID, bashID);
 
-    teleportID = AddUpgrade(raceID,"Teleport", "teleport",
-                            "Allows you to teleport to where you \naim, 60-105 feet being the range.",
-                            true); // Ultimate
+    GetConfigFloatArray("percent_health",  g_DevotionHealthPercent, sizeof(g_DevotionHealthPercent),
+                        g_DevotionHealthPercent, raceID, devotionID);
 }
 
 public OnMapStart()
 {
-    g_smokeSprite = SetupModel("materials/sprites/smoke.vmt", true);
-    if (g_smokeSprite == -1)
-        SetFailState("Couldn't find smoke Model");
+    SetupLightning();
+    SetupHaloSprite();
+    SetupPhysCannonGlow();
 
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
-
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
-
-    SetupSound(teleportWav, true, true);
-    SetupSound(rechargeWav, true, true);
+    SetupTeleport(teleportWav);
 }
 
-public OnPlayerAuthed(client,Handle:player)
+public OnPlayerAuthed(client)
 {
-    m_TeleportCount[client]=0;
+    ResetTeleport(client);
     gBashTime[client] = 0.0;
 }
 
-public OnRaceSelected(client,Handle:player,oldrace,race)
+public Action:OnRaceDeselected(client,oldrace,newrace)
 {
-    if (race != oldrace)
+    if (oldrace == raceID)
     {
-        if (oldrace == raceID)
-        {
-            gBashTime[client] = 0.0;
-            m_TeleportCount[client]=0;
-            ResetMaxHealth(client);
+        gBashTime[client] = 0.0;
+        ResetMaxHealth(client);
+        ResetTeleport(client);
 
-            // Turn off Immunities
-            new immunity_level=GetUpgradeLevel(player,race,immunityID);
-            if (immunity_level)
-                DoImmunity(client, player, immunity_level,false);
-        }
-        else if (race == raceID)
-        {
-            // Turn on Immunities
-            new immunity_level=GetUpgradeLevel(player,race,immunityID);
-            if (immunity_level)
-                DoImmunity(client, player, immunity_level,true);
+        #if defined HEALTH_ADDS_ARMOR
+            SetArmor(client, 0);
+        #endif
 
-            new devotion_level=GetUpgradeLevel(player,race,devotionID);
-            if (devotion_level)
-                DevotionAura(client, devotion_level);
-        }
+        // Turn off Immunities
+        new immunity_level=GetUpgradeLevel(client,raceID,immunityID);
+        DoImmunity(client, immunity_level, false);
+
+        return Plugin_Handled;
     }
+    else
+        return Plugin_Continue;
 }
 
-public OnUpgradeLevelChanged(client,Handle:player,race,upgrade,old_level,new_level)
+public Action:OnRaceSelected(client,oldrace,newrace)
 {
-    if (race == raceID && new_level > 0 && GetRace(player) == raceID)
+    if (newrace == raceID)
+    {
+        gBashTime[client] = 0.0;
+
+        // Turn on Immunities
+        new immunity_level=GetUpgradeLevel(client,raceID,immunityID);
+        DoImmunity(client, immunity_level, true);
+
+        new devotion_level=GetUpgradeLevel(client,raceID,devotionID);
+        DevotionAura(client, devotion_level);
+
+        return Plugin_Handled;
+    }
+    else
+        return Plugin_Continue;
+}
+
+public OnUpgradeLevelChanged(client,race,upgrade,new_level)
+{
+    if (race == raceID && GetRace(client) == raceID)
     {
         if (upgrade == immunityID)
-            DoImmunity(client, player, new_level,true);
+            DoImmunity(client, new_level, true);
         else if (upgrade == devotionID)
             DevotionAura(client, new_level);
     }
 }
 
-public OnUltimateCommand(client,Handle:player,race,bool:pressed)
+public OnUltimateCommand(client,race,bool:pressed,arg)
 {
-    if (race==raceID && IsPlayerAlive(client))
+    if (race==raceID && IsValidClientAlive(client))
     {
-        new ult_level=GetUpgradeLevel(player,race,teleportID);
-        if(ult_level)
+        new level=GetUpgradeLevel(client,race,teleportID);
+        if (level && cfgAllowTeleport)
         {
-            if (pressed)
-            {
-                m_UltimatePressed[client] = GetGameTime();
-                CreateTimer(0.2, UpdateTeleportBar, client, TIMER_REPEAT);
-            }
-            else
-            {
-                new bool:toSpawn = false;
-                new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
-                m_UltimatePressed[client] = 0.0;
-                // Allow short teleports so players can attempt to get unstuck
-                // without having to return to spawn.
-                if (m_TeleportCount[client] >= 2 ||
-                    (m_TeleportCount[client] >= 1 && time_pressed > 0.2))
-                {
-                    // Check to see if player got stuck
-                    new Float:origin[3];
-                    GetClientAbsOrigin(client, origin);
-                    if (origin[0] == teleportLoc[client][0] &&
-                        origin[1] == teleportLoc[client][1] &&
-                        origin[2] == teleportLoc[client][2])
-                    {
-                        toSpawn = true; // If player is stuck, allow teleport to spawn.
-                        PrintToChat(client,"%c[SourceCraft]%c You appear to be stuck, teleporting back to spawn.",
-                                    COLOR_GREEN,COLOR_DEFAULT);
-                    }
-                    else
-                    {
-                        PrintToChat(client,"%c[SourceCraft]%c Sorry, your %cTeleport%c has not recharged yet.",
-                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
-                        return;
-                    }
-                }
-                Teleport(client, ult_level, toSpawn, time_pressed);
-            }
+            new Float:energy=GetUpgradeEnergy(raceID,teleportID) * (5.0-float(level));
+            TeleportCommand(client, race, teleportID, level, energy,
+                            pressed, g_TeleportDistance, teleportWav);
         }
     }
 }
 
 // Events
-public Action:PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
+public OnPlayerSpawnEvent(Handle:event, client, race)
 {
-    new userid=GetEventInt(event,"userid");
-    new client=GetClientOfUserId(userid);
-    if (client)
+    if (race == raceID)
     {
-        new Handle:player=GetPlayerHandle(client);
-        if (player != INVALID_HANDLE)
+        GetClientAbsOrigin(client,spawnLoc[client]);
+        gBashTime[client] = 0.0;
+        ResetTeleport(client);
+
+        new immunity_level=GetUpgradeLevel(client,raceID,immunityID);
+        DoImmunity(client, immunity_level, true);
+
+        new devotion_level=GetUpgradeLevel(client,raceID,devotionID);
+        if (devotion_level > 0)
         {
-            if (GetRace(player) == raceID)
-            {
-                GetClientAbsOrigin(client,spawnLoc[client]);
-                m_TeleportCount[client]=0;
-                gBashTime[client] = 0.0;
-
-                new immunity_level=GetUpgradeLevel(player,raceID,immunityID);
-                if (immunity_level)
-                    DoImmunity(client, player, immunity_level,true);
-
-                new devotion_level=GetUpgradeLevel(player,raceID,devotionID);
-                if (devotion_level)
-                    AuthTimer(0.1,client,DoDevotionAura);
-            }
+            CreateTimer(0.1,DoDevotionAura,GetClientUserId(client),
+                        TIMER_FLAG_NO_MAPCHANGE);
         }
     }
-    return Plugin_Continue;
 }
 
-public Action:DoDevotionAura(Handle:timer,Handle:pack)
+public Action:DoDevotionAura(Handle:timer,any:userid)
 {
-    new client=ClientOfAuthTimer(pack);
-    if(client)
+    new client = GetClientOfUserId(userid);
+    if (client > 0)
     {
-        DevotionAura(client, GetUpgradeLevel(GetPlayerHandle(client),raceID,devotionID));
+        if (GetRace(client) == raceID)
+        {
+            new devotion_level=GetUpgradeLevel(client,raceID,devotionID);
+            DevotionAura(client, devotion_level);
+        }
     }
     return Plugin_Stop;
 }
 
-public Action:OnPlayerDeathEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                 attacker_index,Handle:attacker_player,attacker_race,
-                                 assister_index,Handle:assister_player,assister_race,
-                                 damage,const String:weapon[], bool:is_equipment,
-                                 customkill,bool:headshot,bool:backstab,bool:melee)
+public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_index,
+                          attacker_race, assister_index, assister_race, damage,
+                          const String:weapon[], bool:is_equipment, customkill,
+                          bool:headshot, bool:backstab, bool:melee)
 {
     // Reset MaxHealth back to normal
     if (victim_race == raceID)
+    {
         ResetMaxHealth(victim_index);
 
+        #if defined HEALTH_ADDS_ARMOR
+            SetArmor(victim_index, 0);
+        #endif
+    }
+}
+
+public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
+                                attacker_race, damage, absorbed, bool:from_sc)
+{
+    #if defined HEALTH_ADDS_ARMOR
+        if (victim_race == raceID && absorbed > 0 &&
+            GetUpgradeLevel(victim_index,raceID,devotionID) > 0)
+        {
+            ShowHealthParticle(victim_index);
+        }
+    #endif
+
+    if (!from_sc && attacker_index > 0 &&
+        attacker_index != victim_index &&
+        attacker_race == raceID)
+    {
+        // Don't allow teleporting immediately after an attack!
+        new level = GetUpgradeLevel(attacker_index,raceID,teleportID);
+        if (level && cfgAllowTeleport)
+            TeleporterAttacked(attacker_index,raceID,teleportID);
+
+        if (Bash(victim_index, attacker_index))
+            return Plugin_Handled;
+    }
+
     return Plugin_Continue;
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                attacker_index,Handle:attacker_player,attacker_race,
-                                assister_index,Handle:assister_player,assister_race,
-                                damage)
+public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
+                                  assister_index, assister_race, damage,
+                                  absorbed)
 {
-    if (attacker_index && attacker_index != victim_index)
+    if (assister_race == raceID)
     {
-        if (attacker_race == raceID)
-            Bash(victim_index, victim_player, attacker_player);
+        if (Bash(victim_index, assister_index))
+            return Plugin_Handled;
     }
 
-    if (assister_index && assister_index != victim_index)
-    {
-        if (assister_race == raceID)
-            Bash(victim_index, victim_player, assister_player);
-    }
     return Plugin_Continue;
 }
 
-DoImmunity(client, Handle:player, level, bool:value)
+DoImmunity(client, level, bool:value)
 {
-    if (level >= 1)
+    SetImmunity(client,Immunity_ShopItems, (value && level >= 1));
+    SetImmunity(client,Immunity_Explosion, (value && level >= 2));
+    SetImmunity(client,Immunity_HealthTaking, (value && level >= 3));
+    SetImmunity(client,Immunity_Ultimates, (value && level >= 4));
+
+    if (value && IsValidClientAlive(client))
     {
-        SetImmunity(player,Immunity_ShopItems,value);
-        if (level >= 2)
-        {
-            SetImmunity(player,Immunity_Explosion,value);
-            if (level >= 3)
-            {
-                SetImmunity(player,Immunity_HealthTake,value);
-                if (level >= 4)
-                    SetImmunity(player,Immunity_Ultimates,value);
-            }
-        }
+        new Float:start[3];
+        GetClientAbsOrigin(client, start);
 
-        if (value)
-        {
-            new Float:start[3];
-            GetClientAbsOrigin(client, start);
-
-            new color[4] = { 0, 255, 50, 128 };
-            TE_SetupBeamRingPoint(start,30.0,60.0,g_lightningSprite,g_lightningSprite,
-                                  0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
-            TE_SendToAll();
-        }
+        static const color[4] = { 0, 255, 50, 128 };
+        TE_SetupBeamRingPoint(start, 30.0, 60.0, Lightning(), HaloSprite(),
+                              0, 1, 2.0, 10.0, 0.0 ,color, 10, 0);
+        TE_SendEffectToAll();
     }
 }
 
 DevotionAura(client, level)
 {
-    if (client &&  IsClientInGame(client))
+    if (level > 0 && IsValidClientAlive(client) &&
+        !GetRestriction(client, Restriction_NoUpgrades) &&
+        !GetRestriction(client, Restriction_Stunned))
     {
-        new hpadd;
-        switch(level)
+        new classmax = GetPlayerMaxHealth(client);
+        new maxhp = GetMaxHealth(client);
+        if (maxhp > classmax)
+            maxhp = classmax;
+
+        new hpadd=RoundFloat(float(maxhp)*g_DevotionHealthPercent[level]);
+        if (GetClientHealth(client) < classmax + hpadd)
         {
-            case 1:
-                hpadd=15;
-            case 2:
-                hpadd=26;
-            case 3:
-                hpadd=38;
-            case 4:
-                hpadd=50;
-        }
-        IncreaseHealth(client,hpadd);
+            decl String:upgradeName[64];
+            GetUpgradeName(raceID, devotionID, upgradeName, sizeof(upgradeName), client);
+            DisplayMessage(client, Display_Message, "%t", "ReceivedHP", hpadd, upgradeName);
+            SetIncreasedHealth(client, hpadd, 0, "Devotion");
 
-        DisplayMessage(client,SC_DISPLAY_MISC_MESSAGE,
-                       "%c[SourceCraft]%c You have received %d extra hp from %cDevotion Aura%c.",
-                       COLOR_GREEN,COLOR_DEFAULT,hpadd,COLOR_TEAM,COLOR_DEFAULT);
-
-        new Float:start[3];
-        GetClientAbsOrigin(client, start);
-
-        new Float:end[3];
-        end[0] = start[0];
-        end[1] = start[1];
-        end[2] = start[2] + 150;
-
-        new color[4] = { 200, 255, 205, 255 };
-        TE_SetupBeamPoints(start,end,g_lightningSprite,g_haloSprite,
-                0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
-        TE_SendToAll();
-    }
-}
-
-Bash(victim_index, Handle:victim_player, Handle:player)
-{
-    if (!GetImmunity(victim_player,Immunity_MotionTake))
-    {
-        new upgrade_bash=GetUpgradeLevel(player,raceID,bashID);
-        if (upgrade_bash)
-        {
-            // Bash
-            new percent;
-            switch(upgrade_bash)
+            if (GetGameType() != tf2)
             {
-                case 1:
-                    percent=15;
-                case 2:
-                    percent=21;
-                case 3:
-                    percent=27;
-                case 4:
-                    percent=32;
-            }
-            if (GetRandomInt(1,100)<=percent &&
-                (gBashTime[victim_index] == 0.0 ||
-                 GetGameTime() - gBashTime[victim_index] > 2.0))
-            {
-                new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
-                TE_SetupGlowSprite(Origin,g_lightningSprite,1.0,2.3,90);
+                new haloSprite = HaloSprite();
 
-                gBashTime[victim_index] = GetGameTime();
-                FreezeEntity(victim_index);
-                AuthTimer(1.0,victim_index,UnfreezePlayer);
+                new Float:start[3];
+                GetClientAbsOrigin(client, start);
+
+                decl ringColor[4];
+                if (GetClientTeam(client)==2)
+                    ringColor={255,0,0,255};
+                else
+                    ringColor={0,0,255,255};
+
+                start[2]+=25.0;
+                TE_SetupBeamRingPoint(start,40.0,10.0,BeamSprite(),haloSprite,
+                                      0,15,1.0,15.0,0.0,ringColor,10,0);
+                TE_SendEffectToAll();
+
+                new Float:end[3];
+                end[0] = start[0];
+                end[1] = start[1];
+                end[2] = start[2] + 150;
+
+                static const color[4] = { 200, 255, 205, 255 };
+                TE_SetupBeamPoints(start, end, Lightning(), haloSprite,
+                                   0, 1, 2.0, 40.0, 10.0 ,5,50.0,color,255);
+                TE_SendEffectToAll();
             }
         }
     }
-}
-
-Teleport(client,ult_level, bool:to_spawn, Float:time_pressed)
-{
-    new Float:origin[3];
-    GetClientAbsOrigin(client, origin);
-    TE_SetupSmoke(origin,g_smokeSprite,40.0,1);
-    TE_SendToAll();
-
-    new Float:destloc[3];
-    if (to_spawn)
-        destloc=spawnLoc[client];
     else
     {
-        if (time_pressed > TELEPORT_MAX_CHARGE_TIME || time_pressed <= 0.0)
-            time_pressed = TELEPORT_MAX_CHARGE_TIME;
-
-        new Float:range=1.0;
-        switch(ult_level)
-        {
-            case 1: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 300.0;
-            case 2: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 500.0;
-            case 3: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 800.0;
-            case 4: range=(time_pressed / TELEPORT_MAX_CHARGE_TIME) * 1500.0;
-        }
-
-        new Float:clientloc[3],Float:clientang[3];
-        GetClientEyePosition(client,clientloc);
-        GetClientEyeAngles(client,clientang);
-
-        if (range > 0.0)
-        {
-            new Float:dir[3],Float:endloc[3];
-            GetAngleVectors(clientang,dir,NULL_VECTOR,NULL_VECTOR);
-            ScaleVector(dir, range);
-            AddVectors(clientloc, dir, endloc);
-            TR_TraceRayFilter(clientloc,endloc,MASK_PLAYERSOLID_BRUSHONLY,RayType_EndPoint,TraceRayTryToHit);
-        }
-        else
-            TR_TraceRayFilter(clientloc,clientang,MASK_PLAYERSOLID_BRUSHONLY,RayType_Infinite,TraceRayTryToHit);
-
-        TR_GetEndPosition(destloc);
-
-        new Float:size[3];
-        GetClientMaxs(client, size);
-        size[0] += 5.0;
-        size[1] += 5.0;
-        size[2] += 5.0;
-
-        if (TR_DidHit())
-        {
-            if (destloc[0] > clientloc[0])
-                destloc[0] -= size[0];
-            else
-                destloc[0] += size[0];
-
-            if (destloc[1] > clientloc[1])
-                destloc[1] -= size[1];
-            else
-                destloc[1] += size[1];
-
-            if (destloc[2] > clientloc[2])
-                destloc[2] -= size[2];
-            else
-                destloc[2] += size[2];
-        }
-
-        // Save teleport location for stuck comparison later
-        teleportLoc[client][0] = destloc[0];
-        teleportLoc[client][1] = destloc[1];
-        teleportLoc[client][2] = destloc[2];
-    }
-
-    TeleportEntity(client,destloc,NULL_VECTOR,NULL_VECTOR);
-    EmitSoundToAll(teleportWav,client);
-
-    TE_SetupSmoke(destloc,g_smokeSprite,40.0,1);
-    TE_SendToAll();
-
-    m_TeleportCount[client]++;
-
-    if (!to_spawn)
-    {
-        new Float:cooldown = GetConVarFloat(cvarTeleportCooldown) * (5-ult_level);
-        if (cooldown > 0.0)
-        {
-            DisplayMessage(client,SC_DISPLAY_ULTIMATE,
-                           "%c[SourceCraft]%c %cTeleport%cing, you must wait %2.0f seconds before teleporting again!",
-                           COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-            CreateTimer(cooldown,AllowTeleport,client);
-        }
+        #if defined HEALTH_ADDS_ARMOR
+            SetArmor(client, 0);
+        #endif
     }
 }
 
-public Action:AllowTeleport(Handle:timer,any:index)
+bool:Bash(victim_index, index)
 {
-    m_TeleportCount[index]=0;
-    if(IsClientInGame(index))
+    if (IsValidClient(victim_index) &&
+        !GetRestriction(index, Restriction_NoUpgrades) &&
+        !GetRestriction(index, Restriction_Stunned) &&
+        !GetImmunity(victim_index, Immunity_MotionTaking) &&
+        !GetImmunity(victim_index, Immunity_Upgrades) &&
+        !GetImmunity(victim_index, Immunity_Restore) &&
+        !IsBurrowed(victim_index))
     {
-        new Handle:player = GetPlayerHandle(index);
-        if (GetRace(player) == raceID && IsPlayerAlive(index))
+        new bash_level=GetUpgradeLevel(index, raceID, bashID);
+        if (bash_level > 0)
         {
-            EmitSoundToClient(index, rechargeWav);
-            PrintToChat(index,"%c[SourceCraft]%c Your %cTeleport%c has recharged and can be used again.",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+            if (GetRandomInt(1,100) <= g_BashChance[bash_level] &&
+                (gBashTime[victim_index] == 0.0 || GetGameTime() - gBashTime[victim_index] > 2.0))
+            {
+                if (CanInvokeUpgrade(index, raceID, bashID, .notify=false))
+                {
+                    new Float:Origin[3];
+                    GetClientAbsOrigin(victim_index, Origin);
+                    TE_SetupGlowSprite(Origin, PhysCannonGlow(), 1.0, 2.3, 90);
+                    DisplayMessage(victim_index, Display_Enemy_Ultimate, "%t", "WasBashed", index);
+                    FlashScreen(victim_index,RGBA_COLOR_BLUE);
+
+                    gBashTime[victim_index] = GetGameTime();
+
+                    if (cfgBashFactor > 0.0)
+                    {
+                        SetOverrideSpeed(victim_index, 0.5);
+                        SetRestriction(victim_index, Restriction_Grounded, true);
+                        CreateTimer(cfgBashDuration, RestoreSpeed, GetClientUserId(victim_index),
+                                    TIMER_FLAG_NO_MAPCHANGE);
+                    }
+                    else
+                    {
+                        FreezeEntity(victim_index);
+                        CreateTimer(cfgBashDuration, UnfreezePlayer, GetClientUserId(victim_index),
+                                    TIMER_FLAG_NO_MAPCHANGE);
+                    }
+                    return true;
+                }
+            }
         }
+    }
+    return false;
+}
+
+
+public Action:RestoreSpeed(Handle:timer,any:userid)
+{
+    new client = GetClientOfUserId(userid);
+    if (client > 0)
+    {
+        SetRestriction(client, Restriction_Grounded, false);
+        SetOverrideSpeed(client,-1.0);
     }
     return Plugin_Stop;
-}
-
-public Action:UpdateTeleportBar(Handle:timer, any:client)
-{
-    if (m_UltimatePressed[client] == 0.0)
-        return Plugin_Stop;
-    else
-    {
-        new Float:time_pressed = GetGameTime() - m_UltimatePressed[client];
-        new String:gauge[30] = "[=====================]";
-        new Float:percent = time_pressed/TELEPORT_MAX_CHARGE_TIME;
-        if (percent < 1.0)
-        {
-            new pos = RoundFloat(percent * 20.0) + 1;
-            if (pos < 21)
-            {
-                gauge{pos} = ']';
-                gauge{pos+1} = 0;
-            }
-        }
-        PrintHintText(client, gauge);
-        return Plugin_Continue;
-    }
 }

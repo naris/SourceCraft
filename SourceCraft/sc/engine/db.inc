@@ -10,736 +10,3266 @@
 #endif
 #define _db_included
 
-// DBI
-new Handle:DBIDB = INVALID_HANDLE;
-new bool:DBIsSQLite = false;
+#define ID_STRING_LENGTH                64
+#define ERROR_STRING_LENGTH             512
+
+#define QUERY_STRING_LENGTH             512
+#define SHORT_QUERY_STRING_LENGTH       128
+#define LONG_QUERY_STRING_LENGTH        1024
+#define REALLY_LONG_QUERY_STRING_LENGTH 2048
+
+#define DB_MAIN                         0
+#define DB_THREAD                       1
+#define DB_MAX                          2
+
+#define CONNECTING                      (Handle:-1)
+
+#define CloseDbHandle(%1)       CloseHandle(g_DbHandle[%1]); g_DbHandle[%1] = INVALID_HANDLE
+#define DatabaseHandle(%1)      ((g_DbHandle[%1] == INVALID_HANDLE) ? ConnectToDatabase(%1, false) : g_DbHandle[%1])
+#define DatabaseConnected(%1)   (g_DbHandle[%1] != CONNECTING && g_DbHandle[%1] != INVALID_HANDLE)
+#define DatabaseAvailable(%1)   (g_DbHandle[%1] != CONNECTING && DatabaseHandle(%1) != INVALID_HANDLE && g_DbHandle[%1] != CONNECTING)
 
 new bool:g_MapChanging = false;
+#pragma unused g_MapChanging // Prevent unused warnings about g_MapChanging
 
-ConnectToDatabase()
+new Handle:g_DbHandle[DB_MAX]  = { INVALID_HANDLE, ...};
+new Handle:g_SaveThreadsInFlight = INVALID_HANDLE;
+new Handle:g_PlayersToReload = INVALID_HANDLE;
+new String:g_DBConf[64];
+
+bool:InitDatabase()
 {
-    decl String:error[256];
-    DBIDB = SQL_Connect("sourcecraft",true,error,sizeof(error));
-    if (DBIDB == INVALID_HANDLE || error[0] != '\0')
-    {
-        LogError("Error connecting to the database:%s", error);
-        return false;
-    }
-    else
-    {
-        decl String:dbident[64];
-        SQL_ReadDriver(DBIDB, dbident, sizeof(dbident));
-        LogMessage("Connected to the %s database", dbident);
-        DBIsSQLite = (StrContains(dbident, "sqlite", false) >= 0);
+    if (g_SaveThreadsInFlight == INVALID_HANDLE)
+        g_SaveThreadsInFlight = CreateTrie();
 
-        SQL_CreateTables();
-        return true;
+    if (g_PlayersToReload == INVALID_HANDLE)
+        g_PlayersToReload = CreateTrie();
+
+    if (SQL_CheckConfig("sourcecraft"))
+        strcopy(g_DBConf, sizeof(g_DBConf), "sourcecraft");
+    else
+        strcopy(g_DBConf, sizeof(g_DBConf), "default");
+
+    new bool:status = true;
+    for (new i=0; i < sizeof(g_DbHandle); i++)
+    {
+        if (ConnectToDatabase(i, (i != DB_MAIN)) == INVALID_HANDLE)
+            status = false;
+    }
+    return status;
+}
+
+ClearDatabase()
+{
+    CloseDatabase();
+
+    if (g_SaveThreadsInFlight != INVALID_HANDLE)
+    {
+        CloseHandle(g_SaveThreadsInFlight);
+        g_SaveThreadsInFlight = INVALID_HANDLE;
+    }
+
+    if (g_PlayersToReload != INVALID_HANDLE)
+    {
+        CloseHandle(g_PlayersToReload);
+        g_PlayersToReload = INVALID_HANDLE;
     }
 }
 
-SQL_CreateTables()
+UpdateThreadsInFlight(const String:key[], value)
+{
+    new threads;
+    if (GetTrieValue(g_SaveThreadsInFlight, key, threads))
+    {
+        threads += value;
+        if (threads > 0 || value > 0)
+            SetTrieValue(g_SaveThreadsInFlight, key, threads, true);
+        else                
+            RemoveFromTrie(g_SaveThreadsInFlight, key);
+    }
+
+    // If all the save threads have completed
+    // and the player needs to be reloaded
+    new userid;
+    if (threads <= 0 && value < 0 &&
+        GetTrieValue(g_PlayersToReload, key, userid))
+    {
+        RemoveFromTrie(g_PlayersToReload, key);
+        if (GetClientOfUserId(userid) > 0)
+        {
+            CreateTimer(0.1, Retry_LoadPlayerData,
+                        userid,TIMER_FLAG_NO_MAPCHANGE);
+        }
+    }
+}
+
+Handle:ConnectToDatabase(connection, bool:threaded)
+{
+    if (threaded)
+    {
+        SQL_TConnect(SQL_Connected, g_DBConf,connection);
+        return CONNECTING;
+    }
+    else
+    {
+        decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+        g_DbHandle[connection] = SQL_Connect(g_DBConf,true,error,sizeof(error));
+        if (g_DbHandle[connection] == INVALID_HANDLE || error[0] != '\0')
+        {
+            LogError("Error connecting to the database:%s", error);
+            if (g_DbHandle[connection] != INVALID_HANDLE)
+            {
+                CloseDbHandle(connection);
+            }
+        }
+        else
+        {
+            SQL_LockDatabase(g_DbHandle[connection]);
+
+            decl String:dbident[ID_STRING_LENGTH];
+            SQL_ReadDriver(g_DbHandle[connection], dbident, sizeof(dbident));
+            LogToGame("Connection %d:%08x connected to the %s database",
+                      connection, g_DbHandle[connection], dbident);
+
+            SQL_SetOptions(g_DbHandle[connection]);
+
+            if (SQL_CheckRaceTable(g_DbHandle[connection]))
+                SQL_CreateRaceTables(g_DbHandle[connection]);
+
+            if (g_bCreate || SQL_CheckItemTable(g_DbHandle[connection]))
+                SQL_CreateItemTable(g_DbHandle[connection]);
+
+            SQL_UnlockDatabase(g_DbHandle[connection]);
+        }
+
+        return g_DbHandle[connection];
+    }
+}
+
+public SQL_Connected(Handle:owner, Handle:hndl, const String:error[], any:connection)
+{
+    g_DbHandle[connection] = hndl;
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+	{
+        LogError("Error connecting to the database:%s",
+                 error);
+	}
+	else
+	{
+        LogToGame("Connection %d:%08x connected to the database",
+                  connection, hndl);
+
+        SQL_SetOptions(hndl);
+
+        if (g_bCreate)
+            CreatePlayerTables(hndl);
+        else
+            CheckPlayerTable(hndl);
+    }
+}
+
+CloseDatabase()
+{
+    for (new i=0; i < sizeof(g_DbHandle); i++)
+    {
+        if (g_DbHandle[i] != INVALID_HANDLE)
+        {
+            SQL_LockDatabase(g_DbHandle[i]);
+
+            if (i == DB_MAIN)
+            {
+                LogToGame("Flushing Database Tables");
+                SQL_FastQuery(g_DbHandle[i], "FLUSH TABLES");
+            }
+
+            SQL_UnlockDatabase(g_DbHandle[i]);
+
+            LogToGame("Closing Database connection %d:%08x", i, g_DbHandle[i]);
+            CloseDbHandle(i);
+        }
+    }
+    g_bCreate = false;
+    g_bUpdate = false;
+}
+
+public Action:CloseDatabaseTimer(Handle:timer,Handle:dbHandle)
+{
+    if (dbHandle != INVALID_HANDLE)
+    {
+        // Close the old database handle
+        LogToGame("Closing Database connection %08x", dbHandle);
+        CloseHandle(dbHandle);
+    }
+}
+
+SQL_SetOptions(Handle:dbHandle)
+{
+    SQL_FastQuery(dbHandle, "SET autocommit = 1");
+    SQL_FastQuery(dbHandle, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+}
+
+bool:SQL_CheckItemTable(Handle:dbHandle)
+{
+    new Handle:query=SQL_Query(dbHandle,"show tables like 'sc_items'");
+    if (query)
+    {
+        if (!SQL_HasResultSet(query) ||
+            !SQL_FetchRow(query))
+        {
+            LogError("sc_items table not found in Database!");
+            return true;
+        }
+        CloseHandle(query);
+    }
+    return false;
+}
+
+SQL_CreateItemTable(Handle:dbHandle)
 {
     // Create the sc_races table, if it doesn't exist
-    decl String:SQLString[512];
-    Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s",
+    new String:create_sc_items[][] = {
+        "CREATE TABLE IF NOT EXISTS sc_items",
+        "(item_ident int not null auto_increment,",
+        " item_name varchar(16) not null,",
+        " long_name varchar(64),",
+        " category varchar(64),",
+        " description text,",
+        " crystals int,",
+        " vespene int,",
+        " max int,",
+        " required_level int,",
+        " image varchar(64),",
+        " add_date timestamp NOT NULL default current_timestamp,",
+        "PRIMARY KEY(item_ident),",
+        "INDEX(long_name))",
+        "ENGINE=INNODB" };
+
+    LogMessage("Creating Item Table");
+
+    decl String:SQLString[LONG_QUERY_STRING_LENGTH];
+    ImplodeStrings(create_sc_items, sizeof(create_sc_items), " ", SQLString, sizeof(SQLString));
+    if (!SQL_FastQuery(dbHandle,SQLString))
+    {
+        decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+        SQL_GetError(dbHandle, error, sizeof(error));
+        SetFailState("Error in the creation of the sc_items SQL table:%s", error);
+    }
+}
+
+bool:SQL_CheckRaceTable(Handle:dbHandle)
+{
+    new Handle:query=SQL_Query(dbHandle,"show tables like 'sc_races'");
+    if (query)
+    {
+        if (!SQL_HasResultSet(query) ||
+            !SQL_FetchRow(query))
+        {
+            LogError("sc_races table not found in Database!");
+            g_bCreate = true;
+        }
+        CloseHandle(query);
+    }
+    return g_bCreate;
+}
+
+SQL_CreateRaceTables(Handle:dbHandle)
+{
+    // Create the sc_races table, if it doesn't exist
+    new String:create_sc_factions[][] = {
+        "CREATE TABLE IF NOT EXISTS sc_factions",
+        "(faction ENUM ('Terran', 'Protoss', 'Zerg', 'HumanAlliance',",
+        "               'OrcishHorde', 'NightElf', 'UndeadScourge',",
+        "               'BurningLegion', 'Hellbourne', 'TheLegion',",
+        "               'Sentinel', 'Naga', 'Titan', 'XelNaga',",
+        "               'Pony'),",
+        " long_name varchar(64),",
+        " description text,",
+        " image varchar(64),",
+        " add_date timestamp NOT NULL default current_timestamp,",
+        "PRIMARY KEY(faction))",
+        "ENGINE=INNODB" };
+
+    LogMessage("Creating Race Tables");
+
+    decl String:SQLString[LONG_QUERY_STRING_LENGTH];
+    ImplodeStrings(create_sc_factions, sizeof(create_sc_factions), " ", SQLString, sizeof(SQLString));
+    if (!SQL_FastQuery(dbHandle,SQLString))
+    {
+        decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+        SQL_GetError(dbHandle, error, sizeof(error));
+        SetFailState("Error in the creation of the sc_factions SQL table:%s", error);
+    }
+    else
+    {
+        CreateFactions(dbHandle);
+
+        // Create the sc_races table, if it doesn't exist
+        new String:create_sc_races[][] = {
             "CREATE TABLE IF NOT EXISTS sc_races ",
             "(race_ident int not null auto_increment,",
             " race_name varchar(16) not null,",
             " long_name varchar(64),",
+            " required_level int,",
+            " tech_level int,",
+            " parent_name varchar(16),",
+            " description text,",
+            " image varchar(64),",
             " add_date timestamp default current_timestamp,",
+            " type enum ('Biological', 'Mechanical', 'BioMechanical', 'Robotic',",
+            "            'Energy', 'Magical', 'Mystical', 'Elemental', 'Undead',",
+            "            'Demonic', 'Cybernetic', 'Flyer'),",
+            " faction ENUM ('Terran', 'Protoss', 'Zerg', 'HumanAlliance',",
+            "               'OrcishHorde', 'NightElf', 'UndeadScourge',",
+            "               'BurningLegion', 'Hellbourne', 'TheLegion',",
+            "               'Sentinel', 'Naga', 'Titan', 'XelNaga',",
+            "               'Pony'),",
             "PRIMARY KEY(race_ident),",
-            "INDEX(race_name))");
+            "INDEX(type,race_name),",
+            "INDEX(race_name))",
+            "ENGINE=INNODB" };
 
-    if (!DBIsSQLite)
-        StrCat(SQLString,sizeof(SQLString), " ENGINE=INNODB");
+        ImplodeStrings(create_sc_races, sizeof(create_sc_races),
+                       " ", SQLString, sizeof(SQLString));
 
-    // Process this query in the main thread (NOT a worker thread)
-    // since we will need the race table to exist before we proceed.
-    SQL_LockDatabase(DBIDB);
+        if (!SQL_FastQuery(dbHandle,SQLString))
+        {
+            decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+            SQL_GetError(dbHandle, error, sizeof(error));
+            SetFailState("Error in the creation of the sc_races SQL table:%s", error);
+        }
+        else
+        {
+            // Create the sc_upgrades table, if it doesn't exist
+            new String:create_sc_upgrades[][] = {
+                "CREATE TABLE IF NOT EXISTS sc_upgrades",
+                "(race_ident int NOT NULL,",
+                " upgrade int NOT NULL,",
+                " category int,",
+                " upgrade_name VARCHAR(16),",
+                " long_name VARCHAR(64),",
+                " description TEXT,",
+                " image varchar(64),",
+                " required_level int NOT NULL default '0',",
+                " max_level int NOT NULL default '0',",
+                " cost_crystals int NOT NULL default '0',",
+                " cost_vespene int NOT NULL default '0',",
+                " energy int NOT NULL default '0',",
+                " accumulated tinyint NOT NULL default '0',",
+                " recurring_energy int NOT NULL default '0',",
+                " crystals int NOT NULL default '0',",
+                " vespene int NOT NULL default '0',",
+                " cooldown int NOT NULL default '0',",
+                " add_date timestamp NOT NULL default current_timestamp,",
+                "PRIMARY KEY (race_ident, upgrade),",
+                "FOREIGN KEY (race_ident)",
+                "        REFERENCES sc_races(race_ident)",
+                "        ON DELETE CASCADE ON UPDATE CASCADE)",
+                "ENGINE=INNODB" };
 
-    if(!SQL_FastQuery(DBIDB,SQLString))
-    {
-        decl String:error[256] = "";
-        SQL_GetError(DBIDB, error, sizeof(error));
-        SQL_UnlockDatabase(DBIDB);
-        LogError("Error in the creation of the sc_races SQL table:%s", error);
-        SetFailState("Error in the creation of the sc_races SQL table");
-    }
-    else 
-    {
-        SQL_UnlockDatabase(DBIDB);
+            ImplodeStrings(create_sc_upgrades, sizeof(create_sc_upgrades),
+                           " ", SQLString, sizeof(SQLString));
 
-        // Create the sc_players table, if it doesn't exist
-        Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s",
-                "CREATE TABLE IF NOT EXISTS sc_players ",
-                "(player_ident int not null auto_increment,",
-                " steamid varchar(64) not null,",
-                " name varchar(64),",
-                " race_ident int default 0,",
-                " credits int default 0,",
-                " overall_level int default 0,",
-                " display_flags int default 0,",
-                " last_update timestamp default current_timestamp,",
-                "PRIMARY KEY(player_ident),",
-                "UNIQUE INDEX (steamid))");
-
-        if (!DBIsSQLite)
-            StrCat(SQLString,sizeof(SQLString), " ENGINE=INNODB");
-
-        SQL_TQuery(DBIDB, SQL_CreatePlayers, SQLString);
+            if (!SQL_FastQuery(dbHandle,SQLString))
+            {
+                decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                SQL_GetError(dbHandle, error, sizeof(error));
+                SetFailState("Error in the creation of the sc_upgrades SQL table:%s", error);
+            }
+        }
     }
 }
 
+CheckPlayerTable(Handle:dbHandle)
+{
+    SQL_TQuery(dbHandle,SQL_PlayersChecked,"show tables like 'sc_players'", dbHandle);
+}
 
-public SQL_CreatePlayers(Handle:owner, Handle:hndl, const String:error[], any:data)
+public SQL_PlayersChecked(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
+{
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+        LogError("Error checking the sc_players SQL table:%s", error);
+    else
+    {
+        if (!SQL_HasResultSet(hndl) || !SQL_FetchRow(hndl))
+        {
+            g_bCreate = true;
+            LogError("sc_players table not found in Database!");
+            CreatePlayerTables(dbHandle);
+        }
+        CloseHandle(hndl);
+    }
+}
+
+CreatePlayerTables(Handle:dbHandle)
+{
+    // Create the sc_players table, if it doesn't exist
+    new String:create_sc_players[][] = {
+        "CREATE TABLE IF NOT EXISTS sc_players ",
+        "(player_ident int not null auto_increment,",
+        " steamid varchar(64) not null,",
+        " name varchar(64),",
+        " race_ident int default 0,",
+        " crystals int default 0,",
+        " vespene int default 0,",
+        " overall_level int default 0,",
+        " display_settings int default 0,",
+        " settings int default 0,",
+        " username varchar(25),",
+        " last_update timestamp default current_timestamp,",
+        " status ENUM('Disabled','Active') NOT NULL DEFAULT 'Active',",
+        " del_rec_date DATETIME,",
+        "PRIMARY KEY(player_ident),",
+        "UNIQUE INDEX (steamid, del_rec_date),",
+        "UNIQUE INDEX (username, del_rec_date))",
+        "ENGINE=INNODB" };
+
+    LogMessage("Creating Player Tables");
+
+    decl String:SQLString[LONG_QUERY_STRING_LENGTH];
+    ImplodeStrings(create_sc_players, sizeof(create_sc_players),
+                   " ", SQLString, sizeof(SQLString));
+
+    SQL_TQuery(dbHandle, SQL_PlayersCreated, SQLString, dbHandle);
+}
+
+public SQL_PlayersCreated(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
 {
     if (hndl == INVALID_HANDLE || error[0] != '\0')
         LogError("Error in the creation of the sc_players SQL table:%s", error);
     else
     {
-        // Create the sc_player_races table, if it doesn't exist
-        decl String:SQLString[2560];
+        // Create the sc_player_upgrades table, if it doesn't exist
+        new String:create_sc_players_alias[][] = {
+            "CREATE TABLE IF NOT EXISTS sc_player_alias",
+            "(player_ident int not null,",
+            " steamid varchar(64),",
+            " name varchar(64),",
+            " last_used timestamp default current_timestamp,",
+            "PRIMARY KEY(player_ident,steamid,name),",
+            "FOREIGN KEY (player_ident)",
+            "        REFERENCES sc_players(player_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE)",
+            "ENGINE=INNODB" };
 
-        if (DBIsSQLite)
-        {
-            Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_races ",
-                    "(player_ident int not null,",
-                    " race_ident int not null,",
-                    " xp int default 0,",
-                    " level int default 0,",
-                    "PRIMARY KEY(player_ident,race_ident))");
-        }
-        else
-        {
-            Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_races ",
-                    "(player_ident int not null,",
-                    " race_ident int not null,",
-                    " xp int default 0,",
-                    " level int default 0,",
-                    "PRIMARY KEY(player_ident,race_ident),",
-                    "FOREIGN KEY (player_ident)",
-                    "        REFERENCES sc_players(player_ident)",
-                    "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                    "INDEX (race_ident),",
-                    "FOREIGN KEY (race_ident)",
-                    "        REFERENCES sc_races(race_ident)",
-                    "        ON DELETE CASCADE ON UPDATE CASCADE) ",
-                    "ENGINE=INNODB");
-        }
-        SQL_TQuery(DBIDB, SQL_CreatePlayerRaces, SQLString);
+        decl String:SQLString[QUERY_STRING_LENGTH];
+        ImplodeStrings(create_sc_players_alias, sizeof(create_sc_players_alias),
+                       " ", SQLString, sizeof(SQLString));
+
+        SQL_TQuery(dbHandle, SQL_PlayerAliasCreated, SQLString, dbHandle);
     }
 }
 
-public SQL_CreatePlayerRaces(Handle:owner, Handle:hndl, const String:error[], any:data)
+public SQL_PlayerAliasCreated(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
+{
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+        LogError("Error in the creation of the sc_player_alias SQL table:%s", error);
+    else
+    {
+        // Create the sc_player_races table, if it doesn't exist
+        new String:create_sc_players_races[][] = {
+            "CREATE TABLE IF NOT EXISTS sc_player_races ",
+            "(player_ident int not null,",
+            " race_ident int not null,",
+            " xp int default 0,",
+            " level int default 0,",
+            "PRIMARY KEY(player_ident,race_ident),",
+            "FOREIGN KEY (player_ident)",
+            "        REFERENCES sc_players(player_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE,",
+            "FOREIGN KEY (race_ident)",
+            "        REFERENCES sc_races(race_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE) ",
+            "ENGINE=INNODB" };
+
+        decl String:SQLString[QUERY_STRING_LENGTH];
+        ImplodeStrings(create_sc_players_races, sizeof(create_sc_players_races),
+                       " ", SQLString, sizeof(SQLString));
+
+        SQL_TQuery(dbHandle, SQL_PlayerRacesCreated, SQLString, dbHandle);
+    }
+}
+
+public SQL_PlayerRacesCreated(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
 {
     if (hndl == INVALID_HANDLE || error[0] != '\0')
         LogError("Error in the creation of the sc_player_races SQL table:%s", error);
     else
     {
         // Create the sc_player_upgrades table, if it doesn't exist
-        decl String:SQLString[2048];
+        new String:create_sc_players_upgrades[][] = {
+            "CREATE TABLE IF NOT EXISTS sc_player_upgrades ",
+            "(player_ident int not null,",
+            " race_ident int not null,",
+            " upgrade int not null,",
+            " upgrade_level int default 0,",
+            "PRIMARY KEY(player_ident,race_ident,upgrade),",
+            "FOREIGN KEY (player_ident)",
+            "        REFERENCES sc_players(player_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE,",
+            "FOREIGN KEY (race_ident)",
+            "        REFERENCES sc_races(race_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE,",
+            "FOREIGN KEY (player_ident,race_ident)",
+            "        REFERENCES sc_player_races(player_ident,race_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE,",
+            "FOREIGN KEY (race_ident,upgrade)",
+            "        REFERENCES sc_upgrades(race_ident,upgrade)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE)",
+            "ENGINE=INNODB" };
 
-        if (DBIsSQLite)
-        {
-            Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_upgrades ",
-                    "(player_ident int not null,",
-                    " race_ident int not null,",
-                    " upgrade int not null,",
-                    " upgrade_level int default 0,",
-                    "PRIMARY KEY(player_ident,race_ident,upgrade))");
-        }
-        else
-        {
-            Format(SQLString,sizeof(SQLString), "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "CREATE TABLE IF NOT EXISTS sc_player_upgrades ",
-                    "(player_ident int not null,",
-                    " race_ident int not null,",
-                    " upgrade int not null,",
-                    " upgrade_level int default 0,",
-                    "PRIMARY KEY(player_ident,race_ident,upgrade),",
-                    "FOREIGN KEY (player_ident)",
-                    "        REFERENCES sc_players(player_ident)",
-                    "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                    "INDEX (race_ident),",
-                    "FOREIGN KEY (race_ident)",
-                    "        REFERENCES sc_races(race_ident)",
-                    "        ON DELETE CASCADE ON UPDATE CASCADE,",
-                    "FOREIGN KEY (player_ident,race_ident)",
-                    "        REFERENCES sc_player_races(player_ident,race_ident)",
-                    "        ON DELETE CASCADE ON UPDATE CASCADE) ",
-                    "ENGINE=INNODB");
-        }
-        SQL_TQuery(DBIDB, SQL_CreatePlayerUpgrades, SQLString);
+        decl String:SQLString[LONG_QUERY_STRING_LENGTH];
+        ImplodeStrings(create_sc_players_upgrades, sizeof(create_sc_players_upgrades),
+                       " ", SQLString, sizeof(SQLString));
+
+        SQL_TQuery(dbHandle, SQL_PlayerUpgradesCreated, SQLString, dbHandle);
     }
 }
 
-public SQL_CreatePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], any:data)
+public SQL_PlayerUpgradesCreated(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
 {
     if (hndl == INVALID_HANDLE || error[0] != '\0')
         LogError("Error in the creation of the sc_player_upgrades SQL table:%s", error);
+    else
+    {
+        // Create the sc_player_upgrades table, if it doesn't exist
+        new String:create_sc_players_tech[][] = {
+            "CREATE TABLE IF NOT EXISTS sc_player_tech",
+            "(player_ident int not null,",
+            " faction ENUM ('Terran', 'Protoss', 'Zerg', 'HumanAlliance',",
+            "               'OrcishHorde', 'NightElf', 'UndeadScourge',",
+            "               'BurningLegion', 'Hellbourne', 'TheLegion',",
+            "               'Sentinel', 'Naga', 'Titan', 'XelNaga',",
+            "               'Pony'),",
+            " tech_count int default 0,",
+            " tech_level int default 0,",
+            "PRIMARY KEY(player_ident,faction),",
+            "FOREIGN KEY (player_ident)",
+            "        REFERENCES sc_players(player_ident)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE,",
+            "FOREIGN KEY (faction)",
+            "        REFERENCES sc_factions(faction)",
+            "        ON DELETE CASCADE ON UPDATE CASCADE)",
+            "ENGINE=INNODB" };
+
+        decl String:SQLString[LONG_QUERY_STRING_LENGTH];
+        ImplodeStrings(create_sc_players_tech, sizeof(create_sc_players_tech),
+                       " ", SQLString, sizeof(SQLString));
+
+        SQL_TQuery(dbHandle, SQL_PlayerTechCreated, SQLString, dbHandle);
+    }
 }
 
-LoadRaceIdent(const String:shortName[], const String:raceName[])
+public SQL_PlayerTechCreated(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
 {
-    new race_ident = -1;
-    if(DBIDB && shortName[0])
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+        LogError("Error in the creation of the sc_player_tech SQL table:%s", error);
+    else
     {
-        decl String:SQLString[512];
+        LogMessage("All SourceCraft tables have been verified/created.");
+    }
+}
 
-        // Process this query in the main thread (NOT a worker thread)
-        // since we have to return the result to the caller!
-        SQL_LockDatabase(DBIDB);
+CreateFactions(Handle:dbHandle)
+{
+    for (new Faction:faction = Terran; faction < Faction:sizeof(g_FactionShortNames); faction++)
+    {
+        decl String:factionName[NAME_STRING_LENGTH];
+        GetFactionName(faction, factionName, sizeof(factionName));
 
-        Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races WHERE race_name='%s'", shortName);
+        decl String:description[DESCRIPTION_LENGTH];
+        GetFactionDescription(faction, description,sizeof(description));
 
-        new Handle:query=SQL_Query(DBIDB,SQLString);
-        if (query && SQL_FetchRow(query))
-            race_ident = SQL_FetchInt(query,0);
+        decl String:image[PLATFORM_MAX_PATH];
+        GetFactionImage(faction, image,sizeof(image));
+
+        InsertFaction(dbHandle, faction, factionName, description, image);
+    }
+}
+
+InsertFaction(Handle:dbHandle, Faction:faction, const String:longName[],
+              const String:description[], const String:image[])
+{
+    TraceInto("DB", "UpdateFaction", "faction=%d, longName=%s, image=%s, description=%s", \
+              faction, longName, image, description);
+
+    decl String:escName[NAME_STRING_LENGTH*4+1];
+    if (!SQL_EscapeString(dbHandle, longName, escName, sizeof(escName)))
+    {
+        LogError("Unable to escape %s!", longName);
+        strcopy(escName, sizeof(escName), longName);
+    }
+
+    decl String:escDesc[DESCRIPTION_LENGTH*4+1];
+    if (!SQL_EscapeString(dbHandle, description, escDesc, sizeof(escDesc)))
+    {
+        LogError("Unable to escape %s!", description);
+        strcopy(escDesc, sizeof(escDesc), description);
+    }
+
+    decl String:SQLString[QUERY_STRING_LENGTH+(sizeof(escDesc)*2)];
+    Format(SQLString,sizeof(SQLString),
+            "INSERT INTO sc_factions (faction,long_name,description,image) VALUES (%d,'%s','%s','%s') ON DUPLICATE KEY UPDATE long_name='%s',description='%s',image='%s'", faction, escName, escDesc, image, escName, escDesc, image);
+
+    Trace("query=%s", SQLString);
+
+    SQL_TQuery(dbHandle, SQL_FactionInserted, SQLString, dbHandle);
+
+    TraceReturn();
+}
+
+public SQL_FactionInserted(Handle:owner, Handle:hndl, const String:error[], any:dbHandle)
+{
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+        LogError("Error inserting/updating faction:%s", error);
+}
+
+LoadItemIdent(const String:shortName[])
+{
+    TraceInto("DB", "LoadShopIdent", "shortName=%s", shortName);
+
+    new item_ident = -1;
+    if (shortName[0])
+    {
+        if (DatabaseAvailable(DB_MAIN))
+        {
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString), "SELECT item_ident FROM sc_items WHERE item_name='%s'", shortName);
+
+            new Handle:query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+            if (query)
+            {
+                if (SQL_HasResultSet(query) &&
+                    SQL_FetchRow(query))
+                {
+                    item_ident = SQL_FetchInt(query,0);
+                }
+                CloseHandle(query);
+            }
+
+            SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+        }
         else
         {
-            if (query)
-                CloseHandle(query);
-
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_races (race_name,long_name,add_date) VALUES ('%s','%s',current_timestamp)", shortName, raceName);
-            if (SQL_FastQuery(DBIDB,SQLString))
-                race_ident = SQL_GetInsertId(DBIDB);
-            else
-            {
-                decl String:error[256];
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to insert race %s: %s\nSQL:%s",
-                         shortName, error, SQLString);
-            }
+            LogError("Unable to connect to DB to query %s's item ident.", shortName);
         }
-        SQL_UnlockDatabase(DBIDB);
     }
+
+    TraceReturn("item_ident=%d", item_ident);
+    return item_ident;
+}
+
+InsertItem(const String:shortName[], const String:itemName[], const String:description[],
+           const String:category[], required_level, crystals, vespene, max,
+           const String:image[])
+{
+    TraceInto("DB", "InsertItem", "shortName=%s, itemName=%s, category=%s, required_level=%d, crystals=%d, vespene=%d, max=%d, image=%s", \
+              shortName, itemName, category, required_level, crystals, vespene, max, image);
+
+    TraceDebug("description=(length=%d,string=%s)", strlen(description), description);
+
+    new item_ident = -1;
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        decl String:escDesc[DESCRIPTION_LENGTH*2+1];
+        if (!SQL_EscapeString(g_DbHandle[DB_MAIN], description, escDesc, sizeof(escDesc)))
+        {
+            LogError("Unable to escape %s!", description);
+            strcopy(escDesc, sizeof(escDesc), description);
+        }
+
+        decl String:SQLString[sizeof(escDesc)*2+SHORT_QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString),
+               "INSERT INTO sc_items (item_name,long_name,category,required_level,crystals,vespene,max,image,description,add_date) VALUES ('%s','%s','%s',%d,%d,%d,%d,'%s','%s',current_timestamp) ON DUPLICATE KEY UPDATE long_name='%s',category='%s',required_level=%d,vespene=%d,max=%d,description='%s',image='%s'",
+               shortName, itemName, category, required_level, crystals, vespene, max, image, escDesc, itemName, category, required_level, crystals, vespene, max, image, escDesc);
+
+        Trace("query=%d", SQLString);
+
+        if (SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString))
+            item_ident = SQL_GetInsertId(g_DbHandle[DB_MAIN]);
+        else
+        {
+            decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+            LogError("Unable to insert race %s: %s\nSQL:%s",
+                     shortName, error, SQLString);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to insert %s's race data.", shortName);
+    }
+
+    TraceReturn("item_ident=%d", item_ident);
+    return item_ident;
+}
+
+LoadRaceIdent(const String:shortName[])
+{
+    TraceInto("DB", "LoadRaceIdent", "shortName=%s", shortName);
+
+    new race_ident = -1;
+    if (shortName[0])
+    {
+        if (DatabaseAvailable(DB_MAIN))
+        {
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString), "SELECT race_ident FROM sc_races WHERE race_name='%s'", shortName);
+
+            new Handle:query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+            if (query)
+            {
+                if (SQL_HasResultSet(query) &&
+                    SQL_FetchRow(query))
+                {
+                    race_ident = SQL_FetchInt(query,0);
+                }
+                CloseHandle(query);
+            }
+
+            SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+        }
+        else
+        {
+            LogError("Unable to connect to DB to query %s's race ident.", shortName);
+        }
+    }
+
+    TraceReturn("race_ident=%d", race_ident);
     return race_ident;
 }
 
-LoadPlayerData(client,Handle:playerHandle)
+LoadRaceData(const String:shortName[], &Faction:faction, &UnitType:type)
 {
-    new bool:fetch=false;
-    if (DBIDB)
+    TraceInto("DB", "LoadRaceData", "shortName=%s", shortName);
+
+    new race_ident = -1;
+    if (shortName[0])
     {
-        decl String:steamid[64];
-        if(GetClientAuthString(client,steamid,sizeof(steamid)))
+        if (DatabaseAvailable(DB_MAIN))
         {
-            decl String:SQLString[512];
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
 
-            // Process this query in the main thread (NOT a worker thread)
-            // since we have to return the result to the caller!
-            SQL_LockDatabase(DBIDB);
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString), "SELECT race_ident,faction,type FROM sc_races WHERE race_name='%s'", shortName);
 
-            Format(SQLString,sizeof(SQLString),
-                   "SELECT player_ident, race_ident, credits, overall_level, display_flags FROM sc_players WHERE steamid = '%s'",
-                   steamid);
-
-            new Handle:query=SQL_Query(DBIDB,SQLString);
-            if(query)
+            new Handle:query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+            if (query)
             {
-                fetch = SQL_FetchRow(query);
-                if (fetch)
+                if (SQL_HasResultSet(query) &&
+                    SQL_FetchRow(query))
                 {
-                    new player_ident = SQL_FetchInt(query,0);
-                    SetDatabaseIdent(playerHandle,player_ident);
-                    SetDatabaseSaved(playerHandle,1);
-
-                    SetCredits(playerHandle,SQL_FetchInt(query,2));
-                    SetOverallLevel(playerHandle,SQL_FetchInt(query,3));
-                    SetClientDisplayFlags(client,SQL_FetchInt(query,4));
-
-                    // Load the current Race.
-                    new race_ident = SQL_FetchInt(query,1);
-                    new raceId = FindRaceForIdent(race_ident);
-
-                    CloseHandle(query);
-                    SQL_UnlockDatabase(DBIDB);
-
-                    if (raceId >= 0)
-                    {
-                        if (!SetRace(playerHandle,raceId))
-                            LoadPlayerRaceData(client, playerHandle, raceId);
-                    }
-                    else
-                        raceId = GetRace(playerHandle);
+                    race_ident = SQL_FetchInt(query,0);
+                    faction = Faction:SQL_FetchInt(query,1);
+                    type = UnitType:SQL_FetchInt(query,2);
                 }
-                else
-                {
-                    CloseHandle(query);
-                    SQL_UnlockDatabase(DBIDB);
-                }
+                CloseHandle(query);
             }
-            else
-            {
-                decl String:error[256];
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query %N's (%s) player data: %s\nSQL:%s",
-                         client, steamid, error, SQLString);
 
-                SQL_UnlockDatabase(DBIDB);
-            }
-        }
-        else
-            LogError("Unable to obtain steamid when loading %N!", client);
-    }
-
-    // Return 2 if not fetched so race selection menu will be displayed
-    return (fetch) ? 1 : 2;
-}
-
-LoadPlayerRaceData(client, Handle:playerHandle, raceId)
-{
-    decl String:SQLString[512];
-
-    if (DBIDB)
-    {
-        new player_ident      = GetDatabaseIdent(playerHandle);
-        new Handle:raceHandle = GetRaceHandle(raceId);
-        if (raceHandle != INVALID_HANDLE)
-        {
-            new race_ident = GetRaceIdent(raceHandle);
-
-            // Process this query in the main thread (NOT a worker thread)
-            SQL_LockDatabase(DBIDB);
-
-            Format(SQLString,sizeof(SQLString),
-                    "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d",
-                    player_ident, race_ident);
-
-            new Handle:raceQuery=SQL_Query(DBIDB,SQLString);
-            if (raceQuery)
-            {
-                if (SQL_HasResultSet(raceQuery) && SQL_FetchRow(raceQuery))
-                {
-                    SetXP(playerHandle,raceId,SQL_FetchInt(raceQuery,0));
-                    SetLevel(playerHandle,raceId,SQL_FetchInt(raceQuery,1));
-
-                    Format(SQLString,sizeof(SQLString),
-                            "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d",
-                            player_ident,race_ident);
-
-                    new Handle:upgradeQuery=SQL_Query(DBIDB,SQLString);
-                    if (upgradeQuery)
-                    {
-                        if (SQL_HasResultSet(upgradeQuery))
-                        {
-                            while (SQL_FetchRow(upgradeQuery))
-                            {
-                                LoadUpgradeLevel(playerHandle, raceId,
-                                                 SQL_FetchInt(upgradeQuery,0),
-                                                 SQL_FetchInt(upgradeQuery,1));
-                            }
-                        }
-                        CloseHandle(upgradeQuery);
-                    }
-                    else
-                    {
-                        decl String:error[256];
-                        SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to query %N's player data: %s\nSQL:%s",
-                                client, error, SQLString);
-                    }
-                }
-                SetRaceLoaded(playerHandle,raceId,1);
-                CloseHandle(raceQuery);
-            }
-            else
-            {
-                decl String:error[256] = "";
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to query %N's race data: %s\nSQL:%s",
-                        client, error, SQLString);
-            }
-            SQL_UnlockDatabase(DBIDB);
-        }
-    }
-}
-
-stock SaveAllPlayersData()
-{
-    new playerCount = GetMaxClients();
-    for(new client=1;client<=playerCount;client++)
-    {
-        new Handle:playerHandle=GetPlayerHandle(client);
-        if (playerHandle != INVALID_HANDLE &&
-            IsClientInGame(client) &&
-            !GetDatabaseSaved(playerHandle))
-        {
-            SavePlayerData(client,playerHandle,false);
-        }
-    }
-}
-
-SavePlayer(Handle:playerHandle)
-{
-    if (DBIDB && SAVE_ENABLED && !GetDatabaseSaved(playerHandle))
-    {
-        SavePlayerData(GetArrayCell(playerHandle,INFO_CLIENT_INDEX),
-                       playerHandle,false);
-    }
-}
-
-bool:SavePlayerData(client, Handle:playerHandle, bool:disconnected)
-{
-    decl String:steamid[64];
-    if(GetClientAuthString(client,steamid,sizeof(steamid)))
-    {
-        decl String:SQLString[512];
-
-        new credits           = GetCredits(playerHandle);
-        new overall_level     = GetOverallLevel(playerHandle);
-        new player_ident      = GetDatabaseIdent(playerHandle);
-        new display_flags     = GetClientDisplayFlags(client);
-
-        new Handle:raceHandle = GetRaceHandle(GetRace(playerHandle));
-        new race_ident        = GetRaceIdent(raceHandle);
-
-        // Don't use threaded saves when the map is changing!
-        // or when the player has disconnected!
-        new timeleft = 0;
-        new bool:threaded;
-        if (g_MapChanging)
-            threaded = false;
-        else if (GetMapTimeLeft(timeleft))
-            threaded = (timeleft > 60);
-        else
-            threaded = true;
-
-        if (player_ident > 0)
-        {
-            Format(SQLString,sizeof(SQLString),
-                   "UPDATE sc_players SET race_ident=%d, credits=%d, overall_level=%d, display_flags=%d, last_update=current_timestamp WHERE player_ident = %d",
-                   race_ident, credits, overall_level, display_flags, player_ident);
-
-            if (threaded)
-            {
-                // When threading, copy the data first so it can't
-                // get freed while we are using it!
-                new Handle:playerData;
-                if (disconnected)
-                    playerData = playerHandle;
-                else
-                    playerData = ClonePlayer(playerHandle);
-
-                new Handle:dataPack = CreateDataPack();
-                WritePackCell(dataPack, client);
-                WritePackCell(dataPack, _:playerData);
-                WritePackCell(dataPack, player_ident);
-                ResetPack(dataPack);
-                SQL_TQuery(DBIDB, SQL_UpdatePlayer, SQLString, dataPack);
-
-                if (playerData != playerHandle)
-                {
-                    // Assume save will work and mark playerHandle data saved.
-                    new raceId = GetRace(playerHandle);
-                    new upgradeCount = GetUpgradeCount(raceHandle);
-                    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-                    {
-                        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
-                        SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
-                    }
-                    SetDatabaseSaved(playerHandle,1);
-                }
-                return false;
-            }
-            else
-            {
-                // Process this query in the main thread
-                SQL_LockDatabase(DBIDB);
-
-                if (SQL_FastQuery(DBIDB,SQLString))
-                {
-                    SavePlayerRaceData(client, playerHandle, player_ident, threaded);
-                    SetDatabaseSaved(playerHandle,1);
-                }
-                else
-                {
-                    SetDatabaseIdent(playerHandle,-1);
-                    decl String:error[256];
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to update %N's player record, client=%d, handle=%x, ident=%d: %s\nSQL:%s",
-                             client, client, playerHandle, player_ident, error, SQLString);
-                }
-                SQL_UnlockDatabase(DBIDB);
-            }
+            SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
         }
         else
         {
-            decl String:name[MAX_NAME_LENGTH];
-            decl String:escName[MAX_NAME_LENGTH*2];
-            GetClientName(client,name,sizeof(name));
-            SQL_EscapeString(DBIDB, name, escName, sizeof(escName));
+            LogError("Unable to connect to DB to load %s's race data.", shortName);
+        }
+    }
 
-            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,credits,overall_level,display_flags,last_update) VALUES ('%s','%s',%d,%d,%d,%d,current_timestamp)", steamid, escName, race_ident, credits, overall_level, display_flags);
+    TraceReturn("race_ident=%d", race_ident);
+    return race_ident;
+}
 
-            // Process this query in the main thread
-            SQL_LockDatabase(DBIDB);
+InsertRace(const String:shortName[], const String:raceName[], required_level,
+           tech_level, const String:parentName[], Faction:faction, UnitType:type,
+           const String:description[], const String:image[])
+{
+    TraceInto("DB", "InsertRace", "shortName=%s, raceName=%s, required_level=%d, tech_level=%d, parentName=%s, image=%s", \
+              shortName, raceName, required_level, tech_level, parentName, image);
 
-            if (SQL_FastQuery(DBIDB,SQLString))
+    TraceDebug("description=(length=%d,string=%s)", strlen(description), description);
+
+    new race_ident = -1;
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        decl String:escDesc[DESCRIPTION_LENGTH*2+1];
+        if (!SQL_EscapeString(g_DbHandle[DB_MAIN], description, escDesc, sizeof(escDesc)))
+        {
+            LogError("Unable to escape %s!", description);
+            strcopy(escDesc, sizeof(escDesc), description);
+        }
+
+        decl String:unitType[NAME_STRING_LENGTH];
+        GetUnitTypeName(type, unitType, sizeof(unitType));
+
+        decl String:SQLString[sizeof(escDesc)+SHORT_QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString),
+               "INSERT INTO sc_races (race_name,long_name,required_level,tech_level,parent_name,faction,type,image,description,add_date) VALUES ('%s','%s',%d,%d,'%s',%d,'%s','%s','%s',current_timestamp)",
+               shortName, raceName, required_level, tech_level, parentName,
+               faction, unitType, image, escDesc);
+
+        Trace("query=%d", SQLString);
+
+        if (SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString))
+            race_ident = SQL_GetInsertId(g_DbHandle[DB_MAIN]);
+        else
+        {
+            decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+            LogError("Unable to insert race %s: %s\nSQL:%s",
+                     shortName, error, SQLString);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to insert %s's race data.", shortName);
+    }
+
+    TraceReturn("race_ident=%d", race_ident);
+    return race_ident;
+}
+
+UpdateRace(race_ident, const String:shortName[], const String:raceName[], required_level,
+           tech_level, const String:parentName[], Faction:faction, UnitType:type,
+           const String:description[], const String:image[])
+{
+    TraceInto("DB", "UpdateRace", "race_ident=%d, shortName=%s, raceName=%s, required_level=%d, tech_level=%d, parentName=%s, faction=%d, type=%d", \
+              race_ident, shortName, raceName, required_level, tech_level, parentName, faction, type);
+
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        decl String:unitType[NAME_STRING_LENGTH];
+        GetUnitTypeName(type, unitType, sizeof(unitType));
+
+        decl String:escDesc[DESCRIPTION_LENGTH*2+1];
+        decl String:SQLString[sizeof(escDesc)+SHORT_QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString),
+               "UPDATE sc_races SET race_name='%s', long_name='%s', required_level=%d, tech_level=%d, parent_name='%s', faction=%d, type='%s'",
+               shortName, raceName, required_level, tech_level, parentName, faction, unitType);
+
+        if (description[0] != '\0')
+        {
+            if (!SQL_EscapeString(g_DbHandle[DB_MAIN], description, escDesc, sizeof(escDesc)))
             {
-                player_ident = SQL_GetInsertId(DBIDB);
-                SetDatabaseIdent(playerHandle,player_ident);
-
-                if (threaded)
-                {
-                    new Handle:playerData;
-                    if (disconnected)
-                        playerData = playerHandle;
-                    else
-                        playerData = ClonePlayer(playerHandle);
-
-                    SQL_UnlockDatabase(DBIDB);
-
-                    SavePlayerRaceData(client, playerData, player_ident,threaded);
-
-                    if (playerData != playerHandle)
-                    {
-                        // Assume save will work and mark playerHandle data saved.
-                        new raceId = GetRace(playerHandle);
-                        new upgradeCount = GetUpgradeCount(raceHandle);
-                        for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-                        {
-                            new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
-                            SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
-                        }
-                        SetDatabaseSaved(playerHandle,1);
-                    }
-                    return !disconnected;
-                }
-                else
-                {
-                    SavePlayerRaceData(client, playerHandle, player_ident,threaded);
-                    SetDatabaseSaved(playerHandle,1);
-                }
+                LogError("Unable to escape %s!", description);
+                strcopy(escDesc, sizeof(escDesc), description);
             }
-            else
+
+            Format(SQLString,sizeof(SQLString), "%s, description='%s'", SQLString, escDesc);
+        }
+
+        if (image[0] != '\0')
+        {
+            Format(SQLString,sizeof(SQLString), "%s, image='%s'", SQLString, image);
+        }
+
+        Format(SQLString,sizeof(SQLString), "%s WHERE race_ident=%d", SQLString, race_ident);
+
+        Trace("query=%d", SQLString);
+
+        if (!SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString))
+        {
+            decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+            LogError("Unable to update race %s: %s\nSQL:%s",
+                     shortName, error, SQLString);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to update %s's race data.", shortName);
+    }
+
+    TraceReturn();
+}
+
+bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
+                   const String:name[], const String:desc[], const String:image[],
+                   cost_crystals, cost_vespene, required_level, max_level, Float:energy,
+                   bool:accumulated, Float:recurring_energy, crystals, vespene, Float:cooldown)
+{
+    TraceInto("DB", "InsertUpgrade", "race_ident=%d, upgrade=%d, category=%d, short=%s, name=%s, image=%s", \
+              race_ident, upgrade, upgrade_category, short, name, image);
+
+    TraceDebug("desc=(length=%d,string=%s)", strlen(desc), desc);
+
+    new bool:status = false;
+
+    if (race_ident > 0)
+    {
+        if (DatabaseAvailable(DB_MAIN))
+        {
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            decl String:escDesc[DESCRIPTION_LENGTH*2+1];
+            if (!SQL_EscapeString(g_DbHandle[DB_MAIN], desc, escDesc, sizeof(escDesc)))
             {
-                decl String:error[256];
-                SQL_GetError(DBIDB, error, sizeof(error));
-                LogError("Unable to insert %N's player data, client=%d, handle=%x, ident=%d: %s\nSQL:%s",
-                        client, client, playerHandle, player_ident, error, SQLString);
-
-                Format(SQLString,sizeof(SQLString), "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
-                       steamid);
-
-                new Handle:ident_query=SQL_Query(DBIDB,SQLString);
-                if(ident_query)
-                {
-                    if (SQL_FetchRow(ident_query))
-                    {
-                        player_ident = SQL_FetchInt(ident_query,0);
-                        if (player_ident > 0)
-                        {
-                            CloseHandle(ident_query);
-                            SetDatabaseIdent(playerHandle,player_ident);
-                            SavePlayerData(client,playerHandle,disconnected);
-                        }
-                    }
-                    else
-                    {
-                        SQL_GetError(DBIDB, error, sizeof(error));
-                        LogError("Unable to fetch %N's ident: %s\nSQL:%s",
-                                 client, error, SQLString);
-                        CloseHandle(ident_query);
-                    }
-                }
-                else
-                {
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to query %N's ident: %s\nSQL:%s",
-                             client, error, SQLString);
-                }
+                LogError("Unable to escape %s!", desc);
+                strcopy(escDesc, sizeof(escDesc), desc);
             }
-            if (!threaded)
-                SQL_UnlockDatabase(DBIDB);
+
+            decl String:SQLString[sizeof(escDesc)+QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString),
+                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,crystals=%d,vespene=%d,cooldown=%f",
+                   race_ident, upgrade, upgrade_category, short, name, escDesc, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown,
+                   upgrade_category, short, name, escDesc, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown);
+
+            TraceDebug("query=%s", SQLString);
+
+            status = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+            if (!status)
+            {
+                decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                LogError("Unable to insert/update upgrade %s for race %d: %s\nSQL:%s",
+                         short, race_ident, error, SQLString);
+            }
+
+            SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+        }
+        else
+        {
+            LogError("Unable to connect to DB to insert %d:%s's upgrade data.", race_ident, short);
+        }
+    }
+
+    TraceReturn("status=%d", status);
+    return status;
+}
+
+QueryRaceDescription(race_ident, String:description[], maxlength)
+{
+    TraceInto("DB", "QueryRaceDescription", "race_ident=%s", race_ident);
+
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString), "SELECT description FROM sc_races WHERE race_ident=%d", race_ident);
+
+        new Handle:query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+        if (query)
+        {
+            if (SQL_HasResultSet(query) && SQL_FetchRow(query))
+            {
+                SQL_FetchString(query, 0, description, maxlength);
+            }
+            CloseHandle(query);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to load race %d's description.", race_ident);
+    }
+
+    TraceReturn("description=%s", description);
+}
+
+QueryRaceImage(race_ident, String:image[], maxlength)
+{
+    TraceInto("DB", "QueryRaceImage", "race_ident=%s", race_ident);
+
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString), "SELECT image FROM sc_races WHERE race_ident=%d", race_ident);
+
+        new Handle:query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+        if (query)
+        {
+            if (SQL_HasResultSet(query) && SQL_FetchRow(query))
+            {
+                SQL_FetchString(query, 0, image, maxlength);
+            }
+            CloseHandle(query);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to load race %d's image.", race_ident);
+    }
+
+    TraceReturn("image=%s", image);
+}
+
+QueryUpgradeImage(race_ident, upgrade, String:image[], maxlength)
+{
+    TraceInto("DB", "QueryUpgradeImage", "race_ident=%s", race_ident);
+
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString),
+               "SELECT image FROM sc_upgrades WHERE race_ident=%d AND upgrade=%d",
+               race_ident, upgrade);
+
+        new Handle:query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+        if (query)
+        {
+            if (SQL_HasResultSet(query) && SQL_FetchRow(query))
+            {
+                SQL_FetchString(query, 0, image, maxlength);
+            }
+            CloseHandle(query);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to load race %d, upgrade %d's image.", race_ident, upgrade);
+    }
+
+    TraceReturn("image=%s", image);
+}
+
+LoadPlayerData(client)
+{
+    TraceInto("DB", "LoadPlayerData", "client=%d:%L", \
+              client, ValidClientIndex(client));
+
+    decl String:steamid[CLASS_STRING_LENGTH];
+    if (GetClientAuthString(client,steamid,sizeof(steamid)))
+    {
+        // Generate the 'other' steamid and check that one also.
+        decl String:steamidalt[CLASS_STRING_LENGTH];
+        strcopy(steamidalt, sizeof(steamidalt), steamid);
+        steamidalt[6] = (steamid[6] == '0') ? '1' : '0';
+
+        // Check if there are any in flight save threads
+
+        new threads;
+        if (GetTrieValue(g_SaveThreadsInFlight, steamid, threads) && threads > 0)
+            SetTrieValue(g_PlayersToReload, steamid, GetClientUserId(client), true);
+        else if (GetTrieValue(g_SaveThreadsInFlight, steamidalt, threads) && threads > 0)
+            SetTrieValue(g_PlayersToReload, steamidalt, GetClientUserId(client), true);
+
+        decl String:SQLString[QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString),
+               "SELECT player_ident, status+0, crystals, vespene, overall_level, display_settings, settings, name, race_ident FROM sc_players WHERE (steamid = '%s' OR steamid = '%s') AND del_rec_date IS NULL",
+               steamid, steamidalt);
+
+        if (DatabaseAvailable(DB_THREAD))
+        {
+            SetDatabaseLoaded(client,DataLoading);
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_LoadPlayerData,
+                       SQLString, GetClientUserId(client));
+        }
+        else
+        {
+            SetDatabaseLoaded(client,DataNotLoaded);
+            LogError("Unable to connect to DB to load %d:%L's player data\n",
+                     client, ValidClientIndex(client));
         }
     }
     else
-        LogError("Unable to obtain steamid when saving %N", client);
+    {
+        SetDatabaseLoaded(client,DataNotLoaded);
+        LogError("Unable to obtain steamid to load %d:%L!",
+                 client, ValidClientIndex(client));
+    }
 
-    return true;
+    TraceReturn();
+}
+
+public SQL_LoadPlayerData(Handle:owner, Handle:query, const String:error[], any:userid)
+{
+    TraceInto("DB", "SQL_LoadPlayerData");
+
+    new client = GetClientOfUserId(userid);
+
+    if (query == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Retry Access denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            LogError("Querying %d:%L's player data failed: %s",
+                     client, ValidClientIndex(client), error);
+
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+
+            if (client > 0)
+            {
+                // Retry loading the client's data
+                CreateTimer(0.2, Retry_LoadPlayerData, userid,TIMER_FLAG_NO_MAPCHANGE);
+            }
+        }
+        else
+        {
+            LogError("Unable to query %d:%L's player data: %s",
+                     client, ValidClientIndex(client), error);
+
+            if (client > 0)
+            {
+                SetDatabaseLoaded(client,DataNotLoaded);
+
+                if (IsClientInGame(client))
+                {
+                    PrintToConsole(client, "%t", "UnableToLoad", error);
+                    CPrintToChat(client, "%t", "UnableToLoad", error);
+
+                    SetHudTextParams(-1.0, 0.8, 5.0, 255, 0, 0, 255, 2, 0.5, 0.0, 0.5);
+                    ShowHudText(client, 1, "%t", "UnableToLoad", error);
+                }
+            }
+        }
+    }
+    else 
+    {
+        if (client > 0)
+        {
+            if (SQL_HasResultSet(query) &&
+                SQL_FetchRow(query))
+            {
+                new player_ident = SQL_FetchInt(query,0);
+                SetDatabaseIdent(client,player_ident);
+
+                // Check if there are any in flight save threads
+
+                new threads;
+                decl String:key[CLASS_STRING_LENGTH];
+                Format(key, sizeof(key), "%d", player_ident);
+                if (GetTrieValue(g_SaveThreadsInFlight, key, threads) && threads > 0)
+                    SetTrieValue(g_PlayersToReload, key, GetClientUserId(client), true);
+
+                new PlayerStatus:player_status = PlayerStatus:SQL_FetchInt(query,1);
+                SetPlayerStatus(client,player_status);
+
+                if (player_status != PlayerDisabled)
+                {
+                    SetCrystals(client,SQL_FetchInt(query,2));
+                    SetVespene(client,SQL_FetchInt(query,3));
+                    SetOverallLevel(client,SQL_FetchInt(query,4));
+                    LoadDisplayBits(client,Display:SQL_FetchInt(query,5));
+                    LoadSettingsBits(client,Settings:SQL_FetchInt(query,6));
+
+                    SQL_FetchString(query, 7, playerPrevName[client], sizeof(playerPrevName[]));
+
+                    #if defined _TRACE
+                        decl String:name[MAX_NAME_LENGTH];
+                        name[0] = '\0';
+                        if (GetClientName(client,name,sizeof(name)) &&
+                            name[0] == '\0')
+                        {
+                            Trace("Loading: Unable to retrieve %d:%L's name (DB has %s)", \
+                                   client, ValidClientIndex(client), playerPrevName[client]);
+                        }
+                        else if (!StrEqual(playerPrevName[client], name))
+                        {
+                            Trace("Loading: %d:%L changed name from what's in the DB(%s) to:%s", \
+                                  client, ValidClientIndex(client), playerPrevName[client], name);
+                        }
+                    #endif
+
+                    Trace("Loaded %d:%L's Player Data; player_ident=%d, name='%s', race=%d, race_ident=%d, overall_level=%d, crystals=%d, vespene=%d", \
+                          client, ValidClientIndex(client), player_ident, playerPrevName[client], GetRace(client), GetDatabaseIdent(client), \
+                          GetOverallLevel(client), GetCrystals(client), GetVespene(client));
+
+                    // Load the current Race.
+                    new race_ident = SQL_FetchInt(query,8);
+                    new raceId = FindRaceForIdent(race_ident);
+                    if (raceId >= 0)
+                    {
+                        new Handle:raceHandle = GetRaceHandle(raceId);
+                        if (GetRaceRequiredLevel(raceHandle) < 0)
+                        {
+                            #if defined _TRACE
+                                new child = raceId;
+                            #endif
+
+                            // If the race is restricted,
+                            // Change to the Parent Race instead (if any)
+                            decl String:parentName[NAME_STRING_LENGTH];
+                            GetRaceParentName(raceHandle, parentName, sizeof(parentName));
+                            raceId = FindRace(parentName);
+
+                            #if defined _TRACE
+                                Trace("Parent of %d:%L's locked race=%d is %d:%s", \
+                                      client, ValidClientIndex(client), \
+                                      child, raceId, parentName);
+                            #endif
+                        }
+
+                        if (raceId >= 0)
+                        {
+                            if (GetRaceLoaded(client,raceId) < DataOK)
+                            {
+                                Trace("Load %d:%L's race=%d Data", \
+                                      client, ValidClientIndex(client), \
+                                      raceId);
+
+                                LoadPlayerRaceData(client, raceId);
+                            }
+
+                            Trace("Set %d:%L's race=%d", \
+                                  client, ValidClientIndex(client), \
+                                  raceId);
+
+                            SetRace(client,raceId);
+                        }
+                    }
+                }
+
+                SetDatabaseLoaded(client,DataLoaded);
+                SetDatabaseSaveTime(client, GetGameTime());
+                SetDatabaseSaved(client, true);
+            }
+            else
+            {
+                SetDatabaseLoaded(client,DataNotFound);
+
+                new raceId = GetRace(client);
+                if (raceId >= 0)
+                {
+                    new Handle:raceInfo = GetRaceInfo(client, raceId);
+                    if (raceInfo != INVALID_HANDLE)
+                        SetRaceInfoLoaded(raceInfo,DataNotFound);
+                }
+            }
+        }
+        CloseHandle(query);
+    }
+
+    TraceReturn();
+}
+
+public Action:Retry_LoadPlayerData(Handle:timer,any:userid)
+{
+    // Retry to load the player's data
+    new client = GetClientOfUserId(userid);
+    if (IsValidClient(client))
+        LoadPlayerData(client);
+}
+
+LoadPlayerRaceData(client, raceId)
+{
+    TraceInto("DB", "LoadPlayerRaceData", "client=%d:%L, raceId=%d", \
+              client, ValidClientIndex(client), raceId);
+
+    new player_ident = GetDatabaseIdent(client);
+    if (player_ident > 0)
+    {
+        new Handle:raceHandle = GetRaceHandle(raceId);
+        new Handle:raceInfo = GetRaceInfo(client, raceId);
+        if (raceHandle != INVALID_HANDLE && raceInfo != INVALID_HANDLE)
+        {
+            new race_ident = GetRaceIdent(raceHandle);
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString),
+                   "SELECT xp, level FROM sc_player_races WHERE player_ident = %d AND race_ident = %d",
+                   player_ident, race_ident);
+
+            if (DatabaseAvailable(DB_THREAD))
+            {
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, GetClientUserId(client));
+                WritePackCell(dataPack, raceId);
+
+                SetRaceInfoLoaded(raceInfo,DataLoading);
+                SQL_TQuery(g_DbHandle[DB_THREAD], SQL_LoadPlayerRaceData,
+                           SQLString, dataPack);
+            }
+            else
+            {
+                decl String:raceName[SHORT_STRING_LENGTH];
+                GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+                SetRaceInfoLoaded(raceInfo,DataNotLoaded);
+                LogError("***ERROR*** Database not available, unable to load %d:%L's %d:%s race data, ident=%d\n",
+                         client, ValidClientIndex(client), raceId, raceName, player_ident);
+            }
+
+            new Faction:techId = GetRaceFaction(raceHandle);
+            if (techId > Generic)
+            {
+                if (GetTechLoaded(client,techId) < DataOK)
+                {
+                    Trace("Load %d:%L's techId=%d Data", \
+                          client, ValidClientIndex(client), \
+                          techId);
+
+                    LoadPlayerTechData(client, techId);
+                }
+            }
+        }
+    }
+    else if (player_ident >= 0)
+    {
+        decl String:raceName[SHORT_STRING_LENGTH];
+        new Handle:raceHandle = GetRaceHandle(raceId);
+        GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+        LogError("***ERROR*** Unable to obtain ident to load %d:%L's %d:%s race data, ident=%d\n",
+                 client, ValidClientIndex(client), raceId, raceName, player_ident);
+    }
+    else
+    {
+        #if defined _TRACE
+            decl String:raceName[SHORT_STRING_LENGTH];
+            new Handle:raceHandle = GetRaceHandle(raceId);
+            GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+            Trace("Unable to load %d:%L's %d:%s race data!", \
+                  client, ValidClientIndex(client), \
+                  raceId, raceName);
+        #endif
+    }
+
+    TraceReturn();
+}
+
+public SQL_LoadPlayerRaceData(Handle:owner, Handle:query, const String:error[], any:data)
+{
+    ResetPack(data);
+    new userid = ReadPackCell(data); 
+    new client = GetClientOfUserId(userid); 
+    new raceId = ReadPackCell(data);
+    CloseHandle(data);
+
+    TraceInto("DB", "SQL_LoadPlayerRaceData", "client=%d:%L, raceId=%d", \
+              client, ValidClientIndex(client), raceId);
+
+    if (query == INVALID_HANDLE || error[0] != '\0')
+    {
+        if (client > 0)
+        {
+            new Handle:raceInfo = GetRaceInfo(client, raceId);
+            if (raceInfo != INVALID_HANDLE)
+                SetRaceInfoLoaded(raceInfo,DataNotLoaded);
+        }
+
+        decl String:raceName[SHORT_STRING_LENGTH];
+        new Handle:raceHandle = GetRaceHandle(raceId);
+        GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+
+        // Retry Access denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            LogError("Querying %d:%L's %d:%s race data failed: %s",
+                     client, ValidClientIndex(client),
+                     raceId, raceName, error);
+
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+
+            if (client > 0)
+            {
+                // Retry loading the client's data
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, userid);
+                WritePackCell(dataPack, raceId);
+                CreateTimer(0.2, Retry_LoadPlayerRaceData, dataPack,TIMER_FLAG_NO_MAPCHANGE);
+            }
+        }
+        else
+        {
+            LogError("Unable to query %d:%L's %d:%s race data: %s",
+                     client, ValidClientIndex(client),
+                     raceId, raceName, error);
+
+            if (IsValidClient(client))
+            {
+                PrintToConsole(client, "%t", "UnableToLoadRace", raceName, error);
+                CPrintToChat(client, "%t", "UnableToLoadRace", raceName, error);
+
+                SetHudTextParams(-1.0, 0.8, 5.0, 255, 0, 0, 255, 2, 0.5, 0.0, 0.5);
+                ShowHudText(client, 1, "%t", "UnableToLoadRace", raceName, error);
+            }
+        }
+    }
+    else 
+    {
+        new player_ident = GetDatabaseIdent(client);
+        if (client > 0 && player_ident > 0)
+        {
+            new Handle:raceHandle = GetRaceHandle(raceId);
+            new Handle:raceInfo = GetRaceInfo(client, raceId);
+            if (raceHandle != INVALID_HANDLE && raceInfo != INVALID_HANDLE)
+            {
+                if (SQL_HasResultSet(query) &&
+                    SQL_FetchRow(query))
+                {
+                    new xp = SQL_FetchInt(query,0);
+                    new level = SQL_FetchInt(query,1);
+
+                    SetRaceInfoXP(raceInfo,xp);
+                    SetRaceInfoLevel(raceInfo,level);
+                    SetRaceInfoLoaded(raceInfo,DataOK);
+                    SetRaceInfoSavedXP(raceInfo,xp);
+
+                    Trace("Load %d:%L's data, race=%d, xp=%d, level=%d", \
+                          client, ValidClientIndex(client), \
+                          raceId, xp, level);
+
+                    if (g_bSaveUpgrades)
+                    {
+                        new race_ident = GetRaceIdent(raceHandle);
+                        if (DatabaseConnected(DB_THREAD))
+                        {
+                            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+                            Format(SQLString,sizeof(SQLString),
+                                   "SELECT upgrade, upgrade_level FROM sc_player_upgrades WHERE player_ident = %d AND race_ident = %d",
+                                   player_ident,race_ident);
+
+                            new Handle:dataPack = CreateDataPack();
+                            WritePackCell(dataPack, userid);
+                            WritePackCell(dataPack, raceId);
+
+                            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_LoadPlayerUpgradeData,
+                                       SQLString, dataPack);
+                        }
+                        else
+                        {
+                            decl String:raceName[SHORT_STRING_LENGTH];
+                            GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+                            LogError("***ERROR*** Database not available, unable to load %d:%L's %d:%s upgrade data, ident=%d\n",
+                                     client, ValidClientIndex(client), raceId, raceName, player_ident);
+                        }
+                    }
+                    else
+                        SetRaceInfoLoaded(raceInfo,DataLoaded);
+                }
+                else
+                    SetRaceInfoLoaded(raceInfo,DataNotFound);
+
+                ShowXP(client);
+                ShowCrystals(client);
+                ShowVespene(client);
+                ShowEnergy(client);
+            }
+        }
+        CloseHandle(query);
+    }
+
+    TraceReturn();
+}
+
+public Action:Retry_LoadPlayerRaceData(Handle:timer,Handle:data)
+{
+    ResetPack(data);
+    new client = GetClientOfUserId(ReadPackCell(data)); 
+    new raceId = ReadPackCell(data);
+    CloseHandle(data);
+
+    // Retry to load the player's race data
+    if (IsValidClient(client))
+        LoadPlayerRaceData(client, raceId);
+}
+
+public SQL_LoadPlayerUpgradeData(Handle:owner, Handle:query, const String:error[], any:data)
+{
+    ResetPack(data);
+    new userid = ReadPackCell(data); 
+    new client = GetClientOfUserId(userid); 
+    new raceId = ReadPackCell(data);
+    CloseHandle(data);
+
+    TraceInto("DB", "SQL_LoadPlayerUpgradeData", "client=%d:%L, raceId=%d", \
+              client, ValidClientIndex(client), raceId);
+
+    if (query == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Invalidate DB_THREAD handle for denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+        }
+
+        decl String:raceName[SHORT_STRING_LENGTH];
+        new Handle:raceHandle = GetRaceHandle(raceId);
+        GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+
+        LogError("Unable to query %d:%L's %d:%s upgrade data: %s",
+                 client, ValidClientIndex(client),
+                 raceId, raceName, error);
+    }
+    else 
+    {
+        if (client > 0)
+        {
+            new Handle:raceHandle = GetRaceHandle(raceId);
+            new Handle:raceInfo = GetRaceInfo(client, raceId);
+            if (raceHandle != INVALID_HANDLE && raceInfo != INVALID_HANDLE)
+            {
+                if (SQL_HasResultSet(query))
+                {
+                    new levelTotal = 0;
+                    new upgrade, ulevel;
+                    while (SQL_FetchRow(query))
+                    {
+                        upgrade = SQL_FetchInt(query,0);
+                        ulevel  = SQL_FetchInt(query,1);
+                        LoadUpgradeLevel(client, raceId, upgrade, ulevel);
+                        levelTotal += ulevel;
+
+                        Trace("Load %d:%L's data, race=%d, upgrade=%d, level=%d, total=%d", \
+                              client, ValidClientIndex(client), raceId, upgrade, ulevel, levelTotal);
+                    }
+                }
+                SetRaceInfoLoaded(raceInfo,DataLoaded);
+            }
+        }
+        CloseHandle(query);
+    }
+
+    TraceReturn();
+}
+
+LoadPlayerTechData(client, Faction:techId)
+{
+    TraceInto("DB", "LoadPlayerTechData", "client=%d:%L, techId=%d", \
+              client, ValidClientIndex(client), techId);
+
+    new player_ident = GetDatabaseIdent(client);
+    if (player_ident > 0)
+    {
+        new Handle:techData = GetTechData(client);
+        if (techData != INVALID_HANDLE)
+        {
+            new Handle:techInfo = GetArrayCell(techData,_:techId);
+            if (techInfo != INVALID_HANDLE)
+            {
+                decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+                Format(SQLString,sizeof(SQLString),
+                       "SELECT tech_count, tech_level FROM sc_player_tech WHERE player_ident = %d AND faction = %d",
+                       player_ident, techId);
+
+                if (DatabaseAvailable(DB_THREAD))
+                {
+                    new Handle:dataPack = CreateDataPack();
+                    WritePackCell(dataPack, GetClientUserId(client));
+                    WritePackCell(dataPack, _:techId);
+
+                    SetTechInfoLoaded(techInfo,DataLoading);
+                    SQL_TQuery(g_DbHandle[DB_THREAD], SQL_LoadPlayerTechData,
+                               SQLString, dataPack);
+                }
+                else
+                {
+                    SetTechInfoLoaded(techInfo,DataNotLoaded);
+
+                    decl String:techName[NAME_STRING_LENGTH];
+                    GetFactionName(techId, techName, sizeof(techName));
+                    LogError("***ERROR*** Database not available, unable to load %d:%L's %d:%s tech data, ident=%d\n",
+                             client, ValidClientIndex(client), techId, techName, player_ident);
+                }
+
+            }
+        }
+    }
+    else
+    {
+        decl String:techName[NAME_STRING_LENGTH];
+        GetFactionName(techId, techName, sizeof(techName));
+        Trace("Unable to load %d:%L's %d:%s tech data!, ident=%d", \
+              client, ValidClientIndex(client), techId, techName, player_ident);
+    }
+
+    TraceReturn();
+}
+
+public SQL_LoadPlayerTechData(Handle:owner, Handle:query, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_LoadPlayerTechData");
+
+    ResetPack(data);
+    new userid = ReadPackCell(data); 
+    new client = GetClientOfUserId(userid); 
+    new Faction:techId = Faction:ReadPackCell(data);
+    CloseHandle(data);
+
+    if (query == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Invalidate DB_THREAD handle for denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+        }
+
+        decl String:techName[NAME_STRING_LENGTH];
+        GetFactionName(techId, techName, sizeof(techName));
+        LogError("Unable to query %d:%L's %d:%s tech data: %s",
+                 client, ValidClientIndex(client), techId, techName, error);
+
+        if (client > 0)
+        {
+            new Handle:techData = GetTechData(client);
+            new Handle:techInfo = GetArrayCell(techData,_:techId);
+            SetTechInfoLoaded(techInfo,DataNotLoaded);
+        }
+    }
+    else 
+    {
+        if (client > 0)
+        {
+            new Handle:techData = GetTechData(client);
+            if (techData != INVALID_HANDLE)
+            {
+                new Handle:techInfo = GetArrayCell(techData,_:techId);
+                if (techInfo != INVALID_HANDLE)
+                {
+                    if (SQL_HasResultSet(query) &&
+                        SQL_FetchRow(query))
+                    {
+                        new count = SQL_FetchInt(query,0);
+                        new level = SQL_FetchInt(query,1);
+
+                        SetTechInfoCount(techInfo,count);
+                        SetTechInfoLevel(techInfo,level);
+                        SetTechInfoLoaded(techInfo,DataLoaded);
+
+                        decl String:techName[NAME_STRING_LENGTH];
+                        GetFactionName(techId, techName, sizeof(techName));
+                        Trace("Loaded %d:%L's %d:%s tech data, count=%d, level=%d", \
+                              client,ValidClientIndex(client), techId, techName, count, level);
+                    }
+                    else
+                        SetTechInfoLoaded(techInfo,DataOK);
+                }
+            }
+        }
+    }
+
+    TraceReturn();
+}
+
+SavePlayerData(client)
+{
+    TraceInto("DB", "SavePlayerData", "client=%d:%L", \
+              client, ValidClientIndex(client));
+
+    new bool:threaded = true;
+    /*
+    new timeleft;
+    if (g_MapChanging)
+    {
+        // Don't use threaded saves when the map is changing!
+        threaded = false;
+    }
+    else if (GetMapTimeLeft(timeleft))
+    {
+        // or the map is about to end
+        threaded = (timeleft > 10);
+    }
+    else
+        threaded = true;
+    */
+
+    new player_ident = GetDatabaseIdent(client);
+    if (player_ident > 0)
+    {
+        new race              = GetRace(client);
+        new Handle:raceHandle = GetRaceHandle(race);
+        new race_ident        = GetRaceIdent(raceHandle);
+        new Settings:bits     = GetSettingsBits(client);
+        new overall_level     = GetOverallLevel(client);
+        new crystals          = GetCrystals(client);
+        new vespene           = GetVespene(client);
+
+        Trace("Save %d:%L's data, race=%d, race_ident=%d, overall_level=%d", \
+              client, ValidClientIndex(client), race, race_ident, overall_level);
+
+        decl String:key[CLASS_STRING_LENGTH];
+        decl String:steamid[CLASS_STRING_LENGTH];
+        if (IsClientConnected(client) &&
+                GetClientAuthString(client,steamid,sizeof(steamid)))
+        {
+            strcopy(key, sizeof(key), steamid);
+        }
+        else                
+        {
+            Format(key, sizeof(key), "%d", player_ident);
+            steamid[0] = '\0';
+        }
+
+        // Start the thread count at 0
+        SetTrieValue(g_SaveThreadsInFlight, key, 0, true);
+
+        decl String:name[MAX_NAME_LENGTH];
+        decl String:escName[sizeof(name)*2+1];
+
+        name[0] = escName[0] = '\0';
+        if (IsClientInGame(client))
+            GetClientName(client,name,sizeof(name));
+        else
+            strcopy(name, sizeof(name), playerName[client]);
+
+        if (name[0] == '\0')
+        {
+            strcopy(name, sizeof(name), playerName[client]);
+            if (name[0] == '\0')
+                strcopy(name, sizeof(name), playerPrevName[client]);
+        }
+
+        if (DatabaseAvailable(DB_MAIN))
+        {
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            if (!SQL_EscapeString(g_DbHandle[DB_MAIN], name, escName, sizeof(escName)))
+            {
+                LogError("Unable to escape %s!", name);
+                strcopy(escName, sizeof(escName), name);
+            }
+
+            SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+        }
+        else
+        {
+            LogError("Unable to connect to DB to escape %s!", name);
+            strcopy(escName, sizeof(escName), name);
+        }
+
+        decl String:SQLString[QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString), "UPDATE sc_players SET race_ident=%d, crystals=%d, vespene=%d, overall_level=%d, settings=%d, name='%s', last_update=current_timestamp WHERE player_ident = %d", race_ident, crystals, vespene, overall_level, bits, escName, player_ident);
+
+        Trace("Saving %d:%L's Player Data; player_ident=%d, name='%s', race=%d, race_ident=%d, overall_level=%d, crystals=%d, vespene=%d", client, ValidClientIndex(client), player_ident, name, race, race_ident, overall_level, crystals, vespene);
+
+        if (threaded && DatabaseAvailable(DB_THREAD))
+        {
+            // Start threaded SQL update to update player table
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(client));
+            WritePackCell(dataPack, player_ident);
+            WritePackCell(dataPack, crystals);
+            WritePackCell(dataPack, vespene);
+            WritePackString(dataPack, key);
+
+            UpdateThreadsInFlight(key, 1);
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_UpdatePlayer, SQLString, dataPack);
+        }
+        else if (DatabaseAvailable(DB_MAIN))
+        {
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            if (SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString))
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+            else
+            {
+                new bool:success = false;
+                decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                // Retry Access denied or Lost connection errors.
+                if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+                {
+                    LogError("Initial attempt to update %d:%L's (ident=%d) player data failed: %s\nSQL:%s",
+                            client, ValidClientIndex(client), player_ident, error, SQLString);
+
+                    CloseDbHandle(DB_MAIN);
+                    if (DatabaseAvailable(DB_MAIN))
+                    {
+                        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                        success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+                        if (success)
+                        {
+                            error[0] = '\0';
+                            LogError("Second attempt to update %d:%L's (ident=%d) player data succeeded!",
+                                    client, ValidClientIndex(client), player_ident);
+                        }
+                        else
+                            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+
+                        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+                    }
+                }
+
+                if (!success)
+                {
+                    SetDatabaseSaved(client, false);
+                    LogError("Unable to update %d:%L's (ident=%d) player data (crystals=%d,vespene=%d): %s\nSQL:%s",
+                            client, ValidClientIndex(client), player_ident, crystals, vespene, error, SQLString);
+
+                    TraceReturn();
+                    return;
+                }
+            }
+        }
+        else
+        {
+            LogError("Unable to connect to DB to update %d:%L's (ident=%d) player data.",
+                    client, ValidClientIndex(client), player_ident);
+
+            TraceReturn();
+            return;
+        }
+
+        if (race > 0)
+        {
+            Trace("Save %d:%L's race data, race=%d Data", \
+                  client, ValidClientIndex(client), race);
+
+            if (SavePlayerRaceData(client, player_ident, race, threaded, key))
+            {
+                SetDatabaseSaveTime(client, GetGameTime());
+                SetDatabaseSaved(client, true);
+            }
+        }
+        else
+        {
+            SetDatabaseSaveTime(client, GetGameTime());
+            SetDatabaseSaved(client, true);
+        }
+
+        // Check the thread count and cleanup
+        // the entry if there aren't any
+        UpdateThreadsInFlight(key, 0);
+
+        if (!StrEqual(playerPrevName[client], name))
+        {
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_alias (player_ident,steamid,name,last_used) VALUES (%d,'%s','%s',current_timestamp) ON DUPLICATE KEY UPDATE last_used=current_timestamp", player_ident, steamid, escName);
+            if (threaded && DatabaseAvailable(DB_THREAD))
+            {
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, GetClientUserId(client));
+                WritePackCell(dataPack, player_ident);
+
+                // Start threaded SQL update to update alias table
+                SQL_TQuery(g_DbHandle[DB_THREAD], SQL_UpdateAlias, SQLString, dataPack);
+
+                // Assume it worked.
+                strcopy(playerPrevName[client], sizeof(playerPrevName[]), name);
+            }
+            else if (DatabaseAvailable(DB_MAIN))
+            {
+                SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                if (SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString))
+                {
+                    strcopy(playerPrevName[client], sizeof(playerPrevName[]), name);
+                    SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+                }
+                else
+                {
+                    new bool:success = false;
+                    decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                    SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                    SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                    // Retry Access denied or Lost connection errors.
+                    if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+                    {
+                        LogError("Initial attempt to update %d:%L's (ident=%d) alias data failed: %s\nSQL:%s",
+                                 client, ValidClientIndex(client), player_ident, error, SQLString);
+
+                        CloseDbHandle(DB_MAIN);
+                        if (DatabaseAvailable(DB_MAIN))
+                        {
+                            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                            success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+                            if (success)
+                            {
+                                error[0] = '\0';
+                                LogError("Second attempt to update %d:%L's (ident=%d) alias data succeeded!",
+                                        client, ValidClientIndex(client), player_ident);
+                            }
+                            else
+                                SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+
+                            SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+                        }
+                        else
+                        {
+                            LogError("Unable to reconnect to DB for second attempt to update %d:%L's (ident=%d) alias data.",
+                                     client, ValidClientIndex(client), player_ident);
+                        }
+                    }
+                    else if (StrContains(error, "constraint") >= 0)
+                    {
+                        if (StrContains(error, "player_ident") >= 0)
+                        {
+                            // Invalidate player_ident for constraint failed errors.
+                            SetDatabaseIdent(client,0);
+                        }
+                    }
+
+                    if (!success)
+                    {
+                        LogError("Unable to update %d:%L's (ident=%d) alias data: %s\nSQL:%s",
+                                client, ValidClientIndex(client), player_ident, error, SQLString);
+                    }
+                }
+            }
+            else
+            {
+                LogError("Unable to connect to DB to update %d:%L's (ident=%d) alias data.",
+                        client, ValidClientIndex(client), player_ident);
+            }
+        }
+    }
+    else
+        InsertPlayerData(client, threaded);
+
+    TraceReturn();
 }
 
 public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
+    TraceInto("DB", "SQL_UpdatePlayer");
+
     if (data == INVALID_HANDLE)
         LogError("Invalid Datapack Passed to SQL_UpdatePlayer!");
     else 
     {
-        new client = ReadPackCell(data); 
-        new Handle:playerHandle = Handle:ReadPackCell(data); 
-        new player_ident = ReadPackCell(data); 
-        CloseHandle(data);
+        ResetPack(data);
+        new userid = ReadPackCell(data); 
+        new client = GetClientOfUserId(userid);
+        new player_ident = ReadPackCell(data);
+        new crystals = ReadPackCell(data);
+        new vespene = ReadPackCell(data);
 
-        if (hndl == INVALID_HANDLE || error[0] != '\0')
-        {
-            LogError("Unable to update player record, client=%d, handle=%x, ident=%d: %s",
-                     client, playerHandle, player_ident, error);
-            ClearPlayer(playerHandle);
-        }
-        else
-            SavePlayerRaceData(client, playerHandle, player_ident,true);
-    }
-}
+        decl String:key[CLASS_STRING_LENGTH];
+        ReadPackString(data, key, sizeof(key));
 
-SavePlayerRaceData(client, Handle:playerHandle, player_ident, bool:threaded)
-{
-    decl String:SQLString[512];
-
-    new raceId            = GetRace(playerHandle);
-    new Handle:raceHandle = GetRaceHandle(raceId);
-    new race_ident        = GetRaceIdent(raceHandle);
-
-    new level             = GetLevel(playerHandle,raceId);
-    new xp                = GetXP(playerHandle,raceId);
-
-    if (DBIsSQLite)
-    {
-        Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_races (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, xp, level);
-    }
-    else
-    {
-        Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_races (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", player_ident, race_ident, xp, level, xp, level);
-    }
-
-    if (threaded)
-    {
-        new Handle:dataPack = CreateDataPack();
-        WritePackCell(dataPack, client);
-        WritePackCell(dataPack, _:playerHandle);
-        WritePackCell(dataPack, player_ident);
-        WritePackCell(dataPack, raceId);
-        WritePackCell(dataPack, race_ident);
-        WritePackCell(dataPack, _:raceHandle);
-        ResetPack(dataPack);
-
-        SQL_TQuery(DBIDB, SQL_SavePlayerRace, SQLString, dataPack);
-    }
-    else
-    {
-        if (SQL_FastQuery(DBIDB,SQLString))
-        {
-            SavePlayerUpgrades(client, playerHandle, player_ident,
-                               raceId, race_ident, raceHandle,
-                               threaded);
-        }
+        if (hndl != INVALID_HANDLE && error[0] == '\0')
+            UpdateThreadsInFlight(key, -1);
         else
         {
-            decl String:error[256];
-            decl String:raceName[64];
-            GetRaceShortName(raceHandle, raceName, sizeof(raceName));
-            SQL_GetError(DBIDB, error, sizeof(error));
-            LogError("Unable to insert/replace/update %s data, client=%d, handle=%x : %s\nSQL:%s",
-                     raceName, client, playerHandle, error, SQLString);
+            if (client > 0)
+                SetDatabaseSaved(client, false);
 
-            SetDatabaseIdent(playerHandle,-1); // Reset ident!
-        }
-    }
-}
-
-public SQL_SavePlayerRace(Handle:owner, Handle:hndl, const String:error[], any:data)
-{
-    if (data == INVALID_HANDLE)
-        LogError("Invalid Datapack Passed to SQL_SavePlayerRace!");
-    else 
-    {
-        new client = ReadPackCell(data); 
-        new Handle:playerHandle = Handle:ReadPackCell(data); 
-        new player_ident = ReadPackCell(data); 
-        new raceId = ReadPackCell(data);
-        new race_ident = ReadPackCell(data);
-        new Handle:raceHandle = Handle:ReadPackCell(data);
-        CloseHandle(data);
-
-        if (hndl == INVALID_HANDLE || error[0] != '\0')
-        {
-            decl String:raceName[64];
-            GetRaceShortName(raceHandle, raceName, sizeof(raceName));
-            LogError("Unable to insert/replace %s data, client=%d, handle=%x : %s",
-                     raceName, client, playerHandle, error);
-
-            ClearPlayer(playerHandle);
-        }
-        else
-        {
-            SavePlayerUpgrades(client, playerHandle, player_ident, raceId,
-                               race_ident, raceHandle, true);
-        }
-    }
-}
-
-SavePlayerUpgrades(client, Handle:playerHandle, player_ident,
-                   raceId, race_ident, Handle:raceHandle,
-                   bool:threaded)
-{
-    decl String:SQLString[512];
-    new bool:dataWritten = false;
-    new upgradeCount     = GetUpgradeCount(raceHandle);
-    new lastUpgrade      = upgradeCount - 1;
-    for(new upgrade=0;upgrade<upgradeCount;upgrade++)
-    {
-        new bool:last_upgrade = (upgrade == lastUpgrade);
-        new upgradeLevel = GetUpgradeLevel(playerHandle,raceId,upgrade);
-
-        if (upgradeLevel != GetSavedUpgradeLevel(playerHandle,raceId,upgrade) ||
-            (threaded && last_upgrade && dataWritten))
-        {
-            dataWritten = true;
-            if (DBIsSQLite)
+            // Retry Access denied or Lost connection errors.
+            if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
             {
-                Format(SQLString,sizeof(SQLString), "REPLACE INTO sc_player_upgrades (player_ident,race,upgrade,upgrade_level) VALUES (%d,%d,%d,%d)", player_ident, race_ident, upgrade, upgradeLevel);
-            }
-            else
-            {
-                Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_upgrades (player_ident,race_ident,upgrade,upgrade_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE upgrade_level=%d", player_ident, race_ident, upgrade, upgradeLevel, upgradeLevel);
-            }
+                // Invalidate and close the DB_THREAD handle (in the main thread)
+                CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+                g_DbHandle[DB_THREAD] = INVALID_HANDLE;
 
-            if (threaded)
-            {
-                new Handle:dataPack = CreateDataPack();
-                WritePackCell(dataPack, client);
-                WritePackCell(dataPack, _:playerHandle);
-                WritePackCell(dataPack, _:last_upgrade);
-                ResetPack(dataPack);
-
-                SQL_TQuery(DBIDB, SQL_SavePlayerUpgrades, SQLString, dataPack);
-            }
-            else
-            {
-                if (SQL_FastQuery(DBIDB,SQLString))
-                    SetSavedUpgradeLevel(playerHandle,raceId,upgrade,upgradeLevel);
-                else
+                if (client > 0)
                 {
-                    decl String:error[256];
-                    SQL_GetError(DBIDB, error, sizeof(error));
-                    LogError("Unable to insert/replace upgrade data, client=%d, handle=%x : %s\nSQL:%s",
-                             client, playerHandle, error, SQLString);
+                    // Retry saving the client's data
+                    CreateTimer(0.2, Retry_SavePlayerData, userid,TIMER_FLAG_NO_MAPCHANGE);
+                }
+            }
+            else
+            {
+                RemoveFromTrie(g_SaveThreadsInFlight, key);
+                LogError("Unable to update %d:%L's (ident=%d) player data (crystals=%d,vespene=%d,key=%s): %s",
+                         client, ValidClientIndex(client), player_ident, crystals, vespene, key, error);
+
+                if (IsValidClient(client))
+                {
+                    PrintToConsole(client, "%t", "UnableToSave", error);
+                    CPrintToChat(client, "%t", "UnableToSave", error);
+
+                    SetHudTextParams(-1.0, 0.8, 5.0, 255, 0, 0, 255, 2, 0.5, 0.0, 0.5);
+                    ShowHudText(client, 1, "%t", "UnableToSave", error);
                 }
             }
         }
+        CloseHandle(data);
     }
 
-    if (threaded && !dataWritten)
-        ClearPlayer(playerHandle);
+    TraceReturn();
+}
+
+public Action:Retry_SavePlayerData(Handle:timer,any:userid)
+{
+    // Retry to save the player's data
+    new client = GetClientOfUserId(userid);
+    if (IsValidClient(client))
+        SavePlayerData(client);
+}
+
+public SQL_UpdateAlias(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_UpdateAlias");
+
+    if (data == INVALID_HANDLE)
+        LogError("Invalid Datapack Passed to SQL_UpdateAlias!");
+    else 
+    {
+        if (hndl == INVALID_HANDLE || error[0] != '\0')
+        {
+            // Invalidate DB_THREAD handle for denied or Lost connection errors.
+            if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+            {
+                // Invalidate and close the DB_THREAD handle (in the main thread)
+                CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+                g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+            }
+
+            ResetPack(data);
+            new userid = ReadPackCell(data); 
+            new client = GetClientOfUserId(userid);
+            new player_ident = ReadPackCell(data);
+
+            LogError("Unable to update %d:%L's (ident=%d) alias data: %s",
+                     client, ValidClientIndex(client), player_ident, error);
+        }
+        CloseHandle(data);
+    }
+
+    TraceReturn();
+}
+
+InsertPlayerData(client, bool:threaded)
+{
+    TraceInto("DB", "InsertPlayerData", "client=%d:%L, threaded=%d", \
+              client, ValidClientIndex(client), threaded);
+
+    decl String:steamid[ID_STRING_LENGTH];
+    if (GetClientAuthString(client,steamid,sizeof(steamid)))
+    {
+        if (DatabaseAvailable(DB_MAIN))
+        {
+            new race              = GetRace(client);
+            new Handle:raceHandle = GetRaceHandle(race);
+            new race_ident        = GetRaceIdent(raceHandle);
+            new Settings:bits     = GetSettingsBits(client);
+            new overall_level     = GetOverallLevel(client);
+            new crystals          = GetCrystals(client);
+            new vespene           = GetVespene(client);
+
+            decl String:name[MAX_NAME_LENGTH];
+            decl String:escName[sizeof(name)*2+1];
+
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            name[0] = escName[0] = '\0';
+            if (IsClientInGame(client))
+            {
+                GetClientName(client,name,sizeof(name));
+                if (!SQL_EscapeString(g_DbHandle[DB_MAIN], name, escName, sizeof(escName)))
+                {
+                    LogError("Unable to escape %s!", name);
+                    strcopy(escName, sizeof(escName), name);
+                }
+            }
+
+            Trace("Insert %d:%L's data, race=%d, race_ident=%d, overall_level=%d", \
+                  client, ValidClientIndex(client), race, race_ident, overall_level);
+
+            decl String:SQLString[QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString), "INSERT INTO sc_players (steamid,name,race_ident,crystals,vespene,overall_level,settings,last_update) VALUES ('%s','%s',%d,%d,%d,%d,%d,current_timestamp) ON DUPLICATE KEY UPDATE race_ident=%d, crystals=%d, vespene=%d, overall_level=%d, settings=%d, last_update=current_timestamp", steamid, escName, race_ident, crystals, vespene, overall_level, bits, race_ident, crystals, vespene, overall_level, bits);
+
+            Trace("Inserting %d:%L's Player Data; steamid=%s, name='%s', race=%d, race_ident=%d, overall_level=%d, crystals=%d, vespene=%d", client, ValidClientIndex(client), steamid, name, race, race_ident, overall_level, crystals, vespene);
+
+            new player_ident = -1;
+            new bool:success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+            if (success)
+            {
+                player_ident = SQL_GetInsertId(g_DbHandle[DB_MAIN]);
+                SetDatabaseIdent(client,player_ident);
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+            }
+            else
+            {
+                decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                // Retry Access denied or Lost connection errors.
+                if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+                {
+                    LogError("Initial attempt to insert/update %d:%L's player data failed: %s\nSQL:%s",
+                             client, ValidClientIndex(client), error, SQLString);
+
+                    CloseDbHandle(DB_MAIN);
+                    if (DatabaseAvailable(DB_MAIN))
+                    {
+                        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                        success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+                        if (success)
+                        {
+                            player_ident = SQL_GetInsertId(g_DbHandle[DB_MAIN]);
+                            SetDatabaseIdent(client,player_ident);
+
+                            error[0] = '\0';
+                            LogError("Second attempt to insert/update %d:%L's player data succeeded!",
+                                     client, ValidClientIndex(client));
+                        }
+                        else
+                            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+
+                        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+                    }
+                }
+                else
+                {
+                    LogError("Unable to insert/update %d:%L's player data (crystals=%d,vespene=%d): %s\nSQL:%s",
+                             client, ValidClientIndex(client), crystals, vespene, error, SQLString);
+                }
+            }
+
+            if (success)
+            {
+                if (player_ident > 0 && race > 0)
+                {
+                    Trace("Save %d:%L's race=%d data", \
+                          client, ValidClientIndex(client), \
+                          race);
+
+                    if (SavePlayerRaceData(client, player_ident, race, threaded, ""))
+                    {
+                        SetDatabaseSaveTime(client, GetGameTime());
+                        SetDatabaseSaved(client, true);
+                    }
+                }
+            }
+            else
+            {
+                Format(SQLString,sizeof(SQLString),
+                       "SELECT player_ident FROM sc_players WHERE steamid = '%s'",
+                       steamid);
+
+                SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                new Handle:ident_query=SQL_Query(g_DbHandle[DB_MAIN],SQLString);
+                if (ident_query)
+                {
+                    if (SQL_HasResultSet(ident_query) &&
+                        SQL_FetchRow(ident_query))
+                    {
+                        player_ident = SQL_FetchInt(ident_query,0);
+                    }
+                    else
+                    {
+                        decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                        SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                        LogError("Unable to query %d:%L's ident: %s\nSQL:%s",
+                                  client, ValidClientIndex(client), error, SQLString);
+                    }
+                    CloseHandle(ident_query);
+                }
+                else
+                {
+                    decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+                    SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                    LogError("Unable to query %d:%L's ident: %s\nSQL:%s",
+                            client, ValidClientIndex(client), error, SQLString);
+                }
+
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                if (player_ident > 0)
+                {
+                    Trace("%d:%L's ident=%d", \
+                          client, ValidClientIndex(client), \
+                          player_ident);
+
+                    SetDatabaseIdent(client, player_ident);
+                    SavePlayerData(client);
+                }
+                else
+                {
+                    SetDatabaseSaved(client, false);
+                    LogError("Unable to save %d:%L's data, ident is invalid (%d)!",
+                             client,ValidClientIndex(client), player_ident);
+                }
+            }
+        }
+        else
+        {
+            LogError("Unable to connect to DB to insert %d:%L's player data\n",
+                     client, ValidClientIndex(client));
+        }
+    }
+    else
+    {
+        LogError("Unable to obtain steamid when saving %d:%L",
+                 client, ValidClientIndex(client));
+    }
+
+    TraceReturn();
+}
+
+bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:key[])
+{
+    TraceInto("DB", "SavePlayerRaceData", \
+              "client=%d:%L, player_ident=%d, race=%d, threaded=%d, key=%s", \
+              client, ValidClientIndex(client), player_ident, race, threaded, key);
+
+    new bool:success    = false;           
+    new Handle:raceInfo = GetRaceInfo(client, race);
+    if (raceInfo != INVALID_HANDLE)
+    {
+        new Handle:raceHandle = GetRaceHandle(race);
+        new race_ident        = GetRaceIdent(raceHandle);
+
+        new level = GetRaceInfoLevel(raceInfo);
+        new xp    = GetRaceInfoXP(raceInfo);
+
+        Trace("%d:%L Save Race Data, race=%d, raceInfo=0x%08x, race_ident=%d, level=%d, xp=%d", \
+              client, ValidClientIndex(client), race, raceInfo, race_ident, level, xp);
+
+        new String:SQLString[QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_races (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", player_ident, race_ident, xp, level, xp, level);
+
+        if (threaded && DatabaseAvailable(DB_THREAD))
+        //  && GetRaceInfoLoaded(raceInfo) >= DataLoaded)
+        {
+            // Only save upgrades by calling ThreadedSavePlayerUpgrades()
+            // if the player had levels in this race before
+            // (and the sc_player_races entry already exists)
+            // Otherwise, attempt to save them AFTER saving
+            // the player's race's data has completed!
+            //new bool:saveUpgrades = g_bSaveUpgrades && (GetRaceInfoLoaded(raceInfo) >= DataLoaded);
+            new bool:saveUpgrades = (GetRaceInfoLoaded(raceInfo) >= DataLoaded);
+
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(client));
+            WritePackCell(dataPack, player_ident);
+            WritePackCell(dataPack, race);
+            WritePackCell(dataPack, race_ident);
+            WritePackCell(dataPack, xp);
+            WritePackCell(dataPack, level);
+            WritePackCell(dataPack, !saveUpgrades);
+            WritePackString(dataPack, key);
+
+            UpdateThreadsInFlight(key, 1);
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_SavePlayerRaceData, SQLString, dataPack);
+
+            if (saveUpgrades)
+            {
+                ThreadedSavePlayerUpgrades(client, player_ident, race_ident,
+                                           race, raceInfo, raceHandle, key);
+            }
+
+            SetRaceInfoSavedXP(raceInfo,xp);
+            success = true; // Assume success when threaded.
+        }
+        else if (DatabaseAvailable(DB_MAIN))
+        {
+            decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+            decl String:raceName[SHORT_STRING_LENGTH]; raceName[0] = '\0';
+
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+            if (success)
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+            else
+            {
+                GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+                SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                // Retry Access denied or Lost connection errors.
+                if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+                {
+                    LogError("Initial attempt to insert/update %d:%L's (ident=%d) %d:%s race data failed: %s\nSQL:%s",
+                             client, ValidClientIndex(client), player_ident, race_ident, raceName, error, SQLString);
+
+                    CloseDbHandle(DB_MAIN);
+                    if (DatabaseAvailable(DB_MAIN))
+                    {
+                        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                        success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+                        if (success)
+                        {
+                            error[0] = '\0';
+                            LogError("Second attempt to insert/update %d:%L's (ident=%d) %d:%s race data succeeded!",
+                                     client, ValidClientIndex(client), player_ident, race_ident, raceName);
+                        }
+                        else
+                            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+
+                        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+                    }
+                }
+                else if (StrContains(error, "constraint") >= 0)
+                {
+                    if (StrContains(error, "player_ident") >= 0)
+                    {
+                        // Invalidate player_ident for constraint failed errors.
+                        SetDatabaseIdent(client,0);
+                    }
+                }
+            }
+
+            if (success)
+            {
+                SetRaceInfoSavedXP(raceInfo,xp);
+
+                //if (g_bSaveUpgrades)
+                {
+                    if (threaded && DatabaseAvailable(DB_THREAD))
+                    {
+                        ThreadedSavePlayerUpgrades(client, player_ident, race_ident,
+                                                   race, raceInfo, raceHandle, key);
+
+                        success = true; // Assume success when threaded.
+                    }
+                    else
+                    {
+                        success = SavePlayerUpgrades(client, player_ident, race_ident,
+                                                     race, raceInfo, raceHandle, key);
+                    }
+                }
+            }
+            else
+            {
+                SetDatabaseSaved(client, false);
+                LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s race data (xp=%d,level=%d): %s\nSQL:%s",
+                         client, ValidClientIndex(client), player_ident, race_ident,
+                         raceName, xp, level, error, SQLString);
+            }
+        }
+        else
+        {
+            decl String:raceName[SHORT_STRING_LENGTH];
+            GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+            LogError("Unable to connect to DB to insert/update %d:%L's (ident=%d) %d:%s race data\n",
+                     client, ValidClientIndex(client), player_ident, race_ident, raceName);
+
+            success = false;
+        }
+
+        new Faction:techId = GetRaceFaction(raceHandle);
+        if (techId > Generic)
+        {
+            success &= SavePlayerTechData(client, player_ident,
+                                          techId, threaded, key);
+        }
+    }
+    else
+    {
+        LogError("Unable to get %d:%L's %d race data",
+                 client, ValidClientIndex(client), race);
+    }
+
+    TraceReturn("success=%d", success);
+    return success;
+}
+
+public SQL_SavePlayerRaceData(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_SavePlayerRaceData");
+
+    if (data == INVALID_HANDLE)
+        LogError("Invalid Datapack Passed to SQL_SavePlayerRaceData!");
+    else 
+    {
+        ResetPack(data);
+        new userid            = ReadPackCell(data); 
+        new client            = GetClientOfUserId(userid);
+        new player_ident      = ReadPackCell(data); 
+        new race              = ReadPackCell(data); 
+        new race_ident        = ReadPackCell(data);
+        new xp                = ReadPackCell(data);
+        new level             = ReadPackCell(data);
+        new bool:saveUpgrades = bool:ReadPackCell(data);
+
+        decl String:key[CLASS_STRING_LENGTH];
+        ReadPackString(data, key, sizeof(key));
+
+        if (hndl != INVALID_HANDLE && error[0] == '\0')
+        {
+            UpdateThreadsInFlight(key, -1);
+
+            if (saveUpgrades && IsValidClient(client))
+                CreateTimer(0.1, Retry_SavePlayerData, userid,TIMER_FLAG_NO_MAPCHANGE);
+        }
+        else
+        {
+            new bool:clientIsValid = IsValidClient(client);
+            if (clientIsValid)
+            {
+                SetSavedXP(client,race,0);
+                SetDatabaseSaved(client, false);
+            }
+
+            // Invalidate DB_THREAD handle for denied or Lost connection errors.
+            if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+            {
+                // Invalidate and close the DB_THREAD handle (in the main thread)
+                CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+                g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+
+                if (clientIsValid)
+                {
+                    // Retry saving the client's race data
+                    new Handle:dataPack = CreateDataPack();
+                    WritePackCell(dataPack, userid);
+                    WritePackCell(dataPack, player_ident);
+                    WritePackCell(dataPack, race);
+                    WritePackString(dataPack, key);
+                    CreateTimer(0.2, Retry_SavePlayerRaceData, dataPack,TIMER_FLAG_NO_MAPCHANGE);
+                }
+            }
+            else
+            {
+                RemoveFromTrie(g_SaveThreadsInFlight, key);
+
+                decl String:raceName[SHORT_STRING_LENGTH];
+                GetRaceShortName(GetRaceHandle(race), raceName, sizeof(raceName));
+                LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s race data (xp=%d,level=%d,key=%s): %s",
+                         client, ValidClientIndex(client), player_ident, race_ident, raceName, xp, level, key, error);
+
+                if (clientIsValid)
+                {
+                    if (StrContains(error, "constraint") >= 0)
+                    {
+                        if (StrContains(error, "player_ident") >= 0)
+                        {
+                            // Invalidate player_ident for constraint failed errors.
+                            SetDatabaseIdent(client,0);
+                        }
+                    }
+
+                    PrintToConsole(client, "%t", "UnableToSaveRace", raceName, error);
+                    CPrintToChat(client, "%t", "UnableToSaveRace", raceName, error);
+
+                    SetHudTextParams(-1.0, 0.8, 5.0, 255, 0, 0, 255, 2, 0.5, 0.0, 0.5);
+                    ShowHudText(client, 1, "%t", "UnableToSaveRace", raceName, error);
+                }
+            }
+        }
+        CloseHandle(data);
+    }
+
+    TraceReturn();
+}
+
+public Action:Retry_SavePlayerRaceData(Handle:timer,Handle:data)
+{
+    ResetPack(data);
+    new client = GetClientOfUserId(ReadPackCell(data)); 
+    new player_ident = ReadPackCell(data);
+    new raceId = ReadPackCell(data);
+
+    decl String:key[CLASS_STRING_LENGTH];
+    ReadPackString(data, key, sizeof(key));
+
+    CloseHandle(data);
+
+    // Retry to save the player's race data
+    if (IsValidClient(client))
+        SavePlayerRaceData(client, player_ident, raceId, true, key);
+}
+
+bool:SavePlayerTechData(client, player_ident, Faction:techId, bool:threaded, const String:key[])
+{
+    TraceInto("DB", "SavePlayerTechData", \
+              "client=%d:%L, player_ident=%d, tech=%d, threaded=%d", \
+              client, ValidClientIndex(client), player_ident, techId, threaded);
+
+    new bool:success    = false;           
+    new Handle:techInfo = GetTechInfo(client, techId);
+    if (techInfo != INVALID_HANDLE)
+    {
+        new count = GetTechInfoCount(techInfo);
+        new level = GetTechInfoLevel(techInfo);
+
+        Trace("%d:%L Save Tech Data, tech=%d, techInfo=0x%08x, count=%d, level=%d", \
+              client, ValidClientIndex(client), techId, techInfo, count, level);
+
+        decl String:SQLString[QUERY_STRING_LENGTH];
+        Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_tech (player_ident,faction,tech_count,tech_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE tech_count=%d,tech_level=%d", player_ident, techId, count, level, count, level);
+
+        if (threaded && DatabaseAvailable(DB_THREAD))
+        {
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(client));
+            WritePackCell(dataPack, player_ident);
+            WritePackCell(dataPack, _:techId);
+            WritePackString(dataPack, key);
+
+            UpdateThreadsInFlight(key, 1);
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_SavePlayerTechData, SQLString, dataPack);
+            success = true; // Assume success when threaded.
+        }
+        else if (DatabaseAvailable(DB_MAIN))
+        {
+            decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+
+            SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+            success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+            if (success)
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+            else
+            {
+                SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                // Retry Access denied or Lost connection errors.
+                if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+                {
+                    decl String:techName[NAME_STRING_LENGTH];
+                    GetFactionName(techId, techName, sizeof(techName));
+                    LogError("Initial attempt to insert/update %d:%L's (ident=%d) %d:%s tech data failed: %s\nSQL:%s",
+                             client, ValidClientIndex(client), player_ident, techId, techName, error, SQLString);
+
+                    CloseDbHandle(DB_MAIN);
+                    if (DatabaseAvailable(DB_MAIN))
+                    {
+                        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+                        success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
+                        if (success)
+                        {
+                            error[0] = '\0';
+                            LogError("Second attempt to insert/update %d:%L's (ident=%d) %d:%s tech data succeeded!",
+                                     client, ValidClientIndex(client), player_ident, techId, techName);
+                        }
+                        else
+                            SQL_GetError(g_DbHandle[DB_MAIN], error, sizeof(error));
+
+                        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+                    }
+                }
+                else if (StrContains(error, "constraint") >= 0)
+                {
+                    if (StrContains(error, "player_ident") >= 0)
+                    {
+                        // Invalidate player_ident for constraint failed errors.
+                        SetDatabaseIdent(client,0);
+                    }
+                }
+            }
+
+            if (!success)
+            {
+                SetDatabaseSaved(client, false);
+
+                decl String:techName[NAME_STRING_LENGTH];
+                GetFactionName(techId, techName, sizeof(techName));
+                LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s tech data: %s\nSQL:%s",
+                         client, ValidClientIndex(client), player_ident, techId,
+                         techName, error, SQLString);
+            }
+        }
+        else
+        {
+            decl String:techName[NAME_STRING_LENGTH];
+            GetFactionName(techId, techName, sizeof(techName));
+            LogError("Unable to connect to DB to insert/update %d:%L's (ident=%d) %d:%s tech data",
+                     client, ValidClientIndex(client), player_ident, techId, techName);
+
+            success = false;
+        }
+    }
+    else
+    {
+        LogError("Unable to get %d:%L's %d tech data",
+                 client, ValidClientIndex(client), techId);
+    }
+
+    TraceReturn("success=%d", success);
+    return success;
+}
+
+public SQL_SavePlayerTechData(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_SavePlayerTechData");
+
+    if (data == INVALID_HANDLE)
+        LogError("Invalid Datapack Passed to SQL_SavePlayerTechData!");
+    else 
+    {
+        ResetPack(data);
+        new userid            = ReadPackCell(data); 
+        new client            = GetClientOfUserId(userid);
+        new player_ident      = ReadPackCell(data); 
+        new Faction:techId    = Faction:ReadPackCell(data); 
+
+        decl String:key[CLASS_STRING_LENGTH];
+        ReadPackString(data, key, sizeof(key));
+
+        if (hndl != INVALID_HANDLE && error[0] == '\0')
+            UpdateThreadsInFlight(key, -1);
+        else
+        {
+            if (client > 0)
+            {
+                SetDatabaseSaved(client, false);
+                if (StrContains(error, "constraint") >= 0)
+                {
+                    if (StrContains(error, "player_ident") >= 0)
+                    {
+                        // Invalidate player_ident for constraint failed errors.
+                        SetDatabaseIdent(client,0);
+                    }
+                }
+            }
+
+            // Invalidate DB_THREAD handle for denied or Lost connection errors.
+            if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+            {
+                // Invalidate and close the DB_THREAD handle (in the main thread)
+                CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+                g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+            }
+
+            RemoveFromTrie(g_SaveThreadsInFlight, key);
+
+            decl String:techName[NAME_STRING_LENGTH];
+            GetFactionName(techId, techName, sizeof(techName));
+            LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s tech data: %s",
+                     client, ValidClientIndex(client), player_ident, techId, techName, error);
+        }
+        CloseHandle(data);
+    }
+
+    TraceReturn();
+}
+
+bool:SavePlayerUpgrades(client, player_ident, race_ident, raceId,
+                        Handle:raceInfo, Handle:raceHandle,
+                        const String:key[])
+{
+    TraceInto("DB", "SavePlayerUpgrades", \
+              "client=%d:%L, player_ident=%d, race_ident=%d, raceId=%d, raceInfo=0x%08x, raceHandle=0x%08x", \
+              client, ValidClientIndex(client), player_ident, race_ident, raceId, raceInfo, raceHandle);
+
+    new bool:success = true;
+    if (DatabaseAvailable(DB_MAIN))
+    {
+        static const String:prepareStmt[] = "INSERT INTO sc_player_upgrades (player_ident,race_ident,upgrade,upgrade_level) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE upgrade_level=?";
+
+        decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
+
+        SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+
+        new Handle:dbReplaceUpgradeStmtHandle = SQL_PrepareQuery(g_DbHandle[DB_MAIN], prepareStmt,
+                                                                 error, sizeof(error));
+
+        if (dbReplaceUpgradeStmtHandle == INVALID_HANDLE)
+        {
+            // Retry Access denied or Lost connection errors.
+            if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+            {
+                LogError("Initial attempt to prepare %d:%L's Player Upgrade Replace failed: %s",
+                         client, ValidClientIndex(client), player_ident, error);
+
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                CloseDbHandle(DB_MAIN);
+                if (DatabaseAvailable(DB_MAIN))
+                {
+                    SQL_LockDatabase(g_DbHandle[DB_MAIN]);
+                    dbReplaceUpgradeStmtHandle = SQL_PrepareQuery(g_DbHandle[DB_MAIN], prepareStmt,
+                                                                  error, sizeof(error));
+                    if (dbReplaceUpgradeStmtHandle != INVALID_HANDLE)
+                    {
+                        LogError("Second attempt to prepare %d:%L's (ident=%d) Player Upgrade Replace succeeded!",
+                                 client, ValidClientIndex(client), player_ident);
+                    }
+                }
+            }
+
+            if (dbReplaceUpgradeStmtHandle == INVALID_HANDLE)
+            {
+                SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+
+                success = false;
+                SetDatabaseSaved(client, false);
+                LogError("Unable to connect to DB to prepare %d:%L's (ident=%d) Player Upgrade Replace: %s",
+                         client, ValidClientIndex(client), player_ident, error);
+
+                TraceReturn("success=%d", success);
+                return success;
+            }
+        }
+
+        if (dbReplaceUpgradeStmtHandle != INVALID_HANDLE)
+        {
+            new upgradeCount = GetUpgradeCount(raceHandle);
+            for (new upgrade = 0; upgrade < upgradeCount; upgrade++)
+            {
+                new upgradeLevel = GetRaceInfoUpgradeLevel(raceInfo,upgrade);
+                if (upgradeLevel != GetRaceInfoSavedUpgradeLevel(raceInfo,upgrade))
+                {
+                    SQL_BindParamInt(dbReplaceUpgradeStmtHandle, 0, player_ident);
+                    SQL_BindParamInt(dbReplaceUpgradeStmtHandle, 1, race_ident);
+                    SQL_BindParamInt(dbReplaceUpgradeStmtHandle, 2, upgrade);
+                    SQL_BindParamInt(dbReplaceUpgradeStmtHandle, 3, upgradeLevel);
+                    SQL_BindParamInt(dbReplaceUpgradeStmtHandle, 4, upgradeLevel);
+
+                    if (SQL_Execute(dbReplaceUpgradeStmtHandle))
+                        SetRaceInfoSavedUpgradeLevel(raceInfo,upgrade,upgradeLevel);
+                    else
+                    {
+                        SetDatabaseSaved(client, false);
+                        success = false;
+
+                        decl String:raceName[SHORT_STRING_LENGTH];
+                        GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+
+                        SQL_GetError(dbReplaceUpgradeStmtHandle, error, sizeof(error));
+                        LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s upgrade %d data: %s",
+                                 client, ValidClientIndex(client), player_ident, race_ident, raceName,
+                                 upgrade, error);
+
+                        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+                        {
+                            // Abort saving upgrade data when connection lost or access denied
+                            break;
+                        }
+                        else if (StrContains(error, "constraint") >= 0)
+                        {
+                            if (StrContains(error, "player_ident") >= 0)
+                            {
+                                // Invalidate player_ident for constraint failed errors and then abort.
+                                SetDatabaseIdent(client,0);
+                                break;
+                            }
+                            else if (StrContains(error, "sc_upgrades") >= 0)
+                            {
+                                // Retry saving the client's upgrade data
+                                // (after adding the upgrade to the sc_upgrade table)
+                                new Handle:dataPack = CreateDataPack();
+                                WritePackCell(dataPack, GetClientUserId(client));
+                                WritePackCell(dataPack, player_ident);
+                                WritePackCell(dataPack, race_ident);
+                                WritePackCell(dataPack, raceId);
+                                WritePackCell(dataPack, upgrade);
+                                WritePackString(dataPack, key);
+                                CreateTimer(0.1, Retry_SavePlayerUpgradeData, dataPack,TIMER_FLAG_NO_MAPCHANGE);
+                            }
+                        }
+                    }
+                }
+            }
+
+            CloseHandle(dbReplaceUpgradeStmtHandle);
+        }
+
+        SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
+    }
+    else
+    {
+        LogError("Unable to connect to DB to insert/update %d:%L's (ident=%d) upgrade data\n",
+                 client, ValidClientIndex(client), player_ident);
+        success = false;
+    }
+
+    TraceReturn("success=%d", success);
+    return success;
+}
+
+ThreadedSavePlayerUpgrades(client, player_ident, race_ident, raceId,
+                           Handle:raceInfo, Handle:raceHandle,
+                           const String:key[])
+{
+    TraceInto("DB", "ThreadedSavePlayerUpgrades", \
+              "client=%d:%L, player_ident=%d, race_ident=%d, raceId=%d, raceInfo=0x%08x, raceHandle=0x%08x, key=%s", \
+              client, ValidClientIndex(client), player_ident, race_ident, raceId, raceInfo, raceHandle, key);
+
+    new upgradeCount = GetUpgradeCount(raceHandle);
+    for (new upgrade = 0; upgrade < upgradeCount; upgrade++)
+    {
+        new upgradeLevel = GetRaceInfoUpgradeLevel(raceInfo,upgrade);
+        if (upgradeLevel != GetRaceInfoSavedUpgradeLevel(raceInfo,upgrade))
+        {
+            decl String:SQLString[QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString),
+                   "INSERT INTO sc_player_upgrades (player_ident,race_ident,upgrade,upgrade_level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE upgrade_level=%d",
+                   player_ident, race_ident, upgrade, upgradeLevel, upgradeLevel);
+
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(client));
+            WritePackCell(dataPack, player_ident);
+            WritePackCell(dataPack, race_ident);
+            WritePackCell(dataPack, raceId);
+            WritePackCell(dataPack, upgrade);
+            WritePackCell(dataPack, upgradeLevel);
+            WritePackString(dataPack, key);
+
+            UpdateThreadsInFlight(key, 1);
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_SavePlayerUpgrades, SQLString, dataPack);
+        }
+    }
+
+    TraceReturn("cleared 0x%08x", raceInfo);
 }
 
 public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
+    TraceInto("DB", "SQL_SavePlayerUpgrades");
+
     if (data == INVALID_HANDLE)
         LogError("Invalid Datapack Passed to SQL_SavePlayerUpgrades!");
     else 
     {
-        new client = ReadPackCell(data); 
-        new Handle:playerHandle = Handle:ReadPackCell(data); 
-        new bool:last_upgrade = bool:ReadPackCell(data);
-        if (hndl == INVALID_HANDLE || error[0] != '\0')
-            LogError("Unable to insert/replace one upgrade data, client=%d, handle=%x : %s",
-                     client, playerHandle, error);
+        ResetPack(data);
+        new userid = ReadPackCell(data); 
+        new client = GetClientOfUserId(userid); 
+        new player_ident  = ReadPackCell(data); 
+        new race_ident = ReadPackCell(data);
+        new raceId = ReadPackCell(data);
+        new upgrade = ReadPackCell(data);
+        new level = ReadPackCell(data);
 
-        if (last_upgrade)
-            ClearPlayer(playerHandle);
+        decl String:key[CLASS_STRING_LENGTH];
+        ReadPackString(data, key, sizeof(key));
+
+        if (hndl != INVALID_HANDLE && error[0] == '\0')
+        {
+            UpdateThreadsInFlight(key, -1);
+            if (client > 0)
+            {
+                new Handle:raceInfo = GetRaceInfo(client, raceId);
+                if (raceInfo != INVALID_HANDLE)
+                    SetRaceInfoSavedUpgradeLevel(raceInfo, upgrade, level);
+            }
+        }
+        else
+        {
+            if (client > 0)
+            {
+                new Handle:raceInfo = GetRaceInfo(client, raceId);
+                if (raceInfo != INVALID_HANDLE)
+                    SetRaceInfoSavedUpgradeLevel(raceInfo, upgrade, -1);
+            }
+
+            decl String:raceName[SHORT_STRING_LENGTH];
+            new Handle:raceHandle = GetRaceHandle(raceId);
+            GetRaceShortName(raceHandle, raceName, sizeof(raceName));
+            LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s upgrade %d data: %s",
+                     client, ValidClientIndex(client), player_ident, race_ident, raceName,
+                     upgrade, error);
+
+            // Invalidate DB_THREAD handle for denied or Lost connection errors.
+            if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+            {
+                // Invalidate and close the DB_THREAD handle (in the main thread)
+                CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+                g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+                RemoveFromTrie(g_SaveThreadsInFlight, key);
+            }
+            else if (StrContains(error, "constraint") >= 0)
+            {
+                if (StrContains(error, "player_ident") >= 0)
+                {
+                    // Invalidate player_ident for constraint failed errors.
+                    SetDatabaseIdent(client,0);
+                    RemoveFromTrie(g_SaveThreadsInFlight, key);
+                }
+                else if (StrContains(error, "sc_upgrades") >= 0)
+                {
+                    // Retry saving the client's upgrade data
+                    // (after adding the upgrade to the sc_upgrade table)
+                    new Handle:dataPack = CreateDataPack();
+                    WritePackCell(dataPack, userid);
+                    WritePackCell(dataPack, player_ident);
+                    WritePackCell(dataPack, race_ident);
+                    WritePackCell(dataPack, raceId);
+                    WritePackCell(dataPack, upgrade);
+                    WritePackString(dataPack, key);
+                    CreateTimer(0.1, Retry_SavePlayerUpgradeData, dataPack,TIMER_FLAG_NO_MAPCHANGE);
+                }
+            }
+            else
+                RemoveFromTrie(g_SaveThreadsInFlight, key);
+        }
+        CloseHandle(data);
+    }
+
+    TraceReturn();
+}
+
+public Action:Retry_SavePlayerUpgradeData(Handle:timer,Handle:data)
+{
+    ResetPack(data);
+    new client = GetClientOfUserId(ReadPackCell(data)); 
+    new player_ident = ReadPackCell(data);
+    new race_ident = ReadPackCell(data);
+    new raceId = ReadPackCell(data);
+    new upgrade = ReadPackCell(data);
+
+    decl String:key[CLASS_STRING_LENGTH];
+    ReadPackString(data, key, sizeof(key));
+
+    CloseHandle(data);
+
+    if (raceId > 0)
+    {
+        // Upgrade doesn't exist in DB for the race so add it here
+        new Handle:raceHandle = GetRaceHandle(raceId);
+
+        decl String:short[SHORT_STRING_LENGTH];
+        GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+
+        decl String:image[NAME_STRING_LENGTH];
+        GetUpgradeImage(raceHandle,upgrade,image,sizeof(image));
+
+        decl String:name[NAME_STRING_LENGTH];
+        decl String:desc[LONG_STRING_LENGTH];
+        GetUpgradeNameAndDesc(raceHandle,upgrade,name,sizeof(name),desc,sizeof(desc));
+
+        InsertUpgrade(race_ident, upgrade, GetUpgradeCategory(raceHandle,upgrade), short, name, desc, image,
+                      GetUpgradeCostCrystals(raceHandle,upgrade), GetUpgradeCostVespene(raceHandle,upgrade),
+                      GetUpgradeRequiredLevel(raceHandle,upgrade), GetUpgradeMaxLevel(raceHandle,upgrade),
+                      GetUpgradeEnergy(raceHandle,upgrade), GetUpgradeCanUseAccumulated(raceHandle,upgrade),
+                      GetUpgradeRecurringEnergy(raceHandle,upgrade), GetUpgradeCrystals(raceHandle,upgrade),
+                      GetUpgradeVespene(raceHandle,upgrade), GetUpgradeCooldownDuration(raceHandle,upgrade));
+
+        // Retry to save the player's race (including upgrade) data
+        if (client > 0)
+            SavePlayerRaceData(client, player_ident, raceId, true, key);
     }
 }
+
+DisablePlayer(admin, target)
+{
+    TraceInto("DB", "DisablePlayer", "admin=%d:%L, target=%d:%L's", \
+              admin, ValidClientIndex(admin), \
+              target, ValidClientIndex(target));
+
+    SetPlayerStatus(target,PlayerDisabled);
+
+    if (DatabaseAvailable(DB_THREAD))
+    {
+        new player_ident = GetDatabaseIdent(target);
+        if (player_ident > 0)
+        {
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString),
+                   "UPDATE LOW_PRIORITY sc_players SET status = 'Disabled' WHERE player_ident = %d",
+                   player_ident);
+
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(admin));
+            WritePackCell(dataPack, GetClientUserId(target));
+            WritePackCell(dataPack, player_ident);
+            WritePackString(dataPack, "");
+
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_DisablePlayer, SQLString, dataPack);
+        }
+        else
+        {
+            decl String:steamid[ID_STRING_LENGTH];
+            if (IsClientConnected(target) &&
+                GetClientAuthString(target,steamid,sizeof(steamid)))
+            {
+                decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+                Format(SQLString,sizeof(SQLString),
+                       "UPDATE LOW_PRIORITY sc_players SET status = 'Disabled' WHERE steamid = %d AND del_rec_date IS NULL",
+                       steamid);
+
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, GetClientUserId(admin));
+                WritePackCell(dataPack, GetClientUserId(target));
+                WritePackCell(dataPack, player_ident);
+                WritePackString(dataPack, steamid);
+
+                SQL_TQuery(g_DbHandle[DB_THREAD], SQL_DisablePlayer, SQLString, dataPack);
+            }
+            else
+                LogError("Unable to obtain steamid when disabling %d:%L",
+                         target, ValidClientIndex(target));
+        }
+    }
+
+    TraceReturn();
+}
+
+public SQL_DisablePlayer(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_DisablePlayer");
+
+    ResetPack(data);
+    new adminid = ReadPackCell(data); 
+    new admin = GetClientOfUserId(adminid); 
+    new userid = ReadPackCell(data); 
+    new target = GetClientOfUserId(userid); 
+    new player_ident = ReadPackCell(data);
+
+    decl String:steamid[ID_STRING_LENGTH];
+    ReadPackString(data, steamid, sizeof(steamid));
+
+    CloseHandle(data);
+
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Invalidate DB_THREAD handle for denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+        }
+        else
+        {
+            LogError("Unable to disable player %d:%L's (ident=%d, steamid=%s) data: %s",
+                     target,ValidClientIndex(target), player_ident, steamid, error);
+        }
+    }
+    else
+    {
+        LogAction(admin, target, "%d:%L disabled player %d:%L's (ident=%d, steamid=%s)",
+                  admin, ValidClientIndex(admin), target, ValidClientIndex(target),
+                  player_ident, steamid);
+
+        LogMessage("%d:%L disabled player %d:%L's (ident=%d, steamid=%s)",
+                   admin, ValidClientIndex(admin), target, ValidClientIndex(target),
+                   player_ident, steamid);
+    }
+
+    TraceReturn();
+}
+
+
+EnablePlayer(admin, target)
+{
+    TraceInto("DB", "EnablePlayer", "admin=%d:%L, target=%d:%L's", \
+              admin, ValidClientIndex(admin), \
+              target, ValidClientIndex(target));
+
+    SetPlayerStatus(target,PlayerActive);
+
+    if (DatabaseAvailable(DB_THREAD))
+    {
+        new player_ident = GetDatabaseIdent(target);
+        if (player_ident > 0)
+        {
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString),
+                   "UPDATE LOW_PRIORITY sc_players SET status = 'Active' WHERE player_ident = %d",
+                   player_ident);
+
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(admin));
+            WritePackCell(dataPack, GetClientUserId(target));
+            WritePackCell(dataPack, player_ident);
+            WritePackString(dataPack, "");
+
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_EnablePlayer, SQLString, dataPack);
+        }
+        else
+        {
+            decl String:steamid[ID_STRING_LENGTH];
+            if (IsClientConnected(target) &&
+                GetClientAuthString(target,steamid,sizeof(steamid)))
+            {
+                decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+                Format(SQLString,sizeof(SQLString),
+                       "UPDATE LOW_PRIORITY sc_players SET status = 'Active' WHERE steamid = %d AND del_rec_date IS NULL",
+                       steamid);
+
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, GetClientUserId(admin));
+                WritePackCell(dataPack, GetClientUserId(target));
+                WritePackCell(dataPack, player_ident);
+                WritePackString(dataPack, steamid);
+
+                SQL_TQuery(g_DbHandle[DB_THREAD], SQL_EnablePlayer, SQLString, dataPack);
+            }
+            else
+                LogError("Unable to obtain steamid when disabling %d:%L",
+                         target, ValidClientIndex(target));
+        }
+    }
+
+    TraceReturn();
+}
+
+public SQL_EnablePlayer(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_EnablePlayer");
+
+    ResetPack(data);
+    new adminid = ReadPackCell(data); 
+    new admin = GetClientOfUserId(adminid); 
+    new userid = ReadPackCell(data); 
+    new target = GetClientOfUserId(userid); 
+    new player_ident = ReadPackCell(data);
+
+    decl String:steamid[ID_STRING_LENGTH];
+    ReadPackString(data, steamid, sizeof(steamid));
+
+    CloseHandle(data);
+
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Invalidate DB_THREAD handle for denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+        }
+        else
+        {
+            LogError("Unable to enable player %d:%L's (ident=%d, steamid=%s) data: %s",
+                     target,ValidClientIndex(target), player_ident, steamid, error);
+        }
+    }
+    else
+    {
+        LogAction(admin, target, "%d:%L enabled player %d:%L's (ident=%d, steamid=%s)",
+                  admin, ValidClientIndex(admin), target, ValidClientIndex(target),
+                  player_ident, steamid);
+
+        LogMessage("%d:%L enabled player %d:%L's (ident=%d, steamid=%s)",
+                   admin, ValidClientIndex(admin), target, ValidClientIndex(target),
+                   player_ident, steamid);
+    }
+
+    TraceReturn();
+}
+
+DeletePlayer(admin, target)
+{
+    TraceInto("DB", "DeletePlayer", "admin=%d:%L, target=%d:%L's", \
+              admin, ValidClientIndex(admin), \
+              target, ValidClientIndex(target));
+
+    // Start out by disabling the player              
+    SetPlayerStatus(target,PlayerDisabled);
+
+    if (DatabaseAvailable(DB_THREAD))
+    {
+        new player_ident = GetDatabaseIdent(target);
+        if (player_ident > 0)
+        {
+            decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+            Format(SQLString,sizeof(SQLString),
+            //     "DELETE LOW_PRIORITY FROM sc_players WHERE player_ident = %d",
+                   "UPDATE LOW_PRIORITY sc_players SET del_rec_date = NOW() WHERE player_ident = %d",
+                   player_ident);
+
+            new Handle:dataPack = CreateDataPack();
+            WritePackCell(dataPack, GetClientUserId(admin));
+            WritePackCell(dataPack, GetClientUserId(target));
+            WritePackCell(dataPack, player_ident);
+            WritePackString(dataPack, "");
+
+            SQL_TQuery(g_DbHandle[DB_THREAD], SQL_DeletePlayer, SQLString, dataPack);
+        }
+        else
+        {
+            decl String:steamid[ID_STRING_LENGTH];
+            if (IsClientConnected(target) &&
+                GetClientAuthString(target,steamid,sizeof(steamid)))
+            {
+                decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
+                Format(SQLString,sizeof(SQLString),
+                //     "DELETE LOW_PRIORITY FROM sc_players WHERE steamid = %d",
+                       "UPDATE LOW_PRIORITY sc_players SET del_rec_date = NOW() WHERE steamid = %d AND del_rec_date IS NULL",
+                       steamid);
+
+                new Handle:dataPack = CreateDataPack();
+                WritePackCell(dataPack, GetClientUserId(admin));
+                WritePackCell(dataPack, GetClientUserId(target));
+                WritePackCell(dataPack, player_ident);
+                WritePackString(dataPack, steamid);
+
+                SQL_TQuery(g_DbHandle[DB_THREAD], SQL_DeletePlayer, SQLString, dataPack);
+            }
+            else
+                LogError("Unable to obtain steamid when deleting %d:%L",
+                         target, ValidClientIndex(target));
+        }
+    }
+
+    TraceReturn();
+}
+
+public SQL_DeletePlayer(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+    TraceInto("DB", "SQL_DeletePlayer");
+
+    ResetPack(data);
+    new adminid = ReadPackCell(data); 
+    new admin = GetClientOfUserId(adminid); 
+    new userid = ReadPackCell(data); 
+    new target = GetClientOfUserId(userid); 
+    new player_ident = ReadPackCell(data);
+
+    decl String:steamid[ID_STRING_LENGTH];
+    ReadPackString(data, steamid, sizeof(steamid));
+
+    CloseHandle(data);
+
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Invalidate DB_THREAD handle for denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+        }
+        else
+        {
+            LogError("Unable to delete player %d:%L's (ident=%d, steamid=%s) data: %s",
+                     target,ValidClientIndex(target), player_ident, steamid, error);
+        }
+    }
+    else
+    {
+        if (target > 0)
+            SetDatabaseIdent(target,0);
+
+        LogAction(admin, target, "%d:%L deleted player %d:%L's (ident=%d, steamid=%s)",
+                  admin, ValidClientIndex(admin), target, ValidClientIndex(target),
+                  player_ident, steamid);
+
+        LogMessage("%d:%L deleted player %d:%L's (ident=%d, steamid=%s)",
+                   admin, ValidClientIndex(admin), target, ValidClientIndex(target),
+                   player_ident, steamid);
+    }
+
+    TraceReturn();
+}
+
+FixLevels(client)
+{
+    if (DatabaseAvailable(DB_THREAD))
+    {
+        SQL_TQuery(g_DbHandle[DB_THREAD], SQL_FixLevels,
+                   "CALL fix_all_levels()",
+                   GetClientUserId(client));
+    }
+    else
+    {
+        LogError("Unable to connect to DB to run fix_levels script");
+    }
+}
+
+public SQL_FixLevels(Handle:owner, Handle:hndl, const String:error[], any:userid)
+{
+    if (hndl == INVALID_HANDLE || error[0] != '\0')
+    {
+        // Invalidate DB_THREAD handle for denied or Lost connection errors.
+        if (StrContains(error, "denied") >= 0 || StrContains(error, "connection") >= 0)
+        {
+            // Invalidate and close the DB_THREAD handle (in the main thread)
+            CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
+            g_DbHandle[DB_THREAD] = INVALID_HANDLE;
+        }
+
+        LogError("Error in executing the fix_all_levels() procedure:%s", error);
+    }
+    else
+    {
+        new admin = GetClientOfUserId(userid); 
+        LogAction(admin, -1, "%d:%L executed the fix_all_levels() procedure",
+                  admin, ValidClientIndex(admin));
+    }
+}
+

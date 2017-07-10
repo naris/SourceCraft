@@ -10,397 +10,415 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <new_tempents_stocks>
+#include <particle>
+#include <raytrace>
+#include <range>
 
 #undef REQUIRE_EXTENSIONS
+#include <tf2>
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
 #include "sc/SourceCraft"
-#include "sc/util"
-#include "sc/range"
-#include "sc/trace"
-#include "sc/authtimer"
 #include "sc/maxhealth"
 #include "sc/freeze"
+#include "sc/sounds"
 
-new String:rechargeWav[] = "sourcecraft/transmission.wav";
+#include "effect/Lightning"
+#include "effect/BeamSprite"
+#include "effect/HaloSprite"
+#include "effect/SendEffects"
+#include "effect/FlashScreen"
+#include "effect/TPBeamSprite"
+
+new const String:entangleSound[]="sc/entanglingrootsdecay1.wav";
+
+new g_EvasionChance[]           = { 0, 5, 10, 15, 20 };
+
+new g_ThornsChance[]            = { 0, 5, 10, 15, 20 };
+new Float:g_ThornsPercent[]     = { 0.0, 0.05, 0.10, 0.15, 0.20 };
+
+new g_TrueshotChance[]          = { 0, 5, 10, 15, 20 };
+new Float:g_TrueshotPercent[]   = { 0.0, 0.05, 0.10, 0.15, 0.20 };
+
+new Float:g_RootsRange[]        = { 0.0, 300.0, 450.0, 650.0, 800.0};
+
+new Float:g_EntangleDuration[]  = { 0.0, 2.0, 5.0, 7.0, 10.0 };
 
 new raceID, evasionID, thornsID, trueshotID, rootsID;
-
-new bool:m_AllowEntangle[MAXPLAYERS+1];
-new Handle:cvarEntangleCooldown = INVALID_HANDLE;
-
-new g_lightningSprite;
-new g_haloSprite;
 
 public Plugin:myinfo = 
 {
     name = "SourceCraft Race - Night Elf",
-    author = "PimpinJuice",
+    author = "-=|JFH|=-Naris with credits to PimpinJuice",
     description = "The Night Elf race for SourceCraft.",
-    version = "1.0.0.0",
-    url = "http://pimpinjuice.net/"
+    version = SOURCECRAFT_VERSION,
+    url = "http://www.jigglysfunhouse.net/"
 };
 
 public OnPluginStart()
 {
+    LoadTranslations("sc.common.phrases.txt");
+    LoadTranslations("sc.nightelf.phrases.txt");
     GetGameType();
 
-    if (!HookEvent("player_spawn",PlayerSpawnEvent,EventHookMode_Post))
-        SetFailState("Couldn't hook the player_spawn event.");
-
-    cvarEntangleCooldown=CreateConVar("sc_entangledrootscooldown","45");
+    if (IsSourceCraftLoaded())
+        OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID      = CreateRace("Night Elf", "nightelf",
-                             "You are now a Night Elf.",
-                             "You will be a Night Elf when you die or respawn.");
+    raceID      = CreateRace("nightelf", .initial_energy=30.0,
+                             .energy_limit=150.0, .faction=NightElf,
+                             .type=Biological);
 
-    evasionID   = AddUpgrade(raceID,"Evasion", "evasion",
-                             "Gives you 5-30% chance of evading a shot.");
+    evasionID   = AddUpgrade(raceID, "evasion", .energy=1.0);
+    thornsID    = AddUpgrade(raceID, "thorns", .energy=2.0);
+    trueshotID  = AddUpgrade(raceID, "trueshot", .energy=1.0);
 
-    thornsID    = AddUpgrade(raceID,"Thorns Aura", "thorns",
-                             "Does 30-90% mirror damage to the person \nwho shot you, chance to activate 15-50%.");
+    // Ultimate 1
+    rootsID     = AddUpgrade(raceID, "roots", 1, .energy=30.0, .cooldown=2.0);
 
-    trueshotID  = AddUpgrade(raceID,"Trueshot Aura", "trueshot", 
-                             "Does 20-80% extra damage to the \nenemy, chance is 30-60%.");
+    // Get Configuration Data
 
-    rootsID     = AddUpgrade(raceID,"Entangled Roots", "roots", 
-                             "Every enemy in 25-60 feet range will \nnot be able to move for 10 seconds.",
-                             true); // Ultimate
+    GetConfigArray("chance", g_EvasionChance, sizeof(g_EvasionChance),
+                   g_EvasionChance, raceID, evasionID);
+
+    GetConfigArray("chance", g_ThornsChance, sizeof(g_ThornsChance),
+                   g_ThornsChance, raceID, thornsID);
+
+    GetConfigFloatArray("damage_percent",  g_ThornsPercent, sizeof(g_ThornsPercent),
+                        g_ThornsPercent, raceID, thornsID);
+
+    GetConfigArray("chance", g_TrueshotChance, sizeof(g_TrueshotChance),
+                   g_TrueshotChance, raceID, trueshotID);
+
+    GetConfigFloatArray("damage_percent",  g_TrueshotPercent, sizeof(g_TrueshotPercent),
+                        g_TrueshotPercent, raceID, trueshotID);
+
+    GetConfigFloatArray("range",  g_RootsRange, sizeof(g_RootsRange),
+                        g_RootsRange, raceID, rootsID);
+
+    GetConfigFloatArray("duration",  g_EntangleDuration, sizeof(g_EntangleDuration),
+                        g_EntangleDuration, raceID, rootsID);
 }
 
 public OnMapStart()
 {
-    g_lightningSprite = SetupModel("materials/sprites/lgtning.vmt", true);
-    if (g_lightningSprite == -1)
-        SetFailState("Couldn't find lghtning Model");
+    SetupLightning();
+    SetupBeamSprite();
+    SetupHaloSprite();
+    SetupTPBeamSprite();
 
-    g_haloSprite = SetupModel("materials/sprites/halo01.vmt", true);
-    if (g_haloSprite == -1)
-        SetFailState("Couldn't find halo Model");
+    SetupDeniedSound();
 
-    SetupSound(rechargeWav,true,true);
+    SetupSound(entangleSound);
 }
 
-public OnPlayerAuthed(client,Handle:player)
+public Action:OnPlayerTakeDamage(victim,&attacker,&inflictor,&Float:damage,&damagetype)
 {
-    m_AllowEntangle[client]=true;
-}
-
-public PlayerSpawnEvent(Handle:event,const String:name[],bool:dontBroadcast)
-{
-    new userid=GetEventInt(event,"userid");
-    new index=GetClientOfUserId(userid);
-    if (index>0)
+    if (GetRace(victim) == raceID)
     {
-        m_AllowEntangle[index]=true;
+        new evasion_level = GetUpgradeLevel(victim,raceID,evasionID);
+        if (evasion_level > 0 &&
+            !GetRestriction(victim,Restriction_NoUpgrades) &&
+            !GetRestriction(victim,Restriction_Stunned))
+        {
+            if (GetRandomInt(1,100) <= g_EvasionChance[evasion_level] &&
+                CanInvokeUpgrade(victim, raceID, evasionID, .notify=false))
+            {
+                if (attacker > 0 && attacker <= MaxClients && attacker != victim)
+                {
+                    DisplayMessage(victim,Display_Defense, "%t", "YouEvadedFrom", attacker);
+                    DisplayMessage(attacker,Display_Enemy_Defended, "%t", "HasEvaded", victim);
+                }
+                else
+                {
+                    DisplayMessage(victim,Display_Defense, "%t", "YouEvaded");
+                }
+
+                if (attacker > 0 && attacker <= MaxClients &&
+                    GameType == tf2 && GetMode() != MvM)
+                {
+                    new entities = EntitiesAvailable(200, .message="Reducing Effects");
+                    if (entities > 50)
+                    {
+                        decl Float:pos[3];
+                        GetClientEyePosition(victim, pos);
+                        pos[2] += 4.0;
+                        TE_SetupParticle("miss_text", pos);
+                        TE_SendToClient(attacker);
+                    }
+                }
+                return Plugin_Handled;
+            }
+        }
     }
+    return Plugin_Continue;
 }
 
-public Action:OnPlayerHurtEvent(Handle:event,victim_index,Handle:victim_player,victim_race,
-                                attacker_index,Handle:attacker_player,attacker_race,
-                                assister_index,Handle:assister_player,assister_race,
-                                damage)
+public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
+                                attacker_race, damage, absorbed, bool:from_sc)
 {
-    new bool:changed=false;
-    if (victim_race == raceID)
-    {
-        changed |= Evasion(damage, victim_index, victim_player,
-                           attacker_index, assister_index);
-    }
+    new Action:returnCode = Plugin_Continue;
 
-    if (attacker_index && attacker_index != victim_index)
+    if (!from_sc && attacker_index > 0 &&
+        attacker_index != victim_index)
     {
-        new amount = 0;
+        damage += absorbed;
+
+        if (victim_race == raceID)
+        {
+            if (ThornsAura(event, damage, victim_index, attacker_index))
+            {
+                returnCode = Plugin_Changed;
+            }
+        }
 
         if (attacker_race == raceID)
         {
-            amount = TrueshotAura(damage, victim_index, victim_player,
-                                  attacker_index, attacker_player);
-            if (amount)
-                changed = true;
+            if (TrueshotAura(damage, victim_index, attacker_index))
+            {
+                returnCode = Plugin_Handled;
+            }
         }
-
-        if (victim_race == raceID)
-        {
-            amount += ThornsAura(event, damage, victim_index, victim_player,
-                                 attacker_index, attacker_player);
-        }
-
-        if (amount)
-            changed = true;
     }
 
-    if (assister_index && assister_index != victim_index)
-    {
-        new amount = 0;
-        if (assister_race == raceID)
-        {
-            amount = TrueshotAura(damage, victim_index, victim_player,
-                                  assister_index, assister_player);
-        }
-
-        if (victim_race == raceID)
-        {
-            amount += ThornsAura(event, damage, victim_index, victim_player,
-                                 assister_index, assister_player);
-        }
-
-        if (amount)
-            changed = true;
-    }
-
-    return changed ? Plugin_Changed : Plugin_Continue;
+    return returnCode;
 }
 
-public bool:Evasion(damage, victim_index, Handle:victim_player, attacker_index, assister_index)
+public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
+                                  assister_index, assister_race, damage,
+                                  absorbed)
 {
-    new evasion_level = GetUpgradeLevel(victim_player,raceID,evasionID);
-    if (evasion_level)
+    if (assister_race == raceID)
     {
-        new chance;
-        switch(evasion_level)
+        if (TrueshotAura(damage + absorbed, victim_index, assister_index))
+            return Plugin_Handled;
+    }
+
+    return Plugin_Continue;
+}
+
+public bool:ThornsAura(Handle:event, damage, victim_index, index)
+{
+    new thorns_level = GetUpgradeLevel(victim_index,raceID,thornsID);
+    if (thorns_level > 0)
+    {
+        if (!GetRestriction(index, Restriction_NoUpgrades) &&
+            !GetRestriction(index, Restriction_Stunned) &&
+            !GetImmunity(index, Immunity_HealthTaking) &&
+            !GetImmunity(index, Immunity_Upgrades) &&
+            !IsInvulnerable(index))
         {
-            case 1:
-                chance=5;
-            case 2:
-                chance=15;
-            case 3:
-                chance=20;
-            case 4:
-                chance=30;
-        }
-        if (GetRandomInt(1,100) <= chance)
-        {
-            new newhp=GetClientHealth(victim_index)+damage;
-            new maxhp=GetMaxHealth(victim_index);
-            if (newhp > maxhp)
-                newhp = maxhp;
-
-            SetEntityHealth(victim_index,newhp);
-
-            LogToGame("[SourceCraft] %N evaded an attack from %N!\n", victim_index, attacker_index);
-
-            if (attacker_index && attacker_index != victim_index)
+            new dmgamt = RoundToNearest(damage * GetRandomFloat(0.30,g_ThornsPercent[thorns_level]));
+            if (dmgamt > 0 && GetRandomInt(1,100) <= g_ThornsChance[thorns_level] &&
+                CanInvokeUpgrade(index, raceID, thornsID, .notify=false))
             {
-                DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
-                               "%c[SourceCraft] you %c have %cevaded%c an attack from %N!",
-                               COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT, attacker_index);
-                DisplayMessage(attacker_index,SC_DISPLAY_ENEMY_DEFENDED,
-                               "%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                               COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-            }
-            else
-            {
-                DisplayMessage(victim_index,SC_DISPLAY_DEFENSE,
-                               "%c[SourceCraft] you %c have %cevaded%c damage!",
-                               COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-            }
+                decl Float:indexPos[3];
+                GetClientAbsOrigin(index, indexPos); 
+                indexPos[2]+=35.0;
 
-            if (assister_index)
-            {
-                DisplayMessage(assister_index,SC_DISPLAY_ENEMY_DEFENDED,
-                               "%c[SourceCraft] %N %c has %cevaded%c your attack!",
-                               COLOR_GREEN,victim_index,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                new Float:victimPos[3];
+                GetEntityAbsOrigin(victim_index, victimPos);
+                victimPos[2] += 40;
+
+                new beamSprite = TPBeamSprite();
+                TE_SetupBeamPoints(indexPos, victimPos, beamSprite, beamSprite, 0, 45, 1.0, 10.0, 10.0, 0, 0.5, {255,35,15,255}, 30);
+                TE_SendEffectToAll();
+
+                victimPos[2] -= 35; // +5;
+                TE_SetupSparks(victimPos,victimPos,255,1);
+                TE_SendEffectToAll();
+
+                // reset victimPos to be above indexPos
+                victimPos[0]=indexPos[0];
+                victimPos[1]=indexPos[1];
+                victimPos[2]=indexPos[2] + 80.0;
+                TE_SetupBubbles(indexPos, victimPos, HaloSprite(), 35.0,GetRandomInt(6,8),8.0);
+                TE_SendEffectToAll();
+
+                FlashScreen(index,RGBA_COLOR_RED);
+
+                HurtPlayer(index, dmgamt, victim_index,
+                           "sc_thorns", .in_hurt_event=true);
+                return true;
             }
-            return true;
         }
     }
     return false;
 }
 
-public ThornsAura(Handle:event, damage, victim_index, Handle:victim_player,
-                  index, Handle:player)
+public bool:TrueshotAura(damage, victim_index, index)
 {
-    decl String:weapon[64];
-    if (GetEventString(event, "weapon", weapon, sizeof(weapon)) &&
-        (strcmp(weapon, "thorns") == 0 ||
-         strcmp(weapon, "feedback") == 0))
+    new trueshot_level = GetUpgradeLevel(index,raceID,trueshotID);
+    if (trueshot_level > 0 && !IsInvulnerable(victim_index) &&
+        !GetRestriction(index, Restriction_NoUpgrades) &&
+        !GetRestriction(index, Restriction_Stunned) &&
+        !GetImmunity(victim_index, Immunity_HealthTaking) &&
+        !GetImmunity(victim_index, Immunity_Upgrades))
     {
-        // Make sure not to loop damage from thorns or feedback
-        return false;
-    }
-
-    new thorns_level = GetUpgradeLevel(victim_player,raceID,thornsID);
-    if (thorns_level)
-    {
-        if (!GetImmunity(player,Immunity_HealthTake) &&
-            !TF2_IsPlayerInvuln(index))
+        if (GetRandomInt(1,100) <= g_TrueshotChance[trueshot_level])
         {
-            new chance;
-            switch(thorns_level)
+            new dmgamt=RoundFloat(float(damage)*g_TrueshotPercent[trueshot_level]);
+            if (dmgamt > 0 && CanInvokeUpgrade(index, raceID,trueshotID, .notify=false))
             {
-                case 1:
-                    chance=15;
-                case 2:
-                    chance=25;
-                case 3:
-                    chance=35;
-                case 4:
-                    chance=50;
-            }
-            if(GetRandomInt(1,100) <= chance)
-            {
-                new amount=RoundToNearest(damage * GetRandomFloat(0.30,0.90));
-                HurtPlayer(index,amount,victim_index,"thorns", "Thorns Aura");
+                new Float:victimPos[3];
+                GetEntityAbsOrigin(victim_index, victimPos);
+                victimPos[2] += 5;
 
-                new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
-                Origin[2] += 5;
+                FlashScreen(victim_index,RGBA_COLOR_RED);
+                TE_SetupSparks(victimPos,victimPos,255,1);
+                TE_SendEffectToAll();
 
-                TE_SetupSparks(Origin,Origin,255,1);
-                TE_SendToAll();
-                return amount;
+                HurtPlayer(victim_index, dmgamt, index,
+                           "sc_trueshot", .in_hurt_event=true);
+                return true;
             }
         }
     }
-    return 0;
+    return false;
 }
 
-public TrueshotAura(damage, victim_index, Handle:victim_player, index, Handle:player)
+public OnUltimateCommand(client,race,bool:pressed,arg)
 {
-    // Trueshot Aura
-    new trueshot_level=GetUpgradeLevel(player,raceID,trueshotID);
-    if (trueshot_level &&
-        !GetImmunity(victim_player,Immunity_HealthTake) &&
-        !TF2_IsPlayerInvuln(victim_index))
+    if (pressed && race==raceID && IsValidClientAlive(client))
     {
-        if (GetRandomInt(1,100) <= GetRandomInt(30,60))
+        new ult_level=GetUpgradeLevel(client,race,rootsID);
+        if (ult_level > 0)
         {
-            new Float:percent;
-            switch(trueshot_level)
+            if (GetRestriction(client,Restriction_NoUltimates) ||
+                GetRestriction(client,Restriction_Stunned))
             {
-                case 1:
-                    percent=0.20;
-                case 2:
-                    percent=0.35;
-                case 3:
-                    percent=0.60;
-                case 4:
-                    percent=0.80;
+                decl String:upgradeName[64];
+                GetUpgradeName(raceID, rootsID, upgradeName, sizeof(upgradeName), client);
+                DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
+                PrepareAndEmitSoundToClient(client,deniedWav);
+                return;
             }
-
-            new amount=RoundFloat(float(damage)*percent);
-            if (amount > 0)
+            else if (CanInvokeUpgrade(client, raceID, rootsID))
             {
-                new newhp=GetClientHealth(victim_index)-amount;
-                if (newhp <= 0)
+                if (GameType == tf2)
                 {
-                    newhp=0;
-                    DisplayKill(index, victim_index, "trueshot", "Trueshot Aura", amount);
+                    if (TF2_IsPlayerDisguised(client))
+                        TF2_RemovePlayerDisguise(client);
                 }
-                else
-                    DisplayDamage(index, victim_index, "trueshot", "Trueshot Aura", amount);
 
-                SetEntityHealth(victim_index,newhp);
+                new Float:indexLoc[3];
+                new Float:clientLoc[3];
+                GetClientAbsOrigin(client, clientLoc);
+                clientLoc[2] += 50.0; // Adjust trace position to the middle of the person instead of the feet.
 
-                new Float:Origin[3];
-                GetClientAbsOrigin(victim_index, Origin);
-                Origin[2] += 5;
+                static const beamColor[]        = { 80, 255,  90, 255};
+                static const rootsColor[]       = {139, 69,   19, 255};
+                static const entangleColor[]    = {  0, 255,   0, 255};
+                static const entangleFlash[]    = {  0, 255, 200,  3 };
 
-                TE_SetupSparks(Origin,Origin,255,1);
-                TE_SendToAll();
-                return amount;
-            }
-        }
-    }
-    return 0;
-}
+                new lightning  = Lightning();
+                new beamSprite = BeamSprite();
+                new haloSprite = HaloSprite();
+                new Float:range = g_RootsRange[ult_level];
+                new Float:duration = g_EntangleDuration[ult_level];
 
-public OnUltimateCommand(client,Handle:player,race,bool:pressed)
-{
-    if (race==raceID && pressed && IsPlayerAlive(client) &&
-        m_AllowEntangle[client])
-    {
-        new ult_level=GetUpgradeLevel(player,race,rootsID);
-        if(ult_level)
-        {
-            new Float:range=1.0;
-            switch(ult_level)
-            {
-                case 1:
-                    range=300.0;
-                case 2:
-                    range=450.0;
-                case 3:
-                    range=650.0;
-                case 4:
-                    range=800.0;
-            }
-            new count=0;
-            new Float:indexLoc[3];
-            new Float:clientLoc[3];
-            GetClientAbsOrigin(client, clientLoc);
-            new maxplayers=GetMaxClients();
-            for (new index=1;index<=maxplayers;index++)
-            {
-                if (client != index && IsClientInGame(index) && IsPlayerAlive(index) &&
-                    GetClientTeam(index) != GetClientTeam(client))
+                new b_count=0;
+                new alt_count=0;
+                new list[MaxClients+1];
+                new alt_list[MaxClients+1];
+                SetupOBeaconLists(list, alt_list, b_count, alt_count, client);
+
+                if (b_count > 0)
                 {
-                    new Handle:player_check=GetPlayerHandle(index);
-                    if (player_check != INVALID_HANDLE)
+                    TE_SetupBeamRingPoint(clientLoc, 10.0, range, beamSprite, haloSprite,
+                                          0, 15, 0.5, 5.0, 0.0, rootsColor, 10, 0);
+
+                    TE_Send(list, b_count, 0.0);
+                }
+
+                if (alt_count > 0)
+                {
+                    TE_SetupBeamRingPoint(clientLoc, range-10.0, range, beamSprite, haloSprite,
+                                          0, 15, 0.5, 5.0, 0.0, rootsColor, 10, 0);
+
+                    TE_Send(alt_list, alt_count, 0.0);
+                }
+
+
+                new bool:playSound = PrepareSound(entangleSound);
+
+                new count = 0;
+                new team  = GetClientTeam(client);
+                for (new index=1;index<=MaxClients;index++)
+                {
+                    if (client != index && IsValidClient(index) &&
+                        IsPlayerAlive(index) && GetClientTeam(index) != team)
                     {
-                        if (!GetImmunity(player_check,Immunity_Ultimates) &&
-                            !GetImmunity(player_check,Immunity_MotionTake))
+                        if (!GetImmunity(index,Immunity_Ultimates) &&
+                            !GetImmunity(index,Immunity_Restore) &&
+                            !GetImmunity(index,Immunity_MotionTaking) &&
+                            !IsBurrowed(index))
                         {
                             GetClientAbsOrigin(index, indexLoc);
-                            if (IsPointInRange(clientLoc,indexLoc,range))
+                            indexLoc[2] += 50.0;
+
+                            if (IsPointInRange(clientLoc,indexLoc,range) &&
+                                TraceTargetIndex(client, index, clientLoc, indexLoc))
                             {
-                                if (TraceTarget(client, index, clientLoc, indexLoc))
-                                {
-                                    new color[4] = { 0, 255, 0, 255 };
-                                    TE_SetupBeamLaser(client,index,g_lightningSprite,g_haloSprite,
-                                                      0, 1, 3.0, 10.0,10.0,5,50.0,color,255);
-                                    TE_SendToAll();
+                                TE_SetupBeamPoints(clientLoc, indexLoc, lightning, haloSprite,
+                                                   0, 1, duration / 2.0, 10.0,10.0,5,50.0,
+                                                   entangleColor,255);
+                                TE_SendQEffectToAll(client,index);
 
-                                    DisplayMessage(index,SC_DISPLAY_ENEMY_ULTIMATE,
-                                                   "%c[SourceCraft] %N %chas tied you down with %cEntangled Roots.%c",
-                                                   COLOR_GREEN,client,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT);
+                                indexLoc[2]-= 35.0; // -50.0 + 15.0
+                                TE_SetupBeamRingPoint(indexLoc,45.0,44.0,beamSprite,haloSprite,
+                                                      0,15,duration,5.0,0.0, entangleColor,10,0);
+                                TE_SendEffectToAll();
 
-                                    FreezeEntity(index);
-                                    AuthTimer(10.0,index,UnfreezePlayer);
-                                    count++;
-                                }
+                                indexLoc[2]+=15.0;
+                                TE_SetupBeamRingPoint(indexLoc,45.0,44.0,beamSprite,haloSprite,
+                                                      0,15,duration,5.0,0.0, entangleColor,10,0);
+                                TE_SendEffectToAll();
+
+                                indexLoc[2]+=15.0;
+                                TE_SetupBeamRingPoint(indexLoc,45.0,44.0,beamSprite,haloSprite,
+                                                      0,15,duration,5.0,0.0, entangleColor,10,0);
+                                TE_SendEffectToAll();
+
+                                TE_SetupBeamPoints(clientLoc,indexLoc,beamSprite,haloSprite,
+                                                   0,50,4.0,6.0,25.0,0,12.0,beamColor,40);
+                                TE_SendEffectToAll();
+
+                                FlashScreen(index,entangleFlash);
+
+                                if (playSound)
+                                    EmitSoundToAll(entangleSound, index);
+
+                                DisplayMessage(index,Display_Enemy_Ultimate, "%t",
+                                               "HasEntangled", client);
+
+                                FreezeEntity(index);
+                                CreateTimer(duration,UnfreezePlayer,GetClientUserId(index),
+                                            TIMER_FLAG_NO_MAPCHANGE);
+                                count++;
                             }
                         }
                     }
                 }
-            }
 
-            new Float:cooldown = GetConVarFloat(cvarEntangleCooldown);
-            if (count)
-            {
-                DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c to ensnare %d enemies, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, count, cooldown);
-            }
-            else
-            {
-                DisplayMessage(client,SC_DISPLAY_ULTIMATE,"%c[SourceCraft]%c You have used your ultimate %cEntangled Roots%c without effect, you now need to wait %2.0f seconds before using it again.", COLOR_GREEN,COLOR_DEFAULT,COLOR_TEAM,COLOR_DEFAULT, cooldown);
-            }
+                if (count)
+                {
+                    DisplayMessage(client,Display_Ultimate, "%t",
+                                   "ToEntangleEnemies", count);
+                }
+                else
+                {
+                    decl String:upgradeName[64];
+                    GetUpgradeName(raceID, rootsID, upgradeName, sizeof(upgradeName), client);
+                    DisplayMessage(client,Display_Ultimate, "%t", "WithoutEffect", upgradeName);
+                }
 
-            if (cooldown > 0.0)
-            {
-                m_AllowEntangle[client]=false;
-                CreateTimer(cooldown,AllowEntangle,client);
+                CreateCooldown(client, raceID, rootsID);
             }
         }
     }
-}
-
-public Action:AllowEntangle(Handle:timer,any:index)
-{
-    m_AllowEntangle[index]=true;
-
-    if (IsClientInGame(index) && IsPlayerAlive(index))
-    {
-        if (GetRace(GetPlayerHandle(index)) == raceID)
-        {
-            EmitSoundToClient(index, rechargeWav);
-            PrintToChat(index,"%c[SourceCraft] %cYour your ultimate %cEntangled Roots%c is now available again!",
-                        COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
-        }
-    }                
-    return Plugin_Stop;
 }
