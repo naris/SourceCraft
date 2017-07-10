@@ -1,0 +1,73 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"twilight_RaceName"
+	{
+		"en"		"Twilight Sparkle"
+	}
+
+	"twilight_Image"
+	{
+		"en"		"Ponies/Twilight_Sparkle.png"
+	}
+
+	"twilight_Desc"
+	{
+		"en"		"Twilight Sparkle is a unicorn pony and the main protagonist of My Little Pony Friendship is Magic. She lives at the Golden Oak Library along with her assistant, Spike, and her pet owl, Owlowiscious. She has an older brother, Shining Armor. Shining Armor marries Twilight Sparkle's former foalsitter Princess Cadance, which inducts Twilight into royalty. Twilight is transformed into an Alicorn and crowned princess thanks to her completion of a new magic spell. She represents the element of magic."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"twilight_skill_connected"
+	{
+		"en"		"Connected"
+	}
+	"twilight_skill_connected_desc"
+	{
+		"en"		"Global heal 2HP per second"
+	}
+	"twilight_skill_connected_image"
+	{
+		"en"		"Upgrade/Spell_nature_tranquility.png"
+	}
+
+	"twilight_skill_magic_obedience"
+	{
+		"en"		"Magic Obedience"
+	}
+	"twilight_skill_magic_obedience_desc"
+	{
+		"en"		"5-20% chance of silencing your enemy (on attack)"
+	}
+	"twilight_skill_magic_obedience_image"
+	{
+		"en"		"Upgrade/Spell_nature_purge.png"
+	}
+
+	"twilight_skill_gravity"
+	{
+		"en"		"Gravity"
+	}
+	"twilight_skill_gravity_desc"
+	{
+		"en"		"Reduces your gravity"
+	}
+	"twilight_skill_gravity_image"
+	{
+		"en"		"Upgrade/levitate.png"
+	}
+
+	"twilight_skill_teleport"
+	{
+		"en"		"Teleport"
+	}
+	"twilight_skill_teleport_desc"
+	{
+		"en"		"Short range teleport"
+	}
+	"twilight_skill_teleport_image"
+	{
+		"en"		"Upgrade/massteleport.gif"
+	}
+}

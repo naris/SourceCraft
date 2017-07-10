@@ -1,0 +1,69 @@
+"Phrases"
+{
+	"azgalor_RaceName"
+	{
+		"en"		"Azgalor - Pit Lord"
+	}
+
+	"azgalor_Image"
+	{
+		"en"		"Scourge/azgalor-.png"
+	}
+
+	"azgalor_Desc"
+	{
+		"en"		"One of the many regents of Lord Archimonde who became stranded on the physical plane after the Legion fell in Kalimdor, the devil Azgalor's love of destruction allowed him to accept the Lich King's invitation to help lead the Scourge in conquest with few regrets. After all, this Pit Lord is happiest when he conjures fire to scorch his opponents from above, roasting them slowly as the dead literally explode from beneath their feet. With such hateful power in the hands of a monster such as this, it's no wonder he inspires so much terror as he roams across the battlefield."
+	}
+
+	"azgalor_skill_fire_storm"
+	{
+		"en"		"Fire Storm"
+	}
+	"azgalor_skill_fire_storm_desc"
+	{
+		"en"		"Calls down up to 3 waves(per cast) of fire that damage enemy units in an area. Each wave deals damage and then burns enemies for 2 seconds."
+	}
+	"azgalor_skill_fire_storm_image"
+	{
+		"en"		"Upgrade/Firestorm.gif"
+	}
+
+	"azgalor_skill_pit_of_malice"
+	{
+		"en"		"Pit of Malice"
+	}
+	"azgalor_skill_pit_of_malice_desc"
+	{
+		"en"		"A deadly pit is conjured at target location. Any enemy unit that enters it becomes corrupted with malicious forces and are slowed down for some time.(ability)"
+	}
+	"azgalor_skill_pit_of_malice_image"
+	{
+		"en"		"Upgrade/Pitofmalice.gif"
+	}
+
+	"azgalor_skill_expulsion"
+	{
+		"en"		"Expulsion"
+	}
+	"azgalor_skill_expulsion_desc"
+	{
+		"en"		"Ignites the rotten gases of corpses, detonating them to cause damage to any enemy within the explosion radius."
+	}
+	"azgalor_skill_expulsion_image"
+	{
+		"en"		"Upgrade/Expulsion.gif"
+	}
+
+	"azgalor_skill_dark_rift"
+	{
+		"en"		"Dark Rift"
+	}
+	"azgalor_skill_dark_rift_desc"
+	{
+		"en"		"Opens an rift that pass through the netherworld."
+	}
+	"azgalor_skill_dark_rift_image"
+	{
+		"en"		"Upgrade/Darkrift.gif"
+	}
+}

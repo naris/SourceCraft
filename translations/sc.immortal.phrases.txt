@@ -1,0 +1,110 @@
+"Phrases"
+{
+	"immortal"
+	{
+		"en"		"Protoss Immortal"
+	}
+
+	"immortal_switch"
+	{
+		"en"		"You have {blue}Summoned Immortal{default}!"
+	}
+
+	"immortal_pending"
+	{
+		"en"		""
+	}
+
+	"immortal_image"
+	{
+		"en"		"Protoss/Immortal.png"
+	}
+
+	"immortal_desc"
+	{
+		"en"		"Historically, crippled veteran templar could volunteer to continue serving by being transplanted into dragoon exoskeletons. This honored tradition was broken when the zerg infested the sacred shrine dedicated to the creation of dragoons during the fall of Aiur. After the Brood War, crippled protoss soldiers were transplanted into the new immortal shells.\nImmortals are outfitted with twin phase disruptors as their primary attack form; they give critical fire support to legions of zealots against ground targets. Their specially hardened energy shields only activate when struck by powerful attacks, which leaves them more vulnerable to the pinprick attacks of lesser foes."
+	}
+
+	"immortal_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"immortal_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10%-80%% damage while it is active."
+	}
+	"immortal_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"immortal_speed"
+	{
+		"en"		"Cybernetic Core"
+	}
+	"immortal_speed_desc"
+	{
+		"en"		"Gives you a speed boost, up to 25%% boost (5%% faster than normal speed)."
+	}
+	"immortal_speed_image"
+	{
+		"en"		"Upgrade/CyberneticsCore.jpg"
+	}
+
+	"immortal_ground_weapons"
+	{
+		"en"		"Ground Weapons"
+	}
+	"immortal_ground_weapons_desc"
+	{
+		"en"		"Missiles have a 5-35%% chance to do up to 35-100% more damage."
+	}
+	"immortal_ground_weapons_image"
+	{
+		"en"		"Upgrade/ProGrndWeap.gif"
+	}
+
+	"immortal_immunity"
+	{
+		"en"		"Immunity"
+	}
+	"immortal_immunity_desc"
+	{
+		"en"		"Makes you Immune to: Motion Taking at Level 1,\nShop Items at Level 2,\nUltimates at level 3,\nand Upgrades (Skills) at Level 4."
+	}
+	"immortal_immunity_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"immortal_hard_shields"
+	{
+		"en"		"Hardened Shields"
+	}
+	"immortal_hard_shields_desc"
+	{
+		"en"		"The Hardened Shields absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Hardened Shields are invoked at your location, at level 2 they can be placed at teammates locations and at level 4 the Hardened Shields become mobile and travel with thier target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
+	}
+	"immortal_hard_shields_image"
+	{
+		"en"		"Upgrade/protoss-hardenedshields.jpg"
+	}
+
+	"immortal_collosus"
+	{
+		"en"		"Summon Collosus"
+	}
+	"immortal_collosus_desc"
+	{
+		"en"		"You become a Collosus until you die."
+	}
+	"immortal_collosus_image"
+	{
+		"en"		"Protoss/Collosus.png"
+	}
+
+	"PreventedFromSummoningCollosus"
+	{
+		"en"		"You have been prevented from Summoning {blue}Collosus{default}!"
+	}
+}

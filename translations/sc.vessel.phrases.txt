@@ -1,0 +1,159 @@
+"Phrases"
+{
+	"vessel"
+	{
+		"en"		"Terran Science Vessel"
+	}
+
+	"vessel_switch"
+	{
+		"en"		"You have Built the Science Vessel."
+	}
+
+	"vessel_pending"
+	{
+		"en"		""
+	}
+
+	"vessel_image"
+	{
+		"en"		"Terran/ScienceVessel.png"
+	}
+
+	"vessel_desc"
+	{
+		"en"		"In use since at least 2478, the terrans of the Koprulu Sector built Explorer vessels to conduct a wide range of research and development projects, stationed at points throughout the Koprulu Sector and beyond to study anomalous phenomena. In addition, the Confederacy's Epsilon Squadron used Explorers extensively for border surveillance and study.  When contact with the protoss and zerg devolved into open warfare many Explorers were requisitioned by military authorities to provide electronic warfare and support for forces in the field, along with aiding the research and development of new weapons and technologies.\nThe primary function of the science vessel is the employment of its detection abilities. Other functions, with the appropriate equipment, include the creation of a Defensive Matrix, the generation of a short ranged EMP (alternatively this can be detonated at a distance via the launching of a warhead) and Irradiation. For increased energy output, a Titan Reactor can be installed. All science vessels possess Ghost Program files, stored in a secure room at the bottom of the vessel, in case a ghost requires \"repair\" (what ammounts to medical aid in the program).  After the Brood War the Terran Dominion substituted the Raven for the expensive science vessel in the battlefield support role."
+	}
+
+	"vessel_armor"
+	{
+		"en"		"Ship Plating"
+	}
+	"vessel_armor_desc"
+	{
+		"en"		"Ship Plating that takes damage up to 70%% until it is depleted."
+	}
+	"vessel_armor_image"
+	{
+		"en"		"Upgrade/TerrAirArm.gif"
+	}
+
+	"vessel_lifters"
+	{
+		"en"		"Anti-Gravity Lifters"
+	}
+	"vessel_lifters_desc"
+	{
+		"en"		"Reduces your gravity by 8-64%, allowing you to jump higher."
+	}
+	"vessel_lifters_image"
+	{
+		"en"		"Upgrade/terran-reapernitropacks.jpg"
+	}
+
+	"vessel_detector"
+	{
+		"en"		"Detector"
+	}
+	"vessel_detector_desc"
+	{
+		"en"		"Detect cloaked units around you."
+	}
+	"vessel_detector_image"
+	{
+		"en"		"Upgrade/DetectorTerran.png"
+	}
+
+	"vessel_reactor"
+	{
+		"en"		"Titan Reactor"
+	}
+	"vessel_reactor_desc"
+	{
+		"en"		"Increases the rate at which you generate energy."
+	}
+	"vessel_reactor_image"
+	{
+		"en"		"Upgrade/terran-corvidreactor.jpg"
+	}
+
+	"vessel_ubercharger"
+	{
+		"en"		"Uber Charger"
+	}
+	"vessel_ubercharger_desc"
+	{
+		"en"		"Constantly charges Medic's Uber over time while holding the medigun.\n(1 percent per level every 3 seconds)"
+	}
+	"vessel_ubercharger_image"
+	{
+		"en"		"Upgrade/CellReactor.png"
+	}
+
+	"vessel_matrix"
+	{
+		"en"		"Defensive Matrix"
+	}
+	"vessel_matrix_desc"
+	{
+		"en"		"The Defensive Matrix absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Defensive Matrix is invoked at your location, at level 2 it can be placed at teammates locations and at level 4 the Defensive Matrix become mobile and travels with it's target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
+	}
+	"vessel_matrix_image"
+	{
+		"en"		"Upgrade/DefensiveMatrix.jpg"
+	}
+
+	"vessel_emp"
+	{
+		"en"		"EMP Shockwave"
+	}
+	"vessel_emp_desc"
+	{
+		"en"		"Reduces shield and energy to 0 for all enemy units within the blast radius.\nAlso temporarily disables all buildings within the blast radius for 3 seconds."
+	}
+	"vessel_emp_image"
+	{
+		"en"		"Upgrade/terran-emp.jpg"
+	}
+
+	"vessel_irradiate"
+	{
+		"en"		"Irradiate"
+	}
+	"vessel_irradiate_desc"
+	{
+		"en"		"Reduces the hit points of units near the targeted unit (and the targeted unit itself), units passing near an irradiated unit are also affected."
+	}
+	"vessel_irradiate_image"
+	{
+		"en"		"Upgrade/Irradiate.jpg"
+	}
+	"sc_irradiate"
+	{
+		"en"		"Irradiate"
+	}
+
+	"vessel_raven"
+	{
+		"en"		"Build Raven"
+	}
+	"vessel_raven_desc"
+	{
+		"en"		"You become a Terran Raven until you die.."
+	}
+	"vessel_raven_image"
+	{
+		"en"		"Upgrade/Lab_Raven_Icon.png"
+	}
+
+	"EMPDisrupted"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"You have used {blue}EMP Shockwave{default} to disrupt {1} enemies and/or {2} structures."
+	}
+
+	"PreventedFromBuildingRaven"
+	{
+		"en"		"You have been prevented from Building a {blue}Raven{default}!"
+	}
+}

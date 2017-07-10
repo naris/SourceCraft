@@ -1,0 +1,86 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"sr_RaceName"
+	{
+		"en"		"Soul Reaper"
+	}
+
+	"sr_Image"
+	{
+		"en"		"Hellbourne/SoulReaper.png"
+	}
+
+	"sr_Desc"
+	{
+		"en"		"The Soul Reaper is born in the depths of Hell itself and has risen to the surface on a mission to capture the souls of Newerth. With the authority to instantly judge those he comes in contact with, even the strongest of the Legion wither when he approaches."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"sr_skill_Judgement"
+	{
+		"en"		"Judgement"
+	}
+	"sr_skill_Judgement_desc"
+	{
+		"en"		"[+ability] Heals teammates around you, damages enemies around you"
+	}
+	"sr_skill_Judgement_image"
+	{
+		"en"		"Upgrade/Soulreaperskill1.gif"
+	}
+
+	"sr_skill_WitheringPresence"
+	{
+		"en"		"Withering Presence"
+	}
+	"sr_skill_WitheringPresence_desc"
+	{
+		"en"		"Enemies take damage just by being near you"
+	}
+	"sr_skill_WitheringPresence_image"
+	{
+		"en"		"Upgrade/Soulreaperskill2.gif"
+	}
+
+	"sr_skill_InhumanNature"
+	{
+		"en"		"Inhuman Nature"
+	}
+	"sr_skill_InhumanNature_desc"
+	{
+		"en"		"You heal when anyone around you dies"
+	}
+	"sr_skill_InhumanNature_image"
+	{
+		"en"		"Upgrade/Soulreaperskill3.gif"
+	}
+
+	"sr_skill_DemonicExecution"
+	{
+		"en"		"Demonic Execution"
+	}
+	"sr_skill_DemonicExecution_desc"
+	{
+		"en"		"Deals a large amount of damage based on how much of the enemy's health is missing"
+	}
+	"sr_skill_DemonicExecution_image"
+	{
+		"en"		"Upgrade/Soulreaperskill4.gif"
+	}
+
+	"+/- {amount} HP"
+	{
+		"#format"	"{1:d}"
+		"en"		"+/- {1} HP"
+	}
+	"Executed for {amount} damage"
+	{
+		"#format"	"{1:d}"
+		"en"		"[SC] Executed for {1} damage"
+	}
+
+
+}

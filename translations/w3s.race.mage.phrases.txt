@@ -1,0 +1,83 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"mage_RaceName"
+	{
+		"en"		"Blood Mage"
+	}
+
+	"mage_Image"
+	{
+		"en"		"Alliance/Blood_elf2.png"
+	}
+
+	"mage_Desc"
+	{
+		"en"		"Many of the stoic high elves, reeling from the loss of their ancient homeland, Quel'Thalas, have given in to their hatred and despair and embraced the dark side of their magical natures. Calling themselves 'Blood Elves' - these cold hearted refugees seek to expand their remaining magical powers at any cost - even if it means courting the infernal powers of the Burning Legion! Though still loyal to the Alliance, the Blood Elves' passions will lead them not only to the highest pinnacles of power, but to the darkest depths of madness."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"mage_skill_Phoenix"
+	{
+		"en"		"Phoenix"
+	}
+	"mage_skill_Phoenix_desc"
+	{
+		"en"		"#1# chance to revive your teammates that die.\nEach time you revive, chance is reduced by half\nto a minimum of #2#"
+	}
+	"mage_skill_Phoenix_image"
+	{
+		"en"		"Upgrade/markoffire.gif"
+	}
+
+	"mage_skill_Banish"
+	{
+		"en"		"Banish"
+	}
+	"mage_skill_Banish_desc"
+	{
+		"en"		"#1# of making enemy blind and disoriented for #2# seconds"
+	}
+	"mage_skill_Banish_image"
+	{
+		"en"		"Upgrade/banish.gif"
+	}
+
+	"mage_skill_SiphonMana"
+	{
+		"en"		"Siphon Mana"
+	}
+	"mage_skill_SiphonMana_desc"
+	{
+		"en"		"#1# chance of steal #2# enemy's money (CS)\nor #3# gold (TF) on damage"
+	}
+	"mage_skill_SiphonMana_image"
+	{
+		"en"		"Upgrade/siphonmana.gif"
+	}
+
+	"mage_skill_FlameStrike"
+	{
+		"en"		"Flame Strike"
+	}
+	"mage_skill_FlameStrike_desc"
+	{
+		"en"		"Burn the enemy over time for #1# damage #1# times.\n#3# range"
+	}
+	"mage_skill_FlameStrike_image"
+	{
+		"en"		"Upgrade/flamestrike.gif"
+	}
+
+	"Flame Strike!"
+	{
+		"en"		"Flame Strike!"
+	}
+	"You have been struck with Flame Strike!"
+	{
+		"en"		"You've been struck with Flame Strike!"
+	}
+	
+}

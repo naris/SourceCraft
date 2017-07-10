@@ -1,0 +1,19 @@
+"Phrases"
+{
+	"headless_hatman"
+	{
+		"en"	"the Horsemann"
+	}
+	"eyeball_boss"
+	{
+		"en"	"the Monoculus"
+	}
+	"merasmus"
+	{
+		"en"	"Merasmus"
+	}
+	"tank_boss"
+	{
+		"en"	"a Tank"
+	}
+}

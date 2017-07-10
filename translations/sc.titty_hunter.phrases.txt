@@ -1,0 +1,250 @@
+"Phrases"
+{
+	"titty_hunter"
+	{
+		"en"		"Titty Hunter"
+	}
+
+	"titty_hunter_switch"
+	{
+		"en"		""
+	}
+
+	"titty_hunter_pending"
+	{
+		"en"		""
+	}
+
+	"titty_hunter_image"
+	{
+		"en"		"Scourge/MeatWagonAnim.gif"
+	}
+
+	"titty_hunter_desc"
+	{
+		"en"		"The Titty Hunter is a lumbering, rotting corpse that has made the final transition into true undeath. He has great stamina, revels in combat with living beings and is a ravenous cannibal who devours the flesh of fallen warriors, friend and foe alike. He is also a cunning hero, adept at manipulating opponents. Forcibly raised from the dead, he enjoys nothing more than sowing dissension and hatred within the enemy ranks. The Titty Hunter is a silent stalker of shadows, felling unsuspecting opponents with a single arrow. He still favors the bow as the ultimate weapon, using the same arts that Quel'Thalas taught for millennia. His spells work with manipulating the essences of life and death, as well as various horrible curses and mind-enslaving abilities.  The Titty Hunter strikes fear and woe into the hearts of even the most resolute defenders."
+	}
+
+	"titty_hunter_drain"
+	{
+		"en"		"Drain"
+	}
+	"titty_hunter_drain_desc"
+	{
+		"en"		"Gives you a 15-80%% chance of draining up to 15%% of the enemies energy when you hit them\nAttacking with melee weapons increases the odds and amount (up to 25%%) of energy drained."
+	}
+	"titty_hunter_drain_image"
+	{
+		"en"		"Upgrade/Spell_shadow_siphonmana.png"
+	}
+
+	"titty_hunter_siphon"
+	{
+		"en"		"Siphon"
+	}
+	"titty_hunter_siphon_desc"
+	{
+		"en"		"Gives you a 15-80%% chance of siphoning up to 5%% of the enemies vespene when you hit them\nAttacking with melee weapons increases the odds and amount (up to 15%%) of vespene siphoned."
+	}
+	"titty_hunter_siphon_image"
+	{
+		"en"		"Upgrade/Spell_shadow_lifedrain02.png"
+	}
+
+	"titty_hunter_pickpocket"
+	{
+		"en"		"Pickpocket"
+	}
+	"titty_hunter_pickpocket_desc"
+	{
+		"en"		"Gives you a 15-80%% chance of stealing up to 5%% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount (up to 15%%) of crystals stolen."
+	}
+	"titty_hunter_pickpocket_image"
+	{
+		"en"		"Upgrade/pickpocket.png"
+	}
+
+	"titty_hunter_hallucination"
+	{
+		"en"		"Hallucination"
+	}
+	"titty_hunter_hallucination_desc"
+	{
+		"en"		"Gives you a 15-50%% chance to cause temporary hallucinations in an enemy."
+	}
+	"titty_hunter_hallucination_image"
+	{
+		"en"		"Upgrade/Hallucination.jpg"
+	}
+
+	"titty_hunter_fresca"
+	{
+		"en"		"Tastes like Fresca"
+	}
+	"titty_hunter_fresca_desc"
+	{
+		"en"		"Your attacks have a 5-45%% chance to taste like fresca, poison and ensnare the enemy, which explode if killed."
+	}
+	"titty_hunter_fresca_image"
+	{
+		"en"		"Upgrade/drunkenhaze.gif"
+	}
+
+	"titty_hunter_jetpack"
+	{
+		"en"		"Summon Jetpack"
+	}
+	"titty_hunter_jetpack_desc"
+	{
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+	}
+	"titty_hunter_jetpack_image"
+	{
+		"en"		"Upgrade/Ability_druid_flightform.png"
+	}
+
+	"titty_hunter_fart"
+	{
+		"en"		"Taco-Burrito Fart"
+	}
+	"titty_hunter_fart_desc"
+	{
+		"en"		"Farts a cloud of noxious gasses that damages enemies 150-300 units in range."
+	}
+	"titty_hunter_fart_image"
+	{
+		"en"		"Upgrade/plaguecloud.gif"
+	}
+
+	"titty_hunter_nipple"
+	{
+		"en"		"The Nipple"
+	}
+	"titty_hunter_nipple_desc"
+	{
+		"en"		"For 5-20 seconds, crit arrows and rockets seek out opponents\nAlso, sentry rockets always have a 5-50%% chance of being crits."
+	}
+	"titty_hunter_nipple_image"
+	{
+		"en"		"Upgrade/Spell_nature_starfall.png"
+	}
+
+	"titty_hunter_snatch"
+	{
+		"en"		"Snatch"
+	}
+	"titty_hunter_snatch_desc"
+	{
+		"en"		"Gives you a 20-50%% chance of snatching a level or experience from your next victim/n(or a 80-50%% chance of giving them one of your levels).\nYou will snatch levels from players with a lower level than you or level*100 to level*1000 experience from higher level players."
+	}
+	"titty_hunter_snatch_image"
+	{
+		"en"		"Upgrade/Spell_shadow_unstableaffliction_3.png"
+	}
+
+	"YouHaveDrainedEnergy"
+	{
+		"#format"	"{1:1.0f},{2:N}"
+		"en"		"You have {blue}Drained {2} Energy{default} from {olive}{2}{default}!"
+	}
+	"DrainedYourEnergy"
+	{
+		"#format"	"{1:N},{2:1.0f}"
+		"en"		"{olive}{2}{default} {red}Drained {2} Energy{default} from you!!"
+	}
+
+	"YouHaveSiphonedVespene"
+	{
+		"#format"	"{1:d},{2:N}"
+		"en"		"You have {lightgreen}Siphoned {2} Vespene{default} from {olive}{2}{default}!"
+	}
+	"SiphonedYourVespene"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"{olive}{2}{default} {red}Siphoned {2} Vespene{default} from you!!"
+	}
+
+	"YouHaveSnatchedExperience"
+	{
+		"#format"	"{1:d},{2:N}"
+		"en"		"You have {custom}Snatched {2} Experience{default} from {olive}{2}{default}!"
+	}
+	"SnatchedYourExperience"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"{olive}{2}{default} {red}Snatched {2} Experience{default} from you!!"
+	}
+
+	"YouHaveSnatchedALevel"
+	{
+		"#format"	"{1:N}"
+		"en"		"You have {custom}Snatched a Level{default} from {olive}{1}{default}!"
+	}
+	"SnatchedALevel"
+	{
+		"#format"	"{1:N}"
+		"en"		"{olive}{2}{default} {red}Snatched a Level{default} from you!!"
+	}
+
+	"SnatchMisfiredLostXP"
+	{
+		"#format"	"{1:d},{2:N}"
+		"en"		"{red}Snatch Misfired{default} and you lost {custom}{2} Experience{default} to {olive}{2}{default}!"
+	}
+	"SnatchMisfiredGainedXP"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"{blue}Snatch Misfired{default} and {olive}{2}{default} {custom}Lost {2} Experience{default} to you!"
+	}
+
+	"SnatchMisfiredLostLevel"
+	{
+		"#format"	"{1:N}"
+		"en"		"{red}Snatch Misfired{default} and you {custom}Lost a Level{default} to {olive}{1}{default}!"
+	}
+	"SnatchMisfiredGainedLevel"
+	{
+		"#format"	"{1:N}"
+		"en"		"{blue}Snatch Misfired{default} and {olive}{2}{default} {custom}Lost a Level{default} to you!"
+	}
+
+	"TacoBurritoFarted"
+	{
+		"en"		"You have let loose a mighty {blue}Taco-Burrito Fart{default}!"
+	}
+
+	"NippleAlreadyActive"
+	{
+		"en"		"{blue}The Nipple{default} is already active!"
+	}
+
+	"NippleActive"
+	{
+		"en"		"Your arrows and rockets are now seekers!"
+	}
+
+	"SnatchActive"
+	{
+		"en"		"You will attempt to snatch level/experience from your next victim!"
+	}
+
+	"NippleExpired"
+	{
+		"en"		"Your arrows and rockets are no longer seekers!"
+	}
+
+	"Nipple"
+	{
+		"en"		"a Nipple"
+	}
+
+	"NippleHud"
+	{
+		"en"		"*** Nipple ***"
+	}
+
+	"SnatchHud"
+	{
+		"en"		"*** Snatch ***"
+	}
+}

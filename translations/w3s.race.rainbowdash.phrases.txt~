@@ -1,0 +1,73 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"rainbowdash_RaceName"
+	{
+		"en"		"[MLP:FIM] Rainbow Dash"
+	}
+
+	"rainbowdash_Image"
+	{
+		"en"		"Ponies/RainbowDash.png"
+	}
+
+	"rainbowdash_Desc"
+	{
+		"en"		"Rainbow Dash is a Pegasus pony and a main character in My Little Pony Friendship is Magic. She is responsible for maintaining the weather and clearing the skies in Ponyville. She is also a huge admirer of The Wonderbolts and dreams of joining their flying group. She represents the element of loyalty. She is the last of the main six to have a pet; a tortoise named Tank!"
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"rainbowdash_skill_evasion"
+	{
+		"en"		"Evasion"
+	}
+	"rainbowdash_skill_evasion_desc"
+	{
+		"en"		"20%% evasion."
+	}
+	"rainbowdash_skill_evasion_image"
+	{
+		"en"		"Upgrade/Spell_shadow_shadowward.png"
+	}
+
+	"rainbowdash_skill_swiftness"
+	{
+		"en"		"Swiftness"
+	}
+	"rainbowdash_skill_swiftness_desc"
+	{
+		"en"		"+ 15%% Attack Speed"
+	}
+	"rainbowdash_skill_swiftness_image"
+	{
+		"en"		"Upgrade/Ability_rogue_slicedice.png"
+	}
+
+	"rainbowdash_skill_speed"
+	{
+		"en"		"Speed"
+	}
+	"rainbowdash_skill_speed_desc"
+	{
+		"en"		"(ability) +40% speed for 6 seconds.\nMust not be injured in the last 10 seconds.\nEnds if injured."
+	}
+	"rainbowdash_skill_speed_image"
+	{
+		"en"		"Upgrade/Ability_rogue_sprint.png"
+	}
+
+	"rainbowdash_skill_sonic_rainboom"
+	{
+		"en"		"Sonic Rainboom"
+	}
+	"rainbowdash_skill_sonic_rainboom_desc"
+	{
+		"en"		"Buff teammates' damage around you for 4 sec, 200-400 units. Must be in speed [ability] mode to cast."
+	}
+	"rainbowdash_skill_sonic_rainboom_image"
+	{
+		"en"		"Upgrade/Spell_nature_earthbindtotem.png"
+	}
+}

@@ -1,0 +1,79 @@
+<?php
+/**
+ * Item display page view
+ * 
+ * @version $Id: list.phtml,v 1.4 2007-12-04 16:54:49 seva Exp $
+ */
+
+require_once 'Zend/Controller/Front.php';
+
+// Render common HTML header
+echo $this->render('partials/html_header.phtml');
+
+?>
+
+	<h2>Item List:</h2>
+<?php if (isset($this->error)): ?>
+	<div class="error">
+		<?= $this->escape($this->error); ?>
+	</div>
+<?php elseif ($this->paginator && count($this->paginator)): ?>
+	<table class="item_list">
+		<tr>
+			<th width="50px"></th>
+			<th width="200px">Item</th>
+			<th>Category</th>
+			<th>Description</th>
+			<th>Cost</th>
+			<th>Vespene</th>
+			<th>Max</th>
+			<th>Level</th>
+			<th>Short Name</th>
+		</tr>
+<?php foreach ($this->paginator as $item): ?>
+		<tr class='item'>
+<?php if (empty($item['image'])): ?>
+			<td width="50px"><li></td>
+<?php else: ?>
+			<td width="50px"><a href="<?= Zend_Controller_Front::getInstance()->getBaseUrl() . 
+			'/sc/item/show/ident/' . urlencode($item['item_ident']) ?>"><img src="/sc/images/<?= $this->escape($item['image']) ?>" width="38px" /></td>
+<?php endif; ?>
+			<td width="200px"><a href="<?= Zend_Controller_Front::getInstance()->getBaseUrl() . 
+			'/sc/item/show/ident/' . urlencode($item['item_ident']) ?>"><?= $this->escape($item['long_name']) ?></td>
+			<td><?= $this->escape($item['category']) ?></td>
+			<td><?= $item['description'] ?></td>
+
+<?php if (isset($item['crystals']) && $item['crystals'] > 0): ?>
+			<td><?= $this->escape($item['crystals']) ?></td>
+<?php else: ?>
+			<td></td>
+<?php endif; ?>
+
+<?php if (isset($item['vespene']) && $item['vespene'] > 0): ?>
+			<td><?= $this->escape($item['vespene']) ?></td>
+<?php else: ?>
+			<td></td>
+<?php endif; ?>
+
+<?php if (isset($item['max']) && $item['max'] > 1): ?>
+			<td><?= $this->escape($item['max']) ?></td>
+<?php else: ?>
+			<td></td>
+<?php endif; ?>
+
+<?php if (isset($item['required_level']) && $item['required_level'] > 0): ?>
+			<td><?= $this->escape($item['required_level']) ?></td>
+<?php else: ?>
+			<td></td>
+<?php endif; ?>
+
+			<td><?= $this->escape($item['item_name']) ?></td>
+		</tr>
+<?php endforeach; ?>
+	</table>
+	<?= $this->paginationControl($this->paginator, 'Sliding', 'pagination_control.phtml'); ?>
+<?php else: ?>
+	No items have been selected.
+<?php endif; ?>
+
+<?= $this->render('partials/html_footer.phtml'); ?>

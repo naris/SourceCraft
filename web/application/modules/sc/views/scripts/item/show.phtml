@@ -1,0 +1,91 @@
+<?php
+/**
+ * Item display page view
+ * 
+ * @version $Id: show.phtml,v 1.4 2007-12-04 16:54:49 seva Exp $
+ */
+
+require_once 'Zend/Controller/Front.php';
+
+// Render common HTML header
+echo $this->render('partials/html_header.phtml');
+
+?>
+
+<?php if (isset($this->error)): ?>
+	<div class="error">
+		<?= $this->escape($this->error); ?>
+	</div>
+<?php elseif (! empty($this->item)): ?>
+
+<div class="item_container">
+	<table class="item_detail">
+		<tr>
+			<td width="100%"><table width="100%">
+				<tr>
+					<table width="100%">
+						<tr>
+<?php if (empty($this->item->image)): ?>
+							<td width="250"></td>
+<?php else: ?>
+							<td width="250"><img src="/sc/images/<?= $this->escape($this->item->image) ?>" width="250" /></td>
+<?php endif; ?>
+							<td width="100%" style="vertical-align:top">
+								<table class="item_title" width="100%">
+									<tr>
+										<th width='100%' style="text-align: center;"><?= $this->escape($this->item->long_name) ?></th>
+									</tr>
+								</table>
+								<table class="item_data">
+									<tr>
+										<th width="150px" align="right">Category :</th>
+										<td><a href="<?= Zend_Controller_Front::getInstance()->getBaseUrl() . 
+			'/sc/item/match/category/' . urlencode($this->item->category) ?>"><?= $this->escape($this->item->category) ?></a></td>
+									</tr>
+									<tr>
+										<th width="150px" align="right">Cost :</th>
+										<td><?= $this->escape($this->item->crystals) ?></td>
+									</tr>
+<?php if (isset($this->item->parent_name) && !empty($this->item->parent_name)): ?>
+									<tr>
+										<th width="150px" align="right">Vespene :</th>
+										<td><?= $this->escape($this->item->vespene) ?></td>
+									</tr>
+<?php endif; ?>
+<?php if (isset($this->item->max) && $this->item->max > 0): ?>
+									<tr>
+										<th width="150px" align="right">Max Carried :</th>
+										<td><?= $this->escape($this->item->max) ?></td>
+									</tr>
+<?php endif; ?>
+<?php if (isset($this->item->required_level) && $this->item->required_level > 0): ?>
+									<tr>
+										<th width="150px" align="right">Required Level :</th>
+										<td><?= $this->escape($this->item->required_level) ?></td>
+									</tr>
+<?php endif; ?>
+									<tr>
+										<th width="150px" align="right">Short Name :</th>
+										<td><?= $this->escape($this->item->item_name) ?></td>
+									</tr>
+								</table>
+								<table width="100%">
+									<tr>
+										<td><?= $this->item->description ?></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</tr>
+			</td></table>
+		</tr>
+	</table>
+	<br/>
+
+</div>
+<?php else: ?>
+	No item has been selected.
+<?php endif; ?>
+
+<?= $this->render('partials/html_footer.phtml'); ?>

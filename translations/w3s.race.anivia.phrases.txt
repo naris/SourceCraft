@@ -1,0 +1,82 @@
+"Phrases"
+{
+	"anivia_RaceName"
+	{
+		"en"		"Cryophoenix Anivia"
+	}
+
+	"anivia_Image"
+	{
+		"en"		"Sentinel/Anivia-render.png"
+	}
+
+	"anivia_Desc"
+	{
+		"en"		"In most lore, the phoenix is a creature of fire that rises from its own ashes. What few know, however, is that phoenixes are elemental beings, formed by the eternal essences of their native world. Anivia was conceived on a world such as this - a being of the coldest winter, a creature of pure elemental ice. On her world, Anivia was the protector of the frozen wastes and all those with the spirit to endure in such unforgiving places. She was consulted as a creature of great wisdom, one who could not die and who had seen the world renewed several times. Somehow, Anivia knew that the day would come when she would be plucked from her home and pulled across worlds, and when that day came, she received the call with grace. Seeing the imbalance and injustice on Runeterra, a world lacking elemental protectors, Anivia took her place at the League of Legends.  Since her arrival, the Cryophoenix has chosen to live among the highest peaks of the Northern Ironspike Mountains, adjacent to the frozen wastes of Freljord. She has openly claimed this territory as her own protectorate. Surprisingly, Anivia has struck up a friendship with the yeti of this region - a friendship that grows deeper and deeper with each passing moon. She has formed a close bond with two League champions:  Nunu (and Willump) and the nomad princess  Ashe. In a move that caught the League by surprise, the Cryophoenix recently entreated the summoners of the Institute of War to research a means in bringing across others of her elemental fellows. As a champion, Anivia is revered with a sense of awe by most, but is not the most popular as most consider her unapproachable."
+	}
+
+	"anivia_skill_FlashFrost"
+	{
+		"en"		"Flash Frost"
+	}
+	"anivia_skill_FlashFrost_desc"
+	{
+		"en"		"Throws shard of ice that flies on a line.\nThe Shard will apply damage and slows anyone in its path.\nIt will detonate when reaching its max range or the ability is activated again.(+ability)"
+	}
+	"anivia_skill_FlashFrost_image"
+	{
+		"en"		"Upgrade/FlashFrost.jpg"
+	}
+
+	"anivia_skill_Crystallize"
+	{
+		"en"		"Crystallize"
+	}
+	"anivia_skill_Crystallize_desc"
+	{
+		"en"		"Condense moisture in the air into a solid wall of ice(wall will remain for up to 8 seconds/+ability1)."
+	}
+	"anivia_skill_Crystallize_image"
+	{
+		"en"		"Upgrade/Crystallize.jpg"
+	}
+
+	"anivia_skill_Frostbite"
+	{
+		"en"		"Frostbite"
+	}
+	"anivia_skill_Frostbite_desc"
+	{
+		"en"		"Blasts your target with a freezing wind to deal magical damage.\nIf the target has been frosted by one of your other abilites, they will take a way more damage!"
+	}
+	"anivia_skill_Frostbite_image"
+	{
+		"en"		"Upgrade/Frostbite.jpg"
+	}
+
+	"anivia_skill_Glacialstorm"
+	{
+		"en"		"Glacial Storm"
+	}
+	"anivia_skill_Glacialstorm_desc"
+	{
+		"en"		"Summons a driving rain of ice and hail on a nearby target area to continuously deal magic damage and slow them down by 20%"
+	}
+	"anivia_skill_Glacialstorm_image"
+	{
+		"en"		"Upgrade/GlacialStorm.jpg"
+	}
+	"Shard launched!"
+	{
+		"en"		"Shard launched!"
+	}
+	"You've used Frostbite on your target causing {damage} extra damage!"
+	{
+		"#format"	"{1:d}"
+		"en"		"You've used Frostbite on your target causing {1} extra damage!"
+	}
+	"You do not have enough Mana to do that!"
+	{
+		"en"		"You do not have enough Mana to do that!"
+	}
+}

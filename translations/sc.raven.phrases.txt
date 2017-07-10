@@ -1,0 +1,207 @@
+"Phrases"
+{
+	"raven"
+	{
+		"en"		"Terran Raven"
+	}
+
+	"raven_switch"
+	{
+		"en"		"You have {blue}Built{default} a {blue}Raven{default}!"
+	}
+
+	"raven_pending"
+	{
+		"en"		""
+	}
+
+	"raven_image"
+	{
+		"en"		"Terran/Nighthawk.png"
+	}
+
+	"raven_desc"
+	{
+		"en"		"The Terran Raven, formerly known as the Nighthawk, Vulkan and the TF-620 Nomad, is a versatile craft which combines the functions of a light manufacturing center and observation post. A common sight amongst the colonies of the Fringe Worlds, the Raven is built to operate in all but the harshest climates. Although the Raven shares a number of common traits with the SCV (its smaller 'cousin'), the Raven is a far more specialized and advanced engineering craft.\nRavens are normally employed for first-line colony surveillance and protection duties against dangerous local life forms or climate events. These vehicles boast a wide array of sensors delicate enough to detect even cloaked or burrowed enemies. By deploying its two aft-mounted nano-welders, the Raven can construct a variety of small, semi-permanent defensive structures to meet various threats in a matter of moments.  Several standard template constructions are available to the Raven, a popular example being the auto-turret.  The Terran Dominion initially provided Raven to give low-level protection to its most isolated outposts, typically manning them with local civilians as something akin to a volunteer fire truck or ambulance service. Over time the military support applications of the Raven have seen it deployed in escalating levels of conflict, gradually replacing the older and vastly costlier science vessel."
+	}
+
+	"raven_armor"
+	{
+		"en"		"Ship Plating"
+	}
+	"raven_armor_desc"
+	{
+		"en"		"Ship Plating that takes damage up to 70%% until it is depleted."
+	}
+	"raven_armor_image"
+	{
+		"en"		"Upgrade/TerrAirArm.gif"
+	}
+
+	"raven_lifters"
+	{
+		"en"		"Anti-Gravity Lifters"
+	}
+	"raven_lifters_desc"
+	{
+		"en"		"Reduces your gravity by 8-64%%, allowing you to jump higher."
+	}
+	"raven_lifters_image"
+	{
+		"en"		"Upgrade/terran-reapernitropacks.jpg"
+	}
+
+	"raven_reactor"
+	{
+		"en"		"Corvid Reactor"
+	}
+	"raven_reactor_desc"
+	{
+		"en"		"Increases the rate at which you generate energy."
+	}
+	"raven_reactor_image"
+	{
+		"en"		"Upgrade/terran-corvidreactor.jpg"
+	}
+
+	"raven_hunter"
+	{
+		"en"		"Hunter-Seeker Crit Missile"
+	}
+	"raven_hunter_desc"
+	{
+		"en"		"Crit missiles (rockets, arrows, flares, pipe bombs and syringes) seek out opponents.\nAlso, Sentry Rockets have a 5-50%% chance of being crits"
+	}
+	"raven_hunter_image"
+	{
+		"en"		"Upgrade/terran-huntermissile.jpg"
+	}
+
+	"raven_seeker"
+	{
+		"en"		"Hunter-Seeker Ultimate Missile"
+	}
+	"raven_seeker_desc"
+	{
+		"en"		"For 5-20 seconds, some of your missiles (rockets, arrows, flares, pipe bombs and syringes) seek out opponents.\nLevel 1 will seek 10%% of the time, Level 2 25%%, Level 3 25%% and Level 4 50%%."
+	}
+	"raven_seeker_image"
+	{
+		"en"		"Upgrade/terran-huntermissile.jpg"
+	}
+
+	"raven_matrix"
+	{
+		"en"		"Defensive Matrix"
+	}
+	"raven_matrix_desc"
+	{
+		"en"		"The Defensive Matrix absorbs some damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds."
+	}
+	"raven_matrix_image"
+	{
+		"en"		"Upgrade/DefensiveMatrix.jpg"
+	}
+
+	"raven_spider_mine"
+	{
+		"en"		"Spider Mine"
+	}
+	"raven_spider_mine_desc"
+	{
+		"en"		"Drops a spider mine, which is equipped with motion sensors. Once a target enters a certain range the mine digs itself out of the ground and scurries over that distance to detonate on the target."
+	}
+	"raven_spider_mine_image"
+	{
+		"en"		"Upgrade/DeploySpiderMines.jpg"
+	}
+
+	"raven_thumper"
+	{
+		"en"		"Seismic Thumper"
+	}
+	"raven_thumper_desc"
+	{
+		"en"		"The Seismic Thumper slows down ground units by 50%% and prevents enemy zerg from burrowing."
+	}
+	"raven_thumper_image"
+	{
+		"en"		"Upgrade/Cerberusmines.jpg"
+	}
+
+	"raven_drone"
+	{
+		"en"		"Targeting Drone"
+	}
+	"raven_drone_desc"
+	{
+		"en"		"Drops a Targeting Drone, which is a flying unit that shines a laser on an enemy unit, giving a +50%% damage boost to the targeted units. The drone is cloaked. The targeting laser can be seen even without the use of detectors. The drone has 120 hit points, and is immobile. They expire after 20 seconds."
+	}
+	"raven_drone_image"
+	{
+		"en"		"Upgrade/terran-targetingdrone.jpg"
+	}
+	"sc_targeting"
+	{
+		"en"		"Targeting Drone"
+	}
+
+	"raven_turret"
+	{
+		"en"		"Auto-Turret"
+	}
+	"raven_turret_desc"
+	{
+		"en"		"Allows any class to drop 1-3 auto-turrets (mini sentries) depending on level."
+	}
+	"raven_turret_engyonly_desc"
+	{
+		"en"		"Allows Engineers to drop 1-3 auto-turrets (mini sentries) depending on level."
+	}
+	"raven_turret_image"
+	{
+		"en"		"Upgrade/terran-autoturret.jpg"
+	}
+
+	"ExposedBySeismicThumper"
+	{
+		"#format"	"{1:N}"
+		"en"		"{olive}{1}{default} has {red}Exposed{default} you with a {red}Seismic Thumper{default}!"
+	}
+
+	"TargetingDroneDeployed"
+	{
+		"en"		"You have deployed a {blue}Targeting Drone{default}."
+	}
+
+	"HunterSeeker"
+	{
+		"en"		"a Hunter-Seeker Missile"
+	}
+
+	"HunterSeekerAlreadyActive"
+	{
+		"en"		"{blue}Hunter-Seeker Ultimate Missile{default}s are already active!"
+	}
+
+	"SeekerActive"
+	{
+		"#format"	"{1:2.1f}"
+		"en"		"Your projectiles can now be seekers for {1} seconds!"
+	}
+
+	"SeekerExpired"
+	{
+		"en"		"Your projectiles are no longer seekers!"
+	}
+
+	"SeekerHud"
+	{
+		"en"		"*** Seeker ***"
+	}
+
+	"AutoTurretTitle"
+	{
+		"en"		"Place Auto-Turret?"
+	}
+}

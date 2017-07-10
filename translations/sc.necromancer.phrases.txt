@@ -1,0 +1,190 @@
+"Phrases"
+{
+	"necromancer"
+	{
+		"en"		"Necromancer"
+	}
+
+	"necromancer_switch"
+	{
+		"en"		"You have {blue}Summoned Necromancer{default}!"
+	}
+
+	"necromancer_pending"
+	{
+		"en"		""
+	}
+
+	"necromancer_image"
+	{
+		"en"		"Scourge/necro.png"
+	}
+
+	"necromancer_desc"
+	{
+		"en"		"Though they retained their Humanity after making a pact with death, Necromancers became the most terrifying agents of the Scourge. These dark, insidious men were once thought to be aspiring geniuses by the Magocracy of Dalaran. However, their insatiable lust to delve into the secrets of the dark arts drove them to forsake their very souls. Ner'zhul, the Lich King, granted these malevolent sorcerers true power over the dead in exchange for their loyalty and obedience. The shadowy Necromancers have the power to command various types of Undead and even spread the foul undead plague as well."
+	}
+
+	"necromancer_vampiric_aura"
+	{
+		"en"		"Vampiric Aura"
+	}
+	"necromancer_vampiric_aura_desc"
+	{
+		"en"		"You have a 60%% chance to leech 12-30%% of the damage you did in each attack back as health from the victim, bypassing any armor the victim has."
+	}
+	"necromancer_vampiric_aura_image"
+	{
+		"en"		"Upgrade/vampiricaura.gif"
+	}
+
+	"necromancer_cripple"
+	{
+		"en"		"Cripple"
+	}
+	"necromancer_cripple_desc"
+	{
+		"en"		"Chance to reduce movement speed by 40% and attack rate by 50% of enemy units hit by your fire."
+	}
+	"necromancer_cripple_image"
+	{
+		"en"		"Upgrade/cripple.gif"
+	}
+
+	"necromancer_training"
+	{
+		"en"		"Novice/Adept/Master Training"
+	}
+	"necromancer_training_desc"
+	{
+		"en"		"Increases the amount of energy you start with."
+	}
+	"necromancer_training_image"
+	{
+		"en"		"Upgrade/necromancermaster.gif"
+	}
+
+	"necromancer_unholy_frenzy"
+	{
+		"en"		"Unholy Frenzy"
+	}
+	"necromancer_unholy_frenzy_desc"
+	{
+		"en"		"You enter into an Unholy Frenzy with an increased attack rate, but a cost of drained health."
+	}
+	"necromancer_unholy_frenzy_image"
+	{
+		"en"		"Upgrade/unholyfrenzy.gif"
+	}
+
+	"necromancer_wrangle_eye"
+	{
+		"en"		"Direct Monoculus"
+	}
+	"necromancer_wrangle_eye_desc"
+	{
+		"en"		"You direct the Monoculus' sight and where he fires."
+	}
+	"necromancer_wrangle_eye_image"
+	{
+		"en"		"Upgrade/Killicon_monoculus.png"
+	}
+
+	"necromancer_raise_dead"
+	{
+		"en"		"Raise Dead"
+	}
+	"necromancer_raise_dead_desc"
+	{
+		"en"		"You raise a dead teammate to fight with you."
+	}
+	"necromancer_raise_dead_image"
+	{
+		"en"		"Upgrade/animatedead.gif"
+	}
+
+	"necromancer_raise_eye"
+	{
+		"en"		"Raise Monoculus"
+	}
+	"necromancer_raise_eye_desc"
+	{
+		"en"		"You raise a Monoculus. The level of the Monoculus is this upgrades level -1."
+	}
+	"necromancer_raise_eye_image"
+	{
+		"en"		"Upgrade/Monoculus.png"
+	}
+
+	"necromancer_raise_horse"
+	{
+		"en"		"Raise Horsemann"
+	}
+	"necromancer_raise_horse_desc"
+	{
+		"en"		"You raise a Horsemann"
+	}
+	"necromancer_raise_horse_image"
+	{
+		"en"		"Upgrade/HHH.png"
+	}
+
+	"necromancer_summon_horse"
+	{
+		"en"		"Summon Horsemann"
+	}
+	"necromancer_summon_horse_desc"
+	{
+		"en"		"You become the Horsemann until you die"
+	}
+	"necromancer_summon_horse_image"
+	{
+		"en"		"Upgrade/Headtaker.png"
+	}
+
+	"necromancer_scare"
+	{
+		"en"		"Horsemann Scare"
+	}
+	"necromancer_scare_desc"
+	{
+		"en"		"You Scare everyone around you! You must be the Horsemann to use this."
+	}
+	"necromancer_scare_image"
+	{
+		"en"		"Upgrade/Ghost_Yikes!.png"
+	}
+
+
+	"CrippleHud"
+	{
+		"en"		"*** Crippled ***"
+	}
+	"YouCrippled"
+	{
+		"#format"	"{1:N}"
+		"en"		"You have {blue}Crippled{default} {olive}{1}{default}!"
+	}
+	"HasCrippled"
+	{
+		"#format"	"{1:N}"
+		"en"		"{olive}{1}{default} has {blue}Crippled{default} you!"
+	}
+
+	"InsufficientHealthForFrenzy"
+	{
+		"en"		"You are not healthy enough to invoke {blue}Unholy Frenzy{default}!"
+	}
+	"FrenzyHud"
+	{
+		"en"		"*** Frenzy ***"
+	}
+	"FrenzyActive"
+	{
+		"en"		"You have entered an Unholy Frenzy!"
+	}
+	"FrenzyDissipated"
+	{
+		"en"		"Your Unholy Frenzy has dissipated!"
+	}
+}

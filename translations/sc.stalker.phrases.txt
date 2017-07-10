@@ -1,0 +1,110 @@
+"Phrases"
+{
+	"stalker"
+	{
+		"en"		"Protoss Stalker"
+	}
+
+	"stalker_switch"
+	{
+		"en"		"You have {blue}Summoned Stalker{default}!"
+	}
+
+	"stalker_pending"
+	{
+		"en"		""
+	}
+
+	"stalker_image"
+	{
+		"en"		"Protoss/Stalker.png"
+	}
+
+	"stalker_desc"
+	{
+		"en"		"The fall of Aiur demonstrated to the Dark Templar that more than just stealth and guile were required to defeat the zerg. Hence, the Dark Templar developed the stalker, a war machine inspired by the Khalai  dragoon. While dragoons were piloted by crippled protoss, the stalker was controlled by the shadow-essence of a Dark Templar warrior fused into a metal body. The new walkers were armed with carapace-mounted particle disruptors adept against both ground and aerial targets.\nStalkers were credited with many fantastic powers upon their battlefield debut. However, only one was witnessed consistently: an ability to instantly teleport, or \"blink\", from one spot to another. The improved mobility thus granted allowed the stalker to conduct ambushes, catch fleeing foes, and generally engage on their own terms."
+	}
+
+	"stalker_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"stalker_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10%-80%% damage while it is active."
+	}
+	"stalker_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"stalker_speed"
+	{
+		"en"		"Cybernetic Core"
+	}
+	"stalker_speed_desc"
+	{
+		"en"		"Gives you a speed boost, up to 25%% boost (5%% faster than normal speed)."
+	}
+	"stalker_speed_image"
+	{
+		"en"		"Upgrade/CyberneticsCore.jpg"
+	}
+
+	"stalker_ground_weapons"
+	{
+		"en"		"Ground Weapons"
+	}
+	"stalker_ground_weapons_desc"
+	{
+		"en"		"Missiles have a 5-35%% chance to do up to 35-100% more damage."
+	}
+	"stalker_ground_weapons_image"
+	{
+		"en"		"Upgrade/ProGrndWeap.gif"
+	}
+
+	"stalker_immunity"
+	{
+		"en"		"Immunity"
+	}
+	"stalker_immunity_desc"
+	{
+		"en"		"Makes you Immune to: Motion Taking at Level 1,\nShop Items at Level 2,\nUltimates at level 3,\nand Upgrades (Skills) at Level 4."
+	}
+	"stalker_immunity_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"stalker_blink"
+	{
+		"en"		"Blink"
+	}
+	"stalker_blink_desc"
+	{
+		"en"		"Allows you to teleport to where you \naim within 300-1500 units.\nThe further you blink, the more energy it uses."
+	}
+	"stalker_blink_image"
+	{
+		"en"		"Upgrade/protoss-blink.jpg"
+	}
+
+	"stalker_disrupter"
+	{
+		"en"		"Summon Disrupter"
+	}
+	"stalker_disrupter_desc"
+	{
+		"en"		"You become a Disrupter until you die."
+	}
+	"stalker_disrupter_image"
+	{
+		"en"		"Protoss/Sentry.png"
+	}
+
+	"PreventedFromSummoningDisrupter"
+	{
+		"en"		"You have been prevented from Summoning {blue}Disrupter{default}!"
+	}
+}

@@ -1,0 +1,42 @@
+"Phrases"
+{
+	"the_sentinel"
+	{
+		"en"		"Sentinel"
+	}
+
+	"the_sentinel_crystal_sound"
+	{
+		"en"		"sc/SentinelNoGold1.wav"
+	}
+
+	"the_sentinel_vespene_sound"
+	{
+		"en"		"sc/SentinelNoLumber1.wav"
+	}
+
+	"the_sentinel_energy_sound"
+	{
+		"en"		"sc/SentinelNoEnergy1.wav"
+	}
+
+	"the_sentinel_level_sound"
+	{
+		"en"		"sc/levelupcaster.mp3"
+	}
+
+	"the_sentinel_xp_sound"
+	{
+		"en"		""
+	}
+
+	"the_sentinel_image"
+	{
+		"en"		"Sentinel/Sentinelseal.png"
+	}
+
+	"the_sentinel_desc"
+	{
+		"en"		"Not long after the night elf druids entered the Dreamways of Ysera's Emerald Dream, high priestess of the Sisters of Elune, Tyrande Whisperwind, assembled a powerful fighting force from amongst her night elf sisters. The fearless, highly trained warrior women who pledged themselves to Kalimdor's defense became known as the Sentinels. This period in history became known as the Long Vigil, and ended when the druids were awakened prior to the battle for Mount Hyjal."
+	}
+}

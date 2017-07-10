@@ -1,0 +1,134 @@
+"Phrases"
+{
+	"dragoon"
+	{
+		"en"		"Protoss Dragoon"
+	}
+
+	"dragoon_switch"
+	{
+		"en"		"You have {blue}Summoned Dragoon{default}!"
+	}
+
+	"dragoon_pending"
+	{
+		"en"		""
+	}
+
+	"dragoon_image"
+	{
+		"en"		"Protoss/Dragoon.png"
+	}
+
+	"dragoon_desc"
+	{
+		"en"		"Veteran Protoss warriors who have been crippled or mortally wounded in combat can volunteer to continue their service to the Conclave by being transplanted into Dragoon exoskeletons. Within a short time, the fallen warriors learn to control the movements of the large, mechanical walker as naturally as if they were within their former bodies. Dragoons provide essential supporting fire for the Zealot cyberneticions by launching bolts of anti-particles sheathed in a psychically charged field. These disintegration bolts are effective against both air and ground targets."
+	}
+
+	"dragoon_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"dragoon_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10-80%% damage while it is active."
+	}
+	"dragoon_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"dragoon_speed"
+	{
+		"en"		"Cybernetic Core"
+	}
+	"dragoon_speed_desc"
+	{
+		"en"		"Gives you a speed boost, up to 25%% boost (5%% faster than normal speed)."
+	}
+	"dragoon_speed_image"
+	{
+		"en"		"Upgrade/CyberneticsCore.jpg"
+	}
+
+	"dragoon_ground_weapons"
+	{
+		"en"		"Ground Weapons"
+	}
+	"dragoon_ground_weapons_desc"
+	{
+		"en"		"Missiles have a 5-35%% chance to do up to 35-100%% more damage."
+	}
+	"dragoon_ground_weapons_image"
+	{
+		"en"		"Upgrade/ProGrndWeap.gif"
+	}
+
+	"dragoon_immunity"
+	{
+		"en"		"Immunity"
+	}
+	"dragoon_immunity_desc"
+	{
+		"en"		"Makes you Immune to: Motion Taking at Level 1,\nShop Items at Level 2,\nUltimates at level 3,\nand Upgrades (Skills) at Level 4."
+	}
+	"dragoon_immunity_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"dragoon_singularity"
+	{
+		"en"		"Singularity Charge"
+	}
+	"dragoon_singularity_desc"
+	{
+		"en"		"For 5-20 seconds, your ranged attacks inflict 25-100%% more damage."
+	}
+	"dragoon_singularity_image"
+	{
+		"en"		"Upgrade/SingularityCharge.png"
+	}
+	"sc_singularity"
+	{
+		"en"		"Singularity Charge"
+	}
+
+	"dragoon_reaver"
+	{
+		"en"		"Summon Reaver"
+	}
+	"dragoon_reaver_desc"
+	{
+		"en"		"You become a Reaver until you die."
+	}
+	"dragoon_reaver_image"
+	{
+		"en"		"Protoss/Reaver.jpg"
+	}
+
+	"SingularityActive"
+	{
+		"en"		"The Singularity Charge has been activated!"
+	}
+
+	"SingularityEnded"
+	{
+		"en"		"The Singularity Charge is no longer active!"
+	}
+
+	"SingularityHud"
+	{
+		"en"		"*** Singularity ***"
+	}
+
+	"PreventedFromSummoningReaver"
+	{
+		"en"		"You have been prevented from Summoning {blue}Reaver{default}!"
+	}
+
+	"SummonedReaver"
+	{
+		"en"		"You have {blue}Summoned Reaver{default}!"
+	}
+}

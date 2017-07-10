@@ -1,0 +1,20 @@
+"Phrases"
+{
+	"RecievedAmmo"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"You have received {1} ammo from the {blue}{2}{default}."
+	}
+	"Primary"
+	{
+		"en"		"Primary"
+	}
+	"Secondary"
+	{
+		"en"		"Secondary"
+	}
+	"PrimaryAndSecondary"
+	{
+		"en"		"Primary and Secondary"
+	}
+}

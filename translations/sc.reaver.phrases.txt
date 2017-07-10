@@ -1,0 +1,194 @@
+"Phrases"
+{
+	"reaver"
+	{
+		"en"		"Protoss Reaver"
+	}
+
+	"reaver_switch"
+	{
+		"en"		"You have {blue}Summoned Reaver{default}!"
+	}
+
+	"reaver_pending"
+	{
+		"en"		""
+	}
+
+	"reaver_image"
+	{
+		"en"		"Protoss/Reaver_SC2.png"
+	}
+
+	"reaver_desc"
+	{
+		"en"		"The reaver evolved from a civilian mobile manufacturing unit that was militarized  to become a mobile artillery piece, ensuring that fewer lives would be lost when assaulting enemy bases. Somewhat fittingly, reavers have renowned for leveling entire colonies in moments.\nThe reaver itself does not mount any weaponry, but instead houses a micro-manufacturing plant similar to the carrier, producing tiny robotic drones known as scarabs.\n\nScarabs\n\nScarabs are small, highly explosive drones constructed and launched by reavers. They are launched at enemy targets and installations in groups, able to level enemy structures in moments. Unlike interceptors however, Scarabs do not return to the reaver. Instead, they explode on impact, generating devastating electromagnetic fields that cause heavy damage to their targets."
+	}
+
+	"reaver_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"reaver_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10%-80%% damage while it is active."
+	}
+	"reaver_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"reaver_speed"
+	{
+		"en"		"Cybernetic Core"
+	}
+	"reaver_speed_desc"
+	{
+		"en"		"Gives you a speed boost, up to 25%% boost (5%% faster than normal speed)."
+	}
+	"reaver_speed_image"
+	{
+		"en"		"Upgrade/CyberneticsCore.jpg"
+	}
+
+	"reaver_scarab_attack"
+	{
+		"en"		"Scarab Attack"
+	}
+	"reaver_scarab_attack_desc"
+	{
+		"en"		"Increases damage from attacks by exploding upon contact with enemies with a 20-90%% chance of doing 14-63%% more damage (no more than four times a second)."
+	}
+	"reaver_scarab_attack_image"
+	{
+		"en"		"Upgrade/ScarabDmg.png"
+	}
+
+	"reaver_immunity"
+	{
+		"en"		"Immunity"
+	}
+	"reaver_immunity_desc"
+	{
+		"en"		"Makes you Immune to: Motion Taking at Level 1,\nShop Items at Level 2,\nUltimates at level 3,\nand Upgrades (Skills) at Level 4."
+	}
+	"reaver_immunity_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"reaver_capacity"
+	{
+		"en"		"Reaver Capacity"
+	}
+	"reaver_capacity_desc"
+	{
+		"en"		"Increases the number of scarabs the reaver can hold at once."
+	}
+	"reaver_capacity_image"
+	{
+		"en"		"Upgrade/ReaverCap.png"
+	}
+
+	"reaver_velocity"
+	{
+		"en"		"Scarab Velocity"
+	}
+	"reaver_velocity_desc"
+	{
+		"en"		"Increases the velocity (and range) of scarabs."
+	}
+	"reaver_velocity_image"
+	{
+		"en"		"Upgrade/ScarabDmg.png"
+	}
+
+	"reaver_scarab"
+	{
+		"en"		"Scarab"
+	}
+	"reaver_scarab_desc"
+	{
+		"en"		"Launches a Scarab that explodes on impact, generating devastating electromagnetic fields that cause heavy damage."
+	}
+	"reaver_scarab_image"
+	{
+		"en"		"Upgrade/Scarab.jpg"
+	}
+
+	"reaver_argus_scarab"
+	{
+		"en"		"Argus Scarab"
+	}
+	"reaver_argus_scarab_desc"
+	{
+		"en"		"Launches an extended range Argus Scarab, that explodes on impact, generating devastating electromagnetic fields that cause heavy damage."
+	}
+	"reaver_argus_scarab_image"
+	{
+		"en"		"Upgrade/ArgusScarab.png"
+	}
+
+	"reaver_scarab_siege"
+	{
+		"en"		"Scarab Siege"
+	}
+	"reaver_scarab_siege_desc"
+	{
+		"en"		"Warps in a large number of scarabs with increased range to lay siege for a limited time."
+	}
+	"reaver_scarab_siege_image"
+	{
+		"en"		"Upgrade/ScarabSeige.png"
+	}
+
+	"reaver_detonate"
+	{
+		"en"		"Detonate Scarabs"
+	}
+	"reaver_detonate_desc"
+	{
+		"en"		"Immediately detonates all Scarabs."
+	}
+	"reaver_detonate_image"
+	{
+		"en"		"Upgrade/tossexplode.jpg"
+	}
+
+	"PreventedFromLaunchingScarabs"
+	{
+		"en"		"You have been prevented from Launching a {blue}Scarab{default}!"
+	}
+
+	"NoScarabsAvailable"
+	{
+		"en"		"No {blue}Scarab{default}s are available yet!"
+	}
+
+	"NoScarabEntitiesAvailable"
+	{
+		"en"		"No {blue}Scarab{default}s can be launched at this time, Valve entity limit nearly reached!"
+	}
+
+	"SiegeActive"
+	{
+		"en"		"Siege Mode Activated!"
+	}
+
+	"SiegeExpired"
+	{
+		"en"		"Siege Expired!"
+	}
+
+	"SiegeHud"
+	{
+		"#format"	"{1:d}"
+		"en"		"* Seige: {1} *"
+	}
+
+	"ScarabHud"
+	{
+		"#format"	"{1:d}"
+		"en"		"Scarabs: {1}"
+	}
+}

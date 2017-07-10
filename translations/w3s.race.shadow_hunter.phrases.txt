@@ -1,0 +1,79 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"shadow_hunter_RaceName"
+	{
+		"en"		"Shadow Hunter"
+	}
+
+	"shadow_hunter_Image"
+	{
+		"en"		"Horde/ShadowHunter.png"
+	}
+
+	"shadow_hunter_Desc"
+	{
+		"en"		"These reclusive, wily jungle trolls are considered to be the highest authority within their respective warbands. They are masters of voodoo magics who can use their spirit-powers to both heal their allies and place curses upon their hapless enemies. The Shadow Hunters walk the line between darkness and light in hopes of salvaging the future for their savage brethren."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"shadow_hunter_skill_HealingWave"
+	{
+		"en"		"Healing Wave"
+	}
+	"shadow_hunter_skill_HealingWave_desc"
+	{
+		"en"		"Heal teammates around you"
+	}
+	"shadow_hunter_skill_HealingWave_image"
+	{
+		"en"		"Upgrade/healingwave.gif"
+	}
+
+	"shadow_hunter_skill_Hex"
+	{
+		"en"		"Hex"
+	}
+	"shadow_hunter_skill_Hex_desc"
+	{
+		"en"		"Chance of resisting other enemy's skill attacks"
+	}
+	"shadow_hunter_skill_Hex_image"
+	{
+		"en"		"Upgrade/hex.gif"
+	}
+
+	"shadow_hunter_skill_SerpentWards"
+	{
+		"en"		"Serpent Wards"
+	}
+	"shadow_hunter_skill_SerpentWards_desc"
+	{
+		"en"		"Wards that damage enemies if they touch. Activate by '+ability'"
+	}
+	"shadow_hunter_skill_SerpentWards_image"
+	{
+		"en"		"Upgrade/serpentward.gif"
+	}
+
+	"shadow_hunter_skill_BigBadVoodoo"
+	{
+		"en"		"Big Bad Voodoo"
+	}
+	"shadow_hunter_skill_BigBadVoodoo_desc"
+	{
+		"en"		"You are invulnerable from physical attacks for a duration"
+	}
+	"shadow_hunter_skill_BigBadVoodoo_image"
+	{
+		"en"		"Upgrade/bigbadvoodoospell.gif"
+	}
+
+	"Ultimate not ready, {amount} seconds remaining"
+	{
+		"#format"	"{1:d}"
+		"en"		"Ultimate not ready, {1} seconds remaining"
+	}
+}

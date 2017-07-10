@@ -1,0 +1,105 @@
+"Phrases"
+{
+	"farter"
+	{
+		"en"		"Sick Fucker"
+	}
+
+	"farter_switch"
+	{
+		"en"		""
+	}
+
+	"farter_pending"
+	{
+		"en"		""
+	}
+
+	"farter_image"
+	{
+		"en"		"Scourge/Abomination.gif"
+	}
+
+	"farter_desc"
+	{
+		"en"		"The twisted, mutilated body of the Sick Fucker is comprised of multiple dead limbs and body parts from various corpses. This enormous warrior loves to carve flesh and tear his enemies apart. The slow moving and slow-witted Sick Fucker constantly drips blood behind him and smells like a disease ridden slaughterhouse. He carries large cleavers into combat and wields various sickle-bladed hooks on his disproportionate limbs."
+	}
+
+	"farter_abomination"
+	{
+		"en"		"Festering Abomination"
+	}
+	"farter_abomination_desc"
+	{
+		"en"		"Gives you a 10-25%% chance of doing\n10-67%% more damage."
+	}
+	"sc_festering_abomination"
+	{
+		"en"		"Festering Abomination"
+	}
+	"farter_abomination_image"
+	{
+		"en"		"Upgrade/advancedunholystrength.gif"
+	}
+
+	"farter_pickpocket"
+	{
+		"en"		"Pickpocket"
+	}
+	"farter_pickpocket_desc"
+	{
+		"en"		"Gives you a 15-80%% chance of stealing up to 5-15%% of the enemies crystals when you hit them\nAttacking with melee weapons increases the odds and amount of crystals stolen."
+	}
+	"farter_pickpocket_image"
+	{
+		"en"		"Upgrade/pickpocket.png"
+	}
+
+	"farter_revulsion"
+	{
+		"en"		"Revulsion"
+	}
+	"farter_revulsion_desc"
+	{
+		"en"		"Your level of Revulsion is so high, all enemies quake as you approach."
+	}
+	"farter_revulsion_image"
+	{
+		"en"		"Upgrade/deathanddecay.gif"
+	}
+
+	"farter_flatulence"
+	{
+		"en"		"Flatulence"
+	}
+	"farter_flatulence_desc"
+	{
+		"en"		"Farts a cloud of noxious gasses that damages enemies 150-300 units in range."
+	}
+	"farter_flatulence_image"
+	{
+		"en"		"Upgrade/plaguecloud.gif"
+	}
+	"sc_flatulence"
+	{
+		"en"		"Flatulence"
+	}
+
+	"farter_hunter"
+	{
+		"en"		"Summon Titty Hunter"
+	}
+	"farter_hunter_desc"
+	{
+		"en"		"You become the Titty Hunter until you die."
+	}
+	"farter_hunter_image"
+	{
+		"en"		"Upgrade/infernal.gif"
+	}
+
+	"PreventedFromSummoningHunter"
+	{
+		"en"		"You have been prevented from Summoning {blue}Titty Hunter{default}!"
+	}
+}

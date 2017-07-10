@@ -1,0 +1,42 @@
+"Phrases"
+{
+	"the_legion"
+	{
+		"en"		"The Legion"
+	}
+
+	"the_legion_crystal_sound"
+	{
+		"en"		"sc/NagaNoGold1.wav"
+	}
+
+	"the_legion_vespene_sound"
+	{
+		"en"		"sc/NagaNoLumber1.wav"
+	}
+
+	"the_legion_energy_sound"
+	{
+		"en"		"sc/NagaNoMana1.wav"
+	}
+
+	"the_legion_level_sound"
+	{
+		"en"		"sc/levelupcaster.mp3"
+	}
+
+	"the_legion_xp_sound"
+	{
+		"en"		""
+	}
+
+	"the_legion_image"
+	{
+		"en"		"Alliance/humanseal.png"
+	}
+
+	"the_legion_desc"
+	{
+		"en"		"After surviving near extinction from the 'Apocalypse' millions of years ago, humans are reuniting under a common goal. Through the direction of Jaraziah Grimm, under the banner of the Legion of Man, nomadic human tribes are researching old forgotten technologies to help their economies and populations flourish. Just as described in the history books, as human populations grew in the past, so did waste and pollution. Fearing the coming of the apocalypse again, the animal species of the world (which has evolved to be more intelligent, thoughtful creatures) have united under the Beast Horde to work together to bring down the rising Legion of Man. It is in this struggle that humans scurry to reproduce broken old technologies to drive back their enemy and again dominate their planet Newerth."
+	}
+}

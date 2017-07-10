@@ -1,0 +1,87 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"darkelf_o_RaceName"
+	{
+		"en"		"Dark Elf"
+	}
+
+	"darkelf_o_Image"
+	{
+		"en"		"Legion/dark-elf-female.png"
+	}
+
+	"darkelf_o_Desc"
+	{
+		"en"		"Dark elves were elves, but not like high elves. They were beautiful in their own way, but it was a cold, haughty beauty, one that in the end repelled. The beauty of the dark elves was said to be almost as chill as Deathwing's voice, if not colder. They were lesser beings with minute lifespans and quick to rashness, plunging into what was believed too great a risk. Most evidence points to the mysterious dark elves as being an early developmental form of the night elves. It is hinted that the dark elves, possibly along with others, had something to do with releasing the Burning Legion on Azeroth. In their folly, they brought demons."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"darkelf_o_skill_Fade"
+	{
+		"en"		"Fade"
+	}
+	"darkelf_o_skill_Fade_desc"
+	{
+		"en"		"You fade out of sight on hit, 5-20% Chance"
+	}
+	"darkelf_o_skill_Fade_image"
+	{
+		"en"		"Upgrade/hide.gif"
+	}
+
+	"darkelf_o_skill_SlowFall"
+	{
+		"en"		"SlowFall"
+	}
+	"darkelf_o_skill_SlowFall_desc"
+	{
+		"en"		"You fall a lot slower, 0.85-0.6 Gravity"
+	}
+	"darkelf_o_skill_SlowFall_image"
+	{
+		"en"		"Upgrade/featherfall.png"
+	}
+
+	"darkelf_o_skill_Tribunal"
+	{
+		"en"		"Tribunal"
+	}
+	"darkelf_o_skill_Tribunal_desc"
+	{
+		"en"		"At the cost 4-7 hp/sec, you speed up 10-40%. +ability"
+	}
+	"darkelf_o_skill_Tribunal_image"
+	{
+		"en"		"Upgrade/Ability_druid_travelform.png"
+	}
+
+	"darkelf_o_skill_DarkOrb"
+	{
+		"en"		"DarkOrb"
+	}
+	"darkelf_o_skill_DarkOrb_desc"
+	{
+		"en"		"Blind a player. 0.5-2 second duration & 1000 Range"
+	}
+	"darkelf_o_skill_DarkOrb_image"
+	{
+		"en"		"Upgrade/Inv_misc_orb_04.png"
+	}
+
+	
+	"You've been blinded by a Dark Elf!"
+	{
+		"en"		"You've been blinded by a Dark Elf!"
+	}
+	"DarkOrb blinded Successfully"
+	{
+		"en"		"DarkOrb blinded Successfully"
+	}
+	"You sacrificed for speed."
+	{
+		"en"		"You sacrificed for speed."
+	}
+}

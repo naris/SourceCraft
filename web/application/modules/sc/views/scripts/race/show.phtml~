@@ -1,0 +1,144 @@
+<?php
+/**
+ * Race display page view
+ * 
+ * @version $Id: show.phtml,v 1.4 2007-12-04 16:54:49 seva Exp $
+ */
+
+require_once 'Zend/Controller/Front.php';
+
+// Render common HTML header
+echo $this->render('partials/html_header.phtml');
+
+?>
+
+<?php if (isset($this->error)): ?>
+	<div class="error">
+		<?= $this->escape($this->error); ?>
+	</div>
+<?php elseif (! empty($this->race)): ?>
+
+<div class="race_container">
+	<table class="race_detail">
+		<tr>
+			<td width="100%"><table width="100%">
+				<tr>
+					<table width="100%">
+						<tr>
+							<td><img src="/sc/images/<?= $this->escape($this->race->image) ?>" width="250" /></td>
+							<td width="100%" style="vertical-align:top">
+								<table class="race_title" width="100%">
+									<tr>
+										<th width='100%' style="text-align: center;"><?= $this->escape($this->race->long_name) ?></th>
+									</tr>
+								</table>
+								<table class="race_data">
+									<tr>
+										<th width="150px" align="right">Faction :</th>
+										<td><a href="<?= Zend_Controller_Front::getInstance()->getBaseUrl() . 
+			'/sc/faction/show/id/' . urlencode($this->race->faction) ?>"><?= $this->escape($this->race->faction_name) ?></a></td>
+									</tr>
+									<tr>
+										<th width="150px" align="right">Type :</th>
+										<td><?= $this->escape($this->race->type) ?></td>
+									</tr>
+<?php if (isset($this->race->parent_name) && !empty($this->race->parent_name)): ?>
+									<tr>
+										<th width="150px" align="right">Summoned From :</th>
+										<td><a href="<?= Zend_Controller_Front::getInstance()->getBaseUrl() . 
+			'/sc/race/show/name/' . urlencode($this->race->parent_name) ?>"><?= $this->escape($this->race->parent_long_name) ?></a></td>
+									</tr>
+<?php endif; ?>
+<?php if (isset($this->race->required_level) && $this->race->required_level > 0): ?>
+									<tr>
+										<th width="150px" align="right">Required Level :</th>
+										<td><?= $this->escape($this->race->required_level) ?></td>
+									</tr>
+<?php endif; ?>
+<?php if (isset($this->race->tech_level) && $this->race->tech_level > 0): ?>
+									<tr>
+										<th width="150px" align="right">Required Tech Level :</th>
+										<td><?= $this->escape($this->race->tech_level) ?></td>
+									</tr>
+<?php endif; ?>
+								</table>
+								<table width="100%">
+									<tr>
+										<td><?= $this->race->description ?></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</tr>
+			</td></table>
+		</tr>
+	</table>
+	<br/>
+
+<?php if (! empty($this->upgrades)): ?>
+	<ul><table class="upgrade_detail" width='100%'>
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th colspan="3"><center>-Upgrade Requirement-</center></th>
+			<th colspan="3"><center>----- Cost to Invoke -----</center></th>
+			<th>Energy/</th>
+			<th></th>
+		</tr>
+		<tr>
+			<th></th>
+			<th>Upgrade</th>
+			<th><center>Levels</center></th>
+			<th><center>Min Lvl</center></th>
+			<th><center>Crystals</center></th>
+			<th><center>Vespene</center></th>
+			<th><center>Energy</center></th>
+			<th><center>Crystals</center></th>
+			<th><center>Vespene</center></th>
+			<th><center>Second</center></th>
+			<th>Description</th>
+		</tr>
+<?php foreach ($this->upgrades as $upgrade): ?>
+		<tr class='race_upgrades' width='100%'>
+<?php if (empty($upgrade['image'])): ?>
+			<td><li></td>
+<?php else: ?>
+			<td><img src="/sc/images/<?= $this->escape($upgrade['image']) ?>" width="38px" /></td>
+<?php endif; ?>
+			<td><b><?= $this->escape($upgrade['long_name']) ?><?= (($upgrade['category'] > 0) ? "<br><font color='cyan'> +ultimate" . $upgrade['category'] . "</font>" : "") ?></b></td>
+			<td><center><?= $upgrade['max_level'] ?></center></td>
+			<td><center><?= ($upgrade['required_level'] > 1) ? $upgrade['required_level'] : "" ?></center></td>
+			<td><center><?= ($upgrade['cost_crystals'] > 0) ? $upgrade['cost_crystals'] : "" ?></center></td>
+			<td><center><?= ($upgrade['cost_vespene'] > 0) ? $upgrade['cost_vespene'] : "" ?></center></td>
+			<td><center><?= ($upgrade['energy'] > 0) ? $upgrade['energy'] : "" ?></center></td>
+			<td><center><?= ($upgrade['crystals'] > 0) ? $upgrade['crystals']: "" ?></center></td>
+			<td><center><?= ($upgrade['vespene'] > 0) ? $upgrade['vespene'] : "" ?></center></td>
+			<td><center><?= ($upgrade['recurring_energy'] > 0) ? : "" ?></center></td>
+			<td><?= $upgrade['description'] ?></td>
+		</tr>
+
+<?php endforeach; ?>
+<?php endif; ?>
+		<tr>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="100px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td><img src="/images/spacer.gif" width="40px" height="1"/></td>
+			<td width="100%"></td>
+		</tr>
+	</table></ul>
+	</div>
+<?php else: ?>
+	No race has been selected.
+<?php endif; ?>
+</div>
+
+<?= $this->render('partials/html_footer.phtml'); ?>

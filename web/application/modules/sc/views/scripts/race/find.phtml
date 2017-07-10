@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * Find Race page
+ * 
+ * @version $Id: find.phtml,v 1.2 2007-12-04 12:19:45 seva Exp $
+ */
+
+// Render common HTML header
+echo $this->render('partials/html_header.phtml');
+
+?>
+
+<?php if (isset($this->error)): ?>
+	<div class="error">
+		<?= $this->escape($this->error); ?>
+	</div>
+<?php endif; ?>
+
+<div class="dialog_container" id="searchDlg" title="Find Race" style="margin:0 auto; text-align:center;">
+	<form action="/sc/sc/race/find" method="post">
+		<div style="text-align:center;">Find Race</div><br>
+
+		<label for="race">By Name:</label>
+		<input type="text" name="race" id="race" value="" /><br />
+		
+		<label for="faction">By Faction:</label>
+		<select name="faction" id="faction" size=16>
+		<option value=""></option>
+		<option value="Terran">Terran</option>
+		<option value="Protoss">Protoss</option>
+		<option value="Zerg">Zerg</option>
+		<option value="HumanAlliance">Human Alliance</option>
+		<option value="OrcishHorde">Orcish Horde</option>
+		<option value="NightElf">Night Elf</option>
+		<option value="UndeadScourge">Undead Scourge</option>
+		<option value="BurningLegion">Burning Legion</option>
+		<option value="Hellbourne">Hellbourne</option>
+		<option value="TheLegion">The Legion</option>
+		<option value="Sentinel">Sentinel</option>
+		<option value="Naga">Naga</option>
+		<option value="Titan">Titan</option>
+		<option value="XelNaga">Xel'naga</option>
+		<option value="Pony">The Ponies</option>
+		</select>
+		
+		<div class="button_container">
+			<input type="hidden" name="list_race" id="list_race" value="list_race" />
+			<input type="submit" value="Search">
+		</div>
+	</form>
+</div>
+
+<?= $this->render('partials/html_footer.phtml'); ?>

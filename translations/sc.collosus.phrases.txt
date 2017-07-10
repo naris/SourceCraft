@@ -1,0 +1,135 @@
+"Phrases"
+{
+	"collosus"
+	{
+		"en"		"Protoss Collosus"
+	}
+
+	"collosus_switch"
+	{
+		"en"		"You have {blue}Summoned Collosus{default}!"
+	}
+
+	"collosus_pending"
+	{
+		"en"		""
+	}
+
+	"collosus_image"
+	{
+		"en"		"Protoss/Collosus.png"
+	}
+
+	"collosus_desc"
+	{
+		"en"		"The towering colossus is a protoss robot design dating back to the bloody conflicts of the Kalath Intercession. It strides across the battlefield on four tall, slender legs which give it an extremely high level of mobility. The great height of the machine allows it to step up and down cliffs and other steep elevations with little difficulty, and gives it a dominating field of fire.\nThe heavily armored hull of the colossus carries two powerful thermal lances: one mounted on each side of its body. Complex focusing and targeting systems are used to pinpoint the continuous damage output of the thermal lances for optimal efficiency. As a target is destroyed, the lances are switched to a new target instantly so that a colossus' beam cuts a fiery swathe of destruction through multiple enemies with each firing cycle.\nThe colossus is unusual for the fact that it was created purely as a war machine. Most protoss robots are created for industrial or resource-gathering purposes. Even the much-feared reaver is at its core a mobile manufacturing unit re-tasked to the creation of scarab drones for long-range bombardment. The mass slaughter unleashed on the kalathi by roving colossi appalled the protoss.\nAt the time, the Conclave outlawed the manufacture of colossi, and existing machines were deactivated before being sealed away in distant asteroids and uninhabited moons. Centuries later the war against the zerg has brought forth these engines of destruction to do battle once more."
+	}
+
+	"collosus_armor"
+	{
+		"en"		"Ground Armor"
+	}
+	"collosus_armor_desc"
+	{
+		"en"		"Armor that takes damage up to 90%% until it is depleted."
+	}
+	"collosus_armor_image"
+	{
+		"en"		"Upgrade/ProGrndArm.gif"
+	}
+
+	"collosus_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"collosus_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10%-90%% damage while it is active."
+	}
+	"collosus_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"collosus_speed"
+	{
+		"en"		"Cybernetic Core"
+	}
+	"collosus_speed_desc"
+	{
+		"en"		"Gives you a speed boost, up to 25%% boost or 5%% faster than normal speed)."
+	}
+	"collosus_speed_image"
+	{
+		"en"		"Upgrade/CyberneticsCore.jpg"
+	}
+
+	"collosus_ground_weapons"
+	{
+		"en"		"Ground Weapons"
+	}
+	"collosus_ground_weapons_desc"
+	{
+		"en"		"Missiles have a 5-35%% chance to do up to 35-100% more damage."
+	}
+	"collosus_ground_weapons_image"
+	{
+		"en"		"Upgrade/ProGrndWeap.gif"
+	}
+
+	"collosus_immunity"
+	{
+		"en"		"Immunity"
+	}
+	"collosus_immunity_desc"
+	{
+		"en"		"Makes you Immune to: Motion Taking at Level 1,\nShop Items at Level 2,\nUltimates at level 3,\nand Upgrades (Skills) at Level 4."
+	}
+	"collosus_immunity_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"collosus_extended_lance"
+	{
+		"en"		"Extended Thermal Lance"
+	}
+	"collosus_extended_lance_desc"
+	{
+		"en"		"Increases the range of the Thermal Lance."
+	}
+	"collosus_extended_lance_image"
+	{
+		"en"		"Upgrade/FluxVanes.png"
+	}
+
+	"collosus_thermal_lance"
+	{
+		"en"		"Thermal Lance"
+	}
+	"collosus_thermal_lance_desc"
+	{
+		"en"		"Emits a continuous beam that cuts a fiery swathe of destruction through multiple enemies with each firing cycle."
+	}
+	"collosus_thermal_lance_image"
+	{
+		"en"		"Upgrade/extendedthermallance.jpg"
+	}
+	"sc_thermal_lance"
+	{
+		"en"		"Thermal Lance"
+	}
+
+	"collosus_null_flux"
+	{
+		"en"		"Null-Flux Generator"
+	}
+	"collosus_null_flux_desc"
+	{
+		"en"		"The Null Flux Generator absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Null Flux Shields are invoked at your location, at level 2 they can be placed at teammates locations and at level 4 the Null Flux Shields become mobile and travel with thier target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
+	}
+	"collosus_null_flux_image"
+	{
+		"en"		"Upgrade/protoss-forcefield.jpg"
+	}
+}

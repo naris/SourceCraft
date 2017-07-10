@@ -1,0 +1,120 @@
+"Phrases"
+{
+	"carrier"
+	{
+		"en"		"Protoss Carrier"
+	}
+
+	"carrier_switch"
+	{
+		"en"		"You have {blue}Summoned Carrier{default}!"
+	}
+
+	"carrier_pending"
+	{
+		"en"		""
+	}
+
+	"carrier_image"
+	{
+		"en"		"Protoss/Carrier.png"
+	}
+
+	"carrier_desc"
+	{
+		"en"		"Carriers are large, heavily armored and shielded warships that form the core of the protoss fleet, serving as command centers for fleet commanders. Although carriers lack weapon batteries or other armaments of any kind, their ability to unleash swarms of computer controlled interceptors makes them devastating in ship to ship battle. In addition, the carrier's hangars can house Scout fighters and even Arbiters.  Carriers are capable of making jumps through warp space and can operate in both atmospheric and deep space conditions. When not on the bridge, a carrier commander is entitled to his/her own quarters.\nCarriers manufacture interceptors. When deployed the strike craft attack and retreat rapidly to the carrier for repairs and reinforcement. The details of the smooth orchestrated employment of carrier-borne interceptors is a matter of interest to terran scientists. Interceptors are fast, maneuverable, computer-guided strike craft. They may deploy to engage enemy strike craft or ground units. The plasma charges of a flight of interceptors may threaten to capital ships."
+	}
+
+	"carrier_weapons"
+	{
+		"en"		"Air Weapons"
+	}
+	"carrier_weapons_desc"
+	{
+		"en"		"Increases damage for non-melee attacks, 25%% chance to do 30-100%% extra damage."
+	}
+	"carrier_weapons_image"
+	{
+		"en"		"Upgrade/ProAirWeap.gif"
+	}
+
+	"carrier_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"carrier_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that takes damage up to 80%% while it is active."
+	}
+	"carrier_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"carrier_thrusters"
+	{
+		"en"		"Gravitic Thrusters"
+	}
+	"carrier_thrusters_desc"
+	{
+		"en"		"Gives you a speed boost, 10-25%% faster."
+	}
+	"carrier_thrusters_image"
+	{
+		"en"		"Upgrade/protoss-graviticbooster.jpg"
+	}
+
+	"carrier_capacity"
+	{
+		"en"		"Carrier Capacity"
+	}
+	"carrier_capacity_desc"
+	{
+		"en"		"Increases the number of Interceptors (buildings) you can have active (per type) at a time."
+	}
+	"carrier_capacity_image"
+	{
+		"en"		"Upgrade/CarrierCapacity.png"
+	}
+
+	"carrier_jetpack"
+	{
+		"en"		"Gravitic Drive"
+	}
+	"carrier_jetpack_desc"
+	{
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+	}
+	"carrier_jetpack_image"
+	{
+		"en"		"Upgrade/gravitoncatapult.jpg"
+	}
+
+	"carrier_interceptor"
+	{
+		"en"		"Launch Interceptor"
+	}
+	"carrier_interceptor_desc"
+	{
+		"en"		"Launch an Interceptor (buildings) that you then pilot until invoking ultimate 2 again. It costs extra energe/vespene to build something (or you can control an existing building by pointing at one)."
+	}
+	"carrier_interceptor_image"
+	{
+		"en"		"Upgrade/Interceptor.jpg"
+	}
+
+	"InterceptorsNotAvailable"
+	{
+		"en"		"Interceptors are not available!"
+	}
+
+	"PreventedFromLaunchingInterceptors"
+	{
+		"en"		"You have been prevented from Building/Launching an {blue}Interceptor{default}!"
+	}
+
+	"LaunchedInterceptor"
+	{
+		"en"		"You have launched an {blue}Interceptor{default}!"
+	}
+}

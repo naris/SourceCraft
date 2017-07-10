@@ -1,0 +1,94 @@
+<?php
+
+/**
+ * MOTD page view
+ *  
+ * @author
+ * @version
+ */
+
+// Render common HTML header
+echo $this->render('partials/html_header.phtml');
+
+// Render the common page headers
+//echo $this->render('partials/player_list.phtml'); 
+
+$this->headTitle('SourceCraft');
+$this->placeholder('title')->set('Welcome');
+?>
+
+<script type='text/javascript' src='/soundmanager/script/soundmanager2.js'></script>
+<script>
+	soundManager.url='/soundmanager/swf/';
+	soundManager.debugMode=false;
+	soundManager.useHTML5Audio=true;soundManager.html5Test=/(.*)/i;
+
+	soundManager.onready(function(){
+		var sound=soundManager.createSound('welcome','http://www.jigglysfunhouse.net/tf/motd/sound/welcome.mp3');
+		sound.play('welcome');
+	});
+</script>
+
+<div class="body_container">
+
+	<h1>Welcome to SourceCraft</h1>
+	<p>
+		<strong>SourceCraft</strong> is an amazing mod that combines the abilites, items, and experience leveling of RPG/RTS games such as Starcraft and WoW with the awesome game play of TF2. If you play sourcecraft more then a day you will find out why we lovingly refer to it as SourceCRACK, because it's totally awesome and extremely addictive. So be ready to add this server to your favorites.</p>
+
+	<p><a href="ts3server://ts3.jigglysfunhouse.net">Please Join Us In Teamspeak @ ts3.jigglysfunhouse.net!</a> You can Inquire at <a href="http://www.jigglysfunhouse.net/">www.JigglysFunHouse.net</a> for assistance.</p>
+
+	<p>Sourcecraft takes a lot to run and maintain. All donations are welcomed and appreciation for donations may be returned in the form of gifted source craft levels.
+
+<?php if (! empty($this->backers)): ?>
+You will also be added to this list of generous Financial Backers and recieve other fabulous perks:
+<?php foreach ($this->backers as $user): ?>
+	<?= $this->escape($user['username']) ?>, 
+<?php endforeach; ?>
+<?php endif; ?>
+	</p>
+
+	<p><a href="http://www.jigglysfunhouse.net/">PLEASE DONATE @ www.JigglysFunHouse.net</a></p>
+
+<?php if (! empty($this->active_servers)): ?>
+	<hr>
+
+	<table cellspacing="0" cellpadding="0" border="0" width="100%">
+		<tr><td align="center">
+			<h3>Please feel free to visit one of our other servers:</h3>
+		</td></tr>
+		<tr><td align="center">
+			<table class="server_detail" cellspacing="2" cellpadding="4" border="0" >
+<?php foreach ($this->active_servers as $server): ?>
+<?php	$name = explode( " | ", $server[ 'display_name' ] ); ?>
+				<tr>
+					<td><?= $this->escape($server['address']) ?></td>
+					<td><?= $this->escape($name[0]) ?></td>
+					<td><strong><?= $this->escape($server['map']) ?></strong></td>
+					<td><?= $this->escape($server['currplayers']) ?> / <?= $this->escape($server['maxplayers']) ?></td>
+				</tr>
+<?php endforeach; ?>
+			</table>
+		</td></tr>
+		<tr><td align="center">
+			Switch servers ingame by saying <font color="#5555FF"><b>!servers</b></font> in chat
+		</td></tr>
+	</table>
+<?php endif; ?>
+
+	<hr>
+
+	<p><h2>READ ON FOR MORE INFO ABOUT SOURCECRAFT.</h2></p>
+
+	<p>Sourcecraft options are accessed by typing 'menu' into chat. From there you can do just about anything. For a description of the different races and what their abilities do type "raceinfo" into chat or go to <a href="http://www.jigglysfunhouse.net/">JigglysFunHouse.net</a> web site. Energy and vespene are used for some race abilities and crystals are money for Items in the shopmenu. Items last for one life. You can access the shop menu through the mod menu or by typing 'buy into chat.</p>
+
+	<p>Sourcecraft has a ton of races with many abilities. Most of the abilities are passive and happen automaticly once you put experience levels into that ability, but some abiities are activated through the use of ultimates. Eventually you will bind keys for ultimates 1 through 4 but don't don't worry about this if you are new, ultimates only start at level 8 and you should be familiar with the mod menu by then. The mod menu has a descrition of how to bind ultimate keys.</p>
+
+	<p>You gain experience simply by playing tf2 capping points, killing people, getting assist, etc.. Experience points are tracked and remembered by a database for each race you play. Experience give you skill point levels. you can reassign your skill points any time through the mod menu or by typing "reset" into chat. The next time you spawn you will be asked to reassign your skill points.</p>
+
+	<p>For those joining the server for the first time today, the default race is human allience. we highly recommend you put points into immunity(counters other races abilities) then bash(stops people from moving when you shoot them).</p>
+
+	<p>Feel free to ask what people are doing. most will gladly tell you while others might tell you to fuck off. This is an ADULT server so expect crude language. Also you do NOT own sourcecraft levels, and they can be removed/reset at anytime. Mod levels are generally reset once a year. Have fun playing the greatest tf2 mods ever made.</p>
+
+	<br>
+
+<?= $this->render('partials/html_footer.phtml'); ?>

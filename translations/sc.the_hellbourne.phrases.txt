@@ -1,0 +1,42 @@
+"Phrases"
+{
+	"the_hellbourne"
+	{
+		"en"		"Hellbourne"
+	}
+
+	"the_hellbourne_crystal_sound"
+	{
+		"en"		"sc/NecromancerNoGold1.wav"
+	}
+
+	"the_hellbourne_vespene_sound"
+	{
+		"en"		"sc/NecromancerNoLumber1.wav"
+	}
+
+	"the_hellbourne_energy_sound"
+	{
+		"en"		"sc/NecromancerNoEnergy1.wav"
+	}
+
+	"the_hellbourne_level_sound"
+	{
+		"en"		"sc/levelupcaster.mp3"
+	}
+
+	"the_hellbourne_xp_sound"
+	{
+		"en"		""
+	}
+
+	"the_hellbourne_image"
+	{
+		"en"		"Scourge/undeadseal.png"
+	}
+
+	"the_hellbourne_desc"
+	{
+		"en"		"The Hellbourne came about during the fall of mankind because of the widespread evil and greed that had engulfed the planet. Hells' Sovereign opened up the Hellsgate, ripping a tear into the Earth itself (referred to as a 'scar'). From this scar, the Hellbourne came out and consumed all life until there was nothing left to consume and their power was lost. They went back into Hell and have been waiting for new life to corrupt itself again and for another opening to occur."
+	}
+}

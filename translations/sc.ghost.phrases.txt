@@ -1,0 +1,195 @@
+"Phrases"
+{
+	"ghost"
+	{
+		"en"		"Terran Ghost"
+	}
+
+	"ghost_switch"
+	{
+		"en"		""
+	}
+
+	"ghost_pending"
+	{
+		"en"		""
+	}
+
+	"ghost_image"
+	{
+		"en"		"Terran/Ghost.png"
+	}
+
+	"ghost_desc"
+	{
+		"en"		"Ghosts are chosen from psychically-gifted individuals who are then quarantined by the Terran Confederacy and trained from infancy to channel their psionic energies to augment their natural physical strength and endurance. Conscripts who successfully complete the Ghost Program's rigorous training and augmentations then serve as commandos and assassins.  Ghosts are trained in target shooting, close-quarters combat (martial arts and possibly other techniques) and vehicular expertise.\nGhosts are frequently tasked to locate targets for and provide targeting for tactical nuclear strikes. Their reconnaissance role is aided by cybernetic enhancements to their eyes. Ghosts have the ability to read minds but generally do not have the ability to block thoughts. Ghosts and weaker psychics can detect other sources of psionic power.  Ghosts channel their psionic energies through their hostile environment suit, a specialized skinsuit laced with psi-sensitive artificial muscle fiber, to augment their physical capabilities. A cloaking device and requisite power supply are frequently issued as well; the device requires psionic energy as a component.\nStandard Confederate practice is to implant psychic dampeners into all ghosts to weaken and reshape their memories and as a safeguard, acting on the principle of neural resocialization; however these implants can be disabled. For the most part, ghosts are simply numbers or names. Under the Confederacy, all ghosts, regardless of whether they \"graduated\" or not, were assigned a standard number and/or agent number (an alpha-numeric code). The Dominion has retained this system, though has included the use of codenames. Few ghosts under the program have any memories of their former lives or even their names, especially after memory wipes became SOP (Standard Operating Procedure), following the defection of Sarah Kerrigan."
+	}
+
+	"ghost_cloak"
+	{
+		"en"		"Personal Cloaking Device"
+	}
+	"ghost_cloak_desc"
+	{
+		"en"		"Makes you partially invisible. You will also be less visibile when standing still for a period of time and are using your melee weapon.\nAlso makes you immune to uncloaking and invisible to homing missiles."
+	}
+	"ghost_cloak_noinvis_desc"
+	{
+		"en"		"Makes you immune to uncloaking and invisible to homing missiles."
+	}
+	"ghost_cloak_image"
+	{
+		"en"		"Upgrade/terran-cloak.jpg"
+	}
+
+	"ghost_lockdown"
+	{
+		"en"		"Lockdown"
+	}
+	"ghost_lockdown_desc"
+	{
+		"en"		"Gives you a 15-52%% chance to render an enemy immobile for 1 second.\nThere is a 22-78%% chance to lockdown Mechanical and Robotic units for 2 seconds."
+	}
+	"ghost_lockdown_image"
+	{
+		"en"		"Upgrade/InterLock.png"
+	}
+
+	"ghost_implants"
+	{
+		"en"		"Ocular Implants"
+	}
+	"ghost_implants_desc"
+	{
+		"en"		"Detect cloaked units around you."
+	}
+	"ghost_implants_image"
+	{
+		"en"		"Upgrade/OcularImplants.jpg"
+	}
+
+	"ghost_reactor"
+	{
+		"en"		"Moebius Reactor"
+	}
+	"ghost_reactor_desc"
+	{
+		"en"		"Increases the amount of energy you start with."
+	}
+	"ghost_reactor_image"
+	{
+		"en"		"Upgrade/terran-moebiusreactor.jpg"
+	}
+
+	"ghost_gravitic"
+	{
+		"en"		"Gravitic Charge"
+	}
+	"ghost_gravitic_desc"
+	{
+		"en"		"Gravitic lensing forces enemy units to be slowed when hit\nEach enemy is slowed for 1.5 seconds per level."
+	}
+	"ghost_gravitic_image"
+	{
+		"en"		"Upgrade/terran-punishergrenade.jpg"
+	}
+
+	"ghost_nuke"
+	{
+		"en"		"Nuclear Launch"
+	}
+	"ghost_nuke_desc"
+	{
+		"en"		"Launches a Nuclear Device that does extreme damage to all players in the area."
+	}
+	"ghost_nuke_image"
+	{
+		"en"		"Upgrade/terran-nuclearstrike.jpg"
+	}
+	"sc_nuke"
+	{
+		"en"		"Nuke"
+	}
+
+	"ghost_bunker"
+	{
+		"en"		"Enter Bunker"
+	}
+	"ghost_bunker_desc"
+	{
+		"en"		"Enter the Bunker, which provides additional armor (20-160%) that takes 100%% damage at the cost of becoming immoble while in the bunker."
+	}
+	"ghost_bunker_image"
+	{
+		"en"		"Upgrade/Bunker.jpg"
+	}
+
+	"ghost_ult_lockdown"
+	{
+		"en"		"Ultimate Lockdown"
+	}
+	"ghost_ult_lockdown_desc"
+	{
+		"en"		"Render an enemy immobile for up to 5 seconds."
+	}
+	"ghost_ult_lockdown_image"
+	{
+		"en"		"Upgrade/terran-emp.jpg"
+	}
+
+	"ghost_vessel"
+	{
+		"en"		"Build Science Vessel"
+	}
+	"ghost_vessel_desc"
+	{
+		"en"		"You become a Science Vessel until you die."
+	}
+	"ghost_vessel_image"
+	{
+		"en"		"Upgrade/Lab_SciVes.png"
+	}
+
+	"LockedDown"
+	{
+		"#format"	"{1:N}"
+		"en"		"{olive}{1}{default} has {red}Locked you down{default}!"
+	}
+
+	"NuclearLaunchInProcess"
+	{
+		"en"		"{blue}Nuclear Launch{default} is already in process!"
+	}
+
+	"PreventedFromLaunchingNuke"
+	{
+		"en"		"You have been prevented from {blue}Launching{default} a {blue}Nuclear{default} Missile!"
+	}
+
+	"NukeLaunched"
+	{
+		"#format"	"{1:3.1f}"
+		"en"		"You have {blue}Launched{default} a {blue}Nuclear{default} Missile, you must now wait {1} seconds for the missle to lock on!"
+	}
+
+	"NukeLockedOn"
+	{
+		"#format"	"{1:3.1f}"
+		"en"		"The {blue}Nuclear{default} Missile has {blue}Locked On{default}, you have %3.1f seconds to evacuate!"
+	}
+
+	"NukeExploded"
+	{
+		"en"		"The {blue}Nuclear{default} Missile has {blue}Exploded{default}!"
+	}
+
+	"NukeReady"
+	{
+		"en"		"The {blue}Nuclear{default} Missile is {blue}Ready{default}!"
+	}
+
+	"PreventedFromBuildingScienceVessel"
+	{
+		"en"		"You have been prevented from Building a {blue}Science Vessel{default}!"
+	}
+}

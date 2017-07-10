@@ -1,0 +1,69 @@
+"Phrases"
+{
+	"clinkz_RaceName"
+	{
+		"en"		"Clinkz-Bone Fletcher"
+	}
+
+	"clinkz_Image"
+	{
+		"en"		"Scourge/BoneFletcher.png"
+	}
+
+	"clinkz_Desc"
+	{
+		"en"		"The fire that kindles eternally on the visage of the fallen Elven Archer proves to others that his undeath was a mere genesis. Clinkz seeks perfection in the arts of fletching and never hesitates in sacrificing his own allies for the cause. Still retaining his ability to move with the wind, he is ready to slay the enemy officers with his swiftness and precision in archery. The Fletcher fires arrows that scorch the target with the heat of the Underworld, bringing them closer and closer to their peril. An elvish archer in life, a nightmare in death."
+	}
+
+	"clinkz_skill_strafe"
+	{
+		"en"		"Strafe"
+	}
+	"clinkz_skill_strafe_desc"
+	{
+		"en"		"Fire a large number of arrows in a short time period."
+	}
+	"clinkz_skill_strafe_image"
+	{
+		"en"		"Upgrade/strafe.png"
+	}
+
+	"clinkz_skill_searing_arrows"
+	{
+		"en"		"Searing Arrows"
+	}
+	"clinkz_skill_searing_arrows_desc"
+	{
+		"en"		"Increases the damage of the Hero's attack by adding fire."
+	}
+	"clinkz_skill_searing_arrows_image"
+	{
+		"en"		"Upgrade/searingarrows.gif"
+	}
+
+	"clinkz_skill_wind_walk"
+	{
+		"en"		"Wind Walk"
+	}
+	"clinkz_skill_wind_walk_desc"
+	{
+		"en"		"Turn invisible for a period of time, increasing movement speed.(+ability)"
+	}
+	"clinkz_skill_wind_walk_image"
+	{
+		"en"		"Upgrade/windwalk.gif"
+	}
+
+	"clinkz_skill_death_pact"
+	{
+		"en"		"Death Pact"
+	}
+	"clinkz_skill_death_pact_desc"
+	{
+		"en"		"Gain Health from killing targets"
+	}
+	"clinkz_skill_death_pact_image"
+	{
+		"en"		"Upgrade/deathpact.gif"
+	}
+}

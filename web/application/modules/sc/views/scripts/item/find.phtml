@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * Find Item page
+ * 
+ * @version $Id: find.phtml,v 1.2 2007-12-04 12:19:45 seva Exp $
+ */
+
+// Render common HTML header
+echo $this->render('partials/html_header.phtml');
+
+?>
+
+<?php if (isset($this->error)): ?>
+	<div class="error">
+		<?= $this->escape($this->error); ?>
+	</div>
+<?php endif; ?>
+
+<div class="dialog_container" id="searchDlg" title="Find Item" style="margin:0 auto; text-align:center;">
+	
+	<form action="/sc/sc/item/find" method="post">
+		<div style="text-align:center;">Find Item</div><br>
+
+		<label for="item">By Name:</label>
+		<input type="text" name="item" id="item" value="" /><br />
+		
+		<label for="category">By Category:</label>
+		<select name="category" id="category" size=7>
+		<option value=""></option>
+		<option value="Protective Items">Protective</option>
+		<option value="Enhancement Items">Enhancement</option>
+		<option value="Combative Items">Combative</option>
+		<option value="Defensive Items">Defensive</option>
+		<option value="Mole Related Items">Mole Related</option>
+		<option value="Weapons">Weapons</option>
+		</select>
+		
+		<div class="button_container">
+			<input type="hidden" name="list_item" id="list_item" value="list_item" />
+			<input type="submit" value="Search">
+		</div>
+	</form>
+</div>
+
+<?= $this->render('partials/html_footer.phtml'); ?>

@@ -1,0 +1,42 @@
+"Phrases"
+{
+	"the_ponies"
+	{
+		"en"		"The Ponies"
+	}
+
+	"the_ponies_crystal_sound"
+	{
+		"en"		"sc/SentinelNoGold1.wav"
+	}
+
+	"the_ponies_vespene_sound"
+	{
+		"en"		"sc/SentinelNoLumber1.wav"
+	}
+
+	"the_ponies_energy_sound"
+	{
+		"en"		"sc/SentinelNoEnergy1.wav"
+	}
+
+	"the_ponies_level_sound"
+	{
+		"en"		"sc/levelupcaster.mp3"
+	}
+
+	"the_ponies_xp_sound"
+	{
+		"en"		""
+	}
+
+	"the_ponies_image"
+	{
+		"en"		"Ponies/Ponies.png"
+	}
+
+	"the_ponies_desc"
+	{
+		"en"		"My Little Ponies, of which there are 3 types: Earth ponies, that most closely resemble real ponies for having no wings or unicorn horn, Pegasus ponies and Unicorns"
+	}
+}

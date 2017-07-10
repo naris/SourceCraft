@@ -1,0 +1,121 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"crypt_RaceName"
+	{
+		"en"		"Crypt Lord"
+	}
+
+	"crypt_Image"
+	{
+		"en"		"Scourge/Crypt_Lord.png"
+	}
+
+	"crypt_Desc"
+	{
+		"en"		"These ancient, evil behemoths were once the mighty kings of the subterranean spider kingdom of Azjol-Nerub. Though the Nerubians fell before the wrath of the Lich King during the fabled War of the Spider, the insidious Crypt Lords were swayed over to the Lich King's ranks and granted considerable power and the immortality of undeath. Now the giant, thundering beasts serve as the Lich King's mightiest warriors and the guardians of the Scourge's holdings in Northrend."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"crypt_skill_Impale"
+	{
+		"en"		"Impale"
+	}
+	"crypt_skill_Impale_desc"
+	{
+		"en"		"Shake the enemy crosshair"
+	}
+	"crypt_skill_Impale_image"
+	{
+		"en"		"Upgrade/impale.gif"
+	}
+
+	"crypt_skill_SpikedCarapaceCS"
+	{
+		"en"		"Spiked Carapace"
+	}
+	"crypt_skill_SpikedCarapaceCS_desc"
+	{
+		"en"		"Reduce incoming damage,\nhurts your attacker,\nyou gain armor"
+	}
+	"crypt_skill_SpikedCarapaceCS_image"
+	{
+		"en"		"Upgrade/spikedcarapace.gif"
+	}
+
+	"crypt_skill_SpikedCarapaceTF"
+	{
+		"en"		"Spiked Carapace"
+	}
+	"crypt_skill_SpikedCarapaceTF_desc"
+	{
+		"en"		"Reduce incoming damage,\nreflects some damage to your attacker"
+	}
+	"crypt_skill_SpikedCarapaceTF_image"
+	{
+		"en"		"Upgrade/spikedcarapace.gif"
+	}
+
+	"crypt_skill_CarrionBeetles"
+	{
+		"en"		"Carrion Beetles"
+	}
+	"crypt_skill_CarrionBeetles_desc"
+	{
+		"en"		"Chance of dealing extra damage"
+	}
+	"crypt_skill_CarrionBeetles_image"
+	{
+		"en"		"Upgrade/carrionbeetles.gif"
+	}
+
+	"crypt_skill_LocustSwarm"
+	{
+		"en"		"Locust Swarm"
+	}
+	"crypt_skill_LocustSwarm_desc"
+	{
+		"en"		"Releases locust and attacks enemy"
+	}
+	"crypt_skill_LocustSwarm_image"
+	{
+		"en"		"Upgrade/locustswarm.gif"
+	}
+
+	"Returned {amount} damage to {player}"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"[SC] Returned {1} damage to {2}"
+	}
+	"Received {amount} damage from Spiked Carapace from {player}"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"[SC] Received {1} damage from Spiked Carapace from {2}"
+	}
+	"Blocked Impale"
+	{
+		"en"		"Blocked Impale"
+	}
+	"Enemy Blocked Impale"
+	{
+		"en"		"Enemy Blocked Impale"
+	}
+	"Impaled enemy"
+	{
+		"en"		"Impaled enemy"
+	}
+	"You got impaled by enemy"
+	{
+		"en"		"You got impaled by enemy"
+	}
+	"You blocked beetles attack"
+	{
+		"en"		"You blocked beetles attack"
+	}
+	"Beetles attack was blocked"
+	{
+		"en"		"Beetles attack was blocked"
+	}
+}

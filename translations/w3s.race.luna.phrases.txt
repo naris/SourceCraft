@@ -1,0 +1,78 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"luna_RaceName"
+	{
+		"en"		"Luna Moonfang - The Moon Rider"
+	}
+
+	"luna_Image"
+	{
+		"en"		"Sentinel/lunaypanterafinalcb5.png"
+	}
+
+	"luna_Desc"
+	{
+		"en"		"Luna Moonfang is a stalwart and devout follower of the Moon Goddess, Elune. She fights alongside the Sentinel in the never-ending battle to cleanse the land of the unholy Scourge. Through her valiant efforts, she has been granted small portions of Elune's mystical power. Luna uses this gift to cut a swath through her enemies. It has been said that Luna is able to call down the very light of the moon, and is always surrounded by a glowing aura, as though in moonlight herself. Luna is a shining beacon for the Sentinel, an ever vigilant protector."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"luna_skill_LucentBeam"
+	{
+		"en"		"Lucent Beam"
+	}
+	"luna_skill_LucentBeam_desc"
+	{
+		"en"		"Luna concentrates on the moon`s energy and channels it forcefully to the surface, 6-10dmg. Autocast. 3s cooldown."
+	}
+	"luna_skill_LucentBeam_image"
+	{
+		"en"		"Upgrade/lucentbeam.gif"
+	}
+
+	"luna_skill_MoonGlaive"
+	{
+		"en"		"Moon Glaive"
+	}
+	"luna_skill_MoonGlaive_desc"
+	{
+		"en"		"Allows Luna to attack extra enemies with each Glaive attack."
+	}
+	"luna_skill_MoonGlaive_image"
+	{
+		"en"		"Upgrade/moonglaive.gif"
+	}
+
+	"luna_skill_LunarBlessing"
+	{
+		"en"		"Lunar Blessing"
+	}
+	"luna_skill_LunarBlessing_desc"
+	{
+		"en"		"Nearby ranged units gain the power of the moon. +1-4 damage"
+	}
+	"luna_skill_LunarBlessing_image"
+	{
+		"en"		"Upgrade/lunarblessing.gif"
+	}
+
+	"luna_skill_Eclipse"
+	{
+		"en"		"Eclipse"
+	}
+	"luna_skill_Eclipse_desc"
+	{
+		"en"		"Calls to the moon`s magic, summoning a concentrated burst of Lucent Beams to damage targets around Luna. 4-10 beams."
+	}
+	"luna_skill_Eclipse_image"
+	{
+		"en"		"Upgrade/eclipse.gif"
+	}
+
+	"You have been hit by a Moon Glaive!"
+	{
+		"en"		"You've been hit by a Moon Glaive!"
+	}
+}

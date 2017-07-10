@@ -1,0 +1,69 @@
+"Phrases"
+{
+	"farseer_RaceName"
+	{
+		"en"		"Far Seer"
+	}
+
+	"farseer_Image"
+	{
+		"en"		"Horde/Far_Seer_on_Wolf.png"
+	}
+
+	"farseer_Desc"
+	{
+		"en"		"Far Seers are ancient Orcs who represent the pinnacle of Shamanistic power. These powerful Shamans are counted amongst Thrall's closest advisors and are constantly in tune with the workings and maneuverings of the Horde. Far Seers are not only tied to the elements of the earth and sky, but are also adept at foretelling the future. Their wisdom is outshined only by their courage and ferocity in combat. When the enemies of the horde advance, the far seers mount their loyal dire wolves and wade into battle wielding all the elemental powers of their shamanistic birthright.Far seers are adept at seeing places and events that are distant in both space and time, allowing them to foretell the future to a degree. Many say that they are the pinnacle of shamanistic development. The far seer is an orc tradition, but they sometimes train members of their allied races in its ways, especially tauren. These shaman are wise and often old. Most shaman of this type do not actually earn the title 'far seer' until late in their lives, but they must begin training at an early age. Far seers are some of the most respected shaman in the Horde. Most of them ride great white wolves to battle some say this practice is in homage of the Frostwolf clan, of which Thrall was the chieftain before he united the Horde. The orc far seer is the most respected of shaman. He is not a dedicated battlefield mage; however, the guidance provided by his visionary powers can prove to be more valuable than a dozen skilled warriors. In combat, a far seer prefers to sit back and summon spirits to do his bidding, but if he's pressed into melee, he can be a formidable adversary. In addition to being the warchief, Thrall is also an accomplished and practicing far seer. He was trained by the ancient far seer Drek'Thar."
+	}
+
+	"farseer_skill_far_seer"
+	{
+		"en"		"Far Sight"
+	}
+	"farseer_skill_far_seer_desc"
+	{
+		"en"		"Marks a target enemy hero(ability1)"
+	}
+	"farseer_skill_far_seer_image"
+	{
+		"en"		"Upgrade/farsight.gif"
+	}
+
+	"farseer_skill_chain_lightning"
+	{
+		"en"		"Chain Lightning"
+	}
+	"farseer_skill_chain_lightning_desc"
+	{
+		"en"		"Casts bolt of damaging lightning to jump at each enemy in your near.\nEach jump deals less damage."
+	}
+	"farseer_skill_chain_lightning_image"
+	{
+		"en"		"Upgrade/chainlightning.gif"
+	}
+
+	"farseer_skill_feral_spirit"
+	{
+		"en"		"Feral Spirit"
+	}
+	"farseer_skill_feral_spirit_desc"
+	{
+		"en"		"Transforms yourself into a Spirit Wolf(ability)"
+	}
+	"farseer_skill_feral_spirit_image"
+	{
+		"en"		"Upgrade/feralspirit.gif"
+	}
+
+	"farseer_skill_earthquake"
+	{
+		"en"		"Earthquake"
+	}
+	"farseer_skill_earthquake_desc"
+	{
+		"en"		"Makes the ground tremble and break, cause 50 damage and slows units down within area of effect"
+	}
+	"farseer_skill_earthquake_image"
+	{
+		"en"		"Upgrade/earthquake.gif"
+	}
+}

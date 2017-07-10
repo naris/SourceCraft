@@ -1,0 +1,146 @@
+"Phrases"
+{
+	"zealot"
+	{
+		"en"		"Protoss Zealot"
+	}
+
+	"zealot_switch"
+	{
+		"en"		""
+	}
+
+	"zealot_pending"
+	{
+		"en"		""
+	}
+
+	"zealot_image"
+	{
+		"en"		"Protoss/Zealot.png"
+	}
+
+	"zealot_desc"
+	{
+		"en"		"The heart and soul of the Protoss military are the fierce Zealots who have sworn their lives to the defense of Aiur. Through the path of the Khala, they learn to hone their innate battle rage to a fine edge. The power suits worn by Zealots enhance and channel their already formidable Psionic abilities, allowing them to form a protective shield around themselves and project massive energy blades from their forearms. Even a handful of these dedicated warriors can easily control an entire colony of other, lesser species, as they are capable of tearing through armored structures and vehicles alike.\nAll protoss have a degree of psionic power, the zealots using theirs exclusively on the art of war. Using a limited form of precognition, zealots can predict enemy movements, striking with deadly accuracy and dodging attacks. After the Brood War, some zealots developed the ability to turn their body into pure energy for a few microseconds. This allows them to move at lightning-fast speeds and strike suddenly against an enemy that thinks they are out of range. Seething with shame at the loss of Aiur, the zealots have dedicated themselves to more intense physical training as well. This includes duels at the end of their training, which appears to have the potential to be shortened.\nIn battle, zealots wield psionic blades channelled through forearm units in their power suits. Augmented by cybernetic implants, zealots also use their psionic powers to surround themselves with a plasma shield.  A severely injured zealot may be transported off the battlefield upon the moment of defeat, in order to be transformed into a dragoon or an immortal."
+	}
+
+	"zealot_immunity"
+	{
+		"en"		"Immunity"
+	}
+	"zealot_immunity_desc"
+	{
+		"en"		"Makes you Immune to: Health Taking at Level 1,\nTheft at Level 2,\nBlindness at level 3,\nand Non-Ultimate Upgrades (Skills) at Level 4."
+	}
+	"zealot_immunity_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"zealot_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"zealot_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10-50%% damage while it is active."
+	}
+	"zealot_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"zealot_leg"
+	{
+		"en"		"Leg Enhancements"
+	}
+	"zealot_leg_desc"
+	{
+		"en"		"Gives you a speed boost, 5-20%% faster."
+	}
+	"zealot_leg_image"
+	{
+		"en"		"Upgrade/LegEnhance.png"
+	}
+
+	"zealot_blades"
+	{
+		"en"		"Psi-Blades"
+	}
+	"zealot_blades_desc"
+	{
+		"en"		"Increases Melee Attack Damage 25-80%%"
+	}
+	"zealot_blades_image"
+	{
+		"en"		"Upgrade/protoss-groundweaponslevel0.jpg"
+	}
+
+	"zealot_charge"
+	{
+		"en"		"Charge"
+	}
+	"zealot_charge_desc"
+	{
+		"en"		"Charge forward for 1.5-6 seconds, knocking all asunder and dealing heavy damage to both players and structures."
+	}
+	"zealot_charge_image"
+	{
+		"en"		"Upgrade/Protoss-Charge.jpg"
+	}
+
+	"zealot_dragoon"
+	{
+		"en"		"Summon Dragoon"
+	}
+	"zealot_dragoon_desc"
+	{
+		"en"		"You become a Dragoon until you die."
+	}
+	"zealot_dragoon_image"
+	{
+		"en"		"Protoss/Dragoon.png"
+	}
+
+	"zealot_immortal"
+	{
+		"en"		"Summon Immortal"
+	}
+	"zealot_immortal_desc"
+	{
+		"en"		"You become an Immortal until you die."
+	}
+	"zealot_immortal_image"
+	{
+		"en"		"Protoss/Immortal.png"
+	}
+
+	"zealot_stalker"
+	{
+		"en"		"Summon Stalker"
+	}
+	"zealot_stalker_desc"
+	{
+		"en"		"You become a Stalker until you die."
+	}
+	"zealot_stalker_image"
+	{
+		"en"		"Protoss/Stalker.png"
+	}
+
+	"PreventedFromSummoningDragoon"
+	{
+		"en"		"You have been prevented from Summoning {blue}Dragoon{default}!"
+	}
+
+	"PreventedFromSummoningImmortal"
+	{
+		"en"		"You have been prevented from Summoning {blue}Immortal{default}!"
+	}
+
+	"PreventedFromSummoningStalker"
+	{
+		"en"		"You have been prevented from Summoning {blue}Stalker{default}!"
+	}
+}

@@ -1,0 +1,116 @@
+"Phrases"
+{
+	"phoenix"
+	{
+		"en"		"Protoss Phoenix"
+	}
+
+	"phoenix_switch"
+	{
+		"en"		""
+	}
+
+	"phoenix_pending"
+	{
+		"en"		""
+	}
+
+	"phoenix_image"
+	{
+		"en"		"Protoss/Phoenix.png"
+	}
+
+	"phoenix_desc"
+	{
+		"en"		"The Phoenix is a deadly spacecraft that is rapidly replacing the older Scouts and Corsairs in the role of fighter for the protoss. Phoenix patrols are a common sight on the outer rim of protoss territory, where they sweep deep space for alien threats. The twin ion blaster armament of a Phoenix is highly suited to air-to-air combat.  Amoung the Phoenix's armaments is the Graviton Beam, which is an Anti-Gravity that can lift enemy units into the air. Such units then lose their ability to attack.  However, when the phoenix uses this ability, it is rendered unpowered and is also unable to attack, Other units must attack the target.  The Anti-Gravity ability is very useful in taking key enemy units out of commission and it cannot target massive units.  Burrowed zerg units will be unburrowed by the ability, and will reburrow when they fall back to the ground."
+	}
+
+	"phoenix_weapons"
+	{
+		"en"		"Air Weapons"
+	}
+	"phoenix_weapons_desc"
+	{
+		"en"		"Increases damage for non-melee attacks, 25%% chance to do 30-100%% extra damage."
+	}
+	"phoenix_weapons_image"
+	{
+		"en"		"Upgrade/ProAirWeap.gif"
+	}
+
+	"phoenix_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"phoenix_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that takes damage up to 80%% while it is active."
+	}
+	"phoenix_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"phoenix_thrusters"
+	{
+		"en"		"Gravitic Thrusters"
+	}
+	"phoenix_thrusters_desc"
+	{
+		"en"		"Gives you a speed boost, 10-25%% faster."
+	}
+	"phoenix_thrusters_image"
+	{
+		"en"		"Upgrade/protoss-graviticbooster.jpg"
+	}
+
+	"phoenix_jetpack"
+	{
+		"en"		"Gravitic Drive"
+	}
+	"phoenix_jetpack_desc"
+	{
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+	}
+	"phoenix_jetpack_image"
+	{
+		"en"		"Upgrade/protoss-graviticdrive.jpg"
+	}
+
+	"phoenix_beam"
+	{
+		"en"		"Graviton Beam"
+	}
+	"phoenix_beam_desc"
+	{
+		"en"		"Anti-Gravity beams lift enemy units into the air. Such units lose their ability to attack. When the phoenix uses this ability, it is rendered unpowered and cannot attack. Burrowed zerg units will be unburrowed and Terrans will be plucked from Bunkers."
+	}
+	"phoenix_beam_image"
+	{
+		"en"		"Upgrade/protoss-gravitonbeam.jpg"
+	}
+
+	"phoenix_carrier"
+	{
+		"en"		"Summon Carrier"
+	}
+	"phoenix_carrier_desc"
+	{
+		"en"		"You become a Carrier until you die."
+	}
+	"phoenix_carrier_image"
+	{
+		"en"		"Protoss/Carrier.png"
+	}
+
+	"InsufficientEnergyToDrag"
+	{
+		"#format"	"{1:N}"
+		"en"		"You do not have enough energy to continue {blue}Drag{default}ging {olive}{1}{default}!"
+	}
+
+	"PreventedFromSummoningCarrier"
+	{
+		"en"		"You have been prevented from Summoning {blue}Carrier{default}!"
+	}
+}

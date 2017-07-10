@@ -1,0 +1,95 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"chronos_RaceName"
+	{
+		"en"		"Chronos"
+	}
+
+	"chronos_Image"
+	{
+		"en"		"Hellbourne/chronos.png"
+	}
+
+	"chronos_Desc"
+	{
+		"en"		"The greatest inventors of the Human Legion dreamed of making an army of machine warriors to spare humans the bloody cost of war. Only one was ever created, for no one could ever find a way to quicken him. When the Hellbourne fed a stolen soul into its mechanical shell, they brought the Chronos to life and gained the benefit of this artificial monster's mastery over time itself."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"chronos_skill_TimeLeap"
+	{
+		"en"		"Time Leap"
+	}
+	"chronos_skill_TimeLeap_desc"
+	{
+		"en"		"Leap in the direction you are moving (auto on jump)"
+	}
+	"chronos_skill_TimeLeap_image"
+	{
+		"en"		"Upgrade/Chronosskill1.gif"
+	}
+
+	"chronos_skill_Rewind"
+	{
+		"en"		"Rewind"
+	}
+	"chronos_skill_Rewind_desc"
+	{
+		"en"		"Chance to regain the damage you took"
+	}
+	"chronos_skill_Rewind_image"
+	{
+		"en"		"Upgrade/Chronosskill2.gif"
+	}
+
+	"chronos_skill_TimeLock"
+	{
+		"en"		"Time Lock"
+	}
+	"chronos_skill_TimeLock_desc"
+	{
+		"en"		"Chance to stun your enemy"
+	}
+	"chronos_skill_TimeLock_image"
+	{
+		"en"		"Upgrade/Chronosskill3.gif"
+	}
+
+	"chronos_skill_Chronosphere"
+	{
+		"en"		"Chronosphere"
+	}
+	"chronos_skill_Chronosphere_desc"
+	{
+		"en"		"Rip space and time to trap enemy.\nTrapped victims cannot move and can only deal/receive melee damage,\nSphere protects chornos from outside damage"
+	}
+	"chronos_skill_Chronosphere_image"
+	{
+		"en"		"Upgrade/Chronosskill4.gif"
+	}
+
+	"You have been trapped by a Chronosphere! You can only receive Melee damage"
+	{
+		"en"		"You have been trapped by a Chronosphere!\nYou can only receive Melee damage"
+	}
+	"You can only damage with knife"
+	{
+		"en"		"You can only damage with knife"
+	}
+	"Rewind +{amount} HP!"
+	{
+		"#format"	"{1:d}"
+		"en"		"Rewind +{1} HP!"
+	}
+	"You got Time Locked"
+	{
+		"en"		"You got Time Locked"
+	}
+	"Time Lock!"
+	{
+		"en"		"Time Lock!"
+	}
+}

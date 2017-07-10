@@ -1,0 +1,33 @@
+	//
+	// Allow sourcemod sounds.
+	//
+	sound\sourcemod\...								allow_from_disk
+
+	//
+	// Allow sourcecraft and other sounds.
+	//
+	sound\war3source\...							allow_from_disk
+	sound\sc\...									allow_from_disk
+
+	//
+	// Allow L.Duke nade models
+	//
+	materials\models\weapons\nades\duke1\...		allow_from_disk
+	models\weapons\nades\duke1\...					allow_from_disk
+
+	//
+	// Allow shield models
+	//
+	materials\models\shield\...						allow_from_disk
+	models\shield\...								allow_from_disk
+
+	//
+	// Allow The Amplifier model
+	//
+	materials/models/buildables/amplifier_test/...  allow_from_disk
+	models/buildables/amplifier_test/...      		allow_from_disk
+
+	//
+	// Allow The Repair Node materials
+	//
+	materials/models/buildables/repair/...  		allow_from_disk

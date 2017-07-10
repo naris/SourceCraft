@@ -1,0 +1,83 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"dragonborn_o_RaceName"
+	{
+		"en"		"Dragonborn"
+	}
+
+	"dragonborn_o_Image"
+	{
+		"en"		"Legion/dragonborn.png"
+	}
+
+	"dragonborn_o_Desc"
+	{
+		"en"		"Dragonborn are a race of draconic creatures native to Abeir, Toril's long sundered twin. During the Spellplague the dragonborn nation of Tymanchebar was placed where Unther had once been, creating the nation of Tymanther, where most dragonborn of Faerûn dwell to this day. Dragonborn have a strong hatred of dragons, who enslaved them on Abeir."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"dragonborn_o_skill_Roar"
+	{
+		"en"		"Roar"
+	}
+	"dragonborn_o_skill_Roar_desc"
+	{
+		"en"		"Puts all those around you in a 400 radius in a fear state for 0.4-1.0 second. +Ability"
+	}
+	"dragonborn_o_skill_Roar_image"
+	{
+		"en"		"Upgrade/Inv_misc_head_dragon_01.png"
+	}
+
+	"dragonborn_o_skill_Scales"
+	{
+		"en"		"Scales"
+	}
+	"dragonborn_o_skill_Scales_desc"
+	{
+		"en"		"1-3 physical armor"
+	}
+	"dragonborn_o_skill_Scales_image"
+	{
+		"en"		"Upgrade/Spell_nature_skinofearth.png"
+	}
+
+	"dragonborn_o_skill_Dragonborn"
+	{
+		"en"		"Dragonborn"
+	}
+	"dragonborn_o_skill_Dragonborn_desc"
+	{
+		"en"		"Being dragonborn gives immunitys to certain magics.\n15%% chance of immunity to wards/slows/skills/ultimates "
+	}
+	"dragonborn_o_skill_Dragonborn_image"
+	{
+		"en"		"Upgrade/genericspellimmunity.gif"
+	}
+
+	"dragonborn_o_skill_DragonsBreath"
+	{
+		"en"		"Dragons Breath"
+	}
+	"dragonborn_o_skill_DragonsBreath_desc"
+	{
+		"en"		"Applies jarate effect. 400-700 range."
+	}
+	"dragonborn_o_skill_DragonsBreath_image"
+	{
+		"en"		"Upgrade/Spell_fire_burnout.png"
+	}
+
+	"A dragon weakend you with dragon breath"
+	{
+		"en"		"A dragon weakend you with dragon breath"
+	}
+		
+	"OH GOD A DRAGON"
+	{
+		"en"		"OH GOD A DRAGON"
+	}
+}

@@ -1,0 +1,83 @@
+"Phrases"
+{
+	//<shortname>_RaceName
+	"scout_o_RaceName"
+	{
+		"en"		"Scout"
+	}
+
+	"scout_o_Image"
+	{
+		"en"		"Legion/Scout.png"
+	}
+
+	"scout_o_Desc"
+	{
+		"en"		"Trained since youth to be swift, silent, and deadly, Scouts spend much of their lives deep in the wild, apart from their brethren. After the alliance with the Beast Horde, they learned yet more ways of the wild, and turned all their craft to defeating the Hellbourne. Though many view them as aloof, none doubt the importance of Scouts in the war against the daemons, as the countless enemy corpses, dead by a single blow, attest."
+	}
+
+	//skills:
+	//<shortname>_skill_<SkillNameIdentifier> for the skill name
+	//<shortname>_skill_<SkillNameIdentifier>_desc for the skill description
+	"scout_o_skill_Vanish"
+	{
+		"en"		"Vanish"
+	}
+	"scout_o_skill_Vanish_desc"
+	{
+		"en"		"+ability: Turn invisible at the cost of #1# health / sec for #2# seconds.\nCannot shoot for 1 second out of invis.\nLeave invis early by using ability again"
+	}
+	"scout_o_skill_Vanish_image"
+	{
+		"en"		"Upgrade/Scoutskill1.gif"
+	}
+
+	"scout_o_skill_TrueSight"
+	{
+		"en"		"True Sight"
+	}
+	"scout_o_skill_TrueSight_desc"
+	{
+		"en"		"Enemies cannot be invisible or partially invisible around you. \n#1# units.\nDoes not affect spy cloak (TF)"
+	}
+	"scout_o_skill_TrueSight_image"
+	{
+		"en"		"Upgrade/Scoutskill2.gif"
+	}
+
+	"scout_o_skill_Disarm"
+	{
+		"en"		"Disarm"
+	}
+	"scout_o_skill_Disarm_desc"
+	{
+		"en"		"#1# chance to disarm the enemy on hit"
+	}
+	"scout_o_skill_Disarm_image"
+	{
+		"en"		"Upgrade/Scoutskill3.gif"
+	}
+
+	"scout_o_skill_Marksman"
+	{
+		"en"		"Marksman Shot"
+	}
+	"scout_o_skill_Marksman_desc"
+	{
+		"en"		"Standing still for 1 second, scout is able to deal #1#x damage the further the target.\n1000 units or more deals maximum damage"
+	}
+	"scout_o_skill_Marksman_image"
+	{
+		"en"		"Upgrade/Scoutskill4.gif"
+	}
+	
+	
+	"You sacrificed part of yourself for invis"
+	{
+		"en"		"You sacrificed part of yourself for invis"
+	}
+	"No Longer Invis! Cannot shoot for 1 sec!"
+	{
+		"en"		"No Longer Invis! Cannot shoot for 1 sec!"
+	}
+}

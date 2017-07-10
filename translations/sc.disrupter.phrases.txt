@@ -1,0 +1,163 @@
+"Phrases"
+{
+	"disrupter"
+	{
+		"en"		"Protoss Disrupter"
+	}
+
+	"disrupter_switch"
+	{
+		"en"		"You have {blue}Summoned Disrupter{default}!"
+	}
+
+	"disrupter_pending"
+	{
+		"en"		""
+	}
+
+	"disrupter_image"
+	{
+		"en"		"Protoss/Sentry.png"
+	}
+
+	"disrupter_desc"
+	{
+		"en"		"The fall of Aiur demonstrated to the Dark Templar that more than just stealth and guile were required to defeat the zerg. Hence, the Dark Templar developed the disrupter, a war machine inspired by the Khalai  dragoon. While dragoons were piloted by crippled protoss, the disrupter was controlled by the shadow-essence of a Dark Templar warrior fused into a metal body. The new walkers were armed with carapace-mounted particle disruptors adept against both ground and aerial targets.\nDisrupters were credited with many fantastic powers upon their battlefield debut. However, only one was witnessed consistently: an ability to instantly teleport, or \"blink\", from one spot to another. The improved mobility thus granted allowed the disrupter to conduct ambushes, catch fleeing foes, and generally engage on their own terms."
+	}
+
+	"disrupter_armor"
+	{
+		"en"		"Ground Armor"
+	}
+	"disrupter_armor_desc"
+	{
+		"en"		"Armor that takes damage up to 80%% until it is depleted."
+	}
+	"disrupter_armor_image"
+	{
+		"en"		"Upgrade/ProGrndArm.gif"
+	}
+
+	"disrupter_shields"
+	{
+		"en"		"Plasma Shields"
+	}
+	"disrupter_shields_desc"
+	{
+		"en"		"You are enveloped in re-generating Plasma Shields that protect you from 10%-80%% damage while it is active."
+	}
+	"disrupter_shields_image"
+	{
+		"en"		"Upgrade/ProShields.gif"
+	}
+
+	"disrupter_speed"
+	{
+		"en"		"Cybernetic Core"
+	}
+	"disrupter_speed_desc"
+	{
+		"en"		"Gives you a speed boost, up to 25%% boost (5%% faster than normal speed)."
+	}
+	"disrupter_speed_image"
+	{
+		"en"		"Upgrade/CyberneticsCore.jpg"
+	}
+
+	"disrupter_ground_weapons"
+	{
+		"en"		"Ground Weapons"
+	}
+	"disrupter_ground_weapons_desc"
+	{
+		"en"		"Missiles have a 5-35%% chance to do up to 35-100% more damage."
+	}
+	"disrupter_ground_weapons_image"
+	{
+		"en"		"Upgrade/ProGrndWeap.gif"
+	}
+
+	"disrupter_hallucination"
+	{
+		"en"		"Hallucination"
+	}
+	"disrupter_hallucination_desc"
+	{
+		"en"		"Gives you a 15-75%% chance to cause temporary hallucinations in an enemy."
+	}
+	"disrupter_hallucination_image"
+	{
+		"en"		"Upgrade/Hallucination.jpg"
+	}
+
+	"disrupter_disruption"
+	{
+		"en"		"Molecular Disruption"
+	}
+	"disrupter_disruption_desc"
+	{
+		"en"		"Fires a psionic projectile which bounces between enemy units, to a maximum of 10 bounces. It can strike a single unit more than once."
+	}
+	"disrupter_disruption_image"
+	{
+		"en"		"Upgrade/protoss-groundweaponslevel3.jpg"
+	}
+	"sc_disruption"
+	{
+		"en"		"Molecular Disruption"
+	}
+
+	"disrupter_null_void"
+	{
+		"en"		"Null Void"
+	}
+	"disrupter_null_void_desc"
+	{
+		"en"		"Reduces armor, shields and energy to 0, detects, uncloaks and undisguises all enemy units within the void.\nAlso temporarily disables all buildings within the void for 5 seconds."
+	}
+	"disrupter_null_void_image"
+	{
+		"en"		"Upgrade/protoss-blackhole.jpg"
+	}
+
+	"disrupter_guardian_shield"
+	{
+		"en"		"Guardian Shield"
+	}
+	"disrupter_guardian_shield_desc"
+	{
+		"en"		"The Guardian Shield absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds."
+	}
+	"disrupter_guardian_shield_image"
+	{
+		"en"		"Upgrade/protoss-shieldbattery.jpg"
+	}
+
+	"disrupter_force_field"
+	{
+		"en"		"Force Field"
+	}
+	"disrupter_force_field_desc"
+	{
+		"en"		"Encapsulates one or more enemies within a force field that renders them immobile for up to 5 seconds."
+	}
+	"disrupter_force_field_image"
+	{
+		"en"		"Upgrade/protoss-forcefield.jpg"
+	}
+
+	"DisruptionActive"
+	{
+		"en"		"Your attacks now disrupt the enemies!"
+	}
+
+	"DisruptionEnded"
+	{
+		"en"		"Your attacks no longer Disrupt!"
+	}
+
+	"DisruptionHud"
+	{
+		"en"		"*** Disruption ***"
+	}
+}
