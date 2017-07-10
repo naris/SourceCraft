@@ -1,0 +1,195 @@
+**********************
+** RMF Ability Menu **
+**********************
+sm_rmf_allow_ability_menu					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable				
+sm_rmf_ability_menu_admin_only				(0 = disabled | 1 = enabled)	Default:1		Admin Only						
+
+	
+*****************
+** Spike Shoes **
+*****************
+sm_rmf_allow_spikeshoes						(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_spikeshoes_hopping_power				(400.0-1000.0)					Default:400.0	Stomp hopping power					
+sm_rmf_spikeshoes_movement_speed_mag		(0.0-10.0)						Default:0.9		Movement speed magnification
+sm_rmf_spikeshoes_jump_height_mag			(0.0-10.0)						Default:1.2		Second jump height magnification
+
+
+*******************
+** Homing Rocket **
+*******************
+sm_rmf_allow_homingrocket					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_homingrocket_start_accuracy			(0-100)							Default:70		Homing start accuracy							
+sm_rmf_homingrocket_final_accuracy			(0-100)							Default:2		Homing final accuracy				
+sm_rmf_homingrocket_battery_runtime			(0.0-120.0)						Default:12.0	Homing system battery run time
+
+
+************************
+** King Kong Drumming **
+************************
+sm_rmf_allow_kingkongdrumming				(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_kingkongdrumming_taunt_damage		(0-1000)						Default:3		Base taunt damage 
+sm_rmf_kingkongdrumming_time_lv1			(0.0-120.0)						Default:4.5		Powerup duration(Lv1)
+sm_rmf_kingkongdrumming_time_lv2			(0.0-120.0)						Default:4.0		Powerup duration(Lv2)
+sm_rmf_kingkongdrumming_time_lv3			(0.0-120.0)						Default:3.5		Powerup duration(Lv3)
+sm_rmf_kingkongdrumming_movement_speed_mag	(0.0-10.0)						Default:2.5		Lv1 Movement speed magnification
+sm_rmf_kingkongdrumming_firing_speed_mag	(0.0-10.0)						Default:2.0		Lv2 Firing speed magnification
+
+
+******************
+** After Burner **
+******************
+sm_rmf_allow_afterburner					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_afterburner_use_ammo					(0-200)							Default:4		Ammo Required						
+sm_rmf_afterburner_up_mag					(0.0-10.0)						Default:1.45	Up Velocity Magnification			
+sm_rmf_afterburner_fall_mag					(0.0-10.0)						Default:0.85	Fall Velocity Magnification
+sm_rmf_afterburner_burn_enemy				(0 = disabled | 1 = enabled)	Default:1		Burn enemy when hit After Burner's flame		
+
+
+********************
+** Flare Firework **
+********************
+sm_rmf_allow_flarefirework					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_flarefirework_radius					(0.0-100.0)						Default:2.5		Effective radius[meter]					
+sm_rmf_flarefirework_flare_speed_mag		(0.0-10.0)						Default:0.5		Flare speed magnification
+
+
+********************
+** Disguise Jutsu **
+********************
+sm_rmf_allow_disguisejutsu					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_disguisejutsu_charge_time			(0.0-120.0)						Default:15.0	Pyro Power charge time			
+
+
+**********************
+** Burnsday Present **
+**********************
+sm_rmf_allow_burnsdaypresent				(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_burnsdaypresent_damage				(0-1000)						Default:5		Damage			
+sm_rmf_burnsdaypresent_damage_interval		(0.0-120.0)						Default:0.1		Damage interval		
+sm_rmf_burnsdaypresent_burning_time			(0.0-120.0)						Default:7.0		Burning time	
+sm_rmf_burnsdaypresent_use_ammo				(0-200)							Default:50		Ammo required		
+
+
+******************
+** Sticky Flash **
+******************
+sm_rmf_allow_stickyflash					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_stickyflash_base_blindtime			(0.0-120.0)						Default:2.0		Base blind time						
+sm_rmf_stickyflash_blindtime_add			(0.0-120.0)						Default:2.0		Add blind time						
+sm_rmf_stickyflash_blindtime_add_crits		(0.0-120.0)						Default:4.0		Add blind time critical				
+
+
+****************
+** Drunk Bomb **
+****************
+sm_rmf_allow_drunkbomb						(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_drunkbomb_fuse						(0.0-120.0)						Default:5.5		Fuse time							
+sm_rmf_drunkbomb_speed_mag					(0.0-10.0)						Default:0.8		Walk speed							
+sm_rmf_drunkbomb_radius						(0.0-100.0)						Default:10.0	Damage radius						
+sm_rmf_drunkbomb_base_damage				(0.0-1000.0)					Default:800.0	Base damage	
+
+
+************************
+** Delicious Sandvich **
+************************
+sm_rmf_allow_delicioussandvich				(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_delicioussandvich_add_heal_amount	(0-500)							Default:45		Add heal amount per 1 second			
+	
+
+**********************
+** Centrifuge Rotor **
+**********************
+sm_rmf_allow_centrifugerotor				(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_centrifugerotor_gravity				(0.0-10.0)						Default:10.0	Generate gravity					
+sm_rmf_centrifugerotor_movement_speed_mag	(0.0-10.0)						Default:0.6		Movement speed magnification		
+
+
+******************
+** Metal Hopper **
+******************
+sm_rmf_allow_metalhopper					(0 = disabled | 1 = enabled)	Default:1		Metal Hopper Enable/Disable			
+sm_rmf_metalhopper_base_damage				(0-1000)						Default:35		Metal Hopper base damage			
+sm_rmf_metalhopper_base_power				(10.0-5000.0)					Default:300.0	Metal Hopper base power				
+
+
+**********************
+** Reverse Engineer **
+**********************
+sm_rmf_allow_reverseengineer				(0 = disabled | 1 = enabled)	Default:1		Reverse Engineer Enable/Disable		
+sm_rmf_reverseengineer_chargetime_mag		(0.0-10.0)						Default:2.0		Charge time magnification			
+
+
+******************
+** Sleep Switch **
+******************
+sm_rmf_allow_sleepswitch					(0 = disabled | 1 = enabled)	Default:1		Sleep Switch Enable/Disable			
+sm_rmf_sleepswitch_dist						(0.0-100.0)						Default:20.0	Effective dist[meter]				
+sm_rmf_sleepswitch_heal_amount				(0-500)							Default:20		Heal amount							
+
+
+*********************
+** Uber Transplant **
+*********************
+sm_rmf_allow_ubertransplant					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_ubertransplant_speed					(0.0-120.0)						Default:0.1		Uber transplant speed				
+sm_rmf_ubertransplant_ubar_amount			(0-100)							Default:2		Uber transplant amount per 1%		
+
+
+**********************
+** Doping Injection **
+**********************
+sm_rmf_allow_dopinginjection				(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_dopinginjection_heal_speed			(0.0-120.0)						Default:1.0		Heal Speed							
+sm_rmf_dopinginjection_heal_rate			(0-500)							Default:10		Heal rate							
+sm_rmf_dopinginjection_doping_time			(0.0-120.0)						Default:10.0	Doping duration				
+sm_rmf_dopinginjection_use_ammo				(0-200)							Default:20		Ammo required		
+
+
+******************
+** Supercharger **
+******************
+sm_rmf_allow_supercharger					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_supercharger_charg_speed				(0.0-120.0)						Default:1.0		Charge Speed						
+sm_rmf_supercharger_charge_rate				(0-100)							Default:2		Charge rate							
+sm_rmf_supercharger_drain_speed				(0.0-120.0)						Default:0.25	Ubercharge drain speed	
+
+
+*************
+** Styptic **
+*************
+sm_rmf_allow_styptic						(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_styptic_heal_speed					(0.0-120.0)						Default:0.5		Heal Speed							
+sm_rmf_styptic_heal_rate					(0-500)							Default:10		Heal rate							
+sm_rmf_styptic_use_uber						(0-100)							Default:3		Use ubercharge amount
+
+
+*******************
+** Flying Doctor **
+*******************
+sm_rmf_allow_flyingdoctor					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable					
+
+
+******************
+** CurvingArrow **
+******************
+sm_rmf_allow_curvingarrow					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+	
+		
+*****************
+** MarkingShot **
+*****************
+sm_rmf_allow_markingshot					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_markingshot_time_max					(0.0-120.0)						Default:25.0	Max marking time
+sm_rmf_markingshot_time_min					(0.0-120.0)						Default:2.0		Min marking time;
+sm_rmf_markingshot_charge_mag				(0.0-10.0)						Default:0.8		Charge amount magnification
+
+
+*****************
+** SapperThrow **
+*****************
+sm_rmf_allow_sapperthrow					(0 = disabled | 1 = enabled)	Default:1		Enable/Disable						
+sm_rmf_sapperthrow_radius					(0.0-100.0)						Default:2.5		Effective radius[meter]				
+sm_rmf_sapperthrow_time						(0.0-120.0)						Default:3.0		Effective time						
+sm_rmf_sapperthrow_damage_amount			(0-1000)						Default:10		Building damage amount
+sm_rmf_sapperthrow_damage_rate				(0.0-120.0)						Default:0.1		Building damage rate
+sm_rmf_sapperthrow_charge_time				(0.0-120.0)						Default:30.0	Recharge time
