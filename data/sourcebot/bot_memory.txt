@@ -1,0 +1,13 @@
+"Vault"
+{
+	"Relation"
+	{
+	}
+	"LastPhrase"
+	{
+		"value"		"0"
+	}
+	"Phrases"
+	{
+	}
+}

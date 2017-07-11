@@ -1,0 +1,293 @@
+//Type the responses for when players ask the following categories of question. Only edit the answers here.
+"Vault"
+{
+	"Thanking"
+	{
+		//max: 10
+		"1"		"your welcome"
+		"2"		"welcome :)"
+		"3"		"np"
+		"4"		"no problem"
+		"5"		"yw :D"
+		"6"		"happy to help"
+	}
+	"Leaving_Server"
+	{
+		//max: 10
+		"1"		"oh, bye"
+		"2"		"where are you going?"
+		"3"		"aww dont leave yet"
+		"4"		"see ya later!"
+		"5"		"alright, bye"
+		"6"		"cya"
+	}
+	"Insulted"
+	{
+		//max: 10
+		"1"		"go to hell"
+		"2"		"well that wasnt nice... 0_0"
+		"3"		"shut up!"
+		"4"		"how rude!"
+		"5"		"stop it you jerk"
+		"6"		"right back at ya >:|"
+	}
+	"Respond_To_Player"
+	{
+		//max: 5
+		"1"		"yes?"
+		"2"		"hmm?"
+		"3"		"what?"
+	}
+	"Bot_Feelings"
+	{
+		//max: 20
+		"1"		"great :D"
+		"2"		"doin ok"
+		"3"		"never better"
+		"4"		"so-so"
+		"5"		"not so good"
+		"6"		"pretty bad actually"
+	}
+	"Time_Length_Past"
+	{
+		//max: 10
+		"1"		"a few days ago"
+		"2"		"a very long time :3"
+		"3"		"a while back"
+		"4"		"some time ago"
+		"5"		"just a moment ago"
+	}
+	"Time_Length_Future"
+	{
+		//Max: 10
+		"1"		"a little bit longer"
+		"2"		"later"
+		"3"		"very soon"
+		"4"		"right now actually XD"
+		"5"		"a few years :O"
+	}
+	"Size"
+	{
+		//max: 20
+		"1"		"huge!"
+		"2"		"pretty small"
+		"3"		"i cant even see it"
+		"4"		"i never measured it before"
+		"5"		"the answer would amaze you ;D"
+		"6"		"hard to tell"
+		"7"		"it changes size a lot"
+		"8"		"pretty big"
+		"9"		"very small"
+		"10"		"about average size"
+	}
+	"Amount"
+	{
+		//max: 14
+		"1"		"a lot!"
+		"2"		"just a little"
+		"3"		"more than i can count"
+		"4"		"none lol"
+		"5"		"too many"
+		"6"		"a decent amount"
+	}
+	"How"
+	{
+		//max: 20
+		"1"		"really dont know lol"
+		"2"		"you dont know? XD"
+		"3"		"too complicated"
+		"4"		"woah, no idea"
+		"5"		"i just said it, werent you listening?"
+		"6"		"hm...good question"
+		"7"		"not positive on that one"
+		"8"		"i think you already know ;D"
+		"9"		"sorry that made me LOL"
+		"10"		"pretty easy"
+	}
+	"Are_you...?"
+	{
+		//max: 20
+		"1"		"totally"
+		"2"		"ya"
+		"3"		"naw"
+		"4"		"no way"
+		"5"		"of course"
+		"6"		"i dont think so"
+		"7"		"im not sure..."
+		"8"		"probably"
+		"9"		"not very likely"
+		"10"		"HELL YA"
+	}
+	"What"
+	{
+		//max: 20
+		"1"		"good question, idk though"
+		"2"		"im not the one to ask"
+		"3"		"idk"
+		"4"		"google is good for those kind of questions"
+		"5"		"hmmmm lemme think on that"
+		"6"		"no idea"
+		"7"		"that makes no sense"
+		"8"		"can you ask me later?"
+		"9"		"thats a little confusing..."
+		"10"		"ummm...ok?"
+	}
+	"Why"
+	{
+		//max: 20
+		"1"		"because its what THEY want"
+		"2"		"because Alm made it that way"
+		"3"		"i could say why...but that would just raise more questions"
+		"4"		"my limited scripting leaves me with no answer for that"
+		"5"		"thats just the way it is"
+		"6"		"idk"
+		"7"		"i never thought about it"
+		"8"		"it just is"
+		"9"		"simply stated, no"
+		"10"		"i dont think i can answer that"
+	}
+	"Where"
+	{
+		//max: 20
+		"1"		"somewhere close by..."
+		"2"		"did you try mapquest?"
+		"3"		"right over here XD"
+		"4"		"pretty far away"
+		"5"		"hidden somewhere"
+		"6"		"cant say for sure"
+		"7"		"the other side, i think"
+		"8"		"this way, follow me"
+		"9"		"dont know lol"
+		"10"		"lol not telling"
+	}
+	"Who"
+	{
+		//max: 5
+		"1"		"not entirely sure"
+	}
+	"General_Question"
+	{
+		//max: 8
+		"1"		"yes"
+		"2"		"no"
+		"3"		"yeah"
+		"4"		"nah"
+		"5"		"yep"
+		"6"		"naw"
+		"7"		"maybe"
+		"8"		"i dont think so"
+	}
+	"When_General"
+	{
+		//Max: 20
+		"1"		"a little later"
+		"2"		"sometime tomorrow probably"
+		"3"		"last year"
+		"4"		"right now"
+		"5"		"soon"
+		"6"		"just before"
+		"7"		"later"
+		"8"		"a loooong time ago lol"
+		"9"		"a while back"
+		"10"		"idk"
+	}
+	"When_Past"
+	{
+		//Max: 10
+		"1"		"last year"
+		"2"		"just before"
+		"3"		"a loooong time ago"
+		"4"		"a while back"
+		"5"		"a while ago"
+	}
+	"When_Future"
+	{
+		//Max: 10
+		"1"		"a little later"
+		"2"		"sometime tomorrow probably"
+		"3"		"right now"
+		"4"		"soon"
+		"5"		"later"
+	}
+	"When_Often"
+	{
+		//Max: 10
+		"1"		"every day"
+		"2"		"once in a while"
+		"3"		"not very often"
+		"4"		"twice a week"
+		"5"		"every few seconds or so"
+	}
+	"Either_Or"
+	{
+		//Max: 10
+		"1"		"the first one"
+		"2"		"im gonna go with the latter"
+		"3"		"cant decide..."
+		"4"		"all of them"
+		"5"		"none!"
+	}
+	"Statement_Response"
+	{
+		//Max: 50
+		"1"		"kk"
+		"2"		"oh thats nice"
+		"3"		"aha!"
+		"4"		"LOL!"
+		"5"		"wow"
+		"6"		"thanks"
+		"7"		"what? XD"
+		"8"		"aww"
+		"9"		"sure"
+		"10"		"cool"
+		"11"		"hmm"
+		"12"		"well thats a lot to think about lol"
+		"13"		"no"
+		"14"		"LMAO"
+		"15"		"ok"
+		"16"		"awesome!"
+		"17"		"thats interesting"
+		"18"		"0_0"
+		"19"		"ok dokey"
+		"20"		"oh hell no"
+	}
+	"Greeting"
+	{
+		//Max: 10
+		"1"		"hey!"
+		"2"		"hi"
+		"3"		"wassup!"
+		"4"		"heyy"
+	}
+	"Apology_Accept"
+	{
+		//Max: 5
+		"1"		"you are forgiven"
+		"2"		"alright"
+		"3"		"thats ok"
+		"4"		"apology accepted :)"
+	}
+	"Teleported"
+	{
+		//Max: 5
+		"1"		"woah!"
+		"2"		"wow, where am i?"
+		"3"		"huh? what just happened?"
+	}
+	"No_Respond"
+	{
+		//Max: 10
+		"1"		"leave me alone"
+		"2"		"i dont wanna talk to you"
+		"3"		"stop talking to me"
+		"4"		"im not gonna answer you"
+		"5"		"shut up"
+	}
+	"Said_Name"
+	{
+		//Max: 5
+		"1"		"yes? what?"
+		"2"		"thats me, what do you want?"
+		"3"		"what?"
+	}
+}

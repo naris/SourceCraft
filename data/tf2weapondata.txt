@@ -1,0 +1,226 @@
+"TF2WeaponData"
+{
+	"tf_weapon_scattergun"
+	{
+		"slot"	"1"
+		"max"	"32"
+		"clip"	"6"
+	}
+
+	"tf_weapon_pistol_scout"
+	{
+		"slot"	"2"
+		"max"	"36"
+		"clip"	"12"
+	}
+
+	"tf_weapon_bat"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_rocketlauncher"
+	{
+		"slot"	"1"
+		"max"	"16"
+		"clip"	"4"
+	}
+
+	"tf_weapon_shotgun_soldier"
+	{
+		"slot"	"2"
+		"max"	"32"
+		"clip"	"6"
+	}
+
+	"tf_weapon_shovel"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_flamethrower"
+	{
+		"slot"	"1"
+		"max"	"200"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_shotgun_pyro"
+	{
+		"slot"	"2"
+		"max"	"32"
+		"clip"	"6"
+	}
+
+	"tf_weapon_flaregun"
+	{
+		"slot"	"2"
+		"max"	"16"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_fireaxe"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_grenadelauncher"
+	{
+		"slot"	"1"
+		"max"	"16"
+		"clip"	"4"
+	}
+
+	"tf_weapon_pipebomblauncher"
+	{
+		"slot"	"2"
+		"max"	"24"
+		"clip"	"8"
+	}
+
+	"tf_weapon_bottle"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_minigun"
+	{
+		"slot"	"1"
+		"max"	"200"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_shotgun_hwg"
+	{
+		"slot"	"2"
+		"max"	"32"
+		"clip"	"6"
+	}
+
+//	"tf_weapon_lunchbox"
+//	{
+//		"slot"	"2"
+//		"max"	"-1"
+//		"clip"	"-1"
+//	}
+
+	"tf_weapon_fists"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_weapon_shotgun_primary"
+	{
+		"slot"	"1"
+		"max"	"32"
+		"clip"	"6"
+	}
+
+	"tf_weapon_pistol"
+	{
+		"slot"	"2"
+		"max"	"200"
+		"clip"	"12"
+	}
+
+	"tf_weapon_wrench"
+	{
+		"slot"	"3"
+		"max"	"200"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_pda_engineer_build"
+	{
+		"slot"	"4"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_pda_engineer_destroy"
+	{
+		"slot"	"5"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_syringegun_medic"
+	{
+		"slot"	"1"
+		"max"	"150"
+		"clip"	"40"
+	}
+
+	"tf_weapon_medigun"
+	{
+		"slot"	"2"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_bonesaw"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_sniperrifle"
+	{
+		"slot"	"1"
+		"max"	"25"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_smg"
+	{
+		"slot"	"2"
+		"max"	"75"
+		"clip"	"25"
+	}
+
+	"tf_weapon_club"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_revolver"
+	{
+		"slot"	"1"
+		"max"	"24"
+		"clip"	"6"
+	}
+
+	"tf_weapon_builder"
+	{
+		"slot"	"2"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_knife"
+	{
+		"slot"	"3"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+
+	"tf_weapon_pda_spy"
+	{
+		"slot"	"4"
+		"max"	"-1"
+		"clip"	"-1"
+	}
+}
