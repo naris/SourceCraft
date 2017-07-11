@@ -96,8 +96,8 @@ new Float:cfgLockdownDuration       = 1.0;
 
 enum NuclearStatus { Ready, Tracking, LaunchInitiated, LockedOn, Exploding};
 
-new raceID, cloakID, lockdownID, detectorID, nukeID, reactorID;
-new ultlockdownID, vesselID, bunkerID;
+new raceID, cloakID, lockdownID, detectorID, nukeID, reactorID, bunkerID;
+new ultlockdownID, vesselID;
 
 new g_scienceVesselRace = -1;
 
@@ -122,7 +122,6 @@ public OnPluginStart()
 {
     LoadTranslations("sc.detector.phrases.txt");
     LoadTranslations("sc.common.phrases.txt");
-    LoadTranslations("sc.bunker.phrases.txt");
     LoadTranslations("sc.ghost.phrases.txt");
 
     if (GetGameType() == tf2)
@@ -156,41 +155,42 @@ public OnSourceCraftReady()
     cfgAllowInvisibility = bool:GetConfigNum("allow_invisibility", cfgAllowInvisibility);
     if (cfgAllowInvisibility)
     {
-        cloakID = AddUpgrade(raceID, "cloak");
+        cloakID = AddUpgrade(raceID, "cloak", .cost_crystals=0);
     }
     else
     {
-        cloakID = AddUpgrade(raceID, "cloak", 0, 0, 1, .desc="%ghost_cloak_noinvis_desc");
+        cloakID = AddUpgrade(raceID, "cloak", 0, 0, 1, .desc="%ghost_cloak_noinvis_desc", .cost_crystals=25);
         LogMessage("Reducing Terran Ghost:Personal Cloaking Device due to configuration: sc_allow_invisibility=%d",
                    cfgAllowInvisibility);
     }
 
-    lockdownID  = AddUpgrade(raceID, "lockdown", .energy=2.0);
-    detectorID  = AddUpgrade(raceID, "implants");
-    reactorID   = AddUpgrade(raceID, "reactor");
+    lockdownID  = AddUpgrade(raceID, "lockdown", .energy=2.0, .cost_crystals=40);
+    detectorID  = AddUpgrade(raceID, "implants", .cost_crystals=0);
+    reactorID   = AddUpgrade(raceID, "reactor", .cost_crystals=25);
 
     // Ultimate 1
     nukeID      = AddUpgrade(raceID, "nuke", 1, .energy=300.0,
-                             .cooldown=60.0, .accumulated=true);
+                             .cooldown=60.0, .accumulated=true,
+                             .cost_crystals=50);
 
     // Ultimate 2
-    bunkerID    = AddUpgrade(raceID, "bunker", 2, .energy=30.0,
-                             .cooldown=5.0);
+    bunkerID    = AddBunkerUpgrade(raceID, 2);
 
     // Ultimate 3
-    ultlockdownID = AddUpgrade(raceID, "ult_lockdown", 3, 18,
-                               .energy=100.0, .cooldown=5.0);
+    ultlockdownID = AddUpgrade(raceID, "ult_lockdown", 3, 18, .energy=100.0,
+                               .cooldown=5.0, .cost_crystals=40);
 
     if (!IsUberShieldAvailable())
     {
         SetUpgradeDisabled(raceID, ultlockdownID, true);
         LogMessage("ubershield is not available");
+        LogMessage("Disabling Terran Ghost:Ultimate Lockdown due to ubershield is not available");
     }
 
     // Ultimate 4
     vesselID = AddUpgrade(raceID, "vessel", 4, 16,1,
                           .energy=200.0, .cooldown=30.0,
-                          .accumulated=true);
+                          .accumulated=true, .cost_crystals=50);
 
     // Set the Sidewinder available flag
     IsSidewinderAvailable();
@@ -1492,7 +1492,7 @@ BuildScienceVessel(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_scienceVesselRace, true, false);
+        ChangeRace(client, g_scienceVesselRace, true, false, true);
     }
 }
 

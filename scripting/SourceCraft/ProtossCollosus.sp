@@ -96,25 +96,25 @@ public OnSourceCraftReady()
                              .faction=Protoss, .type=Robotic,
                              .parent="immortal");
 
-    armorID     = AddUpgrade(raceID, "armor", 0, 0);
-    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0);
-    speedID     = AddUpgrade(raceID, "speed");
-    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0);
-    immunityID  = AddUpgrade(raceID, "immunity");
-    extendedID  = AddUpgrade(raceID, "extended_lance");
+    armorID     = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    speedID     = AddUpgrade(raceID, "speed", .cost_crystals=0);
+    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0, .cost_crystals=20);
+    immunityID  = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    extendedID  = AddUpgrade(raceID, "extended_lance", .cost_crystals=10);
 
     // Ultimate 1
-    lanceID   = AddUpgrade(raceID, "thermal_lance", 1, 0,
-                           .energy=90.0, .cooldown=5.0);
+    lanceID   = AddUpgrade(raceID, "thermal_lance", 1, 0, .energy=90.0,
+                           .cooldown=5.0, .cost_crystals=30);
 
     // Ultimate 2
-    nullFluxGeneratorID = AddUpgrade(raceID, "null_flux", 2, 8,
-                                     .energy=60.0, .cooldown=2.0);
+    nullFluxGeneratorID = AddUpgrade(raceID, "null_flux", 2, 8, .energy=60.0,
+                                     .cooldown=2.0, .cost_crystals=25);
 
     if (!IsUberShieldAvailable())
     {
         SetUpgradeDisabled(raceID, nullFluxGeneratorID, true);
-        LogMessage("ubershield is not available");
+        LogMessage("Disabling Protoss Collosus:Null-Flux Generator due to ubershield is not available");
     }
 
     // Set the HGRSource available flag

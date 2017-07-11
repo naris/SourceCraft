@@ -56,7 +56,7 @@ new Float:g_SpeedLevels[]                = { -1.0, 1.10, 1.15, 1.20, 1.25 };
 new g_lurkerRace = -1;
 
 new raceID, carapaceID, regenerationID, augmentsID;
-new missileID, spinesID, poisonID, lurkerID;
+new burrowID, missileID, spinesID, poisonID, lurkerID;
 
 new bool:m_PoisonActive[MAXPLAYERS+1];
 
@@ -75,6 +75,7 @@ public OnPluginStart()
     LoadTranslations("sc.hydralisk.phrases.txt");
 
     GetGameType();
+
     if (IsSourceCraftLoaded())
         OnSourceCraftReady();
 }
@@ -84,23 +85,27 @@ public OnSourceCraftReady()
     raceID          = CreateRace("hydralisk", 48, 0, 26, .faction=Zerg,
                                  .type=Biological);
 
-    carapaceID      = AddUpgrade(raceID, "armor");
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-    augmentsID      = AddUpgrade(raceID, "augments");
-    missileID       = AddUpgrade(raceID, "missile_attack", .energy=2.0);
-    spinesID        = AddUpgrade(raceID, "grooved_spines", .energy=2.0);
+    carapaceID      = AddUpgrade(raceID, "armor", .cost_crystals=5);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+    augmentsID      = AddUpgrade(raceID, "augments", .cost_crystals=0);
+
+    missileID       = AddUpgrade(raceID, "missile_attack", .energy=2.0,
+                                 .cost_crystals=20);
+
+    spinesID        = AddUpgrade(raceID, "grooved_spines", .energy=2.0,
+                                 .cost_crystals=20);
 
     // Ultimate 1
-    poisonID        = AddUpgrade(raceID, "poison_spines", 1,
-                                 .energy=20.0, .cooldown=2.0);
+    poisonID        = AddUpgrade(raceID, "poison_spines", 1, .energy=20.0,
+                                 .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 6, 1);
+    burrowID        = AddBurrowUpgrade(raceID, 2, 6, 1);
 
     // Ultimate 3
-    lurkerID        = AddUpgrade(raceID, "lurker", 3, 12, 1,
-                                 .energy=120.0, .cooldown=60.0,
-                                 .accumulated=true);
+    lurkerID        = AddUpgrade(raceID, "lurker", 3, 12, 1, .energy=120.0,
+                                 .accumulated=true, .cooldown=60.0,
+                                 .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -596,7 +601,7 @@ LurkerAspect(client)
                                5.0, 40.0, 255);
             TE_SendEffectToAll();
 
-            ChangeRace(client, g_lurkerRace, true, false);
+            ChangeRace(client, g_lurkerRace, true, false, true);
     }
 }
 

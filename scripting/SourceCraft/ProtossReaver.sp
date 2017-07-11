@@ -143,28 +143,28 @@ public OnSourceCraftReady()
                                  .faction=Protoss, .type=Robotic,
                                  .parent="dragoon");
 
-    shieldsID       = AddUpgrade(raceID, "shields", .energy=1.0);
-    speedID         = AddUpgrade(raceID, "speed");
-    scarabAttackID  = AddUpgrade(raceID, "scarab_attack", .energy=2.0);
-    immunityID      = AddUpgrade(raceID, "immunity");
-    capacityID      = AddUpgrade(raceID, "capacity", 0, 4);
-    velocityID      = AddUpgrade(raceID, "velocity", 0, 4);
+    shieldsID       = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    speedID         = AddUpgrade(raceID, "speed", .cost_crystals=0);
+    scarabAttackID  = AddUpgrade(raceID, "scarab_attack", .energy=2.0, .cost_crystals=20);
+    immunityID      = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    capacityID      = AddUpgrade(raceID, "capacity", 0, 4, .cost_crystals=20);
+    velocityID      = AddUpgrade(raceID, "velocity", 0, 4, .cost_crystals=20);
 
     // Ultimate 1
-    scarabID        = AddUpgrade(raceID, "scarab", 1, 0,
-                                 .energy=2.0, .cooldown=0.0);
+    scarabID        = AddUpgrade(raceID, "scarab", 1, 0, .energy=2.0,
+                                 .cooldown=0.0, .cost_crystals=40);
 
     // Ultimate 2
-    argusScarabID   = AddUpgrade(raceID, "argus_scarab", 2,
-                                 .energy=4.0, .cooldown=0.0);
+    argusScarabID   = AddUpgrade(raceID, "argus_scarab", 2, .energy=4.0,
+                                 .cooldown=0.0, .cost_crystals=50);
 
     // Ultimate 3
     siegeID         = AddUpgrade(raceID, "scarab_siege", 3, 16, .energy=300.0,
-                                 .vespene=20, .cooldown=120.0,
-                                 .accumulated=true);
+                                 .vespene=20, .cooldown=120.0, .accumulated=true,
+                                 .cost_crystals=50);
 
     // Ultimate 4
-    detonateID      = AddUpgrade(raceID, "detonate", 4, 10, 1);
+    detonateID      = AddUpgrade(raceID, "detonate", 4, 10, 1, .cost_crystals=30);
 
     // Get Configuration Data
     GetConfigFloatArray("shields_amount", g_InitialShields, sizeof(g_InitialShields),

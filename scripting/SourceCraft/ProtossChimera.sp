@@ -121,34 +121,28 @@ public OnSourceCraftReady()
     raceID    = CreateRace("chimera", 32, 0, 20, 45.0, 150.0, 2.0,
                            Protoss, Mechanical);
 
-    scarabID  = AddUpgrade(raceID, "scarab_attack", .energy=2.0);
+    scarabID  = AddUpgrade(raceID, "scarab_attack", .energy=2.0, .cost_crystals=10);
 
-    cloakID   = AddUpgrade(raceID, "distortion");
+    cloakID   = AddUpgrade(raceID, "distortion", .cost_crystals=30);
 
     cfgAllowInvisibility = bool:GetConfigNum("allow_invisibility", true);
     if (!cfgAllowInvisibility)
     {
         SetUpgradeDisabled(raceID, cloakID, true);
+        LogMessage("Disabling Protoss Chimera: Distortion Field due to configuration: sc_allow_invisibility=%d (or gametype != tf2)",
+                   cfgAllowInvisibility);
     }
 
-    sensorID  = AddUpgrade(raceID, "sensors");
-    shieldsID = AddUpgrade(raceID, "shields", .energy=1.0);
+    sensorID  = AddUpgrade(raceID, "sensors", .cost_crystals=0);
+    shieldsID = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
 
     // Ultimate 1
-    if (GetGameType() == tf2)
-    {
-        controlID = AddUpgrade(raceID, "mind_control", 1, .energy=45.0, .cooldown=2.0);
+    controlID = AddUpgrade(raceID, "mind_control", 1, .energy=45.0, .cooldown=2.0, .cost_crystals=30);
 
-        if (!IsMindControlAvailable())
-        {
-            SetUpgradeDisabled(raceID, controlID, true);
-            LogMessage("MindControl is not available");
-        }
-    }
-    else
+    if (GetGameType() != tf2 || !IsMindControlAvailable())
     {
-        controlID = AddUpgrade(raceID, "mind_control", 1, .energy=45.0, .cooldown=2.0,
-                               .desc="%NotAvailable");
+        SetUpgradeDisabled(raceID, controlID, true);
+        LogMessage("Disabling Protoss Chimera:Mind Control due to MindControl is not available (or gametype != tf2)");
     }
 
     // Set the Sidewinder available flag

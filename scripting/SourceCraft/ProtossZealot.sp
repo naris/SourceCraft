@@ -90,30 +90,30 @@ public OnSourceCraftReady()
     raceID      = CreateRace("zealot", 16, 0, 30, .energy_rate=2.0,
                              .faction=Protoss, .type=Biological);
 
-    immunityID  = AddUpgrade(raceID, "immunity");
-    legID       = AddUpgrade(raceID, "leg");
-    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0);
-    meleeID     = AddUpgrade(raceID, "blades", .energy=5.0);
+    immunityID  = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    legID       = AddUpgrade(raceID, "leg", .cost_crystals=0);
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    meleeID     = AddUpgrade(raceID, "blades", .energy=5.0, .cost_crystals=20);
 
     // Ultimate 1
     chargeID = AddUpgrade(raceID, "charge", 1, 8,
                           .energy=200.0, .cooldown=30.0,
-                          .accumulated=true);
+                          .accumulated=true, .cost_crystals=30);
 
     // Ultimate 2
     dragoonID = AddUpgrade(raceID, "dragoon", 2, 4,1,
                            .energy=120.0, .cooldown=10.0,
-                           .accumulated=true);
+                           .accumulated=true, .cost_crystals=50);
 
     // Ultimate 3
     immortalID = AddUpgrade(raceID, "immortal", 3, 10,1,
                             .energy=120.0, .cooldown=30.0,
-                            .accumulated=true);
+                            .accumulated=true, .cost_crystals=50);
 
     // Ultimate 4
     stalkerID = AddUpgrade(raceID, "stalker", 4, 12,1,
                            .energy=120.0, .cooldown=30.0,
-                           .accumulated=true);
+                           .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("shields_amount", g_InitialShields, sizeof(g_InitialShields),
@@ -520,7 +520,7 @@ SummonDragoon(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_dragoonRace, true, false);
+        ChangeRace(client, g_dragoonRace, true, false, true);
     }
 }
 
@@ -557,7 +557,7 @@ SummonImmortal(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_immortalRace, true, false);
+        ChangeRace(client, g_immortalRace, true, false, true);
     }
 }
 
@@ -594,6 +594,6 @@ SummonStalker(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_stalkerRace, true, false);
+        ChangeRace(client, g_stalkerRace, true, false, true);
     }
 }

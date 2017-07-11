@@ -386,7 +386,7 @@ public Admin_Category_Selected(Handle:menu,MenuAction:action,client,selection)
                     {
                         decl String:itembuf[SMALL_STRING_LENGTH];
                         Format(itembuf,sizeof(itembuf),"%d,%d",
-                               target,GetShopId(itemHandle));
+                               target,GetItemId(itemHandle));
 
                         decl String:itemName[NAME_STRING_LENGTH];
                         GetItemName(itemHandle, itemName, sizeof(itemName),client);
@@ -579,7 +579,7 @@ public Admin_SetRace_Select(Handle:menu,MenuAction:action,client,selection)
         if (IsValidClient(target))
         {
             new race=StringToInt(SelectionData[1]);
-            SetRace(target,race);
+            SetRace(target, race, false);
             decl String:racename[NAME_STRING_LENGTH];
             GetRaceName(GetRaceHandle(race),racename,sizeof(racename),client);
 
@@ -1105,7 +1105,7 @@ public Admin_Disable_Confirm(Handle:menu,MenuAction:action,client,selection)
                         ResetPlayer(target, false); // Reset target
 
                         new race = FindRace("human"); // Make target a human
-                        SetRace(target, (race >= 0) ? race : 0);
+                        SetRace(target, (race >= 0) ? race : 0, false);
 
                         LogAction(client, target, "[SC] %L disabled %L", client, target);
                         CPrintToChat(client, "{green}[SC]{default} %t", "AdminDisabled", target);
@@ -1176,7 +1176,7 @@ public Admin_Delete_Confirm(Handle:menu,MenuAction:action,client,selection)
                     ResetPlayer(target, false); // Reset target
 
                     new race = FindRace("human"); // Make target a human
-                    SetRace(target, (race >= 0) ? race : 0);
+                    SetRace(target, (race >= 0) ? race : 0, false);
 
                     LogAction(client, target, "[SC] %L deleted %L from the database", client, target);
                     CPrintToChat(client, "{green}[SC]{default}", "AdminDeleted", target);

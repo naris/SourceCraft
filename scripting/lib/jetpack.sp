@@ -1022,7 +1022,7 @@ public Action:HookRagdoll(Handle:hTimer, any:userid)
         new Handle:hTimerData;
         CreateDataTimer(burning ? 0.1 : 2.0, Explode, hTimerData);
 
-        WritePackCell(hTimerData, index);
+        WritePackCell(hTimerData, userid);
         WritePackCell(hTimerData, g_iFuel[index]);
 
         decl Float:fOrigin[3];
@@ -1038,7 +1038,7 @@ public Action:Explode(Handle:hTimer, Handle:hData)
     new bool:bFF = GetConVarBool(mp_friendlyfire);
 
     ResetPack(hData);
-    new index = ReadPackCell(hData);
+    new userid = ReadPackCell(hData);
 
     new fuel = ReadPackCell(hData);
 
@@ -1056,13 +1056,15 @@ public Action:Explode(Handle:hTimer, Handle:hData)
     TE_SetupExplosion(fOrigin, g_ExplosionIndex, 10.0, 1, 0, 200, 1250);
     TE_SendToAll();
 
-    if (GetClientTeam(index) > 1)
+    new index = GetClientOfUserId(userid); // Get clients index
+    new team  = (index > 0) ? GetClientTeam(index) : 0;
+    if (team > 1)
     {
         for (new victim = 1; victim <= MaxClients; victim++)
         {
             if (victim != index && IsClientInGame(victim) && IsPlayerAlive(victim) && GetClientTeam(victim) > 1 )
             {
-                if (bFF || GetClientTeam(victim) != GetClientTeam(index) )
+                if (bFF || GetClientTeam(victim) != team )
                 {
                     decl Float:victimPos[3];
                     GetClientAbsOrigin(victim, victimPos);

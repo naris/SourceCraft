@@ -16,9 +16,10 @@ enum ItemInfo
     ItemInfo_Max,
     ItemInfo_RequiredLevel,
     Translation:ItemInfo_Translation,
+    ItemInfo_Ident,
     ItemInfo_StoreID,
-    ItemInfo_ShopID,
-    ItemInfo_Ident
+    ItemInfo_Plugin,
+    ItemInfo_ShopID
 }
 
 enum ItemStringInfo
@@ -38,11 +39,14 @@ enum ItemStringInfo
 #define GetItemIndexHandle(%1)              (Handle:GetArrayCell(shopIndex,%1))
 
 // Accessor Macros for Shop Item Data
-#define GetShopId(%1)                       GetArrayCell(%1,_:ItemInfo_ShopID)
-#define SetShopId(%1,%2)                    SetArrayCell(%1,_:ItemInfo_ShopID,%2)
+#define GetItemId(%1)                       GetArrayCell(%1,_:ItemInfo_ShopID)
+#define SetItemId(%1,%2)                    SetArrayCell(%1,_:ItemInfo_ShopID,%2)
 
-#define GetShopIdent(%1)                    GetArrayCell(%1,_:ItemInfo_Ident)
-#define SetShopIdent(%1,%2)                 SetArrayCell(%1,_:ItemInfo_Ident,%2)
+#define GetItemIdent(%1)                    GetArrayCell(%1,_:ItemInfo_Ident)
+#define SetItemIdent(%1,%2)                 SetArrayCell(%1,_:ItemInfo_Ident,%2)
+
+#define GetItemPlugin(%1)                   (Handle:GetArrayCell(%1,_:ItemInfo_Plugin))
+#define SetItemPlugin(%1,%2)                SetArrayCell(%1,_:ItemInfo_Plugin,%2)
 
 #define GetItemCrystals(%1)                 GetArrayCell(%1,_:ItemInfo_Crystals)
 #define SetItemCrystals(%1,%2)              SetArrayCell(%1,_:ItemInfo_Crystals,%2)
@@ -154,7 +158,8 @@ ClearShopVector()
 
 CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcrystals=false, xp=0, max=1,
                required_level=0, storeId=0, Translation:translation=Translation_Auto, const String:translation_file[]="",
-               const String:category[]="", const String:name[]="", const String:desc[]="", const String:image[]="")
+               const String:category[]="", const String:name[]="", const String:desc[]="", const String:image[]="",
+               Handle:plugin=INVALID_HANDLE)
 {
     TraceInto("ShopItems", "CreateShopItem", "name=%s", name);
 
@@ -172,10 +177,10 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
     // Load shop item config, if any
     if (short[0] != '\0')
     {
-        new itemLoaded;
         new bool:itemFound;
+        new ConfigLoadedStatus:itemLoaded;
         new Handle:itemConfig = LoadItemConfig(itemLoaded);
-        if (itemLoaded == CONFIG_NOT_LOADED)
+        if (itemLoaded == ConfigNotLoaded)
         {
             KvRewind(itemConfig);
             itemFound = KvJumpToKey(itemConfig, short, false);
@@ -190,7 +195,7 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
                 max = KvGetNum(itemConfig,"max", max);
             }
             else
-                SetItemConfigLoaded(CONFIG_WAS_UPDATED);
+                SetItemConfigLoaded(ConfigWasUpdated);
         }
         else
             itemFound = false;
@@ -326,6 +331,8 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
         SetItemRequiredLevel(itemHandle,required_level);
         SetItemTranslation(itemHandle,translation);
         SetItemStore(itemHandle,storeId);
+        SetItemPlugin(itemHandle,plugin);
+        SetItemId(itemHandle,shopId);
 
         new Handle:stringsHandle=GetItemStringHandle(itemHandle);
         SetArrayString(stringsHandle,_:ItemString_ShortName,short);
@@ -353,7 +360,9 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
         PushArrayCell(newItem,max);
         PushArrayCell(newItem,required_level);
         PushArrayCell(newItem,translation);
+        PushArrayCell(newItem,0);               // ident
         PushArrayCell(newItem,storeId);
+        PushArrayCell(newItem,plugin);
 
         // Add new Shop Item into Shop Vector.
         shopId = PushArrayCell(shopVector,newItem); // return index.
@@ -418,7 +427,7 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
                                    itemImage);
         }
 
-        PushArrayCell(newItem,itemIdent);
+        SetItemIdent(newItem,itemIdent);
     }
 
     TraceReturn("shopId=%d", shopId);
@@ -550,7 +559,8 @@ bool:PurchaseShopItem(client,item)
                                 if (xp > 0)
                                     SetXP(client,race,experience-xp);
 
-                                SetOwnsItem(client,item,++num);
+                                if (result != Plugin_Handled)
+                                    SetOwnsItem(client,item,++num);
 
                                 if (IsClientInGame(client) && !IsFakeClient(client))
                                 {

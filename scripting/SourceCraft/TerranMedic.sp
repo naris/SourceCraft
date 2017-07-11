@@ -92,7 +92,6 @@ public OnPluginStart()
 {
     LoadTranslations("sc.restore.phrases.txt");
     LoadTranslations("sc.common.phrases.txt");
-    LoadTranslations("sc.bunker.phrases.txt");
     LoadTranslations("sc.medic.phrases.txt");
 
     if (!HookEvent("player_spawn",PlayerSpawnEvent))
@@ -106,110 +105,102 @@ public OnSourceCraftReady()
 {
     raceID  = CreateRace("medic", 32, 0, 36, .faction=Terran, .type=Biological);
 
-    infectID = AddUpgrade(raceID, "infection", .energy=5.0);
+    infectID = AddUpgrade(raceID, "infection", .energy=5.0, .cost_crystals=20);
 
     if (!IsPlagueInfectAvailable() && !IsInfectionAvailable())
     {
-        LogMessage("PlagueInfect and/or MedicInfect are not available");
+        LogMessage("Disabling Terran Medic:Infection due to PlagueInfect and/or MedicInfect are not available");
         SetUpgradeDisabled(raceID, infectID, true);
     }
 
-    if (GetGameType() == tf2)
+    if (GetGameType() == dod)
     {
-        medicID  = -1;
-
-        chargeID = AddUpgrade(raceID, "ubercharger");
-
-        if (!IsUberChargerAvailable())
-        {
-            SetUpgradeDisabled(raceID, chargeID, true);
-            LogMessage("ubercharger is not available");
-        }
-    }
-    else if (GameType == dod)
-    {
-        chargeID = -1;
-
         // Ultimate 4
-        medicID = AddUpgrade(raceID, "training", 4, 0);
+        medicID = AddUpgrade(raceID, "training", 4, 0, .cost_crystals=0);
+        chargeID = -1;
 
         if (!IsMedicClassAvailable())
         {
             SetUpgradeDisabled(raceID, medicID, true);
-            LogMessage("medic_class is not available");
+            LogMessage("Disabling Terran Medic:Medic Training due to medic_class is not available");
         }
     }
     else
     {
-        medicID  = -1;
-        chargeID = AddUpgrade(raceID, "ubercharger", 0, 99, 0, .desc="%NotAvailable");
-        LogMessage("Uber Charger and/or Medic Training are not supported by this mod!");
-    }
+        chargeID = AddUpgrade(raceID, "ubercharger", .cost_crystals=15);
 
-    armorID = AddUpgrade(raceID, "armor");
-
-    if (GameType == tf2)
-    {
-        medipackID = AddUpgrade(raceID, "medipack", 4, 0, .energy=30.0,
-                                .cooldown=10.0);
-
-        if (!IsMedipacksAvailable())
+        if (GameType != tf2 || !IsUberChargerAvailable())
         {
-            SetUpgradeDisabled(raceID, medipackID, true);
-            LogMessage("medipacks are not available");
+            SetUpgradeDisabled(raceID, chargeID, true);
+            LogMessage("Disabling Terran Medic:Uber Charger due to ubercharger is not available (or gametype != tf2)");
+        }
+
+        if (GameType != tf2)
+        {
+            LogMessage("Disabling Terran Medic: Medic Training due to gametype != dod");
+            medicID = AddUpgrade(raceID, "training", 4, 0, .cost_crystals=0);
+            SetUpgradeDisabled(raceID, medicID, true);
+        }
+        else
+        {
+            medicID = -1;
         }
     }
-    else if (GameType == dod)
+
+    armorID = AddUpgrade(raceID, "armor", .cost_crystals=5);
+
+    if (GameType == dod)
     {
-        medipackID = AddUpgrade(raceID, "healthkit");
+        medipackID = AddUpgrade(raceID, "healthkit", .cost_crystals=0);
 
         if (!IsHealthkitAvailable())
         {
             SetUpgradeDisabled(raceID, medipackID, true);
-            LogMessage("healthkits are not available");
+            LogMessage("Disabling Terran Medic:Healthkit due to healthkits are not available");
         }
     }
     else
     {
-        medipackID = AddUpgrade(raceID, "medipack", 0, 99, 0, .desc="%NotAvailable");
-        LogMessage("medipacks and/or healthkits are not supported by this mod");
+        medipackID = AddUpgrade(raceID, "medipack", 4, 0, .energy=30.0,
+                                .cooldown=10.0, .cost_crystals=0);
+
+        if (GameType != tf2 || !IsMedipacksAvailable())
+        {
+            SetUpgradeDisabled(raceID, medipackID, true);
+            LogMessage("Disabling Terran Medic:Medipack due to medipacks are not available (or gametype != tf2)");
+        }
     }
 
-    regenerationID  = AddUpgrade(raceID, "regeneration");
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
 
-    healingID       = AddUpgrade(raceID, "healing");
+    healingID   = AddUpgrade(raceID, "healing", .cost_crystals=10);
 
     // Ultimate 3
-    restoreID       = AddUpgrade(raceID, "restore", 3, .energy=20.0);
+    restoreID   = AddUpgrade(raceID, "restore", 3, .energy=20.0, .cost_crystals=0);
 
     // Ultimate 4 (or 3 in DoD)
-    flareID         = AddUpgrade(raceID, "flare",
-                                 (GameType == dod && m_MedicClassAvailable) ? 4 : 3,
-                                 10, .energy=30.0, .cooldown=2.0);
+    flareID     = AddUpgrade(raceID, "flare",
+                             (GameType == dod && m_MedicClassAvailable) ? 4 : 3,
+                             10, .energy=30.0, .cooldown=2.0, .cost_crystals=20);
 
     // Ultimate 1
-    jetpackID   = AddUpgrade(raceID, "jetpack", 1, 12);
+    jetpackID   = AddUpgrade(raceID, "jetpack", 1, 12, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogMessage("jetpack is not available");
+        LogMessage("Disabling Terran Medic:Jetpack due to jetpack is not available");
     }
 
     // Ultimate 2
-    bunkerID        = AddUpgrade(raceID, "bunker", 2, .energy=30.0, .cooldown=5.0);
+    bunkerID    = AddBunkerUpgrade(raceID, 2);
 
-    if (GameType == dod)
-    {
-        combatID    = AddUpgrade(raceID, "combat");
+    combatID    = AddUpgrade(raceID, "combat", .cost_crystals=0);
 
-        if (!IsMedicClassAvailable())
-            SetUpgradeDisabled(raceID, combatID, true);
-    }
-    else
+    if (GameType != dod || !IsMedicClassAvailable())
     {
-        combatID = AddUpgrade(raceID, "combat", 0, 99, 0,
-                              .desc="%NotAvailable");
+        LogMessage("Disabling Terran Medic:Combat Training due to medic_class is not available (or gametype != dod)");
+        SetUpgradeDisabled(raceID, combatID, true);
     }
 
     // Get Configuration Data

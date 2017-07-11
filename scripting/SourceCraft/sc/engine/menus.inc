@@ -483,13 +483,18 @@ UpgradeMenu(client, MenuMode:mode, bool:interactive)
                 else
                     style = ITEMDRAW_DEFAULT;
 
-                new vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
-                if (vespene_cost < 0)
-                    vespene_cost = g_iUpgradeVespeneCost;
+                new cost = 0;
+                new vespene_cost = 0;
+                if (g_bChargeForUpgrades)
+                {
+                    cost = GetUpgradeCostCrystals(raceHandle,upgrade);
+                    if (cost < 0)
+                        cost = g_iUpgradeCrystalsCost;
 
-                new cost = GetUpgradeCostCrystals(raceHandle,upgrade);
-                if (cost < 0)
-                    cost = g_iUpgradeCrystalsCost;
+                    vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
+                    if (vespene_cost < 0)
+                        vespene_cost = g_iUpgradeVespeneCost;
+                }
 
                 if (g_bUseMoney)
                     cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
@@ -606,13 +611,18 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 new level = GetLevel(client,race);
                 new vespene = GetVespene(client);
 
-                new vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
-                if (vespene_cost < 0)
-                    vespene_cost = g_iUpgradeVespeneCost;
+                new cost = 0;
+                new vespene_cost = 0;
+                if (g_bChargeForUpgrades)
+                {
+                    cost = GetUpgradeCostCrystals(raceHandle,upgrade);
+                    if (cost < 0)
+                        cost = g_iUpgradeCrystalsCost;
 
-                new cost = GetUpgradeCostCrystals(raceHandle,upgrade);
-                if (cost < 0)
-                    cost = g_iUpgradeCrystalsCost;
+                    vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
+                    if (vespene_cost < 0)
+                        vespene_cost = g_iUpgradeVespeneCost;
+                }
 
                 new funds, pcrystals;
                 if (g_bUseMoney)
@@ -764,7 +774,7 @@ ShopMenu(client, target, MenuMode:mode)
                 for (new x=0;x<shopItemCount;x++)
                 {
                     itemHandle=GetItemIndexHandle(x);
-                    id=GetShopId(itemHandle);
+                    id=GetItemId(itemHandle);
                     if (GetOwnsItem(client,id))
                     {
                         count++;
@@ -878,7 +888,7 @@ public Category_Selected(Handle:menu,MenuAction:action,client,selection)
                         break;
                     else
                     {
-                        new id=GetShopId(itemHandle);
+                        new id=GetItemId(itemHandle);
                         decl String:itembuf[SMALL_STRING_LENGTH];
                         Format(itembuf,sizeof(itembuf),"%d",id);
 

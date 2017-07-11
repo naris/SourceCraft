@@ -35,7 +35,7 @@
 
 #define ResetExclaimTimer(%1) m_ExclaimTimers[%1] = INVALID_HANDLE
 
-new raceID, degenerationID, meleeID, attackID;
+new raceID, burrowID, degenerationID, meleeID, attackID;
 
 new Float:g_BroodlingAttackRange[]      = { 1000.0, 800.0, 800.0, 800.0, 800.0 };
 new Float:g_AdrenalGlandsPercent[]      = { 0.0, 0.15, 0.35, 0.55, 0.65 };
@@ -79,14 +79,14 @@ public OnSourceCraftReady()
 {
     raceID          = CreateRace("broodling", -1, -1, 17, .faction=Zerg, .type=Biological);
 
-    degenerationID  = AddUpgrade(raceID, "degeneration", 0, 0);
-    attackID        = AddUpgrade(raceID, "broodling_attack", 0, 0);
-    meleeID         = AddUpgrade(raceID, "adrenal_glands", .energy=2.0);
+    degenerationID  = AddUpgrade(raceID, "degeneration", 0, 0, .cost_crystals=0);
+    attackID        = AddUpgrade(raceID, "broodling_attack", 0, 0, .cost_crystals=0);
+    meleeID         = AddUpgrade(raceID, "adrenal_glands", .energy=2.0, .cost_crystals=0);
 
-    AddUpgrade(raceID, "spawning", 0, 0);
+    AddUpgrade(raceID, "spawning", 0, 0, .cost_crystals=0);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 6, 1);
+    burrowID        = AddBurrowUpgrade(raceID, 2, 6, 1, .cost_crystals=0);
 
     // Get Configuration Data
     GetConfigFloatArray("range", g_BroodlingAttackRange, sizeof(g_BroodlingAttackRange),
@@ -274,7 +274,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
                 race = FindRace("human");
 
             // Revert back to previous race upon death as an Broodling.
-            ChangeRace(victim_index, race, true, true);
+            ChangeRace(victim_index, race, true, true, false);
         }
     }
 }

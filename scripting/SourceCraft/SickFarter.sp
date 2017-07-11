@@ -88,18 +88,18 @@ public OnSourceCraftReady()
 {
     raceID       = CreateRace("farter", 16, 0, 17, .faction=UndeadScourge, .type=Undead);
 
-    festerID     = AddUpgrade(raceID, "abomination", .energy=1.0);
-    pickPocketID = AddUpgrade(raceID, "pickpocket", .energy=1.0);
-    revulsionID  = AddUpgrade(raceID, "revulsion", .energy=1.0);
+    festerID     = AddUpgrade(raceID, "abomination", .energy=1.0, .cost_crystals=20);
+    pickPocketID = AddUpgrade(raceID, "pickpocket", .energy=1.0, .cost_crystals=40);
+    revulsionID  = AddUpgrade(raceID, "revulsion", .energy=1.0, .cost_crystals=20);
 
     // Ultimate 1
-    fartID       = AddUpgrade(raceID, "flatulence", 1,
-                              .energy=30.0, .cooldown=2.0);
+    fartID       = AddUpgrade(raceID, "flatulence", 1, .energy=30.0,
+                              .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 2
     hunterID     = AddUpgrade(raceID, "hunter", 2, 16,1,
                               .energy=300.0, .cooldown=60.0,
-                              .accumulated=true);
+                              .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigArray("chance", g_FesterChance, sizeof(g_FesterChance),
@@ -744,7 +744,7 @@ SummonHunter(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_hunterRace, true, false);
+        ChangeRace(client, g_hunterRace, true, false, true);
     }
 }
 

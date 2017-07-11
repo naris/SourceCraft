@@ -73,12 +73,12 @@ public OnSourceCraftReady()
                              .energy_limit=150.0, .faction=NightElf,
                              .type=Biological);
 
-    evasionID   = AddUpgrade(raceID, "evasion", .energy=1.0);
-    thornsID    = AddUpgrade(raceID, "thorns", .energy=2.0);
-    trueshotID  = AddUpgrade(raceID, "trueshot", .energy=1.0);
+    evasionID   = AddUpgrade(raceID, "evasion", .energy=1.0, .cost_crystals=0);
+    thornsID    = AddUpgrade(raceID, "thorns", .energy=2.0, .cost_crystals=10);
+    trueshotID  = AddUpgrade(raceID, "trueshot", .energy=1.0, .cost_crystals=10);
 
     // Ultimate 1
-    rootsID     = AddUpgrade(raceID, "roots", 1, .energy=30.0, .cooldown=2.0);
+    rootsID     = AddUpgrade(raceID, "roots", 1, .energy=30.0, .cooldown=2.0, .cost_crystals=20);
 
     // Get Configuration Data
 

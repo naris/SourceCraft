@@ -105,38 +105,38 @@ public OnSourceCraftReady()
     raceID          = CreateRace("titty_hunter", -1, -1, 36, .energy_limit=1000.0,
                                  .faction=UndeadScourge, .type=Undead, .parent="farter");
 
-    drainID         = AddUpgrade(raceID, "drain", .energy=1.0);
-    siphonID        = AddUpgrade(raceID, "siphon", .energy=5.0);
-    pickPocketID    = AddUpgrade(raceID, "pickpocket", .energy=1.0, .name="Pickpocket");
-    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0);
-    frescaID        = AddUpgrade(raceID, "fresca", 0, 0, .energy=20.0);
+    drainID         = AddUpgrade(raceID, "drain", .energy=1.0, .cost_crystals=20);
+    siphonID        = AddUpgrade(raceID, "siphon", .energy=5.0, .cost_crystals=20);
+    pickPocketID    = AddUpgrade(raceID, "pickpocket", .energy=1.0, .name="Pickpocket", .cost_crystals=40);
+    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0, .cost_crystals=30);
+    frescaID        = AddUpgrade(raceID, "fresca", 0, 0, .energy=20.0, .cost_crystals=30);
 
     // Ultimate 1
-    jetpackID       = AddUpgrade(raceID, "jetpack", 1);
+    jetpackID       = AddUpgrade(raceID, "jetpack", 1, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogMessage("jetpack is not available");
+        LogMessage("Disabling Titty Hunter:Summon Jetpack due to jetpack is not available");
     }
 
     // Ultimate 2
     fartID          = AddUpgrade(raceID, "fart", 2, .energy=30.0,
-                                 .cooldown=2.0);
+                                 .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 3
     nippleID        = AddUpgrade(raceID, "nipple", 3, 12, .energy=100.0,
-                                 .vespene=10, .cooldown=30.0);
+                                 .vespene=10, .cooldown=30.0, .cost_crystals=75);
 
     if (!IsSidewinderAvailable())
     {
         SetUpgradeDisabled(raceID, nippleID, true);
-        LogMessage("Sidewinder is not available");
+        LogMessage("Disabling Titty Hunter:The Nipple due to sidewinder is not available");
     }
 
     // Ultimate 4
     snatchID        = AddUpgrade(raceID, "snatch", 4, .energy=120.0,
-                                 .vespene=30, .cooldown=60.0);
+                                 .vespene=30, .cooldown=60.0, .cost_crystals=75);
 
     // Get Configuration Data
     GetConfigArray("chance", g_HallucinateChance, sizeof(g_HallucinateChance),

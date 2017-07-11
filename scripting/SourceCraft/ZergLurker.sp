@@ -89,20 +89,20 @@ public OnSourceCraftReady()
     raceID          = CreateRace("lurker", -1, -1, 28, 100.0, -1.0, 1.0,
                                  Zerg, Biological, "hydralisk");
 
-    carapaceID      = AddUpgrade(raceID, "armor", 0, 0);
-    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0);
-    warrenID        = AddUpgrade(raceID, "deep_warren", 0, 0);
-    augmentsID      = AddUpgrade(raceID, "augments", 0, 0);
+    carapaceID      = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0, .cost_crystals=10);
+    warrenID        = AddUpgrade(raceID, "deep_warren", 0, 0, .cost_crystals=10);
+    augmentsID      = AddUpgrade(raceID, "augments", 0, 0, .cost_crystals=0);
 
-    missileID       = AddUpgrade(raceID, "missile_attack", 0, 0,
-                                 .energy=2.0);
+    missileID       = AddUpgrade(raceID, "missile_attack", 0, 0, .energy=2.0,
+                                 .cost_crystals=20);
 
-    poisonID        = AddUpgrade(raceID, "poison_spines", 0, 0,
-                                 .energy=2.0);
+    poisonID        = AddUpgrade(raceID, "poison_spines", 0, 0, .energy=2.0,
+                                 .cost_crystals=25);
 
     // Ultimate 1
-    spineID         = AddUpgrade(raceID, "spine_attack", 1, 0,
-                                 .energy=30.0, .cooldown=5.0);
+    spineID         = AddUpgrade(raceID, "spine_attack", 1, 0, .energy=30.0,
+                                 .cooldown=5.0, .cost_crystals=30);
 
     // Ultimate 2
     AddBurrowUpgrade(raceID, 2, 0, 2, 2);

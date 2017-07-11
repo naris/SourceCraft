@@ -114,67 +114,54 @@ public OnSourceCraftReady()
     raceID      = CreateRace("dark_templar", 64, 0, 30, .energy_rate=2.0,
                              .faction=Protoss, .type=Biological);
 
-    immunityID  = AddUpgrade(raceID, "immunity");
-    legID       = AddUpgrade(raceID, "leg");
-    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0);
+    immunityID  = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    legID       = AddUpgrade(raceID, "leg", .cost_crystals=10);
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+
+    regenID     = AddUpgrade(raceID, "cloak_regen", .cost_crystals=30);
 
     cfgAllowInvisibility = bool:GetConfigNum("allow_invisibility", cfgAllowInvisibility);
-    if (cfgAllowInvisibility)
+    if (!cfgAllowInvisibility)
     {
-        cloakID     = AddUpgrade(raceID, "cloak");
-    }
-    else
-    {
-        cloakID     = AddUpgrade(raceID, "cloak", 0, 0, 1,
-                                 .desc="%dark_templar_cloak_noinvis_desc");
-
+        SetUpgradeDisabled(raceID, cloakID, true);
         LogMessage("Reducing Protoss Dark Templar:Cloaking due to configuration: sc_allow_invisibility=%d",
                    cfgAllowInvisibility);
     }
 
-    if (GameType == tf2 && cfgAllowInvisibility)
-    {
-        regenID     = AddUpgrade(raceID, "cloak_regen");
-    }
-    else
-    {
-        regenID     = AddUpgrade(raceID, "cloak_regen", 0, 99,
-                                 .desc="%NotAvailable");
+    cloakID     = AddUpgrade(raceID, "cloak", .cost_crystals=25);
 
-        LogMessage("Disabling Protoss Dark Templar: Cloak Regeneration due to configuration: sc_allow_invisibility=%d",
+    if (GetGameType() != tf2 || !cfgAllowInvisibility)
+    {
+        SetUpgradeDisabled(raceID, regenID, true);
+        LogMessage("Disabling Protoss Dark Templar: Cloak Regeneration due to configuration: sc_allow_invisibility=%d (or gametype != tf2)",
                    cfgAllowInvisibility);
     }
 
-    meleeID    = AddUpgrade(raceID, "blades", .energy=5.0);
+    meleeID    = AddUpgrade(raceID, "blades", .energy=5.0, .cost_crystals=10);
 
     // Ultimate 1
-    cfgAllowTeleport = bool:GetConfigNum("allow_teleport", cfgAllowTeleport);
-    if (cfgAllowTeleport)
-    {
-        teleportID = AddUpgrade(raceID, "blink", 1,
-                                .energy=30.0, .cooldown=2.0);
-    }
-    else
-    {
-        teleportID = AddUpgrade(raceID, "blink", 1, 99, 0,
-                                .desc="%NotAllowed");
+    teleportID = AddUpgrade(raceID, "blink", 1, .energy=30.0, .cooldown=2.0, .cost_crystals=40);
 
+    cfgAllowTeleport = bool:GetConfigNum("allow_teleport", cfgAllowTeleport);
+    if (!cfgAllowTeleport)
+    {
+        SetUpgradeDisabled(raceID, teleportID, true);
         LogMessage("Disabling Protoss Dark Templar:Blink due to configuration: sc_allow_teleport=%d",
                    cfgAllowTeleport);
     }
 
     // Ultimate 3
     darkArchonID = AddUpgrade(raceID, "dark_archon", 3, 10,1,
-                              .energy=300.0, .cooldown=30.0,
+                              .energy=300.0, .cooldown=30.0, .cost_crystals=0,
                               .accumulated=true);
 
     // Ultimate 2
-    deathID = AddUpgrade(raceID, "death_shadow", 2, 12, .energy=10.0);
+    deathID = AddUpgrade(raceID, "death_shadow", 2, 12, .energy=10.0, .cost_crystals=0);
 
-    if (!IsFakeDeathAvailable())
+    if (GameType != tf2 || !IsFakeDeathAvailable())
     {
         SetUpgradeDisabled(raceID, deathID, true);
-        LogMessage("FakeDeath is not available");
+        LogMessage("Disabling Protoss Dark Templar:Blink due to FakeDeath is not available (or gametype != tf2)");
     }
 
     // Set the Sidewinder available flag
@@ -207,13 +194,10 @@ public OnSourceCraftReady()
 
 public OnLibraryAdded(const String:name[])
 {
-    if (GetGameType() == tf2)
-    {
-        if (StrEqual(name, "FakeDeath"))
-            IsFakeDeathAvailable(true);
-        else if (StrEqual(name, "sidewinder"))
-            IsSidewinderAvailable(true);
-    }
+    if (StrEqual(name, "FakeDeath"))
+        IsFakeDeathAvailable(true);
+    else if (StrEqual(name, "sidewinder"))
+        IsSidewinderAvailable(true);
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -671,7 +655,7 @@ SummonDarkArchon(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_darkArchonRace, true, false);
+        ChangeRace(client, g_darkArchonRace, true, false, true);
     }
 }
 

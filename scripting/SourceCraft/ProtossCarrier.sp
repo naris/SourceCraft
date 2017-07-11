@@ -81,72 +81,61 @@ public OnSourceCraftReady()
     raceID      = CreateRace("carrier", -1, -1, 24, .energy_rate=2.0, .faction=Protoss,
                              .type=Mechanical, .parent="phoenix");
 
-    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0);
-    shieldsID   = AddUpgrade(raceID, "shields");
-    thrusterID  = AddUpgrade(raceID, "thrusters");
+    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0, .cost_crystals=20);
+    shieldsID   = AddUpgrade(raceID, "shields", .cost_crystals=10);
+    thrusterID  = AddUpgrade(raceID, "thrusters", .cost_crystals=0);
 
     if (GetGameType() == tf2)
     {
-        cfgMaxObjects = GetConfigNum("max_objects", 3);
-
-        capacityID  = AddUpgrade(raceID, "capacity", 0, 12,
-                                 (cfgMaxObjects < 5) ? cfgMaxObjects-1 : 4,
-                                 .cost_vespene=10);
-
+        cfgMaxObjects    = GetConfigNum("max_objects", 3);
         cfgAllowSentries = GetConfigNum("allow_sentries", 2);
-
-        if (IsRemoteAvailable())
-        {
-            if (cfgAllowSentries <= 1 || cfgMaxObjects <= 1)
-            {
-                SetUpgradeDisabled(raceID, capacityID, true);
-                LogMessage("Disabling Protoss Carrier:Capacity due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
-                           cfgAllowSentries, cfgMaxObjects);
-            }
-        }
-        else
-        {
-            SetUpgradeDisabled(raceID, capacityID, true);
-            LogError("remote is not available");
-        }
     }
     else
     {
-        LogMessage("remote is not available since gametype != tf2");
-        capacityID  = AddUpgrade(raceID, "capacity", 0, 99, 0,
-                                 .desc="%NotAvailable");
+        cfgMaxObjects    = 0;
+        cfgAllowSentries = 0;
+    }
+
+    capacityID  = AddUpgrade(raceID, "capacity", 0, 12,
+                             (cfgMaxObjects < 5) ? cfgMaxObjects - 1 : 4,
+                             .cost_vespene=10, .cost_crystals=20);
+
+
+    if (GameType != tf2 || !IsRemoteAvailable())
+    {
+        SetUpgradeDisabled(raceID, capacityID, true);
+        LogError("Disabling Protoss Carrier:Capacity due to remote is not available (or gametype != tf2)");
+    }
+    else if (cfgAllowSentries <= 1 || cfgMaxObjects <= 1)
+    {
+        SetUpgradeDisabled(raceID, capacityID, true);
+        LogMessage("Disabling Protoss Carrier:Capacity due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
+                   cfgAllowSentries, cfgMaxObjects);
     }
 
     // Ultimate 1
-    jetpackID = AddUpgrade(raceID, "jetpack", 1, 0);
+    jetpackID   = AddUpgrade(raceID, "jetpack", 1, 0, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogError("jetpack is not available");
+        LogError("Disabling Protoss Carrier:Gravitic Drive due to jetpack is not available");
     }
 
     // Ultimate 2
-    if (GetGameType() == tf2)
-    {
-        interceptorID  = AddUpgrade(raceID, "interceptor", 2, .energy=30.0, .vespene=5, .cooldown=10.0,
-                                    .cooldown_type=Cooldown_SpecifiesBaseValue);
+    interceptorID  = AddUpgrade(raceID, "interceptor", 2, .energy=30.0, .vespene=5, .cooldown=10.0,
+                                .cooldown_type=Cooldown_SpecifiesBaseValue, .cost_crystals=50);
 
-        if (!IsRemoteAvailable())
-        {
-            SetUpgradeDisabled(raceID, interceptorID, true);
-        }
-        else if (cfgAllowSentries < 1 || cfgMaxObjects < 1)
-        {
-            SetUpgradeDisabled(raceID, interceptorID, true);
-            LogMessage("Disabling Protoss Carrier:Launch Interceptor due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
-                       cfgAllowSentries, cfgMaxObjects);
-        }
-    }
-    else
+    if (GameType != tf2 || !IsRemoteAvailable())
     {
-        interceptorID  = AddUpgrade(raceID, "interceptor", 2, 99, 0,
-                                    .desc="%NotAvailable");
+        SetUpgradeDisabled(raceID, interceptorID, true);
+        LogMessage("Disabling Protoss Carrier:Launch Interceptor due remote is not available (or gametype != tf2)");
+    }
+    else if (cfgAllowSentries < 1 || cfgMaxObjects < 1)
+    {
+        SetUpgradeDisabled(raceID, interceptorID, true);
+        LogMessage("Disabling Protoss Carrier:Launch Interceptor due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
+                    cfgAllowSentries, cfgMaxObjects);
     }
 
     // Get Configuration Data
@@ -176,7 +165,7 @@ public OnSourceCraftReady()
     GetConfigFloatArray("refuel_time", g_JetpackRefuelTime, sizeof(g_JetpackRefuelTime),
                         g_JetpackRefuelTime, raceID, jetpackID);
 
-    if (GetGameType() == tf2)
+    if (GameType == tf2)
         ParseInterceptorSpeed();
 }
 

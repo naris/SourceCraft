@@ -127,7 +127,7 @@ public OnSourceCraftReady()
     raceID          = CreateRace("alqaeda", 16, .faction=OrcishHorde, .type=Biological);
 
     cfgMaxRespawns  = GetConfigNum("max_respawns", cfgMaxRespawns);
-    reincarnationID = AddUpgrade(raceID, "reincarnation", .max_level=cfgMaxRespawns, .energy=5.0);
+    reincarnationID = AddUpgrade(raceID, "reincarnation", .max_level=cfgMaxRespawns, .energy=5.0, .cost_crystals=10);
 
     if (cfgMaxRespawns < 1)
     {
@@ -136,11 +136,11 @@ public OnSourceCraftReady()
                    cfgMaxRespawns);
     }
 
-    wrathID         = AddUpgrade(raceID, "wrath");
-    suicideID       = AddUpgrade(raceID, "suicide_bomb");
+    wrathID         = AddUpgrade(raceID, "wrath", .cost_crystals=10);
+    suicideID       = AddUpgrade(raceID, "suicide_bomb", .cost_crystals=20);
 
     // Ultimate 1
-    bomberID        = AddUpgrade(raceID, "mad_bomber", 1, .energy=2.0);
+    bomberID        = AddUpgrade(raceID, "mad_bomber", 1, .energy=2.0, .cost_crystals=30);
 
     // Get Configuration Data
 

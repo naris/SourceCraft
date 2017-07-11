@@ -87,32 +87,31 @@ public OnSourceCraftReady()
                              .faction=Protoss, .type=Cybernetic,
                              .parent="zealot");
 
-    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0);
-    speedID     = AddUpgrade(raceID, "speed");
-    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0);
-    immunityID  = AddUpgrade(raceID, "immunity");
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    speedID     = AddUpgrade(raceID, "speed", .cost_crystals=0);
+    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0, .cost_crystals=20);
+    immunityID  = AddUpgrade(raceID, "immunity", .cost_crystals=0);
 
     // Ultimate 1
+    teleportID = AddUpgrade(raceID, "blink", 1, .energy=30.0, .cooldown=2.0,
+                            .cost_crystals=30);
+
     cfgAllowTeleport = bool:GetConfigNum("allow_teleport", true);
     if (cfgAllowTeleport)
     {
-        teleportID = AddUpgrade(raceID, "blink", 1,
-                                .energy=30.0, .cooldown=2.0);
-
         GetConfigFloatArray("range",  g_TeleportDistance, sizeof(g_TeleportDistance),
                             g_TeleportDistance, raceID, teleportID);
     }
     else
     {
-        teleportID = AddUpgrade(raceID, "blink", 1, 99, 0, .desc="%NotAllowed");
+        SetUpgradeDisabled(raceID, teleportID, true);
         LogMessage("Disabling Protoss Stalker:Blink due to configuration: sc_allow_teleport=%d",
                    cfgAllowTeleport);
     }
 
     // Ultimate 2
-    disrupterID = AddUpgrade(raceID, "disrupter", 2, 4,1,
-                             .energy=120.0, .cooldown=30.0,
-                             .accumulated=true);
+    disrupterID = AddUpgrade(raceID, "disrupter", 2, 4,1, .energy=120.0,
+                             .cooldown=30.0, .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("shields_amount", g_InitialShields, sizeof(g_InitialShields),
@@ -412,7 +411,7 @@ SummonDisrupter(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_disrupterRace, true, false);
+        ChangeRace(client, g_disrupterRace, true, false, true);
     }
 }
 

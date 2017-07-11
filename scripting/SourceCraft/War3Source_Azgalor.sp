@@ -60,91 +60,98 @@ new BeamSprite, HaloSprite, FireSprite, Explosion, HydraSprite, SimpleFire, Part
 
 public Plugin:myinfo = 
 {
-	name = "War3Source Race - Pit Lord[DotA]",
-	author = "Revan",
-	description = "One of the many regents of Lord Archimonde - DotA",
-	version = "1.0.0.5",
-	url = "www.wcs-lagerhaus.de"
+    name = "War3Source Race - Pit Lord[DotA]",
+    author = "Revan",
+    description = "One of the many regents of Lord Archimonde - DotA",
+    version = "1.0.0.5",
+    url = "www.wcs-lagerhaus.de"
 };
 
 public OnPluginStart()
 {
-	HookEvent("round_end",RoundEvent);
-	//CreateTimer(0.14,DeadlyPit,_,TIMER_REPEAT);
-	CreateTimer(0.25,Flame,_,TIMER_REPEAT);
+    HookEvent("round_end",RoundEvent);
+    //CreateTimer(0.14,DeadlyPit,_,TIMER_REPEAT);
+    CreateTimer(0.25,Flame,_,TIMER_REPEAT);
 
 #if !defined SOURCECRAFT
-	ultCooldownCvar_SPAWN=CreateConVar("war3_azgalor_ult_cooldown_spawn","10","(Azgalor)Pit Lord's Ultimate Cooldown on spawn.");
-	ultCooldownCvar=CreateConVar("war3_azgalor_ult_cooldown","25","(Azgalor)Pit Lord's Ultimate Cooldown.");
-	SFXCvar=CreateConVar("war3_azgalor_hugefx_enable","1","Enable/Disable distracting and revealing sfx");
-	HookConVarChange(ultCooldownCvar_SPAWN, W3CvarCooldownHandler);
+    ultCooldownCvar_SPAWN=CreateConVar("war3_azgalor_ult_cooldown_spawn","10","(Azgalor)Pit Lord's Ultimate Cooldown on spawn.");
+    ultCooldownCvar=CreateConVar("war3_azgalor_ult_cooldown","25","(Azgalor)Pit Lord's Ultimate Cooldown.");
+    SFXCvar=CreateConVar("war3_azgalor_hugefx_enable","1","Enable/Disable distracting and revealing sfx");
+    HookConVarChange(ultCooldownCvar_SPAWN, W3CvarCooldownHandler);
 #endif
 }
 
 public OnWar3LoadRaceOrItemOrdered(num)
 {
-	if(num==228)
-	{
+    if(num==228)
+    {
 #if defined SOURCECRAFT
-		thisRaceID=CreateRace("azgalor", .name="Azgalor - Pit Lord", .faction=UndeadScourge, .type=Undead);
+        thisRaceID=CreateRace("azgalor", .name="Azgalor - Pit Lord", .faction=UndeadScourge, .type=Undead, .required_level=48);
 #else
-		thisRaceID = War3_CreateNewRace( "Azgalor - Pit Lord", "azgalor" );
+        thisRaceID = War3_CreateNewRace( "Azgalor - Pit Lord", "azgalor" );
 #endif
 
-		SKILL_FIRE = War3_AddRaceSkill( thisRaceID, "Fire Storm", "Calls down up to 3 waves(per cast) of fire that damage enemy units in an area\nEach wave deals damage and then burns enemies for 2 seconds.", false, 4 );	
-		SKILL_PIT = War3_AddRaceSkill( thisRaceID, "Pit of Malice", "A deadly pit is conjured at target location\nAny enemy unit that enters it becomes corrupted with malicious forces and are slowed down for some time.(ability)", false, 4 );	
-		SKILL_IGNITE = War3_AddRaceSkill( thisRaceID, "Expulsion", "Ignites the rotten gases of corpses, detonating them to cause damage\n to any enemy within the explosion radius.", false, 4 );
-		ULT_RIFT = War3_AddRaceSkill( thisRaceID, "Dark Rift", "Opens an rift that pass through the netherworld.", true, 4 );
+        SKILL_FIRE = War3_AddRaceSkill( thisRaceID, "Fire Storm", "Calls down up to 3 waves(per cast) of fire that damage enemy units in an area\nEach wave deals damage and then burns enemies for 2 seconds.", false, 4 );    
+        SKILL_PIT = War3_AddRaceSkill( thisRaceID, "Pit of Malice", "A deadly pit is conjured at target location\nAny enemy unit that enters it becomes corrupted with malicious forces and are slowed down for some time.(ability)", false, 4 );   
+        SKILL_IGNITE = War3_AddRaceSkill( thisRaceID, "Expulsion", "Ignites the rotten gases of corpses, detonating them to cause damage\n to any enemy within the explosion radius.", false, 4 );
+        ULT_RIFT = War3_AddRaceSkill( thisRaceID, "Dark Rift", "Opens an rift that pass through the netherworld.", true, 4 );
 
 #if defined SOURCECRAFT
-		// Setup energy use requirements
-		SetUpgradeEnergy(thisRaceID, SKILL_FIRE, 1.0);
-		SetUpgradeEnergy(thisRaceID, SKILL_IGNITE, 1.0);
+        // Setup upgrade costs & energy use requirements
+        // Can be altered in the race config file
+        SetUpgradeCost(thisRaceID, SKILL_FIRE, 20);
+        SetUpgradeEnergy(thisRaceID, SKILL_FIRE, 1.0);
 
-		SetUpgradeCooldown(thisRaceID, SKILL_PIT, 12.0); // Can be altered in the race config file
-		SetUpgradeEnergy(thisRaceID, SKILL_PIT, GetUpgradeCooldown(thisRaceID,SKILL_PIT));
+        SetUpgradeCost(thisRaceID, SKILL_IGNITE, 20);
+        SetUpgradeEnergy(thisRaceID, SKILL_IGNITE, 1.0);
 
-		W3SkillCooldownOnSpawn(thisRaceID, ULT_RIFT, 10.0); // Can be altered in the race config file
+        SetUpgradeCost(thisRaceID, SKILL_PIT, 30);
+        SetUpgradeCategory(thisRaceID, SKILL_PIT, 2);
+        SetUpgradeCooldown(thisRaceID, SKILL_PIT, 12.0);
+        SetUpgradeEnergy(thisRaceID, SKILL_PIT, GetUpgradeCooldown(thisRaceID,SKILL_PIT));
 
-		ult_cooldown=GetConfigFloat("cooldown_on_invoke", ult_cooldown, thisRaceID, ULT_RIFT);
-		SetUpgradeEnergy(thisRaceID, ULT_RIFT, ult_cooldown);
+        ult_cooldown=GetConfigFloat("cooldown_on_invoke", ult_cooldown, thisRaceID, ULT_RIFT);
+        SetUpgradeEnergy(thisRaceID, ULT_RIFT, ult_cooldown);
+        W3SkillCooldownOnSpawn(thisRaceID, ULT_RIFT, 10.0);
+        SetUpgradeCategory(thisRaceID, ULT_RIFT, 1);
+        SetUpgradeCost(thisRaceID, ULT_RIFT, 30);
 
-		// Get Configuration Data
-		GetConfigArray("damage",  DamageStorm, sizeof(DamageStorm),
-			 	DamageStorm, thisRaceID, SKILL_FIRE);
+        // Get Configuration Data
+        GetConfigArray("damage",  DamageStorm, sizeof(DamageStorm),
+                DamageStorm, thisRaceID, SKILL_FIRE);
 
-		GetConfigArray("max_damage",  MaximumDamage, sizeof(MaximumDamage),
-			 	MaximumDamage, thisRaceID, SKILL_FIRE);
+        GetConfigArray("max_damage",  MaximumDamage, sizeof(MaximumDamage),
+                MaximumDamage, thisRaceID, SKILL_FIRE);
 
-		GetConfigFloatArray("chance",  Chance, sizeof(Chance),
-			 		Chance, thisRaceID, SKILL_FIRE);
+        GetConfigFloatArray("chance",  Chance, sizeof(Chance),
+                    Chance, thisRaceID, SKILL_FIRE);
 
-		GetConfigFloatArray("radius",  RadiusStorm, sizeof(RadiusStorm),
-			 		RadiusStorm, thisRaceID, SKILL_FIRE);
+        GetConfigFloatArray("radius",  RadiusStorm, sizeof(RadiusStorm),
+                    RadiusStorm, thisRaceID, SKILL_FIRE);
 
-		GetConfigFloatArray("slow",  PitSlow, sizeof(PitSlow),
-			 		PitSlow, thisRaceID, SKILL_PIT);
+        GetConfigFloatArray("slow",  PitSlow, sizeof(PitSlow),
+                    PitSlow, thisRaceID, SKILL_PIT);
 
-		GetConfigFloatArray("distance",  PitMaxDistance, sizeof(PitMaxDistance),
-			 		PitMaxDistance, thisRaceID, SKILL_PIT);
+        GetConfigFloatArray("distance",  PitMaxDistance, sizeof(PitMaxDistance),
+                    PitMaxDistance, thisRaceID, SKILL_PIT);
 
-		GetConfigArray("damage1",  DamageFire1, sizeof(DamageFire1),
-			 	DamageFire1, thisRaceID, SKILL_IGNITE);
+        GetConfigArray("damage1",  DamageFire1, sizeof(DamageFire1),
+                DamageFire1, thisRaceID, SKILL_IGNITE);
 
-		GetConfigArray("damage2",  DamageFire2, sizeof(DamageFire2),
-			 	DamageFire2, thisRaceID, SKILL_IGNITE);
+        GetConfigArray("damage2",  DamageFire2, sizeof(DamageFire2),
+                DamageFire2, thisRaceID, SKILL_IGNITE);
 
-		GetConfigArray("delay",  ult_delay, sizeof(ult_delay),
-				ult_delay, thisRaceID, ULT_RIFT);
+        GetConfigArray("delay",  ult_delay, sizeof(ult_delay),
+                ult_delay, thisRaceID, ULT_RIFT);
 
-		GetConfigArray("hp",  pithp, sizeof(pithp),
-				pithp, thisRaceID, ULT_RIFT);
+        GetConfigArray("hp",  pithp, sizeof(pithp),
+                pithp, thisRaceID, ULT_RIFT);
 #else
-		W3SkillCooldownOnSpawn( thisRaceID, ULT_RIFT, GetConVarFloat(ultCooldownCvar_SPAWN) );
+        W3SkillCooldownOnSpawn( thisRaceID, ULT_RIFT, GetConVarFloat(ultCooldownCvar_SPAWN) );
 #endif
 
-		War3_CreateRaceEnd( thisRaceID );
-	}
+        War3_CreateRaceEnd( thisRaceID );
+    }
 }
 
 public OnMapStart() {
@@ -168,295 +175,295 @@ public OnMapStart() {
 #if !defined SOURCECRAFT
 public W3CvarCooldownHandler(Handle:cvar, const String:oldValue[], const String:newValue[]) 
 { 
-	new Float:value = StringToFloat(newValue);
-	if(value>0.0)
-	W3SkillCooldownOnSpawn( thisRaceID, ULT_RIFT, value );
+    new Float:value = StringToFloat(newValue);
+    if(value>0.0)
+    W3SkillCooldownOnSpawn( thisRaceID, ULT_RIFT, value );
 }
 #endif
 
 public CreateFlame(client,target)
 {
-	for(new i=0;i<MAXWARDS;i++)
-	{
-		if(FlameOwner[i]==0)
-		{
-			FlameOwner[i]=client;
-			GetClientAbsOrigin(target,WardLocation[i]);
-			break;
-		}
-	}
+    for(new i=0;i<MAXWARDS;i++)
+    {
+        if(FlameOwner[i]==0)
+        {
+            FlameOwner[i]=client;
+            GetClientAbsOrigin(target,WardLocation[i]);
+            break;
+        }
+    }
 }
 
 public RemoveFlames(client)
 {
-	for(new i=0;i<MAXWARDS;i++)
-	{
-		if(FlameOwner[i]==client)
-		{
-			FlameOwner[i]=0;
-		}
-	}
-	CurrentFlameCount[client]=0;
+    for(new i=0;i<MAXWARDS;i++)
+    {
+        if(FlameOwner[i]==client)
+        {
+            FlameOwner[i]=0;
+        }
+    }
+    CurrentFlameCount[client]=0;
 }
 
 public Action:Flame(Handle:timer,any:userid)
 {
-	new client;
-	for(new i=0;i<MAXWARDS;i++)
-	{
-		if(FlameOwner[i]!=0)
-		{
-			client=FlameOwner[i];
-			if(!ValidPlayer(client,true))
-			{
-				FlameOwner[i]=0;
-				--CurrentFlameCount[client];
-			}
-			else
-			{
-				FlameLoop(client,i);
-			}
-		}
-	}
+    new client;
+    for(new i=0;i<MAXWARDS;i++)
+    {
+        if(FlameOwner[i]!=0)
+        {
+            client=FlameOwner[i];
+            if(!ValidPlayer(client,true))
+            {
+                FlameOwner[i]=0;
+                --CurrentFlameCount[client];
+            }
+            else
+            {
+                FlameLoop(client,i);
+            }
+        }
+    }
 }
 
 public FlameLoop(owner,wardindex)
 {
-	new ownerteam=GetClientTeam(owner);
-	new Float:start_pos[3];
-	new Float:end_pos[3];
-	new Float:tempVec1[]={0.0,0.0,WARDBELOW};
-	new Float:tempVec2[]={0.0,0.0,WARDABOVE};
-	AddVectors(WardLocation[wardindex],tempVec1,start_pos);
-	AddVectors(WardLocation[wardindex],tempVec2,end_pos);
-	//TE_SetupGlowSprite(start_pos,SimpleFire,0.26,1.00,212);
-	//TE_SendToAll();
-	new Float:BeamXY[3];
-	for(new x=0;x<3;x++) BeamXY[x]=start_pos[x];
-	new Float:BeamZ= BeamXY[2];
-	BeamXY[2]=0.0;
-	
-	
-	new Float:VictimPos[3];
-	new Float:tempZ;
-	for(new i=1;i<=MaxClients;i++)
-	{
-		if(ValidPlayer(i,true)&& GetClientTeam(i)!=ownerteam )
-		{
-			GetClientAbsOrigin(i,VictimPos);
-			tempZ=VictimPos[2];
-			VictimPos[2]=0.0;
-			      
-			if(GetVectorDistance(BeamXY,VictimPos) < WARDRADIUS)
-			{
-				if(tempZ>BeamZ+WARDBELOW && tempZ < BeamZ+WARDABOVE)
-				{
-					if(W3HasImmunity(i,Immunity_Skills))
-					{
-						W3MsgSkillBlocked(i,_,"Expulsion");
-					}
-					else
-					{
-						W3FlashScreen(i,{0,0,0,255});
-						if(War3_DealDamage(i,WARDDAMAGE,owner,DMG_BULLET,"flame",_,W3DMGTYPE_MAGIC))
-						{
-							if(LastThunderClap[i]<GetGameTime()-2){
-								EmitSoundToAll(ignitesnd,i,SNDCHAN_WEAPON);
-								LastThunderClap[i]=GetGameTime();
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+    new ownerteam=GetClientTeam(owner);
+    new Float:start_pos[3];
+    new Float:end_pos[3];
+    new Float:tempVec1[]={0.0,0.0,WARDBELOW};
+    new Float:tempVec2[]={0.0,0.0,WARDABOVE};
+    AddVectors(WardLocation[wardindex],tempVec1,start_pos);
+    AddVectors(WardLocation[wardindex],tempVec2,end_pos);
+    //TE_SetupGlowSprite(start_pos,SimpleFire,0.26,1.00,212);
+    //TE_SendToAll();
+    new Float:BeamXY[3];
+    for(new x=0;x<3;x++) BeamXY[x]=start_pos[x];
+    new Float:BeamZ= BeamXY[2];
+    BeamXY[2]=0.0;
+    
+    
+    new Float:VictimPos[3];
+    new Float:tempZ;
+    for(new i=1;i<=MaxClients;i++)
+    {
+        if(ValidPlayer(i,true)&& GetClientTeam(i)!=ownerteam )
+        {
+            GetClientAbsOrigin(i,VictimPos);
+            tempZ=VictimPos[2];
+            VictimPos[2]=0.0;
+                  
+            if(GetVectorDistance(BeamXY,VictimPos) < WARDRADIUS)
+            {
+                if(tempZ>BeamZ+WARDBELOW && tempZ < BeamZ+WARDABOVE)
+                {
+                    if(W3HasImmunity(i,Immunity_Skills))
+                    {
+                        W3MsgSkillBlocked(i,_,"Expulsion");
+                    }
+                    else
+                    {
+                        W3FlashScreen(i,{0,0,0,255});
+                        if(War3_DealDamage(i,WARDDAMAGE,owner,DMG_BULLET,"flame",_,W3DMGTYPE_MAGIC))
+                        {
+                            if(LastThunderClap[i]<GetGameTime()-2){
+                                EmitSoundToAll(ignitesnd,i,SNDCHAN_WEAPON);
+                                LastThunderClap[i]=GetGameTime();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 public Action:StopSlow( Handle:timer, any:client )
 {
-	War3_SetBuff(client,fSlow,thisRaceID,1.0);
-	if (ValidPlayer(client))
-	{
-		PrintToConsole(client,"[W3S] Slowdown is fading away...");
-		new Float:startpos[3];
-		GetClientAbsOrigin(client,startpos);
-		TE_SetupBeamRingPoint(startpos,120.1,20.0,BeamSprite,BeamSprite,0,15,1.20,27.0,12.0,{255,120,120,255},0,0);
+    War3_SetBuff(client,fSlow,thisRaceID,1.0);
+    if (ValidPlayer(client))
+    {
+        PrintToConsole(client,"[W3S] Slowdown is fading away...");
+        new Float:startpos[3];
+        GetClientAbsOrigin(client,startpos);
+        TE_SetupBeamRingPoint(startpos,120.1,20.0,BeamSprite,BeamSprite,0,15,1.20,27.0,12.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll();
+        TE_SendEffectToAll();
 #else
-		TE_SendToAll();
+        TE_SendToAll();
 #endif
-	}
+    }
 }
 
 public OnRaceChanged(client,oldrace,newrace)
 {
-	if(newrace!=thisRaceID)
-	{
-		RemoveFlames(client);
-	}
+    if(newrace!=thisRaceID)
+    {
+        RemoveFlames(client);
+    }
 }
 
 public RoundEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
-	for(new x=1;x<=64;x++)
-	{
-		new race = War3_GetRace(x);
-		if (race == thisRaceID)
-		{
-			RemoveFlames(x);
-			bIsTarget[x]=true;
-		}
-	}
+    for(new x=1;x<=64;x++)
+    {
+        new race = War3_GetRace(x);
+        if (race == thisRaceID)
+        {
+            RemoveFlames(x);
+            bIsTarget[x]=true;
+        }
+    }
 }
 
 public OnWar3EventSpawn(client)
 {
-	new user_race = War3_GetRace(client);
-	if (user_race == thisRaceID)
-	{ 
-		RemoveFlames(client);
-		new Float:iVec[3];
-		GetClientAbsOrigin(client, Float:iVec);
-		new Float:iVec2[3];
-		GetClientAbsOrigin(client, Float:iVec2);
-		iVec[2]+=100;
-		iVec2[2]+=100;
-		TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+    new user_race = War3_GetRace(client);
+    if (user_race == thisRaceID)
+    { 
+        RemoveFlames(client);
+        new Float:iVec[3];
+        GetClientAbsOrigin(client, Float:iVec);
+        new Float:iVec2[3];
+        GetClientAbsOrigin(client, Float:iVec2);
+        iVec[2]+=100;
+        iVec2[2]+=100;
+        TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(0.3);
+        TE_SendEffectToAll(0.3);
 #else
-		TE_SendToAll(0.3);
+        TE_SendToAll(0.3);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(0.6);
+        TE_SendEffectToAll(0.6);
 #else
-		TE_SendToAll(0.6);
+        TE_SendToAll(0.6);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(0.9);
+        TE_SendEffectToAll(0.9);
 #else
-		TE_SendToAll(0.9);
+        TE_SendToAll(0.9);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(1.2);
+        TE_SendEffectToAll(1.2);
 #else
-		TE_SendToAll(1.2);
+        TE_SendToAll(1.2);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(1.5);
+        TE_SendEffectToAll(1.5);
 #else
-		TE_SendToAll(1.5);
+        TE_SendToAll(1.5);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,75.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(1.8);
+        TE_SendEffectToAll(1.8);
 #else
-		TE_SendToAll(1.8);
+        TE_SendToAll(1.8);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,120.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,120.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(2.1);
+        TE_SendEffectToAll(2.1);
 #else
-		TE_SendToAll(2.1);
+        TE_SendToAll(2.1);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,120.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,120.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(2.1);
+        TE_SendEffectToAll(2.1);
 #else
-		TE_SendToAll(2.1);
+        TE_SendToAll(2.1);
 #endif
-		iVec[2]-=10;
-		TE_SetupBeamRingPoint(iVec,20.0,120.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
+        iVec[2]-=10;
+        TE_SetupBeamRingPoint(iVec,20.0,120.0,HaloSprite,HaloSprite,0,15,0.4,15.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll(2.4);
+        TE_SendEffectToAll(2.4);
 #else
-		TE_SendToAll(2.4);
+        TE_SendToAll(2.4);
 #endif
-		TE_SetupGlowSprite(iVec,SimpleFire,3.0,1.00,212);
+        TE_SetupGlowSprite(iVec,SimpleFire,3.0,1.00,212);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll();
+        TE_SendEffectToAll();
 #else
-		TE_SendToAll();
+        TE_SendToAll();
 #endif
-		//TE_SetupDynamicLight(iVec,255,28,28,10,30.0,2.2,2.2);
-		//TE_SendToAll();
-		TE_SetupDynamicLight(iVec,255,0,0,12,80.0,2.8,1.0);
+        //TE_SetupDynamicLight(iVec,255,28,28,10,30.0,2.2,2.2);
+        //TE_SendToAll();
+        TE_SetupDynamicLight(iVec,255,0,0,12,80.0,2.8,1.0);
 #if defined SOURCECRAFT
-		TE_SendDEffectToAll(2.4);
+        TE_SendDEffectToAll(2.4);
 #else
-		TE_SendToAll(2.4);
+        TE_SendToAll(2.4);
 #endif
-	}
+    }
 }
 
 public OnW3TakeDmgBullet(victim,attacker,Float:damage)
 {
-	if(IS_PLAYER(victim)&&IS_PLAYER(attacker)&&victim>0&&attacker>0&&attacker!=victim)
-	{
-		new vteam=GetClientTeam(victim);
-		new ateam=GetClientTeam(attacker);
-		if(vteam!=ateam)
-		{
-			new race_attacker=War3_GetRace(attacker);
-			new skill_level=War3_GetSkillLevel(attacker,thisRaceID,SKILL_FIRE);
-			if(race_attacker==thisRaceID && skill_level>0 )
-			{
-				if(GetRandomFloat(0.0,1.0)<=Chance[skill_level]*W3ChanceModifier(attacker) && !W3HasImmunity(victim,Immunity_Skills))
-				{
+    if(IS_PLAYER(victim)&&IS_PLAYER(attacker)&&victim>0&&attacker>0&&attacker!=victim)
+    {
+        new vteam=GetClientTeam(victim);
+        new ateam=GetClientTeam(attacker);
+        if(vteam!=ateam)
+        {
+            new race_attacker=War3_GetRace(attacker);
+            new skill_level=War3_GetSkillLevel(attacker,thisRaceID,SKILL_FIRE);
+            if(race_attacker==thisRaceID && skill_level>0 )
+            {
+                if(GetRandomFloat(0.0,1.0)<=Chance[skill_level]*W3ChanceModifier(attacker) && !W3HasImmunity(victim,Immunity_Skills))
+                {
 #if defined SOURCECRAFT
-					if (CanInvokeUpgrade(attacker,thisRaceID,SKILL_FIRE, .notify=false))
-					{
+                    if (CanInvokeUpgrade(attacker,thisRaceID,SKILL_FIRE, .notify=false))
+                    {
 #endif
-					new Float:spos[3];
-					new Float:epos[3];
-					GetClientAbsOrigin(victim,epos);
-					GetClientAbsOrigin(attacker,spos);
-					epos[2]+=35;
-					spos[2]+=100;
+                    new Float:spos[3];
+                    new Float:epos[3];
+                    GetClientAbsOrigin(victim,epos);
+                    GetClientAbsOrigin(attacker,spos);
+                    epos[2]+=35;
+                    spos[2]+=100;
 #if defined SOURCECRAFT
-					if(SFXEnable)
-					{
-						TE_SetupBeamPoints(spos, epos, BeamSprite, BeamSprite, 0, 35, 1.0, 10.0, 10.0, 0, 10.0, {255,25,25,255}, 30);
-						TE_SendEffectToAll();
-					}
+                    if(SFXEnable)
+                    {
+                        TE_SetupBeamPoints(spos, epos, BeamSprite, BeamSprite, 0, 35, 1.0, 10.0, 10.0, 0, 10.0, {255,25,25,255}, 30);
+                        TE_SendEffectToAll();
+                    }
 #else
-					if(GetConVarBool(SFXCvar))
-					{
-						TE_SetupBeamPoints(spos, epos, BeamSprite, BeamSprite, 0, 35, 1.0, 10.0, 10.0, 0, 10.0, {255,25,25,255}, 30);
-						TE_SendToAll();
-					}
+                    if(GetConVarBool(SFXCvar))
+                    {
+                        TE_SetupBeamPoints(spos, epos, BeamSprite, BeamSprite, 0, 35, 1.0, 10.0, 10.0, 0, 10.0, {255,25,25,255}, 30);
+                        TE_SendToAll();
+                    }
 #endif
-					new damage1=DamageStorm[skill_level];
-					new damage2=MaximumDamage[skill_level];
-					new Float:radius=RadiusStorm[skill_level];
-					DoFire(attacker,victim,radius,damage1,damage2,true);
-					
-					W3FlashScreen(victim,RGBA_COLOR_RED);
-				
-					//bIsTarget[victim]=true;
-					CreateTimer( 0.10, Timer_DeSelect, victim );
+                    new damage1=DamageStorm[skill_level];
+                    new damage2=MaximumDamage[skill_level];
+                    new Float:radius=RadiusStorm[skill_level];
+                    DoFire(attacker,victim,radius,damage1,damage2,true);
+                    
+                    W3FlashScreen(victim,RGBA_COLOR_RED);
+                
+                    //bIsTarget[victim]=true;
+                    CreateTimer( 0.10, Timer_DeSelect, victim );
 
-					EmitSoundToAll(burnsnd,victim);
-					//PrintHintText(attacker,"Fire Storm");
+                    EmitSoundToAll(burnsnd,victim);
+                    //PrintHintText(attacker,"Fire Storm");
 #if defined SOURCECRAFT
-					}
+                    }
 #endif
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 }
 
 //extra wagante effekte
@@ -476,457 +483,457 @@ stock TE_SetupDynamicLight(const Float:vecOrigin[3], r,g,b,iExponent,Float:fRadi
 //DoFire(angreifer, getroffener, radius, schaden
 public DoFire(attacker,victim,Float:radius,damage,maxdmg,bool:showmsg)
 {
-	if(ValidPlayer(victim,true)&&ValidPlayer(attacker,true)){
-		//if(IsPlayerAlive(victim)&&IsPlayerAlive(attacker));
-		//{
-			if(War3_GetRace(attacker)==thisRaceID && War3_GetRace(victim)!=thisRaceID)
-			{
-				new Float:StartPos[3];
-				new Float:EndPos[3];
-				
-				GetClientAbsOrigin( attacker, StartPos );
-				GetClientAbsOrigin( victim, EndPos );
+    if(ValidPlayer(victim,true)&&ValidPlayer(attacker,true)){
+        //if(IsPlayerAlive(victim)&&IsPlayerAlive(attacker));
+        //{
+            if(War3_GetRace(attacker)==thisRaceID && War3_GetRace(victim)!=thisRaceID)
+            {
+                new Float:StartPos[3];
+                new Float:EndPos[3];
+                
+                GetClientAbsOrigin( attacker, StartPos );
+                GetClientAbsOrigin( victim, EndPos );
 
-				StartPos[2]+=100;
-				TE_SetupGlowSprite(StartPos,FireSprite,3.0,0.80,212);
+                StartPos[2]+=100;
+                TE_SetupGlowSprite(StartPos,FireSprite,3.0,0.80,212);
 #if defined SOURCECRAFT
-				TE_SendEffectToAll();
+                TE_SendEffectToAll();
 #else
-				TE_SendToAll();
+                TE_SendToAll();
 #endif
-				TE_SetupBeamRingPoint(StartPos,74.0,76.0,HaloSprite,HaloSprite,0,15,3.45,280.0,2.0,{255,77,77,255},0,0);
+                TE_SetupBeamRingPoint(StartPos,74.0,76.0,HaloSprite,HaloSprite,0,15,3.45,280.0,2.0,{255,77,77,255},0,0);
 #if defined SOURCECRAFT
-				TE_SendEffectToAll();
+                TE_SendEffectToAll();
 #else
-				TE_SendToAll();
+                TE_SendToAll();
 #endif
-				TE_SetupDynamicLight(StartPos,255,80,80,10,radius,3.30,2.2);
+                TE_SetupDynamicLight(StartPos,255,80,80,10,radius,3.30,2.2);
 #if defined SOURCECRAFT
-				TE_SendDEffectToAll();
+                TE_SendDEffectToAll();
 #else
-				TE_SendToAll();
+                TE_SendToAll();
 #endif
-				W3FlashScreen(attacker,RGBA_COLOR_RED);
-				EmitSoundToClient(attacker, catchsnd);				
-				new waveammount = GetRandomInt(1,3);
-				if(waveammount!=0)
-				{
-					DoExplosion(damage,maxdmg,attacker,victim);
-				}
-				if(waveammount==2)
-				{
-					DoExplosion(damage,maxdmg,attacker,victim);
-				}
-				if(waveammount==3)
-				{
-					DoExplosion(damage,maxdmg,attacker,victim);
-				}
-				if(showmsg)
-				{
-					PrintHintText(attacker,"Fire Storm:\nCasted %i waves of Fire",waveammount);
-				}
-			}
-		//}
-	}
+                W3FlashScreen(attacker,RGBA_COLOR_RED);
+                EmitSoundToClient(attacker, catchsnd);              
+                new waveammount = GetRandomInt(1,3);
+                if(waveammount!=0)
+                {
+                    DoExplosion(damage,maxdmg,attacker,victim);
+                }
+                if(waveammount==2)
+                {
+                    DoExplosion(damage,maxdmg,attacker,victim);
+                }
+                if(waveammount==3)
+                {
+                    DoExplosion(damage,maxdmg,attacker,victim);
+                }
+                if(showmsg)
+                {
+                    PrintHintText(attacker,"Fire Storm:\nCasted %i waves of Fire",waveammount);
+                }
+            }
+        //}
+    }
 }
 
-public OnWar3EventDeath(victim,attacker)
+public OnWar3EventDeath(victim, attacker, deathrace)
 {
-	if(IS_PLAYER(victim)&&IS_PLAYER(attacker)&&victim>0&&attacker>0&&attacker!=victim)
-	{
-		new vteam=GetClientTeam(victim);
-		new ateam=GetClientTeam(attacker);
-		if(vteam!=ateam)
-		{
-			new race_attacker=War3_GetRace(attacker);
-			new skill_level=War3_GetSkillLevel(attacker,thisRaceID,SKILL_IGNITE);
-			if(race_attacker==thisRaceID && skill_level>0 )
-			{
+    if(IS_PLAYER(victim)&&IS_PLAYER(attacker)&&victim>0&&attacker>0&&attacker!=victim)
+    {
+        new vteam=GetClientTeam(victim);
+        new ateam=GetClientTeam(attacker);
+        if(vteam!=ateam)
+        {
+            new race_attacker=War3_GetRace(attacker);
+            new skill_level=War3_GetSkillLevel(attacker,thisRaceID,SKILL_IGNITE);
+            if(race_attacker==thisRaceID && skill_level>0 )
+            {
 #if defined SOURCECRAFT
-				if (CanInvokeUpgrade(attacker,thisRaceID,SKILL_FIRE, .notify=false))
-				{
+                if (CanInvokeUpgrade(attacker,thisRaceID,SKILL_FIRE, .notify=false))
+                {
 #endif
-				new Float:Vec[3];
-				GetClientAbsOrigin(victim,Vec);
-				new Float:Vec2[3];
-				GetClientAbsOrigin(victim,Vec2);
-				new Float:Vec3[3];
-				GetClientAbsOrigin(attacker,Vec3);
-				Vec2[2]+=100;
-				Vec3[2]+=45;
-				TE_SetupGlowSprite( Vec, SimpleFire, 10.0 , 1.6 , 195);
+                new Float:Vec[3];
+                GetClientAbsOrigin(victim,Vec);
+                new Float:Vec2[3];
+                GetClientAbsOrigin(victim,Vec2);
+                new Float:Vec3[3];
+                GetClientAbsOrigin(attacker,Vec3);
+                Vec2[2]+=100;
+                Vec3[2]+=45;
+                TE_SetupGlowSprite( Vec, SimpleFire, 10.0 , 1.6 , 195);
 #if defined SOURCECRAFT
-				TE_SendEffectToAll();
-				if(SFXEnable)
+                TE_SendEffectToAll();
+                if(SFXEnable)
 #else
-				TE_SendToAll();
-				if(GetConVarBool(SFXCvar))
+                TE_SendToAll();
+                if(GetConVarBool(SFXCvar))
 #endif
-				{
-					TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
-					TE_SendToAll();
-					TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
-					TE_SendToAll();
+                {
+                    TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
+                    TE_SendToAll();
+                    TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
+                    TE_SendToAll();
 
-					TE_SetupBeamPoints( Vec, Vec3, HydraSprite, HaloSprite, 0, 1, 2.3, 45.0, 2.0, 0, 3.0, { 255, 0, 0, 255 }, 1 );
+                    TE_SetupBeamPoints( Vec, Vec3, HydraSprite, HaloSprite, 0, 1, 2.3, 45.0, 2.0, 0, 3.0, { 255, 0, 0, 255 }, 1 );
 #if defined SOURCECRAFT
-					TE_SendEffectToAll();
+                    TE_SendEffectToAll();
 #else
-					TE_SendToAll();
+                    TE_SendToAll();
 #endif
-				}
-				EmitSoundToClient(attacker, burnsnd);
+                }
+                EmitSoundToClient(attacker, burnsnd);
 
-				new damage1=DamageFire1[skill_level];
-				new damage2=DamageFire2[skill_level];
-				//bIsTarget[victim]=true;
-				CreateTimer( 0.10, Timer_DeSelect, victim );
-				IgniteExplosion(damage1,damage2,attacker,victim);
-				CreateFlame(attacker,victim);
-				CreateTimer(10.0, Timer_Extinguish, attacker);
-				TE_Start("Bubbles");
-				TE_WriteVector("m_vecMins", Vec);
-				TE_WriteVector("m_vecMaxs", Vec2);
-				TE_WriteFloat("m_fHeight", 228.0);
-				TE_WriteNum("m_nModelIndex", Particle);
-				TE_WriteNum("m_nCount", 35);
-				TE_WriteFloat("m_fSpeed", 0.5);
+                new damage1=DamageFire1[skill_level];
+                new damage2=DamageFire2[skill_level];
+                //bIsTarget[victim]=true;
+                CreateTimer( 0.10, Timer_DeSelect, victim );
+                IgniteExplosion(damage1,damage2,attacker,victim);
+                CreateFlame(attacker,victim);
+                CreateTimer(10.0, Timer_Extinguish, attacker);
+                TE_Start("Bubbles");
+                TE_WriteVector("m_vecMins", Vec);
+                TE_WriteVector("m_vecMaxs", Vec2);
+                TE_WriteFloat("m_fHeight", 228.0);
+                TE_WriteNum("m_nModelIndex", Particle);
+                TE_WriteNum("m_nCount", 35);
+                TE_WriteFloat("m_fSpeed", 0.5);
 #if defined SOURCECRAFT
-				TE_SendEffectToAll();
-				}
+                TE_SendEffectToAll();
+                }
 #else
-				TE_SendToAll();
+                TE_SendToAll();
 #endif
-			}
-		}
-	}
+            }
+        }
+    }
 }
 public DoExplosion(magnitude,maxdmg,client,target)
 {
-	//Destination = Owner
-	//Vec = Fireball
-	//Origin = Victim
-	new Float:Destination[3];
-	GetClientAbsOrigin(client,Destination);
-	new AttackerTeam = GetClientTeam(client);
-	TE_SetupBeamRingPoint(Destination,1.0,9000.0,HaloSprite,HaloSprite,0,15,2.8,10.0,2.0,{255,120,120,255},0,0);
+    //Destination = Owner
+    //Vec = Fireball
+    //Origin = Victim
+    new Float:Destination[3];
+    GetClientAbsOrigin(client,Destination);
+    new AttackerTeam = GetClientTeam(client);
+    TE_SetupBeamRingPoint(Destination,1.0,9000.0,HaloSprite,HaloSprite,0,15,2.8,10.0,2.0,{255,120,120,255},0,0);
 #if defined SOURCECRAFT
-	TE_SendEffectToAll();
+    TE_SendEffectToAll();
 #else
-	TE_SendToAll();
+    TE_SendToAll();
 #endif
-	War3_DealDamage(target,3,client,DMG_BULLET,"firestorm");
-	//schaden simlurieren und spieler schmokeln lassen
-	for(new i=1;i<=MaxClients;i++)
-		{
-			if(ValidPlayer(i,true) && GetClientTeam(i)!=AttackerTeam && !bIsTarget[i])
-			{
-				bIsTarget[i]=true;
-				CreateTimer( 0.10, Timer_DeSelect, i );
-				new Float:Vec[3];
-				GetClientAbsOrigin(target,Vec);
-				new Float:Origin[3];
-				GetClientAbsOrigin(i,Origin);
-				Vec[0] += GetRandomFloat( -150.0, 150.0 );
-				Vec[1] += GetRandomFloat( -150.0, 150.0 );
-				Vec[2] += 10.0;
+    War3_DealDamage(target,3,client,DMG_BULLET,"firestorm");
+    //schaden simlurieren und spieler schmokeln lassen
+    for(new i=1;i<=MaxClients;i++)
+        {
+            if(ValidPlayer(i,true) && GetClientTeam(i)!=AttackerTeam && !bIsTarget[i])
+            {
+                bIsTarget[i]=true;
+                CreateTimer( 0.10, Timer_DeSelect, i );
+                new Float:Vec[3];
+                GetClientAbsOrigin(target,Vec);
+                new Float:Origin[3];
+                GetClientAbsOrigin(i,Origin);
+                Vec[0] += GetRandomFloat( -150.0, 150.0 );
+                Vec[1] += GetRandomFloat( -150.0, 150.0 );
+                Vec[2] += 10.0;
 #if defined SOURCECRAFT
-				if(SFXEnable)
+                if(SFXEnable)
 #else
-				if(GetConVarBool(SFXCvar))
+                if(GetConVarBool(SFXCvar))
 #endif
-				{
-					TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
-					TE_SendToAll();
-					TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
-					TE_SendToAll(0.18);
+                {
+                    TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
+                    TE_SendToAll();
+                    TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
+                    TE_SendToAll(0.18);
 
-					Destination[2] += 100.0;
-					TE_SetupBeamPoints( Vec, Destination, BeamSprite, HaloSprite, 0, 1, 0.61, 20.0, 2.0, 0, 1.0, { 255, 11, 11, 255 }, 1 );
+                    Destination[2] += 100.0;
+                    TE_SetupBeamPoints( Vec, Destination, BeamSprite, HaloSprite, 0, 1, 0.61, 20.0, 2.0, 0, 1.0, { 255, 11, 11, 255 }, 1 );
 #if defined SOURCECRAFT
-					TE_SendEffectToAll();
+                    TE_SendEffectToAll();
 #else
-					TE_SendToAll();
+                    TE_SendToAll();
 #endif
-				}
-				if(GetVectorDistance(Origin,Vec) < 100.0)
-				{
-					new magdmg = GetRandomInt(magnitude,maxdmg);
-					PrintToConsole(client,"FireStorm hit a target and damaged him for %d damage",magdmg);
-					IgniteEntity(i, 2.0);
-					EmitSoundToClient(i, ignitesnd);
-					W3FlashScreen(i,RGBA_COLOR_RED);
-					War3_ShakeScreen(i);
-					//TODO 1 - may add explosion sounds?
-					War3_DealDamage(i,magdmg,client,DMG_BULLET,"firestorm");
-					PrintToConsole(i,"hit by a firestorm");
-					PrintCenterText(client,"Firestorm was successfully");
-				}
-			}
-		}
+                }
+                if(GetVectorDistance(Origin,Vec) < 100.0)
+                {
+                    new magdmg = GetRandomInt(magnitude,maxdmg);
+                    PrintToConsole(client,"FireStorm hit a target and damaged him for %d damage",magdmg);
+                    IgniteEntity(i, 2.0);
+                    EmitSoundToClient(i, ignitesnd);
+                    W3FlashScreen(i,RGBA_COLOR_RED);
+                    War3_ShakeScreen(i);
+                    //TODO 1 - may add explosion sounds?
+                    War3_DealDamage(i,magdmg,client,DMG_BULLET,"firestorm");
+                    PrintToConsole(i,"hit by a firestorm");
+                    PrintCenterText(client,"Firestorm was successfully");
+                }
+            }
+        }
 }
 
 public IgniteExplosion(mindmg,maxdmg,client,target)
 {
-	new Float:Destination[3];
-	GetClientAbsOrigin(target,Destination);
-	new AttackerTeam = GetClientTeam(client);
-	EmitSoundToClient(client, catchsnd);
-	for(new i=1;i<=MaxClients;i++)
-		{
-			if(ValidPlayer(i,true)&&GetClientTeam(i)!=AttackerTeam && !bIsTarget[i])
-			{
-				new Float:Vec[3];
-				GetClientAbsOrigin(i,Vec);
-				if(GetVectorDistance(Destination,Vec)<=110.0)
-				{
-					bIsTarget[i]=true;
-					CreateTimer( 0.10, Timer_DeSelect, i );
-					//new Float:dir[3]={0.0,0.0,-90.0};
-					new magdmg = GetRandomInt(mindmg,maxdmg);
-					PrintToConsole(client,"[Notice] Expulsion dealing %i damage",magdmg);
-					PrintToChat(i,"\x05Hit by Expulsion");
-					IgniteEntity(i, 2.0);
-					W3FlashScreen(i,RGBA_COLOR_RED);
-					War3_ShakeScreen(i);
-					//TODO 1 - may add explosion sounds?
-					War3_DealDamage(i,magdmg,client,DMG_BULLET,"expulsion");
+    new Float:Destination[3];
+    GetClientAbsOrigin(target,Destination);
+    new AttackerTeam = GetClientTeam(client);
+    EmitSoundToClient(client, catchsnd);
+    for(new i=1;i<=MaxClients;i++)
+        {
+            if(ValidPlayer(i,true)&&GetClientTeam(i)!=AttackerTeam && !bIsTarget[i])
+            {
+                new Float:Vec[3];
+                GetClientAbsOrigin(i,Vec);
+                if(GetVectorDistance(Destination,Vec)<=110.0)
+                {
+                    bIsTarget[i]=true;
+                    CreateTimer( 0.10, Timer_DeSelect, i );
+                    //new Float:dir[3]={0.0,0.0,-90.0};
+                    new magdmg = GetRandomInt(mindmg,maxdmg);
+                    PrintToConsole(client,"[Notice] Expulsion dealing %i damage",magdmg);
+                    PrintToChat(i,"\x05Hit by Expulsion");
+                    IgniteEntity(i, 2.0);
+                    W3FlashScreen(i,RGBA_COLOR_RED);
+                    War3_ShakeScreen(i);
+                    //TODO 1 - may add explosion sounds?
+                    War3_DealDamage(i,magdmg,client,DMG_BULLET,"expulsion");
 #if defined SOURCECRAFT
-					if(SFXEnable)
+                    if(SFXEnable)
 #else
-					if(GetConVarBool(SFXCvar))
+                    if(GetConVarBool(SFXCvar))
 #endif
-					{
-						TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
-						TE_SendToAll();
+                    {
+                        TE_SetupExplosion(Vec, Explosion, 6.5, 1, 4, 0, 0);
+                        TE_SendToAll();
 
-						TE_SetupBeamRingPoint( Vec,65.0,75.0,HaloSprite,HaloSprite,0,15,12.20,100.0,2.0,{255,0,0,255},30,0);
+                        TE_SetupBeamRingPoint( Vec,65.0,75.0,HaloSprite,HaloSprite,0,15,12.20,100.0,2.0,{255,0,0,255},30,0);
 #if defined SOURCECRAFT
-						TE_SendEffectToAll();
+                        TE_SendEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
 
-						TE_SetupBeamRingPoint( Vec,74.0,9000.0,SimpleFire,HaloSprite,0,15,3.45,20.0,2.0,{255,0,0,255},0,0);
+                        TE_SetupBeamRingPoint( Vec,74.0,9000.0,SimpleFire,HaloSprite,0,15,3.45,20.0,2.0,{255,0,0,255},0,0);
 #if defined SOURCECRAFT
-						TE_SendEffectToAll();
+                        TE_SendEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
-					}
-				}
-			}
-		}
+                    }
+                }
+            }
+        }
 }
 
 public OnUltimateCommand(client,race,bool:pressed)
 {
-	if(race==thisRaceID && pressed && IsPlayerAlive(client))
-	{
-		new skill=War3_GetSkillLevel(client,race,ULT_RIFT);
-		if(skill>0)
-		{
-			if(War3_SkillNotInCooldown(client,thisRaceID,ULT_RIFT,true)&&!Silenced(client))
-			{
-				new Float:startpos[3];
-				new Float:targetpos[3];
-				GetClientAbsOrigin(client,startpos);
-				GetClientAbsOrigin(client,targetpos);
-				targetpos[2]+=850;
-				TE_SetupBeamPoints(startpos, targetpos, BeamSprite, BeamSprite, 0, 5, 10.0, 65.0, 5.5, 2, 0.2, {255,128,35,255}, 70);  
+    if(race==thisRaceID && pressed && IsPlayerAlive(client))
+    {
+        new skill=War3_GetSkillLevel(client,race,ULT_RIFT);
+        if(skill>0)
+        {
+            if(War3_SkillNotInCooldown(client,thisRaceID,ULT_RIFT,true)&&!Silenced(client))
+            {
+                new Float:startpos[3];
+                new Float:targetpos[3];
+                GetClientAbsOrigin(client,startpos);
+                GetClientAbsOrigin(client,targetpos);
+                targetpos[2]+=850;
+                TE_SetupBeamPoints(startpos, targetpos, BeamSprite, BeamSprite, 0, 5, 10.0, 65.0, 5.5, 2, 0.2, {255,128,35,255}, 70);  
 #if defined SOURCECRAFT
-				TE_SendEffectToAll();
+                TE_SendEffectToAll();
 #else
-				TE_SendToAll();
+                TE_SendToAll();
 #endif
-				TE_SetupBeamPoints(startpos, targetpos, BeamSprite, BeamSprite, 0, 5, 8.0, 65.0, 5.5, 2, 0.2, {255,128,35,240}, 70);  //do it twice so it disappears more smoothly
+                TE_SetupBeamPoints(startpos, targetpos, BeamSprite, BeamSprite, 0, 5, 8.0, 65.0, 5.5, 2, 0.2, {255,128,35,240}, 70);  //do it twice so it disappears more smoothly
 #if defined SOURCECRAFT
-				TE_SendEffectToAll();
+                TE_SendEffectToAll();
 #else
-				TE_SendToAll();
+                TE_SendToAll();
 #endif
-				CreateTimer(ult_delay[skill], Timer_Rift, client);
-				//PrintToChat(client,"Rift in %f seconds.",delay[skill]);
-				War3_ChatMessage(client,"Rift in %f seconds.",ult_delay[skill]);
-				EmitSoundToAll(riftsnd,client);
+                CreateTimer(ult_delay[skill], Timer_Rift, client);
+                //PrintToChat(client,"Rift in %f seconds.",delay[skill]);
+                War3_ChatMessage(client,"Rift in %f seconds.",ult_delay[skill]);
+                EmitSoundToAll(riftsnd,client);
 #if !defined SOURCECRAFT
-				new Float:ult_cooldown=GetConVarFloat(ultCooldownCvar);
+                new Float:ult_cooldown=GetConVarFloat(ultCooldownCvar);
 #endif
-				War3_CooldownMGR(client,ult_cooldown,thisRaceID,ULT_RIFT,_,_);
-			}
-		}
-		else
-		{
-			W3MsgUltNotLeveled(client);
-		}
-	}
+                War3_CooldownMGR(client,ult_cooldown,thisRaceID,ULT_RIFT,_,_);
+            }
+        }
+        else
+        {
+            W3MsgUltNotLeveled(client);
+        }
+    }
 }
 
 public OnAbilityCommand(client,ability,bool:pressed)
 {
-	if(War3_GetRace(client)==thisRaceID && pressed && IsPlayerAlive(client))
-	{
-		new skill_level=War3_GetSkillLevel(client,thisRaceID,SKILL_PIT);
-		if(skill_level>0)
-		{
-			if(!Silenced(client))
-			{
-				if(War3_SkillNotInCooldown(client,thisRaceID,SKILL_PIT,true))
-				{
-					new Float:startpos[3];
-					new Float:targetpos[3];
-					War3_GetAimEndPoint(client,targetpos);
-					GetClientAbsOrigin(client,startpos);
-					startpos[2]+=45;
+    if(War3_GetRace(client)==thisRaceID && pressed && IsPlayerAlive(client))
+    {
+        new skill_level=War3_GetSkillLevel(client,thisRaceID,SKILL_PIT);
+        if(skill_level>0)
+        {
+            if(!Silenced(client))
+            {
+                if(War3_SkillNotInCooldown(client,thisRaceID,SKILL_PIT,true))
+                {
+                    new Float:startpos[3];
+                    new Float:targetpos[3];
+                    War3_GetAimEndPoint(client,targetpos);
+                    GetClientAbsOrigin(client,startpos);
+                    startpos[2]+=45;
 #if defined SOURCECRAFT
-					if(SFXEnable)
+                    if(SFXEnable)
 #else
-					if(GetConVarBool(SFXCvar))
+                    if(GetConVarBool(SFXCvar))
 #endif
-					{
-						TE_SetupBeamPoints(startpos, targetpos, BlackSprite, BlackSprite, 0, 5, 1.0, 4.0, 9.0, 2, 3.5, {255,128,35,255}, 70);  
+                    {
+                        TE_SetupBeamPoints(startpos, targetpos, BlackSprite, BlackSprite, 0, 5, 1.0, 4.0, 9.0, 2, 3.5, {255,128,35,255}, 70);  
 #if defined SOURCECRAFT
-						TE_SendEffectToAll();
+                        TE_SendEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
-						TE_SetupBeamRingPoint(targetpos,120.1,120.0,BlackSprite,BlackSprite,0,15,3.50,1.0,50.0,{255,255,255,255},0,0);
+                        TE_SetupBeamRingPoint(targetpos,120.1,120.0,BlackSprite,BlackSprite,0,15,3.50,1.0,50.0,{255,255,255,255},0,0);
 #if defined SOURCECRAFT
-						TE_SendEffectToAll();
+                        TE_SendEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
-						TE_Start("Bubbles");
-						TE_WriteVector("m_vecMins", startpos);
-						TE_WriteVector("m_vecMaxs", targetpos);
-						TE_WriteFloat("m_fHeight", 310.0);
-						TE_WriteNum("m_nModelIndex", Ventilator);
-						TE_WriteNum("m_nCount", 180);
-						TE_WriteFloat("m_fSpeed", 2.8);
+                        TE_Start("Bubbles");
+                        TE_WriteVector("m_vecMins", startpos);
+                        TE_WriteVector("m_vecMaxs", targetpos);
+                        TE_WriteFloat("m_fHeight", 310.0);
+                        TE_WriteNum("m_nModelIndex", Ventilator);
+                        TE_WriteNum("m_nCount", 180);
+                        TE_WriteFloat("m_fSpeed", 2.8);
 #if defined SOURCECRAFT
-						TE_SendEffectToAll();
+                        TE_SendEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
-					}
-					W3FlashScreen(client,{10,10,15,228}, 0.65, 0.8, FFADE_OUT);
-					EmitSoundToAll(riftsnd,client);
+                    }
+                    W3FlashScreen(client,{10,10,15,228}, 0.65, 0.8, FFADE_OUT);
+                    EmitSoundToAll(riftsnd,client);
 
 #if defined SOURCECRAFT
-					new Float:cooldown= GetUpgradeCooldown(thisRaceID,SKILL_PIT) / 10.0;
-					War3_CooldownMGR(client,cooldown,thisRaceID,SKILL_PIT,true,true);
+                    new Float:cooldown= GetUpgradeCooldown(thisRaceID,SKILL_PIT) / 10.0;
+                    War3_CooldownMGR(client,cooldown,thisRaceID,SKILL_PIT,true,true);
 #else
-					War3_CooldownMGR(client,2.5,thisRaceID,SKILL_PIT,true,true);
+                    War3_CooldownMGR(client,2.5,thisRaceID,SKILL_PIT,true,true);
 #endif
 
-					//new Float:maxdist=PitMaxDistance[skill_level];
-					new target = War3_GetTargetInViewCone(client,PitMaxDistance[skill_level],false,5.0);
-					if(target>0 && !W3HasImmunity(target,Immunity_Skills))
-					{
-						TE_SetupBeamRingPoint(targetpos,120.1,120.0,FireSprite,HaloSprite,0,15,3.50,1.0,50.0,{255,230,230,255},0,0);
+                    //new Float:maxdist=PitMaxDistance[skill_level];
+                    new target = War3_GetTargetInViewCone(client,PitMaxDistance[skill_level],false,5.0);
+                    if(target>0 && !W3HasImmunity(target,Immunity_Skills))
+                    {
+                        TE_SetupBeamRingPoint(targetpos,120.1,120.0,FireSprite,HaloSprite,0,15,3.50,1.0,50.0,{255,230,230,255},0,0);
 #if defined SOURCECRAFT
-						TE_SendEffectToAll();
+                        TE_SendEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
-						EmitSoundToAll(burnsnd,target);
-						new ddmg = GetRandomInt(1,10);
-						War3_DealDamage(target,ddmg,client,DMG_ENERGYBEAM,"pit_of_malice",W3DMGORIGIN_SKILL,W3DMGTYPE_TRUEDMG);
-						W3FlashScreen(target,{10,10,15,255}, 1.08, 1.3, FFADE_OUT);
-						//War3_CooldownMGR(client,12.0,thisRaceID,SKILL_PIT,_,_,_,"Pit of Malice");
+                        EmitSoundToAll(burnsnd,target);
+                        new ddmg = GetRandomInt(1,10);
+                        War3_DealDamage(target,ddmg,client,DMG_ENERGYBEAM,"pit_of_malice",W3DMGORIGIN_SKILL,W3DMGTYPE_TRUEDMG);
+                        W3FlashScreen(target,{10,10,15,255}, 1.08, 1.3, FFADE_OUT);
+                        //War3_CooldownMGR(client,12.0,thisRaceID,SKILL_PIT,_,_,_,"Pit of Malice");
 #if defined SOURCECRAFT
-						new Float:cooldown2= GetUpgradeCooldown(thisRaceID,SKILL_PIT);
-						War3_CooldownMGR(client,cooldown2,thisRaceID,SKILL_PIT,true,true);
+                        new Float:cooldown2= GetUpgradeCooldown(thisRaceID,SKILL_PIT);
+                        War3_CooldownMGR(client,cooldown2,thisRaceID,SKILL_PIT,true,true);
 #else
-						War3_CooldownMGR(client,12.0,thisRaceID,SKILL_PIT,true,true);
+                        War3_CooldownMGR(client,12.0,thisRaceID,SKILL_PIT,true,true);
 #endif
-						new Float:slowmotion=PitSlow[skill_level];
-						War3_SetBuff(target,fSlow,thisRaceID,slowmotion);
-						CreateTimer( 6.25, StopSlow, target );
-						TE_SetupDynamicLight(targetpos,255,255,100,110,88.0,1.00,5.0);
+                        new Float:slowmotion=PitSlow[skill_level];
+                        War3_SetBuff(target,fSlow,thisRaceID,slowmotion);
+                        CreateTimer( 6.25, StopSlow, target );
+                        TE_SetupDynamicLight(targetpos,255,255,100,110,88.0,1.00,5.0);
 #if defined SOURCECRAFT
-						TE_SendDEffectToAll();
+                        TE_SendDEffectToAll();
 #else
-						TE_SendToAll();
+                        TE_SendToAll();
 #endif
-						PrintToConsole(client,"damaged enemy (%i -hp)",ddmg);
-						PrintHintText(client,"Pit Of Malice : Hit Target");
-						PrintHintText(target,"Slowed down by Pit Of Malice");
-					}
-					else
-					{
+                        PrintToConsole(client,"damaged enemy (%i -hp)",ddmg);
+                        PrintHintText(client,"Pit Of Malice : Hit Target");
+                        PrintHintText(target,"Slowed down by Pit Of Malice");
+                    }
+                    else
+                    {
 #if defined SOURCECRAFT
-						//new Float:cooldown= GetUpgradeCooldown(thisRaceID,SKILL_PIT) / 10.0;
-						War3_CooldownMGR(client,cooldown,thisRaceID,SKILL_PIT,true,true);
+                        //new Float:cooldown= GetUpgradeCooldown(thisRaceID,SKILL_PIT) / 10.0;
+                        War3_CooldownMGR(client,cooldown,thisRaceID,SKILL_PIT,true,true);
 #else
-						War3_CooldownMGR(client,3.0,thisRaceID,SKILL_PIT,true,true);
+                        War3_CooldownMGR(client,3.0,thisRaceID,SKILL_PIT,true,true);
 #endif
 
-						PrintHintText(client,"No Valid Target in %f Feed found",PitMaxDistance[skill_level]/10.0);
-					}
-				}
-			}
-			else
-			{
-				PrintToChat(client,"\x05Failed, you are Silenced!");
-			}	
-		}
-	}
+                        PrintHintText(client,"No Valid Target in %f Feed found",PitMaxDistance[skill_level]/10.0);
+                    }
+                }
+            }
+            else
+            {
+                PrintToChat(client,"\x05Failed, you are Silenced!");
+            }   
+        }
+    }
 }
 
 public Action:Timer_Rift(Handle:timer, any:client)
 {
-	new skill=War3_GetSkillLevel(client,thisRaceID,ULT_RIFT);
-	if(skill>0)
-	{
-		new Float:iVec[3];
-		GetClientAbsOrigin(client,iVec);  
-		War3_SpawnPlayer(client,true);
-		//War3_SpawnPlayer(client,false);
-		//thanks to Ownz ( War3_SpawnPlayer(client,bool:ignore_dead_check=false) )
-		TE_SetupGlowSprite( iVec, BeamSprite, 3.5 , 1.5 , 150);
+    new skill=War3_GetSkillLevel(client,thisRaceID,ULT_RIFT);
+    if(skill>0)
+    {
+        new Float:iVec[3];
+        GetClientAbsOrigin(client,iVec);  
+        War3_SpawnPlayer(client,true);
+        //War3_SpawnPlayer(client,false);
+        //thanks to Ownz ( War3_SpawnPlayer(client,bool:ignore_dead_check=false) )
+        TE_SetupGlowSprite( iVec, BeamSprite, 3.5 , 1.5 , 150);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll();
+        TE_SendEffectToAll();
 #else
-		TE_SendToAll();
+        TE_SendToAll();
 #endif
-		TE_SetupBeamRingPoint( iVec,1.0,75.0,HaloSprite,HaloSprite,0,15,16.0,280.0,2.0,{255,0,0,255},0,0);
+        TE_SetupBeamRingPoint( iVec,1.0,75.0,HaloSprite,HaloSprite,0,15,16.0,280.0,2.0,{255,0,0,255},0,0);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll();
+        TE_SendEffectToAll();
 #else
-		TE_SendToAll();
+        TE_SendToAll();
 #endif
-		TE_SetupBeamFollow(client,SimpleFire,0,0.4,10.0,20.0,20,{250,250,250,255});
+        TE_SetupBeamFollow(client,SimpleFire,0,0.4,10.0,20.0,20,{250,250,250,255});
 #if defined SOURCECRAFT
-		TE_SendEffectToAll();
+        TE_SendEffectToAll();
 #else
-		TE_SendToAll();
+        TE_SendToAll();
 #endif
-		TE_SetupEnergySplash(iVec, iVec,false);
+        TE_SetupEnergySplash(iVec, iVec,false);
 #if defined SOURCECRAFT
-		TE_SendEffectToAll();
+        TE_SendEffectToAll();
 #else
-		TE_SendToAll();
+        TE_SendToAll();
 #endif
-		new morehealth=pithp[skill];
-		SetEntityHealth(client,GetClientHealth(client)+morehealth);
-		PrintToChat(client,"\x03Dark Rift : \x02 A Rift opens, gained +%d HP",morehealth);
-		EmitSoundToAll(riftsnd, SOUND_FROM_WORLD, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 500, -1, iVec, NULL_VECTOR, true, 0.0);
-	}
+        new morehealth=pithp[skill];
+        SetEntityHealth(client,GetClientHealth(client)+morehealth);
+        PrintToChat(client,"\x03Dark Rift : \x02 A Rift opens, gained +%d HP",morehealth);
+        EmitSoundToAll(riftsnd, SOUND_FROM_WORLD, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, 500, -1, iVec, NULL_VECTOR, true, 0.0);
+    }
 }
 
 public Action:Timer_DeSelect(Handle:timer, any:client)
 {
-	if(ValidPlayer(client,true))
-	{
-		bIsTarget[client]=false;
-	}
+    if(ValidPlayer(client,true))
+    {
+        bIsTarget[client]=false;
+    }
 }
 
 public Action:Timer_Extinguish(Handle:timer, any:client)
 {
-	if(ValidPlayer(client,true))
-	{
-		RemoveFlames(client);
-	}
+    if(ValidPlayer(client,true))
+    {
+        RemoveFlames(client);
+    }
 }

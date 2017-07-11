@@ -113,23 +113,23 @@ public OnSourceCraftReady()
     raceID          = CreateRace("archon", -1, -1, 32, 45.0, -1.0, 2.0,
                                  Protoss, Energy, "templar");
 
-    shockwaveID     = AddUpgrade(raceID, "shockwave", 0, 0, .energy=2.0);
-    shieldsID       = AddUpgrade(raceID, "shields", 0, 0, .energy=1.0);
-    feedbackID      = AddUpgrade(raceID, "feedback", 0, 0, .energy=2.0);
-    levitationID    = AddUpgrade(raceID, "levitation", 0, 0);
-    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0);
+    shockwaveID     = AddUpgrade(raceID, "shockwave", 0, 0, .energy=2.0, .cost_crystals=10);
+    shieldsID       = AddUpgrade(raceID, "shields", 0, 0, .energy=1.0, .cost_crystals=10);
+    feedbackID      = AddUpgrade(raceID, "feedback", 0, 0, .energy=2.0, .cost_crystals=10);
+    levitationID    = AddUpgrade(raceID, "levitation", 0, 0, .cost_crystals=0);
+    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0, .cost_crystals=20);
 
     // Ultimate 1
-    boltID = AddUpgrade(raceID, "psionic_bolt", 1, 4,
-                        .energy=45.0, .cooldown=10.0);
+    boltID = AddUpgrade(raceID, "psionic_bolt", 1, 4, .energy=45.0, .cooldown=10.0,
+                        .cost_crystals=30);
 
     // Ultimate 2
-    ultimateFeedbackID = AddUpgrade(raceID, "ultimate_feedback", 2, 10,
-                                    .energy=30.0, .cooldown=3.0);
+    ultimateFeedbackID = AddUpgrade(raceID, "ultimate_feedback", 2, 10, .energy=30.0,
+                                    .cooldown=3.0, .cost_crystals=30);
 
     // Ultimate 3
-    rageID = AddUpgrade(raceID, "rage", 3, 12, .energy=180.0,
-                        .vespene=20, .cooldown=100.0);
+    rageID = AddUpgrade(raceID, "rage", 3, 12, .energy=180.0, .vespene=20, .cooldown=100.0,
+                        .cost_crystals=30);
 
     // Get Configuration Data
     GetConfigFloatArray("damage_percent",  g_ShockwavePercent, sizeof(g_ShockwavePercent),

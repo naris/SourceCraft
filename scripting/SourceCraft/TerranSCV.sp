@@ -138,155 +138,122 @@ public OnPluginStart()
 
 public OnSourceCraftReady()
 {
-    raceID              = CreateRace("scv", 48, 0, 37, .faction=Terran,
-                                     .type=BioMechanical);
+    raceID          = CreateRace("scv", 48, 0, 37, .faction=Terran,
+                                 .type=BioMechanical);
 
-    supplyID            = AddUpgrade(raceID, "supply_depot");
+    supplyID        = AddUpgrade(raceID, "supply_depot", .cost_crystals=15);
 
-    if (GetGameType() == tf2)
+    supplyBunkerID  = AddUpgrade(raceID, "supply_bunker", 0, 0, .cost_crystals=25);
+
+    if (GameType != tf2)
     {
-        supplyBunkerID  = AddUpgrade(raceID, "supply_bunker", 0, 0);
+        SetUpgradeDisabled(raceID, supplyBunkerID, true);
+        LogMessage("Disabling Terran SCV:Research Supply Bunkers due to gametype != tf2");
+    }
 
-        ammopackID  = AddUpgrade(raceID, "ammopack", 0, 0,
-                                 .energy=30.0, .cooldown=10.0);
+    if (GameType == dod)
+    {
+        ammopackID = AddUpgrade(raceID, "ammopack", .cost_crystals=0,
+                                .desc="%scv_ammopack_dod_desc");
 
-        if (!IsAmmopacksAvailable())
+        if (!IsDodAmmoAvailable())
         {
             SetUpgradeDisabled(raceID, ammopackID, true);
-            LogMessage("ammopacks are not available");
-        }
-
-        teleporterID = AddUpgrade(raceID, "teleporter");
-
-        if (!IsTeleporterAvailable())
-        {
-            SetUpgradeDisabled(raceID, teleporterID, true);
-            LogMessage("tf2teleporter is not available");
+            LogMessage("Disabling Terran SCV:Ammopack due to dodammo is not available");
         }
     }
     else
     {
-        LogMessage("Structures are not supported by this mod");
-        supplyBunkerID  = AddUpgrade(raceID, "supply_bunker", 0, 99, 0,
-                                     .desc="%NotApplicable");
+        ammopackID  = AddUpgrade(raceID, "ammopack", 0, 0, .energy=30.0,
+                                 .cooldown=10.0, .cost_crystals=0);
 
-        if (GameType == dod)
+        if (GetGameType() != tf2 || !IsAmmopacksAvailable())
         {
-            ammopackID = AddUpgrade(raceID, "ammopack",
-                                    .desc="%scv_ammopack_dod_desc");
-
-            if (!IsDodAmmoAvailable())
-            {
-                SetUpgradeDisabled(raceID, ammopackID, true);
-                LogMessage("dodammo is not available");
-            }
-
-            LogMessage("Teleporters are not supported by this mod");
-            teleporterID = AddUpgrade(raceID, "teleporter", 0, 99, 0,
-                                      .desc="%NotApplicable");
-        }
-        else
-        {
-            LogMessage("Ammopacks and teleporters are not supported by this mod");
-            ammopackID  = AddUpgrade(raceID, "ammopack", 0, 99, 0,
-                                    .desc="%NotApplicable");
-
-            teleporterID = AddUpgrade(raceID, "teleporter", 0, 99, 0,
-                                      .desc="%NotApplicable");
+            SetUpgradeDisabled(raceID, ammopackID, true);
+            LogMessage("Disabling Terran SCV:Ammopack due to ammopacks are not available (or gametype != tf2)");
         }
     }
 
-    immunityID          = AddUpgrade(raceID, "immunity");
-    armorID             = AddUpgrade(raceID, "armor");
+    teleporterID    = AddUpgrade(raceID, "teleporter", .cost_crystals=0);
+
+    if (GameType != tf2 || !IsTeleporterAvailable())
+    {
+        SetUpgradeDisabled(raceID, teleporterID, true);
+        LogMessage("Disabling Terran SCV:Ammopack due to tf2teleporter is not available (or gametype != tf2)");
+    }
+
+
+    immunityID      = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    armorID         = AddUpgrade(raceID, "armor", .cost_crystals=5);
 
     // Ultimate 1
-    cfgAllowGravgun     = GetConfigNum("allow_use", 2, .section="gravgun");
-    if (cfgAllowGravgun >= 1)
+    cfgAllowGravgun = GetConfigNum("allow_use", 2, .section="gravgun");
+
+    if (GameType != tf2)
     {
-        if (GameType != tf2)
+        gravgunID   = AddUpgrade(raceID, "gravgun", 1, 10, 1, .energy=5.0,
+                                 .recurring_energy=5.0, .cooldown=2.0, .cost_crystals=30,
+                                 .desc="%scv_gravgun_notf2_desc");
+    }
+    else
+    {
+        cfgAllowRepair = bool:GetConfigNum("allow_repair", true, .section="gravgun");
+        if (cfgAllowRepair)
         {
-            gravgunID   = AddUpgrade(raceID, "gravgun", 1, 10, 1,
-                                     .energy=5.0, .recurring_energy=5.0, .cooldown=2.0,
-                                     .desc="%scv_gravgun_notf2_desc");
+            gravgunID = AddUpgrade(raceID, "gravgun", 1, 10, .energy=5.0, .recurring_energy=5.0,
+                                   .cooldown=2.0, .cost_crystals=75, .name="Gravity Gun",
+                                   .desc=(cfgAllowGravgun >= 2) ?  "%scv_gravgun_desc"
+                                                                :  "%scv_gravgun_engyonly_desc");
         }
         else
         {
-            cfgAllowRepair = bool:GetConfigNum("allow_repair", true, .section="gravgun");
-            if (cfgAllowRepair)
-            {
-                gravgunID = AddUpgrade(raceID, "gravgun", 1, 10,
-                                       .energy=5.0, .recurring_energy=5.0, .cooldown=2.0, .name="Gravity Gun",
-                                       .desc=(cfgAllowGravgun >= 2) ?  "%scv_gravgun_desc"
-                                                                    :  "%scv_gravgun_engyonly_desc");
-            }
-            else
-            {
-                gravgunID = AddUpgrade(raceID, "gravgun", 1, 10,
-                                       .energy=5.0, .recurring_energy=5.0, .cooldown=2.0, .name="Gravity Gun",
-                                       .desc=(cfgAllowGravgun >= 2) ?  "%scv_gravgun_norepair_desc"
-                                                                    :  "%scv_gravgun_norepair_engyonly_desc");
-            }
+            gravgunID = AddUpgrade(raceID, "gravgun", 1, 10, .energy=5.0, .recurring_energy=5.0,
+                                   .cooldown=2.0, .cost_crystals=50, .name="Gravity Gun",
+                                   .desc=(cfgAllowGravgun >= 2) ?  "%scv_gravgun_norepair_desc"
+                                                                :  "%scv_gravgun_norepair_engyonly_desc");
         }
     }
 
-    if (!IsGravgunAvailable())
+    if (!IsGravgunAvailable() || !cfgAllowGravgun)
     {
         SetUpgradeDisabled(raceID, gravgunID, true);
-        LogMessage("ztf2grab is not available");
-    }
-    else if (!cfgAllowGravgun)
-    {
-        SetUpgradeDisabled(raceID, gravgunID, true);
-        LogMessage("Disabling Terran SCV:Gravity Gun due to configuration: sc_allow_gravgun=%d",
+        LogMessage("Disabling Terran SCV:Gravity Gun due to configuration: sc_allow_gravgun=%d or ztf2grab is not available",
                    cfgAllowGravgun);
     }
 
     // Ultimate 2
-    bunkerID            = AddUpgrade(raceID, "bunker", 2, .energy=30.0,
-                                     .cooldown=5.0);
+    bunkerID            = AddBunkerUpgrade(raceID, 2);
 
     // Ultimate 2
-    tripmineID          = AddUpgrade(raceID, "tripmine", 2);
+    tripmineID          = AddUpgrade(raceID, "tripmine", 2, .cost_crystals=40);
 
     if (!IsTripminesAvailable())
     {
         SetUpgradeDisabled(raceID, tripmineID, true);
-        LogMessage("Tripmines are not available");
+        LogMessage("Disabling Terran SCV:Tripmine due to tripmines are not available");
     }
 
     // Ultimate 3 & 2
-    nadeID              = AddUpgrade(raceID, "nade", 3);
+    nadeID              = AddUpgrade(raceID, "nade", 3, .cost_crystals=40);
 
     if (!IsNadesAvailable())
     {
         SetUpgradeDisabled(raceID, nadeID, true);
-        LogMessage("ztf2nades are not available");
+        LogMessage("Disabling Terran SCV:Grenade due to ztf2nades are not available");
     }
 
     // Ultimate 4
-    battlecruiserID     = AddUpgrade(raceID, "battlecruiser", 4, 16, 1,
-                                     .energy=300.0, .cooldown=60.0,
-                                     .accumulated=true);
+    battlecruiserID     = AddUpgrade(raceID, "battlecruiser", 4, 16, 1, .energy=300.0,
+                                     .accumulated=true, .cooldown=60.0, .cost_crystals=50);
 
-    if (GameType == tf2)
+    amplifierID     = AddUpgrade(raceID, "amplifier", 0, 1);
+    repairNodeID    = AddUpgrade(raceID, "repair_node", 0, 1);
+
+    if (GameType != tf2 || !IsAmpNodeAvailable())
     {
-        amplifierID     = AddUpgrade(raceID, "amplifier", 0, 1);
-        repairNodeID    = AddUpgrade(raceID, "repair_node", 0, 1);
-
-        if (!IsAmpNodeAvailable())
-        {
-            SetUpgradeDisabled(raceID, amplifierID, true);
-            SetUpgradeDisabled(raceID, repairNodeID, true);
-        }
-    }
-    else
-    {
-        LogMessage("amp_node is not available");
-        amplifierID = AddUpgrade(raceID, "amplifier", 0, 99, 0,
-                                 .desc="%NotAvailable");
-
-        repairNodeID = AddUpgrade(raceID, "repair_node", 0, 99, 0,
-                                  .desc="%NotAvailable");
+        SetUpgradeDisabled(raceID, amplifierID, true);
+        SetUpgradeDisabled(raceID, repairNodeID, true);
+        LogMessage("Disabling Terran SCV:Research Amplifier & Repair Node due to amp_node is not available (or gametype != tf2)");
     }
 
     // Set the Infinite Ammo available flag
@@ -1264,7 +1231,7 @@ BuildBattlecruiser(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_battlecruiserRace, true, false);
+        ChangeRace(client, g_battlecruiserRace, true, false, true);
     }
 }
 

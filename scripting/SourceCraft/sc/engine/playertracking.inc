@@ -196,11 +196,7 @@ ResetLevel(client,race,new_level)
 
     new delta = SetLevel(client,race,new_level,true);
     if (delta < 0)
-    {
-        ResetUpgradesNow(client,race);
-        if (new_level > 0 && GetDatabaseLoaded(client) != DataLoading)
-            UpgradeMenu(client, UpgradeMode, false);
-    }
+        ResetUpgradesNow(client, race, true);
     else if (delta > 0 && GetDatabaseLoaded(client) != DataLoading)
         UpgradeMenu(client, UpgradeMode, false);
 
@@ -285,7 +281,7 @@ GetActiveUltimate(client,race,category)
     return upgrade;
 }
 
-SetActiveUltimate(client,race,category,upgrade)
+stock SetActiveUltimate(client,race,category,upgrade)
 {
     TraceInto("PlayerTracking", "SetActiveUltimate", "client=%d:%N, race=%d, category=%d, upgrade=%d", \
               client, ValidClientIndex(client), race, category, upgrade);
@@ -769,10 +765,10 @@ IncrementTechLevel(client,Faction:techId, amount)
     TraceReturn();
 }
 
-bool:SetRace(client,race)
+bool:SetRace(client, race, bool:saveEnergy=false)
 {
-    TraceInto("PlayerTracking", "SetRace", "client=%d:%N, race=%d", \
-              client, ValidClientIndex(client), race);
+    TraceInto("PlayerTracking", "SetRace", "client=%d:%N, race=%d, saveEnergy=%d", \
+              client, ValidClientIndex(client), race, saveEnergy);
 
     new oldrace = GetRace(client);
     if (race >= 0 && race != oldrace)
@@ -867,7 +863,10 @@ bool:SetRace(client,race)
         // Reset accumulated energy when changing races
         new Handle:raceInfo = GetRaceInfo(client, race);
         if (raceInfo != INVALID_HANDLE)
-            SetRaceInfoAccumulatedEnergy(raceInfo,0.0);
+        {
+            new Float:energy = (saveEnergy) ? GetEnergy(client) : 0.0;
+            SetRaceInfoAccumulatedEnergy(raceInfo, energy);
+        }
 
         // Set the energy to the initial amount of the new race.
         new Float:initial = GetInitialEnergy(client);
@@ -1204,15 +1203,15 @@ ResetPlayer(client, bool:clear)
             new Handle:raceInfo=GetArrayCell(raceData,race); // Player's races
             if (raceInfo != INVALID_HANDLE)
             {
-                SetRaceInfoXP(raceInfo,0); // Race's XP
-                SetRaceInfoLevel(raceInfo,0); // Race's Level
-                SetRaceInfoAccumulatedEnergy(raceInfo,0.0); // Race's Accumulated Energy
-                SetRaceInfoActiveUltimate1(raceInfo,-1); // Race's Active Ultimate 1 Upgrade 
-                SetRaceInfoActiveUltimate2(raceInfo,-1); // Race's Active Ultimate 2 Upgrade 
-                SetRaceInfoActiveUltimate3(raceInfo,-1); // Race's Active Ultimate 3 Upgrade 
-                SetRaceInfoActiveUltimate4(raceInfo,-1); // Race's Active Ultimate 4 Upgrade 
-                SetRaceInfoLoaded(raceInfo,DataNotLoaded); // Race Not Loaded
-                SetRaceInfoSavedXP(raceInfo,0); // Race's Saved XP
+                SetRaceInfoXP(raceInfo, 0); // Race's XP
+                SetRaceInfoLevel(raceInfo, 0); // Race's Level
+                SetRaceInfoAccumulatedEnergy(raceInfo, 0.0); // Race's Accumulated Energy
+                SetRaceInfoActiveUltimate1(raceInfo, -1); // Race's Active Ultimate 1 Upgrade 
+                SetRaceInfoActiveUltimate2(raceInfo, -1); // Race's Active Ultimate 2 Upgrade 
+                SetRaceInfoActiveUltimate3(raceInfo, -1); // Race's Active Ultimate 3 Upgrade 
+                SetRaceInfoActiveUltimate4(raceInfo, -1); // Race's Active Ultimate 4 Upgrade 
+                SetRaceInfoLoaded(raceInfo, DataNotLoaded); // Race Not Loaded
+                SetRaceInfoSavedXP(raceInfo, 0); // Race's Saved XP
 
                 new Handle:raceHandle=GetRaceHandle(race);
                 new upgradeCount = (raceHandle != INVALID_HANDLE) ? GetUpgradeCount(raceHandle) : 0;

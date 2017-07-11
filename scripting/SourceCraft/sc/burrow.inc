@@ -16,22 +16,33 @@
 
 #define BURROWED_COMPLETELY     4
 
-#if !defined burrowID
-    stock burrowID;
-#endif
-
-stock AddBurrowUpgrade(raceId, category=2, required_level=6, max_level=1, start_level=0)
+/**
+ * Add the Zerg Burrow upgrade to a race.
+ *
+ * @param raceId 	        Race to add Borrow to.
+ * @param category:         Ultimate Category to use. (default is 2)
+ * @param required_level:   Level required to upgrade Bunker. (default is 6)
+ * @param max_level:        Max Burrow levels to allow for this race [1-4]. (default is 1)
+ * @param start_level:      Level to start Burrow at[0-4]. (default is 0, burrow has to be upgraded to be used)
+ *                          Levels allow: (1=strip weapons/prevent attack, 2=attack unburrows, 3=attack unburrows instantly, 4=unlimited attack - for Bunkers)
+ * @param energy:           Amount of energy required to invoke upgrade. (default is 30)
+ * @param cooldown:         Duration of the cooldown. (default is 5.0)
+ * @param cost_crystals:    Amount of crystals required to purchase upgrade for 1 map. (default is 10)
+ * @return                  The return value will be the upgrade index or -1 if there was a problem.
+ */
+stock AddBurrowUpgrade(raceId, category=2, required_level=6, max_level=1, start_level=0, cost_crystals=10)
 {
     AdditionalTranslations("sc.burrow.phrases.txt");
 
-    decl String:desc[32];
-    if (max_level > start_level && start_level > 0)
+    decl String:desc[NAME_STRING_LENGTH];
+    if (max_level >= start_level && start_level > 0 && start_level < 3)
         Format(desc, sizeof(desc), "%%burrow_%d.%d", start_level, max_level);
     else
         Format(desc, sizeof(desc), "%%burrow_%d", max_level);
 
-    burrowID = AddUpgrade(raceId, "burrow", category, required_level, max_level-start_level,
-                          .name="%Burrow", .image="%burrow_image", .desc=desc);
+    return AddUpgrade(raceId, "burrow", category, required_level, max_level-start_level,
+                      .desc=desc, .cost_crystals=cost_crystals,
+                      .name="%Burrow", .image="%burrow_image");
 }
 
 /**

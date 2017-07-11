@@ -561,6 +561,14 @@ public PlayerChargeDeployed(Handle:event,const String:name[],bool:dontBroadcast)
         new index = GetClientOfUserId(userid);
         if (IsValidClient(index))
         {
+            new weaponent = GetEntPropEnt(index, Prop_Send, "m_hActiveWeapon");
+            if (weaponent > 0)
+            {
+                new weaponindex = GetEntProp(weaponent, Prop_Send, "m_iItemDefinitionIndex");
+                if (weaponindex == 998) // Vaccinator
+                    return; // Don't give anything for the Vaccinator
+            }
+
             GiveChargeDeployedXP(index);
             GiveChargeDeployedCrystals(index);
         }

@@ -99,7 +99,7 @@ public Action:SayCommand(client, const String:command[], argc)
                 {
                     new Handle:raceHandle=GetRaceHandle(race);
                     if (raceHandle != INVALID_HANDLE)
-                        ChangeRace(client, race, raceHandle, false, true);
+                        ChangeRace(client, race, raceHandle, false, true, false);
                     else
                         RaceMenu(client,ChangeRaceMode);
                 }
@@ -377,7 +377,7 @@ public Action:ChangeRaceCommand(client,args)
             {
                 new Handle:raceHandle=GetRaceHandle(race);
                 if (raceHandle != INVALID_HANDLE)
-                    ChangeRace(client, race, raceHandle, false, true);
+                    ChangeRace(client, race, raceHandle, false, true, false);
                 else
                     RaceMenu(client,ChangeRaceMode);
             }

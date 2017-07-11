@@ -123,11 +123,12 @@ public OnSourceCraftReady()
 {
     raceID          = CreateRace("orc", .faction=OrcishHorde, .type=Biological);
 
-    strikeID        = AddUpgrade(raceID, "acute_strike", .energy=2.0);
-    missileID       = AddUpgrade(raceID, "acute_grenade", .energy=2.0);
+    strikeID        = AddUpgrade(raceID, "acute_strike", .energy=2.0, .cost_crystals=10);
+    missileID       = AddUpgrade(raceID, "acute_grenade", .energy=2.0, .cost_crystals=10);
 
     cfgMaxRespawns  = GetConfigNum("max_respawns", cfgMaxRespawns);
-    reincarnationID = AddUpgrade(raceID, "reincarnation", .max_level=cfgMaxRespawns, .energy=10.0);
+    reincarnationID = AddUpgrade(raceID, "reincarnation", .max_level=cfgMaxRespawns,
+                                 .energy=10.0, .cost_crystals=0);
 
     if (cfgMaxRespawns < 1)
     {
@@ -137,7 +138,8 @@ public OnSourceCraftReady()
     }
 
     // Ultimate 1
-    lightningID     = AddUpgrade(raceID, "lightning", 1, .energy=30.0, .cooldown=2.0);
+    lightningID     = AddUpgrade(raceID, "lightning", 1, .energy=30.0,
+                                 .cooldown=2.0, .cost_crystals=20);
 
     // Get Configuration Data
     GetConfigArray("chance", g_ReincarnationChance, sizeof(g_ReincarnationChance),

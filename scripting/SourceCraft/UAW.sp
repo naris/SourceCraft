@@ -81,23 +81,23 @@ public OnSourceCraftReady()
 {
     raceID        = CreateRace("uaw", 16, 0, 24, .faction=UndeadScourge, .type=Undead);
 
-    wageID        = AddUpgrade(raceID, "wages");
-    seniorityID   = AddUpgrade(raceID, "seniority");
-    negotiationID = AddUpgrade(raceID, "negotiations", 0, 0);
-    rulesID       = AddUpgrade(raceID, "rules");
+    wageID        = AddUpgrade(raceID, "wages", .cost_crystals=20);
+    seniorityID   = AddUpgrade(raceID, "seniority", .cost_crystals=0);
+    negotiationID = AddUpgrade(raceID, "negotiations", 0, 0, .cost_crystals=0);
+    rulesID       = AddUpgrade(raceID, "rules", .cost_crystals=20);
 
     // Ultimate 1
-    hookID    = AddUpgrade(raceID, "hook", 1, .energy=1.0,
-                           .recurring_energy=1.0);
+    hookID        = AddUpgrade(raceID, "hook", 1, .energy=1.0,
+                               .recurring_energy=1.0, .cost_crystals=30);
 
     // Ultimate 2
-    ropeID    = AddUpgrade(raceID, "rope", 2);
+    ropeID        = AddUpgrade(raceID, "rope", 2, .cost_crystals=15);
 
     if (!IsHGRSourceAvailable())
     {
         SetUpgradeDisabled(raceID, hookID, true);
         SetUpgradeDisabled(raceID, ropeID, true);
-        LogError("HGR:Source is not available");
+        LogMessage("Disabling UAW:Hook & Swing Shift due to hgrsource is not available");
     }
 
     // Get Configuration Data

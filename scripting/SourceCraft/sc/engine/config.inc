@@ -7,11 +7,11 @@
 
 #include <string_to>
 
-new Handle:vecLevelConfiguration     = INVALID_HANDLE;
-new Handle:g_SourceCraftConfigHandle = INVALID_HANDLE;
-new Handle:g_ItemConfigHandle        = INVALID_HANDLE;
-new g_SourceCraftConfigLoaded        = CONFIG_NOT_LOADED;
-new g_ItemConfigLoaded               = CONFIG_NOT_LOADED;
+new Handle:vecLevelConfiguration                    = INVALID_HANDLE;
+new Handle:g_SourceCraftConfigHandle                = INVALID_HANDLE;
+new Handle:g_ItemConfigHandle                       = INVALID_HANDLE;
+new ConfigLoadedStatus:g_SourceCraftConfigLoaded    = ConfigNotLoaded;
+new ConfigLoadedStatus:g_ItemConfigLoaded           = ConfigNotLoaded;
 
 GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
              node=NONE, const String:section[]="")
@@ -22,7 +22,7 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
     new value;
     if (fileId >= SHOPITEM)
     {
-        new configLoaded;
+        new ConfigLoadedStatus:configLoaded;
         new Handle:raceHandle;
         new Handle:configHandle;
         decl String:nodeName[SHORT_STRING_LENGTH];
@@ -57,7 +57,7 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
             if (node >= 0)
             {
                 new bool:nodeFound;
-                if (configLoaded == CONFIG_NOT_LOADED)
+                if (configLoaded == ConfigNotLoaded)
                     nodeFound = false;
                 else
                 {
@@ -81,8 +81,10 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
                             value = KvGetNum(configHandle, key, defvalue);
                             if (value == defvalue)
                             {
-                                new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                                updateConfig = (loaded != CONFIG_WAS_LOADED);
+                                new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                    ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                                updateConfig = (loaded != ConfigWasLoaded);
                             }
                         }
                         else
@@ -93,17 +95,17 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
                             KvSetNum(configHandle, key, value=defvalue);
 
                             if (fileId == SHOPITEM)
-                                g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                                g_ItemConfigLoaded = ConfigWasUpdated;
                             else
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         }
                     }
                     else
                     {
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
 
@@ -131,7 +133,7 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
             }
             else
             {
-                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == CONFIG_NOT_LOADED)
+                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == ConfigNotLoaded)
                 {
                     if (section[0] != '\0')
                     {
@@ -145,9 +147,9 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
                     KvSetNum(configHandle, key, value=defvalue);
 
                     if (fileId == SHOPITEM)
-                        g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                        g_ItemConfigLoaded = ConfigWasUpdated;
                     else
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                 }
                 else
                 {
@@ -167,8 +169,10 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
                         value = KvGetNum(configHandle, key, defvalue);
                         if (value == defvalue)
                         {
-                            new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                            updateConfig = (loaded != CONFIG_WAS_LOADED);
+                            new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                            updateConfig = (loaded != ConfigWasLoaded);
                         }
                     }
                     else
@@ -179,9 +183,9 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
                         KvSetNum(configHandle, key, value=defvalue);
 
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
             }
@@ -239,11 +243,11 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
         new bool:sectionFound;
         if (section[0] != '\0')
         {
-            if (g_SourceCraftConfigLoaded == CONFIG_WAS_LOADED)
+            if (g_SourceCraftConfigLoaded == ConfigWasLoaded)
             {
                 sectionFound = KvJumpToKey(g_SourceCraftConfigHandle, section, false);
                 if (!sectionFound)
-                    g_SourceCraftConfigLoaded = CONFIG_WAS_UPDATED;
+                    g_SourceCraftConfigLoaded = ConfigWasUpdated;
             }
             else
                 sectionFound = false;
@@ -261,7 +265,7 @@ GetConfigNum(const String:key[], defvalue=0, fileId=MAIN,
         else
             sectionFound = true;
 
-        if (g_SourceCraftConfigLoaded == CONFIG_NOT_LOADED || !sectionFound)
+        if (g_SourceCraftConfigLoaded == ConfigNotLoaded || !sectionFound)
             KvSetNum(g_SourceCraftConfigHandle, key, value=defvalue);
         else
             value = KvGetNum(g_SourceCraftConfigHandle, key, defvalue);
@@ -280,9 +284,9 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
     new Float:value;
     if (fileId >= SHOPITEM)
     {
-        new configLoaded;
         new Handle:raceHandle;
         new Handle:configHandle;
+        new ConfigLoadedStatus:configLoaded;
         decl String:nodeName[SHORT_STRING_LENGTH];
 
         if (fileId == SHOPITEM)
@@ -311,7 +315,7 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
             if (node >= 0)
             {
                 new bool:nodeFound;
-                if (configLoaded == CONFIG_NOT_LOADED)
+                if (configLoaded == ConfigNotLoaded)
                     nodeFound = false;
                 else
                 {
@@ -335,8 +339,10 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
                             value = KvGetFloat(configHandle, key, defvalue);
                             if (value == defvalue)
                             {
-                                new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                                updateConfig = (loaded != CONFIG_WAS_LOADED);
+                                new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                    ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                                updateConfig = (loaded != ConfigWasLoaded);
                             }
 
                             Trace("KvGetFloat sectionFound=%d, configHandle=0x%08x, file=%d, node=%s, section=%s, key=%s, value=%f, def=%f, updateConfig=%d", \
@@ -350,9 +356,9 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
                             KvSetFloat(configHandle, key, value=defvalue);
 
                             if (fileId == SHOPITEM)
-                                g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                                g_ItemConfigLoaded = ConfigWasUpdated;
                             else
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
 
                             Trace("KvSetFloat sectionFound=%d, configHandle=0x%08x, file=%d, node=%s, section=%s, key=%s, def=%f", \
                                   sectionFound, configHandle, fileId, nodeName, section, key, defvalue);
@@ -361,9 +367,9 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
                     else
                     {
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
 
@@ -394,7 +400,7 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
             }
             else
             {
-                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == CONFIG_NOT_LOADED)
+                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == ConfigNotLoaded)
                 {
                     if (section[0] != '\0')
                     {
@@ -405,9 +411,9 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
                     KvSetFloat(configHandle, key, value=defvalue);
 
                     if (fileId == SHOPITEM)
-                        g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                        g_ItemConfigLoaded = ConfigWasUpdated;
                     else
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
 
                     Trace("KvSetFloat3 configHandle=0x%08x, file=%d, section=%s, key=%s, def=%f", \
                           configHandle, fileId, section, key, defvalue);
@@ -430,8 +436,10 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
                         value = KvGetFloat(configHandle, key, defvalue);
                         if (value == defvalue)
                         {
-                            new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                            updateConfig = (loaded != CONFIG_WAS_LOADED);
+                            new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                            updateConfig = (loaded != ConfigWasLoaded);
                         }
                     }
                     else
@@ -442,9 +450,9 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
                         KvSetFloat(configHandle, key, value=defvalue);
 
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
 
                         Trace("KvSetFloat4 configHandle=0x%08x, file=%d, section=%s, key=%s, def=%f", \
                               configHandle, fileId, section, key, defvalue);
@@ -481,11 +489,11 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
         new bool:sectionFound;
         if (section[0] != '\0')
         {
-            if (g_SourceCraftConfigLoaded == CONFIG_WAS_LOADED)
+            if (g_SourceCraftConfigLoaded == ConfigWasLoaded)
             {
                 sectionFound = KvJumpToKey(g_SourceCraftConfigHandle, section, false);
                 if (!sectionFound)
-                    g_SourceCraftConfigLoaded = CONFIG_WAS_UPDATED;
+                    g_SourceCraftConfigLoaded = ConfigWasUpdated;
             }
             else
                 sectionFound = false;
@@ -503,7 +511,7 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
         else
             sectionFound = true;
 
-        if (g_SourceCraftConfigLoaded == CONFIG_NOT_LOADED || !sectionFound)
+        if (g_SourceCraftConfigLoaded == ConfigNotLoaded || !sectionFound)
             KvSetFloat(g_SourceCraftConfigHandle, key, value=defvalue);
         else
             value = KvGetFloat(g_SourceCraftConfigHandle, key, defvalue);
@@ -522,9 +530,9 @@ GetConfigString(const String:key[], String:value[], maxlength,
 
     if (fileId >= SHOPITEM)
     {
-        new configLoaded;
         new Handle:raceHandle;
         new Handle:configHandle;
+        new ConfigLoadedStatus:configLoaded;
         decl String:nodeName[SHORT_STRING_LENGTH];
 
         if (fileId == SHOPITEM)
@@ -553,7 +561,7 @@ GetConfigString(const String:key[], String:value[], maxlength,
             if (node >= 0)
             {
                 new bool:nodeFound;
-                if (configLoaded == CONFIG_NOT_LOADED)
+                if (configLoaded == ConfigNotLoaded)
                     nodeFound = false;
                 else
                 {
@@ -577,8 +585,10 @@ GetConfigString(const String:key[], String:value[], maxlength,
                             KvGetString(configHandle, key, value, maxlength, defvalue);
                             if (StrEqual(value, defvalue))
                             {
-                                new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                                updateConfig = (loaded != CONFIG_WAS_LOADED);
+                                new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                    ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                                updateConfig = (loaded != ConfigWasLoaded);
                             }
                         }
                         else
@@ -590,17 +600,17 @@ GetConfigString(const String:key[], String:value[], maxlength,
                             KvSetString(configHandle, key, value);
 
                             if (fileId == SHOPITEM)
-                                g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                                g_ItemConfigLoaded = ConfigWasUpdated;
                             else
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         }
                     }
                     else
                     {
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
 
@@ -630,7 +640,7 @@ GetConfigString(const String:key[], String:value[], maxlength,
             }
             else
             {
-                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == CONFIG_NOT_LOADED)
+                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == ConfigNotLoaded)
                 {
                     if (section[0] != '\0')
                     {
@@ -645,9 +655,9 @@ GetConfigString(const String:key[], String:value[], maxlength,
                     KvSetString(configHandle, key, value);
 
                     if (fileId == SHOPITEM)
-                        g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                        g_ItemConfigLoaded = ConfigWasUpdated;
                     else
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                 }
                 else
                 {
@@ -667,8 +677,10 @@ GetConfigString(const String:key[], String:value[], maxlength,
                         KvGetString(configHandle, key, value, maxlength, defvalue);
                         if (StrEqual(value, defvalue))
                         {
-                            new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                            updateConfig = (loaded != CONFIG_WAS_LOADED);
+                            new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                            updateConfig = (loaded != ConfigWasLoaded);
                         }
                     }
                     else
@@ -680,9 +692,9 @@ GetConfigString(const String:key[], String:value[], maxlength,
                         KvSetString(configHandle, key, value);
 
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
             }
@@ -704,11 +716,11 @@ GetConfigString(const String:key[], String:value[], maxlength,
         new bool:sectionFound;
         if (section[0] != '\0')
         {
-            if (g_SourceCraftConfigLoaded == CONFIG_WAS_LOADED)
+            if (g_SourceCraftConfigLoaded == ConfigWasLoaded)
             {
                 sectionFound = KvJumpToKey(g_SourceCraftConfigHandle, section, false);
                 if (!sectionFound)
-                    g_SourceCraftConfigLoaded = CONFIG_WAS_UPDATED;
+                    g_SourceCraftConfigLoaded = ConfigWasUpdated;
             }
             else
                 sectionFound = false;
@@ -726,7 +738,7 @@ GetConfigString(const String:key[], String:value[], maxlength,
         else
             sectionFound = true;
 
-        if (g_SourceCraftConfigLoaded == CONFIG_NOT_LOADED || !sectionFound)
+        if (g_SourceCraftConfigLoaded == ConfigNotLoaded || !sectionFound)
         {
             strcopy(value, maxlength, defvalue);
             KvSetString(g_SourceCraftConfigHandle, key, value);
@@ -759,9 +771,9 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
 
     if (fileId >= SHOPITEM)
     {
-        new configLoaded;
         new Handle:raceHandle;
         new Handle:configHandle;
+        new ConfigLoadedStatus:configLoaded;
         decl String:nodeName[SHORT_STRING_LENGTH];
 
         if (fileId == SHOPITEM)
@@ -790,7 +802,7 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
             if (node >= 0)
             {
                 new bool:nodeFound;
-                if (configLoaded == CONFIG_NOT_LOADED)
+                if (configLoaded == ConfigNotLoaded)
                     nodeFound = false;
                 else
                 {
@@ -816,8 +828,10 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
 
                             if (StrEqual(buffer, defstring))
                             {
-                                new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                                updateConfig = (loaded != CONFIG_WAS_LOADED);
+                                new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                    ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                                updateConfig = (loaded != ConfigWasLoaded);
                             }
                         }
                         else
@@ -830,17 +844,17 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
                                 value[i] = defvalue[i];
 
                             if (fileId == SHOPITEM)
-                                g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                                g_ItemConfigLoaded = ConfigWasUpdated;
                             else
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         }
                     }
                     else
                     {
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
 
@@ -870,7 +884,7 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
             }
             else
             {
-                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == CONFIG_NOT_LOADED)
+                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == ConfigNotLoaded)
                 {
                     if (section[0] != '\0')
                     {
@@ -886,9 +900,9 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
                         value[i] = defvalue[i];
 
                     if (fileId == SHOPITEM)
-                        g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                        g_ItemConfigLoaded = ConfigWasUpdated;
                     else
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                 }
                 else
                 {
@@ -910,8 +924,10 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
 
                         if (StrEqual(buffer, defstring))
                         {
-                            new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                            updateConfig = (loaded != CONFIG_WAS_LOADED);
+                            new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                            updateConfig = (loaded != ConfigWasLoaded);
                         }
                     }
                     else
@@ -924,9 +940,9 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
                             value[i] = defvalue[i];
 
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
             }
@@ -948,11 +964,11 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
         new bool:sectionFound;
         if (section[0] != '\0')
         {
-            if (g_SourceCraftConfigLoaded == CONFIG_WAS_LOADED)
+            if (g_SourceCraftConfigLoaded == ConfigWasLoaded)
             {
                 sectionFound = KvJumpToKey(g_SourceCraftConfigHandle, section, false);
                 if (!sectionFound)
-                    g_SourceCraftConfigLoaded = CONFIG_WAS_UPDATED;
+                    g_SourceCraftConfigLoaded = ConfigWasUpdated;
             }
             else
                 sectionFound = false;
@@ -970,7 +986,7 @@ GetConfigArray(const String:key[], any:value[], size, const any:defvalue[],
         else
             sectionFound = true;
 
-        if (g_SourceCraftConfigLoaded == CONFIG_NOT_LOADED || !sectionFound)
+        if (g_SourceCraftConfigLoaded == ConfigNotLoaded || !sectionFound)
         {
             KvSetString(g_SourceCraftConfigHandle, key, defstring);
             for (new i=0; i < size; i++)
@@ -1009,9 +1025,9 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
 
     if (fileId >= SHOPITEM)
     {
-        new configLoaded;
         new Handle:raceHandle;
         new Handle:configHandle;
+        new ConfigLoadedStatus:configLoaded;
         decl String:nodeName[SHORT_STRING_LENGTH];
 
         if (fileId == SHOPITEM)
@@ -1040,7 +1056,7 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
             if (node >= 0)
             {
                 new bool:nodeFound;
-                if (configLoaded == CONFIG_NOT_LOADED)
+                if (configLoaded == ConfigNotLoaded)
                     nodeFound = false;
                 else
                 {
@@ -1066,8 +1082,10 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
 
                             if (StrEqual(buffer, defstring))
                             {
-                                new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                                updateConfig = (loaded != CONFIG_WAS_LOADED);
+                                new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                    ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                                updateConfig = (loaded != ConfigWasLoaded);
                             }
                         }
                         else
@@ -1080,17 +1098,17 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
                                 value[i] = defvalue[i];
 
                             if (fileId == SHOPITEM)
-                                g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                                g_ItemConfigLoaded = ConfigWasUpdated;
                             else
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         }
                     }
                     else
                     {
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
 
@@ -1120,7 +1138,7 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
             }
             else
             {
-                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == CONFIG_NOT_LOADED)
+                if (((fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle)) == ConfigNotLoaded)
                 {
                     if (section[0] != '\0')
                     {
@@ -1133,9 +1151,9 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
                         value[i] = defvalue[i];
 
                     if (fileId == SHOPITEM)
-                        g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                        g_ItemConfigLoaded = ConfigWasUpdated;
                     else
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                 }
                 else
                 {
@@ -1157,8 +1175,10 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
 
                         if (StrEqual(buffer, defstring))
                         {
-                            new loaded = (fileId == SHOPITEM) ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
-                            updateConfig = (loaded != CONFIG_WAS_LOADED);
+                            new ConfigLoadedStatus:loaded = (fileId == SHOPITEM)
+                                ? g_ItemConfigLoaded : GetRaceConfigIsLoaded(raceHandle);
+
+                            updateConfig = (loaded != ConfigWasLoaded);
                         }
                     }
                     else
@@ -1171,9 +1191,9 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
                             value[i] = defvalue[i];
 
                         if (fileId == SHOPITEM)
-                            g_ItemConfigLoaded = CONFIG_WAS_UPDATED;
+                            g_ItemConfigLoaded = ConfigWasUpdated;
                         else
-                            SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                     }
                 }
             }
@@ -1195,11 +1215,11 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
         new bool:sectionFound;
         if (section[0] != '\0')
         {
-            if (g_SourceCraftConfigLoaded == CONFIG_WAS_LOADED)
+            if (g_SourceCraftConfigLoaded == ConfigWasLoaded)
             {
                 sectionFound = KvJumpToKey(g_SourceCraftConfigHandle, section, false);
                 if (!sectionFound)
-                    g_SourceCraftConfigLoaded = CONFIG_WAS_UPDATED;
+                    g_SourceCraftConfigLoaded = ConfigWasUpdated;
             }
             else
                 sectionFound = false;
@@ -1217,7 +1237,7 @@ GetConfigFloatArray(const String:key[], Float:value[], size,
         else
             sectionFound = true;
 
-        if (g_SourceCraftConfigLoaded == CONFIG_NOT_LOADED || !sectionFound)
+        if (g_SourceCraftConfigLoaded == ConfigNotLoaded || !sectionFound)
         {
             KvSetString(g_SourceCraftConfigHandle, key, defstring);
             for (new i=0; i < size; i++)
@@ -1239,11 +1259,12 @@ bool:ParseSettings()
     TraceInto("SourceCraft", "ParseSettings");
 
     LoadSettings();
-    if (g_SourceCraftConfigLoaded == CONFIG_NOT_LOADED)
+    if (g_SourceCraftConfigLoaded == ConfigNotLoaded)
     {
         // Set options
         KvSetNum(g_SourceCraftConfigHandle, "update", g_bUpdate);
         KvSetNum(g_SourceCraftConfigHandle, "save_xp", g_bSaveXP);
+        KvSetNum(g_SourceCraftConfigHandle, "charge_for_upgrades", g_bChargeForUpgrades);
         KvSetNum(g_SourceCraftConfigHandle, "save_upgrades", g_bSaveUpgrades);
 
         KvSetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
@@ -1289,6 +1310,8 @@ bool:ParseSettings()
         // Load options
         g_bUpdate=bool:KvGetNum(g_SourceCraftConfigHandle, "update", g_bUpdate);
         g_bSaveXP=bool:KvGetNum(g_SourceCraftConfigHandle, "save_xp", g_bSaveXP);
+
+        g_bChargeForUpgrades=bool:KvGetNum(g_SourceCraftConfigHandle, "charge_for_upgrades", g_bChargeForUpgrades);
         g_bSaveUpgrades=bool:KvGetNum(g_SourceCraftConfigHandle, "save_upgrades", g_bSaveUpgrades);
 
         g_iMinPlayers=KvGetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
@@ -1374,7 +1397,7 @@ bool:ParseSettings()
             LogError("Unable to create long_term section in configs/sourcecraft.cfg!");
             CloseHandle(g_SourceCraftConfigHandle);
             g_SourceCraftConfigHandle=INVALID_HANDLE;
-            g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+            g_SourceCraftConfigLoaded=ConfigNotLoaded;
             TraceReturn("return false");
             return false;
         }
@@ -1397,7 +1420,7 @@ bool:ParseSettings()
 
         CloseHandle(g_SourceCraftConfigHandle);
         g_SourceCraftConfigHandle=INVALID_HANDLE;
-        g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+        g_SourceCraftConfigLoaded=ConfigNotLoaded;
         TraceReturn("return false");
         return false;
     }
@@ -1419,7 +1442,7 @@ bool:ParseSettings()
 
         CloseHandle(g_SourceCraftConfigHandle);
         g_SourceCraftConfigHandle=INVALID_HANDLE;
-        g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+        g_SourceCraftConfigLoaded=ConfigNotLoaded;
         TraceReturn("return false");
         return false;
     }
@@ -1440,7 +1463,7 @@ bool:ParseSettings()
             LogError("Unable to create short_term section in configs/sourcecraft.cfg!");
             CloseHandle(g_SourceCraftConfigHandle);
             g_SourceCraftConfigHandle=INVALID_HANDLE;
-            g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+            g_SourceCraftConfigLoaded=ConfigNotLoaded;
             TraceReturn("return false");
             return false;
         }
@@ -1465,7 +1488,7 @@ bool:ParseSettings()
 
         CloseHandle(g_SourceCraftConfigHandle);
         g_SourceCraftConfigHandle=INVALID_HANDLE;
-        g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+        g_SourceCraftConfigLoaded=ConfigNotLoaded;
         TraceReturn("return false");
         return false;
     }
@@ -1487,7 +1510,7 @@ bool:ParseSettings()
 
         CloseHandle(g_SourceCraftConfigHandle);
         g_SourceCraftConfigHandle=INVALID_HANDLE;
-        g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+        g_SourceCraftConfigLoaded=ConfigNotLoaded;
         TraceReturn("return false");
         return false;
     }
@@ -1544,7 +1567,7 @@ bool:ParseSettings()
     return true;
 }
 
-Handle:GetRaceConfig(Handle:raceHandle, &loaded)
+Handle:GetRaceConfig(Handle:raceHandle, &ConfigLoadedStatus:loaded)
 {
     TraceInto("Config", "GetRaceConfig", "raceHandle=0x%08x, loaded=%d", raceHandle, loaded);
 
@@ -1565,7 +1588,7 @@ Handle:GetRaceConfig(Handle:raceHandle, &loaded)
     return configHandle;
 }
 
-Handle:LoadRaceConfig(const String:short[], &loaded)
+Handle:LoadRaceConfig(const String:short[], &ConfigLoadedStatus:loaded)
 {
     TraceInto("Config", "LoadRaceConfig", "short=%s, loaded=%d", short, loaded);
 
@@ -1574,13 +1597,13 @@ Handle:LoadRaceConfig(const String:short[], &loaded)
     decl String:path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM,path,sizeof(path),"configs/sc/%s.cfg", short);
 
-    loaded = FileToKeyValues(config,path);
+    loaded = ConfigLoadedStatus:FileToKeyValues(config,path);
 
     TraceReturn("configHandle=0x%08x, loaded=%d, path=%s", config, loaded, path);
     return config;
 }
 
-Handle:LoadItemConfig(&loaded)
+Handle:LoadItemConfig(&ConfigLoadedStatus:loaded)
 {
     if (g_ItemConfigHandle == INVALID_HANDLE)
     {
@@ -1589,14 +1612,14 @@ Handle:LoadItemConfig(&loaded)
         decl String:path[PLATFORM_MAX_PATH];
         BuildPath(Path_SM,path,sizeof(path),"configs/sc/shopitems.cfg");
 
-        g_ItemConfigLoaded = FileToKeyValues(g_ItemConfigHandle,path);
+        g_ItemConfigLoaded = ConfigLoadedStatus:FileToKeyValues(g_ItemConfigHandle,path);
     }
 
     loaded = g_ItemConfigLoaded;
     return g_ItemConfigHandle;
 }
 
-SetItemConfigLoaded(loaded)
+SetItemConfigLoaded(ConfigLoadedStatus:loaded)
 {
     g_ItemConfigLoaded = loaded;
 }
@@ -1623,7 +1646,7 @@ LoadSettings()
         BuildPath(Path_SM,path,sizeof(path),"configs/sourcecraft.cfg");
 
         g_SourceCraftConfigHandle=CreateKeyValues("SourceCraft");
-        g_SourceCraftConfigLoaded=FileToKeyValues(g_SourceCraftConfigHandle,path);
+        g_SourceCraftConfigLoaded=ConfigLoadedStatus:FileToKeyValues(g_SourceCraftConfigHandle,path);
     }
 }
 
@@ -1643,18 +1666,18 @@ CompleteConfigs()
     // Save and Close the shop item config file
     if (g_ItemConfigHandle != INVALID_HANDLE)
     {
-        if (g_ItemConfigLoaded != CONFIG_WAS_LOADED)
+        if (g_ItemConfigLoaded != ConfigWasLoaded)
             SaveConfig(g_ItemConfigHandle, "shopitems");
 
         CloseHandle(g_ItemConfigHandle);
         g_ItemConfigHandle = INVALID_HANDLE;
-        g_ItemConfigLoaded = CONFIG_NOT_LOADED;
+        g_ItemConfigLoaded = ConfigNotLoaded;
     }
 
     // Save and Close the main sourcraft config file
     if (g_SourceCraftConfigHandle != INVALID_HANDLE)
     {
-        if (g_SourceCraftConfigLoaded != CONFIG_WAS_LOADED)
+        if (g_SourceCraftConfigLoaded != ConfigWasLoaded)
         {
             decl String:path[PLATFORM_MAX_PATH];
             BuildPath(Path_SM,path,sizeof(path),"configs/sourcecraft.cfg");
@@ -1668,7 +1691,7 @@ CompleteConfigs()
 
         CloseHandle(g_SourceCraftConfigHandle);
         g_SourceCraftConfigHandle=INVALID_HANDLE;
-        g_SourceCraftConfigLoaded=CONFIG_NOT_LOADED;
+        g_SourceCraftConfigLoaded=ConfigNotLoaded;
     }
 
     TraceReturn();

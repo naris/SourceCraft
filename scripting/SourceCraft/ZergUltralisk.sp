@@ -113,14 +113,17 @@ public OnSourceCraftReady()
     raceID          = CreateRace("ultralisk", -1, -1, 24, .faction=Zerg,
                                  .type=Biological, .parent="omegalisk");
 
-    armorID         = AddUpgrade(raceID, "armor", 0, 0);
-    speedID         = AddUpgrade(raceID, "speed", 0, 0);
-    meleeID         = AddUpgrade(raceID, "uber_blades", 0, 0, .energy=2.0);
-    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0);
+    armorID         = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    speedID         = AddUpgrade(raceID, "speed", 0, 0, .cost_crystals=0);
+
+    meleeID         = AddUpgrade(raceID, "uber_blades", 0, 0, .energy=2.0,
+                                 .cost_crystals=20);
+
+    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0, .cost_crystals=10);
 
     // Ultimate 1
     cleaveID        = AddUpgrade(raceID, "cleave", 1, 0,
-                                 .energy=45.0, .cooldown=2.0);
+                                 .energy=45.0, .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 2
     AddBurrowUpgrade(raceID, 2, 0, 3, 3);
@@ -128,7 +131,7 @@ public OnSourceCraftReady()
     // Ultimate 3
     chargeID        = AddUpgrade(raceID, "charge", 3, 4,
                                  .energy=200.0, .cooldown=20.0,
-                                 .accumulated=true);
+                                 .accumulated=true, .cost_crystals=30);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -381,10 +384,10 @@ public Action:Regeneration(Handle:timer, any:userid)
         !GetRestriction(client,Restriction_NoUpgrades) &&
         !GetRestriction(client,Restriction_Stunned))
     {
-        new level = GetUpgradeLevel(client,raceID,regenerationID)+1;
+        new level = GetUpgradeLevel(client,raceID,regenerationID);
         new amount = g_RegenerationAmount[level];
 
-        if (m_HasAttacked[client])            
+        if (m_HasAttacked[client])
             m_HasAttacked[client] = false;
         else            
             amount *= 2;

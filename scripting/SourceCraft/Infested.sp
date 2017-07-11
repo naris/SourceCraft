@@ -46,7 +46,7 @@ new Float:g_ExplodeRadius[]      = { 1000.0, 800.0, 600.0, 450.0, 300.0 };
 new g_ExplodePlayerDamage[]      = {    800,   900,  1000,  1100, 1200  };
 new g_ExplodeBuildingDamage[]    = {   1000,  1250,  1500,  1750, 2000  };
 
-new raceID, boostID, explodeID;
+new raceID, burrowID, boostID, explodeID;
 
 new m_LastRace[MAXPLAYERS+1];
 new m_Countdown[MAXPLAYERS+1];
@@ -71,17 +71,17 @@ public OnPluginStart()
 
 public OnSourceCraftReady()
 {
-    raceID   = CreateRace("infested", -1, -1, 13, .faction=Zerg, .type=Biological);
+    raceID      = CreateRace("infested", -1, -1, 13, .faction=Zerg, .type=Biological);
 
-    AddUpgrade(raceID, "disarming", 0, 0);
+    AddUpgrade(raceID, "disarming", 0, 0, .cost_crystals=0);
 
-    boostID  = AddUpgrade(raceID, "boost", 0, 0);
+    boostID     = AddUpgrade(raceID, "boost", 0, 0, .cost_crystals=0);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 4, 1);
+    burrowID    = AddBurrowUpgrade(raceID, 2, 4, 1, .cost_crystals=0);
 
     // Ultimate 1
-    explodeID = AddUpgrade(raceID, "explode", 1, 0);
+    explodeID   = AddUpgrade(raceID, "explode", 1, 0, .cost_crystals=0);
 
     // Get Configuration Data
     GetConfigFloatArray("speed", g_SpeedLevels, sizeof(g_SpeedLevels),
@@ -288,7 +288,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
             race = FindRace("human");
 
         // Revert back to previous race upon death as an Infested.
-        ChangeRace(victim_index, race, true, true);
+        ChangeRace(victim_index, race, true, true, false);
     }
 }
 

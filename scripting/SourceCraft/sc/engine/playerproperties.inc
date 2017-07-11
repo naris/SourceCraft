@@ -165,7 +165,7 @@ public Action:PlayerHUD(Handle:timer, any:userid)
         {
             new Float:rate = GetEnergyRate(client);
             new Float:limit = GetEnergyLimit(client);
-            new energyFlags = 0;
+            new EnergyFlags:energyFlags = NoEnergy;
 
             new race = GetRace(client);
             if (race > 0)
@@ -277,11 +277,11 @@ public Action:PlayerHUD(Handle:timer, any:userid)
                     new Float:x = HudPos[Block1][ws][XPos]; // 0.18
                     new Float:y = HudPos[Block1][ws][YPos]; // 0.84
 
-                    if (limit != 0 || energyFlags != 0)
+                    if (limit != 0 || energyFlags != NoEnergy)
                     {
                         SetHudTextParams(x, y, 1.0, 255, 192, 192, 255);
 
-                        new Float:accumulated = (race > 0 && (energyFlags & RACE_USES_ACCUMULATED) != 0)
+                        new Float:accumulated = (race > 0 && (energyFlags & UsesAccumulated) != NoEnergy)
                                                 ? GetAccumulatedEnergy(client,race) : 0.0;
                         if (accumulated > 0.0 )
                         {

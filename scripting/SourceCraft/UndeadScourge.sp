@@ -98,17 +98,17 @@ public OnSourceCraftReady()
 {
     raceID       = CreateRace("undead", 0, 0, 17, .faction=UndeadScourge, .type=Undead);
 
-    vampiricID   = AddUpgrade(raceID, "vampiric_aura", .energy=2.0);
-    unholyID     = AddUpgrade(raceID, "unholy_aura");
-    levitationID = AddUpgrade(raceID, "levitation");
+    vampiricID   = AddUpgrade(raceID, "vampiric_aura", .energy=2.0, .cost_crystals=10);
+    unholyID     = AddUpgrade(raceID, "unholy_aura", .cost_crystals=0);
+    levitationID = AddUpgrade(raceID, "levitation", .cost_crystals=0);
 
     // Ultimate 1
-    suicideID    = AddUpgrade(raceID, "suicide_bomb", 1, .energy=30.0);
+    suicideID    = AddUpgrade(raceID, "suicide_bomb", 1, .energy=30.0, .cost_crystals=20);
 
     // Ultimate 2
     necroID      = AddUpgrade(raceID, "necromancer", 2, 12,1,
                               .energy=300.0, .cooldown=30.0,
-                              .accumulated=true);
+                              .accumulated=true, .cost_crystals=75);
 
     // Get Configuration Data
     GetConfigFloatArray("speed", g_SpeedLevels, sizeof(g_SpeedLevels),
@@ -476,6 +476,6 @@ SummonNecromancer(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_necroRace, true, false);
+        ChangeRace(client, g_necroRace, true, false, true);
     }
 }

@@ -68,7 +68,6 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     LoadTranslations("sc.common.phrases.txt");
-    LoadTranslations("sc.bunker.phrases.txt");
     LoadTranslations("sc.reaper.phrases.txt");
     LoadTranslations("sc.d8charge.phrases.txt");
 
@@ -99,42 +98,41 @@ public OnSourceCraftReady()
 {
     TraceInto("TerranReaper", "OnSourceCraftReady");
 
-    raceID    = CreateRace("reaper", 48, 0, 24, .faction=Terran,
-                           .type=Biological);
+    raceID      = CreateRace("reaper", 48, 0, 24, .faction=Terran,
+                             .type=Biological);
 
-    weaponsID = AddUpgrade(raceID, "weapons", .energy=2.0);
-    armorID   = AddUpgrade(raceID, "armor");
+    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0, .cost_crystals=20);
+    armorID     = AddUpgrade(raceID, "armor", .cost_crystals=5);
 
     if (IsROFAvailable())
     {
         stimpacksID = AddUpgrade(raceID, "enhanced_stimpacks", 0, 12,
-                                 .recurring_energy=4.0);
+                                 .recurring_energy=4.0, .cost_crystals=30);
     }
     else
     {
-        stimpacksID = AddUpgrade(raceID, "stimpacks", 0, 12);
+        stimpacksID = AddUpgrade(raceID, "stimpacks", 0, 12, .cost_crystals=0);
     }
 
     // Ultimate 1
-    jetpackID = AddUpgrade(raceID, "jetpack", 1);
+    jetpackID   = AddUpgrade(raceID, "jetpack", 1, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogError("jetpack is not available");
+        LogMessage("Disabling Terran Reaper:Jetpack due to jetpack is not available");
     }
 
     // Ultimate 2
-    bunkerID = AddUpgrade(raceID, "bunker", 2, .energy=30.0,
-                          .cooldown=5.0);
+    bunkerID    = AddBunkerUpgrade(raceID, 2);
 
     // Ultimate 3 & 4
-    chargeID = AddUpgrade(raceID, "d8charge", 3, 16);
+    chargeID    = AddUpgrade(raceID, "d8charge", 3, 16, .cost_crystals=30);
 
     if (!IsTNTAvailable())
     {
         SetUpgradeDisabled(raceID, chargeID, true);
-        LogError("sm_tnt is not available");
+        LogMessage("Disabling Terran Reaper:D8 Charge due to sm_tnt is not available");
     }
 
     // Get Configuration Data

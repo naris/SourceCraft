@@ -1053,7 +1053,6 @@ SetMine(client)
 
                 TeleportEntity(mine_ent, end, normal, NULL_VECTOR);
                 DispatchKeyValue(mine_ent, "targetname", minename);
-                DispatchKeyValue(mine_ent, "classname", "tripmine");
 
                 SetEntProp(mine_ent, Prop_Data, "m_MoveCollide", 0);
 
@@ -1077,7 +1076,7 @@ SetMine(client)
                 //DispatchKeyValue(mine_ent, "SetHealth", "10");
                 new health = GetConVarInt(cvHealth);
                 if (health > 0)
-                    SetEntProp(mine_ent, Prop_Send, "m_iHealth", health);
+                    SetEntityHealth(mine_ent, health);
 
                 HookSingleEntityOutput(mine_ent, "OnBreak", mineBreak, true);
 
@@ -1088,6 +1087,8 @@ SetMine(client)
                     else
                         DispatchKeyValue(mine_ent, "OnTouchedByEntity", "!self,Break,,0,-1");
                 }
+
+                DispatchKeyValue(mine_ent, "classname", "tripmine");
 
                 new prop_ref = EntIndexToEntRef(mine_ent);
                 g_SavedEntityRef[mine_ent] = prop_ref;

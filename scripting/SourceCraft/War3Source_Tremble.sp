@@ -9,7 +9,7 @@
 
 //war3source handles the includes 8)
 #include <sourcemod>
-#include "W3SIncs/sdkhooks"
+#include <sdkhooks>
 #include "W3SIncs/War3Source_Interface"
 //#include "revantools.inc"
 
@@ -43,7 +43,7 @@ new Handle:ReUseOnDeathCvar;
 new Handle:TeleportWhenAliveCvar;
 #endif
 
-new SKILL_1,SKILL_2,SKILL_3,ULT;
+new SKILL_1,SKILL_2,SKILL_3,SKILL_4,ULT;
 new LargeBeam,BeamSprite,Bug1,Bug2,Bug3,Bug4;
 
 new MasterLevel[MAXPLAYERS];
@@ -196,32 +196,42 @@ public AbilitysCvarChange(Handle:h_ScjEnabled, const String:s_ScjOldValue[], con
 public OnWar3PluginReady()
 {
 #if defined SOURCECRAFT
-    thisRaceID=CreateRace("tremble", .name="[HoN] Tremble", .faction=Hellbourne, .type=Biological);
+    thisRaceID=CreateRace("tremble", .name="[HoN] Tremble", .faction=Hellbourne, .type=Biological, .required_level=64);
 #else
     thisRaceID = War3_CreateNewRace( "[HoN] Tremble", "tremble" );
 #endif
 
 	SKILL_1 = War3_AddRaceSkill( thisRaceID, "Dark Swarm","Summons a massive swarm of bugs to act as his personal shield\ndeflecting ranged attackers and suffocating nearby enemies.", false, 4 );
-	SKILL_2 = War3_AddRaceSkill( thisRaceID, "Terrorform / Terrorport", "Terrorform(+ability):\nBuilds up a Terror Mound, granting invisibility, movement speed, and health regeneration.\nTerror Port(+ability1):\nGrants the Ability to teleport between each Terror Mound", false, 4 );	
+	SKILL_2 = War3_AddRaceSkill( thisRaceID, "Terrorform", "Terrorform(+ability):\nBuilds up a Terror Mound, granting invisibility, movement speed, and health regeneration.", false, 4 );	
+	SKILL_4 = War3_AddRaceSkill( thisRaceID, "Terrorport", "Terror Port(+ability1):\nGrants the Ability to teleport between each Terror Mound", false, 1 );	
 	SKILL_3 = War3_AddRaceSkill( thisRaceID, "Impalers", "Passively adds damage to your attacks and slows the target enemy.", false, 4 );
 	ULT = War3_AddRaceSkill( thisRaceID, "Hive Mind", "Permanently summon Shudder to aid you in battle.", true, 4 ); // The Anti Team Ressurection Skill :p
 
 #if defined SOURCECRAFT
-    // Setup energy use requirements
+    // Setup upgrade costs & energy use requirements
+    // Can be altered in the race config file
+    SetUpgradeCost(thisRaceID, SKILL_1, 10);
     SetUpgradeEnergy(thisRaceID, SKILL_1, 1.0);
     SetUpgradeRecurringEnergy(thisRaceID, SKILL_1, 1.0);
 
+    SetUpgradeCost(thisRaceID, SKILL_3, 20);
     SetUpgradeEnergy(thisRaceID, SKILL_3, 1.0);
 
-    W3SkillCooldownOnSpawn(thisRaceID, SKILL_2, 10.0);
-
     abiCooldown=GetConfigFloat("cooldown_on_invoke", abiCooldown, thisRaceID, SKILL_2);
-    SetUpgradeEnergy(thisRaceID, ULT, abiCooldown);
+    SetUpgradeEnergy(thisRaceID, SKILL_2, abiCooldown);
+    W3SkillCooldownOnSpawn(thisRaceID, SKILL_2, 10.0);
+    SetUpgradeCategory(thisRaceID, SKILL_2, 2);
+    SetUpgradeCost(thisRaceID, SKILL_2, 30);
 
-    W3SkillCooldownOnSpawn(thisRaceID, ULT, 20.0);
+    SetUpgradeEnergy(thisRaceID, SKILL_4, abiCooldown);
+    SetUpgradeCategory(thisRaceID, SKILL_4, 3);
+    SetUpgradeCost(thisRaceID, SKILL_4, 30);
 
     ultCooldown=GetConfigFloat("cooldown_on_invoke", ultCooldown, thisRaceID, ULT);
     SetUpgradeEnergy(thisRaceID, ULT, ultCooldown);
+    W3SkillCooldownOnSpawn(thisRaceID, ULT, 20.0);
+    SetUpgradeCategory(thisRaceID, ULT, 1);
+    SetUpgradeCost(thisRaceID, ULT, 20);
 
     // Get Configuration Data
     GetConfigFloatArray("chance",  SwarmChance, sizeof(SwarmChance),
@@ -475,7 +485,9 @@ public OnAbilityCommand(client,ability,bool:pressed)
 			}
 			else {
 				if(nTrembleCount[client]>0 ) {
-					MountPlayer(client);
+                    new skill4_level=War3_GetSkillLevel(client,thisRaceID,SKILL_4);
+                    if(skill4_level>0&&War3_SkillNotInCooldown(client,thisRaceID,SKILL_4,true))
+					    MountPlayer(client);
 				}
 				else {
 					PrintHintText(client,"You need to create at least 2 Terror Mounds to tunnel");
@@ -633,7 +645,7 @@ public MountAoE(owner,tremble,level)
 	else if(dice==3)
 		Sprite=Bug4;
 	for(new reptimes=0;reptimes<=3;reptimes++) {
-		TE_SetupBubbles(start_pos,end_pos,220.0,Sprite,2,GetRandomFloat(28.0,30.0));
+		TE_SetupBubbles(start_pos,end_pos,Sprite,220.0,2,GetRandomFloat(28.0,30.0));
 #if defined SOURCECRAFT
         TE_SendEffectToAll();
 #else
@@ -725,17 +737,6 @@ stock TE_SetupDynamicLight(const Float:vecOrigin[3], r,g,b,iExponent,Float:fRadi
 	TE_WriteFloat("m_fRadius",fRadius);
 	TE_WriteFloat("m_fTime",fTime);
 	TE_WriteFloat("m_fDecay",fDecay);
-}
-
-stock TE_SetupBubbles(Float:startposi[3],Float:finalposi[3],Float:fHeight,nModelIndex,nCount,Float:fSpeed)
-{
-	TE_Start("Bubbles");
-	TE_WriteVector("m_vecMins", startposi);
-	TE_WriteVector("m_vecMaxs", finalposi);
-	TE_WriteFloat("m_fHeight", fHeight);
-	TE_WriteNum("m_nModelIndex", nModelIndex);
-	TE_WriteNum("m_nCount", nCount);
-	TE_WriteFloat("m_fSpeed", fSpeed);
 }
 
 public Action:DoSwarm(client)
@@ -847,7 +848,6 @@ public OnUltimateCommand(client,race,bool:pressed)
                                 SetEntProp(npc_ent, Prop_Send, "m_usSolidFlags", 152);
                                 TeleportEntity(npc_ent, actualpos, NULL_VECTOR, NULL_VECTOR);
                                 DispatchKeyValue(npc_ent, "targetname", entname);
-                                DispatchKeyValue(npc_ent, "classname", shudder_classname);
 
                                 SetEntProp(npc_ent, Prop_Data, "m_MoveCollide", 1);
                                 SetEntProp(npc_ent, Prop_Send, "m_iTeamNum", npcteam, 4);
@@ -861,7 +861,9 @@ public OnUltimateCommand(client,race,bool:pressed)
                                 DispatchKeyValue(npc_ent, "ExplodeDamage", "60");
                                 SetVariantString(shudder_idle);
                                 AcceptEntityInput(npc_ent, "SetAnimation", -1, -1, 0);
-                                SetEntProp(npc_ent, Prop_Send, "m_iHealth", ShudderHealth[ult_level]);
+                                SetEntityHealth(npc_ent, ShudderHealth[ult_level]);
+                                DispatchKeyValue(npc_ent, "classname", shudder_classname);
+
                                 HookSingleEntityOutput(npc_ent, "OnTakeDamage", OnShudderDamage, false);
                                 SDKHook(npc_ent, SDKHook_StartTouch, OnShudderTouch);
                                 HookSingleEntityOutput(npc_ent, "OnBreak", OnShudderKilled, true);
@@ -1427,7 +1429,7 @@ public Action:Timer_LoopSwarm(Handle:timer, any:i)
 			new Float:fxtimer = 0.0; //start delay before first effect get displayed!
 			new nBugs = GetRandomInt(2,4); //amount of bugs to be displayed!
 			for(new reptimes=0;reptimes<=nBugs;reptimes++) {
-				TE_SetupBubbles(effectVector1,effectVector2,900.0,Bug1,2,GetRandomFloat(28.0,150.0));
+				TE_SetupBubbles(effectVector1,effectVector2,Bug1,900.0,2,GetRandomFloat(28.0,150.0));
 #if defined SOURCECRAFT
                 TE_SendEffectToAll(fxtimer);
 #else
@@ -1438,7 +1440,7 @@ public Action:Timer_LoopSwarm(Handle:timer, any:i)
 			fxtimer = 0.3;
 			nBugs = GetRandomInt(4,7);
 			for(new reptimes=0;reptimes<=nBugs;reptimes++) {
-				TE_SetupBubbles(effectVector1,effectVector2,500.0,Bug2,2,GetRandomFloat(28.0,150.0));
+				TE_SetupBubbles(effectVector1,effectVector2,Bug2,500.0,2,GetRandomFloat(28.0,150.0));
 #if defined SOURCECRAFT
                 TE_SendEffectToAll(fxtimer);
 #else
@@ -1449,7 +1451,7 @@ public Action:Timer_LoopSwarm(Handle:timer, any:i)
 			fxtimer = 0.5;
 			nBugs = GetRandomInt(3,5);
 			for(new reptimes=0;reptimes<=nBugs;reptimes++) {
-				TE_SetupBubbles(effectVector1,effectVector2,500.0,Bug3,2,GetRandomFloat(28.0,150.0));
+				TE_SetupBubbles(effectVector1,effectVector2,Bug3,500.0,2,GetRandomFloat(28.0,150.0));
 #if defined SOURCECRAFT
                 TE_SendEffectToAll(fxtimer);
 #else
@@ -1460,7 +1462,7 @@ public Action:Timer_LoopSwarm(Handle:timer, any:i)
 			fxtimer = 0.8;
 			nBugs = 3;
 			for(new reptimes=0;reptimes<=nBugs;reptimes++) {
-				TE_SetupBubbles(effectVector1,effectVector2,600.0,Bug4,2,GetRandomFloat(28.0,150.0));
+				TE_SetupBubbles(effectVector1,effectVector2,Bug4,600.0,2,GetRandomFloat(28.0,150.0));
 #if defined SOURCECRAFT
                 TE_SendEffectToAll(fxtimer);
 #else

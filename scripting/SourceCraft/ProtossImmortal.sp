@@ -88,25 +88,25 @@ public OnSourceCraftReady()
                              .faction=Protoss, .type=Cybernetic,
                              .parent="zealot");
 
-    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0);
-    speedID     = AddUpgrade(raceID, "speed");
-    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0);
-    immunityID  = AddUpgrade(raceID, "immunity");
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    speedID     = AddUpgrade(raceID, "speed", .cost_crystals=0);
+    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0, .cost_crystals=20);
+    immunityID  = AddUpgrade(raceID, "immunity", .cost_crystals=0);
 
     // Ultimate 1
-    hardenedShieldsID = AddUpgrade(raceID, "hard_shields", 1, 8,
-                                   .energy=60.0, .cooldown=2.0);
+    hardenedShieldsID = AddUpgrade(raceID, "hard_shields", 1, 8, .energy=60.0,
+                                   .cooldown=2.0, .cost_crystals=30);
 
     if (!IsUberShieldAvailable())
     {
         SetUpgradeDisabled(raceID, hardenedShieldsID, true);
-        LogMessage("ubershield is not available");
+        LogMessage("Disabling Protoss Immortal:Hardened Shields due to ubershield is not available");
     }
 
     // Ultimate 2
     collosusID = AddUpgrade(raceID, "collosus", 2, 4,1,
                             .energy=100.0, .cooldown=20.0,
-                            .accumulated=true);
+                            .accumulated=true, .cost_crystals=50);
 
     // Set the HGRSource available flag
     IsHGRSourceAvailable();
@@ -406,7 +406,7 @@ SummonCollosus(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_collosusRace, true, false);
+        ChangeRace(client, g_collosusRace, true, false, true);
     }
 }
 

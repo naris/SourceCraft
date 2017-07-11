@@ -52,7 +52,7 @@ new Float:g_PlagueRange[]       = { 300.0, 400.0, 550.0, 700.0, 900.0 };
 new Float:g_DarkSwarmRange[]    = { 300.0, 400.0, 600.0, 800.0, 1000.0 };
 new Float:g_ConsumePercent[]    = { 0.0, 0.10, 0.18, 0.28, 0.40 };
 
-new raceID, carapaceID, regenerationID, consumeID, darkSwarmID, plagueID, infestorID;
+new raceID, carapaceID, regenerationID, consumeID, burrowID, darkSwarmID, plagueID, infestorID;
 
 new g_infestorRace = -1;
 
@@ -83,25 +83,25 @@ public OnSourceCraftReady()
     raceID          = CreateRace("defiler", 48, 0, 22, 45.0,
                                  .faction=Zerg, .type=Biological);
 
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-    carapaceID      = AddUpgrade(raceID, "armor");
-    consumeID       = AddUpgrade(raceID, "consume", .energy=2.0);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+    carapaceID      = AddUpgrade(raceID, "armor", .cost_crystals=5);
+    consumeID       = AddUpgrade(raceID, "consume", .energy=2.0, .cost_crystals=20);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 6, 1);
+    burrowID        = AddBurrowUpgrade(raceID, 2, 6, 1);
 
     // Ultimate 3
-    darkSwarmID     = AddUpgrade(raceID, "dark_swarm", 3, 8,
-                                 .energy=90.0, .cooldown=10.0);
+    darkSwarmID     = AddUpgrade(raceID, "dark_swarm", 3, 8, .energy=90.0,
+                                 .cooldown=10.0, .cost_crystals=30);
 
     // Ultimate 1
     plagueID        = AddUpgrade(raceID, "plague", 1, .energy=90.0,
-                                 .cooldown=10.0);
+                                 .cooldown=10.0, .cost_crystals=30);
 
     // Ultimate 4
     infestorID      = AddUpgrade(raceID, "infestor", 4, 12, 1,
                                  .energy=120.0, .cooldown=30.0,
-                                 .accumulated=true);
+                                 .accumulated=true, .cost_crystals=30);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -506,7 +506,7 @@ EvolveInfestor(client)
         TE_SendEffectToAll();
 
         PrepareAndEmitSoundToAll(evolveWav,client);
-        ChangeRace(client, g_infestorRace, true, false);
+        ChangeRace(client, g_infestorRace, true, false, true);
     }
 }
 

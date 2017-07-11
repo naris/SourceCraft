@@ -39,12 +39,6 @@ new String:g_DBConf[64];
 
 bool:InitDatabase()
 {
-    if (g_SaveThreadsInFlight == INVALID_HANDLE)
-        g_SaveThreadsInFlight = CreateTrie();
-
-    if (g_PlayersToReload == INVALID_HANDLE)
-        g_PlayersToReload = CreateTrie();
-
     if (SQL_CheckConfig("sourcecraft"))
         strcopy(g_DBConf, sizeof(g_DBConf), "sourcecraft");
     else
@@ -76,8 +70,19 @@ ClearDatabase()
     }
 }
 
+ReloadPlayer(const String:key[], client)
+{
+    if (g_PlayersToReload == INVALID_HANDLE)
+        g_PlayersToReload = CreateTrie();
+
+    SetTrieValue(g_PlayersToReload, key, GetClientUserId(client), true);
+}
+
 UpdateThreadsInFlight(const String:key[], value)
 {
+    if (g_SaveThreadsInFlight == INVALID_HANDLE)
+        g_SaveThreadsInFlight = CreateTrie();
+
     new threads;
     if (GetTrieValue(g_SaveThreadsInFlight, key, threads))
     {
@@ -88,17 +93,20 @@ UpdateThreadsInFlight(const String:key[], value)
             RemoveFromTrie(g_SaveThreadsInFlight, key);
     }
 
-    // If all the save threads have completed
-    // and the player needs to be reloaded
-    new userid;
-    if (threads <= 0 && value < 0 &&
-        GetTrieValue(g_PlayersToReload, key, userid))
+    if (g_PlayersToReload != INVALID_HANDLE)
     {
-        RemoveFromTrie(g_PlayersToReload, key);
-        if (GetClientOfUserId(userid) > 0)
+        // If all the save threads have completed
+        // and the player needs to be reloaded
+        new userid;
+        if (threads <= 0 && value < 0 &&
+            GetTrieValue(g_PlayersToReload, key, userid))
         {
-            CreateTimer(0.1, Retry_LoadPlayerData,
-                        userid,TIMER_FLAG_NO_MAPCHANGE);
+            RemoveFromTrie(g_PlayersToReload, key);
+            if (GetClientOfUserId(userid) > 0)
+            {
+                CreateTimer(0.1, Retry_LoadPlayerData,
+                            userid,TIMER_FLAG_NO_MAPCHANGE);
+            }
         }
     }
 }
@@ -1059,12 +1067,14 @@ LoadPlayerData(client)
         steamidalt[6] = (steamid[6] == '0') ? '1' : '0';
 
         // Check if there are any in flight save threads
-
-        new threads;
-        if (GetTrieValue(g_SaveThreadsInFlight, steamid, threads) && threads > 0)
-            SetTrieValue(g_PlayersToReload, steamid, GetClientUserId(client), true);
-        else if (GetTrieValue(g_SaveThreadsInFlight, steamidalt, threads) && threads > 0)
-            SetTrieValue(g_PlayersToReload, steamidalt, GetClientUserId(client), true);
+        if (g_SaveThreadsInFlight != INVALID_HANDLE)
+        {
+            new threads;
+            if (GetTrieValue(g_SaveThreadsInFlight, steamid, threads) && threads > 0)
+                ReloadPlayer(steamid, client);
+            else if (GetTrieValue(g_SaveThreadsInFlight, steamidalt, threads) && threads > 0)
+                ReloadPlayer(steamidalt, client);
+        }
 
         decl String:SQLString[QUERY_STRING_LENGTH];
         Format(SQLString,sizeof(SQLString),
@@ -1150,11 +1160,14 @@ public SQL_LoadPlayerData(Handle:owner, Handle:query, const String:error[], any:
 
                 // Check if there are any in flight save threads
 
-                new threads;
-                decl String:key[CLASS_STRING_LENGTH];
-                Format(key, sizeof(key), "%d", player_ident);
-                if (GetTrieValue(g_SaveThreadsInFlight, key, threads) && threads > 0)
-                    SetTrieValue(g_PlayersToReload, key, GetClientUserId(client), true);
+                if (g_SaveThreadsInFlight != INVALID_HANDLE)
+                {
+                    new threads;
+                    decl String:key[CLASS_STRING_LENGTH];
+                    Format(key, sizeof(key), "%d", player_ident);
+                    if (GetTrieValue(g_SaveThreadsInFlight, key, threads) && threads > 0)
+                        ReloadPlayer(key, client);
+                }
 
                 new PlayerStatus:player_status = PlayerStatus:SQL_FetchInt(query,1);
                 SetPlayerStatus(client,player_status);
@@ -1229,7 +1242,7 @@ public SQL_LoadPlayerData(Handle:owner, Handle:query, const String:error[], any:
                                   client, ValidClientIndex(client), \
                                   raceId);
 
-                            SetRace(client,raceId);
+                            SetRace(client, raceId, false);
                         }
                     }
                 }
@@ -1423,7 +1436,7 @@ public SQL_LoadPlayerRaceData(Handle:owner, Handle:query, const String:error[], 
                           client, ValidClientIndex(client), \
                           raceId, xp, level);
 
-                    if (g_bSaveUpgrades)
+                    if (g_bSaveUpgrades || !g_bChargeForUpgrades)
                     {
                         new race_ident = GetRaceIdent(raceHandle);
                         if (DatabaseConnected(DB_THREAD))
@@ -1708,6 +1721,9 @@ SavePlayerData(client)
             steamid[0] = '\0';
         }
 
+        if (g_SaveThreadsInFlight == INVALID_HANDLE)
+            g_SaveThreadsInFlight = CreateTrie();
+
         // Start the thread count at 0
         SetTrieValue(g_SaveThreadsInFlight, key, 0, true);
 
@@ -1971,9 +1987,11 @@ public SQL_UpdatePlayer(Handle:owner, Handle:hndl, const String:error[], any:dat
             }
             else
             {
-                RemoveFromTrie(g_SaveThreadsInFlight, key);
                 LogError("Unable to update %d:%L's (ident=%d) player data (crystals=%d,vespene=%d,key=%s): %s",
                          client, ValidClientIndex(client), player_ident, crystals, vespene, key, error);
+
+                if (g_SaveThreadsInFlight != INVALID_HANDLE)
+                    RemoveFromTrie(g_SaveThreadsInFlight, key);
 
                 if (IsValidClient(client))
                 {
@@ -2233,8 +2251,8 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
             // (and the sc_player_races entry already exists)
             // Otherwise, attempt to save them AFTER saving
             // the player's race's data has completed!
-            //new bool:saveUpgrades = g_bSaveUpgrades && (GetRaceInfoLoaded(raceInfo) >= DataLoaded);
             new bool:saveUpgrades = (GetRaceInfoLoaded(raceInfo) >= DataLoaded);
+            //                      && (g_bSaveUpgrades || !g_bChargeForUpgrades);
 
             new Handle:dataPack = CreateDataPack();
             WritePackCell(dataPack, GetClientUserId(client));
@@ -2312,7 +2330,7 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
             {
                 SetRaceInfoSavedXP(raceInfo,xp);
 
-                //if (g_bSaveUpgrades)
+                //if (g_bSaveUpgrades || !g_bChargeForUpgrades)
                 {
                     if (threaded && DatabaseAvailable(DB_THREAD))
                     {
@@ -2420,12 +2438,13 @@ public SQL_SavePlayerRaceData(Handle:owner, Handle:hndl, const String:error[], a
             }
             else
             {
-                RemoveFromTrie(g_SaveThreadsInFlight, key);
-
                 decl String:raceName[SHORT_STRING_LENGTH];
                 GetRaceShortName(GetRaceHandle(race), raceName, sizeof(raceName));
                 LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s race data (xp=%d,level=%d,key=%s): %s",
                          client, ValidClientIndex(client), player_ident, race_ident, raceName, xp, level, key, error);
+
+                if (g_SaveThreadsInFlight != INVALID_HANDLE)
+                    RemoveFromTrie(g_SaveThreadsInFlight, key);
 
                 if (clientIsValid)
                 {
@@ -2602,6 +2621,14 @@ public SQL_SavePlayerTechData(Handle:owner, Handle:hndl, const String:error[], a
             UpdateThreadsInFlight(key, -1);
         else
         {
+            decl String:techName[NAME_STRING_LENGTH];
+            GetFactionName(techId, techName, sizeof(techName));
+            LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s tech data: %s",
+                     client, ValidClientIndex(client), player_ident, techId, techName, error);
+
+            if (g_SaveThreadsInFlight != INVALID_HANDLE)
+                RemoveFromTrie(g_SaveThreadsInFlight, key);
+
             if (client > 0)
             {
                 SetDatabaseSaved(client, false);
@@ -2622,13 +2649,6 @@ public SQL_SavePlayerTechData(Handle:owner, Handle:hndl, const String:error[], a
                 CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
                 g_DbHandle[DB_THREAD] = INVALID_HANDLE;
             }
-
-            RemoveFromTrie(g_SaveThreadsInFlight, key);
-
-            decl String:techName[NAME_STRING_LENGTH];
-            GetFactionName(techId, techName, sizeof(techName));
-            LogError("Unable to insert/update %d:%L's (ident=%d) %d:%s tech data: %s",
-                     client, ValidClientIndex(client), player_ident, techId, techName, error);
         }
         CloseHandle(data);
     }
@@ -2858,7 +2878,9 @@ public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], a
                 // Invalidate and close the DB_THREAD handle (in the main thread)
                 CreateTimer(0.1, CloseDatabaseTimer, g_DbHandle[DB_THREAD],TIMER_FLAG_NO_MAPCHANGE);
                 g_DbHandle[DB_THREAD] = INVALID_HANDLE;
-                RemoveFromTrie(g_SaveThreadsInFlight, key);
+
+                if (g_SaveThreadsInFlight != INVALID_HANDLE)
+                    RemoveFromTrie(g_SaveThreadsInFlight, key);
             }
             else if (StrContains(error, "constraint") >= 0)
             {
@@ -2866,7 +2888,9 @@ public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], a
                 {
                     // Invalidate player_ident for constraint failed errors.
                     SetDatabaseIdent(client,0);
-                    RemoveFromTrie(g_SaveThreadsInFlight, key);
+
+                    if (g_SaveThreadsInFlight != INVALID_HANDLE)
+                        RemoveFromTrie(g_SaveThreadsInFlight, key);
                 }
                 else if (StrContains(error, "sc_upgrades") >= 0)
                 {
@@ -2882,7 +2906,7 @@ public SQL_SavePlayerUpgrades(Handle:owner, Handle:hndl, const String:error[], a
                     CreateTimer(0.1, Retry_SavePlayerUpgradeData, dataPack,TIMER_FLAG_NO_MAPCHANGE);
                 }
             }
-            else
+            else if (g_SaveThreadsInFlight != INVALID_HANDLE)
                 RemoveFromTrie(g_SaveThreadsInFlight, key);
         }
         CloseHandle(data);

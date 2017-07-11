@@ -188,7 +188,7 @@ native SetRaceInitialEnergy(race,Float:newamount);
  * @param race:     The race ID returned from CreateRace()
  * @return          The return value will be the Energy Flags
  */
-native GetRaceEnergyFlags(race);
+native EnergyFlags:GetRaceEnergyFlags(race);
 
 /**
  * Sets the Energy flags for a race.
@@ -196,7 +196,7 @@ native GetRaceEnergyFlags(race);
  * @param newflags: The flags you want to set
  * @noreturn
  */
-native SetRaceEnergyFlags(race,newflags);
+native SetRaceEnergyFlags(race,EnergyFlags:newflags);
 
 /**
  * Retrieves the name of the race
@@ -250,6 +250,13 @@ native GetRaceParentId(race);
  * @return          The return value will be the Faction of the race
  */
 native Faction:GetRaceFaction(race,bool:validate=true);
+
+/**
+ * Gets the plugin Handle for a race.
+ * @param race:     The race ID returned from CreateRace()
+ * @return          The return value will be the Handle of the plugin that created the race.
+ */
+native Handle:GetRacePlugin(race);
 
 /**
  * Retrieves the number of races
@@ -433,6 +440,17 @@ native AddUpgrade(race, const String:short[], upgrade_category=0, required_level
 #define AddSkill    AddUpgrade
 
 /**
+ * Sets an upgrade's crystal and/or vespene costs
+ * @param race:             The race ID returned from CreateRace()
+ * @param upgrade:          The upgrade ID returned from AddUpgrade()
+ * @param cost_crystals:    Amount of crystals required to purchase upgrade for 1 map, -1 to leave unchanged
+ * @param cost_vespene:     Amount of vespene required to purchase upgrade for 1 map, -1 to leave unchanged
+ * @param override:         Set true to override the config file.
+ * @noreturn
+ */
+native SetUpgradeCost(race, upgrade, cost_crystals=-1, cost_vespene=-1, bool:override=false);
+
+/**
  * Sets an upgrade's cooldown parameters
  * @param race:             The race ID returned from CreateRace()
  * @param upgrade:          The upgrade ID returned from AddUpgrade()
@@ -466,17 +484,6 @@ native Float:GetUpgradeCooldown(race, upgrade, &CooldownType:cooldown_type=Coold
 native GetUpgradeName(race, upgrade, String:name[], maxlength, lang=LANG_SERVER);
 
 /**
- * Retrieves the description of an upgrade
- * @param race:         The race ID returned from CreateRace()
- * @param upgrade:      The upgrade ID returned from AddUpgrade()
- * @param description:  String to place the description into.
- * @param maxlength:    The size of the description buffer.
- * @param lang:         Client to translate the description for, if any.
- * @noreturn
- */
-native GetUpgradeDescription(race, upgrade, String:description[], maxlength, lang=LANG_SERVER);
-
-/**
  * Retrieves the short name of an upgrade
  * @param race:      The race ID returned from CreateRace()
  * @param upgrade:   The upgrade ID returned from AddUpgrade()
@@ -486,6 +493,27 @@ native GetUpgradeDescription(race, upgrade, String:description[], maxlength, lan
  * @noreturn
  */
 native GetUpgradeShortName(race, upgrade, String:short[], maxlength);
+
+/**
+ * Retrieves the description of an upgrade
+ * @param race:         The race ID returned from CreateRace()
+ * @param upgrade:      The upgrade ID returned from AddUpgrade()
+ * @param description:  String to place the description into.
+ * @param maxlength:    The size of the description buffer.
+ * @param lang:         Client to translate the description for, if any.
+ * @return              The return value will be category gleaned from the description
+ *                      (if any -- only set for Translation_W3S races)
+ */
+native GetUpgradeDescription(race, upgrade, String:description[], maxlength, lang=LANG_SERVER);
+
+/**
+ * Change the description of an upgrade
+ * @param race:         The race ID returned from CreateRace()
+ * @param upgrade:      The upgrade ID returned from AddUpgrade()
+ * @param description:  New description for the Upgrade.
+ * @noreturn
+ */
+native SetUpgradeDescription(race, upgrade, const String:description[]);
 
 /**
  * Retrieves the amount of energy used by an upgrade
@@ -698,6 +726,13 @@ native GetItemCategory(item, String:category[], maxlength, lang=LANG_SERVER);
  * @noreturn
  */
 native GetItemDescription(item, String:description[], maxlength, lang=LANG_SERVER);
+
+/**
+ * Gets the plugin Handle for a shop item.
+ * @param race:     The race ID returned from CreateItem()
+ * @return          The return value will be the Handle of the plugin that created the shop item.
+ */
+native Handle:GetItemPlugin(item);
 
 /**
  * Retrieves the number of ShopItems
@@ -1101,13 +1136,14 @@ native GetRace(client);
 
 /**
  * Changes the current race of the player.
- * @param client:   The index of the player.
- * @param race:     The race ID returned from CreateRace.
- * @param force:    Set true to force the race to change now or false to change on death.
- * @param check:    Set true to check race requirements before changing.
+ * @param client:       The index of the player.
+ * @param race:         The race ID returned from CreateRace.
+ * @param force:        Set true to force the race to change now or false to change on death.
+ * @param check:        Set true to check race requirements before changing.
+ * @param saveEnergy:   Save the client's remaining energy into accumulated energy (for summons).
  * @noreturn
  */
-native ChangeRace(client,race,bool:force=false,bool:check=true);
+native ChangeRace(client, race, bool:force=false, bool:check=true, bool:saveEnergy=false);
 
 /**
  * Gets the current level for the provided race.
@@ -1197,8 +1233,8 @@ native GetReqLevelXP(level);
  * @param client:   The index of the player.
  * @param race:     The race ID returned from CreateRace or -1 for current race
  * @param upgrade:  The upgrade you want to lookup with
- * @param check:    Set true to check the race. If the client's race != race, return -1.
- * @return          The return value will be the upgrade level or -1 if it failed.
+ * @param check:    Set true to check the race. If the client's race != race, return 0.
+ * @return          The return value will be the upgrade level or 0 if it failed.
  */
 native GetUpgradeLevel(client,race,upgrade,bool:check=false);
 
@@ -1216,9 +1252,10 @@ native SetUpgradeLevel(client,race,upgrade,newlevel);
  * Resets the levels for the upgrade for the curerent race.
  * @param client:   The index of the player.
  * @param race:     The race ID returned from CreateRace or -1 for current race
+ * @param show:     If true, Show the upgrade menu
  * @noreturn
  */
-native ResetUpgradeLevels(client,race=-1);
+native ResetUpgradeLevels(client, race=-1, bool:show=true);
 
 /**
  * Gets the amount of Accumulated Energy a player has.
@@ -1509,42 +1546,46 @@ native bool:GetImmunity(client,Immunity:imm);
  * @param immunity:  The immunity or immunities you want to set.
  * @param imm_state: The state to set the immunity to.
  * @param id:        Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:  Handle of the plugin to set immunity for (defaults to calling plugin)
  * @noreturn
  */
-native SetImmunity(client,Immunity:immunity,bool:imm_state=true,id=0);
+native SetImmunity(client, Immunity:immunity, bool:imm_state=true,
+                   id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
- * Gets the state of all immunities for a player.
+ * Gets the state of all restrictions for a player.
  * @param client:   The index of the player.
- * @return          The return value will be all of the player's immunity bits.
+ * @return          The return value will be all of the player's restriction bits.
  */
 native GetRestrictionBits(client);
 
 /**
- * Sets the state of all immunities for a player.
+ * Sets the state of all restrictions for a player.
  * @param client:   The index of the player.
- * @param immunities: The value to set for the player's immunities.
+ * @param immunities: The value to set for the player's restrictions.
  * @noreturn
  */
 native SetRestrictionBits(client, restrict);
 
 /**
- * Gets the state of a certain immunity.
+ * Gets the state of a certain restriction.
  * @param client:   The index of the player.
- * @param immunity: The immunity or immunities you want to check. 
- * @return          The return value will be true if they are immune or false if they aren't.
+ * @param immunity: The restriction or restrictions you want to check. 
+ * @return          The return value will be true if they are restricted or false if they aren't.
  */
 native bool:GetRestriction(client,Restriction:restrict);
 
 /**
- * Gives the player a specific immunity.
+ * Gives the player a specific restriction.
  * @param client:    The index of the player.
- * @param immunity:  The immunity or immunities you want to set.
- * @param imm_state: The state to set the immunity to.
+ * @param immunity:  The restriction or restrictions you want to set.
+ * @param imm_state: The state to set the restriction to.
  * @param id:        Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:  Handle of the plugin to set restriction for (defaults to calling plugin)
  * @noreturn
  */
-native SetRestriction(client,Restriction:restrict,bool:restrict_state=true,id=0);
+native SetRestriction(client,Restriction:restrict,bool:restrict_state=true,
+                      id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Gets the state of all attributes for a player.
@@ -1587,9 +1628,11 @@ native SetAttribute(client,Attribute:attrib,bool:attrib_state=true);
  * @param speed:    The speed you want to pass.
  * @param apply:    Set to true to apply the setting immedately.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set speed for (defaults to calling plugin)
  * @noreturn
  */
-native SetSpeed(client,Float:speed=-1.0,bool:apply=false,id=0);
+native SetSpeed(client, Float:speed=-1.0, bool:apply=false,
+                id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Sets the gravity for the player that is handled within the SourceCraft system,
@@ -1600,9 +1643,11 @@ native SetSpeed(client,Float:speed=-1.0,bool:apply=false,id=0);
  * @param gravity:  The gravity you want to pass.
  * @param apply:    Set to true to apply the setting immedately.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set gravity for (defaults to calling plugin)
  * @noreturn
  */
-native SetGravity(client,Float:gravity=-1.0,bool:apply=false,id=0);
+native SetGravity(client, Float:gravity=-1.0, bool:apply=false,
+                  id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Sets the visibility for the player that is handled within the SourceCraft system,
@@ -1626,6 +1671,7 @@ native SetGravity(client,Float:gravity=-1.0,bool:apply=false,id=0);
  * @param timestamp:    Timestamp of when the visibility was set, used when priorities are tied.
  * @param apply:        Set to true to apply the setting immedately.
  * @param id:           Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:     Handle of the plugin to set visibility for (defaults to calling plugin)
  * @noreturn
  */
 native SetVisibility(client, VisibilityType:type=NormalVisibility,
@@ -1633,7 +1679,8 @@ native SetVisibility(client, VisibilityType:type=NormalVisibility,
                      RenderMode:mode=RenderMode:-1, RenderFx:fx=RenderFx:-1,
                      r=-1, g=-1, b=-1, weaponAlpha=-1,bool:colorWeapons=false,
                      VisibilityPriority:priority=VisibilityPriorityNotSpecified,
-                     Float:timestamp=0.0, bool:apply=false, id=0);
+                     Float:timestamp=0.0, bool:apply=false,
+                     id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
@@ -1643,9 +1690,11 @@ native SetVisibility(client, VisibilityType:type=NormalVisibility,
  * @param speed:    The speed you want to pass.
  * @param apply:    Set to true to apply the setting immedately.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set speed for (defaults to calling plugin)
  * @noreturn
  */
-native SetOverrideSpeed(client,Float:speed=-1.0,bool:apply=false,id=0);
+native SetOverrideSpeed(client, Float:speed=-1.0, bool:apply=false,
+                        id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
@@ -1655,9 +1704,11 @@ native SetOverrideSpeed(client,Float:speed=-1.0,bool:apply=false,id=0);
  * @param gravity:  The gravity you want to pass.
  * @param apply:    Set to true to apply the setting immedately.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set gravity for (defaults to calling plugin)
  * @noreturn
  */
-native SetOverrideGravity(client,Float:gravity=-1.0,bool:apply=false,id=0);
+native SetOverrideGravity(client,Float:gravity=-1.0,bool:apply=false,
+                          id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Overrides the (in)visibility for SourceCraft , useful for punishing them or whatever.
@@ -1667,9 +1718,11 @@ native SetOverrideGravity(client,Float:gravity=-1.0,bool:apply=false,id=0);
  * @param visibility:   The visibility you want to pass.
  * @param apply:        Set to true to apply the setting immedately.
  * @param id:           Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:     Handle of the plugin to set visibility for (defaults to calling plugin)
  * @noreturn
  */
-native SetOverrideVisiblity(client,visibility=-1,bool:apply=false,id=0);
+native SetOverrideVisiblity(client, visibility=-1, bool:apply=false,
+                            id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Sets the MoveType for the player that is handled within the SourceCraft system,
@@ -1678,9 +1731,11 @@ native SetOverrideVisiblity(client,visibility=-1,bool:apply=false,id=0);
  * @param mt:       The MoveType you want to pass.
  * @param apply:    Set to true to apply the setting immedately.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set MoveType for (defaults to calling plugin)
  * @noreturn
  */
-native SetMoveType(client,MoveType:mt=MOVETYPE_DEFAULT,bool:apply=false,id=0);
+native SetMoveType(client, MoveType:mt=MOVETYPE_DEFAULT, bool:apply=false,
+                   id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Applies the Speed, Gravity and Visibility settings for the specified player
@@ -1697,9 +1752,11 @@ native ApplyPlayerSettings(client);
  * @param rate:     Rate at which to Regenerate (or Decay) Health at.
  * @param flags:    RegenFlags, see armor_flags.inc for explanation
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set health regen for (defaults to calling plugin)
  * @noreturn
  */
-native SetHealthRegen(client,Float:rate=0.0,RegenFlags:flags=Regen_Default,id=0);
+native SetHealthRegen(client, Float:rate=0.0, RegenFlags:flags=Regen_Default,
+                      id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Gets the sum of the health regeneration (or decay) rate set by all plugins
@@ -1714,9 +1771,11 @@ native Float:GetHealthRegenSum(client);
  * @param rate:     Rate at which to Regenerate (or Decay) Shields at.
  * @param flags:    RegenFlags, see armor_flags.inc for explanation
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set shield regen for (defaults to calling plugin)
  * @noreturn
  */
-native SetShieldRegen(client,Float:rate=0.0,RegenFlags:flags=Regen_Default,id=0);
+native SetShieldRegen(client, Float:rate=0.0, RegenFlags:flags=Regen_Default,
+                      id=0, Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Gets the sum of the shield regeneration (or decay) rate set by all plugins
@@ -1730,9 +1789,11 @@ native Float:GetShieldRegenSum(client);
  * @param client:   The index of the player.
  * @param armor:    The armor you want to pass.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set armor for (defaults to calling plugin)
  * @noreturn
  */
-native SetPhysicalArmorPercent(client,Float:armor=0.0,id=0);
+native SetPhysicalArmorPercent(client, Float:armor=0.0, id=0,
+                               Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Gets the sum of the physical armor percent set by all (war3source) plugins
@@ -1746,9 +1807,11 @@ native Float:GetPhysicalArmorSum(client);
  * @param client:   The index of the player.
  * @param armor:    The armor you want to pass.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set armor for (defaults to calling plugin)
  * @noreturn
  */
-native SetMagicalArmorPercent(client,Float:armor=0.0,id=0);
+native SetMagicalArmorPercent(client, Float:armor=0.0, id=0,
+                               Handle:pluginid=INVALID_HANDLE);
 
 /**
  * Gets the sum of the magical armor percent set by all (war3source) plugins
@@ -2339,10 +2402,10 @@ forward OnCooldownExpired(client,race,upgrade,bool:expiredByTime);
  * Do not edit below this line!
  */
 
-public SharedPlugin:__pl_sourcecraft = 
+public SharedPlugin:__pl_SourceCraft = 
 {
-	name = "sourcecraft",
-	file = "sourcecraft.smx",
+	name = "SourceCraft",
+	file = "SourceCraft.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
 #else
@@ -2351,7 +2414,7 @@ public SharedPlugin:__pl_sourcecraft =
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_sourcecraft_SetNTVOptional()
+public __pl_SourceCraft_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetType");
 	MarkNativeAsOptional("GetMode");
@@ -2369,6 +2432,7 @@ public __pl_sourcecraft_SetNTVOptional()
 	MarkNativeAsOptional("GetRaceEnergyFlags");
 	MarkNativeAsOptional("SetRaceEnergyFlags");
 	MarkNativeAsOptional("AddUpgrade");
+	MarkNativeAsOptional("SetUpgradeCost");
 	MarkNativeAsOptional("SetUpgradeCooldown");
 	MarkNativeAsOptional("GetUpgradeCooldown");
 	MarkNativeAsOptional("GetRaceName");
@@ -2394,6 +2458,7 @@ public __pl_sourcecraft_SetNTVOptional()
 	MarkNativeAsOptional("GetUpgradeCount");
 	MarkNativeAsOptional("GetUpgradeName");
 	MarkNativeAsOptional("GetUpgradeDescription");
+	MarkNativeAsOptional("SetUpgradeDescription");
 	MarkNativeAsOptional("GetUpgradeShortName");
 	MarkNativeAsOptional("GetUpgradeEnergy");
 	MarkNativeAsOptional("SetUpgradeEnergy");

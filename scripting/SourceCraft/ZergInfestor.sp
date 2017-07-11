@@ -54,7 +54,8 @@ new Float:g_PlagueRange[]       = { 300.0, 400.0, 550.0, 700.0, 900.0 };
 new Float:g_DarkSwarmRange[]    = { 300.0, 400.0, 600.0, 800.0, 1000.0 };
 new Float:g_CorruptionRange[]   = { 250.0, 500.0, 700.0, 1000.0, 1500.0 };
 
-new raceID, carapaceID, regenerationID, consumeID, darkSwarmID, plagueID, swarmID, corruptionID;
+new raceID, carapaceID, regenerationID, consumeID, burrowID;
+new darkSwarmID, plagueID, swarmID, corruptionID;
 
 new m_gasAllocation[MAXPLAYERS+1];
 new Float:m_ConsumeEnemyTime[MAXPLAYERS+1];
@@ -75,6 +76,7 @@ public OnPluginStart()
     LoadTranslations("sc.protector.phrases.txt");
 
     GetGameType();
+
     if (IsSourceCraftLoaded())
         OnSourceCraftReady();
 }
@@ -84,48 +86,43 @@ public OnSourceCraftReady()
     raceID          = CreateRace("infestor", -1, -1, 29, 100.0, -1.0, 1.0,
                                  Zerg, Biological, "defiler");
 
-    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0);
-    carapaceID      = AddUpgrade(raceID, "armor", 0, 0);
-    consumeID       = AddUpgrade(raceID, "consume", 0, 0, .energy=1.0);
+    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0, .cost_crystals=10);
+    carapaceID      = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+
+    consumeID       = AddUpgrade(raceID, "consume", 0, 0, .energy=1.0,
+                                 .cost_crystals=20);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 0, 1, 1);
+    burrowID        = AddBurrowUpgrade(raceID, 2, 0, 1, 1);
 
     // Ultimate 1
-    darkSwarmID = AddUpgrade(raceID, "dark_swarm", 1, 0,
-                             .energy=90.0, .cooldown=10.0);
+    darkSwarmID     = AddUpgrade(raceID, "dark_swarm", 1, 0, .energy=90.0,
+                                .cooldown=10.0, .cost_crystals=30);
 
     // Ultimate 1
-    plagueID = AddUpgrade(raceID, "disease", 1, 1,
-                          .energy=90.0, .cooldown=10.0);
+    plagueID        = AddUpgrade(raceID, "disease", 1, 1, .energy=90.0,
+                                 .cooldown=10.0, .cost_crystals=30);
 
     // Ultimate 3
-    swarmID = AddUpgrade(raceID, "swarm", 3, 0,
-                         .cooldown=2.0);
+    swarmID         = AddUpgrade(raceID, "swarm", 3, 0, .cooldown=2.0,
+                                 .cost_crystals=30);
 
+    // Ultimate 4
+    corruptionID    = AddUpgrade(raceID, "corruption", 4, 4, .energy=10.0, .cost_crystals=40,
+                                 .desc = (IsMindControlAvailable()) ? "%infestor_corruption_desc"
+                                         : "%infestor_corruption_nocontrol_desc");
+
+    // Disable/alter inapplicable upgrades
     if (!IsGasAvailable())
     {
         SetUpgradeDisabled(raceID, swarmID, true);
-        LogMessage("sm_gas is not available");
+        LogMessage("Disabling Zerg Infestor:Swarm Infestation due to sm_gas is not available");
     }
 
-    // Ultimate 4
-    if (GetGameType() == tf2)
+    if (GameType != tf2)
     {
-        if (IsMindControlAvailable())
-        {
-            corruptionID = AddUpgrade(raceID, "corruption", 4, 4, .energy=10.0);
-        }
-        else
-        {
-            corruptionID = AddUpgrade(raceID, "corruption", 4, 4, .energy=10.0,
-                                      .desc="%infestor_corruption_nocontrol_desc");
-        }
-    }
-    else
-    {
-        corruptionID = AddUpgrade(raceID, "corruption", 4, 99, 0,
-                                  .desc="%NotAvailable");
+        SetUpgradeDisabled(raceID, corruptionID, true);
+        LogMessage("Disabling Zerg Infestor:Enduring Corruption due to gametype != tf2");
     }
 
     // Get Configuration Data
@@ -672,7 +669,7 @@ public Action:CorruptionTimer(Handle:timer,Handle:pack)
                     if (health > max_health)
                         health = max_health;
 
-                    SetEntProp(target, Prop_Send, "m_iHealth", health);
+                    SetEntityHealth(target, health);
                     if (GetEngineTime() < endTime)
                         return Plugin_Continue;
                 }
@@ -683,7 +680,7 @@ public Action:CorruptionTimer(Handle:timer,Handle:pack)
                 health -= amount;
                 if (health > 50 + amount)
                 {
-                    SetEntProp(target, Prop_Send, "m_iHealth", health);
+                    SetEntityHealth(target, health);
                     if (GetEngineTime() < endTime)
                         return Plugin_Continue;
                     else

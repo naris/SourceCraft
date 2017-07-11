@@ -240,11 +240,11 @@ new String:m_ArmorName[MAXPLAYERS+1][NAME_STRING_LENGTH];
 #define IncrementVespeneValue(%1,%2)            playerArray[%1][ClientInfo_Vespene] += %2
 #define DecrementVespeneValue(%1,%2)            playerArray[%1][ClientInfo_Vespene] -= %2
 
-#define GetPCrystals(%1)                          playerArray[%1][ClientInfo_PCrystals]
-#define SetPCrystals(%1,%2)                       playerArray[%1][ClientInfo_PCrystals] = %2
+#define GetPCrystals(%1)                        playerArray[%1][ClientInfo_PCrystals]
+#define SetPCrystals(%1,%2)                     playerArray[%1][ClientInfo_PCrystals] = %2
 
-#define IncrementPCrystals(%1,%2)                 playerArray[%1][ClientInfo_PCrystals] += %2
-#define DecrementPCrystals(%1,%2)                 playerArray[%1][ClientInfo_PCrystals] -= %2
+#define IncrementPCrystals(%1,%2)               playerArray[%1][ClientInfo_PCrystals] += %2
+#define DecrementPCrystals(%1,%2)               playerArray[%1][ClientInfo_PCrystals] -= %2
 
 #define GetOverallLevel(%1)                     playerArray[%1][ClientInfo_OverallLevel]
 #define SetOverallLevelValue(%1,%2)             playerArray[%1][ClientInfo_OverallLevel] = %2

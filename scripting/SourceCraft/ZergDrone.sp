@@ -60,7 +60,7 @@ new Float:g_ArmorPercent[][2]   = { {0.00, 0.00},
 new Float:g_NydusCanalRate[]    = { 0.0, 8.0, 6.0, 3.0, 1.0 };
 
 new carapaceID, regenerationID, creepID, nydusCanalID;
-new evolutionID, mutateID, burrowStructID, hiveQueenID;
+new evolutionID, mutateID, burrowID, burrowStructID, hiveQueenID;
 
 new g_hiveQueenRace = -1;
 
@@ -85,101 +85,88 @@ public OnPluginStart()
     LoadTranslations("sc.supply.phrases.txt");
     LoadTranslations("sc.drone.phrases.txt");
 
+    GetGameType();
+
     if (IsSourceCraftLoaded())
         OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID = CreateRace("drone", 64, 0, 27, .faction=Zerg,
-                        .type=Biological);
-
-    carapaceID      = AddUpgrade(raceID, "armor");
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-
-    if (GetGameType() == tf2)
-    {
-        creepID     = AddUpgrade(raceID, "creep");
-
-        cfgAllowSentries = GetConfigNum("allow_sentries", 2);
-        if (cfgAllowSentries < 2)
-        {
-            SetUpgradeDisabled(raceID, creepID, true);
-            LogMessage("Disabling Zerg Drone:Creep due to configuration: sc_allow_sentries=%d",
-                       cfgAllowSentries);
-        }
-
-        nydusCanalID = AddUpgrade(raceID, "teleporter");
-
-        if (!IsTeleporterAvailable())
-        {
-            SetUpgradeDisabled(raceID, nydusCanalID, true);
-            LogMessage("tf2teleporter is not available");
-        }
-
-        evolutionID = AddUpgrade(raceID, "evolution", 0, 8, (cfgMaxObjects < 5) ? cfgMaxObjects-1 : 4,
-                                 .cost_vespene=10);
-
-        cfgMaxObjects    = GetConfigNum("max_objects", 3);
-        if (cfgMaxObjects <= 1)
-        {
-            SetUpgradeDisabled(raceID, evolutionID, true);
-            LogMessage("Disabling Zerg Drone:Evolution Chamber due to configuration: sc_maxobjects=%d",
-                       cfgMaxObjects);
-        }
-
-        // Ultimate 1
-        mutateID = AddUpgrade(raceID, "mutate", true, 4, .energy=30.0, .vespene=2, .cooldown=5.0,
-                              .cooldown_type=Cooldown_SpecifiesBaseValue,
-                              .desc=(cfgAllowSentries >= 2) ? "%drone_mutate_desc"
-                              : "%drone_mutate_engyonly_desc");
-
-        if (!IsBuildAvailable())
-        {
-            SetUpgradeDisabled(raceID, mutateID, true);
-            LogMessage("remote is not available");
-        }
-        else if (cfgAllowSentries < 1)
-        {
-            SetUpgradeDisabled(raceID, mutateID, true);
-            LogMessage("Disabling Zerg Drone:Mutate due to configuration: sc_allow_sentries=%d",
-                       cfgAllowSentries);
-        }
-    }
-    else
-    {
-        creepID     = AddUpgrade(raceID, "creep", 0, 99, 0,
-                                 .desc="%NotAvailable");
-
-        nydusCanalID = AddUpgrade(raceID, "teleporter", 0, 99, 0,
-                                  .desc="%NotAvailable");
-
-        evolutionID = AddUpgrade(raceID, "evolution", 0, 99, 0,
-                                 .desc="%NotAvailable");
-
-        // Ultimate 1
-        mutateID = AddUpgrade(raceID, "mutate", 1, 99,0, .desc="%NotAvailable");
-    }
-
-    // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 6, 1);
-
-    // Ultimate 3
     if (GameType == tf2)
     {
-        burrowStructID = AddUpgrade(raceID, "burrow_structure", 3, 8, 1,
-                                    .energy=5.0);
+        cfgMaxObjects    = GetConfigNum("max_objects", 3);
+        cfgAllowSentries = GetConfigNum("allow_sentries", 2);
     }
     else
     {
-        burrowStructID = AddUpgrade(raceID, "burrow_structure", 3, 99,0,
-                                    .desc="%NotAvailable");
+        cfgMaxObjects    = 0;
+        cfgAllowSentries = 0;
     }
 
+    raceID          = CreateRace("drone", 64, 0, 27, .faction=Zerg,
+                                 .type=Biological);
+
+    carapaceID      = AddUpgrade(raceID, "armor", .cost_crystals=5);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+
+    creepID         = AddUpgrade(raceID, "creep", .cost_crystals=30);
+
+    nydusCanalID    = AddUpgrade(raceID, "teleporter", .cost_crystals=0);
+
+    evolutionID     = AddUpgrade(raceID, "evolution", 0, 8, (cfgMaxObjects < 5) ? cfgMaxObjects-1 : 4,
+                                 .cost_crystals=25, .cost_vespene=10);
+
+    // Ultimate 1
+    mutateID        = AddUpgrade(raceID, "mutate", true, 4, .energy=30.0, .vespene=2, .cost_crystals=75,
+                                 .cooldown=5.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
+                                 .desc=(cfgAllowSentries >= 2) ? "%drone_mutate_desc"
+                                       : "%drone_mutate_engyonly_desc");
+
+    // Ultimate 2
+    burrowID        = AddBurrowUpgrade(raceID, 2, 6, 1);
+
+    // Ultimate 3
+    burrowStructID  = AddUpgrade(raceID, "burrow_structure", 3, 8, 1,
+                                 .energy=5.0, .cost_crystals=75);
+
     // Ultimate 4
-    hiveQueenID = AddUpgrade(raceID, "hive_queen", 4, 10, 1,
-                             .energy=300.0, .cooldown=30.0,
-                             .accumulated=true);
+    hiveQueenID     = AddUpgrade(raceID, "hive_queen", 4, 10, 1, .energy=300.0,
+                                 .accumulated=true, .cooldown=30.0, .cost_crystals=50);
+
+    // Disable inapplicable upgrades
+    if (GameType != tf2 || cfgAllowSentries < 2)
+    {
+        SetUpgradeDisabled(raceID, creepID, true);
+        LogMessage("Disabling Zerg Drone:Creep due to configuration: sc_allow_sentries=%d (or gametype != tf2)",
+                   cfgAllowSentries);
+    }
+
+    if (!IsTeleporterAvailable())
+    {
+        SetUpgradeDisabled(raceID, nydusCanalID, true);
+        LogMessage("Disabling Zerg Drone:Nydus Canal due to tf2teleporter is not available (or gametype != tf2)");
+    }
+
+    if (GameType != tf2 || cfgMaxObjects <= 1)
+    {
+        SetUpgradeDisabled(raceID, evolutionID, true);
+        LogMessage("Disabling Zerg Drone:Evolution Chamber due to configuration: sc_maxobjects=%d (or gametype != tf2)",
+                   cfgMaxObjects);
+    }
+
+    if (!IsBuildAvailable() || cfgAllowSentries < 1)
+    {
+        SetUpgradeDisabled(raceID, mutateID, true);
+        LogMessage("Disabling Zerg Drone:Mutate due to configuration: sc_allow_sentries=%d or remote is not available or (gametype != tf2)",
+                   cfgAllowSentries);
+    }
+
+    if (GameType != tf2)
+    {
+        SetUpgradeDisabled(raceID, mutateID, true);
+        LogMessage("Disabling Zerg Drone:Burrow Structure due to gametype != tf2");
+    }
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -596,7 +583,7 @@ ReplenishObject(client, object, TFObjectType:type, amount, num_rockets)
             if (health > max_health)
                 health = max_health;
 
-            SetEntProp(object, Prop_Send, "m_iHealth", health);
+            SetEntityHealth(object, health);
         }
 
         switch (type)
@@ -679,7 +666,7 @@ EvolveHiveQueen(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_hiveQueenRace, true, false);
+        ChangeRace(client, g_hiveQueenRace, true, false, true);
     }
 }
 

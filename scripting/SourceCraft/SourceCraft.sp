@@ -11,7 +11,7 @@
 #pragma semicolon 1
 
 // Pump up the memory!
-#pragma dynamic 131072
+#pragma dynamic 262144
 
 #include <sourcemod>
 #include <keyvalues>
@@ -67,8 +67,8 @@ new const String:sndPickup[]  = "items/gift_pickup.wav";
 new const String:sndPain[][]  = { "player/pl_pain5.wav", "player/pl_pain6.wav",
                                   "player/pl_pain7.wav", "player/pain.wav" };
 
-new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://sc.jigglysfunhouse.net/sc/sc/player/show/steamid/%s";
-new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://sc.jigglysfunhouse.net/sc/sc/";
+new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://jigglysfunhouse.net/sc/sc/player/show/steamid/%s";
+new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://jigglysfunhouse.net/sc/sc/";
 new String:g_UpdateURL[LONG_STRING_LENGTH]   = "http://www.jigglysfunhouse.net/Wiki/index.php/Updates";
 new String:g_WikiURL[LONG_STRING_LENGTH]     = "http://www.jigglysfunhouse.net/Wiki/index.php/SourceCraft";
 new String:g_BugURL[LONG_STRING_LENGTH]      = "http://www.jigglysfunhouse.net/thebuggenie";
@@ -79,6 +79,7 @@ new bool:g_bUseMoney              = false;
 new bool:g_bUpdate                = false;
 new bool:g_bCreate                = false;
 new bool:g_bSaveXP                = true;
+new bool:g_bChargeForUpgrades     = false;
 new bool:g_bSaveUpgrades          = false;
 
 new g_iMaxCrystals                = 100;
@@ -86,7 +87,7 @@ new g_iMaxVespene                 = 5000;
 new g_iMinPlayers                 = 4;
 new g_iMinUltimate                = 8;
 
-new g_iUpgradeCrystalsCost        = 75;
+new g_iUpgradeCrystalsCost        = 25;
 new g_iUpgradeVespeneCost         = 0;
 
 new Float:g_fEnergyFactor         = 0.1;

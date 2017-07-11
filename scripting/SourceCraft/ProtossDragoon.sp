@@ -128,19 +128,19 @@ public OnSourceCraftReady()
                              .faction=Protoss, .type=Cybernetic,
                              .parent="zealot");
 
-    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0);
-    speedID     = AddUpgrade(raceID, "speed");
-    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0);
-    immunityID  = AddUpgrade(raceID, "immunity");
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    speedID     = AddUpgrade(raceID, "speed", .cost_crystals=0);
+    missileID   = AddUpgrade(raceID, "ground_weapons", .energy=2.0, .cost_crystals=20);
+    immunityID  = AddUpgrade(raceID, "immunity", .cost_crystals=0);
 
     // Ultimate 1
-    singularityID = AddUpgrade(raceID, "singularity", 1,
-                               .energy=60.0, .cooldown=2.0);
+    singularityID = AddUpgrade(raceID, "singularity", 1, .energy=60.0,
+                               .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 2
-    reaverID = AddUpgrade(raceID, "reaver", 2, 4, 1,
-                          .energy=80.0, .cooldown=10.0,
-                          .accumulated=true);
+    reaverID = AddUpgrade(raceID, "reaver", 2, 4, 1, .energy=80.0,
+                          .accumulated=true, .cooldown=10.0,
+                          .cost_crystals=60);
 
     // Get Configuration Data
     GetConfigFloatArray("shields_amount", g_InitialShields, sizeof(g_InitialShields),
@@ -505,7 +505,7 @@ SummonReaver(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_reaverRace, true, false);
+        ChangeRace(client, g_reaverRace, true, false, true);
     }
 }
 

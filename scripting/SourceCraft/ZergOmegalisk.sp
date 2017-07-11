@@ -42,7 +42,7 @@
 
 new const String:g_KaiserBladesSound[] = "sc/zulhit01.wav";
 
-new raceID, regenerationID, healingID, carapaceID;
+new raceID, regenerationID, healingID, carapaceID, burrowID;
 new meleeID, nodeID, tentacleID, ultraliskID;
 
 new const String:g_ArmorName[]      = "Carapace";
@@ -87,29 +87,30 @@ public OnSourceCraftReady()
     raceID          = CreateRace("omegalisk", 32, 0, 26, 50.0, 500.0,
                                  .faction=Zerg, .type=Biological);
 
-    meleeID         = AddUpgrade(raceID, "kaiser_blades", .energy=2.0);
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-    healingID       = AddUpgrade(raceID, "healing");
-    carapaceID      = AddUpgrade(raceID, "armor");
-    nodeID          = AddUpgrade(raceID, "node");
+    meleeID         = AddUpgrade(raceID, "kaiser_blades", .energy=2.0, .cost_crystals=20);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+    healingID       = AddUpgrade(raceID, "healing", .cost_crystals=10);
+    carapaceID      = AddUpgrade(raceID, "armor", .cost_crystals=5);
+    nodeID          = AddUpgrade(raceID, "node", .cost_crystals=25);
 
     // Ultimate 1
     tentacleID  = AddUpgrade(raceID, "tentacle", 1, .energy=10.0,
-                             .recurring_energy=1.0, .cooldown=5.0);
+                             .recurring_energy=1.0, .cooldown=5.0,
+                             .cost_crystals=30);
 
     if (!IsHGRSourceAvailable())
     {
         SetUpgradeDisabled(raceID, tentacleID, true);
-        LogError("HGR:Source is not available");
+        LogMessage("Disabling Zerg Omegalisk:Swarm Infestation due to hgrsource is not available");
     }
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 6, 1);
+    burrowID    = AddBurrowUpgrade(raceID, 2, 6, 1);
 
     // Ultimate 3
     ultraliskID = AddUpgrade(raceID, "ultralisk", 3, 14,1,
                              .energy=500.0, .cooldown=60.0,
-                             .accumulated=true);
+                             .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -669,7 +670,7 @@ EvolveUltralisk(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_ultraliskRace, true, false);
+        ChangeRace(client, g_ultraliskRace, true, false, true);
     }
 }
 

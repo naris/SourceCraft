@@ -60,22 +60,33 @@ bool:HookEvents()
 
 public OnEntityCreated(entity, const String:classname[])
 {
-    if (StrEqual(classname, "func_respawnroom"))	// TF2 Respawn room
+    if (GameType == tf2)
     {
-        SDKHook(entity, SDKHook_StartTouch, SpawnStartTouch);
-        SDKHook(entity, SDKHook_EndTouch, SpawnEndTouch);
-    }
-    else if (StrEqual(classname, "headless_hatman") ||
-             StrEqual(classname, "eyeball_boss")    ||
-             StrEqual(classname, "merasmus")        ||
-             StrEqual(classname, "tank_boss"))
-    {
-        SDKHook(entity, SDKHook_OnTakeDamage, OnEntityTakeDamage);
-    }
-#if 0 
-    else if (strncmp(classname, "obj_", 4) == 0)
-        SDKHook(entity, SDKHook_OnTakeDamage, OnObjectTakeDamage);
+        if (StrEqual(classname, "func_respawnroom"))    // TF2 Respawn room
+        {
+            SDKHook(entity, SDKHook_StartTouch, SpawnStartTouch);
+            SDKHook(entity, SDKHook_EndTouch, SpawnEndTouch);
+        }
+        else if (StrEqual(classname, "headless_hatman") ||  // TF2 Bosses
+                StrEqual(classname, "eyeball_boss")    ||
+                StrEqual(classname, "merasmus")        ||
+                StrEqual(classname, "tank_boss"))
+        {
+            SDKHook(entity, SDKHook_OnTakeDamage, OnEntityTakeDamage);
+        }
+#if 0
+        else if (strncmp(classname, "obj_", 4) == 0)
+            SDKHook(entity, SDKHook_OnTakeDamage, OnObjectTakeDamage);
 #endif
+    }
+    else if (GameType == l4d || GameType == l4d2)
+    {
+        if (StrEqual(classname, "infected", false) ||  // Left4Dead
+            StrEqual(classname, "witch", false))
+        {
+            SDKHook(entity, SDKHook_OnTakeDamage, OnEntityTakeDamage);
+        }
+    }
 }
 
 public SpawnStartTouch(spawn, client)
@@ -1055,7 +1066,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     {
                         // Revert back to Parent race after death as a Summoned race.
                         // (Set pending race to the parent)
-                        ChangeRace(victim_index, parentRace, GetRaceHandle(parentRace), false, false);
+                        ChangeRace(victim_index, parentRace, GetRaceHandle(parentRace), false, false, false);
                         race = 0; // and skip upgrade check below.
                     }
                 }

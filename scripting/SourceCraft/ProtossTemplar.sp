@@ -99,22 +99,22 @@ public OnSourceCraftReady()
     raceID          = CreateRace("templar", 48, 0, 29, .energy_rate=2.0,
                                  .faction=Protoss, .type=Biological);
 
-    immunityID      = AddUpgrade(raceID, "immunity");
-    levitationID    = AddUpgrade(raceID, "levitation");
-    feedbackID      = AddUpgrade(raceID, "feedback", .energy=2.0);
-    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0);
+    immunityID      = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    levitationID    = AddUpgrade(raceID, "levitation", .cost_crystals=0);
+    feedbackID      = AddUpgrade(raceID, "feedback", .energy=2.0, .cost_crystals=20);
+    hallucinationID = AddUpgrade(raceID, "hallucination", .energy=2.0, .cost_crystals=30);
 
     // Ultimate 1
-    psionicStormID = AddUpgrade(raceID, "psistorm", 1,
-                                .energy=60.0, .cooldown=2.0);
+    psionicStormID = AddUpgrade(raceID, "psistorm", 1, .energy=60.0,
+                                .cooldown=2.0, .cost_crystals=30);
 
-    shieldsID       = AddUpgrade(raceID, "shields", .energy=1.0);
-    amuletID        = AddUpgrade(raceID, "amulet");
+    shieldsID       = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    amuletID        = AddUpgrade(raceID, "amulet", .cost_crystals=25);
 
     // Ultimate 2
     archonID        = AddUpgrade(raceID, "archon", 2, 12,1,
                                  .energy=300.0, .cooldown=30.0,
-                                 .accumulated=true);
+                                 .accumulated=true, .cost_crystals=50);
 
     // Set the Sidewinder available flag
     IsSidewinderAvailable();
@@ -598,6 +598,6 @@ SummonArchon(client)
                            5.0,40.0,255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_archonRace, true, false);
+        ChangeRace(client, g_archonRace, true, false, true);
     }
 }

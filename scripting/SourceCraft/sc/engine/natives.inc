@@ -163,7 +163,7 @@ public Native_CreateRace(Handle:plugin,numParams)
     return CreateRace(short, required_level, tech_level, max_level, initial_energy,
                       energy_limit, energy_rate, faction, type, parent, translation,
                       translation_file, name, switch_message, pending_message, desc,
-                      image);
+                      image, plugin);
 }
 
 /**
@@ -224,8 +224,8 @@ public Native_SetRaceAttributes(Handle:plugin,numParams)
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
     {
-        new Handle:messagesHandle=GetArrayCell(raceHandle,RACE_MESSAGES);
-        new Handle:stringsHandle=GetArrayCell(raceHandle,RACE_STRINGS);
+        new Handle:stringsHandle=GetRaceStringHandle(raceHandle);
+        new Handle:messagesHandle=GetRaceMessageHandle(raceHandle);
 
         new required_level = GetNativeCell(2);
         if (required_level >= 0)
@@ -262,7 +262,7 @@ public Native_SetRaceAttributes(Handle:plugin,numParams)
         decl String:parent[SHORT_STRING_LENGTH];
         GetNativeString(10,parent,sizeof(parent));
         if (parent[0] != '\0')
-            SetArrayString(stringsHandle,RACE_PARENT_NAME,parent);
+            SetArrayString(stringsHandle,_:RaceString_ParentName,parent);
 
         new Translation:translation = Translation:GetNativeCell(11);
         if (translation != Translation_Default)
@@ -276,24 +276,41 @@ public Native_SetRaceAttributes(Handle:plugin,numParams)
         decl String:name[NAME_STRING_LENGTH];
         GetNativeString(13,name,sizeof(name));
         if (name[0] != '\0')
-            SetArrayString(stringsHandle,RACE_NAME,name);
+            SetRaceHName(stringsHandle,name);
 
         decl String:switch_message[LONG_STRING_LENGTH];
         GetNativeString(14,switch_message,sizeof(switch_message));
         if (switch_message[0] != '\0')
-            SetArrayString(messagesHandle,RACE_SWITCHMESSAGE,switch_message);
+            SetRaceHSwitchString(messagesHandle,switch_message);
 
         decl String:pending_message[LONG_STRING_LENGTH];
         GetNativeString(15,pending_message,sizeof(pending_message));
         if (pending_message[0] != '\0')
-            SetArrayString(messagesHandle,RACE_SWITCHMESSAGE_DEAD,pending_message);
+            SetRaceHSwitchStringDead(messagesHandle,pending_message);
 
         decl String:short[SHORT_STRING_LENGTH];
         GetNativeString(16,short,sizeof(short));
         if (short[0] != '\0')
-            SetArrayString(stringsHandle,RACE_SHORT_NAME,short);
+            SetRaceHShortName(stringsHandle,short);
 
+        SetRaceHasBeenCompleted(raceHandle,false);
     }
+}
+
+/**
+ * Gets the plugin Handle for a race.
+ * @param race:     The race ID returned from CreateRace()
+ * @return          The return value will be the Handle of the plugin that created the race.
+ *
+ * native GetRacePlugin(race);
+ */
+public Native_GetRacePlugin(Handle:plugin,numParams)
+{
+    new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
+    if (raceHandle != INVALID_HANDLE)
+        return _:GetRacePlugin(raceHandle);
+    else
+        return _:INVALID_HANDLE;
 }
 
 /**
@@ -324,7 +341,10 @@ public Native_SetRaceEnergyRate(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
+    {
         SetRaceEnergyRate(raceHandle,GetNativeCell(2));
+        SetRaceHasBeenCompleted(raceHandle,false);
+    }
 }
 
 /**
@@ -355,7 +375,10 @@ public Native_SetRaceEnergyLimit(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
+    {
         SetRaceEnergyLimit(raceHandle,GetNativeCell(2));
+        SetRaceHasBeenCompleted(raceHandle,false);
+    }
 }
 
 /**
@@ -386,7 +409,10 @@ public Native_SetRaceInitialEnergy(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
+    {
         SetRaceInitialEnergy(raceHandle,GetNativeCell(2));
+        SetRaceHasBeenCompleted(raceHandle,false);
+    }
 }
 
 /**
@@ -394,13 +420,13 @@ public Native_SetRaceInitialEnergy(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @return The return value will be the amount of energy or -1 if it failed.
  *
- * native GetRaceEnergyFlags(race);
+ * native EnergyFlags:GetRaceEnergyFlags(race);
  */
 public Native_GetRaceEnergyFlags(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
-        return GetRaceEnergyFlags(raceHandle);
+        return _:GetRaceEnergyFlags(raceHandle);
     else
         return -1;
 }
@@ -411,13 +437,16 @@ public Native_GetRaceEnergyFlags(Handle:plugin,numParams)
  * @param newflags: The flags you want to set
  * @noreturn
  *
- * native SetRaceEnergyFlags(race,newflags);
+ * native SetRaceEnergyFlags(race,EnergyFlags:newflags);
  */
 public Native_SetRaceEnergyFlags(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
-        SetRaceEnergyFlags(raceHandle,GetNativeCell(2));
+    {
+        SetRaceEnergyFlags(raceHandle,EnergyFlags:GetNativeCell(2));
+        SetRaceHasBeenCompleted(raceHandle,false);
+    }
 }
 
 /**
@@ -527,6 +556,129 @@ public Native_AddUpgrade(Handle:plugin,numParams)
 }
 
 /**
+ * Sets an upgrade's crystal and/or vespene costs
+ * @param race:             The race ID returned from CreateRace()
+ * @param upgrade:          The upgrade ID returned from AddUpgrade()
+ * @param cost_crystals:    Amount of crystals required to purchase upgrade for 1 map, -1 to leave unchanged
+ * @param cost_vespene:     Amount of vespene required to purchase upgrade for 1 map, -1 to leave unchanged
+ * @param override:         Set true to override the config file.
+ * @noreturn
+ *
+ * native SetUpgradeCost(race, upgrade, cost_crystals=-1, cost_vespene=-1, bool:override=false);
+ */
+public Native_SetUpgradeCost(Handle:plugin,numParams)
+{
+    new race = GetNativeCell(1);
+    new Handle:raceHandle = GetRaceHandle(race);
+    if (raceHandle != INVALID_HANDLE)
+    {
+        new upgrade = GetNativeCell(2);
+        new cost_crystals = GetNativeCell(3);
+        new cost_vespene = GetNativeCell(4);
+
+        if (!GetNativeCell(5)) // !override
+        {
+            // Check if the config file has cost_crystals and/or cost_vespene for this upgrade
+            new ConfigLoadedStatus:raceLoaded;
+            new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
+            if (raceConfig != INVALID_HANDLE)
+            {
+                new bool:upgradeFound;
+                decl String:short[NAME_STRING_LENGTH];
+                GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+
+                if (raceLoaded != ConfigNotLoaded)
+                {
+                    KvRewind(raceConfig);
+                    upgradeFound = KvJumpToKey(raceConfig, short, false);
+                    if (upgradeFound)
+                    {
+                        if (cost_crystals >= 0)
+                        {
+                            new value = KvGetNum(raceConfig,"cost_crystals", cost_crystals);
+                            if (value == cost_crystals)
+                            {
+                                if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
+                                {
+                                    SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
+                                    KvSetNum(raceConfig,"cost_crystals", cost_crystals);
+                                }
+                            }
+                            else
+                                cost_crystals = value;
+                        }
+
+                        if (cost_vespene >= 0)
+                        {
+                            new value = KvGetNum(raceConfig,"cost_vespene", cost_vespene);
+                            if (value == cost_crystals)
+                            {
+                                if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
+                                {
+                                    SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
+                                    KvSetNum(raceConfig,"cost_vespene", cost_vespene);
+                                }
+                            }
+                            else
+                                cost_vespene = value;
+                        }
+
+                        KvGoBack(raceConfig);
+                    }
+                }
+                else
+                    upgradeFound = false;
+
+                if (!upgradeFound)
+                {
+                    KvRewind(raceConfig);
+                    if (KvJumpToKey(raceConfig, short, true))
+                    {
+                        if (cost_crystals >= 0)
+                        {
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
+                            KvSetNum(raceConfig,"cost_crystals", cost_crystals);
+                            KvGoBack(raceConfig);
+                        }
+
+                        if (cost_vespene >= 0)
+                        {
+                            SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
+                            KvSetNum(raceConfig,"cost_vespene", cost_vespene);
+                            KvGoBack(raceConfig);
+                        }
+                    }
+                    else
+                        LogError("Unable to create %s section for race %d", short, race);
+                }
+
+                if (GetRaceHasBeenCompleted(raceHandle))
+                {
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
+                        SaveConfig(raceConfig, short);
+
+                    CloseHandle(raceConfig);
+                    SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
+                }
+            }
+        }
+
+        if (cost_crystals >= 0)
+        {
+            SetUpgradeCostCrystals(raceHandle, upgrade, cost_crystals);
+            SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
+        }
+
+        if (cost_vespene >= 0)
+        {
+            SetUpgradeCostVespene(raceHandle, upgrade, cost_vespene);
+            SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
+        }
+    }
+}
+
+/**
  * Sets an upgrade's cooldown parameters
  * @param race:          The race ID returned from CreateRace()
  * @param upgrade:       The upgrade ID returned from AddUpgrade()
@@ -552,7 +704,7 @@ public Native_SetUpgradeCooldown(Handle:plugin,numParams)
         if (!GetNativeCell(5)) // !override
         {
             // Check if the config file has a cooldown for this upgrade
-            new raceLoaded;
+            new ConfigLoadedStatus:raceLoaded;
             new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
             if (raceConfig != INVALID_HANDLE)
             {
@@ -560,7 +712,7 @@ public Native_SetUpgradeCooldown(Handle:plugin,numParams)
                 decl String:short[NAME_STRING_LENGTH];
                 GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-                if (raceLoaded != CONFIG_NOT_LOADED)
+                if (raceLoaded != ConfigNotLoaded)
                 {
                     KvRewind(raceConfig);
                     upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -578,7 +730,7 @@ public Native_SetUpgradeCooldown(Handle:plugin,numParams)
                     KvRewind(raceConfig);
                     if (KvJumpToKey(raceConfig, short, true))
                     {
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         KvSetFloat(raceConfig,"cooldown", cooldown);
                         KvGoBack(raceConfig);
                     }
@@ -588,12 +740,12 @@ public Native_SetUpgradeCooldown(Handle:plugin,numParams)
 
                 if (GetRaceHasBeenCompleted(raceHandle))
                 {
-                    if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                         SaveConfig(raceConfig, short);
 
                     CloseHandle(raceConfig);
                     SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-                    SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
                 }
             }
         }
@@ -1024,31 +1176,6 @@ public Native_GetUpgradeName(Handle:plugin,numParams)
 }
 
 /**
- * Retrieves the description of an upgrade
- * @param race:      The race ID returned from CreateRace()
- * @param upgrade:   The upgrade ID returned from AddUpgrade()
- * @param name:      String to place the description into.
- * @param maxlength: The size of the description buffer.
- * @param lang:      Client to translate the description for, if any.
- * @noreturn
- *
- * native GetUpgradeDescription(race, upgrade, String:description[], maxlength, lang=LANG_SERVER);
- */         
-public Native_GetUpgradeDescription(Handle:plugin,numParams)
-{
-    new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
-    if (raceHandle != INVALID_HANDLE)
-    {
-        decl String:description[NAME_STRING_LENGTH];
-        new upgrade   = GetNativeCell(2);
-        new maxlength = GetNativeCell(4);
-        new lang = GetNativeCell(5);
-        GetUpgradeDescription(raceHandle, upgrade, description, sizeof(description), lang);
-        SetNativeString(3, description, maxlength);
-    }
-}
-
-/**
  * Retrieves the short name of an upgrade
  * @param race:      The race ID returned from CreateRace()
  * @param upgrade:   The upgrade ID returned from AddUpgrade()
@@ -1069,6 +1196,59 @@ public Native_GetUpgradeShortName(Handle:plugin,numParams)
         new maxlength = GetNativeCell(4);
         GetUpgradeShortName(raceHandle, upgrade, short, sizeof(short));
         SetNativeString(3, short, maxlength);
+    }
+}
+
+/**
+ * Retrieves the description of an upgrade
+ * @param race:         The race ID returned from CreateRace()
+ * @param upgrade:      The upgrade ID returned from AddUpgrade()
+ * @param description:  String to place the description into.
+ * @param maxlength:    The size of the description buffer.
+ * @param lang:         Client to translate the description for, if any.
+ * @return              The return value will be category gleaned from the description
+ *                      (if any -- only set for Translation_W3S races)
+ *
+ * native GetUpgradeDescription(race, upgrade, String:description[], maxlength, lang=LANG_SERVER);
+ */         
+public Native_GetUpgradeDescription(Handle:plugin,numParams)
+{
+    new category = 0;
+    new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
+    if (raceHandle != INVALID_HANDLE)
+    {
+        decl String:description[NAME_STRING_LENGTH];
+        new upgrade   = GetNativeCell(2);
+        new maxlength = GetNativeCell(4);
+        new lang = GetNativeCell(5);
+
+        category = GetUpgradeDescription(raceHandle, upgrade, description, sizeof(description), lang);
+        SetNativeString(3, description, maxlength);
+    }
+    return category;
+}
+
+/**
+ * Retrieves the description of an upgrade
+ * @param race:         The race ID returned from CreateRace()
+ * @param upgrade:      The upgrade ID returned from AddUpgrade()
+ * @param description:  New description for the Upgrade.
+ * @noreturn
+ *
+ * native SetUpgradeDescription(race, upgrade, const String:description[]);
+ */         
+public Native_SetUpgradeDescription(Handle:plugin,numParams)
+{
+    new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
+    if (raceHandle != INVALID_HANDLE)
+    {
+        new upgrade   = GetNativeCell(2);
+
+        decl String:description[NAME_STRING_LENGTH];
+        GetNativeString(3,description,sizeof(description));
+
+        SetUpgradeDescription(raceHandle, upgrade, description);
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
     }
 }
 
@@ -1094,9 +1274,10 @@ public Native_GetUpgradeEnergy(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @param upgrade:  The upgrade ID returned from AddUpgrade()
  * @param energy:   The amount you want to set
+ * @param override: Set true to override the config file.
  * @noreturn
  *
- * native SetUpgradeEnergy(race,upgrade,energy,bool:override=false);
+ * native SetUpgradeEnergy(race, upgrade, Float:energy, bool:override=false);
  */
 public Native_SetUpgradeEnergy(Handle:plugin,numParams)
 {
@@ -1110,7 +1291,7 @@ public Native_SetUpgradeEnergy(Handle:plugin,numParams)
         if (!GetNativeCell(4)) // !override
         {
             // Check if the config file has energy for this upgrade
-            new raceLoaded;
+            new ConfigLoadedStatus:raceLoaded;
             new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
             if (raceConfig != INVALID_HANDLE)
             {
@@ -1118,7 +1299,7 @@ public Native_SetUpgradeEnergy(Handle:plugin,numParams)
                 decl String:short[NAME_STRING_LENGTH];
                 GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-                if (raceLoaded != CONFIG_NOT_LOADED)
+                if (raceLoaded != ConfigNotLoaded)
                 {
                     KvRewind(raceConfig);
                     upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -1127,9 +1308,9 @@ public Native_SetUpgradeEnergy(Handle:plugin,numParams)
                         new Float:value = KvGetFloat(raceConfig,"energy", energy);
                         if (value == energy)
                         {
-                            if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                            if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                             {
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                                 KvSetFloat(raceConfig,"energy", energy);
                             }
                         }
@@ -1147,7 +1328,7 @@ public Native_SetUpgradeEnergy(Handle:plugin,numParams)
                     KvRewind(raceConfig);
                     if (KvJumpToKey(raceConfig, short, true))
                     {
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         KvSetFloat(raceConfig,"energy", energy);
                         KvGoBack(raceConfig);
                     }
@@ -1157,17 +1338,18 @@ public Native_SetUpgradeEnergy(Handle:plugin,numParams)
 
                 if (GetRaceHasBeenCompleted(raceHandle))
                 {
-                    if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                         SaveConfig(raceConfig, short);
 
                     CloseHandle(raceConfig);
                     SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-                    SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
                 }
             }
         }
 
         SetUpgradeEnergy(raceHandle, upgrade, energy);
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
     }
 }
 
@@ -1193,9 +1375,10 @@ public N_GetUpgradeRecurringEnergy(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @param upgrade:  The upgrade ID returned from AddUpgrade()
  * @param amount:   The amount you want to set
+ * @param override: Set true to override the config file.
  * @noreturn
  *
- * native SetUpgradeRecurringEnergy(race,upgrade,amount);
+ * native Float:SetUpgradeRecurringEnergy(race, upgrade, Float:amount, bool:override=false);
  */
 public N_SetUpgradeRecurringEnergy(Handle:plugin,numParams)
 {
@@ -1209,7 +1392,7 @@ public N_SetUpgradeRecurringEnergy(Handle:plugin,numParams)
         if (!GetNativeCell(4)) // !override
         {
             // Check if the config file has recurring_energy for this upgrade
-            new raceLoaded;
+            new ConfigLoadedStatus:raceLoaded;
             new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
             if (raceConfig != INVALID_HANDLE)
             {
@@ -1217,7 +1400,7 @@ public N_SetUpgradeRecurringEnergy(Handle:plugin,numParams)
                 decl String:short[NAME_STRING_LENGTH];
                 GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-                if (raceLoaded != CONFIG_NOT_LOADED)
+                if (raceLoaded != ConfigNotLoaded)
                 {
                     KvRewind(raceConfig);
                     upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -1226,9 +1409,9 @@ public N_SetUpgradeRecurringEnergy(Handle:plugin,numParams)
                         new Float:value = KvGetFloat(raceConfig,"recurring_energy", recurring_energy);
                         if (value == recurring_energy)
                         {
-                            if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                            if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                             {
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                                 KvSetFloat(raceConfig,"recurring_energy", recurring_energy);
                             }
                         }
@@ -1246,7 +1429,7 @@ public N_SetUpgradeRecurringEnergy(Handle:plugin,numParams)
                     KvRewind(raceConfig);
                     if (KvJumpToKey(raceConfig, short, true))
                     {
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         KvSetFloat(raceConfig,"recurring_energy", recurring_energy);
                         KvGoBack(raceConfig);
                     }
@@ -1256,17 +1439,18 @@ public N_SetUpgradeRecurringEnergy(Handle:plugin,numParams)
 
                 if (GetRaceHasBeenCompleted(raceHandle))
                 {
-                    if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                         SaveConfig(raceConfig, short);
 
                     CloseHandle(raceConfig);
                     SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-                    SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
                 }
             }
         }
 
         SetUpgradeRecurringEnergy(raceHandle, upgrade, recurring_energy);
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
     }
 }
 
@@ -1292,9 +1476,10 @@ public Native_GetUpgradeVespene(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @param upgrade:  The upgrade ID returned from AddUpgrade()
  * @param amount:   The amount you want to set
+ * @param override: Set true to override the config file.
  * @noreturn
  *
- * native SetUpgradeVespene(race,upgrade);
+ * native SetUpgradeVespene(race, upgrade, amount, bool:override=false);
  */
 public Native_SetUpgradeVespene(Handle:plugin,numParams)
 {
@@ -1308,7 +1493,7 @@ public Native_SetUpgradeVespene(Handle:plugin,numParams)
         if (!GetNativeCell(4)) // !override
         {
             // Check if the config file has vespene for this upgrade
-            new raceLoaded;
+            new ConfigLoadedStatus:raceLoaded;
             new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
             if (raceConfig != INVALID_HANDLE)
             {
@@ -1316,7 +1501,7 @@ public Native_SetUpgradeVespene(Handle:plugin,numParams)
                 decl String:short[NAME_STRING_LENGTH];
                 GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-                if (raceLoaded != CONFIG_NOT_LOADED)
+                if (raceLoaded != ConfigNotLoaded)
                 {
                     KvRewind(raceConfig);
                     upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -1325,9 +1510,9 @@ public Native_SetUpgradeVespene(Handle:plugin,numParams)
                         new value = KvGetNum(raceConfig,"vespene", vespene);
                         if (value == vespene)
                         {
-                            if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                            if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                             {
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                                 KvSetNum(raceConfig,"vespene", vespene);
                             }
                         }
@@ -1345,7 +1530,7 @@ public Native_SetUpgradeVespene(Handle:plugin,numParams)
                     KvRewind(raceConfig);
                     if (KvJumpToKey(raceConfig, short, true))
                     {
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         KvSetNum(raceConfig,"vespene", vespene);
                         KvGoBack(raceConfig);
                     }
@@ -1355,17 +1540,18 @@ public Native_SetUpgradeVespene(Handle:plugin,numParams)
 
                 if (GetRaceHasBeenCompleted(raceHandle))
                 {
-                    if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                         SaveConfig(raceConfig, short);
 
                     CloseHandle(raceConfig);
                     SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-                    SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
                 }
             }
         }
 
         SetUpgradeVespene(raceHandle, upgrade, vespene);
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
     }
 }
 
@@ -1391,9 +1577,10 @@ public Native_GetUpgradeCrystals(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @param upgrade:  The upgrade ID returned from AddUpgrade()
  * @param amount:   The amount you want to set
+ * @param override: Set true to override the config file.
  * @noreturn
  *
- * native SetUpgradeCrystals(race,upgrade);
+ * native SetUpgradeCrystals(race, upgrade, amount, bool:override=false);
  */
 public Native_SetUpgradeCrystals(Handle:plugin,numParams)
 {
@@ -1407,7 +1594,7 @@ public Native_SetUpgradeCrystals(Handle:plugin,numParams)
         if (!GetNativeCell(4)) // !override
         {
             // Check if the config file has crystals for this upgrade
-            new raceLoaded;
+            new ConfigLoadedStatus:raceLoaded;
             new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
             if (raceConfig != INVALID_HANDLE)
             {
@@ -1415,7 +1602,7 @@ public Native_SetUpgradeCrystals(Handle:plugin,numParams)
                 decl String:short[NAME_STRING_LENGTH];
                 GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-                if (raceLoaded != CONFIG_NOT_LOADED)
+                if (raceLoaded != ConfigNotLoaded)
                 {
                     KvRewind(raceConfig);
                     upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -1424,9 +1611,9 @@ public Native_SetUpgradeCrystals(Handle:plugin,numParams)
                         new value = KvGetNum(raceConfig,"crystals", crystals);
                         if (value == crystals)
                         {
-                            if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                            if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                             {
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                                 KvSetNum(raceConfig,"crystals", crystals);
                             }
                         }
@@ -1444,7 +1631,7 @@ public Native_SetUpgradeCrystals(Handle:plugin,numParams)
                     KvRewind(raceConfig);
                     if (KvJumpToKey(raceConfig, short, true))
                     {
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         KvSetNum(raceConfig,"crystals", crystals);
                         KvGoBack(raceConfig);
                     }
@@ -1454,17 +1641,18 @@ public Native_SetUpgradeCrystals(Handle:plugin,numParams)
 
                 if (GetRaceHasBeenCompleted(raceHandle))
                 {
-                    if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                         SaveConfig(raceConfig, short);
 
                     CloseHandle(raceConfig);
                     SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-                    SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
                 }
             }
         }
 
         SetUpgradeCrystals(raceHandle, upgrade, crystals);
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
     }
 }
 
@@ -1490,9 +1678,10 @@ public Native_GetUpgradeRequiredLevel(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @param upgrade:  The upgrade ID returned from AddUpgrade()
  * @param level:    The required level you want to set
+ * @param override: Set true to override the config file.
  * @noreturn
  *
- * native SetUpgradeRequiredLevel(race,upgrade,level);
+ * native SetUpgradeRequiredLevel(race, upgrade, level, bool:override=false);
  */
 public Native_SetUpgradeRequiredLevel(Handle:plugin,numParams)
 {
@@ -1506,7 +1695,7 @@ public Native_SetUpgradeRequiredLevel(Handle:plugin,numParams)
         if (!GetNativeCell(4)) // !override
         {
             // Check if the config file has a required_level for this upgrade
-            new raceLoaded;
+            new ConfigLoadedStatus:raceLoaded;
             new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
             if (raceConfig != INVALID_HANDLE)
             {
@@ -1514,7 +1703,7 @@ public Native_SetUpgradeRequiredLevel(Handle:plugin,numParams)
                 decl String:short[NAME_STRING_LENGTH];
                 GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-                if (raceLoaded != CONFIG_NOT_LOADED)
+                if (raceLoaded != ConfigNotLoaded)
                 {
                     KvRewind(raceConfig);
                     upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -1523,9 +1712,9 @@ public Native_SetUpgradeRequiredLevel(Handle:plugin,numParams)
                         new value = KvGetNum(raceConfig,"required_level", required_level);
                         if (value == required_level)
                         {
-                            if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                            if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                             {
-                                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                                 KvSetNum(raceConfig,"required_level", required_level);
                             }
                         }
@@ -1543,7 +1732,7 @@ public Native_SetUpgradeRequiredLevel(Handle:plugin,numParams)
                     KvRewind(raceConfig);
                     if (KvJumpToKey(raceConfig, short, true))
                     {
-                        SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                        SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
                         KvSetNum(raceConfig,"required_level", required_level);
                         KvGoBack(raceConfig);
                     }
@@ -1553,17 +1742,18 @@ public Native_SetUpgradeRequiredLevel(Handle:plugin,numParams)
 
                 if (GetRaceHasBeenCompleted(raceHandle))
                 {
-                    if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+                    if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
                         SaveConfig(raceConfig, short);
 
                     CloseHandle(raceConfig);
                     SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-                    SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+                    SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
                 }
             }
         }
 
         SetUpgradeRequiredLevel(raceHandle, upgrade, required_level);
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
     }
 }
 
@@ -1589,15 +1779,20 @@ public Native_GetUpgradeMaxLevel(Handle:plugin,numParams)
  * @param race:     The race ID returned from CreateRace()
  * @param upgrade:  The upgrade ID returned from AddUpgrade()
  * @param level:    The max level you want to set
+ * @param override: Set true to override the config file.
  * @noreturn
  *
- * native SetUpgradeMaxLevel(race,upgrade);
+ * native SetUpgradeMaxLevel(race,upgrade, level, bool:override=false);
  */
 public Native_SetUpgradeMaxLevel(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
-        SetUpgradeMaxLevel(raceHandle, GetNativeCell(2), GetNativeCell(3));
+    {
+        new upgrade = GetNativeCell(2);
+        SetUpgradeMaxLevel(raceHandle, upgrade, GetNativeCell(3));
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
+    }
 }
 
 /**
@@ -1630,7 +1825,11 @@ public Native_SetUpgradeCategory(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
+    {
+        new upgrade = GetNativeCell(2);
         SetUpgradeCategory(raceHandle, GetNativeCell(2), GetNativeCell(3));
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
+    }
 }
 
 /**
@@ -1663,7 +1862,11 @@ public Native_SetUpgradeDisabled(Handle:plugin,numParams)
 {
     new Handle:raceHandle = GetRaceHandle(GetNativeCell(1));
     if (raceHandle != INVALID_HANDLE)
-        SetUpgradeDisabled(raceHandle, GetNativeCell(2), GetNativeCell(3));
+    {
+        new upgrade = GetNativeCell(2);
+        SetUpgradeDisabled(raceHandle, upgrade, GetNativeCell(3));
+        SetUpgradeHasBeenCompleted(raceHandle, upgrade, false);
+    }
 }
 
 /**
@@ -1752,7 +1955,7 @@ public Native_CreateShopItem(Handle:plugin,numParams)
 
     return CreateShopItem(short, crystals, vespene, money, pcrystals, xp, max,
                           required_level, store, translation, translation_file,
-                          category, name, desc, image);
+                          category, name, desc, image, plugin);
 }
 
 /**
@@ -1870,14 +2073,43 @@ public Native_GetItemShortName(Handle:plugin,numParams)
  */
 public Native_SetItemShortName(Handle:plugin,numParams)
 {
-    new item=GetNativeCell(1);
-    new Handle:itemHandle=GetShopItemHandle(item);
+    new Handle:itemHandle=GetShopItemHandle(GetNativeCell(1));
     if (itemHandle != INVALID_HANDLE)
     {
         decl String:short[SHORT_STRING_LENGTH];
         GetNativeString(2,short,sizeof(short));
         SetItemShortName(itemHandle,short);
     }
+}
+
+/**
+ * Gets the plugin Handle for a shop item.
+ * @param race:     The race ID returned from CreateItem()
+ * @return          The return value will be the Handle of the plugin that created the shop item.
+ *
+ * native GetItemPlugin(race);
+ */
+public Native_GetItemPlugin(Handle:plugin,numParams)
+{
+    new Handle:itemHandle=GetShopItemHandle(GetNativeCell(1));
+    if (itemHandle != INVALID_HANDLE)
+        return _:GetItemPlugin(itemHandle);
+    else
+        return _:INVALID_HANDLE;
+}
+
+/**
+ * Find the ShopItem ID of a shop item
+ * @param name: The name of the item. (max 64)
+ * @return The return value will be the item index or -1 if there was a problem.
+ *
+ * native FindShopItem(const String:name[]);
+ */         
+public Native_FindShopItem(Handle:plugin,numParams)
+{
+    decl String:name[SHORT_STRING_LENGTH];
+    GetNativeString(1,name,sizeof(name));
+    return FindShopItem(name);
 }
 
 /**
@@ -1898,26 +2130,12 @@ public Native_CreateHelpCommand(Handle:plugin,numParams)
 }
 
 /**
- * Find the ShopItem ID of a shop item
- * @param name: The name of the item. (max 64)
- * @return The return value will be the item index or -1 if there was a problem.
- *
- * native FindShopItem(const String:name[]);
- */         
-public Native_FindShopItem(Handle:plugin,numParams)
-{
-    decl String:name[SHORT_STRING_LENGTH];
-    GetNativeString(1,name,sizeof(name));
-    return FindShopItem(name);
-}
-
-/**
  * Find the Race ID of a race
  * @param name: The short name of the race. (max 64)
  * @return The return value will be the race index or -1 if there was a problem.
  *
  * native FindRace(const String:name[]);
- */         
+ */
 public Native_FindRace(Handle:plugin,numParams)
 {
     decl String:name[SHORT_STRING_LENGTH];
@@ -3302,13 +3520,14 @@ public Native_GetRace(Handle:plugin,numParams)
 
 /**
  * Changes the current race of the player.
- * @param client:   The index of the player.
- * @param race:     The race ID returned from CreateRace.
- * @param force:    Set true to force the race to change now or false to change on death.
- * @param check:    Set true to check race requirements before changing.
+ * @param client:       The index of the player.
+ * @param race:         The race ID returned from CreateRace.
+ * @param force:        Set true to force the race to change now or false to change on death.
+ * @param check:        Set true to check race requirements before changing.
+ * @param saveEnergy:   Save the client's remaining energy into accumulated energy (for summons).
  * @noreturn
  *
- * native ChangeRace(client,race,bool:force=false,bool:check=true);
+ * native ChangeRace(client, race, bool:force=false, bool:check=true, bool:saveEnergy=false);
  */
 public Native_ChangeRace(Handle:plugin,numParams)
 {
@@ -3318,9 +3537,10 @@ public Native_ChangeRace(Handle:plugin,numParams)
         new race=GetNativeCell(2);
         if (race > 0)
         {
-            new bool:force=bool:GetNativeCell(3);
-            new bool:check=bool:GetNativeCell(4);
-            ChangeRace(client, race, GetRaceHandle(race), force, check);
+            ChangeRace(client, race, GetRaceHandle(race),
+                       bool:GetNativeCell(3),
+                       bool:GetNativeCell(4),
+                       bool:GetNativeCell(5));
         }
     }
 }
@@ -3394,14 +3614,14 @@ public Native_ResetLevel(Handle:plugin,numParams)
  * @param client:   The index of the player.
  * @param race:     The race ID returned from CreateRace or -1 for current race
  * @param upgrade:  The upgrade you want to lookup with
- * @param check:    Set true to check the race. If the client's race != race, return -1.
- * @return          The return value will be the upgrade level or -1 if it failed.
+ * @param check:    Set true to check the race. If the client's race != race, return 0.
+ * @return          The return value will be the upgrade level or 0 if it failed.
  *
  * native GetUpgradeLevel(client,race,upgrade,bool:check=false);
  */
 public Native_GetUpgradeLevel(Handle:plugin,numParams)
 {
-    new level       = -1;
+    new level       = 0;
     new client      = GetNativeCell(1);
     new race        = GetNativeCell(2);
     new upgrade     = GetNativeCell(3);
@@ -3460,6 +3680,7 @@ public Native_SetUpgradeLevel(Handle:plugin,numParams)
  * Resets the levels for the upgrade for the curerent race.
  * @param client:   The index of the player.
  * @param race:     The race ID returned from CreateRace or -1 for current race
+ * @param show:     If true, Show the upgrade menu
  * @noreturn
  *
  * native ResetUpgradeLevels(client,race);
@@ -3468,7 +3689,7 @@ public Native_ResetUpgradeLevels(Handle:plugin,numParams)
 {
     new client = GetNativeCell(1);
     if (IsValidClient(client))
-        ResetUpgradesNow(client, GetNativeCell(2));
+        ResetUpgradesNow(client, GetNativeCell(2), bool:GetNativeCell(3));
 }
 
 /**
@@ -4311,7 +4532,7 @@ public Native_GetAttribute(Handle:plugin,numParams)
     new client = GetNativeCell(1);
     if (IsValidClient(client))
         return GetAttribute(client,Attribute:GetNativeCell(2));
-    else        
+    else
         return false;
 }
 
@@ -4385,19 +4606,21 @@ public Native_GetImmunity(Handle:plugin,numParams)
     new client = GetNativeCell(1);
     if (IsValidClient(client))
         return GetImmunity(client,Immunity:GetNativeCell(2));
-    else        
+    else
         return false;
 }
 
 /**
  * Gives the player a specific immunity.
- * @param client: The index of the player.
- * @param immunity: The immunity or immunities you want to set.
+ * @param client:    The index of the player.
+ * @param immunity:  The immunity or immunities you want to set.
  * @param imm_state: The state of immunity, true if they are, false if they aren't.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param id:        Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:  Handle of the plugin to set immunity for (defaults to calling plugin)
  * @noreturn
  *
- * native SetImmunity(client,Immunity:immunity,bool:imm_state=true,id=0);
+ * native SetImmunity(client,Immunity:immunity,bool:imm_state=true,
+ *                    id=0,Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetImmunity(Handle:plugin,numParams)
 {
@@ -4411,11 +4634,15 @@ public Native_SetImmunity(Handle:plugin,numParams)
         if (propData != INVALID_HANDLE)
         {
             new id=GetNativeCell(4);
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:pluginid=Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
+
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
+                PushArrayCell(propData, CreateProperties(client, pluginid, id,
                                         .immunities=(imm_state) ? imm : Immunity_None));
 
                 SetImmunity(client,imm,imm_state);
@@ -4510,13 +4737,15 @@ public Native_GetRestriction(Handle:plugin,numParams)
 
 /**
  * Gives the player a specific restriction.
- * @param client: The index of the player.
- * @param restriction: The restriction or restrictions you want to set.
- * @param restrict_state: The state of restriction, true if they are, false if they aren't.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param client:           The index of the player.
+ * @param restriction:      The restriction or restrictions you want to set.
+ * @param restrict_state:   The state of restriction, true if they are, false if they aren't.
+ * @param id:               Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:         Handle of the plugin to set restriction for (defaults to calling plugin)
  * @noreturn
  *
- * native SetRestriction(client,Restriction:restriction,bool:restrict_state=true,id=0);
+ * native SetRestriction(client, Restriction:restriction, bool:restrict_state=true,
+ *                       id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetRestriction(Handle:plugin,numParams)
 {
@@ -4530,11 +4759,15 @@ public Native_SetRestriction(Handle:plugin,numParams)
         if (propData != INVALID_HANDLE)
         {
             new id=GetNativeCell(4);
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:pluginid=Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
+
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
+                PushArrayCell(propData, CreateProperties(client, pluginid, id,
                                         .restrictions=(restrict_state) ? restrict : Restriction_None));
 
                 SetRestriction(client,restrict,restrict_state);
@@ -4577,13 +4810,15 @@ public Native_SetRestriction(Handle:plugin,numParams)
  * good for upgrades and items that set speed so you don't end up making the player slower.
  * Pass -1.0 as speed when they no longer should use the speed, make sure to do this when
  * they no longer have the upgrade or item, or whatever.
- * @param client: The index of the player.
- * @param speed: The speed you want to pass.
- * @param apply: Set to true to apply the setting immedately.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param client:   The index of the player.
+ * @param speed:    The speed you want to pass.
+ * @param apply:    Set to true to apply the setting immedately.
+ * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set speed for (defaults to calling plugin)
  * @noreturn
  *
- * native SetSpeed(client,Float:speed=-1.0,bool:apply=false,id=0);
+ * native SetSpeed(client, Float:speed=-1.0, bool:apply=false,
+ *                 id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetSpeed(Handle:plugin,numParams)
 {
@@ -4593,17 +4828,20 @@ public Native_SetSpeed(Handle:plugin,numParams)
         new Handle:propData=GetPropData(client);
         if (propData != INVALID_HANDLE)
         {
-            new Float:speed = GetNativeCell(2);
-            new bool:apply  = GetNativeCell(3);
-            new id          = GetNativeCell(4);
+            new Float:speed     = GetNativeCell(2);
+            new bool:apply      = GetNativeCell(3);
+            new id              = GetNativeCell(4);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new Float:oldSpeed = speed;
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                        .speed=speed));
+                PushArrayCell(propData, CreateProperties(client, pluginid,
+                                                         id, .speed=speed));
             }
             else
             {
@@ -4628,13 +4866,15 @@ public Native_SetSpeed(Handle:plugin,numParams)
  * good for upgrades and items that set gravity so you don't end up making the player jump lower.
  * Pass -1.0 as gravity when they no longer should use the gravity, make sure to do this when
  * they no longer have the upgrade or item, or whatever.
- * @param client: The index of the player.
- * @param gravity: The gravity you want to pass.
- * @param apply: Set to true to apply the setting immedately.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param client:   The index of the player.
+ * @param gravity:  The gravity you want to pass.
+ * @param apply:    Set to true to apply the setting immedately.
+ * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set gravity for (defaults to calling plugin)
  * @noreturn
  *
- * native SetGravity(client,Float:gravity=-1.0,bool:apply=false,id=0);
+ * native SetGravity(client, Float:gravity=-1.0, bool:apply=false,
+ *                   id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetGravity(Handle:plugin,numParams)
 {
@@ -4644,9 +4884,12 @@ public Native_SetGravity(Handle:plugin,numParams)
         new Handle:propData=GetPropData(client);
         if (propData != INVALID_HANDLE)
         {
-            new Float:gravity = GetNativeCell(2);
-            new bool:apply    = GetNativeCell(3);
-            new id            = GetNativeCell(4);
+            new Float:gravity   = GetNativeCell(2);
+            new bool:apply      = GetNativeCell(3);
+            new id              = GetNativeCell(4);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new Float:oldGravity = gravity;
             new Handle:propInfo = GetPropInfo(propData, plugin, id);
@@ -4654,7 +4897,7 @@ public Native_SetGravity(Handle:plugin,numParams)
             {
                 // create a new entry
                 PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                        .gravity=gravity));
+                                                         .gravity=gravity));
             }
             else
             {
@@ -4697,6 +4940,7 @@ public Native_SetGravity(Handle:plugin,numParams)
  * @param timestamp:    Timestamp of when the visibility was set, used when priorities are tied.
  * @param apply:        Set to true to apply the setting immedately.
  * @param id:           Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:     Handle of the plugin to set visibility for (defaults to calling plugin)
  * @noreturn
  *
  * native SetVisibility(client, VisibilityType:type=NormalVisibility,
@@ -4704,7 +4948,8 @@ public Native_SetGravity(Handle:plugin,numParams)
  *                      RenderMode:mode=RenderMode:-1, RenderFx:fx=RenderFx:-1,
  *                      r=-1, g=-1, b=-1, weaponAlpha=-1,bool:colorWeapons=false,
  *                      VisibilityPriority:priority=VisibilityPriorityNotSpecified,
- *                      Float:timestamp=0.0, bool:apply=false, id=0);
+ *                      Float:timestamp=0.0, bool:apply=false,
+ *                      id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetVisibility(Handle:plugin,numParams)
 {
@@ -4733,17 +4978,20 @@ public Native_SetVisibility(Handle:plugin,numParams)
             new Float:timestamp             = GetNativeCell(14);
             new bool:apply                  = GetNativeCell(15);
             new id                          = GetNativeCell(16);
+            new Handle:pluginid             = Handle:GetNativeCell(17);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new oldVisibility  = visibility;
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 Trace("Create new properties for %d:%L: visibility=%d,type=%d,f1=%f,f2=%f,mode=%d,fx=%d,r=%d,g=%d,b=%d,weaponAlpha=%d", \
                       client, ValidClientIndex(client), visibility, type, factor1, factor2, mode, fx, r, g, b, weaponAlpha);
 
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                        .visibility=visibility, .type=type,
+                PushArrayCell(propData, CreateProperties(client, pluginid,
+                                        id, .visibility=visibility, .type=type,
                                         .factor1=factor1, .factor2=factor2, .mode=mode,
                                         .fx=fx, .r=r, .g=g, .b=b, .weaponAlpha=weaponAlpha,
                                         .colorWeapons=colorWeapons, .priority=priority,
@@ -4756,7 +5004,7 @@ public Native_SetVisibility(Handle:plugin,numParams)
 
                 // update existing entry
                 oldVisibility = GetPropInfoVisibility(propInfo);
-                             
+
                 if (type != AdditiveVisibility || visibility >= 0)
                     SetPropInfoVisibility(propInfo,visibility);
 
@@ -4821,13 +5069,15 @@ public Native_SetVisibility(Handle:plugin,numParams)
  * Overrides the speed for SourceCraft, useful for punishing them or whatever.
  * Pass -1.0 as speed when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
- * @param client: The index of the player.
- * @param speed: The speed you want to pass.
- * @param apply: Set to true to apply the setting immedately.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param client:   The index of the player.
+ * @param speed:    The speed you want to pass.
+ * @param apply:    Set to true to apply the setting immedately.
+ * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set speed for (defaults to calling plugin)
  * @noreturn
  *
- * native SetOverrideSpeed(client,Float:speed=-1.0,bool:apply=false,id=0);
+ * native SetOverrideSpeed(client, Float:speed=-1.0, bool:apply=false,
+ *                         id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetOverrideSpeed(Handle:plugin,numParams)
 {
@@ -4837,16 +5087,19 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
         new Handle:propData=GetPropData(client);
         if (propData != INVALID_HANDLE)
         {
-            new Float:speed = GetNativeCell(2);
-            new bool:apply  = GetNativeCell(3);
-            new id          = GetNativeCell(4);
+            new Float:speed     = GetNativeCell(2);
+            new bool:apply      = GetNativeCell(3);
+            new id              = GetNativeCell(4);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new Float:oldSpeed = speed;
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
+                PushArrayCell(propData, CreateProperties(client, pluginid, id,
                                         .forceSpeed=speed));
             }
             else
@@ -4871,13 +5124,15 @@ public Native_SetOverrideSpeed(Handle:plugin,numParams)
  * Overrides the gravity for SourceCraft, useful for punishing them or whatever.
  * Pass -1.0 as gravity when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
- * @param client: The index of the player.
- * @param gravity: The gravity you want to pass.
- * @param apply: Set to true to apply the setting immedately.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param client:   The index of the player.
+ * @param gravity:  The gravity you want to pass.
+ * @param apply:    Set to true to apply the setting immedately.
+ * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set gravity for (defaults to calling plugin)
  * @noreturn
  *
- * native SetOverrideGravity(client,Float:gravity=-1.0,bool:apply=false,id=0);
+ * native SetOverrideGravity(client, Float:gravity=-1.0, bool:apply=false,
+ *                           id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetOverrideGravity(Handle:plugin,numParams)
 {
@@ -4887,16 +5142,19 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
         new Handle:propData=GetPropData(client);
         if (propData != INVALID_HANDLE)
         {
-            new Float:gravity = GetNativeCell(2);
-            new bool:apply    = GetNativeCell(3);
-            new id            = GetNativeCell(4);
+            new Float:gravity   = GetNativeCell(2);
+            new bool:apply      = GetNativeCell(3);
+            new id              = GetNativeCell(4);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new Float:oldGravity = gravity;
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
+                PushArrayCell(propData, CreateProperties(client, pluginid, id,
                                         .forceGravity=gravity));
             }
             else
@@ -4921,13 +5179,15 @@ public Native_SetOverrideGravity(Handle:plugin,numParams)
  * Overrides the (in)visibility for SourceCraft , useful for punishing them or whatever.
  * Pass -1 as visibility when you want the SourceCraft system to take over again,
  * make sure to do this when they are no longer supposed to follow!
- * @param client: The index of the player.
+ * @param client:     The index of the player.
  * @param visibility: The visibility you want to pass.
- * @param apply: Set to true to apply the setting immedately.
- * @param id: Identifier to allow more than 1 setting per plugin.
+ * @param apply:      Set to true to apply the setting immedately.
+ * @param id:         Identifier to allow more than 1 setting per plugin.
+ * @param pluginid:   Handle of the plugin to set visibility for (defaults to calling plugin)
  * @noreturn
  *
- * native SetOverrideVisiblity(client,visibility=-1,bool:apply=false,id=0);
+ * native SetOverrideVisiblity(client, visibility=-1, bool:apply=false,
+ *                             id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetOverrideVisiblity(Handle:plugin,numParams)
 {
@@ -4937,17 +5197,20 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
         new Handle:propData=GetPropData(client);
         if (propData != INVALID_HANDLE)
         {
-            new visibility = GetNativeCell(2);
-            new bool:apply = GetNativeCell(3);
-            new id         = GetNativeCell(4);
+            new visibility      = GetNativeCell(2);
+            new bool:apply      = GetNativeCell(3);
+            new id              = GetNativeCell(4);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new oldVisibility=visibility;
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                        .forceVisibility=visibility));
+                PushArrayCell(propData, CreateProperties(client, pluginid,
+                                        id, .forceVisibility=visibility));
             }
             else
             {
@@ -4977,9 +5240,11 @@ public Native_SetOverrideVisiblity(Handle:plugin,numParams)
  * @param mt:       The MoveType you want to pass.
  * @param apply:    Set to true to apply the setting immedately.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set MoveType for (defaults to calling plugin)
  * @noreturn
- * 
- * native SetMoveType(client,MoveType:mt=MOVETYPE_DEFAULT,bool:apply=false,id=0);
+ *
+ * native SetMoveType(client, MoveType:mt=MOVETYPE_DEFAULT, bool:apply=false,
+ *                    id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetMoveType(Handle:plugin,numParams)
 {
@@ -4989,17 +5254,20 @@ public Native_SetMoveType(Handle:plugin,numParams)
         new Handle:propData=GetPropData(client);
         if (propData != INVALID_HANDLE)
         {
-            new MoveType:mt = MoveType:GetNativeCell(2);
-            new bool:apply  = GetNativeCell(3);
-            new id          = GetNativeCell(4);
+            new MoveType:mt     = MoveType:GetNativeCell(2);
+            new bool:apply      = GetNativeCell(3);
+            new id              = GetNativeCell(4);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
 
             new MoveType:oldMt = mt;
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                        .mt=mt));
+                PushArrayCell(propData, CreateProperties(client, pluginid,
+                                                         id, .mt=mt));
             }
             else
             {
@@ -5046,9 +5314,11 @@ public Native_ApplyPlayerSettings(Handle:plugin,numParams)
  * @param rate:     Rate at which to Regenerate (or Decay) Health at.
  * @param flags:    RegenFlags, see armor_flags.inc for explanation
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set health regen for (defaults to calling plugin)
  * @noreturn
  *
- * native SetHealthRegen(client,Float:rate=0.0,RegenFlags:flags=Regen_Default,id=0);
+ * native SetHealthRegen(client, Float:rate=0.0, RegenFlags:flags=Regen_Default,
+ *                       id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetHealthRegen(Handle:plugin,numParams)
 {
@@ -5062,12 +5332,16 @@ public Native_SetHealthRegen(Handle:plugin,numParams)
             new RegenFlags:flags=RegenFlags:GetNativeCell(3);
 
             new id=GetNativeCell(4);
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
+
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                                         .regenHealth=rate,
+                PushArrayCell(propData, CreateProperties(client, pluginid,
+                                                         id, .regenHealth=rate,
                                                          .regenHealthFlags=flags));
             }
             else
@@ -5122,9 +5396,11 @@ public Native_GetHealthRegenSum(Handle:plugin,numParams)
  * @param rate:     Rate at which to Regenerate (or Decay) Shields at.
  * @param flags:    RegenFlags, see armor_flags.inc for explanation
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set shield regen for (defaults to calling plugin)
  * @noreturn
  *
- * native SetShieldRegen(client,Float:rate=0.0,RegenFlags:flags=Regen_Default,id=0);
+ * native SetShieldRegen(client, Float:rate=0.0, RegenFlags:flags=Regen_Default,
+                         id=0, Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetShieldRegen(Handle:plugin,numParams)
 {
@@ -5138,12 +5414,16 @@ public Native_SetShieldRegen(Handle:plugin,numParams)
             new RegenFlags:flags=RegenFlags:GetNativeCell(3);
 
             new id=GetNativeCell(4);
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:pluginid = Handle:GetNativeCell(5);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
+
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
-                                                         .regenShield=rate,
+                PushArrayCell(propData, CreateProperties(client, pluginid,
+                                                         id, .regenShield=rate,
                                                          .regenShieldFlags=flags));
             }
             else
@@ -5197,9 +5477,11 @@ public Native_GetShieldRegenSum(Handle:plugin,numParams)
  * @param client:   The index of the player.
  * @param armor:    The armor you want to pass.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set armor for (defaults to calling plugin)
  * @noreturn
  *
- * native SetPhysicalArmorPercent(client,Float:armor=0.0,id=0);
+ * native SetPhysicalArmorPercent(client, Float:armor=0.0, id=0,
+ *                                Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetPhysicalArmorPercent(Handle:plugin,numParams)
 {
@@ -5212,11 +5494,15 @@ public Native_SetPhysicalArmorPercent(Handle:plugin,numParams)
             new Float:armor=GetNativeCell(2);
 
             new id=GetNativeCell(3);
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:pluginid = Handle:GetNativeCell(4);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
+
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
+                PushArrayCell(propData, CreateProperties(client, pluginid, id,
                                         .physicalArmorPercent=armor));
             }
             else
@@ -5249,9 +5535,11 @@ public Native_GetPhysicalArmorSum(Handle:plugin,numParams)
  * @param client:   The index of the player.
  * @param armor:    The armor you want to pass.
  * @param id:       Identifier to allow more than 1 setting per plugin.
+ * @param pluginid: Handle of the plugin to set armor for (defaults to calling plugin)
  * @noreturn
  *
- * native SetMagicalArmorPercent(client,Float:armor=0.0,id=0);
+ * native SetMagicalArmorPercent(client, Float:armor=0.0, id=0,
+ *                               Handle:pluginid=INVALID_HANDLE);
  */
 public Native_SetMagicalArmorPercent(Handle:plugin,numParams)
 {
@@ -5264,11 +5552,15 @@ public Native_SetMagicalArmorPercent(Handle:plugin,numParams)
             new Float:armor=GetNativeCell(2);
 
             new id=GetNativeCell(3);
-            new Handle:propInfo = GetPropInfo(propData, plugin, id);
+            new Handle:pluginid = Handle:GetNativeCell(4);
+            if (pluginid == INVALID_HANDLE)
+                pluginid = plugin;
+
+            new Handle:propInfo = GetPropInfo(propData, pluginid, id);
             if (propInfo == INVALID_HANDLE)
             {
                 // create a new entry
-                PushArrayCell(propData, CreateProperties(client, plugin, id,
+                PushArrayCell(propData, CreateProperties(client, pluginid, id,
                                         .magicalArmorPercent=armor));
             }
             else
@@ -5559,34 +5851,40 @@ public Native_CanInvokeUpgrade(Handle:plugin,numParams)
         }
     }
 
-    new crystals = GetCrystals(client);
-    new crystal_cost = GetUpgradeCrystals(raceHandle,upgrade);
-    if (crystal_cost > 0 && crystal_cost > crystals)
+    new crystal_cost = 0;
+    new vespene_cost = 0;
+    new crystals, vespene;
+    if (g_bChargeForUpgrades)
     {
-        if (notify)
+        crystals = GetCrystals(client);
+        crystal_cost = GetUpgradeCrystals(raceHandle,upgrade);
+        if (crystal_cost > 0 && crystal_cost > crystals)
         {
-            decl String:upgradeName[NAME_STRING_LENGTH];
-            GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
-            DisplayMessage(client, Display_Ultimate, "%t", "InsufficientCrystalsFor", upgradeName, crystal_cost);
-            EmitEnergySoundToClient(client,faction);
-            ShowCrystals(client);
+            if (notify)
+            {
+                decl String:upgradeName[NAME_STRING_LENGTH];
+                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                DisplayMessage(client, Display_Ultimate, "%t", "InsufficientCrystalsFor", upgradeName, crystal_cost);
+                EmitEnergySoundToClient(client,faction);
+                ShowCrystals(client);
+            }
+            return false;
         }
-        return false;
-    }
 
-    new vespene = GetVespene(client);
-    new vespene_cost = GetUpgradeVespene(raceHandle,upgrade);
-    if (vespene_cost > 0 && vespene_cost > vespene)
-    {
-        if (notify)
+        vespene = GetVespene(client);
+        vespene_cost = GetUpgradeVespene(raceHandle,upgrade);
+        if (vespene_cost > 0 && vespene_cost > vespene)
         {
-            decl String:upgradeName[NAME_STRING_LENGTH];
-            GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
-            DisplayMessage(client, Display_Ultimate, "%t", "InsufficientVespeneFor", upgradeName, vespene_cost);
-            EmitEnergySoundToClient(client,faction);
-            ShowVespene(client);
+            if (notify)
+            {
+                decl String:upgradeName[NAME_STRING_LENGTH];
+                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                DisplayMessage(client, Display_Ultimate, "%t", "InsufficientVespeneFor", upgradeName, vespene_cost);
+                EmitEnergySoundToClient(client,faction);
+                ShowVespene(client);
+            }
+            return false;
         }
-        return false;
     }
 
     if (!HasCooldownExpired(client, race, upgrade, notify))
@@ -5693,13 +5991,17 @@ public Native_ChargeForUpgrade(Handle:plugin,numParams)
     new upgrade = GetNativeCell(3);
 
     new Handle:raceHandle = GetRaceHandle(race);
-    new vespene_cost = GetUpgradeVespene(raceHandle,upgrade);
-    if (vespene_cost > 0)
-        SetVespene(client, GetVespene(client)-vespene_cost);
 
-    new crystal_cost = GetUpgradeCrystals(raceHandle,upgrade);
-    if (crystal_cost > 0)
-        SetCrystals(client, GetCrystals(client)-crystal_cost);
+    if (g_bChargeForUpgrades)
+    {
+        new vespene_cost = GetUpgradeVespene(raceHandle,upgrade);
+        if (vespene_cost > 0)
+            SetVespene(client, GetVespene(client)-vespene_cost);
+
+        new crystal_cost = GetUpgradeCrystals(raceHandle,upgrade);
+        if (crystal_cost > 0)
+            SetCrystals(client, GetCrystals(client)-crystal_cost);
+    }
 
     new Float:energy_cost = GetUpgradeEnergy(raceHandle,upgrade);
     if (energy_cost > 0.0)
@@ -6028,6 +6330,7 @@ InitNatives()
     CreateNative("GameHasMoney",Native_GameHasMoney);
     CreateNative("CreateRace",Native_CreateRace);
     CreateNative("SetRaceAttributes",Native_SetRaceAttributes);
+    CreateNative("GetRacePlugin",Native_GetRacePlugin);
     CreateNative("GetRaceEnergyRate",Native_GetRaceEnergyRate);
     CreateNative("SetRaceEnergyRate",Native_SetRaceEnergyRate);
     CreateNative("GetRaceEnergyLimit",Native_GetRaceEnergyLimit);
@@ -6037,9 +6340,6 @@ InitNatives()
     CreateNative("GetRaceInitialEnergy",Native_GetRaceInitialEnergy);
     CreateNative("SetRaceInitialEnergy",Native_SetRaceInitialEnergy);
     CreateNative("RaceComplete",Native_RaceComplete);
-    CreateNative("AddUpgrade",Native_AddUpgrade);
-    CreateNative("SetUpgradeCooldown",Native_SetUpgradeCooldown);
-    CreateNative("GetUpgradeCooldown",Native_GetUpgradeCooldown);
     CreateNative("GetRaceName",Native_GetRaceName);
     CreateNative("GetRaceDescription",Native_GetRaceDescription);
     CreateNative("GetRaceShortName",Native_GetRaceShortName);
@@ -6047,6 +6347,7 @@ InitNatives()
     CreateNative("GetRaceParentId",Native_GetRaceParentId);
     CreateNative("GetRaceFaction",Native_GetRaceFaction);
     CreateNative("GetRaceCount",Native_GetRaceCount);
+    CreateNative("GetUpgradeCount",Native_GetUpgradeCount);
     CreateNative("GetUnitTypeName",Native_GetUnitTypeName);
     CreateNative("GetFactionName",Native_GetFactionName);
     CreateNative("GetFactionDescription",Native_GetFactionDescription);
@@ -6060,9 +6361,13 @@ InitNatives()
     CreateNative("EmitXPSoundToClient",Native_EmitXPSoundToClient);
     CreateNative("GetFactionLevelSound",Native_GetFactionLevelSound);
     CreateNative("EmitLevelSoundToClient",Native_EmitLevelSoundToClient);
-    CreateNative("GetUpgradeCount",Native_GetUpgradeCount);
+    CreateNative("AddUpgrade",Native_AddUpgrade);
+    CreateNative("SetUpgradeCost",Native_SetUpgradeCost);
+    CreateNative("SetUpgradeCooldown",Native_SetUpgradeCooldown);
+    CreateNative("GetUpgradeCooldown",Native_GetUpgradeCooldown);
     CreateNative("GetUpgradeName",Native_GetUpgradeName);
     CreateNative("GetUpgradeDescription",Native_GetUpgradeDescription);
+    CreateNative("SetUpgradeDescription",Native_SetUpgradeDescription);
     CreateNative("GetUpgradeShortName",Native_GetUpgradeShortName);
     CreateNative("GetUpgradeEnergy",Native_GetUpgradeEnergy);
     CreateNative("SetUpgradeEnergy",Native_SetUpgradeEnergy);
@@ -6087,8 +6392,9 @@ InitNatives()
     CreateNative("GetItemCategory",Native_GetItemCategory);
     CreateNative("GetItemShortName",Native_GetItemShortName);
     CreateNative("SetItemShortName",Native_SetItemShortName);
-    CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
+    CreateNative("GetItemPlugin",Native_GetItemPlugin);
     CreateNative("FindShopItem",Native_FindShopItem);
+    CreateNative("CreateHelpCommand",Native_CreateHelpCommand);
     CreateNative("FindRace",Native_FindRace);
     CreateNative("HealPlayer",Native_HealPlayer);
     CreateNative("HurtPlayer",Native_HurtPlayer);
@@ -6224,7 +6530,7 @@ InitNatives()
     CreateNative("GetConfigArray",Native_GetConfigArray);
     CreateNative("GetConfigFloatArray",Native_GetConfigFloatArray);
     CreateNative("LoadSourceCraftTranslations",Native_LoadSCTranslations);
-    RegPluginLibrary("sourcecraft");
+    RegPluginLibrary("SourceCraft");
 }
 
 InitForwards()

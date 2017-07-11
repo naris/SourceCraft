@@ -99,35 +99,27 @@ public OnSourceCraftReady()
     raceID = CreateRace("dark_archon", -1, -1, 28, 45.0, 100.0, 2.0,
                         Protoss, Energy, "dark_templar");
 
-    shockwaveID = AddUpgrade(raceID, "shockwave", 0, 0, .energy=2.0);
-    shieldsID   = AddUpgrade(raceID, "shields", 0, 0, .energy=1.0);
-    meleeID     = AddUpgrade(raceID, "blades", 0, 0, .energy=2.0);
+    shockwaveID = AddUpgrade(raceID, "shockwave", 0, 0, .energy=2.0, .cost_crystals=20);
+    shieldsID   = AddUpgrade(raceID, "shields", 0, 0, .energy=1.0, .cost_crystals=10);
+    meleeID     = AddUpgrade(raceID, "blades", 0, 0, .energy=2.0, .cost_crystals=10);
 
     // Ultimate 1
-    maelstormID = AddUpgrade(raceID, "maelstorm", 1, 0, .energy=45.0, .cooldown=2.0);
+    maelstormID = AddUpgrade(raceID, "maelstorm", 1, 0, .energy=45.0, .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 2
-    if (GameType == tf2)
-    {
-        controlID = AddUpgrade(raceID, "mind_control", 2, .energy=45.0, .cooldown=2.0);
+    controlID   = AddUpgrade(raceID, "mind_control", 2, .energy=45.0, .cooldown=2.0, .cost_crystals=30);
 
-        if (!IsMindControlAvailable())
-        {
-            SetUpgradeDisabled(raceID, controlID, true);
-            LogMessage("MindControl is not available");
-        }
-    }
-    else
+    if (GetGameType() != tf2 || !IsMindControlAvailable())
     {
-        controlID = AddUpgrade(raceID, "mind_control", 2, .energy=45.0, .cooldown=2.0,
-                               .desc="%NotAvailable");
+        SetUpgradeDisabled(raceID, controlID, true);
+        LogMessage("Disabling Protoss Dark Archon:Mind Control due to MindControl is not available (or gametype != tf2)");
     }
 
     // Ultimate 3
-    ultimateFeedbackID = AddUpgrade(raceID, "ultimate_feedback", 3, 8, .energy=30.0, .cooldown=3.0);
+    ultimateFeedbackID = AddUpgrade(raceID, "ultimate_feedback", 3, 8, .energy=30.0, .cooldown=3.0, .cost_crystals=30);
 
     // Ultimate 4
-    rageID = AddUpgrade(raceID, "rage", 4, 12, .energy=180.0, .vespene=20, .cooldown=100.0);
+    rageID = AddUpgrade(raceID, "rage", 4, 12, .energy=180.0, .vespene=20, .cooldown=100.0, .cost_crystals=50);
 
     // Set the Sidewinder available flag
     IsSidewinderAvailable();

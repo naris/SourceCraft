@@ -32,7 +32,7 @@
 //#include "effect/FlashScreen"
 #include "effect/Shake"
 
-new raceID, boostID, rollID, meleeID, explodeID, volatileID;
+new raceID, burrowID, boostID, rollID, meleeID, explodeID, volatileID;
 
 new Float:g_SpeedLevels[]           = {  0.60,  0.70,  0.80,  1.00, 1.10 };
 new Float:g_AdrenalGlandsPercent[]  = {  0.15,  0.30,  0.40,  0.50, 0.70 };
@@ -69,19 +69,19 @@ public OnSourceCraftReady()
     raceID     = CreateRace("baneling", -1, -1, 21, .faction=Zerg,
                             .type=Biological, .parent="zergling");
 
-    boostID    = AddUpgrade(raceID, "hooks", 0, 0);
-    meleeID    = AddUpgrade(raceID, "adrenal_glands", 0, 0, .energy=2.0);
+    boostID    = AddUpgrade(raceID, "hooks", 0, 0, .cost_crystals=0);
+    meleeID    = AddUpgrade(raceID, "adrenal_glands", 0, 0, .energy=2.0, .cost_crystals=10);
 
     // Ultimate 1
-    rollID     = AddUpgrade(raceID, "roll", 1, 0, .energy=20.0);
+    rollID     = AddUpgrade(raceID, "roll", 1, 0, .energy=20.0, .cost_crystals=0);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 0, 1, 1);
+    burrowID   = AddBurrowUpgrade(raceID, 2, 0, 1, 1);
 
     // Ultimate 3
-    explodeID  = AddUpgrade(raceID, "explode", 3, 0);
+    explodeID  = AddUpgrade(raceID, "explode", 3, 0, .cost_crystals=25);
 
-    volatileID = AddUpgrade(raceID, "volatile", 0, 8);
+    volatileID = AddUpgrade(raceID, "volatile", 0, 8, .cost_crystals=25);
 
     // Get Configuration Data
     GetConfigFloatArray("speed", g_SpeedLevels, sizeof(g_SpeedLevels),

@@ -110,54 +110,55 @@ public OnSourceCraftReady()
                              .faction=Terran, .type=Mechanical,
                              .parent="vessel");
 
-    armorID     = AddUpgrade(raceID, "armor", 0, 0);
-    liftersID   = AddUpgrade(raceID, "lifters");
-    reactorID   = AddUpgrade(raceID, "reactor");
+    armorID     = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    liftersID   = AddUpgrade(raceID, "lifters", .cost_crystals=0);
+    reactorID   = AddUpgrade(raceID, "reactor", .cost_crystals=10);
 
-    hunterID    = AddUpgrade(raceID, "hunter", 0, 16, 1,
-                             .energy=10.0, .vespene=2);
+    hunterID    = AddUpgrade(raceID, "hunter", 0, 16, 1, .energy=10.0,
+                             .vespene=2, .cost_crystals=50);
 
     // Ultimate 2
     seekerID    = AddUpgrade(raceID, "seeker", 2, 12, .energy=100.0,
-                            .vespene=10, .cooldown=30.0);
+                            .vespene=10, .cooldown=30.0, .cost_crystals=75);
 
     if (!IsSidewinderAvailable())
     {
         SetUpgradeDisabled(raceID, hunterID, true);
         SetUpgradeDisabled(raceID, seekerID, true);
-        LogMessage("Sidewinder is not available");
+        LogMessage("Disabling Hunter-Seeker Missiles due to sidewinder is not available");
     }
 
     // Ultimate 1
-    matrixID = AddUpgrade(raceID, "matrix", 2, 8,
-                          .cooldown=2.0);
+    matrixID    = AddUpgrade(raceID, "matrix", 2, 8, .cooldown=2.0,
+                             .cost_crystals=30);
 
     if (!IsUberShieldAvailable())
     {
         SetUpgradeDisabled(raceID, matrixID, true);
-        LogMessage("ubershield is not available");
+        LogMessage("Disabling Terran Raven:Defensive Matrix due to ubershield is not available");
     }
 
     // Ultimate 3
-    mineID = AddUpgrade(raceID, "spider_mine", 3, 1);
+    mineID      = AddUpgrade(raceID, "spider_mine", 3, 1, .cost_crystals=30);
 
     if (!IsFireminesAvailable())
     {
         SetUpgradeDisabled(raceID, mineID, true);
-        LogMessage("Firemines are not available");
+        LogMessage("Disabling Terran Raven:Spider Mine due to firemines are not available");
     }
 
     // Ultimate 3
-    thumperID = AddUpgrade(raceID, "thumper", 3, 4, .energy=80.0,
-                           .cooldown=0.0);
+    thumperID   = AddUpgrade(raceID, "thumper", 3, 4, .energy=80.0,
+                             .cooldown=0.0, .cost_crystals=20);
 
     // Ultimate 4
-    droneID = AddUpgrade(raceID, "drone", 4, 1, .energy=80.0,
-                         .cooldown=2.0);
+    droneID     = AddUpgrade(raceID, "drone", 4, 1, .energy=80.0,
+                            .cooldown=2.0, .cost_crystals=20);
 
     if (!IsNadesAvailable())
     {
         SetUpgradeDisabled(raceID, droneID, true);
+        LogMessage("Disabling Terran Raven:Targeting Drone due to ztf2nades are not available");
     }
 
     // Ultimate 2
@@ -165,28 +166,23 @@ public OnSourceCraftReady()
     {
         cfgMaxObjects = GetConfigNum("max_objects", 3);
         cfgAllowSentries = GetConfigNum("allow_sentries", 2);
-
-        spawnID = AddUpgrade(raceID, "turret", 2, 0, 4, .energy=30.0, .vespene=5,
-                             .cooldown=10.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
-                             .desc=(cfgAllowSentries >= 2) ? "%raven_turret_desc"
-                                   : "%raven_turret_engyonly_desc");
-
-        if (!IsBuildAvailable())
-        {
-            SetUpgradeDisabled(raceID, spawnID, true);
-            LogMessage("remote is not available");
-        }
-        else if (cfgAllowSentries < 1 || cfgMaxObjects <= 1)
-        {
-            SetUpgradeDisabled(raceID, spawnID, true);
-            LogMessage("Disabling Terran Raven:Auto Turret due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
-                    cfgAllowSentries, cfgMaxObjects);
-        }
     }
     else
     {
-        spawnID = AddUpgrade(raceID, "turret", 2, 99,0, 
-                             .desc="%NotAvailable");
+        cfgMaxObjects = 0;
+        cfgAllowSentries = 0;
+    }
+
+    spawnID = AddUpgrade(raceID, "turret", 2, 0, 4, .energy=30.0, .vespene=5, .cost_crystals=75,
+                         .cooldown=10.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
+                         .desc=(cfgAllowSentries >= 2) ? "%raven_turret_desc"
+                                                       : "%raven_turret_engyonly_desc");
+
+    if (cfgAllowSentries < 1 || cfgMaxObjects <= 1  ||
+        GameType != tf2      || !IsBuildAvailable())
+    {
+        SetUpgradeDisabled(raceID, spawnID, true);
+        LogMessage("Disabling Terran Raven:Auto Turret due to configuration: allow_sentries=%d, max_objects=%d (or remote is not available or gametype != tf2)", cfgAllowSentries, cfgMaxObjects);
     }
 
     // Set the HGRSource available flag

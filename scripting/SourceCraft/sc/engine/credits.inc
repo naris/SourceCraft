@@ -73,7 +73,7 @@ ShowEnergy(client, Display:displayFlags=Display_Energy)
         new bool:display = (displayFlags != Display_Energy);
         if (!display)
         {
-            new energyFlags = 0;
+            new EnergyFlags:energyFlags = NoEnergy;
             new Float:limit = GetEnergyLimit(client);
             new Float:rate = GetEnergyRate(client);
 
@@ -90,7 +90,7 @@ ShowEnergy(client, Display:displayFlags=Display_Energy)
                     limit = GetRaceEnergyLimit(raceHandle);
             }
 
-            display = (((energyFlags & RACE_USES_ACCUMULATED) != 0) ||
+            display = (((energyFlags & UsesAccumulated) != NoEnergy) ||
                        rate > 0 || limit > 0 );
         }
 

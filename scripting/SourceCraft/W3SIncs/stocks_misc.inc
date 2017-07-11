@@ -36,7 +36,7 @@ stock W3AddFile(const String:filename[])
  */
 stock W3AddSound(const String:sound[], bool:precache = false, bool:preload = false)
 {
-	/*
+#if !defined SOURCECRAFT
 	decl String:path[PLATFORM_MAX_PATH];
 	Format(path, sizeof(path), "sound/%s", sound);
 	if (FileExists(path)) {
@@ -49,8 +49,9 @@ stock W3AddSound(const String:sound[], bool:precache = false, bool:preload = fal
 		ThrowError("Sound file \"%s\" not found", path);
 	}
 	return 0;
-	*/
+#else
 	return SetupSound(sound, War3_IsL4DEngine() ? DONT_DOWNLOAD : DOWNLOAD, false, precache, preload);
+#endif
 }
 
 //precache sound    and adds to download table, an older function
@@ -106,7 +107,7 @@ stock bool:War3_PrecacheSound(String:sound[]){
  */
 stock W3AddModel(const String:model[], bool:precache = true, bool:preload = true)
 {
-	/*
+#if !defined SOURCECRAFT
 	if (FileExists(model)) {
 		AddFileToDownloadsTable(model);
 		if (precache)
@@ -116,8 +117,9 @@ stock W3AddModel(const String:model[], bool:precache = true, bool:preload = true
 		ThrowError("Model file \"%s\" not found", model);
 	}
 	return 0;
-	*/
+#else
 	return SetupModel(model,.precache=precache,.preload=preload);
+#endif
 }
 
 /**
@@ -130,7 +132,7 @@ stock W3AddModel(const String:model[], bool:precache = true, bool:preload = true
  */
 stock W3AddDecal(const String:decal[], bool:precache = true, bool:preload = true)
 {
-	/*
+#if !defined SOURCECRAFT
 	if (FileExists(decal)) {
 		AddFileToDownloadsTable(decal);
 		if (precache)
@@ -139,8 +141,9 @@ stock W3AddDecal(const String:decal[], bool:precache = true, bool:preload = true
 		ThrowError("Decal file \"%s\" not found", decal);
 	}
 	return 0;
-	*/
+#else
 	return SetupDecal(decal,.precache=precache,.preload=preload);
+#endif
 }
 
 //precache particle    doesn't add to download table
@@ -151,4 +154,20 @@ stock War3_PrecacheParticle( const String:p_strEffectName[] )
 	if ( s_numStringTable == INVALID_STRING_TABLE  )
 		s_numStringTable = FindStringTable( "ParticleEffectNames" );
 	AddToStringTable( s_numStringTable, p_strEffectName );
+}
+
+//probably usefull since it allready gots a getbyshortname brother
+stock War3_GetRaceIDByName(const String:racename[64]) {
+	new RacesLoaded = War3_GetRacesLoaded();
+	decl String:buffer[64],id;
+	id=-1;//so.. -1 means invalid/not found
+	for(new x=1;x<=RacesLoaded;x++)
+	{
+		War3_GetRaceName(x,buffer,sizeof(buffer));
+		if(StrEqual(buffer,racename)) {
+			id=x;
+			break;
+		}
+	}
+	return id;
 }

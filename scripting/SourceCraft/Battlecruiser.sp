@@ -109,23 +109,26 @@ public OnSourceCraftReady()
     raceID      = CreateRace("battlecruiser", -1, -1, 28, 60.0, -1.0, 1.0,
                              Terran, Mechanical, "scv");
 
-    immunityID  = AddUpgrade(raceID, "immunity", 0, 0);
-    armorID     = AddUpgrade(raceID, "armor",    0, 0);
-    weaponsID   = AddUpgrade(raceID, "weapons",  0, 0, .energy=2.0);
+    immunityID  = AddUpgrade(raceID, "immunity", 0, 0, .cost_crystals=0);
+    armorID     = AddUpgrade(raceID, "armor",    0, 0, .cost_crystals=10);
+    weaponsID   = AddUpgrade(raceID, "weapons",  0, 0, .energy=2.0, .cost_crystals=15);
 
     // Ultimate 2
-    jetpackID   = AddUpgrade(raceID, "jetpack", 2, 0);
+    jetpackID   = AddUpgrade(raceID, "jetpack", 2, 0, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogMessage("jetpack is not available");
+        LogMessage("Disabling Terran Battlecruiser:Ship Propulsion due to jetpack is not available");
     }
 
     // Ultimate 1
+    cfgAllowGravgun = GetConfigNum("allow_use", cfgAllowGravgun, .section="gravgun");
+
     if (GetGameType() != tf2)
     {
-        gravAccelID = AddUpgrade(raceID, "gravgun", 1, 10, 1, .energy=10.0, .recurring_energy=10.0, .cooldown=2.0,
+        gravAccelID = AddUpgrade(raceID, "gravgun", 1, 10, 1, .energy=10.0,
+                                 .recurring_energy=10.0, .cooldown=2.0, .cost_crystals=0,
                                  .desc="%battlecruiser_gravgun_notf2_desc" );
     }
     else
@@ -135,43 +138,39 @@ public OnSourceCraftReady()
 
         if (cfgAllowRepair)
         {
-            gravAccelID = AddUpgrade(raceID, "gravgun", 1, 0, .energy=10.0, .recurring_energy=10.0, .cooldown=2.0,
+            gravAccelID = AddUpgrade(raceID, "gravgun", 1, 0, .energy=10.0,
+                                     .recurring_energy=10.0, .cooldown=2.0, .cost_crystals=90,
                                      .desc=(cfgAllowGravgun >= 2) ? "%battlecruiser_gravgun_desc"
-                                     : "%battlecruiser_gravgun_engyonly_desc");
+                                                                  : "%battlecruiser_gravgun_engyonly_desc");
         }
         else if (cfgAllowEnabled)
         {
-            gravAccelID = AddUpgrade(raceID, "gravgun", 1, 0, .energy=10.0, .recurring_energy=10.0, .cooldown=2.0,
+            gravAccelID = AddUpgrade(raceID, "gravgun", 1, 0, .energy=10.0,
+                                     .recurring_energy=10.0, .cooldown=2.0, .cost_crystals=80,
                                      .desc=(cfgAllowGravgun >= 2) ? "%battlecruiser_gravgun_norepair_desc"
-                                     : "%battlecruiser_gravgun_norepair_engyonly_desc");
+                                                                  : "%battlecruiser_gravgun_norepair_engyonly_desc");
         }
         else
         {
-            gravAccelID = AddUpgrade(raceID, "gravgun", 1, 0, 2, .energy=10.0, .recurring_energy=10.0, .cooldown=2.0, .name="",
+            gravAccelID = AddUpgrade(raceID, "gravgun", 1, 0, 2, .energy=10.0,
+                                     .recurring_energy=10.0, .cooldown=2.0, .name="", .cost_crystals=75,
                                      .desc=(cfgAllowGravgun >= 2) ? "%battlecruiser_gravgun_noenable_desc"
-                                     : "%battlecruiser_gravgun_noenable_engyonly_desc");
+                                                                  : "%battlecruiser_gravgun_noenable_engyonly_desc");
         }
     }
 
-    cfgAllowGravgun = GetConfigNum("allow_use", cfgAllowGravgun, .section="gravgun");
-
-    if (!IsGravgunAvailable())
+    if (cfgAllowGravgun < 1 || !IsGravgunAvailable())
     {
         SetUpgradeDisabled(raceID, gravAccelID, true);
-        LogMessage("ztf2grab is not available");
-    }
-    else if (cfgAllowGravgun < 1)
-    {
-        SetUpgradeDisabled(raceID, gravAccelID, true);
-        LogMessage("Disabling Terran Battlecruiser:Gravity Accelerator due to configuration: sc_allow_gravgun=%d",
+        LogMessage("Disabling Terran Battlecruiser:Gravity Accelerator due to configuration: sc_allow_gravgun=%d or ztf2grab is not available",
                    cfgAllowGravgun);
     }
 
     // Ultimate 3
-    yamatoID  = AddUpgrade(raceID, "yamato", 3, 8, .energy=60.0, .cooldown=2.0);
+    yamatoID  = AddUpgrade(raceID, "yamato", 3, 8, .energy=60.0, .cooldown=2.0, .cost_crystals=25);
 
     // Ultimate 4
-    barrageID = AddUpgrade(raceID, "barrage", 4, 6, .energy=60.0, .cooldown=2.0);
+    barrageID = AddUpgrade(raceID, "barrage", 4, 6, .energy=60.0, .cooldown=2.0, .cost_crystals=25);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),

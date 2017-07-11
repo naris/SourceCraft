@@ -15,6 +15,7 @@
 #include "effect/Fade"
 
 // The following are color presets for the FlashScreen function
+#if !defined RGBA_COLOR_RED
 #define RGBA_COLOR_RED		{255,0,0,3}
 #define RGBA_COLOR_GREEN	{0,255,0,3}
 #define RGBA_COLOR_BLUE		{0,0,255,3}
@@ -31,6 +32,7 @@
 #define RGBA_COLOR_GOLD		{255,215,0,3}
 #define RGBA_COLOR_BROWN	{139,69,19,3}
 #define RGBA_COLOR_VIOLET	{238,130,238,3}
+#endif
 
 /**
  * Flashes a player's screen a certain color for a duration.

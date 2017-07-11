@@ -95,14 +95,14 @@ public OnSourceCraftReady()
     raceID          = CreateRace("queen", 100, 0, 36, 120.0, 1000.0, 1.0,
                                  Zerg, Biological);
 
-    armorID         = AddUpgrade(raceID, "armor");
-    pneumatizedID   = AddUpgrade(raceID, "pneumatized");
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-    parasiteID      = AddUpgrade(raceID, "parasite", .energy=1.0);
-    ensnareID       = AddUpgrade(raceID, "ensnare", .energy=3.0);
+    armorID         = AddUpgrade(raceID, "armor", .cost_crystals=5);
+    pneumatizedID   = AddUpgrade(raceID, "pneumatized", .cost_crystals=0);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+    parasiteID      = AddUpgrade(raceID, "parasite", .energy=1.0, .cost_crystals=20);
+    ensnareID       = AddUpgrade(raceID, "ensnare", .energy=3.0, .cost_crystals=20);
 
     // Ultimate 1
-    jetpackID       = AddUpgrade(raceID, "flyer", 1);
+    jetpackID       = AddUpgrade(raceID, "flyer", 1, .cost_crystals=30);
 
     if (!IsJetpackAvailable())
     {
@@ -110,17 +110,17 @@ public OnSourceCraftReady()
         LogMessage("jetpack is not available");
     }
 
-    meiosisID       = AddUpgrade(raceID, "meiosis");
+    meiosisID       = AddUpgrade(raceID, "meiosis", .cost_crystals=25);
 
     // Ultimate 2
     broodlingID     = AddUpgrade(raceID, "broodling", 2, 10,
                                  .energy=90.0, .cooldown=5.0,
-                                 .accumulated=true);
+                                 .accumulated=true, .cost_crystals=40);
 
     // Ultimate 3
     infestID        = AddUpgrade(raceID, "infest", 3, 12,
                                  .energy=180.0, .cooldown=5.0,
-                                 .accumulated=true);
+                                 .accumulated=true, .cost_crystals=40);
 
     // Set the Sidewinder available flag
     IsSidewinderAvailable();
@@ -851,7 +851,7 @@ SpawnBroodling(client)
                     PrepareAndEmitSoundToAll(queenFireWav,client);
                     PrepareAndEmitSoundToAll(broodlingHitWav,target);
 
-                    ChangeRace(target, g_broodlingRace, true, false);
+                    ChangeRace(target, g_broodlingRace, true, false, false);
 
                     DisplayMessage(client,Display_Ultimate, "%t",
                                    "BroodlingSpawned", target);
@@ -915,7 +915,7 @@ InfestEnemy(client)
                     PrepareAndEmitSoundToAll(queenFireWav,client);
                     PrepareAndEmitSoundToAll(infestedHitWav,target);
 
-                    ChangeRace(target, g_infestedRace, true, false);
+                    ChangeRace(target, g_infestedRace, true, false, false);
 
                     DisplayMessage(client,Display_Ultimate, "%t",
                                    "YouHaveInfested", target);

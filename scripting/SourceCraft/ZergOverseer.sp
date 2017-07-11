@@ -95,15 +95,15 @@ public OnSourceCraftReady()
     raceID          = CreateRace("overseer", -1, -1, 36, 45.0, 150.0, 1.0,
                                  Zerg, Biological, "overlord");
 
-    pneumatizedID   = AddUpgrade(raceID, "pneumatized");
-    boostID         = AddUpgrade(raceID, "boost");
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-    healingID       = AddUpgrade(raceID, "healing");
-    transfusionID   = AddUpgrade(raceID, "transfusion");
-    detectorID      = AddUpgrade(raceID, "antennae");
+    pneumatizedID   = AddUpgrade(raceID, "pneumatized", .cost_crystals=0);
+    boostID         = AddUpgrade(raceID, "boost", .cost_crystals=0);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+    healingID       = AddUpgrade(raceID, "healing", .cost_crystals=10);
+    transfusionID   = AddUpgrade(raceID, "transfusion", .cost_crystals=20);
+    detectorID      = AddUpgrade(raceID, "antennae", .cost_crystals=0);
 
     // Ultimate 1
-    jetpackID   = AddUpgrade(raceID, "flyer", 1, 0);
+    jetpackID   = AddUpgrade(raceID, "flyer", 1, 0, .cost_crystals=30);
 
     if (!IsJetpackAvailable())
     {
@@ -113,10 +113,11 @@ public OnSourceCraftReady()
 
     // Ultimate 2
     excreteID       = AddUpgrade(raceID, "excrete", 2, .energy=30.0,
-                                 .cooldown=2.0);
+                                 .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 3
-    sacsID      = AddUpgrade(raceID, "sacs", 3, .energy=30.0);
+    sacsID      = AddUpgrade(raceID, "sacs", 3, .energy=30.0,
+                             .cost_crystals=30);
 
     if (!IsPiggybackAvailable())
     {

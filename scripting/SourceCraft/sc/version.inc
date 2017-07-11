@@ -9,4 +9,4 @@
  #endinput
 #endif
 
-#define SOURCECRAFT_VERSION         "25.5 $Revision: 5867 $" 
+#define SOURCECRAFT_VERSION         "30 $Revision: 5867 $" 

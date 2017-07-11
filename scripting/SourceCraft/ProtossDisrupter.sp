@@ -101,34 +101,34 @@ public OnSourceCraftReady()
                                   .faction=Protoss, .type=Cybernetic,
                                   .parent="stalker");
 
-    armorID          = AddUpgrade(raceID, "armor", 0, 0);
-    shieldsID        = AddUpgrade(raceID, "shields", .energy=1.0);
-    speedID          = AddUpgrade(raceID, "speed");
-    missileID        = AddUpgrade(raceID, "ground_weapons", .energy=2.0);
+    armorID          = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    shieldsID        = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
+    speedID          = AddUpgrade(raceID, "speed", .cost_crystals=0);
+    missileID        = AddUpgrade(raceID, "ground_weapons", .energy=2.0, .cost_crystals=20);
     hallucinationID  = AddUpgrade(raceID, "hallucination", .energy=60.0,
-                                  .recurring_energy=2.0, .cooldown=2.0);
+                                  .recurring_energy=2.0, .cooldown=2.0, .cost_crystals=25);
 
     // Ultimate 1
     disruptionID     = AddUpgrade(raceID, "disruption", 1, 1, .energy=60.0,
-                                  .recurring_energy=2.0, .cooldown=2.0);
+                                  .recurring_energy=2.0, .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 2
-    nullVoidID       = AddUpgrade(raceID, "null_void", 2, 10,
-                                  .energy=80.0, .cooldown=2.0);
+    nullVoidID       = AddUpgrade(raceID, "null_void", 2, 10, .energy=80.0,
+                                  .cooldown=2.0, .cost_crystals=15);
 
     // Ultimate 3
-    guardianShieldID = AddUpgrade(raceID, "guardian_shield", 3, 8,
-                                  .energy=60.0, .cooldown=2.0);
+    guardianShieldID = AddUpgrade(raceID, "guardian_shield", 3, 8, .energy=60.0,
+                                  .cooldown=2.0, .cost_crystals=25);
 
     // Ultimate 4
-    forceFieldID     = AddUpgrade(raceID, "force_field", 4, 8,
-                                  .energy=100.0, .cooldown=5.0);
+    forceFieldID     = AddUpgrade(raceID, "force_field", 4, 8, .energy=100.0,
+                                  .cooldown=5.0, .cost_crystals=25);
 
     if (!IsUberShieldAvailable())
     {
         SetUpgradeDisabled(raceID, guardianShieldID, true);
         SetUpgradeDisabled(raceID, forceFieldID, true);
-        LogMessage("ubershield is not available");
+        LogMessage("Disabling Protoss Disrupter:Guardian & Force Field due to ubershield is not available");
     }
 
     // Set the HGRSource available flag

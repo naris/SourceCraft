@@ -121,104 +121,94 @@ public OnSourceCraftReady()
                                  .faction=Protoss, .type=Robotic,
                                  .parent="probe");
 
-    shieldsID       = AddUpgrade(raceID, "shields", 0, 0, .energy=1.0);
+    shieldsID       = AddUpgrade(raceID, "shields", 0, 0, .energy=1.0,
+                                 .cost_crystals=10);
 
     if (GetGameType() == tf2)
     {
         cfgMaxObjects = GetConfigNum("max_objects", 3);
         cfgAllowSentries = GetConfigNum("allow_sentries", 2);
-
-        if (cfgAllowSentries >= 2)
-        {
-            batteriesID = AddUpgrade(raceID, "batteries", 0, 0);
-            forgeID = AddUpgrade(raceID, "forge", 0, 0);
-        }
-        else
-        {
-            batteriesID = AddUpgrade(raceID, "batteries", 0, 0, .desc="%prism_batteries_nosentries_desc");
-
-            forgeID = AddUpgrade(raceID, "forge", 0, 0);
-            SetUpgradeDisabled(raceID, forgeID, true);
-
-            LogMessage("Disabling Protoss Warp Prism:Forge due to configuration: sc_allow_sentries=%d",
-                       cfgAllowSentries);
-        }
-
-        warpGateID = AddUpgrade(raceID, "warp_gate", 0, 0);
-
-        if (!IsTeleporterAvailable())
-        {
-            SetUpgradeDisabled(raceID, warpGateID, true);
-            LogMessage("tf2teleporter is not available");
-        }
-
-        cannonID    = AddUpgrade(raceID, "phase_cannon", 0, 0, .energy=2.0);
     }
     else
     {
-        LogMessage("sentries, teleporters and/or dispensers are not supported by this mod");
-
-        batteriesID = AddUpgrade(raceID, "batteries", 0, 0, .desc="%NotAvailable");
-        forgeID     = AddUpgrade(raceID, "forge", 0, 99,0, .desc="%NotAvailable");
-        warpGateID  = AddUpgrade(raceID, "warp_gate", 0, 99, 0, .desc="%NotAvailable");
-
-        cannonID    = AddUpgrade(raceID, "phase_cannon", 0, 0, .energy=2.0,
-                                 .desc="%prism_phase_cannon_notf2_desc");
+        cfgMaxObjects = 0;
+        cfgAllowSentries = 0;
     }
 
-    enhancementID   = AddUpgrade(raceID, "speed", 0, 0);
+    forgeID = AddUpgrade(raceID, "forge", 0, 0, .cost_crystals=20);
+
+    if (GameType != tf2 || cfgAllowSentries < 2)
+    {
+        batteriesID = AddUpgrade(raceID, "batteries", 0, 0, .cost_crystals=20,
+                                 .desc="%prism_batteries_nosentries_desc");
+
+        SetUpgradeDisabled(raceID, forgeID, true);
+        LogMessage("Disabling Protoss Warp Prism:Forge due to configuration: sc_allow_sentries=%d (or gametype != tf2)",
+                   cfgAllowSentries);
+    }
+    else
+    {
+        batteriesID = AddUpgrade(raceID, "batteries", 0, 0, .cost_crystals=30);
+    }
+
+
+    warpGateID = AddUpgrade(raceID, "warp_gate", 0, 0, .cost_crystals=0);
+
+    if (GameType != tf2 || !IsTeleporterAvailable())
+    {
+        SetUpgradeDisabled(raceID, warpGateID, true);
+        LogMessage("Disabling Protoss Warp Prism:Warp Gate due to tf2teleporter is not available (or gametype != tf2)");
+    }
+
+    cannonID    = AddUpgrade(raceID, "phase_cannon", 0, 0, .energy=2.0, .cost_crystals=30);
+
+    if (GameType != tf2)
+    {
+        SetUpgradeDisabled(raceID, cannonID, true);
+        LogMessage("Disabling Protoss Warp Prism:Phase Cannon due to gametype != tf2");
+    }
+
+    enhancementID   = AddUpgrade(raceID, "speed", 0, 0, .cost_crystals=0);
 
     // Ultimate 1
-    jetpackID       = AddUpgrade(raceID, "jetpack", 1, 4);
+    jetpackID       = AddUpgrade(raceID, "jetpack", 1, 4, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogMessage("jetpack is not available");
+        LogMessage("Disabling Protoss Warp Prism:Gravitic Drive due to jetpack is not available");
     }
 
     cfgAllowTeleport = bool:GetConfigNum("allow_teleport", true);
 
     // Ultimate 2
-    if (GameType == tf2)
+    spawnID = AddUpgrade(raceID, "warp_in", 2, 0, 4, .energy=30.0,
+                         .vespene=5, .cooldown=10.0, .cost_crystals=75,
+                         .cooldown_type=Cooldown_SpecifiesBaseValue,
+                         .desc=(cfgAllowSentries >= 2) ? "%prism_warp_in_desc"
+                               : "%prism_warp_in_engyonly_desc");
+
+    if (GameType != tf2 || cfgAllowSentries < 1 || cfgMaxObjects <= 1)
     {
-        spawnID = AddUpgrade(raceID, "warp_in", 2, 0, 4,
-                             .energy=30.0, .vespene=5, .cooldown=10.0,
-                             .cooldown_type=Cooldown_SpecifiesBaseValue,
-                             .desc=(cfgAllowSentries >= 2) ? "%prism_warp_in_desc"
-                                   : "%prism_warp_in_engyonly_desc");
-
-        if (cfgAllowSentries < 1 || cfgMaxObjects <= 1)
-        {
-            SetUpgradeDisabled(raceID, spawnID, true);
-            LogMessage("Disabling Protoss Warp Prism:Warp In due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
-                       cfgAllowSentries, cfgMaxObjects);
-        }
-
-        // Ultimate 3
-        recallStructureID = AddUpgrade(raceID, "recall_structure", 3, 1, 1,
-                                       .energy=30.0, .vespene=5, .cooldown=5.0);
-
-        if (!cfgAllowTeleport || cfgAllowSentries < 1)
-        {
-            SetUpgradeDisabled(raceID, recallStructureID, true);
-            LogMessage("Disabling Protoss Warp Prism:Recall Structure due to configuration: sc_allow_sentries=%d, sc_allow_teleport=%d",
-                       cfgAllowSentries, cfgAllowTeleport);
-        }
+        SetUpgradeDisabled(raceID, spawnID, true);
+        LogMessage("Disabling Protoss Warp Prism:Warp In due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d (or gametype != tf2)",
+                   cfgAllowSentries, cfgMaxObjects);
     }
-    else
-    {
-        // Ultimate 2
-        spawnID = AddUpgrade(raceID, "warp_in", 2, 99,0, .desc="Not Applicable");
 
-        // Ultimate 3
-        recallStructureID = AddUpgrade(raceID, "recall_structure", 3, 99,0, .desc="Not Applicable");
-        //LogMessage("sentries, teleporters and/or dispensers are not supported by this mod");
+    // Ultimate 3
+    recallStructureID = AddUpgrade(raceID, "recall_structure", 3, 1, 1, .energy=30.0,
+                                   .vespene=5, .cooldown=5.0, .cost_crystals=50);
+
+    if (GameType != tf2 || !cfgAllowTeleport || cfgAllowSentries < 1)
+    {
+        SetUpgradeDisabled(raceID, recallStructureID, true);
+        LogMessage("Disabling Protoss Warp Prism:Recall Structure due to configuration: sc_allow_sentries=%d, sc_allow_teleport=%d (or gametype != tf2)",
+                   cfgAllowSentries, cfgAllowTeleport);
     }
 
     // Ultimate 4
-    recallID = AddUpgrade(raceID, "recall_team", 4, 8, 1,
-                          .energy=30.0, .vespene=5, .cooldown=5.0);
+    recallID = AddUpgrade(raceID, "recall_team", 4, 8, 1, .energy=30.0,
+                          .vespene=5, .cooldown=5.0, .cost_crystals=50);
 
     if (!cfgAllowTeleport)
     {
@@ -736,7 +726,7 @@ public Action:ForgeTimer(Handle:timer,any:ref)
                         health = maxHealth;
 
                     SetEntProp(object, Prop_Data, "m_iMaxHealth", health);
-                    SetEntProp(object, Prop_Send, "m_iHealth", health);
+                    SetEntityHealth(object, health);
 
                     if (TF2_GetObjectType(object) == TFObject_Sentry)
                     {

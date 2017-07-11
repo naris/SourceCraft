@@ -61,7 +61,7 @@ new Float:g_ArmorPercent[][2]  = { {0.00, 0.00},
 
 new cfgMaxRespawns             = 4;
 
-new raceID, boostID, carapaceID, regenerationID;
+new raceID, boostID, carapaceID, regenerationID, burrowID;
 new meleeID, spawningID, bloodlustID, banelingID;
 
 new g_banelingRace = -1;
@@ -131,13 +131,14 @@ public OnSourceCraftReady()
 {
     raceID          = CreateRace("zergling", 16, 0, 29, .faction=Zerg, .type=Biological);
 
-    boostID         = AddUpgrade(raceID, "boost");
-    meleeID         = AddUpgrade(raceID, "adrenal_glands", .energy=2.0);
-    regenerationID  = AddUpgrade(raceID, "regeneration");
-    carapaceID      = AddUpgrade(raceID, "carapace");
+    boostID         = AddUpgrade(raceID, "boost", .cost_crystals=0);
+    meleeID         = AddUpgrade(raceID, "adrenal_glands", .energy=2.0, .cost_crystals=20);
+    regenerationID  = AddUpgrade(raceID, "regeneration", .cost_crystals=10);
+    carapaceID      = AddUpgrade(raceID, "carapace", .cost_crystals=5);
 
-    cfgMaxRespawns = GetConfigNum("max_respawns", cfgMaxRespawns);
-    spawningID  = AddUpgrade(raceID, "spawning", .max_level=cfgMaxRespawns, .energy=10.0);
+    cfgMaxRespawns  = GetConfigNum("max_respawns", cfgMaxRespawns);
+    spawningID      = AddUpgrade(raceID, "spawning", .max_level=cfgMaxRespawns,
+                                 .energy=10.0, .cost_crystals=25);
 
     if (cfgMaxRespawns < 1)
     {
@@ -147,15 +148,15 @@ public OnSourceCraftReady()
     }
 
     // Ultimate 1
-    bloodlustID     = AddUpgrade(raceID, "bloodlust", 1, .energy=30.0);
+    bloodlustID     = AddUpgrade(raceID, "bloodlust", 1, .energy=30.0, .cost_crystals=30);
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 6, 1);
+    burrowID        = AddBurrowUpgrade(raceID, 2, 6, 1);
 
     // Ultimate 3
-    banelingID      = AddUpgrade(raceID, "baneling", 3, 12, 1,
-                                 .energy=120.0, .cooldown=30.0,
-                                 .accumulated=true);
+    banelingID      = AddUpgrade(raceID, "baneling", 3, 12, 1, .energy=120.0,
+                                 .accumulated=true, .cooldown=30.0,
+                                 .cost_crystals=50);
 
     // Get Configuration Data
 
@@ -700,7 +701,7 @@ BanelingMorph(client)
 
         DisplayMessage(client,Display_Ultimate, "%t", "MorphedIntoBaneling");
 
-        ChangeRace(client, g_banelingRace, true, false);
+        ChangeRace(client, g_banelingRace, true, false, true);
     }
 }
 

@@ -83,7 +83,6 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     LoadTranslations("sc.common.phrases.txt");
-    LoadTranslations("sc.bunker.phrases.txt");
     LoadTranslations("sc.firebat.phrases.txt");
     LoadTranslations("sc.stimpacks.phrases.txt");
 
@@ -97,34 +96,34 @@ public OnSourceCraftReady()
     raceID    = CreateRace("firebat", -1, 0, 24, .faction=Terran,
                            .type=Biological, .parent="marine");
 
-    weaponsID = AddUpgrade(raceID, "weapons", .energy=2.0);
+    weaponsID = AddUpgrade(raceID, "weapons", .energy=2.0, .cost_crystals=20);
 
-    armorID   = AddUpgrade(raceID, "armor");
+    armorID   = AddUpgrade(raceID, "armor", .cost_crystals=5);
 
     // Ultimate 3
     if (IsROFAvailable())
     {
         stimpacksID = AddUpgrade(raceID, "ultimate_stimpacks", 3, 4, .energy=30.0,
-                                 .recurring_energy=3.0, .cooldown=10.0);
+                                 .recurring_energy=3.0, .cooldown=10.0, .cost_crystals=25);
     }
     else
     {
-        stimpacksID = AddUpgrade(raceID, "stimpacks", 0, 12);
+        stimpacksID = AddUpgrade(raceID, "stimpacks", 0, 12, .cost_crystals=0);
     }
 
-    plasmaID = AddUpgrade(raceID, "plasma", false, 0, .energy=1.0);
+    plasmaID = AddUpgrade(raceID, "plasma", false, 0, .energy=1.0, .cost_crystals=20);
 
     // Ultimate 1
-    flamethrowerID = AddUpgrade(raceID, "flamethrower", 1, 1);
+    flamethrowerID = AddUpgrade(raceID, "flamethrower", 1, 1, .cost_crystals=30);
 
     if (!IsFlamethrowerAvailable())
     {
         SetUpgradeDisabled(raceID, flamethrowerID, true);
-        LogError("sm_flamethrower is not available");
+        LogMessage("Disabling Terran Firebat:Perdition Flamethrower due to sm_flamethrower is not available");
     }
 
     // Ultimate 2
-    bunkerID = AddUpgrade(raceID, "bunker", 2, .energy=30.0, .cooldown=5.0);
+    bunkerID    = AddBunkerUpgrade(raceID, 2);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),

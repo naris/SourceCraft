@@ -63,7 +63,6 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
     LoadTranslations("sc.common.phrases.txt");
-    LoadTranslations("sc.bunker.phrases.txt");
     LoadTranslations("sc.marine.phrases.txt");
 
     GetGameType();
@@ -76,22 +75,22 @@ public OnSourceCraftReady()
     raceID          = CreateRace("marine", 16, 0, 22, .faction=Terran,
                                  .type=Biological);
 
-    u238ID          = AddUpgrade(raceID, "u238", .energy=2.0);
-    armorID         = AddUpgrade(raceID, "armor");
-    stimpacksID     = AddUpgrade(raceID, "stimpacks");
-    combatShieldID  = AddUpgrade(raceID, "combat_shield");
+    u238ID          = AddUpgrade(raceID, "u238", .energy=2.0, .cost_crystals=20);
+    armorID         = AddUpgrade(raceID, "armor", .cost_crystals=5);
+    stimpacksID     = AddUpgrade(raceID, "stimpacks", .cost_crystals=0);
+    combatShieldID  = AddUpgrade(raceID, "combat_shield", .cost_crystals=5);
 
     // Ultimate 1
-    bunkerID        = AddUpgrade(raceID, "bunker", 1, 6, .energy=10.0,
-                                 .cooldown=2.0);
+    bunkerID        = AddBunkerUpgrade(raceID, 1, 6, .energy=10.0,
+                                       .cooldown=2.0, .cost_crystals=10);
 
     // Ultimate 3
     marauderID      = AddUpgrade(raceID, "marauder", 3, 10,1, .energy=200.0,
-                                 .cooldown=30.0, .accumulated=true);
+                                 .cooldown=30.0, .accumulated=true, .cost_crystals=50);
 
     // Ultimate 4
     firebatID       = AddUpgrade(raceID, "firebat", 4, 8,1, .energy=150.0,
-                                 .cooldown=30.0, .accumulated=true);
+                                 .cooldown=30.0, .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -448,7 +447,7 @@ FirebatTraining(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_firebatRace, true, false);
+        ChangeRace(client, g_firebatRace, true, false, true);
     }
 }
 
@@ -484,7 +483,7 @@ MarauderTraining(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_marauderRace, true, false);
+        ChangeRace(client, g_marauderRace, true, false, true);
     }
 }
 

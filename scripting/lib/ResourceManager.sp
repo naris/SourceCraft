@@ -175,19 +175,20 @@ public OnMapEnd()
 /**
  * Sets up a given sound.
  *
- * @param model			Name of the sound to precache.
+ * @param sound			Name of the sound to precache.
  * @param force		    If force is true the sound limit will be ignored for this sound.
  * @param download		If download is 2 the file will be added to the downloadables table,
  *                      If download is 1 the file be added if it's within the allotted number of files.
  * @param precache		If precache is true the file will be precached.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return				Returns a model index (if precached).
+ * @return				Returns true if successfully precached.
  *
- * native SetupSound(const String:sound[], download=DOWNLOAD, bool:force=false,
- *                   bool:precache=false, bool:preload=false);
+ * native bool:SetupSound(const String:sound[], download=DOWNLOAD, bool:force=false,
+ *                        bool:precache=false, bool:preload=false);
  */
 public Native_SetupSound(Handle:plugin,numParams)
 {
+    new bool:wasPrecached = false;
     decl String:sound[PLATFORM_MAX_PATH+1];
     GetNativeString(1, sound, sizeof(sound));
 
@@ -279,7 +280,7 @@ public Native_SetupSound(Handle:plugin,numParams)
         {
             if (force || GetGameMode() != MvM)
             {
-                PrecacheSound(sound, GetNativeCell(5)); // preload);
+                wasPrecached = PrecacheSound(sound, GetNativeCell(5)); // preload);
                 value  = Precached;
                 update = true;
             }
@@ -293,6 +294,8 @@ public Native_SetupSound(Handle:plugin,numParams)
 
     if (update)
         SetTrieValue(g_soundTrie, sound, value);
+
+    return wasPrecached;
 }
 
 /**

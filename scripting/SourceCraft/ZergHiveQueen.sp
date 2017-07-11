@@ -72,7 +72,7 @@ new g_ToxicCreepDamage[][2]     = { { 0, 1 },
                                     { 2, 8 },
                                     { 4, 10} };
 
-new raceID, carapaceID, regenerationID, transfusionID;
+new raceID, carapaceID, regenerationID, transfusionID, burrowID;
 new nydusCanalID, spinesID, mutateID, tunnelID, toxicID, spawnID;
 
 new cfgMaxObjects;
@@ -96,121 +96,91 @@ public OnPluginStart()
     LoadTranslations("sc.objects.phrases.txt");
     LoadTranslations("sc.hive_queen.phrases.txt");
 
+    GetGameType();
+
     if (IsSourceCraftLoaded())
         OnSourceCraftReady();
 }
 
 public OnSourceCraftReady()
 {
-    raceID          = CreateRace("hive_queen", -1, -1, 32, .faction=Zerg,
-                                 .type=Biological, .parent="drone");
-
-    carapaceID      = AddUpgrade(raceID, "armor", 0, 0);
-    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0);
-
-    if (GetGameType() == tf2)
+    if (GameType == tf2)
     {
         cfgMaxObjects = GetConfigNum("max_objects", 3);
         cfgAllowSentries = GetConfigNum("allow_sentries", 2);
 
-        transfusionID = AddUpgrade(raceID, "transfusion", 0, 0,
-                                   .desc=(cfgAllowSentries >= 2) ?
-                                   "%hive_queen_transfusion_desc" : 
-                                   "%hive_queen_transfusion_nosentries_desc");
-
-        toxicID       = AddUpgrade(raceID, "toxic_creep", 0, 0);
-    }
-    else
-    {
-        transfusionID = AddUpgrade(raceID, "transfusion", 0, 99, 0,
-                                   .desc="%NotAvailable");
-
-        toxicID       = AddUpgrade(raceID, "toxic_creep", 0, 99, 0,
-                                   .desc="%NotAvailable");
-    }
-
-    spinesID          = AddUpgrade(raceID, "spines", 0, 0, .energy=2.0);
-
-    if (GameType == tf2)
-    {
-        nydusCanalID  = AddUpgrade(raceID, "teleporter", 0, 0);
-
-        if (!IsTeleporterAvailable())
-        {
-            SetUpgradeDisabled(raceID, nydusCanalID, true);
-            LogMessage("tf2teleporter is not available");
-        }
-    }
-    else
-    {
-        nydusCanalID  = AddUpgrade(raceID, "teleporter", 0, 99, 0,
-                                  .desc="%NotAvailable");
-    }
-
-    // Ultimate 1
-    if (GameType == tf2)
-    {
-        mutateID      = AddUpgrade(raceID, "mutate", 1, 1, .energy=0.0, .vespene=0,
-                                   .cooldown=0.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
-                                   .desc=(cfgAllowSentries >= 2) ? "%hive_queen_mutate_desc"
-                                         : "%hive_queen_mutate_engyonly_desc");
-
         IsAmpNodeAvailable();
         IsGravgunAvailable();
-
-        if (!IsBuildAvailable())
-        {
-            SetUpgradeDisabled(raceID, mutateID, true);
-            LogMessage("remote is not available");
-        }
-        else if (cfgAllowSentries < 1)
-        {
-            SetUpgradeDisabled(raceID, mutateID, true);
-            LogMessage("Disabling Zerg Hive Queen:Mutate due to configuration: sc_allow_sentries=%d",
-                       cfgAllowSentries);
-        }
     }
     else
     {
-        mutateID      = AddUpgrade(raceID, "mutate", 1, 99,0,
-                                   .desc="%NotAllowed");
-
+        cfgMaxObjects    = 0;
+        cfgAllowSentries = 0;
     }
+
+    raceID          = CreateRace("hive_queen", -1, -1, 32, .faction=Zerg,
+                                 .type=Biological, .parent="drone");
+
+    carapaceID      = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    regenerationID  = AddUpgrade(raceID, "regeneration", 0, 0, .cost_crystals=10);
+
+    transfusionID   = AddUpgrade(raceID, "transfusion", 0, 0, .cost_crystals=75,
+                                 .desc=(cfgAllowSentries >= 2) ?
+                                 "%hive_queen_transfusion_desc" : 
+                                 "%hive_queen_transfusion_nosentries_desc");
+
+    toxicID         = AddUpgrade(raceID, "toxic_creep", 0, 0, .cost_crystals=25);
+
+    spinesID        = AddUpgrade(raceID, "spines", 0, 0, .energy=2.0, .cost_crystals=20);
+
+    nydusCanalID    = AddUpgrade(raceID, "teleporter", 0, 0, .cost_crystals=0);
+
+    // Ultimate 1
+    mutateID        = AddUpgrade(raceID, "mutate", 1, 1, .energy=0.0, .vespene=0, .cost_crystals=65,
+                                 .cooldown=0.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
+                                 .desc=(cfgAllowSentries >= 2) ? "%hive_queen_mutate_desc"
+                                       : "%hive_queen_mutate_engyonly_desc");
 
     // Ultimate 4
-    if (GameType == tf2)
-    {
-        spawnID       = AddUpgrade(raceID, "spawn", 4, 4, .energy=30.0, .vespene=5,
-                                   .cooldown=10.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
-                                   .desc=(cfgAllowSentries >= 2) ? "%hive_queen_spawn_desc"
-                                         : "%hive_queen_spawn_engyonly_desc");
-
-        if (cfgAllowSentries < 1 || cfgMaxObjects <= 1)
-        {
-            SetUpgradeDisabled(raceID, spawnID, true);
-            LogMessage("Disabling Zerg Hive Queen:Spawn Structure due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d",
-                       cfgAllowSentries, cfgMaxObjects);
-        }
-    }
-    else
-    {
-        spawnID = AddUpgrade(raceID, "spawn", 4, 99,0, 
-                             .desc="%NotAllowed");
-    }
+    spawnID         = AddUpgrade(raceID, "spawn", 4, 4, .energy=30.0, .vespene=5, .cost_crystals=75,
+                                 .cooldown=10.0, .cooldown_type=Cooldown_SpecifiesBaseValue,
+                                 .desc=(cfgAllowSentries >= 2) ? "%hive_queen_spawn_desc"
+                                       : "%hive_queen_spawn_engyonly_desc");
 
     // Ultimate 2
-    AddBurrowUpgrade(raceID, 2, 0, 2, 1);
+    burrowID        = AddBurrowUpgrade(raceID, 2, 0, 2, 1);
 
     // Ultimate 3
-    if (GameType == tf2)
+    tunnelID = AddUpgrade(raceID, "tunnel", 3, 0, 1, .energy=30.0,
+                          .cooldown=0.0, .cost_crystals=30);
+
+    // Disable inapplicable upgrades
+    if (GameType != tf2)
     {
-        tunnelID = AddUpgrade(raceID, "tunnel", 3, 0, 1,
-                              .energy=30.0, .cooldown=0.0);
+        SetUpgradeDisabled(raceID, transfusionID, true);
+        SetUpgradeDisabled(raceID, toxicID, true);
+        SetUpgradeDisabled(raceID, tunnelID, true);
+        LogMessage("Disabling Zerg Hive Queen:Transfusion, Toxic Creep & Deep Tunnel due to gametype != tf2)");
     }
-    else
+
+    if (!IsTeleporterAvailable())
     {
-        tunnelID = AddUpgrade(raceID, "tunnel", 3, 99, 0,
-                              .desc="%NotAvailable");
+        SetUpgradeDisabled(raceID, nydusCanalID, true);
+        LogMessage("Disabling Zerg Hive Queen:Transfusion & Toxic Creep due to tf2teleporter is not available (or gametype != tf2)");
+    }
+
+    if (!IsBuildAvailable() || cfgAllowSentries < 1)
+    {
+        SetUpgradeDisabled(raceID, mutateID, true);
+        LogMessage("Disabling Zerg Hive Queen:Mutate due to configuration: sc_allow_sentries=%d or remote is not available (or gametype != tf2)",
+                   cfgAllowSentries);
+    }
+
+    if (GameType != tf2 || cfgAllowSentries < 1 || cfgMaxObjects <= 1)
+    {
+        SetUpgradeDisabled(raceID, spawnID, true);
+        LogMessage("Disabling Zerg Hive Queen:Spawn Structure due to configuration: sc_allow_sentries=%d, sc_maxobjects=%d (or gametype != tf2)",
+                   cfgAllowSentries, cfgMaxObjects);
     }
 
     // Set the Infinite Ammo available flag
@@ -231,7 +201,7 @@ public OnSourceCraftReady()
     GetConfigFloatArray("damage_percent",  g_SpinePercent, sizeof(g_SpinePercent),
                         g_SpinePercent, raceID, spinesID);
 
-    if (GetGameType() == tf2)
+    if (GameType == tf2)
     {
         GetConfigFloatArray("range",  g_TransfusionRange, sizeof(g_TransfusionRange),
                             g_TransfusionRange, raceID, transfusionID);
@@ -706,7 +676,7 @@ public Action:CreepTimer(Handle:timer, any:userid)
                                     if (health > max_health)
                                         health = max_health;
 
-                                    SetEntProp(ent, Prop_Send, "m_iHealth", health);
+                                    SetEntityHealth(ent, health);
                                 }
                             }
 

@@ -8,65 +8,79 @@
 
 #include "sc/cooldown"
 
-#define RACE_STRINGS                             0
-#define RACE_MESSAGES                            1
-#define RACE_UPGRADES                            2
-#define RACE_IDENT                               3
-#define RACE_REQUIRED_LEVEL                      4
-#define RACE_TECH_LEVEL                          5
-#define RACE_MAX_LEVEL                           6
-#define RACE_INITIAL_ENERGY                      7
-#define RACE_ENERGY_LIMIT                        8
-#define RACE_ENERGY_RATE                         9
-#define RACE_ENERGY_FLAGS                       10
-#define RACE_FACTION                            11
-#define RACE_TYPE                               12
-#define RACE_ID                                 13
-#define RACE_IS_NEW                             14
-#define RACE_PARENT_ID                          15
-#define RACE_TRANSLATION                        16
-#define RACE_CONFIG_HANDLE                      17
-#define RACE_CONFIG_LOADED                      18
-#define RACE_COMPLETED                          19
+enum RaceData
+{
+    RaceData_Strings = 0,
+    RaceData_Messages,
+    RaceData_Upgrades,
+    RaceData_RequiredLevel,
+    RaceData_TechLevel,
+    RaceData_MaxLevel,
+    RaceData_InitialEnergy,
+    RaceData_EnergyLimit,
+    RaceData_EnergyRate,
+    RaceData_EnergyFlags,
+    RaceData_Faction,
+    RaceData_Type,
+    RaceData_IsNew,
+    RaceData_ParentId,
+    RaceData_Translation,
+    RaceData_ConfigHandle,
+    RaceData_ConfigLoaded,
+    RaceData_Completed,
+    RaceData_Ident,
+    RaceData_Plugin,
+    RaceData_Id
+};
 
-#define RACE_NAME                                0
-#define RACE_SHORT_NAME                          1
-#define RACE_PARENT_NAME                         2
+enum RaceStrings
+{
+    RaceString_Name = 0,
+    RaceString_ShortName,
+    RaceString_ParentName
+};
 
-#define RACE_SWITCHMESSAGE                       0
-#define RACE_SWITCHMESSAGE_DEAD                  1
-#define RACE_TRANSLATIONFILE                     2
+enum RaceMessages
+{
+    RaceMessage_Switch,
+    RaceMessage_SwitchDead,
+    RaceMessage_TranslationFile
+};
 
-#define UPGRADE_STRINGS                          0
-#define UPGRADE_ENERGY                           1
-#define UPGRADE_RECURRING_ENERGY                 2
-#define UPGRADE_ACCUMULATED                      3
-#define UPGRADE_CRYSTALS                         4
-#define UPGRADE_VESPENE                          5
-#define UPGRADE_COOLDOWN                         6
-#define UPGRADE_COOLDOWN_TYPE                    7
-#define UPGRADE_REQUIRED_LEVEL                   8
-#define UPGRADE_MAX_LEVEL                        9
-#define UPGRADE_COST_CRYSTALS                   10
-#define UPGRADE_COST_VESPENE                    11
-#define UPGRADE_CATEGORY                        12
-#define UPGRADE_DISABLED                        13
-#define UPGRADE_DATA_COUNT                      14
+enum UpgradeData
+{
+    UpgradeData_Strings = 0,
+    UpgradeData_Energy,
+    UpgradeData_RecurringEnergy,
+    UpgradeData_Accumulated,
+    UpgradeData_Crystals,
+    UpgradeData_Vespene,
+    UpgradeData_Cooldown,
+    UpgradeData_CooldownType,
+    UpgradeData_RequiredLevel,
+    UpgradeData_MaxLevel,
+    UpgradeData_CostCrystals,
+    UpgradeData_CostVespene,
+    UpgradeData_Category,
+    UpgradeData_Disabled,
+    UpgradeData_Completed
+};
 
-#define UPGRADE_NAME                             0
-#define UPGRADE_SHORT_NAME                       1
-#define UPGRADE_DESC                             2
-#define UPGRADE_PARM                             3
+enum UpgradeStrings
+{
+    UpgradeString_Name,
+    UpgradeString_ShortName,
+    UpgradeString_Desc,
+    UpgradeString_Parm
+};
 
-// Valid values for *_CONFIG_LOADED
-#define CONFIG_NOT_LOADED                        0
-#define CONFIG_WAS_LOADED                        1
-#define CONFIG_WAS_UPDATED                       2
-
-// Race Energy Use Flags
-#define RACE_NO_ENERGY                           0
-#define RACE_USES_ENERGY                         1
-#define RACE_USES_ACCUMULATED                    2
+// Valid values for ConfigLoaded
+enum ConfigLoadedStatus
+{
+    ConfigNotLoaded = 0,
+    ConfigWasLoaded,
+    ConfigWasUpdated
+}
 
 // Accessor Macros for Race & Index Arrays
 #define GetRaceCount()                           GetArraySize(raceArray)
@@ -76,135 +90,159 @@
 #define GetRaceIndexHandle(%1)                   (Handle:GetArrayCell(raceIndex,%1))
 
 // Accessor Macros for Race Data
-#define GetRaceId(%1)                            GetArrayCell(%1,RACE_ID)
-#define SetRaceId(%1,%2)                         SetArrayCell(%1,RACE_ID,%2)
+#define GetRaceId(%1)                            GetArrayCell(%1,_:RaceData_Id)
+#define SetRaceId(%1,%2)                         SetArrayCell(%1,_:RaceData_Id,%2)
 
-#define GetRaceIdent(%1)                         GetArrayCell(%1,RACE_IDENT)
-#define SetRaceIdent(%1,%2)                      SetArrayCell(%1,RACE_IDENT,%2)
+#define GetRacePlugin(%1)                        (Handle:GetArrayCell(%1,_:RaceData_Plugin))
+#define SetRacePlugin(%1,%2)                     SetArrayCell(%1,_:RaceData_Plugin,%2)
 
-#define GetRaceRequiredLevel(%1)                 GetArrayCell(%1,RACE_REQUIRED_LEVEL)
-#define SetRaceRequiredLevel(%1,%2)              SetArrayCell(%1,RACE_REQUIRED_LEVEL,%2)
+#define GetRaceIdent(%1)                         GetArrayCell(%1,_:RaceData_Ident)
+#define SetRaceIdent(%1,%2)                      SetArrayCell(%1,_:RaceData_Ident,%2)
 
-#define GetRaceTechLevel(%1)                     GetArrayCell(%1,RACE_TECH_LEVEL)
-#define SetRaceTechLevel(%1,%2)                  SetArrayCell(%1,RACE_TECH_LEVEL,%2)
+#define GetRaceRequiredLevel(%1)                 GetArrayCell(%1,_:RaceData_RequiredLevel)
+#define SetRaceRequiredLevel(%1,%2)              SetArrayCell(%1,_:RaceData_RequiredLevel,%2)
 
-#define GetRaceMaxLevel(%1)                      GetArrayCell(%1,RACE_MAX_LEVEL)
-#define SetRaceMaxLevel(%1,%2)                   SetArrayCell(%1,RACE_MAX_LEVEL,%2)
+#define GetRaceTechLevel(%1)                     GetArrayCell(%1,_:RaceData_TechLevel)
+#define SetRaceTechLevel(%1,%2)                  SetArrayCell(%1,_:RaceData_TechLevel,%2)
 
-#define GetRaceInitialEnergy(%1)                 Float:GetArrayCell(%1,RACE_INITIAL_ENERGY)
-#define SetRaceInitialEnergy(%1,%2)              SetArrayCell(%1,RACE_INITIAL_ENERGY,%2)
+#define GetRaceMaxLevel(%1)                      GetArrayCell(%1,_:RaceData_MaxLevel)
+#define SetRaceMaxLevel(%1,%2)                   SetArrayCell(%1,_:RaceData_MaxLevel,%2)
 
-#define GetRaceEnergyLimit(%1)                   Float:GetArrayCell(%1,RACE_ENERGY_LIMIT)
-#define SetRaceEnergyLimit(%1,%2)                SetArrayCell(%1,RACE_ENERGY_LIMIT,%2)
+#define GetRaceInitialEnergy(%1)                 (Float:GetArrayCell(%1,_:RaceData_InitialEnergy))
+#define SetRaceInitialEnergy(%1,%2)              SetArrayCell(%1,_:RaceData_InitialEnergy,%2)
 
-#define GetRaceEnergyRate(%1)                    Float:GetArrayCell(%1,RACE_ENERGY_RATE)
-#define SetRaceEnergyRate(%1,%2)                 SetArrayCell(%1,RACE_ENERGY_RATE,%2)
+#define GetRaceEnergyLimit(%1)                   (Float:GetArrayCell(%1,_:RaceData_EnergyLimit))
+#define SetRaceEnergyLimit(%1,%2)                SetArrayCell(%1,_:RaceData_EnergyLimit,%2)
 
-#define GetRaceEnergyFlags(%1)                   GetArrayCell(%1,RACE_ENERGY_FLAGS)
-#define SetRaceEnergyFlags(%1,%2)                SetArrayCell(%1,RACE_ENERGY_FLAGS,%2)
+#define GetRaceEnergyRate(%1)                    (Float:GetArrayCell(%1,_:RaceData_EnergyRate))
+#define SetRaceEnergyRate(%1,%2)                 SetArrayCell(%1,_:RaceData_EnergyRate,%2)
 
-#define GetRaceFaction(%1)                       (Faction:GetArrayCell(%1,RACE_FACTION))
-#define SetRaceFaction(%1,%2)                    SetArrayCell(%1,RACE_FACTION,_:%2)
+#define GetRaceEnergyFlags(%1)                   (EnergyFlags:GetArrayCell(%1,_:RaceData_EnergyFlags))
+#define SetRaceEnergyFlags(%1,%2)                SetArrayCell(%1,_:RaceData_EnergyFlags,_:%2)
 
-#define GetRaceType(%1)                          (UnitType:GetArrayCell(%1,RACE_TYPE))
-#define SetRaceType(%1,%2)                       SetArrayCell(%1,RACE_TYPE,_:%2)
+#define GetRaceFaction(%1)                       (Faction:GetArrayCell(%1,_:RaceData_Faction))
+#define SetRaceFaction(%1,%2)                    SetArrayCell(%1,_:RaceData_Faction,_:%2)
 
-#define GetRaceIsNew(%1)                         (bool:GetArrayCell(%1,RACE_IS_NEW))
-#define SetRaceIsNew(%1,%2)                      SetArrayCell(%1,RACE_IS_NEW,%2)
+#define GetRaceType(%1)                          (UnitType:GetArrayCell(%1,_:RaceData_Type))
+#define SetRaceType(%1,%2)                       SetArrayCell(%1,_:RaceData_Type,_:%2)
 
-#define GetRaceConfigHandle(%1)                  (Handle:GetArrayCell(%1,RACE_CONFIG_HANDLE))
-#define SetRaceConfigHandle(%1,%2)               SetArrayCell(%1,RACE_CONFIG_HANDLE,_:%2)
+#define GetRaceIsNew(%1)                         (bool:GetArrayCell(%1,_:RaceData_IsNew))
+#define SetRaceIsNew(%1,%2)                      SetArrayCell(%1,_:RaceData_IsNew,%2)
 
-#define GetRaceConfigIsLoaded(%1)                GetArrayCell(%1,RACE_CONFIG_LOADED)
-#define SetRaceConfigIsLoaded(%1,%2)             SetArrayCell(%1,RACE_CONFIG_LOADED,%2)
+#define GetRaceConfigHandle(%1)                  (Handle:GetArrayCell(%1,_:RaceData_ConfigHandle))
+#define SetRaceConfigHandle(%1,%2)               SetArrayCell(%1,_:RaceData_ConfigHandle,_:%2)
 
-#define GetRaceHasBeenCompleted(%1)              (bool:GetArrayCell(%1,RACE_COMPLETED))
-#define SetRaceHasBeenCompleted(%1,%2)           SetArrayCell(%1,RACE_COMPLETED,%2)
+#define GetRaceConfigIsLoaded(%1)                (ConfigLoadedStatus:GetArrayCell(%1,_:RaceData_ConfigLoaded))
+#define SetRaceConfigIsLoaded(%1,%2)             SetArrayCell(%1,_:RaceData_ConfigLoaded,_:%2)
 
-#define GetRaceTranslation(%1)                   (Translation:GetArrayCell(%1,RACE_TRANSLATION))
-#define SetRaceTranslation(%1,%2)                SetArrayCell(%1,RACE_TRANSLATION,_:%2)
+#define GetRaceHasBeenCompleted(%1)              (bool:GetArrayCell(%1,_:RaceData_Completed))
+#define SetRaceHasBeenCompleted(%1,%2)           SetArrayCell(%1,_:RaceData_Completed,%2)
+
+#define GetRaceTranslation(%1)                   (Translation:GetArrayCell(%1,_:RaceData_Translation))
+#define SetRaceTranslation(%1,%2)                SetArrayCell(%1,_:RaceData_Translation,_:%2)
 
 // Accessor Macros for Race Strings
-#define GetRaceStringHandle(%1)                  GetArrayCell(%1,RACE_STRINGS)
+#define GetRaceStringHandle(%1)                  (Handle:GetArrayCell(%1,_:RaceData_Strings))
 
-#define GetRaceShortName(%1,%2,%3)               GetArrayString(GetRaceStringHandle(%1),RACE_SHORT_NAME,%2,%3)
-#define SetRaceShortName(%1,%2)                  SetArrayString(GetRaceStringHandle(%1),RACE_SHORT_NAME,%2)
+#define GetRaceHShortName(%1,%2,%3)              GetArrayString(%1,_:RaceString_ShortName,%2,%3)
+#define SetRaceHShortName(%1,%2)                 SetArrayString(%1,_:RaceString_ShortName,%2)
 
-#define GetRaceNameString(%1,%2,%3)              GetArrayString(GetRaceStringHandle(%1),RACE_NAME,%2,%3)
-#define SetRaceName(%1,%2)                       SetArrayString(GetRaceStringHandle(%1),RACE_NAME,%2)
+#define GetRaceShortName(%1,%2,%3)               GetRaceHShortName(GetRaceStringHandle(%1),%2,%3)
+#define SetRaceShortName(%1,%2)                  SetRaceHShortName(GetRaceStringHandle(%1),%2)
 
-#define GetRaceParentName(%1,%2,%3)              GetArrayString(GetRaceStringHandle(%1),RACE_PARENT_NAME,%2,%3)
-#define SetRaceParentName(%1,%2)                 SetArrayString(GetRaceStringHandle(%1),RACE_PARENT_NAME,%2)
+#define GetRaceHNameString(%1,%2,%3)             GetArrayString(%1,_:RaceString_Name,%2,%3)
+#define SetRaceHName(%1,%2)                      SetArrayString(%1,_:RaceString_Name,%2)
+
+#define GetRaceNameString(%1,%2,%3)              GetRaceHNameString(GetRaceStringHandle(%1),%2,%3)
+#define SetRaceName(%1,%2)                       SetRaceHName(GetRaceStringHandle(%1),%2)
+
+#define GetRaceHParentName(%1,%2,%3)             GetArrayString(%1,_:RaceString_ParentName,%2,%3)
+#define SetRaceHParentName(%1,%2)                SetArrayString(%1,_:RaceString_ParentName,%2)
+
+#define GetRaceParentName(%1,%2,%3)              GetRaceHParentName(GetRaceStringHandle(%1),%2,%3)
+#define SetRaceParentName(%1,%2)                 SetRaceHParentName(GetRaceStringHandle(%1),%2)
 
 // Accessor Macros for Race Messages
-#define GetRaceMessageHandle(%1)                 GetArrayCell(%1,RACE_MESSAGES)
+#define GetRaceMessageHandle(%1)                 (Handle:GetArrayCell(%1,_:RaceData_Messages))
 
-#define GetRaceSwitchString(%1,%2,%3)            GetArrayString(GetRaceMessageHandle(%1),RACE_SWITCHMESSAGE,%2,%3)
-#define SetRaceSwitchString(%1,%2)               SetArrayString(GetRaceMessageHandle(%1),RACE_SWITCHMESSAGE,%2)
+#define GetRaceHSwitchString(%1,%2,%3)           GetArrayString(%1,_:RaceMessage_Switch,%2,%3)
+#define SetRaceHSwitchString(%1,%2)              SetArrayString(%1,_:RaceMessage_Switch,%2)
 
-#define GetRaceSwitchStringDead(%1,%2,%3)        GetArrayString(GetRaceMessageHandle(%1),RACE_SWITCHMESSAGE_DEAD,%2,%3)
-#define SetRaceSwitchStringDead(%1,%2)           SetArrayString(GetRaceMessageHandle(%1),RACE_SWITCHMESSAGE_DEAD,%2)
+#define GetRaceSwitchString(%1,%2,%3)            GetRaceHSwitchString(GetRaceMessageHandle(%1),%2,%3)
+#define SetRaceSwitchString(%1,%2)               SetRaceHSwitchString(GetRaceMessageHandle(%1),%2)
 
-#define GetRaceTranslationFile(%1,%2,%3)         GetArrayString(GetRaceMessageHandle(%1),RACE_TRANSLATIONFILE,%2,%3)
-#define SetRaceTranslationFile(%1,%2)            SetArrayString(GetRaceMessageHandle(%1),RACE_TRANSLATIONFILE,%2)
+#define GetRaceHSwitchStringDead(%1,%2,%3)       GetArrayString(%1,_:RaceMessage_SwitchDead,%2,%3)
+#define SetRaceHSwitchStringDead(%1,%2)          SetArrayString(%1,_:RaceMessage_SwitchDead,%2)
+
+#define GetRaceSwitchStringDead(%1,%2,%3)        GetRaceHSwitchStringDead(GetRaceMessageHandle(%1),%2,%3)
+#define SetRaceSwitchStringDead(%1,%2)           SetRaceHSwitchStringDead(GetRaceMessageHandle(%1),%2)
+
+#define GetRaceHTranslationFile(%1,%2,%3)        GetArrayString(%1,_:RaceMessage_TranslationFile,%2,%3)
+#define SetRaceHTranslationFile(%1,%2)           SetArrayString(%1,_:RaceMessage_TranslationFile,%2)
+
+#define GetRaceTranslationFile(%1,%2,%3)         GetRaceHTranslationFile(GetRaceMessageHandle(%1),%2,%3)
+#define SetRaceTranslationFile(%1,%2)            SetRaceHTranslationFile(GetRaceMessageHandle(%1),%2)
 
 // Accessor Macros for Upgrade Data
-#define GetUpgradeListHandle(%1)                 GetArrayCell(%1,RACE_UPGRADES)
-#define GetUpgradeHandle(%1,%2)                  GetArrayCell(GetUpgradeListHandle(%1),%2)
+#define GetUpgradeListHandle(%1)                 (Handle:GetArrayCell(%1,_:RaceData_Upgrades))
+#define GetUpgradeHandle(%1,%2)                  (Handle:GetArrayCell(GetUpgradeListHandle(%1),%2))
 
-#define GetUpgradeEnergy(%1,%2)                  Float:GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_ENERGY)
-#define SetUpgradeEnergy(%1,%2,%3)               SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_ENERGY,%3)
+#define GetUpgradeEnergy(%1,%2)                  (Float:GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Energy))
+#define SetUpgradeEnergy(%1,%2,%3)               SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Energy,%3)
 
-#define GetUpgradeRecurringEnergy(%1,%2)         Float:GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_RECURRING_ENERGY)
-#define SetUpgradeRecurringEnergy(%1,%2,%3)      SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_RECURRING_ENERGY,%3)
+#define GetUpgradeRecurringEnergy(%1,%2)         (Float:GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_RecurringEnergy))
+#define SetUpgradeRecurringEnergy(%1,%2,%3)      SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_RecurringEnergy,%3)
 
-#define GetUpgradeCanUseAccumulated(%1,%2)          (bool:GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_ACCUMULATED))
-#define SetUpgradeUseAccumulated(%1,%2,%3)       SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_ACCUMULATED,_:%3)
+#define GetUpgradeCanUseAccumulated(%1,%2)       (bool:GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Accumulated))
+#define SetUpgradeUseAccumulated(%1,%2,%3)       SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Accumulated,_:%3)
 
-#define GetUpgradeCrystals(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_CRYSTALS)
-#define SetUpgradeCrystals(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_CRYSTALS,%3)
+#define GetUpgradeCrystals(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Crystals)
+#define SetUpgradeCrystals(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Crystals,%3)
 
-#define GetUpgradeVespene(%1,%2)                 GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_VESPENE)
-#define SetUpgradeVespene(%1,%2,%3)              SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_VESPENE,%3)
+#define GetUpgradeVespene(%1,%2)                 GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Vespene)
+#define SetUpgradeVespene(%1,%2,%3)              SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Vespene,%3)
 
-#define GetUpgradeCostCrystals(%1,%2)            GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COST_CRYSTALS)
-#define SetUpgradeCostCrystals(%1,%2,%3)         SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COST_CRYSTALS,%3)
+#define GetUpgradeCostCrystals(%1,%2)            GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_CostCrystals)
+#define SetUpgradeCostCrystals(%1,%2,%3)         SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_CostCrystals,%3)
 
-#define GetUpgradeCostVespene(%1,%2)             GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COST_VESPENE)
-#define SetUpgradeCostVespene(%1,%2,%3)          SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COST_VESPENE,%3)
+#define GetUpgradeCostVespene(%1,%2)             GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_CostVespene)
+#define SetUpgradeCostVespene(%1,%2,%3)          SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_CostVespene,%3)
 
-#define GetUpgradeCooldownDuration(%1,%2)        (Float:GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COOLDOWN))
-#define SetUpgradeCooldownDuration(%1,%2,%3)     SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COOLDOWN,_:%3)
+#define GetUpgradeCooldownDuration(%1,%2)        (Float:GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Cooldown))
+#define SetUpgradeCooldownDuration(%1,%2,%3)     SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Cooldown,_:%3)
 
-#define GetUpgradeCooldownType(%1,%2)            (CooldownType:GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COOLDOWN_TYPE))
-#define SetUpgradeCooldownType(%1,%2,%3)         SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_COOLDOWN_TYPE,_:%3)
+#define GetUpgradeCooldownType(%1,%2)            (CooldownType:GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_CooldownType))
+#define SetUpgradeCooldownType(%1,%2,%3)         SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_CooldownType,_:%3)
 
-#define GetUpgradeRequiredLevel(%1,%2)           GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_REQUIRED_LEVEL)
-#define SetUpgradeRequiredLevel(%1,%2,%3)        SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_REQUIRED_LEVEL,%3)
+#define GetUpgradeRequiredLevel(%1,%2)           GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_RequiredLevel)
+#define SetUpgradeRequiredLevel(%1,%2,%3)        SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_RequiredLevel,%3)
 
-#define GetUpgradeMaxLevel(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_MAX_LEVEL)
-#define SetUpgradeMaxLevel(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_MAX_LEVEL,%3)
+#define GetUpgradeMaxLevel(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_MaxLevel)
+#define SetUpgradeMaxLevel(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_MaxLevel,%3)
 
-#define GetUpgradeCategory(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_CATEGORY)
-#define SetUpgradeCategory(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_CATEGORY,%3)
+#define GetUpgradeCategory(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Category)
+#define SetUpgradeCategory(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Category,%3)
 
-#define GetUpgradeDisabled(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_DISABLED)
-#define SetUpgradeDisabled(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_DISABLED,%3)
+#define GetUpgradeDisabled(%1,%2)                GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Disabled)
+#define SetUpgradeDisabled(%1,%2,%3)             SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Disabled,%3)
+
+#define GetUpgradeHasBeenCompleted(%1,%2)        GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Completed)
+#define SetUpgradeHasBeenCompleted(%1,%2,%3)     SetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Completed,%3)
 
 // Accessor Macros for Upgrade Strings
-#define GetUpgradeStringHandle(%1,%2)            GetArrayCell(GetUpgradeHandle(%1,%2),UPGRADE_STRINGS)
+#define GetUpgradeStringHandle(%1,%2)            GetArrayCell(GetUpgradeHandle(%1,%2),_:UpgradeData_Strings)
 
-#define GetUpgradeShortName(%1,%2,%3,%4)         GetArrayString(GetUpgradeStringHandle(%1,%2),UPGRADE_SHORT_NAME,%3,%4)
-#define SetUpgradeShortName(%1,%2,%3)            SetArrayString(SetUpgradeStringHandle(%1,%2),UPGRADE_SHORT_NAME,%3)
+#define GetUpgradeShortName(%1,%2,%3,%4)         GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_ShortName,%3,%4)
+#define SetUpgradeShortName(%1,%2,%3)            SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_ShortName,%3)
 
-#define GetUpgradeNameString(%1,%2,%3,%4)        GetArrayString(GetUpgradeStringHandle(%1,%2),UPGRADE_NAME,%3,%4)
-#define SetUpgradeName(%1,%2,%3)                 SetArrayString(SetUpgradeStringHandle(%1,%2),UPGRADE_NAME,%3)
+#define GetUpgradeNameString(%1,%2,%3,%4)        GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Name,%3,%4)
+#define SetUpgradeName(%1,%2,%3)                 SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Name,%3)
 
-#define GetUpgradeDescriptionString(%1,%2,%3,%4) GetArrayString(GetUpgradeStringHandle(%1,%2),UPGRADE_DESC,%3,%4)
-#define SetUpgradeDescription(%1,%2,%3)          SetArrayString(SetUpgradeStringHandle(%1,%2),UPGRADE_DESC,%3)
+#define GetUpgradeDescriptionString(%1,%2,%3,%4) GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Desc,%3,%4)
+#define SetUpgradeDescription(%1,%2,%3)          SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Desc,%3)
 
-#define GetUpgradeParameter(%1,%2,%3,%4,%5)      GetArrayString(GetUpgradeStringHandle(%1,%2),UPGRADE_PARM+%3,%4,%5)
-#define SetUpgradeParameter(%1,%2,%3,%4)         SetArrayString(SetUpgradeStringHandle(%1,%2),UPGRADE_PARM+%3,%4)
+#define GetUpgradeParameter(%1,%2,%3,%4,%5)      GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Parm+%3,%4,%5)
+#define SetUpgradeParameter(%1,%2,%3,%4)         SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Parm+%3,%4)
 
 // A vector of race infomation
 new Handle:raceArray = INVALID_HANDLE;
@@ -262,7 +300,7 @@ ClearRaceArray()
             for(new upgrade=0;upgrade<upgradeCount;upgrade++)
             {
                 new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
-                new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
+                new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,_:UpgradeData_Strings);
 
                 ClearArray(upgradeHandle);
                 CloseHandle(upgradeHandle);
@@ -322,11 +360,12 @@ CreateRace(const String:short[], required_level=0, tech_level=0, max_level=16,
            Float:initial_energy=30.0, Float:energy_limit=100.0, Float:energy_rate=1.0, Faction:faction=Generic,
            UnitType:type=GenericUnit, const String:parent[]="", Translation:translation=Translation_Auto,
            const String:translation_file[]="", const String:name[]="", const String:switch_message[]="",
-           const String:pending_message[]="", const String:desc[]="", const String:image[]="")
+           const String:pending_message[]="", const String:desc[]="", const String:image[]="",
+           Handle:plugin=INVALID_HANDLE)
 {
     new Handle:raceConfig;
     new Handle:raceHandle;
-    new raceLoaded;
+    new ConfigLoadedStatus:raceLoaded;
 
     TraceInto("Race", "CreateRace", "short=%s, required_level=%d, tech_level=%d, max_level=%d, initial_energy=%f, energy_limit=%f, energy_rate=%f, faction=%d, type=%d, parent=%s, translation=%d, file=%s, name=%s, switch_message=%s, pending_message=%s, image=%s, desc=%s", short, required_level, tech_level, max_level, initial_energy, energy_limit, energy_rate, faction, type, parent, translation, translation_file, name, switch_message, pending_message, image, desc);
 
@@ -348,7 +387,7 @@ CreateRace(const String:short[], required_level=0, tech_level=0, max_level=16,
     else
     {
         raceConfig = LoadRaceConfig(short, raceLoaded);
-        if (raceLoaded == CONFIG_NOT_LOADED)
+        if (raceLoaded == ConfigNotLoaded)
         {
             if (faction == Unassigned)
                 KvSetNum(raceConfig,"faction", _:faction);
@@ -470,16 +509,18 @@ CreateRace(const String:short[], required_level=0, tech_level=0, max_level=16,
         SetRaceConfigHandle(raceHandle,raceConfig);
         SetRaceConfigIsLoaded(raceHandle,raceLoaded);
         SetRaceHasBeenCompleted(raceHandle,false);
+        SetRacePlugin(raceHandle,plugin);
+        SetRaceId(raceHandle,raceId);
 
         new Handle:messagesHandle=GetRaceMessageHandle(raceHandle);
-        SetArrayString(messagesHandle,RACE_SWITCHMESSAGE,switch_message);
-        SetArrayString(messagesHandle,RACE_SWITCHMESSAGE_DEAD,pending_message);
-        SetArrayString(messagesHandle,RACE_TRANSLATIONFILE,translation_path);
+        SetArrayString(messagesHandle, _:RaceMessage_Switch,            switch_message);
+        SetArrayString(messagesHandle, _:RaceMessage_SwitchDead,        pending_message);
+        SetArrayString(messagesHandle, _:RaceMessage_TranslationFile,   translation_path);
 
         new Handle:stringsHandle=GetRaceStringHandle(raceHandle);
-        SetArrayString(stringsHandle,RACE_NAME,name);
-        SetArrayString(stringsHandle,RACE_SHORT_NAME,short);
-        SetArrayString(stringsHandle,RACE_PARENT_NAME,parent);
+        SetArrayString(stringsHandle, _:RaceString_Name,       name);
+        SetArrayString(stringsHandle, _:RaceString_ShortName,  short);
+        SetArrayString(stringsHandle, _:RaceString_ParentName, parent);
     }
     else
     {
@@ -520,26 +561,27 @@ CreateRace(const String:short[], required_level=0, tech_level=0, max_level=16,
         PushArrayCell(raceHandle,stringsHandle);
         PushArrayCell(raceHandle,messagesHandle);
         PushArrayCell(raceHandle,upgradeListHandle);
-        PushArrayCell(raceHandle,raceIdent);
         PushArrayCell(raceHandle,required_level);
         PushArrayCell(raceHandle,tech_level);
         PushArrayCell(raceHandle,max_level);
         PushArrayCell(raceHandle,initial_energy);
         PushArrayCell(raceHandle,energy_limit);
         PushArrayCell(raceHandle,energy_rate);
-        PushArrayCell(raceHandle,false); // accumulated
+        PushArrayCell(raceHandle,NoEnergy);     // EnergyFlags
         PushArrayCell(raceHandle,faction);
         PushArrayCell(raceHandle,type);
+        PushArrayCell(raceHandle,raceIsNew);
+        PushArrayCell(raceHandle,0);            // parent id
+        PushArrayCell(raceHandle,translation);
+        PushArrayCell(raceHandle,raceConfig);   // config handle
+        PushArrayCell(raceHandle,raceLoaded);   // config loaded
+        PushArrayCell(raceHandle,false);        // completed
+        PushArrayCell(raceHandle,raceIdent);
+        PushArrayCell(raceHandle,plugin);
 
         // Add new Race Data into Race Array.
         raceId = PushArrayCell(raceArray,raceHandle); // return index.
         PushArrayCell(raceHandle,raceId);
-        PushArrayCell(raceHandle,raceIsNew);
-        PushArrayCell(raceHandle,0); // parent id
-        PushArrayCell(raceHandle,translation);
-        PushArrayCell(raceHandle,raceConfig); // config handle
-        PushArrayCell(raceHandle,raceLoaded); // config loaded
-        PushArrayCell(raceHandle,false); // completed
 
         SetTraceCategory("Array");
         Trace("CreateArray raceHandle[%d]=0x%08x", raceId, raceHandle);
@@ -666,7 +708,7 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
         new Handle:raceConfig = GetRaceConfigHandle(raceHandle);
         if (raceConfig != INVALID_HANDLE)
         {
-            if (GetRaceConfigIsLoaded(raceHandle) != CONFIG_WAS_LOADED)
+            if (GetRaceConfigIsLoaded(raceHandle) != ConfigWasLoaded)
             {
                 decl String:short[SHORT_STRING_LENGTH];
                 GetRaceShortName(raceHandle, short, sizeof(short));
@@ -675,7 +717,7 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
 
             CloseHandle(raceConfig);
             SetRaceConfigHandle(raceHandle,INVALID_HANDLE);
-            SetRaceConfigIsLoaded(raceHandle,CONFIG_NOT_LOADED);
+            SetRaceConfigIsLoaded(raceHandle,ConfigNotLoaded);
         }
 
         // Update the database, if specified
@@ -700,6 +742,47 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
 
                 UpdateRace(raceIdent, short, raceName, required_level, tech_level,
                            raceParent, faction, type, raceDesc, raceImage);
+
+                // Update all upgrades that have been modifed since they were created
+                new upgradeCount = GetUpgradeCount(raceHandle);
+                for(new upgrade=0;upgrade<upgradeCount;upgrade++)
+                {
+                    new Handle:upgradeHandle=GetUpgradeHandle(raceHandle, upgrade);
+                    if (!GetArrayCell(upgradeHandle, _:UpgradeData_Completed))
+                    {
+                        decl String:upgradeName[NAME_STRING_LENGTH];
+                        GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName));
+
+                        decl String:upgradeDesc[DESCRIPTION_LENGTH];
+                        GetUpgradeDescription(raceHandle, upgrade, upgradeDesc, sizeof(upgradeDesc));
+
+                        decl String:upgradeImage[NAME_STRING_LENGTH];
+                        GetUpgradeImage(raceHandle, upgrade, upgradeImage, sizeof(upgradeImage), image);
+
+                        new upgrade_category        = GetArrayCell(upgradeHandle, _:UpgradeData_Category);
+                        new req_level               = GetArrayCell(upgradeHandle, _:UpgradeData_RequiredLevel);
+                        new max_level               = GetArrayCell(upgradeHandle, _:UpgradeData_MaxLevel);
+                        new Float:energy            = GetArrayCell(upgradeHandle, _:UpgradeData_Energy);
+                        new Float:recurring_energy  = GetArrayCell(upgradeHandle, _:UpgradeData_RecurringEnergy);
+                        new bool:accumulated        = GetArrayCell(upgradeHandle, _:UpgradeData_Accumulated);
+                        new crystals                = GetArrayCell(upgradeHandle, _:UpgradeData_Crystals);
+                        new vespene                 = GetArrayCell(upgradeHandle, _:UpgradeData_Vespene);
+                        new cost_crystals           = GetArrayCell(upgradeHandle, _:UpgradeData_CostCrystals);
+                        new cost_vespene            = GetArrayCell(upgradeHandle, _:UpgradeData_Vespene);
+                        new Float:cooldown          = GetArrayCell(upgradeHandle, _:UpgradeData_Cooldown);
+
+                        // Update database
+                        if (InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
+                                          short, upgradeName, upgradeDesc, upgradeImage,
+                                          cost_crystals, cost_vespene, req_level,
+                                          max_level, energy, accumulated,
+                                          recurring_energy, crystals,
+                                          vespene, cooldown))
+                        {
+                            SetArrayCell(upgradeHandle, _:UpgradeData_Completed, true);
+                        }
+                    }
+                }
             }
         }
     }
@@ -718,19 +801,13 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         #pragma unused race
     #endif
 
-    if (cost_crystals < 0)
-        cost_crystals = g_iUpgradeCrystalsCost;
-
-    if (cost_vespene < 0)
-        cost_vespene = g_iUpgradeVespeneCost;
-
-    new raceLoaded;
+    new ConfigLoadedStatus:raceLoaded;
     new Handle:raceConfig = GetRaceConfig(raceHandle, raceLoaded);
     if (raceConfig != INVALID_HANDLE)
     {
         new bool:upgradeFound;
         new raceMaxLevel = GetRaceMaxLevel(raceHandle);
-        if (raceLoaded != CONFIG_NOT_LOADED)
+        if (raceLoaded != ConfigNotLoaded)
         {
             KvRewind(raceConfig);
             upgradeFound = KvJumpToKey(raceConfig, short, false);
@@ -741,13 +818,13 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
                 recurring_energy = KvGetFloat(raceConfig,"recurring_energy", recurring_energy);
                 crystals = KvGetNum(raceConfig,"crystals", crystals);
                 vespene = KvGetNum(raceConfig,"vespene", vespene);
-                cost_crystals = KvGetNum(raceConfig,"cost_crystals", crystals);
-                cost_vespene = KvGetNum(raceConfig,"cost_vespene", vespene);
+                cost_crystals = KvGetNum(raceConfig,"cost_crystals", cost_crystals);
+                cost_vespene = KvGetNum(raceConfig,"cost_vespene", cost_vespene);
                 cooldown = KvGetFloat(raceConfig,"cooldown", cooldown);
                 KvGoBack(raceConfig);
             }
             else if (required_level < raceMaxLevel)
-                SetRaceConfigIsLoaded(raceHandle,CONFIG_WAS_UPDATED);
+                SetRaceConfigIsLoaded(raceHandle,ConfigWasUpdated);
         }
         else
             upgradeFound = false;
@@ -793,33 +870,42 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
     if (required_level < 0)
         required_level = (upgrade_category >= 1) ? g_iMinUltimate : 1;
 
+    if (cost_crystals < 0)
+        cost_crystals = g_iUpgradeCrystalsCost;
+
+    if (cost_vespene < 0)
+        cost_vespene = g_iUpgradeVespeneCost;
+
+    new Handle:upgradeHandle;
     new Handle:upgradeStringHandle;
     new upgrade = FindUpgrade(raceHandle, short);
     if (upgrade >= 0)
     {
         new Handle:upgradeListHandle=GetUpgradeListHandle(raceHandle);
-        new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
-        SetArrayCell(upgradeHandle, UPGRADE_ENERGY,energy);
-        SetArrayCell(upgradeHandle, UPGRADE_RECURRING_ENERGY,recurring_energy);
-        SetArrayCell(upgradeHandle, UPGRADE_ACCUMULATED,accumulated);
-        SetArrayCell(upgradeHandle, UPGRADE_CRYSTALS,crystals);
-        SetArrayCell(upgradeHandle, UPGRADE_VESPENE,vespene);
-        SetArrayCell(upgradeHandle, UPGRADE_COOLDOWN,cooldown);
-        SetArrayCell(upgradeHandle, UPGRADE_COOLDOWN_TYPE,cooldown_type);
-        SetArrayCell(upgradeHandle, UPGRADE_REQUIRED_LEVEL,required_level);
-        SetArrayCell(upgradeHandle, UPGRADE_MAX_LEVEL,max_level);
-        SetArrayCell(upgradeHandle, UPGRADE_COST_CRYSTALS,cost_crystals);
-        SetArrayCell(upgradeHandle, UPGRADE_COST_VESPENE,cost_vespene);
-        SetArrayCell(upgradeHandle, UPGRADE_CATEGORY,upgrade_category);
-        SetArrayCell(upgradeHandle, UPGRADE_DISABLED,disabled);
 
-        upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
-        SetArrayString(upgradeStringHandle,UPGRADE_NAME,name);
-        SetArrayString(upgradeStringHandle,UPGRADE_SHORT_NAME,short);
-        SetArrayString(upgradeStringHandle,UPGRADE_DESC,desc);
+        upgradeHandle=GetArrayCell(upgradeListHandle, upgrade);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Energy,          energy);
+        SetArrayCell(upgradeHandle, _:UpgradeData_RecurringEnergy, recurring_energy);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Accumulated,     accumulated);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Crystals,        crystals);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Vespene,         vespene);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Cooldown,        cooldown);
+        SetArrayCell(upgradeHandle, _:UpgradeData_CooldownType,    cooldown_type);
+        SetArrayCell(upgradeHandle, _:UpgradeData_RequiredLevel,   required_level);
+        SetArrayCell(upgradeHandle, _:UpgradeData_MaxLevel,        max_level);
+        SetArrayCell(upgradeHandle, _:UpgradeData_CostCrystals,    cost_crystals);
+        SetArrayCell(upgradeHandle, _:UpgradeData_CostVespene,     cost_vespene);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Category,        upgrade_category);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Disabled,        disabled);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Completed,       false);
+
+        upgradeStringHandle=GetArrayCell(upgradeHandle,_:UpgradeData_Strings);
+        SetArrayString(upgradeStringHandle,_:UpgradeString_Name,      name);
+        SetArrayString(upgradeStringHandle,_:UpgradeString_ShortName, short);
+        SetArrayString(upgradeStringHandle,_:UpgradeString_Desc,      desc);
 
         // Remove any leftover parameter strings.
-        ResizeArray(upgradeStringHandle, UPGRADE_PARM);
+        ResizeArray(upgradeStringHandle, _:UpgradeString_Parm);
     }
     else
     {
@@ -828,7 +914,7 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         PushArrayString(upgradeStringHandle,short);
         PushArrayString(upgradeStringHandle,desc);
 
-        new Handle:upgradeHandle=CreateArray();
+        upgradeHandle=CreateArray();
         PushArrayCell(upgradeHandle,upgradeStringHandle);
         PushArrayCell(upgradeHandle,energy);
         PushArrayCell(upgradeHandle,recurring_energy);
@@ -843,6 +929,7 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         PushArrayCell(upgradeHandle,cost_vespene);
         PushArrayCell(upgradeHandle,upgrade_category);
         PushArrayCell(upgradeHandle,disabled);
+        PushArrayCell(upgradeHandle,false);
 
         new Handle:upgradeListHandle=GetUpgradeListHandle(raceHandle);
         upgrade = PushArrayCell(upgradeListHandle, upgradeHandle); // return index
@@ -903,12 +990,13 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
             SetRaceEnergyLimit(raceHandle, energy);
 
         // set the race's EnergyFlags
-        new energy_flags = GetRaceEnergyFlags(raceHandle) | RACE_USES_ENERGY;
+        new EnergyFlags:energy_flags = GetRaceEnergyFlags(raceHandle) | UsesEnergy;
 
         if (accumulated)
-            energy_flags |= RACE_USES_ACCUMULATED;
+            energy_flags |= UsesAccumulated;
 
         SetRaceEnergyFlags(raceHandle, energy_flags);
+        SetRaceHasBeenCompleted(raceHandle,false);
     }
 
     if (GetRaceIsNew(raceHandle) || g_bCreate || g_bUpdate)
@@ -923,12 +1011,15 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         GetUpgradeImage(raceHandle, upgrade, upgradeImage, sizeof(upgradeImage), image);
 
         // Update database with upgrade description
-        InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
-                      short, upgradeName, upgradeDesc, upgradeImage,
-                      cost_crystals, cost_vespene, required_level,
-                      max_level, energy, accumulated,
-                      recurring_energy, crystals,
-                      vespene, cooldown);
+        if (InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
+                          short, upgradeName, upgradeDesc, upgradeImage,
+                          cost_crystals, cost_vespene, required_level,
+                          max_level, energy, accumulated,
+                          recurring_energy, crystals,
+                          vespene, cooldown))
+        {
+            SetArrayCell(upgradeHandle, _:UpgradeData_Completed, true);
+        }
     }
 
     #if defined _TRACE
@@ -947,9 +1038,10 @@ SetUpgradeCooldown(race, Handle:raceHandle, upgrade, Float:cooldown, CooldownTyp
         #pragma unused race
     #endif
 
-    new Handle:upgradeHandle=GetUpgradeHandle(raceHandle,upgrade);
-    SetArrayCell(upgradeHandle, UPGRADE_COOLDOWN,cooldown);
-    SetArrayCell(upgradeHandle, UPGRADE_COOLDOWN_TYPE,cooldown_type);
+    new Handle:upgradeHandle=GetUpgradeHandle(raceHandle,   upgrade);
+    SetArrayCell(upgradeHandle, _:UpgradeData_Cooldown,     cooldown);
+    SetArrayCell(upgradeHandle, _:UpgradeData_CooldownType, cooldown_type);
+    SetArrayCell(upgradeHandle, _:UpgradeData_Completed,    false);
 
     #if defined _TRACE
         TraceReturn();
@@ -965,11 +1057,11 @@ Float:GetUpgradeCooldown(race, Handle:raceHandle, upgrade, &CooldownType:cooldow
         #pragma unused race
     #endif
 
-    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
-    new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,    _:RaceData_Upgrades);
+    new Handle:upgradeHandle=GetArrayCell(upgradeListHandle, upgrade);
 
-    cooldown_type = CooldownType:GetArrayCell(upgradeHandle, UPGRADE_COOLDOWN_TYPE);
-    new Float:cooldown = Float:GetArrayCell(upgradeHandle, UPGRADE_COOLDOWN);
+    cooldown_type = CooldownType:GetArrayCell(upgradeHandle, _:UpgradeData_CooldownType);
+    new Float:cooldown = Float:GetArrayCell(upgradeHandle,   _:UpgradeData_Cooldown);
 
     #if defined _TRACE
         TraceReturn("cooldown=%f,cooldown_type=%d", cooldown, cooldown_type);
@@ -988,13 +1080,13 @@ GetRaceParentId(Handle:raceHandle)
 {
     if (raceHandle != INVALID_HANDLE)
     {
-        new parent = GetArrayCell(raceHandle,RACE_PARENT_ID);
+        new parent = GetArrayCell(raceHandle,_:RaceData_ParentId);
         if (parent == 0)
         {
             decl String:name[NAME_STRING_LENGTH]; name[0] = '\0';
             GetRaceParentName(raceHandle, name, sizeof(name));
             parent = (name[0] != '\0') ? FindRace(name) : -1;
-            SetArrayCell(raceHandle,RACE_PARENT_ID,parent);
+            SetArrayCell(raceHandle,_:RaceData_ParentId,parent);
         }
         return parent;
     }
@@ -1273,6 +1365,8 @@ GetUpgradeImage(Handle:raceHandle, upgrade, String:image[], maxlength,
 
 GetUpgradeDescription(Handle:raceHandle, upgrade, String:desc[], maxlength, lang=LANG_SERVER)
 {
+    new category = 0;
+
     TraceInto("Race", "GetUpgradeDescription", "raceHandle=0x%08x", raceHandle);
 
     GetUpgradeDescriptionString(raceHandle,upgrade,desc,maxlength);
@@ -1304,22 +1398,25 @@ GetUpgradeDescription(Handle:raceHandle, upgrade, String:desc[], maxlength, lang
                 Format(key,sizeof(key),"%s_%s_desc",race,short);
             }
 
-            FormatUpgradeDescription(raceHandle, upgrade, translation,
-                                     key, desc, maxlength, lang);
+            category = FormatUpgradeDescription(raceHandle, upgrade, translation,
+                                                key, desc, maxlength, lang);
         }
     }
 
-    TraceReturn("desc=%s", desc);
+    TraceReturn("desc=%s, category=%d", desc, category);
+    return category;
 }
 
 GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
                       String:desc[], maxDesc, lang=LANG_SERVER)
 {
+    new category = 0;
+
     TraceInto("Race", "GetUpgradeNameAndDesc", "raceHandle=0x%08x, upgrade=%d", raceHandle, upgrade);
 
     new Handle:upgradeStringHandle=GetUpgradeStringHandle(raceHandle,upgrade);
-    GetArrayString(upgradeStringHandle, UPGRADE_NAME, name, maxName);
-    GetArrayString(upgradeStringHandle, UPGRADE_DESC, desc, maxDesc);
+    GetArrayString(upgradeStringHandle, _:UpgradeString_Name, name, maxName);
+    GetArrayString(upgradeStringHandle, _:UpgradeString_Desc, desc, maxDesc);
 
     new Translation:translation = GetRaceTranslation(raceHandle);
     if (translation > Translation_Auto)
@@ -1348,8 +1445,8 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
         if (desc[0] != '%')
         {
             StrCat(key,sizeof(key),"_desc");
-            FormatUpgradeDescription(raceHandle, upgrade, translation,
-                                     key, desc, maxDesc, lang);
+            category = FormatUpgradeDescription(raceHandle, upgrade, translation,
+                                                key, desc, maxDesc, lang);
         }
     }
 
@@ -1359,12 +1456,15 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
     if (desc[0] == '%')
         Format(desc,maxDesc,"%T",desc[1],lang);
 
-    TraceReturn("name=%s, desc=%s", name, desc);
+    TraceReturn("name=%s, desc=%s, category=%d", name, desc, category);
+    return category;
 }
 
 FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
                          const String:key[], String:desc[], maxlength, lang=LANG_SERVER)
 {
+    new category = 0;
+
     TraceInto("Race", "FormatUpgradeDescription", "raceHandle=0x%08x, key=%s", raceHandle, key);
 
     if (translation == Translation_W3S)
@@ -1374,8 +1474,8 @@ FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
 
         new Handle:upgradeListHandle=GetUpgradeListHandle(raceHandle);
         new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
-        new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
-        new numParms = GetArraySize(upgradeStringHandle) - UPGRADE_PARM;
+        new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,_:UpgradeData_Strings);
+        new numParms = GetArraySize(upgradeStringHandle) - _:UpgradeString_Parm;
         if (numParms > 0)
         {
             Trace("replace %d parms", numParms);
@@ -1391,21 +1491,66 @@ FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
         }
 
         //Change any references to +ability to +ultimate
-        ReplaceString(desc, maxlength, "+ability2", "+ultimate4", false);
-        ReplaceString(desc, maxlength, "ability2",  "+ultimate4", false);
-        ReplaceString(desc, maxlength, "+ability1", "+ultimate3", false);
-        ReplaceString(desc, maxlength, "ability1",  "+ultimate3", false);
-        ReplaceString(desc, maxlength, "+ability0", "+ultimate2", false);
-        ReplaceString(desc, maxlength, "+ability",  "+ultimate2", false);
-        ReplaceString(desc, maxlength, "(ability)", "(+ultimate2)", false);
+        if (ReplaceString(desc, maxlength, "+ability2", "+ultimate4", false) > 0)
+            category = 4;
+
+        if (ReplaceString(desc, maxlength, "ability2",  "+ultimate4", false) > 0)
+            category = 4;
+
+        if (ReplaceString(desc, maxlength, "+ability1", "+ultimate3", false) > 0)
+            category = 3;
+
+        if (ReplaceString(desc, maxlength, "ability1",  "+ultimate3", false) > 0)
+            category = 3;
+
+        if (ReplaceString(desc, maxlength, "+ability0", "+ultimate2", false) > 0)
+            category = 2;
+
+        if (ReplaceString(desc, maxlength, "+ability",  "+ultimate2", false) > 0)
+            category = 2;
+
+        if (ReplaceString(desc, maxlength, "(ability)", "(+ultimate2)", false) > 0)
+            category = 2;
+
+        if (category == 0)
+        {
+            if (StrContains(desc, "ultimate4", false) >= 0  ||
+                StrContains(key, "ability2", false) >= 0   ||
+                StrContains(key, "ultimate4", false) >= 0)
+            {
+                category = 4;
+            }
+            else if (StrContains(desc, "ultimate3", false) >= 0  ||
+                     StrContains(key, "ability1", false) >= 0   ||
+                     StrContains(key, "ultimate3", false) >= 0)
+            {
+                category = 3;
+            }
+            else if (StrContains(desc, "+ultimate2", false) >= 0 ||
+                     StrContains(desc, "ultimate2", false) >= 0  ||
+                     StrContains(key, "+ability", false) >= 0   ||
+                     StrContains(key, "(ability)", false) >= 0  ||
+                     StrContains(key, "+ultimate2", false) >= 0 ||
+                     StrContains(key, "ultimate2", false) >= 0)
+            {
+                category = 2;
+            }
+            else if (StrContains(desc, "ultimate1", false) >= 0  ||
+                     StrContains(desc, "+ultimate", false) >= 0  ||
+                     StrContains(key, "ultimate1", false) >= 0  ||
+                     StrContains(key, "+ultimate", false) >= 0)
+            {
+                category = 1;
+            }
+        }
         //ReplaceString(desc, maxlength, "ability", "+ultimate2", false);
     }
     else
     {
         new Handle:upgradeListHandle=GetUpgradeListHandle(raceHandle);
         new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
-        new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
-        new numParms = GetArraySize(upgradeStringHandle) - UPGRADE_PARM;
+        new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,_:UpgradeData_Strings);
+        new numParms = GetArraySize(upgradeStringHandle) - _:UpgradeString_Parm;
         if (numParms > 0)
         {
             decl String:parm[8][NAME_STRING_LENGTH];
@@ -1482,12 +1627,14 @@ FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
             Format(desc,maxlength,"%T",key,lang);
         }
     }
-    TraceReturn("desc=%s", desc);
+
+    TraceReturn("desc=%s, category=%d", desc, category);
+    return category;
 }
 
 GetUpgradeCount(Handle:raceHandle)
 {
-    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,_:RaceData_Upgrades);
     if (upgradeListHandle != INVALID_HANDLE)
         return GetArraySize(upgradeListHandle);
     else
@@ -1496,7 +1643,7 @@ GetUpgradeCount(Handle:raceHandle)
 
 FindUpgrade(Handle:raceHandle, const String:short[])
 {
-    new Handle:upgradeListHandle=GetArrayCell(raceHandle,RACE_UPGRADES);
+    new Handle:upgradeListHandle=GetArrayCell(raceHandle,_:RaceData_Upgrades);
     if (upgradeListHandle != INVALID_HANDLE)
     {
         decl String:curName[NAME_STRING_LENGTH];
@@ -1506,10 +1653,10 @@ FindUpgrade(Handle:raceHandle, const String:short[])
             new Handle:upgradeHandle=GetArrayCell(upgradeListHandle,upgrade);
             if (upgradeHandle != INVALID_HANDLE)
             {
-                new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,UPGRADE_STRINGS);
+                new Handle:upgradeStringHandle=GetArrayCell(upgradeHandle,_:UpgradeData_Strings);
                 if (upgradeStringHandle != INVALID_HANDLE)
                 {
-                    GetArrayString(upgradeStringHandle,UPGRADE_SHORT_NAME, curName, sizeof(curName));
+                    GetArrayString(upgradeStringHandle,_:UpgradeString_ShortName, curName, sizeof(curName));
                     if (StrEqual(short,curName,false))
                         return upgrade;
                 }
@@ -1539,7 +1686,7 @@ FindRaceForIdent(ident)
     {
         //if (GetRaceIdent(GetRaceHandle(race)) == ident)
         new Handle:raceHandle=GetRaceHandle(race);
-        if (GetArrayCell(raceHandle,RACE_IDENT) == ident)
+        if (GetArrayCell(raceHandle,_:RaceData_Ident) == ident)
             return race;
     }
     return -1;
@@ -1550,7 +1697,7 @@ PendingCheck(client)
     if (GetPendingUpgradeReset(client))
     {
         SetPendingUpgradeReset(client,false);
-        ResetUpgradesNow(client,-1);
+        ResetUpgradesNow(client, -1, true);
     }
 
     new pendingRace = GetPendingRace(client);
@@ -1558,7 +1705,7 @@ PendingCheck(client)
     {
         decl String:buf[LONG_STRING_LENGTH];
         SetPendingRace(client,-1);
-        SetRace(client,pendingRace);
+        SetRace(client, pendingRace, false);
         new Handle:raceHandle=GetRaceHandle(pendingRace);
         GetRaceSwitchMessage(raceHandle, buf, sizeof(buf), client);
         CPrintToChat(client,"{green}[SC]{default} %s", buf);
@@ -1566,10 +1713,10 @@ PendingCheck(client)
     return pendingRace;
 }
 
-ChangeRace(client, race, Handle:raceHandle, bool:forceNow, bool:check)
+ChangeRace(client, race, Handle:raceHandle, bool:forceNow=false, bool:check=true, bool:saveEnergy=false)
 {
-    TraceInto("Race", "ChangeRace", "Change %d:%N's race to %1, raceHandle=0x%08x, forceNow=%d,check=%d", \
-              client, ValidClientIndex(client), race, raceHandle, forceNow, check);
+    TraceInto("Race", "ChangeRace", "Change %d:%N's race to %1, raceHandle=0x%08x, forceNow=%d, check=%d, saveEnergy=%d", \
+              client, ValidClientIndex(client), race, raceHandle, forceNow, check, saveEnergy);
 
     if (check)
     {
@@ -1652,28 +1799,43 @@ ChangeRace(client, race, Handle:raceHandle, bool:forceNow, bool:check)
         }
     }
 
+    // Save the old race's data
+    new oldrace = GetRace(client);
+    if (oldrace > 0 && !GetDatabaseSaved(client) &&
+        GetDatabaseLoaded(client) >= DataOK &&
+        GetRaceLoaded(client, oldrace) >= DataOK)
+    {
+        if (g_bDatabaseConnected)
+        {
+            Trace("Save %d:%N's race=%d Data", \
+                  client,ValidClientIndex(client), \
+                  race);
+
+            SavePlayerData(client);
+        }
+        else
+        {
+            LogError("Database not available to save %N's levels!", client);
+            PrintHintText(client, "%t", "NoDatabaseForSave");
+        }
+    }
+
     // If the race is invalid, default race to human for new players.
     if (race <= 0)
         race = FindRace("human");
 
-    if (!forceNow && !g_FirstSpawn[client] && IsPlayerAlive(client))
+    if (race != oldrace)
     {
+        // Reset & Refund the upgrade costs of the old race
+        if (g_bChargeForUpgrades)
+            ResetUpgradesNow(client, oldrace, false);
+
+        // Check if the new race's data has been loaded and load it if needed.
         if (g_bSaveXP && GetPlayerStatus(client) != PlayerDisabled &&
             GetRaceLoaded(client,race) < DataOK)
         {
             if (g_bDatabaseConnected)
             {
-                new oldrace = GetRace(client);
-                if (oldrace > 0 && !GetDatabaseSaved(client) &&
-                    GetDatabaseLoaded(client) >= DataOK &&
-                    GetRaceLoaded(client, oldrace) >= DataOK)
-                {
-                    Trace("Save %d:%N's race=%d Data", \
-                          client,ValidClientIndex(client), \
-                          race);
-
-                    SavePlayerData(client);
-                }
 
                 Trace("Load %d:%N's race=%d Data", \
                       client, ValidClientIndex(client), \
@@ -1688,20 +1850,24 @@ ChangeRace(client, race, Handle:raceHandle, bool:forceNow, bool:check)
             }
         }
 
-        decl String:buf[LONG_STRING_LENGTH];
-        GetRaceSwitchMessageDead(raceHandle, buf, sizeof(buf), client);
-        CPrintToChat(client, "{green}[SC]{default} %s", buf);
-        SetPendingRace(client,race);
+        if (!forceNow && !g_FirstSpawn[client] && IsPlayerAlive(client))
+        {
+            decl String:buf[LONG_STRING_LENGTH];
+            GetRaceSwitchMessageDead(raceHandle, buf, sizeof(buf), client);
+            CPrintToChat(client, "{green}[SC]{default} %s", buf);
+            SetPendingRace(client,race);
+        }
+        else
+        {
+            decl String:buf[LONG_STRING_LENGTH];
+            GetRaceSwitchMessage(raceHandle, buf, sizeof(buf), client);
+            CPrintToChat(client, "{green}[SC]{default} %s", buf);
+            g_FirstSpawn[client]=false;
+            SetPendingRace(client,-1);
+            SetRace(client, race, saveEnergy);
+        }
     }
-    else
-    {
-        decl String:buf[LONG_STRING_LENGTH];
-        GetRaceSwitchMessage(raceHandle, buf, sizeof(buf), client);
-        CPrintToChat(client, "{green}[SC]{default} %s", buf);
-        g_FirstSpawn[client]=false;
-        SetPendingRace(client,-1);
-        SetRace(client,race);
-    }
+
     TraceReturn();
 }
 
@@ -1714,38 +1880,60 @@ ResetUpgrades(client)
         CPrintToChat(client, "{green}[SC]{default} %t", "UpgradesPendingReset");
     }
     else
-        ResetUpgradesNow(client,-1);
+        ResetUpgradesNow(client, -1, true);
 }
 
-ResetUpgradesNow(client,race)
+ResetUpgradesNow(client, race, bool:show=true)
 {
     if (GetDatabaseLoaded(client) == DataLoading)
     {
-        CPrintToChat(client, "{green}[SC]{default} %t", "StillLoadingUnableToReset");
+        if (show)
+            CPrintToChat(client, "{green}[SC]{default} %t", "StillLoadingUnableToReset");
     }
     else
     {
         if (race < 0)
             race = GetRace(client);
 
-        SetActiveUltimate(client,race,1,-1);
-        SetActiveUltimate(client,race,2,-1);
-        SetActiveUltimate(client,race,3,-1);
-
-        // DON'T reset the saved flag for resets!
-        //SetDatabaseSaved(client, false);
-
-        new upgradeCount=GetUpgradeCount(GetRaceHandle(race));
-        for (new upgrade=0;upgrade<upgradeCount;upgrade++)
+        if (race >= 0)
         {
-            SetUpgradeLevel(client,race,upgrade,0);
-            SetSavedUpgradeLevel(client,race,upgrade,-1);
+            new Handle:raceInfo = GetRaceInfo(client, race);
+            if (raceInfo != INVALID_HANDLE)
+            {
+                SetRaceInfoActiveUltimate1(raceInfo, -1);
+                SetRaceInfoActiveUltimate2(raceInfo, -1);
+                SetRaceInfoActiveUltimate3(raceInfo, -1);
+                SetRaceInfoActiveUltimate4(raceInfo, -1);
+
+                // DON'T reset the saved flag for resets!
+                //SetDatabaseSaved(client, false);
+
+                // Refund the crystal cost as +crystals
+                new Handle:raceHandle=GetRaceHandle(race);
+                new upgradeCount=GetUpgradeCount(raceHandle);
+                for (new upgrade=0;upgrade<upgradeCount;upgrade++)
+                {
+                    new level = GetRaceInfoSavedUpgradeLevel(raceInfo, upgrade);
+                    if (level > 0)
+                    {
+                        new cost_crystals = GetUpgradeCostCrystals(raceHandle, upgrade);
+                        if (cost_crystals > 0)
+                            IncrementPCrystals(client, cost_crystals * level);
+                    }
+
+                    SetRaceInfoUpgradeLevel(raceInfo, upgrade, 0);
+                    SetRaceInfoSavedUpgradeLevel(raceInfo, upgrade, -1);
+                }
+            }
         }
 
-        CPrintToChat(client,"{green}[SC]{default} %t", "UpgradesReset");
+        if (show)
+        {
+            CPrintToChat(client,"{green}[SC]{default} %t", "UpgradesReset");
 
-        if (GetLevel(client,race) > 0)
-            UpgradeMenu(client, UpgradeMode, true);
+            if (GetLevel(client,race) > 0)
+                UpgradeMenu(client, UpgradeMode, true);
+        }
     }
 }
 

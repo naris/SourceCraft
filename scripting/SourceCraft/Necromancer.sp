@@ -104,62 +104,65 @@ public OnSourceCraftReady()
     raceID       = CreateRace("necromancer", -1, -1, 32, .faction=UndeadScourge,
                               .type=Undead, .parent="undead");
 
-    vampiricID   = AddUpgrade(raceID, "vampiric_aura", .energy=2.0);
+    vampiricID   = AddUpgrade(raceID, "vampiric_aura", .energy=2.0, .cost_crystals=10);
 
-    crippleID    = AddUpgrade(raceID, "cripple", .max_level=sizeof(g_CrippleChance)-1, .energy=5.0);
+    crippleID    = AddUpgrade(raceID, "cripple", .max_level=sizeof(g_CrippleChance)-1,
+                              .energy=5.0, .cost_crystals=10);
 
-    trainingID   = AddUpgrade(raceID, "training");
+    trainingID   = AddUpgrade(raceID, "training", .cost_crystals=20);
 
     // Ultimate 1
     frenzyID     = AddUpgrade(raceID, "unholy_frenzy", 1, .energy=30.0,
-                              .recurring_energy=3.0, .cooldown=10.0);
+                              .recurring_energy=3.0, .cooldown=10.0,
+                              .cost_crystals=30);
 
     wrangleID    = AddUpgrade(raceID, "wrangle_eye", 1, 12, 1,
-                              .energy=30.0, .vespene=10);
+                              .energy=30.0, .vespene=10,
+                              .cost_crystals=35);
 
-    if (!IsWrangleyeAvailable())
+    if (GetGameType() != tf2 || !IsWrangleyeAvailable())
     {
         SetUpgradeDisabled(raceID, wrangleID, true);
-        LogMessage("wrangleye is not available");
+        LogMessage("Disabling Necromancer:Direct Monoculus due to wrangleye is not available (or gametype != tf2)");
     }
 
     raiseDeadID  = AddUpgrade(raceID, "raise_dead", 2, 6, 1,
-                              .energy=30.0);
+                              .energy=30.0, .cost_crystals=30);
 
     raiseEyeID   = AddUpgrade(raceID, "raise_eye", 3, 8, 4,
                               .energy=200.0, .vespene=80,
-                              .cooldown=160.0);
+                              .cooldown=160.0, .cost_crystals=50);
 
-    if (!IsMonoculusAvailable())
+    if (GameType != tf2 || !IsMonoculusAvailable())
     {
         SetUpgradeDisabled(raceID, raiseEyeID, true);
-        LogMessage("MonoSpawn is not available");
+        LogMessage("Disabling Necromancer:Raise Monoculus due to MonoSpawn is not available (or gametype != tf2)");
     }
 
     raiseHorseID = AddUpgrade(raceID, "raise_horse", 3, 6, 1,
-                              .energy=180.0, .vespene=40,
-                              .cooldown=120.0);
+                              .energy=180.0, .vespene=50,
+                              .cooldown=120.0, .cost_crystals=40);
 
-    if (!IsHorsemannAvailable())
+    if (GameType != tf2 || !IsHorsemannAvailable())
     {
         SetUpgradeDisabled(raceID, raiseHorseID, true);
-        LogMessage("horsemann is not available");
+        LogMessage("Disabling Necromancer:Raise Horsemann due to horsemann is not available (or gametype != tf2)");
     }
 
     summonHorseID = AddUpgrade(raceID, "summon_horse", 4, 16, 4,
                                .energy=300.0, .vespene=100,
-                               .cooldown=200.0);
+                               .cooldown=200.0, .cost_crystals=75);
 
     scareID       = AddUpgrade(raceID, "scare", 4, 16, 4,
                                .energy=30.0, .vespene=10,
                                .recurring_energy=5.0,
-                               .cooldown=30.0);
+                               .cooldown=30.0, .cost_crystals=15);
 
-    if (!IsBeHorsemannAvailable())
+    if (GameType != tf2 || !IsBeHorsemannAvailable())
     {
         SetUpgradeDisabled(raceID, summonHorseID, true);
         SetUpgradeDisabled(raceID, scareID, true);
-        LogMessage("behorsemann is not available");
+        LogMessage("Disabling Necromancer:Summon Horsemann & Scare due to behorsemann is not available (or gametype != tf2)");
     }
 
     // Set  the ROF Available flag

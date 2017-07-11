@@ -136,47 +136,62 @@ public OnPluginStart()
 
 public OnSourceCraftReady()
 {
-    raceID          = CreateRace("probe", 80, 0, 33, .energy_rate=2.0,
-                                 .faction=Protoss, .type=Robotic);
+    raceID      = CreateRace("probe", 80, 0, 33, .energy_rate=2.0,
+                             .faction=Protoss, .type=Robotic);
 
-    shieldsID       = AddUpgrade(raceID, "shields", .energy=1.0);
+    shieldsID   = AddUpgrade(raceID, "shields", .energy=1.0, .cost_crystals=10);
 
-    if (GameType == tf2)
+    batteriesID = AddUpgrade(raceID, "batteries", .cost_crystals=50);
+    forgeID     = AddUpgrade(raceID, "forge", .cost_crystals=50);
+    warpGateID  = AddUpgrade(raceID, "warp_gate", .cost_crystals=0);
+
+    cannonID    = AddUpgrade(raceID, "cannon", 0, 8, .energy=2.0, .cost_crystals=50);
+
+    // Ultimate 1
+    recallStructureID = AddUpgrade(raceID, "recall_structure", 1, 8, .energy=30.0,
+                                   .vespene=5, .cooldown=5.0, .cost_crystals=50);
+
+    // Ultimate 2
+    pylonID     = AddUpgrade(raceID, "pylon", 2, 10, .energy=30.0, .cooldown=2.0,
+                             .cost_crystals=50);
+
+    // Ultimate 3
+    amplifierID = AddUpgrade(raceID, "amplifier", 3, 8, .energy=30.0,
+                             .vespene=5, .cooldown=10.0, .cost_crystals=10);
+
+    // Ultimate 4
+    phasePrismID = AddUpgrade(raceID, "prism", 4, 14, 1,
+                              .energy=300.0, .cooldown=60.0,
+                              .accumulated=true, .cost_crystals=50);
+
+    // Check GameType and configurations
+    if (GetGameType() != tf2)
     {
-        batteriesID = AddUpgrade(raceID, "batteries");
-        forgeID     = AddUpgrade(raceID, "forge");
+        LogMessage("Disabling Protoss Probe:Shield Batteries, Forge, Warp Gate, Dark Pylon and Warp In Amplifier due to gametype != tf2");
 
+        SetUpgradeDisabled(raceID, batteriesID, true);
+        SetUpgradeDisabled(raceID, forgeID, true);
+        SetUpgradeDisabled(raceID, warpGateID, true);
+
+        SetUpgradeDisabled(raceID, recallStructureID, true);
+        SetUpgradeDisabled(raceID, pylonID, true);
+        SetUpgradeDisabled(raceID, amplifierID, true);
+    }
+    else
+    {
         cfgAllowSentries = GetConfigNum("allow_sentries", 2);
         if (cfgAllowSentries < 2)
         {
-            //SetUpgradeDisabled(raceID, batteriesID, true);
             SetUpgradeDisabled(raceID, forgeID, true);
-            LogMessage("Disabling Protoss Probe:Shield Batteries and Forge due to configuration: sc_allow_sentries=%d",
+            LogMessage("Disabling Protoss Probe:Forge due to configuration: sc_allow_sentries=%d",
                        cfgAllowSentries);
         }
-
-        warpGateID = AddUpgrade(raceID, "warp_gate");
 
         if (!IsTeleporterAvailable())
         {
             SetUpgradeDisabled(raceID, warpGateID, true);
-            LogMessage("tf2teleporter is not available");
+            LogMessage("Disabling Protoss Probe:Warp Gate due to tf2teleporter is not available");
         }
-    }
-    else
-    {
-        batteriesID = AddUpgrade(raceID, "batteries", 0, 0, .desc="%NotApplicable");
-        forgeID     = AddUpgrade(raceID, "forge", 0, 99,0, .desc="%NotApplicable");
-        warpGateID  = AddUpgrade(raceID, "warp_gate", 0, 99, 0, .desc="%NotApplicable");
-    }
-
-    cannonID = AddUpgrade(raceID, "cannon", 0, 8, .energy=2.0);
-
-    if (GameType == tf2)
-    {
-        // Ultimate 1
-        recallStructureID = AddUpgrade(raceID, "recall_structure", 1, 8, .energy=30.0,
-                                       .vespene=5, .cooldown=5.0);
 
         cfgAllowTeleport = bool:GetConfigNum("allow_teleport", true);
         if (!cfgAllowTeleport || cfgAllowSentries < 1)
@@ -186,9 +201,6 @@ public OnSourceCraftReady()
                         cfgAllowSentries, cfgAllowTeleport);
         }
 
-        // Ultimate 2
-        pylonID = AddUpgrade(raceID, "pylon", 2, 10, .energy=30.0, .cooldown=2.0);
-
         cfgAllowInvisibility = bool:GetConfigNum("allow_invisibility", true);
         if (!cfgAllowInvisibility)
         {
@@ -197,33 +209,12 @@ public OnSourceCraftReady()
                         cfgAllowInvisibility);
         }
 
-        // Ultimate 3
-        amplifierID = AddUpgrade(raceID, "amplifier", 3, 8, .energy=30.0,
-                                 .vespene=5, .cooldown=10.0);
-
         if (!IsAmpNodeAvailable() || !IsBuildAvailable())
         {
             SetUpgradeDisabled(raceID, amplifierID, true);
-            LogMessage("amp_node and/or remote are not available");
+            LogMessage("Disabling Protoss Probe:Warp In Amplifier due to amp_node and/or remote are not available");
         }
     }
-    else
-    {
-        // Ultimate 1
-        recallStructureID = AddUpgrade(raceID, "recall_structure", 1, 99,0, .desc="%NotApplicable");
-
-        // Ultimate 2
-        pylonID = AddUpgrade(raceID, "pylon", 2, 99, 2, .desc="%NotApplicable");
-
-        // Ultimate 3
-        amplifierID = AddUpgrade(raceID, "amplifier", 3, 99, 0, .desc="%NotApplicable");
-        //LogMessage("sentries, teleporters and/or dispensers are not supported by this mod");
-    }
-
-    // Ultimate 4
-    phasePrismID = AddUpgrade(raceID, "prism", 4, 14, 1,
-                              .energy=300.0, .cooldown=60.0,
-                              .accumulated=true);
 
     // Set the Infinite Ammo available flag
     IsInfiniteAmmoAvailable();
@@ -720,7 +711,7 @@ public Action:ForgeTimer(Handle:timer,any:ref)
                     if (health > GetEntProp(object, Prop_Data, "m_iMaxHealth"))
                         SetEntProp(object, Prop_Data, "m_iMaxHealth", health);
 
-                    SetEntProp(object, Prop_Send, "m_iHealth", health);
+                    SetEntityHealth(object, health);
 
                     if (TF2_GetObjectType(object) == TFObject_Sentry)
                     {
@@ -852,7 +843,7 @@ public Action:BatteryTimer(Handle:timer, any:userid)
                                 if (health > maxHealth)
                                     health = maxHealth;
 
-                                SetEntProp(i, Prop_Send, "m_iHealth", health);
+                                SetEntityHealth(i, health);
                             }
                         }
                     }
@@ -1039,7 +1030,7 @@ SummonPhasePrism(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_phasePrismRace, true, false);
+        ChangeRace(client, g_phasePrismRace, true, false, true);
     }
 }
 

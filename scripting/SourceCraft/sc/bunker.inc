@@ -26,6 +26,26 @@
 #define SetupBunker()       SetupDeniedSound()
 
 /**
+ * Add the Terran Bunker upgrade to a race.
+ *
+ * @param raceId 	        Race to add Bunker to.
+ * @param category:         Ultimate Category to use. (default is 2)
+ * @param required_level:   Level required to upgrade Bunker. (default is 8)
+ * @param energy:           Amount of energy required to invoke Bunker. (default is 30)
+ * @param cooldown:         Duration of the cooldown. (default is 5.0)
+ * @param cost_crystals:    Amount of crystals required to purchase Bunker for 1 map. (default is 10)
+ * @return                  The return value will be the upgrade index or -1 if there was a problem.
+ */
+stock AddBunkerUpgrade(raceId, category=2, required_level=8, Float:energy=30.0,
+                       Float:cooldown=5.0, cost_crystals=10)
+{
+    LoadTranslations("sc.bunker.phrases.txt");
+
+    return AddUpgrade(raceId, "bunker", category, required_level, .energy=energy,
+                      .cooldown=cooldown, .cost_crystals=cost_crystals);
+}
+
+/**
  * The client Enters (or Leaves) the Bunker,
  * depending on if they are already in the Bunker.
  *

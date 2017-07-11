@@ -327,15 +327,15 @@ UpgradesInfo(client,target,race,MenuMode:mode)
             new maxUpgradeLevel = GetUpgradeMaxLevel(raceHandle,upgrade);
             new requiredLevel   = GetUpgradeRequiredLevel(raceHandle,upgrade);
             new bool:disabled   = GetUpgradeDisabled(raceHandle,upgrade);
-            if (disabled || requiredLevel > maxLevel || maxUpgradeLevel <= 0)
-            {
-                new len=strlen(item);
-                Format(item[len], sizeof(item)-len," [%T]", "NotAvailable", client);
-            }
-            else if (requiredLevel < 1)
+            if (requiredLevel < 1 && !disabled)
             {
                 new len=strlen(item);
                 Format(item[len], sizeof(item)-len," [%T]", "AlwaysAvailable", client);
+            }
+            else if (disabled || requiredLevel > maxLevel || maxUpgradeLevel <= 0)
+            {
+                new len=strlen(item);
+                Format(item[len], sizeof(item)-len," [%T]", "NotAvailable", client);
             }
             else if (requiredLevel > 1)
             {
@@ -391,7 +391,7 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                 new upgrade=StringToInt(SelectionInfo);
                 if (upgrade < 0) // They decided to change to this race.
                 {
-                    ChangeRace(target, race, raceHandle, false, true);
+                    ChangeRace(target, race, raceHandle, false, true, false);
                     if (gUpgradesMenuMode[client] & FromMainMenu)
                         MainMenu(client);
                 }
@@ -490,22 +490,25 @@ UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
         AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
     }
 
-    new crystal_cost = GetUpgradeCostCrystals(raceHandle, upgrade);
-    if (crystal_cost < 0)
-        crystal_cost = g_iUpgradeCrystalsCost;
-    if (crystal_cost > 0)
+    if (g_bChargeForUpgrades)
     {
-        Format(item,sizeof(item), "%T", "CostsCrystalsToUpgrade", client, crystals);
-        AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
-    }
+        new crystal_cost = GetUpgradeCostCrystals(raceHandle, upgrade);
+        if (crystal_cost < 0)
+            crystal_cost = g_iUpgradeCrystalsCost;
+        if (crystal_cost > 0)
+        {
+            Format(item,sizeof(item), "%T", "CostsCrystalsToUpgrade", client, crystal_cost);
+            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        }
 
-    new vespene_cost = GetUpgradeCostVespene(raceHandle, upgrade);
-    if (vespene_cost < 0)
-        vespene_cost = g_iUpgradeVespeneCost;
-    if (vespene_cost > 0)
-    {
-        Format(item, sizeof(item), "%T", "CostsVespeneToUpgrade", client, vespene);
-        AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        new vespene_cost = GetUpgradeCostVespene(raceHandle, upgrade);
+        if (vespene_cost < 0)
+            vespene_cost = g_iUpgradeVespeneCost;
+        if (vespene_cost > 0)
+        {
+            Format(item, sizeof(item), "%T", "CostsVespeneToUpgrade", client, vespene_cost);
+            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        }
     }
 
     AddMenuItem(menu, "", "", ITEMDRAW_SPACER);

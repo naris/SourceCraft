@@ -89,33 +89,33 @@ public OnSourceCraftReady()
     raceID      = CreateRace("phoenix", 64, 0, 21, .energy_rate=2.0,
                              .faction=Protoss, .type=Mechanical);
 
-    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0);
-    shieldsID   = AddUpgrade(raceID, "shields");
-    thrusterID  = AddUpgrade(raceID, "thrusters");
+    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0, .cost_crystals=20);
+    shieldsID   = AddUpgrade(raceID, "shields", .cost_crystals=10);
+    thrusterID  = AddUpgrade(raceID, "thrusters", .cost_crystals=0);
 
     // Ultimate 1
-    jetpackID = AddUpgrade(raceID, "jetpack", 1);
+    jetpackID = AddUpgrade(raceID, "jetpack", 1, .cost_crystals=25);
 
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogError("jetpack is not available");
+        LogMessage("Disabling Protoss Phoenix:Gravitic Drive due to jetpack is not available");
     }
 
     // Ultimate 2
-    beamID  = AddUpgrade(raceID, "beam", 2, .energy=1.0,
-                         .recurring_energy=1.0, .cooldown=2.0);
+    beamID  = AddUpgrade(raceID, "beam", 2, .energy=1.0, .recurring_energy=1.0,
+                         .cooldown=2.0, .cost_crystals=40);
 
     if (!IsHGRSourceAvailable())
     {
         SetUpgradeDisabled(raceID, beamID, true);
-        LogError("HGR:Source is not available");
+        LogMessage("Disabling Protoss Phoenix:Graviton Beam due to hgrsource is not available");
     }
 
     // Ultimate 3
     carrierID = AddUpgrade(raceID, "carrier", 3, 16,1,
                            .energy=300.0, .cooldown=60.0,
-                           .accumulated=true);
+                           .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("shields_amount", g_InitialShields, sizeof(g_InitialShields),
@@ -656,7 +656,7 @@ SummonCarrier(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_carrierRace, true, false);
+        ChangeRace(client, g_carrierRace, true, false, true);
     }
 }
 

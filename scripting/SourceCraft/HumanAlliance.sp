@@ -41,7 +41,7 @@ new Float:g_TeleportDistance[]      = { 0.0, 300.0, 500.0, 800.0, 1500.0 };
 
 new bool:cfgAllowTeleport           = true;
 
-new Float:cfgBashFactor             = 0.0;
+new Float:cfgBashFactor             = 0.5;
 new Float:cfgBashDuration           = 1.0;
 
 new Float:gBashTime[MAXPLAYERS+1];
@@ -69,15 +69,15 @@ public OnPluginStart()
 public OnSourceCraftReady()
 {
     raceID     = CreateRace("human", .faction=HumanAlliance, .type=Biological);
-    immunityID = AddUpgrade(raceID, "immunity");
-    devotionID = AddUpgrade(raceID, "devotion");
-    bashID     = AddUpgrade(raceID, "bash", .energy=2.0);
+    immunityID = AddUpgrade(raceID, "immunity", .cost_crystals=0);
+    devotionID = AddUpgrade(raceID, "devotion", .cost_crystals=0);
+    bashID     = AddUpgrade(raceID, "bash", .energy=2.0, .cost_crystals=50);
 
     cfgAllowTeleport = bool:GetConfigNum("allow_teleport", cfgAllowTeleport);
     if (cfgAllowTeleport)
     {
         // Ultimate 1
-        teleportID = AddUpgrade(raceID, "teleport", 1, .energy=20.0, .cooldown=2.0);
+        teleportID = AddUpgrade(raceID, "teleport", 1, .energy=20.0, .cooldown=2.0, .cost_crystals=20);
 
         GetConfigFloatArray("range",  g_TeleportDistance, sizeof(g_TeleportDistance),
                             g_TeleportDistance, raceID, teleportID);
@@ -91,8 +91,9 @@ public OnSourceCraftReady()
     }
 
     // Get Configuration Data
-    GetConfigArray("chance", g_BashChance, sizeof(g_BashChance),
-                   g_BashChance, raceID, bashID);
+    cfgBashFactor = GetConfigFloat("factor", cfgBashFactor, raceID, bashID);
+    cfgBashDuration = GetConfigFloat("duration", cfgBashDuration, raceID, bashID);
+    GetConfigArray("chance", g_BashChance, sizeof(g_BashChance), g_BashChance, raceID, bashID);
 
     GetConfigFloatArray("percent_health",  g_DevotionHealthPercent, sizeof(g_DevotionHealthPercent),
                         g_DevotionHealthPercent, raceID, devotionID);
@@ -374,7 +375,7 @@ bool:Bash(victim_index, index)
 
                     if (cfgBashFactor > 0.0)
                     {
-                        SetOverrideSpeed(victim_index, 0.5);
+                        SetOverrideSpeed(victim_index, cfgBashFactor);
                         SetRestriction(victim_index, Restriction_Grounded, true);
                         CreateTimer(cfgBashDuration, RestoreSpeed, GetClientUserId(victim_index),
                                     TIMER_FLAG_NO_MAPCHANGE);

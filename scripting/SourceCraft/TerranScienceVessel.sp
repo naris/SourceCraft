@@ -115,47 +115,39 @@ public OnSourceCraftReady()
                              .faction=Terran, .type=Mechanical,
                              .parent="ghost");
 
-    armorID     = AddUpgrade(raceID, "armor", 0, 0);
-    liftersID   = AddUpgrade(raceID, "lifters");
-    detectorID  = AddUpgrade(raceID, "detector");
-    reactorID   = AddUpgrade(raceID, "reactor", 0, 14);
+    armorID     = AddUpgrade(raceID, "armor", 0, 0, .cost_crystals=5);
+    liftersID   = AddUpgrade(raceID, "lifters", .cost_crystals=0);
+    detectorID  = AddUpgrade(raceID, "detector", .cost_crystals=0);
+    reactorID   = AddUpgrade(raceID, "reactor", 0, 14, .cost_crystals=20);
 
-    if (GameType == tf2)
-    {
-        chargeID = AddUpgrade(raceID, "ubercharger");
+    chargeID = AddUpgrade(raceID, "ubercharger", .cost_crystals=0);
 
-        if (!IsUberChargerAvailable())
-        {
-            SetUpgradeDisabled(raceID, chargeID, true);
-            LogMessage("ubercharger is not available");
-        }
-    }
-    else
+    if (GetGameType() != tf2 || !IsUberChargerAvailable())
     {
-        chargeID = AddUpgrade(raceID, "ubercharger", 0, 99, 0, .desc="%NotAvailable");
-        LogMessage("ubercharger is only available in tf2");
+        SetUpgradeDisabled(raceID, chargeID, true);
+        LogMessage("Disabling Terran Science Vessel:Uber Charger due to ubercharger is not available (or gametype != tf2)");
     }
 
     // Ultimate 1
-    matrixID = AddUpgrade(raceID, "matrix", 1, 8, .energy=60.0,
+    matrixID = AddUpgrade(raceID, "matrix", 1, 8, .energy=60.0, .cost_crystals=30,
                           .cooldown=2.0, .name="Defensive Matrix");
 
     if (!IsUberShieldAvailable())
     {
         SetUpgradeDisabled(raceID, matrixID, true);
-        LogMessage("ubershield is not available");
+        LogMessage("Disabling Terran Science Vessel:Defensive Matrix due to ubershield is not available (or gametype != tf2)");
     }
 
     // Ultimate 2
     empID       = AddUpgrade(raceID, "emp", 2, 1, .energy=80.0,
-                             .cooldown=2.0);
+                             .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 3
-    plagueID    = AddUpgrade(raceID, "irradiate", 3, 14, .energy=45.0, .cooldown=2.0);
+    plagueID    = AddUpgrade(raceID, "irradiate", 3, 14, .energy=45.0, .cooldown=2.0, .cost_crystals=30);
 
     // Ultimate 4
     ravenID     = AddUpgrade(raceID, "raven", 4, 16, 1, .energy=300.0,
-                             .cooldown=120.0, .accumulated=true);
+                             .cooldown=120.0, .accumulated=true, .cost_crystals=50);
 
     // Get Configuration Data
     GetConfigFloatArray("armor_amount", g_InitialArmor, sizeof(g_InitialArmor),
@@ -756,7 +748,7 @@ BuildRaven(client)
                            5.0, 40.0, 255);
         TE_SendEffectToAll();
 
-        ChangeRace(client, g_ravenRace, true, false);
+        ChangeRace(client, g_ravenRace, true, false, true);
     }
 }
 

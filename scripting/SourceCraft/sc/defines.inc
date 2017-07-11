@@ -20,11 +20,6 @@
 #define SHORT_STRING_LENGTH    32  // 16
 #define SMALL_STRING_LENGTH    16
 
-// Race Energy Use Flags used by Set/GetRaceEnergyFlags() natives
-#define RACE_NO_ENERGY          0
-#define RACE_USES_ENERGY        1
-#define RACE_USES_ACCUMULATED   2
-
 // Define fileIds used by Config natives
 #define MAIN                   -1
 #define SHOPITEM                0
@@ -38,6 +33,15 @@
 #define Bit_IsSet(%1)           ((%1) != any:0)
 #define FlipBit_IsSet(%1)       ((%1) == any:0)
 
+// Race Energy Use Flags used by Set/GetRaceEnergyFlags() natives
+enum EnergyFlags (<<=1)
+{
+    NoEnergy = 0,
+    UsesEnergy = 1,
+    UsesAccumulated
+};
+
+// Translation Types used by CreateRace() & CreateShopItem()
 enum Translation
 {
     Translation_Default = -1,

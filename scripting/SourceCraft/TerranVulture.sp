@@ -86,36 +86,36 @@ public OnSourceCraftReady()
     raceID      = CreateRace("vulture", 32, 0, 24, .faction=Terran,
                              .type=BioMechanical);
 
-    supplyID    = AddUpgrade(raceID, "supply_depot");
-    thrustersID = AddUpgrade(raceID, "thrusters");
-    platingID   = AddUpgrade(raceID, "armor");
-    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0);
+    supplyID    = AddUpgrade(raceID, "supply_depot", .cost_crystals=15);
+    thrustersID = AddUpgrade(raceID, "thrusters", .cost_crystals=0);
+    platingID   = AddUpgrade(raceID, "armor", .cost_crystals=10);
+    weaponsID   = AddUpgrade(raceID, "weapons", .energy=2.0, .cost_crystals=20);
 
     // Ultimate 1
-    mineID = AddUpgrade(raceID, "spider_mine", 1);
+    mineID = AddUpgrade(raceID, "spider_mine", 1, .cost_crystals=40);
 
     if (!IsFireminesAvailable())
     {
         SetUpgradeDisabled(raceID, mineID, true);
-        LogMessage("Firemines are not available");
+        LogMessage("Disabling Terran Vulture:Spider Mine due to firemines are not available");
     }
 
     // Ultimate 2
-    tripmineID = AddUpgrade(raceID, "tripmine", 2);
+    tripmineID = AddUpgrade(raceID, "tripmine", 2, .cost_crystals=40);
 
     if (!IsTripminesAvailable())
     {
         SetUpgradeDisabled(raceID, tripmineID, true);
-        LogMessage("Tripmines are not available");
+        LogMessage("Disabling Terran Vulture:Tripmine due to tripmines are not available");
     }
 
     // Ultimate 3, 4 & 2
-    nadeID = AddUpgrade(raceID, "nade", 3);
+    nadeID = AddUpgrade(raceID, "nade", 3, .cost_crystals=40);
 
     if (!IsNadesAvailable())
     {
         SetUpgradeDisabled(raceID, nadeID, true);
-        LogMessage("ztf2nades are not available");
+        LogMessage("Disabling Terran Vulture:Grenade due to ztf2nades are not available");
     }
 
     // Set the Infinite Ammo available flag
