@@ -1,8 +1,0 @@
-//Add your own statement triggers and responses here. Follow the examples.
-"Vault"
-{
-	"What are you?"	"I am a sourcebot."
-	"Can I kill you?"	"Yes, but I'll get mad ;D"
-	"Who made you?"	"Alm is my creator."
-	"What do I do?"	"This server is random, ask Alm what to do."
-}
