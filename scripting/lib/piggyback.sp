@@ -97,12 +97,12 @@ public OnPluginStart()
     HookEvent("player_spawn", Player_Spawn);
     HookEvent("player_death", Player_Death);
 
-    pb_distance = CreateConVar("pb_distance", "142.0", "Distance from which someone can be piggybacked", FCVAR_PLUGIN);
-    pb_method = CreateConVar("pb_method", "6", "Method to handle a piggybacking player. 1=force view, 2=disable shooting, 3=force view & disable shooting, 4=allow spays, 8=passenger dies with carrier, 16=client picks up target instead of jumps on target, 0=do nothing (inaccurate aim)", FCVAR_PLUGIN);
-    pb_enable = CreateConVar("pb_enable", "1", "Enable piggybacking", FCVAR_PLUGIN);
-    pb_info = CreateConVar("pb_info", "120.0", "Time interval in seconds between notifications (0 for none)", FCVAR_PLUGIN);
+    pb_distance = CreateConVar("pb_distance", "142.0", "Distance from which someone can be piggybacked", FCVAR_NONE);
+    pb_method = CreateConVar("pb_method", "6", "Method to handle a piggybacking player. 1=force view, 2=disable shooting, 3=force view & disable shooting, 4=allow spays, 8=passenger dies with carrier, 16=client picks up target instead of jumps on target, 0=do nothing (inaccurate aim)", FCVAR_NONE);
+    pb_enable = CreateConVar("pb_enable", "1", "Enable piggybacking", FCVAR_NONE);
+    pb_info = CreateConVar("pb_info", "120.0", "Time interval in seconds between notifications (0 for none)", FCVAR_NONE);
 
-    CreateConVar("pb_version", PLUGIN_VERSION, "Piggyback Version", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_NOTIFY);
+    CreateConVar("pb_version", PLUGIN_VERSION, "Piggyback Version", FCVAR_DONTRECORD|FCVAR_NOTIFY);
 
     if (GetConVarFloat(pb_info) > 0.0)
         CreateTimer(GetConVarFloat(pb_info), Notification);

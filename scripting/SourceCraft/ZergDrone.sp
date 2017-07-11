@@ -534,20 +534,20 @@ public Action:CreepTimer(Handle:timer, any:userid)
                 (GetUpgradeLevel(client,raceID,mutateID) ||
                  TF2_GetPlayerClass(client) == TFClass_Engineer))
             {
-                new object, amount = creep_level * 2;
-                while ((object = FindEntityByClassname(object, "obj_sentrygun")) != -1)
+                new obj, amount = creep_level * 2;
+                while ((obj = FindEntityByClassname(obj, "obj_sentrygun")) != -1)
                 {
-                    ReplenishObject(client, object, TFObject_Sentry, amount, creep_level);
+                    ReplenishObject(client, obj, TFObject_Sentry, amount, creep_level);
                 }
 
-                while ((object = FindEntityByClassname(object, "obj_teleporter")) != -1)
+                while ((obj = FindEntityByClassname(obj, "obj_teleporter")) != -1)
                 {
-                    ReplenishObject(client, object, TFObject_Teleporter, amount, creep_level);
+                    ReplenishObject(client, obj, TFObject_Teleporter, amount, creep_level);
                 }
 
-                while ((object = FindEntityByClassname(object, "obj_dispenser")) != -1)
+                while ((obj = FindEntityByClassname(obj, "obj_dispenser")) != -1)
                 {
-                    ReplenishObject(client, object, TFObject_Dispenser, amount, creep_level);
+                    ReplenishObject(client, obj, TFObject_Dispenser, amount, creep_level);
                 }
             }
         }
@@ -555,72 +555,72 @@ public Action:CreepTimer(Handle:timer, any:userid)
     return Plugin_Continue;
 }
 
-ReplenishObject(client, object, TFObjectType:type, amount, num_rockets)
+ReplenishObject(client, obj, TFObjectType:type, amount, num_rockets)
 {
-    if (GetEntPropEnt(object, Prop_Send, "m_hBuilder") == client &&
-        GetEntPropFloat(object, Prop_Send, "m_flPercentageConstructed") >= 1.0)
+    if (GetEntPropEnt(obj, Prop_Send, "m_hBuilder") == client &&
+        GetEntPropFloat(obj, Prop_Send, "m_flPercentageConstructed") >= 1.0)
     {
-        new iLevel = GetEntProp(object, Prop_Send, "m_bMiniBuilding") ? 0 : 
-                     GetEntProp(object, Prop_Send, "m_iUpgradeLevel");
+        new iLevel = GetEntProp(obj, Prop_Send, "m_bMiniBuilding") ? 0 : 
+                     GetEntProp(obj, Prop_Send, "m_iUpgradeLevel");
 
         if (iLevel > 0 && iLevel < 3)
         {
-            new iUpgrade = GetEntProp(object, Prop_Send, "m_iUpgradeMetal");
+            new iUpgrade = GetEntProp(obj, Prop_Send, "m_iUpgradeMetal");
             if (iUpgrade < TF2_MaxUpgradeMetal)
             {
                 iUpgrade += amount;
                 if (iUpgrade > TF2_MaxUpgradeMetal)
                     iUpgrade = TF2_MaxUpgradeMetal;
-                SetEntProp(object, Prop_Send, "m_iUpgradeMetal", iUpgrade);
+                SetEntProp(obj, Prop_Send, "m_iUpgradeMetal", iUpgrade);
             }                                        
         }
 
-        new max_health = GetEntProp(object, Prop_Data, "m_iMaxHealth");
-        new health = GetEntProp(object, Prop_Send, "m_iHealth");
+        new max_health = GetEntProp(obj, Prop_Data, "m_iMaxHealth");
+        new health = GetEntProp(obj, Prop_Send, "m_iHealth");
         if (health < max_health)
         {
             health += amount;
             if (health > max_health)
                 health = max_health;
 
-            SetEntityHealth(object, health);
+            SetEntityHealth(obj, health);
         }
 
         switch (type)
         {
             case TFObject_Dispenser:
             {
-                new iMetal = GetEntProp(object, Prop_Send, "m_iAmmoMetal");
+                new iMetal = GetEntProp(obj, Prop_Send, "m_iAmmoMetal");
                 if (iMetal < TF2_MaxDispenserMetal)
                 {
                     iMetal += amount;
                     if (iMetal > TF2_MaxDispenserMetal)
                         iMetal = TF2_MaxDispenserMetal;
-                    SetEntProp(object, Prop_Send, "m_iAmmoMetal", iMetal);
+                    SetEntProp(obj, Prop_Send, "m_iAmmoMetal", iMetal);
                 }
             }
             case TFObject_Sentry:
             {
                 new maxShells = TF2_MaxSentryShells[iLevel];
-                new iShells = GetEntProp(object, Prop_Send, "m_iAmmoShells");
+                new iShells = GetEntProp(obj, Prop_Send, "m_iAmmoShells");
                 if (iShells < maxShells)
                 {
                     iShells += amount;
                     if (iShells > maxShells)
                         iShells = maxShells;
-                    SetEntProp(object, Prop_Send, "m_iAmmoShells", iShells);
+                    SetEntProp(obj, Prop_Send, "m_iAmmoShells", iShells);
                 }
 
                 if (iLevel > 2)
                 {
                     new maxRockets = TF2_MaxSentryRockets[iLevel];
-                    new iRockets = GetEntProp(object, Prop_Send, "m_iAmmoRockets");
+                    new iRockets = GetEntProp(obj, Prop_Send, "m_iAmmoRockets");
                     if (iRockets < maxRockets)
                     {
                         iRockets += num_rockets;
                         if (iRockets > maxRockets)
                             iRockets = maxRockets;
-                        SetEntProp(object, Prop_Send, "m_iAmmoRockets", iRockets);
+                        SetEntProp(obj, Prop_Send, "m_iAmmoRockets", iRockets);
                     }
                 }
             }

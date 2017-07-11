@@ -39,7 +39,7 @@ new bool:g_HomingEnabled[MAXPLAYERS+1] = false;
 public OnPluginStart()
 {	
 	LoadTranslations("common.phrases");
-	CreateConVar("sm_homingprojectiles_version", PLUGIN_VERSION, "Set a target(s) projectiles to home in on the nearest target", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_homingprojectiles_version", PLUGIN_VERSION, "Set a target(s) projectiles to home in on the nearest target", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegAdminCmd("sm_homproj", Command_Name, ADMFLAG_SLAY, "Set target(s) projectiles to homing, Usage: sm_homproj \"target\" \"1/0\"");	
 	LoadTranslations("common.phrases");
 }

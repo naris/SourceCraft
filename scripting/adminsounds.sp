@@ -20,7 +20,7 @@ Versions:
 
 	1.1
 		* Made the config file load automatically
-		* Added sm_admin_sounds_delay cvar to control the minimum delay between 2 sounds
+		* Added sm_adminsounds_delay cvar to control the minimum delay between 2 sounds
 
 	1.1.1 // Changed by cadavor
 		* Added Log messages
@@ -44,7 +44,7 @@ Versions:
 		
 	1.2.0 // Changed by cadavor
 		* Change config file to use KeyValue function (see soundslist.cfg for more details)
-		* Added command "sm_admin_sounds_list" to display in console all sounds and categories with parameters
+		* Added command "sm_adminsounds_list" to display in console all sounds and categories with parameters
 		* Added Cvar to choose the show time of menu
 		* Reset next sound delay on map start
 
@@ -83,9 +83,9 @@ Versions:
 		
 Commands :
 	Admin Commands:
-		sm_admin_sounds_menu 		Display a menu of all admin sounds to play
-		sm_admin_sounds_stop		Stop the playing sound for everyone
-		sm_admin_sounds_list		Display a list of categories of sounds
+		sm_adminsounds_menu 	Display a menu of all admin sounds to play
+		sm_adminsounds_stop		Stop the playing sound for everyone
+		sm_adminsounds_list		Display a list of categories of sounds
 	
 	User Commands:
 		!stop	 			When used in chat will per-user stop any sound currently playing by this plug-in
@@ -149,23 +149,23 @@ public OnPluginStart()
 {
 	LoadTranslations("adminsounds.phrases");
 
-	CreateConVar("sm_admin_sounds_version", PLUGIN_VERSION, "Admin Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	g_CvarDelay = CreateConVar("sm_admin_sounds_delay", "60", "Default time in seconds after playing a sound that another one can be played. Default: 60", FCVAR_PLUGIN, true, 0.0);
-	g_CvarDisplay = CreateConVar("sm_admin_sounds_display", "1", "Enable the display of message to client when a sound is played. Default: on", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_CvarMenuReprint = CreateConVar("sm_admin_sounds_menureprint", "0", "Enable the possibility to reprint the menu after each sound. Default : 0.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_CvarMenuTime = CreateConVar("sm_admin_sounds_menutime", "20", "How long the menu still show. Default : 20.", FCVAR_PLUGIN, true, 5.0, true, 60.0);
-	g_CvarAdminStop = CreateConVar("sm_admin_sounds_adminlevelstop", "b", "Admin flag to be allow to stop played sound (see admin_level.cfg). If blank no stop possibility for admin. Default : b.", FCVAR_PLUGIN);
-	g_CvarStop = CreateConVar("sm_admin_sounds_stop", "1", "Enable the possibility to stop the playing sound. Default: on", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_CvarStopAll = CreateConVar("sm_admin_sounds_stopall", "1", "Enable the possibility to stop all sounds. Default : on", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_CvarVolume = CreateConVar("sm_admin_sounds_volume", "1.0", "Default volume of played sounds : 0.0 <= x <= 1.0. Default : 1.0.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_CvarTimeImmunity = CreateConVar("sm_admin_sounds_timeimmunity", "z", "Admin flag for delay time immunity (see admin_level.cfg). Leave blank for no immunity. Default : z.", FCVAR_PLUGIN);
+	CreateConVar("sm_admin_sounds_version", PLUGIN_VERSION, "Admin Sounds Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	g_CvarDelay = CreateConVar("sm_admin_sounds_delay", "60", "Default time in seconds after playing a sound that another one can be played. Default: 60", FCVAR_NONE, true, 0.0);
+	g_CvarDisplay = CreateConVar("sm_admin_sounds_display", "1", "Enable the display of message to client when a sound is played. Default: on", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarMenuReprint = CreateConVar("sm_admin_sounds_menureprint", "0", "Enable the possibility to reprint the menu after each sound. Default : 0.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarMenuTime = CreateConVar("sm_admin_sounds_menutime", "20", "How long the menu still show. Default : 20.", FCVAR_NONE, true, 5.0, true, 60.0);
+	g_CvarAdminStop = CreateConVar("sm_admin_sounds_adminlevelstop", "b", "Admin flag to be allow to stop played sound (see admin_level.cfg). If blank no stop possibility for admin. Default : b.", FCVAR_NONE);
+	g_CvarStop = CreateConVar("sm_admin_sounds_stop", "1", "Enable the possibility to stop the playing sound. Default: on", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarStopAll = CreateConVar("sm_admin_sounds_stopall", "1", "Enable the possibility to stop all sounds. Default : on", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarVolume = CreateConVar("sm_admin_sounds_volume", "1.0", "Default volume of played sounds : 0.0 <= x <= 1.0. Default : 1.0.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_CvarTimeImmunity = CreateConVar("sm_admin_sounds_timeimmunity", "z", "Admin flag for delay time immunity (see admin_level.cfg). Leave blank for no immunity. Default : z.", FCVAR_NONE);
 	
 	// Execute the config file
 	AutoExecConfig(true, "adminsounds");
 
-	RegAdminCmd("sm_admin_sounds_menu", AS_CatMenu, ADMFLAG_GENERIC);
-	RegAdminCmd("sm_admin_sounds_stop", Command_StopPlayedSound, ADMFLAG_GENERIC);
-	RegConsoleCmd("sm_admin_sounds_list", Command_Sound_List, "List available sounds to console");
+	RegAdminCmd("sm_adminsounds_menu", AS_CatMenu, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_adminsounds_stop", Command_StopPlayedSound, ADMFLAG_GENERIC);
+	RegConsoleCmd("sm_adminsounds_list", Command_Sound_List, "List available sounds to console");
 
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
@@ -849,7 +849,7 @@ public Action:Command_Say(client, args)
 	decl String:clientAuth[64];
 	GetCmdArgString(speech,sizeof(speech));
 	GetClientName(client, clientName, 64);
-	GetClientAuthString(client, clientAuth, sizeof(clientAuth));
+	GetClientAuthId(client, AuthId_Steam2, clientAuth, sizeof(clientAuth));
 
 	new startidx = 0;
 	if (speech[0] == '"')

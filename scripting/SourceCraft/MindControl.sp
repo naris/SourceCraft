@@ -102,9 +102,9 @@ public OnClientDisconnect(client)
 public ObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new index = GetClientOfUserId(GetEventInt(event,"userid"));
-    new object = GetEventInt(event,"index");
+    new obj = GetEventInt(event,"index");
     new TFExtObjectType:type = TFExtObjectType:GetEventInt(event,"objecttype");
-    ProcessMindControlledObjects(remove, object, index, type, INVALID_HANDLE);
+    ProcessMindControlledObjects(remove, obj, index, type, INVALID_HANDLE);
 }
 
 public Action:CorrectDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
@@ -226,36 +226,36 @@ bool:ReplaceObject(client, target, &builder=0, &TFExtObjectType:type=TFExtObject
 
                         AcceptEntityInput(target, "kill");
 
-                        new object;
+                        new obj;
                         switch (type)
                         {
                             case TFExtObject_Sentry:
                             {
-                                object = BuildSentry(client, pos, angles, iLevel, false, false,
-                                                     false, iHealth, iMaxHealth);
+                                obj = BuildSentry(client, pos, angles, iLevel, false, false,
+                                                  false, iHealth, iMaxHealth);
                             }
                             case TFExtObject_MiniSentry:
                             {
-                                object = BuildSentry(client, pos, angles, iLevel, false, true,
-                                                     false, iHealth, iMaxHealth);
+                                obj = BuildSentry(client, pos, angles, iLevel, false, true,
+                                                  false, iHealth, iMaxHealth);
                             }
                             case TFExtObject_Teleporter, TFExtObject_TeleporterEntry:
                             {
-                                object = BuildTeleporterEntry(client, pos, angles, iLevel, false,
-                                                              iHealth, iMaxHealth);
+                                obj = BuildTeleporterEntry(client, pos, angles, iLevel, false,
+                                                           iHealth, iMaxHealth);
                             }
                             case TFExtObject_TeleporterExit:
                             {
-                                object = BuildTeleporterExit(client, pos, angles, iLevel, false,
-                                                             iHealth, iMaxHealth);
+                                obj = BuildTeleporterExit(client, pos, angles, iLevel, false,
+                                                          iHealth, iMaxHealth);
                             }
                             case TFExtObject_Dispenser, TFExtObject_Amplifier, TFExtObject_RepairNode:
                             {
-                                object = BuildDispenser(client, pos, angles, iLevel, false,
-                                                        iHealth, iMaxHealth, .type=type);
+                                obj = BuildDispenser(client, pos, angles, iLevel, false,
+                                                     iHealth, iMaxHealth, .type=type);
                             }
                         }
-                        return (object > 0);
+                        return (obj > 0);
                     }
                     else
                     {
@@ -435,14 +435,14 @@ bool:ControlObject(client, target, &builder=0, &TFExtObjectType:type=TFExtObject
 
 public Action:CheckSentries(Handle:timer,any:ref)
 {
-    new object = EntRefToEntIndex(ref);
-    if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+    new obj = EntRefToEntIndex(ref);
+    if (obj > 0 && IsValidEdict(obj) && IsValidEntity(obj))
     {
         // disable the sentry if it is controlled.
-        if (GetEntProp(object, Prop_Send, "m_bPlayerControlled"))
-            SetEntProp(object, Prop_Send, "m_bDisabled", 1);
+        if (GetEntProp(obj, Prop_Send, "m_bPlayerControlled"))
+            SetEntProp(obj, Prop_Send, "m_bDisabled", 1);
         else            
-            SetEntProp(object, Prop_Send, "m_bDisabled", 0);
+            SetEntProp(obj, Prop_Send, "m_bDisabled", 0);
 
         return Plugin_Continue;
     }
@@ -451,11 +451,11 @@ public Action:CheckSentries(Handle:timer,any:ref)
     return Plugin_Stop;
 }
 
-ProcessMindControlledObjects(command:cmd, object=-1, builder=-1,
+ProcessMindControlledObjects(command:cmd, obj=-1, builder=-1,
                              TFExtObjectType:type=TFExtObject_Unknown,
                              Handle:timer=INVALID_HANDLE)
 {
-    if (object > 0 || builder > 0)
+    if (obj > 0 || builder > 0)
     {
         for (new client=1;client<=MaxClients;client++)
         {
@@ -475,8 +475,8 @@ ProcessMindControlledObjects(command:cmd, object=-1, builder=-1,
                         new TFExtObjectType:pack_type = TFExtObjectType:ReadPackCell(pack);
 
                         new bool:found;
-                        if (object > 0)
-                            found = (object == pack_target);
+                        if (obj > 0)
+                            found = (obj == pack_target);
                         else if (timer != INVALID_HANDLE)
                             found = (timer == pack_timer);
                         else

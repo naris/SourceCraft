@@ -4,17 +4,10 @@
 	{
 		"Offsets"
 		{
-			"Weapon_Switch"
+			"CTFWeaponBase::WeaponReset"
 			{
-				"windows"	"260"
-                	"linux"		"261"
-                	"mac"			"261"
-			}
-			"WeaponReset"
-			{
-				"windows"	"398"
-				"linux"		"405"
-				"mac"			"405"
+				"linux"		"421"
+				"windows"	"414"
 			}
 		}
 	}

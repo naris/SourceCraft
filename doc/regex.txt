@@ -1,0 +1,2 @@
+Regex to search logs for admin actions
+L (?<date>\d{2}/\d{2}/\d{4}) - (?<time>\d{2}:\d{2}:\d{2}): \[(?<module>[^\]]+)\] "(?<name>[^<]+)<(?<id>\d+)><(?<steamid>STEAM_\d:\d:\d+)><>"(?<action>[^"]+)"(?<victim>[^<]+)<(?<vid>\d+)><(?<vsteamid>STEAM_\d:\d:\d+)><>"(?<extra>.+)

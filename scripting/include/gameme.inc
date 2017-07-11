@@ -129,7 +129,7 @@ public SharedPlugin:__pl_gameme =
 #else
 	required = 0,
 #endif
-};
+}
 
 #if !defined REQUIRE_PLUGIN
 public __pl_gameme_SetNTVOptional()

@@ -29,7 +29,7 @@
 
 #define MAXENTITIES             2048
 
-enum grabType { dispenser, teleporter, sentrygun, teleporter_entry, teleporter_exit, sapper, object, prop, unknown, none };
+enum grabType { dispenser, teleporter, sentrygun, teleporter_entry, teleporter_exit, sapper, ent_object, ent_prop, unknown, none };
 
 // globals
 new gObj[MAXPLAYERS+1]                  = { INVALID_ENT_REFERENCE, ... };   // what object the player is holding
@@ -352,44 +352,44 @@ public OnPluginStart()
     HookEvent("player_spawn",PlayerSpawn);
 
     // convars
-    CreateConVar("sm_grab_version", PLUGIN_VERSION, "ZGrab:TF2", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    cvSpeed = CreateConVar("sm_grab_speed", "25.0", "Speed at which held objects move (Default 25) -WARNING- Don't set too high or objects start flying all over the place", FCVAR_PLUGIN);
-    cvDistance = CreateConVar("sm_grab_distance", "100.0", "Distance an object is held at (Default 100)", FCVAR_PLUGIN);
-    cvTeamRestrict = CreateConVar("sm_grab_teams", "0", "restrict usage based on teams (0=all can use, 2 or 3 to restrict red or blu", FCVAR_PLUGIN);
-    cvSound = CreateConVar("sm_grab_sound", "weapons/physcannon/hold_loop.wav", "sound to play, change takes effect on map change", FCVAR_PLUGIN);
-    cvMissSound = CreateConVar("sm_grab_misssound", "weapons/physcannon/physcannon_dryfire.wav", "sound to play for misses, change takes effect on map change", FCVAR_PLUGIN);
-    cvInvalidSound = CreateConVar("sm_grab_invalidsound", "weapons/physcannon/physcannon_tooheavy.wav", "sound to play for errors, change takes effect on map change", FCVAR_PLUGIN);
-    cvPickupSound = CreateConVar("sm_grab_pickupsound", "weapons/physcannon/physcannon_pickup.wav", "sound to play for pickup, change takes effect on map change", FCVAR_PLUGIN);
-    cvThrowSound = CreateConVar("sm_grab_throwsound", "weapons/physcannon/superphys_launch1.wav", "sound to play for throw, change takes effect on map change", FCVAR_PLUGIN);
-    cvDropSound = CreateConVar("sm_grab_dropsound", "weapons/physcannon/physcannon_drop.wav", "sound to play for drop, change takes effect on map change", FCVAR_PLUGIN);
-    cvGround = CreateConVar("sm_grab_soccer", "0", "soccer (ground mode) (1/0 = on/off)", FCVAR_PLUGIN);
-    cvThrowTime = CreateConVar("sm_grab_throwcharge", "2.0", "Time to charge throw to full (default 2.0)", FCVAR_PLUGIN);
-    cvThrowMinTime = CreateConVar("sm_grab_mincharge", "0.2", "minimum charge time, anything less drops (default 0.2)", FCVAR_PLUGIN);
-    cvThrowSpeed = CreateConVar("sm_grab_throwspeed", "1000.0", "speed at which an object is thrown. (default 1000)", FCVAR_PLUGIN);
-    cvMaxDistance = CreateConVar("sm_grab_reach", "512.0", "maximum distance from which you can grab an object (default 512)", FCVAR_PLUGIN);
-    cvMaxDuration = CreateConVar("sm_grab_fatiguetime", "0.0", "maximum time objects can be held before being dropped in seconds (default 0.0 is infinite)", FCVAR_PLUGIN);
-    cvSteal = CreateConVar("sm_grab_thief", "1", "Can objects be stolen from another player who is holding it? (1/0 = yes/no)", FCVAR_PLUGIN);
-    cvDropOnJump = CreateConVar("sm_grab_jumpdrop", "1", "drop objects when jumping to prevent glitch-flying? (1/0 = yes/no)", FCVAR_PLUGIN);
-    cvThrowGravity = CreateConVar("sm_grab_throwgrav", "1.0", "gravity of thrown buildings (default 1.0)", FCVAR_PLUGIN);
-    cvDropGravity = CreateConVar("sm_grab_dropgrav", "10.0", "gravity of dropped buildings (default 10.0)", FCVAR_PLUGIN);
-    cvStopSpeed = CreateConVar("sm_grab_stopspeed", "10.0", "speed buildings are considered stopped", FCVAR_PLUGIN);
-    cvDebug = CreateConVar("sm_grab_debug", "0", "display object classtype on grab attempt", FCVAR_PLUGIN);
-    cvMovetype = CreateConVar("sm_grab_movetype", "1", "change the movetype of grabbed/thrown objects (1/0 = yes/no)", FCVAR_PLUGIN);
+    CreateConVar("sm_grab_version", PLUGIN_VERSION, "ZGrab:TF2", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    cvSpeed = CreateConVar("sm_grab_speed", "25.0", "Speed at which held objects move (Default 25) -WARNING- Don't set too high or objects start flying all over the place", FCVAR_NONE);
+    cvDistance = CreateConVar("sm_grab_distance", "100.0", "Distance an object is held at (Default 100)", FCVAR_NONE);
+    cvTeamRestrict = CreateConVar("sm_grab_teams", "0", "restrict usage based on teams (0=all can use, 2 or 3 to restrict red or blu", FCVAR_NONE);
+    cvSound = CreateConVar("sm_grab_sound", "weapons/physcannon/hold_loop.wav", "sound to play, change takes effect on map change", FCVAR_NONE);
+    cvMissSound = CreateConVar("sm_grab_misssound", "weapons/physcannon/physcannon_dryfire.wav", "sound to play for misses, change takes effect on map change", FCVAR_NONE);
+    cvInvalidSound = CreateConVar("sm_grab_invalidsound", "weapons/physcannon/physcannon_tooheavy.wav", "sound to play for errors, change takes effect on map change", FCVAR_NONE);
+    cvPickupSound = CreateConVar("sm_grab_pickupsound", "weapons/physcannon/physcannon_pickup.wav", "sound to play for pickup, change takes effect on map change", FCVAR_NONE);
+    cvThrowSound = CreateConVar("sm_grab_throwsound", "weapons/physcannon/superphys_launch1.wav", "sound to play for throw, change takes effect on map change", FCVAR_NONE);
+    cvDropSound = CreateConVar("sm_grab_dropsound", "weapons/physcannon/physcannon_drop.wav", "sound to play for drop, change takes effect on map change", FCVAR_NONE);
+    cvGround = CreateConVar("sm_grab_soccer", "0", "soccer (ground mode) (1/0 = on/off)", FCVAR_NONE);
+    cvThrowTime = CreateConVar("sm_grab_throwcharge", "2.0", "Time to charge throw to full (default 2.0)", FCVAR_NONE);
+    cvThrowMinTime = CreateConVar("sm_grab_mincharge", "0.2", "minimum charge time, anything less drops (default 0.2)", FCVAR_NONE);
+    cvThrowSpeed = CreateConVar("sm_grab_throwspeed", "1000.0", "speed at which an object is thrown. (default 1000)", FCVAR_NONE);
+    cvMaxDistance = CreateConVar("sm_grab_reach", "512.0", "maximum distance from which you can grab an object (default 512)", FCVAR_NONE);
+    cvMaxDuration = CreateConVar("sm_grab_fatiguetime", "0.0", "maximum time objects can be held before being dropped in seconds (default 0.0 is infinite)", FCVAR_NONE);
+    cvSteal = CreateConVar("sm_grab_thief", "1", "Can objects be stolen from another player who is holding it? (1/0 = yes/no)", FCVAR_NONE);
+    cvDropOnJump = CreateConVar("sm_grab_jumpdrop", "1", "drop objects when jumping to prevent glitch-flying? (1/0 = yes/no)", FCVAR_NONE);
+    cvThrowGravity = CreateConVar("sm_grab_throwgrav", "1.0", "gravity of thrown buildings (default 1.0)", FCVAR_NONE);
+    cvDropGravity = CreateConVar("sm_grab_dropgrav", "10.0", "gravity of dropped buildings (default 10.0)", FCVAR_NONE);
+    cvStopSpeed = CreateConVar("sm_grab_stopspeed", "10.0", "speed buildings are considered stopped", FCVAR_NONE);
+    cvDebug = CreateConVar("sm_grab_debug", "0", "display object classtype on grab attempt", FCVAR_NONE);
+    cvMovetype = CreateConVar("sm_grab_movetype", "1", "change the movetype of grabbed/thrown objects (1/0 = yes/no)", FCVAR_NONE);
 
     if (GetGameType() == tf2)
     {
-        cvBuildingSound = CreateConVar("sm_grab_buildingsound", "weapons/physcannon/superphys_hold_loop.wav", "sound to play, change takes effect on map change", FCVAR_PLUGIN);
-        cvBuildings = CreateConVar("sm_grab_buildings", "1", "can engi buildings be picked up? (1/0 = yes/no)", FCVAR_PLUGIN);
-        cvOtherBuildings = CreateConVar("sm_grab_teamgrab", "1", "can teammates buildings be picked up? (1/0 = yes/no)", FCVAR_PLUGIN);
-        cvThrowBuildings = CreateConVar("sm_grab_throw", "1", "can buildings be thrown? (1/0 = yes/no)", FCVAR_PLUGIN);
-        cvThrowSetDisabled = CreateConVar("sm_grab_throwdisable", "1", "set buildings disabled when thrown? (1/0 = yes/no)", FCVAR_PLUGIN);
-        cvGrabSetDisabled = CreateConVar("sm_grab_grabdisable", "1", "set buildings disabled when grabbed? (1/0 = yes/no)", FCVAR_PLUGIN);
-        cvDropOnSapped = CreateConVar("sm_grab_sapped", "1", "drop objects if they are sapped? (1/0 = yes/no)", FCVAR_PLUGIN);
-        cvAllowRepair = CreateConVar("sm_grab_norepair", "1", "Allow objects to be repaired while held? (0 allows, 1 disallows)", FCVAR_PLUGIN);
-        cvDispenserEnabled = CreateConVar("sm_grab_dispenser", "1", "Can engie dispeners be grabbed? (0=no 1=yes)", FCVAR_PLUGIN);
-        cvEnableBits = CreateConVar("sm_grab_altenable", "7", "Enable/Disable Engi Alt-Fire/Reload Support (1=shotgun,2=wrench,4=wrench-reload)", FCVAR_PLUGIN);
+        cvBuildingSound = CreateConVar("sm_grab_buildingsound", "weapons/physcannon/superphys_hold_loop.wav", "sound to play, change takes effect on map change", FCVAR_NONE);
+        cvBuildings = CreateConVar("sm_grab_buildings", "1", "can engi buildings be picked up? (1/0 = yes/no)", FCVAR_NONE);
+        cvOtherBuildings = CreateConVar("sm_grab_teamgrab", "1", "can teammates buildings be picked up? (1/0 = yes/no)", FCVAR_NONE);
+        cvThrowBuildings = CreateConVar("sm_grab_throw", "1", "can buildings be thrown? (1/0 = yes/no)", FCVAR_NONE);
+        cvThrowSetDisabled = CreateConVar("sm_grab_throwdisable", "1", "set buildings disabled when thrown? (1/0 = yes/no)", FCVAR_NONE);
+        cvGrabSetDisabled = CreateConVar("sm_grab_grabdisable", "1", "set buildings disabled when grabbed? (1/0 = yes/no)", FCVAR_NONE);
+        cvDropOnSapped = CreateConVar("sm_grab_sapped", "1", "drop objects if they are sapped? (1/0 = yes/no)", FCVAR_NONE);
+        cvAllowRepair = CreateConVar("sm_grab_norepair", "1", "Allow objects to be repaired while held? (0 allows, 1 disallows)", FCVAR_NONE);
+        cvDispenserEnabled = CreateConVar("sm_grab_dispenser", "1", "Can engie dispeners be grabbed? (0=no 1=yes)", FCVAR_NONE);
+        cvEnableBits = CreateConVar("sm_grab_altenable", "7", "Enable/Disable Engi Alt-Fire/Reload Support (1=shotgun,2=wrench,4=wrench-reload)", FCVAR_NONE);
 
-        cvProps = CreateConVar("sm_grab_props", "0", "can props be picked up? (1/0 = yes/no)", FCVAR_PLUGIN);
+        cvProps = CreateConVar("sm_grab_props", "0", "can props be picked up? (1/0 = yes/no)", FCVAR_NONE);
 
         // convarchange
         HookConVarChange(cvEnableBits, Cvar_enabled); 
@@ -766,7 +766,7 @@ public Action:Command_Grab(client, args)
     }
     else
     {
-        if (grab != prop || !(gPermissions[client] & CAN_GRAB_PROPS))
+        if (grab != ent_prop || !(gPermissions[client] & CAN_GRAB_PROPS))
         {
             if (!groundmode)
                 PrepareAndEmitSoundToAll(gInvalidSound, client);
@@ -940,7 +940,7 @@ public Action:Command_UnGrab(client, args)
     return Plugin_Handled;
 }
 
-Drop(client, bool:throw)
+Drop(client, bool:throwIt)
 {
     new bool:groundmode = GetConVarBool(cvGround);
     if (!groundmode) // no sound in ground mode
@@ -955,7 +955,7 @@ Drop(client, bool:throw)
     new ent = EntRefToEntIndex(ref);
     if (ent > 0)
     {
-        if (!throw)
+        if (!throwIt)
         {
             if (!groundmode)
                 PrepareAndEmitSoundToAll(gDropSound, client);
@@ -975,7 +975,7 @@ Drop(client, bool:throw)
         if (gt >= dispenser && gt <= teleporter_exit)
         {
             new bool:disable = gDisabled[ent];
-            if (throw && !disable && (gt >= dispenser && gt <= teleporter_exit) &&
+            if (throwIt && !disable && (gt >= dispenser && gt <= teleporter_exit) &&
                 !(gPermissions[client] & CAN_THROW_ENABLED_BUILDINGS) &&
                 GetEntProp(ent, Prop_Send, "m_iTeamNum") == GetClientTeam(client))
             {
@@ -1003,7 +1003,7 @@ Drop(client, bool:throw)
             }
         }
 
-        if (!throw)
+        if (!throwIt)
         {
             new Action:res = Plugin_Continue;
             Call_StartForward(fwdOnDropObject);
@@ -1039,7 +1039,7 @@ public Action:Command_Throw(client, args)
         return Command_Grab(client, args);
 
     // is it a object that can't be thrown? 
-    else if (gType[client] >= object && !(gPermissions[client] & CAN_THROW_BUILDINGS))
+    else if (gType[client] >= ent_object && !(gPermissions[client] & CAN_THROW_BUILDINGS))
         return Plugin_Handled;
 
     // start throw timer
@@ -1651,9 +1651,9 @@ grabType:GetGrabType(ent)
         else if (strcmp("obj_sapper", edictname, false)==0)
             return sapper; // ent is a teleporter_exit
         else if (strncmp("obj_", edictname, 4, false)==0)
-            return object; // ent is an object
+            return ent_object; // ent is an object
         else if (strncmp("prop_", edictname, 5, false)==0)
-            return prop; // ent is a physics entities
+            return ent_prop; // ent is a physics entities
         else if (strncmp("prop_", edictname, 5, false)==0)
             return unknown; // ent is a unknown
     }

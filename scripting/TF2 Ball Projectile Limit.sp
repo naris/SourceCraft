@@ -36,7 +36,7 @@ new g_iCount = 0;
 
 public OnPluginStart()
 {
-	CreateConVar("sm_balllimit_version", PLUGIN_VERSION, "Ball Projectile Limit", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_balllimit_version", PLUGIN_VERSION, "Ball Projectile Limit", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_hBallLimit = CreateConVar("sm_balllimit", "32", "Limit the ball projectiles on the map to this amount", 0, true, 1.0);
 	HookConVarChange(g_hBallLimit, CvarChange_BallLimit);
 	RegAdminCmd("sm_clearballs", Command_ClearBalls, ADMFLAG_GENERIC, "Clear all ball projectiles on the map");

@@ -234,12 +234,12 @@ public Spawn_Selected(Handle:menu,MenuAction:action,client,selection)
                 if (TF2_GetPlayerClass(client) == TFClass_Engineer &&
                     CountObjects(client,TF2_ObjectClassNames[item]) <= 0)
                 {
-                    new TFObjectType:object;
+                    new TFObjectType:obj;
                     if (item == _:TFExtObject_MiniSentry)
-                        object = TFObject_Sentry;
+                        obj = TFObject_Sentry;
                     else if (item == _:TFExtObject_RepairNode)
                     {
-                        object = TFObject_Dispenser;
+                        obj = TFObject_Dispenser;
                         if (m_AmpNodeAvailable)
                         {
                             new spawn_level=GetUpgradeLevel(client,m_spawnRaceId,m_spawnUpgradeId);
@@ -248,7 +248,7 @@ public Spawn_Selected(Handle:menu,MenuAction:action,client,selection)
                     }
                     else if (item == _:TFExtObject_Amplifier)
                     {
-                        object = TFObject_Dispenser;
+                        obj = TFObject_Dispenser;
                         if (m_AmpNodeAvailable)
                         {
                             new TFCond:cond = TFCond_Buffed;
@@ -262,16 +262,16 @@ public Spawn_Selected(Handle:menu,MenuAction:action,client,selection)
                     }
                     /*else if (item == _:TFExtObject_UpgradeStation)
                     {
-                        object = TFObject_Dispenser;
+                        obj = TFObject_Dispenser;
                         if (m_AmpNodeAvailable)
                         {
                             SetUpgradeStation(client, .enable=true, .select=true);
                         }
                     }*/
                     else
-                        object = TFObjectType:item;
+                        obj = TFObjectType:item;
 
-                    ClientCommand(client, "build %d", object);
+                    ClientCommand(client, "build %d", obj);
                 }
                 else
                 {
@@ -356,12 +356,12 @@ stock SpawnIt(client, TFExtObjectType:type, raceId, upgradeId, level,
         m_spawnRaceId = raceId;
         m_spawnUpgradeId = upgradeId;
         strcopy(m_SpawnSound, sizeof(m_SpawnSound), spawnSound);
-        new object = BuildObject(client, type, (bMini || type == TFExtObject_MiniSentry) ? 1 : level,
-                                 bMini, bShielded, .bDisabled=true, .check=false);
-        if (object > 0)
+        new obj = BuildObject(client, type, (bMini || type == TFExtObject_MiniSentry) ? 1 : level,
+                              bMini, bShielded, .bDisabled=true, .check=false);
+        if (obj > 0)
         {
             //if (m_GravgunAvailable)
-            //    DropEntity(object);
+            //    DropEntity(obj);
 
             ChargeForUpgrade(client, raceId, upgradeId);
             PrepareAndEmitSoundToAll(m_SpawnSound,client);
@@ -375,17 +375,17 @@ stock SpawnIt(client, TFExtObjectType:type, raceId, upgradeId, level,
             {
                 if (type == TFExtObject_Amplifier)
                 {
-                    ConvertToAmplifier(object, client, TFCond_Buffed, m_SpawnAmpRange[level]);
+                    ConvertToAmplifier(obj, client, TFCond_Buffed, m_SpawnAmpRange[level]);
                 }
                 else if (type == TFExtObject_RepairNode)
                 {
-                    ConvertToRepairNode(object, client, m_SpawnNodeRange[level],
+                    ConvertToRepairNode(obj, client, m_SpawnNodeRange[level],
                                         m_SpawnNodeRegen[level], m_SpawnNodeShells[level],
                                         m_SpawnNodeRockets[level], .team=(spawn_level>2));
                 }
                 /*else if (type == TFExtObject_UpgradeStation)
                 {
-                    ConvertToUpgradeStation(object);
+                    ConvertToUpgradeStation(obj);
                 }*/
             }
         }

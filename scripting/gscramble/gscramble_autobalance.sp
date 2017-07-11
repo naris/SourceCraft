@@ -50,13 +50,16 @@ stock GetSmallerTeam()
 public Action:timer_StartBalanceCheck(Handle:timer, any:client)
 {
 	if (g_aTeams[bImbalanced] && BalancePlayer(client))
+	{
 		CheckBalance(true);
+	}
+	
 	return Plugin_Handled;
 }
 
 bool:BalancePlayer(client)
 {
-	if (!g_bMvMMode || !TeamsUnbalanced(false))
+	if (!TeamsUnbalanced(false))
 	{
 		return true;
 	}
@@ -84,10 +87,15 @@ bool:BalancePlayer(client)
 	if (!overrider)
 	{
 		if (!IsValidTarget(client, balance) || GetPlayerPriority(client) < 0)
+		{
 			return false;	
+		}
 	}
 	else if (IsPlayerAlive(client))
+	{
 		CreateTimer(0.5, Timer_BalanceSpawn, GetClientUserId(client));
+	}
+	
 	new String:sName[MAX_NAME_LENGTH + 1], String:sTeam[32];
 	GetClientName(client, sName, 32);
 	team == TEAM_RED ? (sTeam = "RED") : (sTeam = "BLU");
@@ -95,6 +103,7 @@ bool:BalancePlayer(client)
 	ChangeClientTeam(client, team);
 	g_bBlockDeath = false;
 	g_aPlayers[client][iBalanceTime] = iTime + (GetConVarInt(cvar_BalanceTime) * 60);
+	
 	if (!IsFakeClient(client))
 	{
 		new Handle:event = CreateEvent("teamplay_teambalanced_player");
@@ -103,9 +112,11 @@ bool:BalancePlayer(client)
 		SetupTeamSwapBlock(client);
 		FireEvent(event);
 	}
+	
 	LogAction(client, -1, "\"%L\" has been auto-balanced to %s.", client, sTeam);
 	PrintToChatAll("\x01\x04[SM]\x01 %t", "TeamChangedAll", sName, sTeam);
 	g_aTeams[bImbalanced]=false;
+	
 	return true;
 }
 
@@ -115,16 +126,20 @@ stock StartForceTimer()
 	{
 		return;
 	}
+	
 	if (g_hForceBalanceTimer != INVALID_HANDLE)
 	{
 		KillTimer(g_hForceBalanceTimer);
 		g_hForceBalanceTimer = INVALID_HANDLE;
 	}
+	
 	new Float:fDelay;
+	
 	if (1 > (fDelay = GetConVarFloat(cvar_MaxUnbalanceTime)))
 	{
 		return;
 	}
+	
 	g_hForceBalanceTimer = CreateTimer(fDelay, Timer_ForceBalance);
 }
 
@@ -134,24 +149,34 @@ stock StartForceTimer()
 public Action:Timer_ForceBalance(Handle:timer)
 {
 	g_hForceBalanceTimer = INVALID_HANDLE;
+	
 	if (TeamsUnbalanced(false))
 	{
 		BalanceTeams(true);
 	}
+	
 	g_aTeams[bImbalanced] = false;
+	
 	return Plugin_Handled;
 }
 
 CheckBalance(bool:post=false)
 {
-	if (g_bMvMMode)
-		return;
 	if (!g_bHooked)
+	{
 		return;
+	}
+	
 	if (g_hCheckTimer != INVALID_HANDLE)
+	{
 		return;
+	}
+	
 	if (!g_bAutoBalance)
+	{
 		return;
+	}
+	
 	if (g_bBlockDeath)
 	{
 		return;
@@ -201,11 +226,13 @@ flags the teams as being unbalanced
 public Action:timer_BalanceFlag(Handle:timer)
 {
 	g_hBalanceFlagTimer = INVALID_HANDLE;
+	
 	if (TeamsUnbalanced())
 	{
 		StartForceTimer();
 		g_aTeams[bImbalanced] = true;
 	}
+	
 	return Plugin_Handled;
 }
 
@@ -213,6 +240,7 @@ public Action:timer_CheckBalance(Handle:timer)
 {
 	g_hCheckTimer = INVALID_HANDLE;
 	CheckBalance();
+	
 	return Plugin_Handled;
 }
 
@@ -233,10 +261,13 @@ stock bool:TeamsUnbalanced(bool:force=true)
 				KillTimer(g_hBalanceFlagTimer);
 				g_hBalanceFlagTimer = INVALID_HANDLE;
 			}
+			
 			return false;
 		}
+		
 		return true;
 	}
+	
 	return false;
 }
 
@@ -251,15 +282,21 @@ stock BalanceTeams(bool:respawn=true)
 		smallTeam = GetSmallerTeam(),
 		swaps = GetAbsValue(GetTeamClientCount(TEAM_RED), GetTeamClientCount(TEAM_BLUE)) / 2,
 		iTeamSize = GetClientCount();
+		
 	new iFatTeam[iTeamSize][2];
+	
 	for (new i = 1; i <= MaxClients; i++) 
 	{
 		if (!IsClientInGame(i))
+		{
 			continue;
+		}
+		
 		if (IsValidSpectator(i))
 		{
 			iFatTeam[counter][0] = i;
 			iFatTeam[counter][1] = 90;
+			
 			counter++;
 		}
 		else if (GetClientTeam(i) == team) 
@@ -276,37 +313,54 @@ stock BalanceTeams(bool:respawn=true)
 			{
 				iFatTeam[counter][1] = -5;
 			}
+			
 			iFatTeam[counter][0] = i;
 			counter++;
 		}
 	}	
+	
 	SortCustom2D(iFatTeam, counter, SortIntsDesc); // sort the array so low prio players are on the bottom
 	g_bBlockDeath = true;	
+	
 	for (new i = 0; swaps-- > 0 && i < counter; i++)
 	{
 		if (iFatTeam[i][0])
 		{	
-			new bWasSpec = false;			
+			new bWasSpec = false;		
+			
 			if (GetClientTeam(iFatTeam[i][0]) == 1)
 			{
 				bWasSpec = true;
 			}
+			
 			new String:clientName[MAX_NAME_LENGTH + 1], String:sTeam[4];
 			GetClientName(iFatTeam[i][0], clientName, 32);
+			
 			if (team == TEAM_RED)
+			{
 				sTeam = "Blu";
+			}
 			else
-				sTeam = "Red";				
+			{
+				sTeam = "Red";
+			}
+				
 			ChangeClientTeam(iFatTeam[i][0], team == TEAM_BLUE ? TEAM_RED : TEAM_BLUE);
+			
 			if (bWasSpec)
 			{
 				TF2_SetPlayerClass(iFatTeam[i][0], TFClass_Scout);
 			}
+			
 			PrintToChatAll("\x01\x04[SM]\x01 %t", "TeamChangedAll", clientName, sTeam);
 			SetupTeamSwapBlock(iFatTeam[i][0]);
 			LogAction(iFatTeam[i][0], -1, "\"%L\" has been force-balanced to %s.", iFatTeam[i][0], sTeam);			
+			
 			if (respawn)
+			{
 				CreateTimer(0.5, Timer_BalanceSpawn, GetClientUserId(iFatTeam[i][0]), TIMER_FLAG_NO_MAPCHANGE);
+			}
+			
 			if (!IsFakeClient(iFatTeam[i][0]))
 			{				
 				new Handle:event = CreateEvent("teamplay_teambalanced_player");
@@ -327,6 +381,7 @@ stock bool:IsOkToBalance()
 	if (g_RoundState == normal)
 	{
 		new iBalanceTimeLimit = GetConVarInt(cvar_BalanceTimeLimit);
+		
 		if (iBalanceTimeLimit && g_iRoundTimer)
 		{
 			if (g_iRoundTimer < iBalanceTimeLimit)
@@ -334,7 +389,8 @@ stock bool:IsOkToBalance()
 				return false;
 			}
 		}
-		return (!g_bMvMMode);
+		
+		return true;
 	}
 	switch (g_RoundState)
 	{
@@ -342,25 +398,29 @@ stock bool:IsOkToBalance()
 		{
 			return false;
 		}
+		
 		case preGame:
 		{
 			return false;
 		}
+		
 		case setup:
 		{
 			return false;
 		}
+		
 		case bonusRound:
 		{
 			return false;
 		}
 	}
-	return (!g_bMvMMode);
+	return true;
 }
 
 public Action:Timer_BalanceSpawn(Handle:timer, any:id)
 {
 	new client;
+	
 	if ((client = (GetClientOfUserId(id))))
 	{
 		if (!IsPlayerAlive(client))
@@ -368,5 +428,6 @@ public Action:Timer_BalanceSpawn(Handle:timer, any:id)
 			TF2_RespawnPlayer(client);
 		}
 	}
+	
 	return Plugin_Handled;
 }

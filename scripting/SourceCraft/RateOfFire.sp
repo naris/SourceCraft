@@ -86,7 +86,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-    g_hROF = CreateConVar("sm_rof", "1.0", "Rate Of Fire multiplier.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+    g_hROF = CreateConVar("sm_rof", "1.0", "Rate Of Fire multiplier.", FCVAR_NOTIFY);
     HookConVarChange(g_hROF, Cvar_rof);
 }
 

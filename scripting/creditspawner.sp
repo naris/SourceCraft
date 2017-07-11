@@ -17,7 +17,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_spawncredit_version", PL_VERSION, "Credits Spawner Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_spawncredit_version", PL_VERSION, "Credits Spawner Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegAdminCmd("sm_spawncredit", Command_Spawn, ADMFLAG_CHEATS);
 }
 

@@ -285,8 +285,8 @@ public Action:cmdbufflist(client, args){
   if(args==1){
     new String:arg[32];
     GetCmdArg(1,arg,sizeof(arg));
-    new int=StringToInt(arg);
-#pragma unused int // prevent warning when compiled for SOURCECRAFT w/o _TRACE
+    new num=StringToInt(arg);
+#pragma unused num // prevent warning when compiled for SOURCECRAFT w/o _TRACE
     new ItemsLoaded = W3GetItemsLoaded();
     new RacesPlusItems = ItemsLoaded+War3_GetRacesLoaded();
     for(new i=1;i<=RacesPlusItems;i++){
@@ -297,7 +297,7 @@ public Action:cmdbufflist(client, args){
       else{
         War3_GetRaceShortname(i-ItemsLoaded,name,sizeof(name));
       }
-      War3_LogInfo("buff for client %d buffid %d : %d %f race/item %s",client,int,buffdebuff[client][W3Buff:int][i],buffdebuff[client][W3Buff:int][i],name);
+      War3_LogInfo("buff for client %d buffid %d : %d %f race/item %s",client,num,buffdebuff[client][W3Buff:num][i],buffdebuff[client][W3Buff:num][i],name);
       
     }
   }

@@ -636,9 +636,9 @@ public EventRoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-public OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type)
+public OnPlayerBuiltObject(Handle:event, client, obj, TFObjectType:type)
 {
-    if (object > 0 && type != TFObject_Sapper)
+    if (obj > 0 && type != TFObject_Sapper)
     {
         if (IsValidClientNotSpec(client) && GetRace(client) == raceID &&
             !GetRestriction(client, Restriction_NoUpgrades) &&
@@ -646,15 +646,15 @@ public OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type)
         {
             if (cfgAllowSentries >= 1 && GetUpgradeLevel(client,raceID,forgeID) > 0)
             {
-                new Float:time = (GetEntPropFloat(object, Prop_Send, "m_flPercentageConstructed") >= 1.0) ? 0.1 : 10.0;
-                CreateTimer(time, ForgeTimer, EntIndexToEntRef(object), TIMER_FLAG_NO_MAPCHANGE);
+                new Float:time = (GetEntPropFloat(obj, Prop_Send, "m_flPercentageConstructed") >= 1.0) ? 0.1 : 10.0;
+                CreateTimer(time, ForgeTimer, EntIndexToEntRef(obj), TIMER_FLAG_NO_MAPCHANGE);
             }
 
             new pylon_level = cfgAllowInvisibility && m_IsDarkPylon[client] ? GetUpgradeLevel(client,raceID,pylonID) : 0;
             if (pylon_level > 0)
             {
-                SetEntityRenderColor(object, 255, 255, 255, m_DarkPylonAlpha[pylon_level]);
-                SetEntityRenderMode(object,RENDER_TRANSCOLOR);
+                SetEntityRenderColor(obj, 255, 255, 255, m_DarkPylonAlpha[pylon_level]);
+                SetEntityRenderMode(obj,RENDER_TRANSCOLOR);
             }
         }
     }
@@ -662,8 +662,8 @@ public OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type)
 
 public PlayerUpgradedObject(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new object = GetEventInt(event,"index");
-    if (object > 0)
+    new obj = GetEventInt(event,"index");
+    if (obj > 0)
     {
         new client = GetClientOfUserId(GetEventInt(event,"userid"));
         if (IsValidClientNotSpec(client) && GetRace(client) == raceID &&
@@ -671,13 +671,13 @@ public PlayerUpgradedObject(Handle:event,const String:name[],bool:dontBroadcast)
             !GetRestriction(client, Restriction_Stunned))
         {
             if (cfgAllowSentries >= 1 && GetUpgradeLevel(client,raceID,forgeID) > 0)
-                CreateTimer(0.1, ForgeTimer, EntIndexToEntRef(object), TIMER_FLAG_NO_MAPCHANGE);
+                CreateTimer(0.1, ForgeTimer, EntIndexToEntRef(obj), TIMER_FLAG_NO_MAPCHANGE);
 
             new pylon_level = m_IsDarkPylon[client] ? GetUpgradeLevel(client,raceID,pylonID) : 0;
             if (pylon_level > 0 && cfgAllowInvisibility)
             {
-                SetEntityRenderColor(object, 255, 255, 255, m_DarkPylonAlpha[pylon_level]);
-                SetEntityRenderMode(object,RENDER_TRANSCOLOR);
+                SetEntityRenderColor(obj, 255, 255, 255, m_DarkPylonAlpha[pylon_level]);
+                SetEntityRenderMode(obj,RENDER_TRANSCOLOR);
             }
         }
     }
@@ -685,64 +685,64 @@ public PlayerUpgradedObject(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:ForgeTimer(Handle:timer,any:ref)
 {
-    new object = EntRefToEntIndex(ref);
-    if (object > 0 && IsValidEntity(object) && IsValidEdict(object))
+    new obj = EntRefToEntIndex(ref);
+    if (obj > 0 && IsValidEntity(obj) && IsValidEdict(obj))
     {
-        new builder = GetEntPropEnt(object, Prop_Send, "m_hBuilder");
+        new builder = GetEntPropEnt(obj, Prop_Send, "m_hBuilder");
         if (builder > 0 && GetRace(builder) == raceID &&
             !GetRestriction(builder, Restriction_NoUpgrades) &&
             !GetRestriction(builder, Restriction_Stunned))
         {
-            if (GetEntPropFloat(object, Prop_Send, "m_flPercentageConstructed") >= 1.0)
+            if (GetEntPropFloat(obj, Prop_Send, "m_flPercentageConstructed") >= 1.0)
             {
                 new build_level = GetUpgradeLevel(builder,raceID,forgeID);
                 if (build_level > 0 && cfgAllowSentries >= 1)
                 {
-                    new iLevel = GetEntProp(object, Prop_Send, "m_bMiniBuilding") ? 0 : 
-                                 GetEntProp(object, Prop_Send, "m_iUpgradeLevel");
+                    new iLevel = GetEntProp(obj, Prop_Send, "m_bMiniBuilding") ? 0 : 
+                                 GetEntProp(obj, Prop_Send, "m_iUpgradeLevel");
 
-                    //new health = GetEntProp(object, Prop_Send, "m_iHealth");
+                    //new health = GetEntProp(obj, Prop_Send, "m_iHealth");
                     new health = RoundToNearest(float(TF2_SentryHealth[iLevel]) * g_ForgeFactor[build_level]);
 
                     new maxHealth = TF2_SentryHealth[4]; //[iLevel+1];
                     if (health > maxHealth)
                         health = maxHealth;
 
-                    if (health > GetEntProp(object, Prop_Data, "m_iMaxHealth"))
-                        SetEntProp(object, Prop_Data, "m_iMaxHealth", health);
+                    if (health > GetEntProp(obj, Prop_Data, "m_iMaxHealth"))
+                        SetEntProp(obj, Prop_Data, "m_iMaxHealth", health);
 
-                    SetEntityHealth(object, health);
+                    SetEntityHealth(obj, health);
 
-                    if (TF2_GetObjectType(object) == TFObject_Sentry)
+                    if (TF2_GetObjectType(obj) == TFObject_Sentry)
                     {
                         new maxShells = TF2_MaxSentryShells[4]; //[iLevel+1];
-                        //new iShells = GetEntProp(object, Prop_Send, "m_iAmmoShells");
+                        //new iShells = GetEntProp(obj, Prop_Send, "m_iAmmoShells");
                         new iShells = RoundToNearest(float(TF2_MaxSentryShells[iLevel]) *g_ForgeFactor[build_level]);
                         if (iShells > maxShells)
                             iShells = maxShells;
 
-                        SetEntProp(object, Prop_Send, "m_iAmmoShells", iShells);
+                        SetEntProp(obj, Prop_Send, "m_iAmmoShells", iShells);
 
                         if (iLevel > 2)
                         {
                             new maxRockets = TF2_MaxSentryRockets[4]; //[iLevel+1];
-                            //new iRockets = GetEntProp(object, Prop_Send, "m_iAmmoRockets");
+                            //new iRockets = GetEntProp(obj, Prop_Send, "m_iAmmoRockets");
                             new iRockets = RoundToNearest(float(TF2_MaxSentryRockets[iLevel]) *g_ForgeFactor[build_level]);
                             if (iRockets > maxRockets)
                                 iRockets = maxRockets;
 
-                            SetEntProp(object, Prop_Send, "m_iAmmoRockets", iRockets);
+                            SetEntProp(obj, Prop_Send, "m_iAmmoRockets", iRockets);
                         }
                     }
 
-                    PrepareAndEmitSoundToAll(forgeWav,object);
+                    PrepareAndEmitSoundToAll(forgeWav,obj);
                 }
 
                 new pylon_level = m_IsDarkPylon[builder] ? GetUpgradeLevel(builder,raceID,pylonID) : 0;
                 if (pylon_level > 0 && cfgAllowInvisibility)
                 {
-                    SetEntityRenderColor(object, 255, 255, 255, m_DarkPylonAlpha[pylon_level]);
-                    SetEntityRenderMode(object,RENDER_TRANSCOLOR);
+                    SetEntityRenderColor(obj, 255, 255, 255, m_DarkPylonAlpha[pylon_level]);
+                    SetEntityRenderMode(obj,RENDER_TRANSCOLOR);
                 }
             }
             else

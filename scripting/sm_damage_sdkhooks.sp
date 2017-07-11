@@ -24,7 +24,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_damage_version", PLUGIN_VERSION,"SM Damage Version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED);
+	CreateConVar("sm_damage_version", PLUGIN_VERSION,"SM Damage Version", FCVAR_NOTIFY|FCVAR_REPLICATED);
 	
 	g_enabled = CreateConVar("sm_damage_enabled","1");
 	g_info = CreateConVar("sm_damage_info","1");

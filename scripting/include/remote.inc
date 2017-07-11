@@ -242,7 +242,7 @@ native bool:DestroyBuildingMenu(client);
  * @param object 	        Entity (building object) to destroy.
  * @return			        none
  */
-native DestroyBuilding(object);
+native DestroyBuilding(obj);
 
 /**
  * Description: Native Interface to buildlimit

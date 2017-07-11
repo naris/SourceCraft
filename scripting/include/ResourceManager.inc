@@ -80,16 +80,16 @@ native PrepareDecal(const String:model[], &index=0, bool:preload=true);
 /**
  * Sets up a given sound.
  *
- * @param model			Name of the sound to precache.
+ * @param sound			Name of the sound to precache.
  * @param force		    If force is true the file will be precached even if the sound limit has been reached.
  * @param download		If download is 2 the file will be added to the downloadables table,
  *                      If download is 1 the file be added if it's within the allotted number of files.
  * @param precache		If precache is true the file will be precached immediately.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return				Returns a model index (if precached).
+ * @return				Returns true if successfully precached.
  */
-native SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-                  bool:precache=false, bool:preload=false);
+native bool:SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                       bool:precache=false, bool:preload=false);
 
 /**
  * Prepares a given sound for use.

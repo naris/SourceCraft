@@ -142,18 +142,18 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-    CreateConVar("dod_ammo_version", PLUGIN_VERSION, "DoD Ammo Version (DO NOT CHANGE!)", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
+    CreateConVar("dod_ammo_version", PLUGIN_VERSION, "DoD Ammo Version (DO NOT CHANGE!)", FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
 
-    AmmoPackDrop = CreateConVar("dod_ammo_pack_drop", "1", "<1/0> = allow/disallow players to drop their ammopack on command", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    AmmoPackOnDeath = CreateConVar("dod_ammo_pack_ondeath", "1", "<1/0> = enable/disable dropping a ammopack on players' death", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    AmmoPackLifetime = CreateConVar("dod_ammopack_lifetime", "30", "<#> = number of seconds a dropped ammopack stays on the map", FCVAR_PLUGIN, true, 5.0, true, 60.0);
-    AmmoPackRule = CreateConVar("dod_ammopack_pickuprule", "0", "<0/1/2> = set who can pickup dropped ammopacks: 0 = everyone, 1 = only teammates, 2 = only enemies", FCVAR_PLUGIN, true, 0.0, true, 2.0);
+    AmmoPackDrop = CreateConVar("dod_ammo_pack_drop", "1", "<1/0> = allow/disallow players to drop their ammopack on command", FCVAR_NONE, true, 0.0, true, 1.0);
+    AmmoPackOnDeath = CreateConVar("dod_ammo_pack_ondeath", "1", "<1/0> = enable/disable dropping a ammopack on players' death", FCVAR_NONE, true, 0.0, true, 1.0);
+    AmmoPackLifetime = CreateConVar("dod_ammopack_lifetime", "30", "<#> = number of seconds a dropped ammopack stays on the map", FCVAR_NONE, true, 5.0, true, 60.0);
+    AmmoPackRule = CreateConVar("dod_ammopack_pickuprule", "0", "<0/1/2> = set who can pickup dropped ammopacks: 0 = everyone, 1 = only teammates, 2 = only enemies", FCVAR_NONE, true, 0.0, true, 2.0);
 
-    RestockEnabled = CreateConVar("dod_ammo_restock", "1", "<1/0> = enable/disable players being able to restock", FCVAR_PLUGIN)
-    RestockCount = CreateConVar("dod_ammo_restock_perlife", "3", "<#/0> = number of restocks per life a player can use  -  0=no limit", FCVAR_PLUGIN)
-    RestockDelay = CreateConVar("dod_ammo_restock_delay", "30", "<#/0> = number of seconds after ammoing can be used again  -  0=no limit", FCVAR_PLUGIN)
-    AmmoAnnounce = CreateConVar("dod_ammo_announce", "1", "<1/2/0> = set announcement  -  1=only on first spawn  -  2=every spawn until it is used  -  0=no announcements", FCVAR_PLUGIN)
-    RestockCheck = CreateConVar("dod_ammo_restock_check", "1", "<1/0> = enable/disable disallowing to ammo if player has more than half of the set ammo ammo", FCVAR_PLUGIN)
+    RestockEnabled = CreateConVar("dod_ammo_restock", "1", "<1/0> = enable/disable players being able to restock", FCVAR_NONE)
+    RestockCount = CreateConVar("dod_ammo_restock_perlife", "3", "<#/0> = number of restocks per life a player can use  -  0=no limit", FCVAR_NONE)
+    RestockDelay = CreateConVar("dod_ammo_restock_delay", "30", "<#/0> = number of seconds after ammoing can be used again  -  0=no limit", FCVAR_NONE)
+    AmmoAnnounce = CreateConVar("dod_ammo_announce", "1", "<1/2/0> = set announcement  -  1=only on first spawn  -  2=every spawn until it is used  -  0=no announcements", FCVAR_NONE)
+    RestockCheck = CreateConVar("dod_ammo_restock_check", "1", "<1/0> = enable/disable disallowing to ammo if player has more than half of the set ammo ammo", FCVAR_NONE)
 
     decl String:ConVarName[256]
     decl String:ConVarValue[256]
@@ -163,7 +163,7 @@ public OnPluginStart()
         Format(ConVarName, sizeof(ConVarName), "dod_ammo_%s",g_Weapon[i])
         IntToString(g_AmmoAmmo[i], ConVarValue, sizeof(ConVarValue))
         Format(ConVarDescription, sizeof(ConVarDescription), "<#> set amount of Ammo to ammo for %s", g_Weapon[i])
-        CreateConVar(ConVarName, ConVarValue, ConVarDescription,FCVAR_PLUGIN)
+        CreateConVar(ConVarName, ConVarValue, ConVarDescription,FCVAR_NONE)
     }
 
     RegConsoleCmd("say", SayAmmo)

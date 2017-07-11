@@ -421,20 +421,20 @@ public OnPluginStart()
 {
     RegConsoleCmd("sm_gas", Gas, " -  Calls in gas at coords specified by player's crosshairs");
 
-    CreateConVar("sm_gas_version", PLUGIN_VERSION, "Version of SourceMod Gas on this server", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    g_Cvar_GasAmount   = CreateConVar("sm_gas_amount", "1", " Number of gas attacks per player at spawn", FCVAR_PLUGIN);
-    g_Cvar_Red         = CreateConVar("sm_gas_red", "180", " Amount of red color in gas", FCVAR_PLUGIN);
-    g_Cvar_Green       = CreateConVar("sm_gas_green", "210", " Amount of green color in gas", FCVAR_PLUGIN);
-    g_Cvar_Blue        = CreateConVar("sm_gas_blue", "0", " Amount of blue color in gas", FCVAR_PLUGIN);
-    g_Cvar_Random      = CreateConVar("sm_gas_random", "0", " Make gas color random <1 to enable>", FCVAR_PLUGIN);
-    g_Cvar_Damage      = CreateConVar("sm_gas_damage", "50", " Amount of damage that the gas does", FCVAR_PLUGIN);
-    g_Cvar_Admins      = CreateConVar("sm_gas_admins", "0", " Allow Admins only to use Gas", FCVAR_PLUGIN);
-    g_Cvar_Time        = CreateConVar("sm_gas_time", "18.0", " Length of time gas should be active", FCVAR_PLUGIN);
-    g_Cvar_Enable      = CreateConVar("sm_gas_enabled", "1", " Enable/Disable the Gas plugin", FCVAR_PLUGIN);
-    g_Cvar_Delay       = CreateConVar("sm_gas_delay", "20", " Delay between spawning and making gas available", FCVAR_PLUGIN);
-    g_Cvar_Msg         = CreateConVar("sm_gas_showmessages", "0", " Show gas messages", FCVAR_PLUGIN);
-    g_Cvar_Radius      = CreateConVar("sm_gas_radius", "200", " Radius of the gas cloud", FCVAR_PLUGIN);
-    g_Cvar_Whoosh	   = CreateConVar("sm_gas_launchmethod", "0", " 0=Launched by air  1=Instant", FCVAR_PLUGIN);
+    CreateConVar("sm_gas_version", PLUGIN_VERSION, "Version of SourceMod Gas on this server", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    g_Cvar_GasAmount   = CreateConVar("sm_gas_amount", "1", " Number of gas attacks per player at spawn", FCVAR_NONE);
+    g_Cvar_Red         = CreateConVar("sm_gas_red", "180", " Amount of red color in gas", FCVAR_NONE);
+    g_Cvar_Green       = CreateConVar("sm_gas_green", "210", " Amount of green color in gas", FCVAR_NONE);
+    g_Cvar_Blue        = CreateConVar("sm_gas_blue", "0", " Amount of blue color in gas", FCVAR_NONE);
+    g_Cvar_Random      = CreateConVar("sm_gas_random", "0", " Make gas color random <1 to enable>", FCVAR_NONE);
+    g_Cvar_Damage      = CreateConVar("sm_gas_damage", "50", " Amount of damage that the gas does", FCVAR_NONE);
+    g_Cvar_Admins      = CreateConVar("sm_gas_admins", "0", " Allow Admins only to use Gas", FCVAR_NONE);
+    g_Cvar_Time        = CreateConVar("sm_gas_time", "18.0", " Length of time gas should be active", FCVAR_NONE);
+    g_Cvar_Enable      = CreateConVar("sm_gas_enabled", "1", " Enable/Disable the Gas plugin", FCVAR_NONE);
+    g_Cvar_Delay       = CreateConVar("sm_gas_delay", "20", " Delay between spawning and making gas available", FCVAR_NONE);
+    g_Cvar_Msg         = CreateConVar("sm_gas_showmessages", "0", " Show gas messages", FCVAR_NONE);
+    g_Cvar_Radius      = CreateConVar("sm_gas_radius", "200", " Radius of the gas cloud", FCVAR_NONE);
+    g_Cvar_Whoosh	   = CreateConVar("sm_gas_launchmethod", "0", " 0=Launched by air  1=Instant", FCVAR_NONE);
 
     HookEvent("player_spawn", PlayerSpawnEvent);
     HookEvent("player_death", PlayerDeathEvent);

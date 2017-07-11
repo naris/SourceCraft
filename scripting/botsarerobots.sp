@@ -24,7 +24,7 @@ new bool:isRobot[MAXPLAYERS + 1] = { false, ... };
 
 public OnPluginStart()
 {
-	CreateConVar("botsarerobots_version", PLUGIN_VERSION, "Bots are Robots Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD);
+	CreateConVar("botsarerobots_version", PLUGIN_VERSION, "Bots are Robots Version", FCVAR_REPLICATED|FCVAR_NOTIFY||FCVAR_SPONLY|FCVAR_DONTRECORD);
 
 	HookEvent("post_inventory_application", Event_PostInventory, EventHookMode_Post);
 

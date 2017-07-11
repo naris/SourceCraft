@@ -57,7 +57,7 @@ public OnPluginStart()
 	LoadTranslations("core.phrases");
 	AddCommandListener(Listener_taunt, "taunt");
 	AddCommandListener(Listener_taunt, "+taunt");
-	CreateConVar("sm_betherobot_version",PLUGIN_VERSION,"Plugin version.", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY);
+	CreateConVar("sm_betherobot_version",PLUGIN_VERSION,"Plugin version.", FCVAR_REPLICATED|FCVAR_NOTIFY||FCVAR_SPONLY);
 	cvarFootsteps = CreateConVar("sm_betherobot_footsteps","1","If on, players who are robots will make footstep sounds.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarDefault = CreateConVar("sm_betherobot_default","0","If on, Be the Robot will be enabled on players when they join the server.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarClasses = CreateConVar("sm_betherobot_classes","0","These classes CANNOT be made into robots. Add up the numbers to restrict the classes you want. 1=Scout 2=Soldier 4=Pyro 8=Demo 16=Heavy 64=Medic 128=Sniper 256=Spy", FCVAR_NONE, true, 0.0, true, 511.0);

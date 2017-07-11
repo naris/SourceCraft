@@ -43,7 +43,7 @@ new const String:szSpriteFiles[TOTAL_SPRITE_FILES][] =
 	"materials/custom/donator2"
 };
 
-enum _:tColors
+enum tColors
 {
 	tColor_Black,
 	tColor_White,
@@ -180,12 +180,12 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("basicdonator_recog_v", PLUGIN_VERSION, "Donator Recognition Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("basicdonator_recog_v", PLUGIN_VERSION, "Donator Recognition Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
-	g_DuringSetupCvar = CreateConVar("basicdonator_during_setup", "1", "Donator Recognition During Setup?", FCVAR_PLUGIN);
-	g_AdminFlagCvar = CreateConVar("basicdonator_admin_flag", "", "Optional Admin flag that indicates a donator", FCVAR_PLUGIN);
-	g_AtStartCvar = CreateConVar("basicdonator_at_start", "1", "Donator Recognition When Round Starts?", FCVAR_PLUGIN);
-	g_AlwaysCvar = CreateConVar("basicdonator_always", "0", "Donator Recognition All the Time?", FCVAR_PLUGIN);
+	g_DuringSetupCvar = CreateConVar("basicdonator_during_setup", "1", "Donator Recognition During Setup?", FCVAR_NONE);
+	g_AdminFlagCvar = CreateConVar("basicdonator_admin_flag", "", "Optional Admin flag that indicates a donator", FCVAR_NONE);
+	g_AtStartCvar = CreateConVar("basicdonator_at_start", "1", "Donator Recognition When Round Starts?", FCVAR_NONE);
+	g_AlwaysCvar = CreateConVar("basicdonator_always", "0", "Donator Recognition All the Time?", FCVAR_NONE);
 	
 	HookEventEx("player_spawn", event_player_spawn, EventHookMode_Post);
 	HookEventEx("player_death", event_player_death, EventHookMode_Post);
@@ -534,7 +534,7 @@ public Action:Panel_ChangeTagColor(iClient)
 	FormatEx(szBuffer, sizeof(szBuffer), "%i %i %i", g_iTagColor[iClient][0], g_iTagColor[iClient][1], g_iTagColor[iClient][2]);
 
 	decl String:szItem[4];
-	for (new i = 0; i < tColor_Max; i++)
+	for (new i = 0; i < _:tColor_Max; i++)
 	{
 		FormatEx(szItem, sizeof(szItem), "%i", i);
 		if (StrEqual(szBuffer, szColorValues[i]))

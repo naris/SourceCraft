@@ -49,7 +49,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-    CreateConVar("sm_tf_teletools", PL_VERSION, "Teleport Tools", FCVAR_PLUGIN|FCVAR_SPONLY);
+    CreateConVar("sm_tf_teletools", PL_VERSION, "Teleport Tools", FCVAR_SPONLY);
 
     g_cvarEnabled = CreateConVar("sm_tele_on","1","Enable/Disable teleport manager");
     g_cvarBlueTime = CreateConVar("sm_teleblue_time","0.6","Amount of time for blue tele to recharg, 0.0=disable");

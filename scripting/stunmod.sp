@@ -28,8 +28,8 @@ public OnPluginStart()
 	RegConsoleCmd("sm_gstunme", Cmd_GhostStunMe, "Ghost-stuns you!");
 	RegConsoleCmd("sm_bonkme", Cmd_BonkMe, "Bonks you!");
 	
-	CreateConVar("sm_stunmod_version", PLUGIN_VERSION, "Stunmod Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	allowSelfstun = CreateConVar("sm_stunmod_selfstun", "0", "Allow players to stun themselves? 1/0", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	CreateConVar("sm_stunmod_version", PLUGIN_VERSION, "Stunmod Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	allowSelfstun = CreateConVar("sm_stunmod_selfstun", "0", "Allow players to stun themselves? 1/0", FCVAR_NONE, true, 0.0, true, 1.0);
 	defaultTime = CreateConVar("sm_stunmod_cmd_timer","5","Number of seconds to stun a player for if not specified.");
 	playerTime = CreateConVar("sm_stunmod_player_timer","5","Number of seconds for a player to stun themselves.");
 	

@@ -503,16 +503,16 @@ public OnPluginStart()
     LoadTranslations("plugin.quakesounds");
 
     // Create the remainder of the CVARs
-    CreateConVar("sm_quakesounds_version", PLUGIN_VERSION, "Quake Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("sm_quakesounds_version", PLUGIN_VERSION, "Quake Sounds Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     cvarAnnounce = CreateConVar("sm_quakesounds_announce", "1", "Announcement preferences");
     cvarTextDefault = CreateConVar("sm_quakesounds_text", "1", "Default text setting for new users");
     cvarSoundDefault = CreateConVar("sm_quakesounds_sound", "1", "Default sound for new users, 1=Standard, 2=Female, 0=Disabled");
     cvarVolume = CreateConVar("sm_quakesounds_volume", "1.0", "Volume: should be a number between 0.0. and 1.0");
 
 #if !defined _ResourceManager_included
-    cvarDownloadThreshold = CreateConVar("sm_quakesounds_download_threshold", "-1", "Number of sounds to download per map start (-1=unlimited).", FCVAR_PLUGIN);
-    cvarSoundThreshold = CreateConVar("sm_quakesounds_sound_threshold", "0", "Number of sounds to precache on map start (-1=unlimited).", FCVAR_PLUGIN);
-    cvarSoundLimit     = CreateConVar("sm_quakesounds_sound_max", "-1", "Maximum number of sounds to allow (-1=unlimited).", FCVAR_PLUGIN);
+    cvarDownloadThreshold = CreateConVar("sm_quakesounds_download_threshold", "-1", "Number of sounds to download per map start (-1=unlimited).", );
+    cvarSoundThreshold = CreateConVar("sm_quakesounds_sound_threshold", "0", "Number of sounds to precache on map start (-1=unlimited).", );
+    cvarSoundLimit     = CreateConVar("sm_quakesounds_sound_max", "-1", "Maximum number of sounds to allow (-1=unlimited).", );
 #endif
 
     // Hook events and register commands as needed

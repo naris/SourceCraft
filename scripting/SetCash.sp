@@ -31,7 +31,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	CreateConVar("sm_setcash_version", PLUGIN_VERSION, "SetCash", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_setcash_version", PLUGIN_VERSION, "SetCash", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegAdminCmd("sm_setcash", Command_SetCash, ADMFLAG_GENERIC, "Set target(s) cash for Mann vs Machine mode, Usage: sm_setcash \"target\" \"amount(0-32767)\"");
 	RegAdminCmd("sm_addcash", Command_AddCash, ADMFLAG_GENERIC, "Add to target(s) cash for Mann vs Machine mode, Usage: sm_setcash \"target\" \"amount(0-32767)\"");
 	RegAdminCmd("sm_removecash", Command_RemoveCash, ADMFLAG_GENERIC, "Add to target(s) cash for Mann vs Machine mode, Usage: sm_setcash \"target\" \"amount(0-32767)\"");

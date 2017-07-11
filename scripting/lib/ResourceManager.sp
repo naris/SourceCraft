@@ -14,7 +14,7 @@
 // CONSTANTS
 #define PLUGIN_VERSION          "2.4"
 
-#define CVAR_FLAGS               FCVAR_PLUGIN|FCVAR_NOTIFY
+#define CVAR_FLAGS               FCVAR_NOTIFY
 
 enum State { Unknown=0, Defined, Download, Force, Precached };
 

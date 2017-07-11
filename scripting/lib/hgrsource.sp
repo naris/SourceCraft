@@ -531,13 +531,13 @@ public OnPluginStart()
     cvarAnnounce=CreateConVar("hgrsource_announce","0","This will enable announcements that the plugin is loaded");
 
     // Sound cvars
-    cvarGrabHitSound = CreateConVar("hgrsource_grab_sound", grabberHitWav, "sound when grab hits", FCVAR_PLUGIN);
-    cvarSeekingSound = CreateConVar("hgrsource_seeking_sound", seekingWav, "sound when grab is seeking a target", FCVAR_PLUGIN);
-    cvarPullSound = CreateConVar("hgrsource_pull_sound", pullerWav, "sound when grab pulls", FCVAR_PLUGIN);
-    cvarDeniedSound = CreateConVar("hgrsource_denied_sound", deniedWav, "access denied sound", FCVAR_PLUGIN);
-    cvarErrorSound = CreateConVar("hgrsource_error_sound", errorWav, "error sound", FCVAR_PLUGIN);
-    cvarFireSound = CreateConVar("hgrsource_fire_sound", fireWav, "sound when hook or rope or grab is fired", FCVAR_PLUGIN);
-    cvarHitSound = CreateConVar("hgrsource_hit_sound", hitWav, "sound when hook or rope hits", FCVAR_PLUGIN);
+    cvarGrabHitSound = CreateConVar("hgrsource_grab_sound", grabberHitWav, "sound when grab hits", FCVAR_NONE);
+    cvarSeekingSound = CreateConVar("hgrsource_seeking_sound", seekingWav, "sound when grab is seeking a target", FCVAR_NONE);
+    cvarPullSound = CreateConVar("hgrsource_pull_sound", pullerWav, "sound when grab pulls", FCVAR_NONE);
+    cvarDeniedSound = CreateConVar("hgrsource_denied_sound", deniedWav, "access denied sound", FCVAR_NONE);
+    cvarErrorSound = CreateConVar("hgrsource_error_sound", errorWav, "error sound", FCVAR_NONE);
+    cvarFireSound = CreateConVar("hgrsource_fire_sound", fireWav, "sound when hook or rope or grab is fired", FCVAR_NONE);
+    cvarHitSound = CreateConVar("hgrsource_hit_sound", hitWav, "sound when hook or rope hits", FCVAR_NONE);
 
     // Hook cvars
     cvarHookEnable=CreateConVar("hgrsource_hook_enable","0","This will enable the hook feature of this plugin");
@@ -582,7 +582,7 @@ public OnPluginStart()
 
     // Public cvar
     CreateConVar("hgrsource_version",VERSION,"[HGR:Source] Current version of this plugin",
-                 FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_UNLOGGED|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
+                 FCVAR_SPONLY|FCVAR_UNLOGGED|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
     PrintToServer("----------------|         HGR:Source Loaded         |---------------");
 }

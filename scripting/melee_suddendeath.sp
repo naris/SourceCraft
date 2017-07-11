@@ -26,7 +26,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("melee_suddendeath_version", PLUGIN_VERSION, "Plugin Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("melee_suddendeath_version", PLUGIN_VERSION, "Plugin Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	g_hEnabled = CreateConVar("melee_suddendeath", "0", "0/1 - Enable melee in sudden death");
 	g_hClass = CreateConVar("melee_suddendeath_class", "random", "Force a class during sudden death. Leave blank to disable. Acceptable values: scout, soldier, pyro, demo/demoman, heavy, engineer/engy, medic, sniper, spy, random.");

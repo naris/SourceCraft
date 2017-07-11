@@ -28,7 +28,7 @@ new g_iMode;
 
 public OnPluginStart()
 {
-	g_hVersion = CreateConVar("sm_resize_version", PLUGIN_VERSION, "\"Resize Players\" Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_hVersion = CreateConVar("sm_resize_version", PLUGIN_VERSION, "\"Resize Players\" Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	g_hEnabled = CreateConVar("sm_resize_enabled", "1", "0 = Disable plugin, 1 = Enable plugin", 0, true, 0.0, true, 1.0);
 	g_bEnabled = GetConVarBool(g_hEnabled);

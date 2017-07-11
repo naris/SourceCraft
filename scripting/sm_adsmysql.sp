@@ -77,7 +77,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_adsmysql_version", PLUGIN_VERSION, " Adverts from DB Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
+	CreateConVar("sm_adsmysql_version", PLUGIN_VERSION, " Adverts from DB Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
 	
 	RegAdminCmd("sm_reloadads", Admin_ReloadAds, ADMFLAG_CONVARS, " - reloads the ads ")
 	

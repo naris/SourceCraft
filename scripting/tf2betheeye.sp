@@ -115,38 +115,38 @@ public OnPluginStart()
 {
 	LoadTranslations("common.phrases.txt");
 	
-	sm_tf2bte_version = CreateConVar( "sm_tf2bte_version", PLUGIN_VERSION, "TF2 Be The Ghost plugin version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED );
+	sm_tf2bte_version = CreateConVar( "sm_tf2bte_version", PLUGIN_VERSION, "TF2 Be The Ghost plugin version", FCVAR_NOTIFY|FCVAR_REPLICATED );
 	SetConVarString( sm_tf2bte_version, PLUGIN_VERSION, true, true );
 	HookConVarChange( sm_tf2bte_version, OnConVarChanged_PluginVersion );
 	
-	sm_tf2bte_debug = CreateConVar( "sm_tf2bte_debug", "0", "Debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2bte_debug = CreateConVar( "sm_tf2bte_debug", "0", "Debug mode", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2bte_debug, OnConVarChanged );
 	
-	sm_tf2bte_notify = CreateConVar( "sm_tf2bte_notify", "2", "Chat notificationsn2 - public, 1 - private, 0 - disabled", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
+	sm_tf2bte_notify = CreateConVar( "sm_tf2bte_notify", "2", "Chat notificationsn2 - public, 1 - private, 0 - disabled", FCVAR_NONE, true, 0.0, true, 2.0 );
 	HookConVarChange( sm_tf2bte_notify, OnConVarChanged );
 	
-	sm_tf2bte_eye_health = CreateConVar( "sm_tf2bte_eye_health", "5000", "Base health level", FCVAR_PLUGIN, true, 100.0 );
+	sm_tf2bte_eye_health = CreateConVar( "sm_tf2bte_eye_health", "5000", "Base health level", FCVAR_NONE, true, 100.0 );
 	HookConVarChange( sm_tf2bte_eye_health, OnConVarChanged );
 	
-	sm_tf2bte_eye_health_per_player = CreateConVar( "sm_tf2bte_eye_health_per_player", "100", "Health regeneration per kill", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2bte_eye_health_per_player = CreateConVar( "sm_tf2bte_eye_health_per_player", "100", "Health regeneration per kill", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2bte_eye_health_per_player, OnConVarChanged );
 	
-	sm_tf2bte_eye_stunned_duration = CreateConVar( "sm_tf2bte_eye_stunned_duration", "10.0", "Stunned eye duration", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2bte_eye_stunned_duration = CreateConVar( "sm_tf2bte_eye_stunned_duration", "10.0", "Stunned eye duration", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2bte_eye_stunned_duration, OnConVarChanged );
 	
-	sm_tf2bte_eye_rage_multiplier = CreateConVar( "sm_tf2bte_eye_rage_multiplier", "0.001", "", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2bte_eye_rage_multiplier = CreateConVar( "sm_tf2bte_eye_rage_multiplier", "0.001", "", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2bte_eye_rage_multiplier, OnConVarChanged );
 	
-	sm_tf2bte_eye_rage_subtraction = CreateConVar( "sm_tf2bte_eye_rage_subtraction", "0.01", "", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2bte_eye_rage_subtraction = CreateConVar( "sm_tf2bte_eye_rage_subtraction", "0.01", "", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2bte_eye_rage_subtraction, OnConVarChanged );
 	
-	sm_tf2bte_eye_respawn = CreateConVar( "sm_tf2bte_eye_respawn", "1", "Once the Eye was killed, respawn as it again", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2bte_eye_respawn = CreateConVar( "sm_tf2bte_eye_respawn", "1", "Once the Eye was killed, respawn as it again", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2bte_eye_respawn, OnConVarChanged );
 	
-	sm_tf2bte_hud_xpos = CreateConVar( "sm_tf2bte_hud_xpos", "0.86", "", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2bte_hud_xpos = CreateConVar( "sm_tf2bte_hud_xpos", "0.86", "", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2bte_hud_xpos, OnConVarChanged );
 	
-	sm_tf2bte_hud_ypos = CreateConVar( "sm_tf2bte_hud_ypos", "0.91", "", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2bte_hud_ypos = CreateConVar( "sm_tf2bte_hud_ypos", "0.91", "", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2bte_hud_ypos, OnConVarChanged );
 	
 	decl String:strGameDir[8];

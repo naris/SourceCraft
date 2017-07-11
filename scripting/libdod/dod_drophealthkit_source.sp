@@ -130,15 +130,15 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {   
-    CreateConVar("dod_drophealthkit_version", PLUGIN_VERSION, "DoD DropHealthKit Source Version (DO NOT CHANGE!)", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("dod_drophealthkit_version", PLUGIN_VERSION, "DoD DropHealthKit Source Version (DO NOT CHANGE!)", FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(FindConVar("dod_drophealthkit_version"), PLUGIN_VERSION);
-    healthkitdeaddrop = CreateConVar("dod_drophealthkit_deaddrop", "1", "<1/0> = enable/disable dropping a healthkit on players' death", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    healthkitrule = CreateConVar("dod_drophealthkit_pickuprule", "0", "<0/1/2> = set who can pickup dropped healthkits: 0 = everyone, 1 = only teammates, 2 = only enemies", FCVAR_PLUGIN, true, 0.0, true, 2.0);
-    healthkitdropcmd = CreateConVar("dod_drophealthkit_alivedrop", "1", "<1/0> = enable/disable allowing alive players to drop their healthkit", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    healthkithealth = CreateConVar("dod_drophealthkit_addhealth", "25", "<#> = amount of HP to add to a player picking up a healthkit", FCVAR_PLUGIN, true, 5.0, true, 95.0);
-    healthkitmaxhealth = CreateConVar("dod_drophealthkit_maxhealth", "100", "<#> = maximum amount of healthpoints a player can reach", FCVAR_PLUGIN, true, 50.0, true, 200.0);
-    healthkitliefetime = CreateConVar("dod_drophealthkit_lifetime", "30", "<#> = number of seconds a dropped healthkit stays on the map", FCVAR_PLUGIN, true, 5.0, true, 60.0);
-    healthkitteamcolor = CreateConVar("dod_drophealthkit_useteamcolor", "0", "<1/0> = use team's color of dropping player to colorize healthkit", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    healthkitdeaddrop = CreateConVar("dod_drophealthkit_deaddrop", "1", "<1/0> = enable/disable dropping a healthkit on players' death", FCVAR_NONE, true, 0.0, true, 1.0);
+    healthkitrule = CreateConVar("dod_drophealthkit_pickuprule", "0", "<0/1/2> = set who can pickup dropped healthkits: 0 = everyone, 1 = only teammates, 2 = only enemies", FCVAR_NONE, true, 0.0, true, 2.0);
+    healthkitdropcmd = CreateConVar("dod_drophealthkit_alivedrop", "1", "<1/0> = enable/disable allowing alive players to drop their healthkit", FCVAR_NONE, true, 0.0, true, 1.0);
+    healthkithealth = CreateConVar("dod_drophealthkit_addhealth", "25", "<#> = amount of HP to add to a player picking up a healthkit", FCVAR_NONE, true, 5.0, true, 95.0);
+    healthkitmaxhealth = CreateConVar("dod_drophealthkit_maxhealth", "100", "<#> = maximum amount of healthpoints a player can reach", FCVAR_NONE, true, 50.0, true, 200.0);
+    healthkitliefetime = CreateConVar("dod_drophealthkit_lifetime", "30", "<#> = number of seconds a dropped healthkit stays on the map", FCVAR_NONE, true, 5.0, true, 60.0);
+    healthkitteamcolor = CreateConVar("dod_drophealthkit_useteamcolor", "0", "<1/0> = use team's color of dropping player to colorize healthkit", FCVAR_NONE, true, 0.0, true, 1.0);
     RegAdminCmd("dropammo", cmdDropHealthKit, 0);
     HookEvent("player_hurt", OnPlayerDeath, EventHookMode_Pre);
     HookEventEx("player_spawn", OnPlayerSpawn, EventHookMode_Post);

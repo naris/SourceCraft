@@ -83,18 +83,18 @@ public OnPluginStart()
 	g_kvNames = CreateKeyValues("Names");
 
 	// convars
-	CreateConVar("sm_namereserve_version", PLUGIN_VERSION, "NameReserve version", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_namereserve_version", PLUGIN_VERSION, "NameReserve version", FCVAR_REPLICATED|FCVAR_NOTIFY);
 
-	g_cvAdminsFlag = CreateConVar("sm_namereserve_adminsflag", "b", "Admin flag for reserved name use immunity. Empty string means all admins are checked and must have steam ids listed in the config. (b is the generic flag)", FCVAR_PLUGIN);
-	g_cvBadName = CreateConVar("sm_namereserve_badname", "I tried to use a bad name ;_;", "If PunishType is set to rename, this is the name the user will be changed to.", FCVAR_PLUGIN);
-	g_cvKickDelay = CreateConVar("sm_namereserve_kickdelay", "60", "If PunishType is set to kick, this value is used as the delay before kicking the user.", FCVAR_PLUGIN);
-	g_cvKickMsg = CreateConVar("sm_namereserve_kickmsg", "Using a reserved name", "Set this to the kick message a user will see (if PunishType is set to kick)", FCVAR_PLUGIN);
-	g_cvKickWarnAmount = CreateConVar("sm_namereserve_kickwarnamount", "1", "If PunishType is set to kick, this value is used as the amount of times the user will be issued warnings that they're going to get kicked. (This will be evenly divided out of kickDelay, so if you set kickDelay to 10 and this to 5, the user will be warned every 2 seconds until kicked)", FCVAR_PLUGIN);
-	g_cvKickWarnMsg = CreateConVar("sm_namereserve_kickwarnmsg", "If you don't change your name, you're gonna be kicked ({rn} is reserved)", "Message displayed to the user with each warning when a kick is pending. {rn} will be replaced by the reserved name.", FCVAR_PLUGIN);
-	g_cvNameSuffix = CreateConVar("sm_namereserve_namesuffix", " (imposter)", "The text to append to a user's name if it's reserved", FCVAR_PLUGIN);
-	g_cvPunishType = CreateConVar("sm_namereserve_punishtype", "0", "The punishment type to use when someone uses a reserved name. (0 = append suffix, 1= rename, 2 = kick)", FCVAR_PLUGIN);
-	g_cvRenameMsg = CreateConVar("sm_namereserve_renamemsg", "You were renamed to avoid admin confusion <3 ({rn} is reserved)", "The message shown to the user to let them know they've been renamed. {rn} will be replaced with the reserved name.", FCVAR_PLUGIN);
-	g_cvShowRenameMsg = CreateConVar("sm_namereserve_showrenamemsg", "1", "Whether or not to inform the user that they've been renamed", FCVAR_PLUGIN);
+	g_cvAdminsFlag = CreateConVar("sm_namereserve_adminsflag", "b", "Admin flag for reserved name use immunity. Empty string means all admins are checked and must have steam ids listed in the config. (b is the generic flag)", FCVAR_NONE);
+	g_cvBadName = CreateConVar("sm_namereserve_badname", "I tried to use a bad name ;_;", "If PunishType is set to rename, this is the name the user will be changed to.", FCVAR_NONE);
+	g_cvKickDelay = CreateConVar("sm_namereserve_kickdelay", "60", "If PunishType is set to kick, this value is used as the delay before kicking the user.", FCVAR_NONE);
+	g_cvKickMsg = CreateConVar("sm_namereserve_kickmsg", "Using a reserved name", "Set this to the kick message a user will see (if PunishType is set to kick)", FCVAR_NONE);
+	g_cvKickWarnAmount = CreateConVar("sm_namereserve_kickwarnamount", "1", "If PunishType is set to kick, this value is used as the amount of times the user will be issued warnings that they're going to get kicked. (This will be evenly divided out of kickDelay, so if you set kickDelay to 10 and this to 5, the user will be warned every 2 seconds until kicked)", FCVAR_NONE);
+	g_cvKickWarnMsg = CreateConVar("sm_namereserve_kickwarnmsg", "If you don't change your name, you're gonna be kicked ({rn} is reserved)", "Message displayed to the user with each warning when a kick is pending. {rn} will be replaced by the reserved name.", FCVAR_NONE);
+	g_cvNameSuffix = CreateConVar("sm_namereserve_namesuffix", " (imposter)", "The text to append to a user's name if it's reserved", FCVAR_NONE);
+	g_cvPunishType = CreateConVar("sm_namereserve_punishtype", "0", "The punishment type to use when someone uses a reserved name. (0 = append suffix, 1= rename, 2 = kick)", FCVAR_NONE);
+	g_cvRenameMsg = CreateConVar("sm_namereserve_renamemsg", "You were renamed to avoid admin confusion <3 ({rn} is reserved)", "The message shown to the user to let them know they've been renamed. {rn} will be replaced with the reserved name.", FCVAR_NONE);
+	g_cvShowRenameMsg = CreateConVar("sm_namereserve_showrenamemsg", "1", "Whether or not to inform the user that they've been renamed", FCVAR_NONE);
 
 	// config setup
 	AutoExecConfig(true, "namereserve");

@@ -4,7 +4,7 @@
 #include <tf2>
 #include <tf2_stocks>
 
-#define PLUGIN_VERSION "0.4.1"
+#define PLUGIN_VERSION "0.6"
 
 #define ITEM_SPYCICLE 649
 
@@ -25,8 +25,8 @@ new Handle:g_hCvarJumper;
 new Handle:g_hCvarCircuit;
 new Handle:g_hCvarHint;
 
-new Handle:g_hWeaponSwitch;
-new Handle:g_hWeaponReset;
+new Handle:g_hSDKWeaponSwitch;
+new Handle:g_hSDKWeaponReset;
 
 new Handle:g_hTopMenu;
 
@@ -59,24 +59,26 @@ public OnPluginStart()
 	LookupOffset(g_iOffsetDef, "CBaseCombatWeapon", "m_iItemDefinitionIndex");
 	LookupOffset(g_iOffsetState, "CTFMinigun", "m_iWeaponState");
 	LookupOffset(g_iOffsetMelt, "CTFKnife", "m_flKnifeMeltTimestamp");
-	
+
 	new Handle:hConf = LoadGameConfigFile("sdkhooks.games");
 	if(hConf == INVALID_HANDLE)
 	{
 		SetFailState("Could not read sdkhooks.games gamedata.");
 		return;
 	}
+	
 	StartPrepSDKCall(SDKCall_Player);
 	PrepSDKCall_SetFromConf(hConf, SDKConf_Virtual, "Weapon_Switch");
 	PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	g_hWeaponSwitch = EndPrepSDKCall();
-	if(g_hWeaponSwitch == INVALID_HANDLE)
+	g_hSDKWeaponSwitch = EndPrepSDKCall();
+	if(g_hSDKWeaponSwitch == INVALID_HANDLE)
 	{
 		SetFailState("Could not initialize call for CTFPlayer::Weapon_Switch");
 		CloseHandle(hConf);
 		return;
 	}
+
 	CloseHandle(hConf);
 	
 	hConf = LoadGameConfigFile("melee");
@@ -85,18 +87,20 @@ public OnPluginStart()
 		SetFailState("Could not read melee gamedata: gamedata/melee.txt.");
 		return;
 	}
+
 	StartPrepSDKCall(SDKCall_Entity);
-	PrepSDKCall_SetFromConf(hConf, SDKConf_Virtual, "WeaponReset");
-	g_hWeaponReset = EndPrepSDKCall();
-	if(g_hWeaponReset == INVALID_HANDLE)
+	PrepSDKCall_SetFromConf(hConf, SDKConf_Virtual, "CTFWeaponBase::WeaponReset");
+	g_hSDKWeaponReset = EndPrepSDKCall();
+	if(g_hSDKWeaponReset == INVALID_HANDLE)
 	{
-		SetFailState("Could not initialize call for CTFWeaponBase::WeaponReset");
+		SetFailState("Failed to initalize call: CTFWeaponBase::WeaponReset");
 		CloseHandle(hConf);
 		return;
 	}
+
 	CloseHandle(hConf);
 	
-	CreateConVar("melee_version", PLUGIN_VERSION, "Plugin Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("melee_version", PLUGIN_VERSION, "Plugin Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_hCvarHealing = CreateConVar("melee_healing", "0", "1 - Allow healing | 0 - Disallow healing");
 	g_hCvarFlags = CreateConVar("melee_flag", "z", "Admin flag for melee only");
 	g_hCvarFlagsVoting = CreateConVar("melee_voteflag", "z", "Admin flag fo melee votes");
@@ -259,28 +263,6 @@ SetMeleeMode(bool:bEnabled, bool:bVerbose=true)
 	if(bEnabled)
 	{
 		g_bEnabled = true;
-		
-		for(new i=1; i<=MaxClients; i++)
-		{
-			if(IsClientInGame(i) && IsPlayerAlive(i))
-			{
-				new iActive = GetActiveWeapon(i);
-				new iMelee = GetPlayerWeaponSlot(i, TFWeaponSlot_Melee);
-				
-				if(iActive && IsValidEntity(iActive) && iMelee && IsValidEntity(iMelee) && iActive != iMelee)
-				{
-					decl String:strClass[40];
-					GetEdictClassname(iActive, strClass, sizeof(strClass));
-					if(strcmp(strClass, "tf_weapon_minigun") == 0)
-					{
-						ResetMinigun(iActive, 0);
-						TF2_RemoveCondition(i, TFCond_Slowed);
-					}
-					
-					ResetWeapon(iActive);
-				}
-			}
-		}
 	}else{
 		g_bEnabled = false;
 	}
@@ -292,15 +274,14 @@ SetMeleeMode(bool:bEnabled, bool:bVerbose=true)
 	Call_PushCell(bEnabled);
 	Call_Finish();
 	
-	if(bVerbose)
-		PrintToChatAll("\x04 %T", "Melee_Action", LANG_SERVER, 0x01, g_bEnabled ? g_strOn : g_strOff);
+	if(bVerbose) PrintToChatAll("\x04 %T", "Melee_Action", LANG_SERVER, 0x01, g_bEnabled ? g_strOn : g_strOff);
 }
 
 public OnGameFrame()
 {
 	if(g_bEnabled)
 	{
-		decl String:strClass[30];
+		decl String:strClass[32];
 		for(new i=1; i<=MaxClients; i++)
 		{
 			if(IsClientInGame(i) && IsPlayerAlive(i))
@@ -308,29 +289,34 @@ public OnGameFrame()
 				new iWeapon = GetPlayerWeaponSlot(i, TFWeaponSlot_Melee);
 				new iActive = GetActiveWeapon(i);
 				
-				if(iWeapon && IsValidEntity(iWeapon) && iActive && IsValidEntity(iActive) && iWeapon != iActive)
+				if(iWeapon > MaxClients && iActive > MaxClients && iWeapon != iActive)
 				{
-					new iWeaponDef = GetItemDefinition(iWeapon);
-					new iActiveDef = GetItemDefinition(iActive);
+					new iDefMelee = GetItemDefinition(iWeapon);
+					new iDefActive = GetItemDefinition(iActive);
 					GetEdictClassname(iActive, strClass, sizeof(strClass));
-					
-					if(iWeaponDef == ITEM_SPYCICLE && GetKnifeMeltTimestamp(iWeapon) != 0.0)
+
+					if(iDefMelee == ITEM_SPYCICLE && GetKnifeMeltTimestamp(iWeapon) != 0.0)
 					{
 						SetKnifeMeltTimestamp(iWeapon, 0.0);
 					}
-					
+
 					if(strcmp(strClass, "tf_weapon_minigun") == 0)
 					{
 						ResetMinigun(iActive, 0);
 						TF2_RemoveCondition(i, TFCond_Slowed);
 					}
-					
+
 					if(g_iMeleeMode) // Strict melee mode
 					{
-						SetActiveWeapon(i, iWeapon);
-					}else{
-						if(!CanUseWeapon(iActiveDef))
+						if(!CanUseWeaponInStrict(iDefActive))
 						{
+							SDK_ResetWeapon(iActive);
+							SetActiveWeapon(i, iWeapon);
+						}
+					}else{
+						if(!CanUseWeapon(iDefActive))
+						{
+							SDK_ResetWeapon(iActive);
 							SetActiveWeapon(i, iWeapon);
 						}
 					}
@@ -340,22 +326,36 @@ public OnGameFrame()
 	}
 }
 
-bool:CanUseWeapon(iItemDef)
+bool CanUseWeaponInStrict(int itemDef)
 {
-	switch(iItemDef)
+	switch(itemDef)
 	{
-		case 735,736,810,831,933: return true; // Spy Sapper / Upgradable Sapper / Recorder / Recorder Promo / Ap-Sap
+		case 1155: return true; // Passtime Gun.
+	}
+
+	return false;
+}
+
+bool CanUseWeapon(int itemDef)
+{
+	switch(itemDef)
+	{
+		case 735,736,810,831,933,1080,1102: return true; // Spy Sapper / Upgradable Sapper / Recorder / Recorder Promo / Ap-Sap / Festive Sapper / Snack Attack
 		case 25,26,28,737: return true; // Engineer's Build & Destroy PDAs / Builder / Upgradable Build PDA
-		case 140: return true; // Wrangler
-		case 58: return true; // Jarate
+		case 140,1086: return true; // Wrangler / Festive Wrangler
+		case 58,1083,1105: return true; // Jarate / Festive Jarate / Self-Aware Beauty Mark
 		case 42,159,311,433,863,1002: return true; // Sandvich / Chocolate Bar / Buffalo Steak / Fishcake / Robo-Sandvich / Festive Sandvich
-		case 46,163,222: return true; // Bonk / Crit-a-Cola / Mad Milk
+		case 46,163,222,1121,1145: return true; // Bonk / Crit-a-Cola / Mad Milk / Mutated Milk / Festive Bonk
 		case 27: return true; // Spy Disguise PDA
 		case 129,226,354,1001: return true; // The Buff Banner / The Battalion's Backup / The Concheror / Festive Buff Banner
 		case 29,35,411,211,663: return g_bHealing; // Medigun / Kritzcrieg / The Quick-Fix / Strange Medigun / Festive Medigun
 		case 237,265: return g_bJumper; // Rocket/Sticky Jumper
 		case 528: return g_bCircuit; // Short Circuit
+		case 1069,1070,5605: return true; // Spell Books
+		case 1152: return true; // Grappling Hook
 	}
+
+	if(CanUseWeaponInStrict(itemDef)) return true;
 	
 	return false;
 }
@@ -370,14 +370,9 @@ GetActiveWeapon(client)
 	return GetEntDataEnt2(client, g_iOffsetOwner);
 }
 
-SetActiveWeapon(client, weapon)
+SetActiveWeapon(client, iWeapon)
 {
-	SDKCall(g_hWeaponSwitch, client, weapon, 0);
-}
-
-ResetWeapon(weapon)
-{
-	SDKCall(g_hWeaponReset, weapon);
+	SDKCall(g_hSDKWeaponSwitch, client, iWeapon, 0);
 }
 
 Float:GetKnifeMeltTimestamp(iKnife)
@@ -387,13 +382,7 @@ Float:GetKnifeMeltTimestamp(iKnife)
 
 SetKnifeMeltTimestamp(iKnife, Float:flAmount)
 {
-	return SetEntDataFloat(iKnife, g_iOffsetMelt, flAmount);
-}
-
-ResetMinigun(weapon, iState)
-{
-	// 0 - idle | 1 - lowering | 2 - shooting | 3 - reving | 4 - click click
-	SetEntData(weapon, g_iOffsetState, iState);
+	SetEntDataFloat(iKnife, g_iOffsetMelt, flAmount);
 }
 
 SetSentryDisable(bool:bEnabled)
@@ -619,4 +608,20 @@ bool:TestVoteDelay(client)
  	}
  	
 	return true;
+}
+
+SDK_ResetWeapon(weapon)
+{
+	if(g_hSDKWeaponReset != INVALID_HANDLE)
+	{
+#if defined DEBUG
+		PrintToServer("(SDK_ResetWeapon) Calling on weapon %d..", weapon);
+#endif
+		SDKCall(g_hSDKWeaponReset, weapon);
+	}
+}
+
+ResetMinigun(weapon, iState)
+{
+    SetEntData(weapon, g_iOffsetState, iState, 4, false);
 }

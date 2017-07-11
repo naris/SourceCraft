@@ -24,7 +24,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_observerpoint_version", PLUGIN_VERSION, "Version of Observer Point", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
+	CreateConVar("sm_observerpoint_version", PLUGIN_VERSION, "Version of Observer Point", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
 	g_Enabled  = CreateConVar("sm_observerpoint_enabled", "1", "- Enables/Disables the plugin")
 	
 	HookEvent("teamplay_round_start", RoundStartEvent)

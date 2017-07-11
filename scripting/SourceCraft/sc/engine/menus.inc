@@ -156,6 +156,7 @@ RaceMenu(client,MenuMode:mode)
         new indexCount = GetRaceIndexCount();
         if (indexCount > 1)
         {
+            new lastIndex = indexCount - 1;
             new bool:change   = bool:(mode & ChangeRaceMode);
             new Handle:crMenu = CreateMenu(Faction_Selected);
 
@@ -179,9 +180,8 @@ RaceMenu(client,MenuMode:mode)
                     lastFaction = faction;
                     if (index < indexCount)
                     {
-                        new Handle:nextHandle   = GetRaceIndexHandle(index+1);
-                        new Faction:nextFaction = GetRaceFaction(nextHandle);
-                        if (nextFaction != faction)
+                        new Faction:nextFaction = (index < lastIndex) ? GetRaceFaction(GetRaceIndexHandle(index+1)) : faction;
+                        if (nextFaction != faction || indexCount < 16) /* TODO: Change this to a parameter */
                         {
                             decl String:item[ITEM_STRING_LENGTH];
                             new reqLevel = GetRaceRequiredLevel(raceHandle);

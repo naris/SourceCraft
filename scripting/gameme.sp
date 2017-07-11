@@ -1,7 +1,7 @@
 /**
  * gameME Plugin
  * http://www.gameme.com
- * Copyright (C) 2007-2013 TTS Oetzel & Goerz GmbH
+ * Copyright (C) 2007-2016 TTS Oetzel & Goerz GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@
 
 
 // plugin information
-#define GAMEME_PLUGIN_VERSION "4.2"
+#define GAMEME_PLUGIN_VERSION "4.7.2"
 public Plugin:myinfo = {
 	name = "gameME Plugin",
 	author = "TTS Oetzel & Goerz GmbH",
@@ -44,6 +44,7 @@ public Plugin:myinfo = {
 	version = GAMEME_PLUGIN_VERSION,
 	url = "http://www.gameme.com"
 };
+
 
 // mod information
 #define MOD_CSS 1
@@ -92,12 +93,13 @@ enum gameme_plugin_data {
   Float: live_interval,
   display_spectator,
   bool: sdkhook_available,
-  sdk_version,
+  EngineVersion: engine_version,
   bool: ignore_next_tag_change,
   Handle: custom_tags,
   Handle: sv_tags,
   Handle: live_socket,
-  server_port
+  server_port,
+  protobuf
 }
 new gameme_plugin[gameme_plugin_data];
 
@@ -153,7 +155,7 @@ new gameme_players[MAXPLAYERS + 1][gameme_data];
 #define HITGROUP_LEFTLEG   6
 #define HITGROUP_RIGHTLEG  7
 
-#define MAX_LOG_WEAPONS    38
+#define MAX_LOG_WEAPONS    52
 #define LOG_HIT_OFFSET     8
 enum weapon_data {wshots, whits, wkills, wheadshots, wteamkills, wdamage, wdeaths, whealth, wgeneric, whead, wchest, wstomach, wleftarm, wrightarm, wleftleg, wrightleg}
 	
@@ -191,21 +193,34 @@ new ColorSlotArray[] = { -1, -1, -1, -1, -1, -1 };
  */
 
 
-#define MAX_CSGO_CODE_MODELS 6
-new const String: csgo_code_models[6][] = {"leet", 
-	          	            	           "phoenix",
-	          	            	           "balkan",
-	          	            	           "st6",
-	          	            	           "gign",
-	          	            	           "gsg9"};
+#define MAX_CSGO_CODE_MODELS 15
+new const String: csgo_code_models[15][] = {"leet", 
+	          	            	            "phoenix",
+	          	            	            "balkan",
+	          	            	            "st6",
+	          	            	            "gign",
+	          	            	            "gsg9",
+	          	            	            "anarchist",
+	          	            	            "pirate",
+	          	            	            "professional",
+	          	            	            "separatist",
+	          	            	            "fbi",
+	          	            	            "idf",
+	          	            	            "sas",
+	          	            	            "swat",
+	          	            	            "zombie"};
+	          	            	           
                                 
-#define MAX_CSGO_WEAPON_COUNT 38
+#define MAX_CSGO_WEAPON_COUNT 52
 new const String: csgo_weapon_list[][] = { "ak47", "m4a1", "deagle", "awp", "p90", "bizon", "hkp2000",
 										   "glock", "nova", "galilar", "ump45", "famas", "aug", "ssg08",
 										   "p250", "mp7", "elite", "sg556", "knife", "fiveseven", "sawedoff",
 										   "mag7", "hegrenade", "tec9", "scar20", "mp9", "xm1014", "negev",
 										   "g3sg1", "mac10", "m249", "taser", "inferno", "decoy", "flashbang",
-										   "smokegrenade", "molotov", "incgrenade", "knifegg" };
+										   "smokegrenade", "molotov", "incgrenade", "knifegg", "usp_silencer",
+										   "m4a1_silencer", "bayonet", "knife_m9_bayonet", "knife_karambit",
+										   "knife_flip", "knife_gut", "cz75a", "knife_tactical", "knife_butterfly",
+										   "knife_falchion", "knife_push", "revolver" };
 
 
 /**
@@ -345,14 +360,14 @@ new zps_players[MAXPLAYERS + 1][zps_player];
 
 
 /**
- *  Insurgency: Modern Infantry Combat
+ *  Insurgency 2014
  */
 
-#define MAX_INSMOD_WEAPON_COUNT 19
-new const String: insmod_weapon_list[][] = { "makarov", "m9", "sks", "m1014", "toz", "svd", "rpk", "m249", "m16m203", "l42a1", "m4med", "m4", "m16a4", "m14", "fnfal", "aks74u", "ak47", "kabar", "bayonet"}; 
+#define MAX_INSMOD_WEAPON_COUNT 30
+new const String: insmod_weapon_list[][] = {"ak74", "akm", "aks74u", "fal", "m14", "m16a4", "m1911", "m1a1", "m249", "m40a1", "m45", "m4a1", "m590", "m9", "makarov", "mini14", "mk18", "mosin", "mp40", "mp5", "rpk", "sks", "toz", "ump45", "galil", "galil_sar", "sterling", "model10", "l1a1", "gurkha"}; 
 
 enum insmod_player {
-	last_weapon
+	String: last_role[64]
 }
 
 new insmod_players[MAXPLAYERS + 1][insmod_player];
@@ -477,7 +492,7 @@ enum callback_data {callback_data_id, Float: callback_data_time, callback_data_c
 
 public OnPluginStart() 
 {
-	LogToGame("gameME Plugin %s (http://www.gameme.com), copyright (c) 2007-2013 TTS Oetzel & Goerz GmbH", GAMEME_PLUGIN_VERSION);
+	LogToGame("gameME Plugin %s (http://www.gameme.com), copyright (c) 2007-2016 TTS Oetzel & Goerz GmbH", GAMEME_PLUGIN_VERSION);
 
 	// setup default values
 	gameme_plugin[log_locations]       = 1;
@@ -485,6 +500,7 @@ public OnPluginStart()
 	gameme_plugin[damage_display_type] = 1;
 	gameme_plugin[live_active]         = 0;
 	gameme_plugin[live_interval]       = 0.2;
+	gameme_plugin[protobuf]            = 0;
 
 	LoadTranslations("gameme.phrases");
 	
@@ -601,6 +617,9 @@ public OnPluginStart()
 	SetTrieValue(gameme_plugin[blocked_commands], "gameme_hideranking", 1);
 	SetTrieValue(gameme_plugin[blocked_commands], "/gameme_hideranking", 1);
 	SetTrieValue(gameme_plugin[blocked_commands], "!gameme_hideranking", 1);
+	SetTrieValue(gameme_plugin[blocked_commands], "gameme_reset", 1);
+	SetTrieValue(gameme_plugin[blocked_commands], "/gameme_reset", 1);
+	SetTrieValue(gameme_plugin[blocked_commands], "!gameme_reset", 1);
 	SetTrieValue(gameme_plugin[blocked_commands], "gameme_chat 0", 1);
 	SetTrieValue(gameme_plugin[blocked_commands], "/gameme_chat 0", 1);
 	SetTrieValue(gameme_plugin[blocked_commands], "!gameme_chat 0", 1);
@@ -641,6 +660,12 @@ public OnPluginStart()
 	HookConVarChange(gameme_plugin[gameme_live_address], OnLiveAddressChange);
 
 	get_server_mod();
+	if (gameme_plugin[mod_id] == MOD_CSGO) {
+		if (GetUserMessageType() == UM_Protobuf) {
+			gameme_plugin[protobuf] = 1;
+			LogToGame("gameME Protobuf user messages detected");
+		}
+	}
 
 	CreateGameMEMenuMain(gameme_plugin[menu_main]);
 	CreateGameMEMenuAuto(gameme_plugin[menu_auto]);
@@ -674,14 +699,14 @@ public OnPluginStart()
 
 	gameme_plugin[custom_tags] = CreateArray(128);
 	gameme_plugin[sv_tags] = FindConVar("sv_tags");
-	gameme_plugin[sdk_version] = GuessSDKVersion();
+	gameme_plugin[engine_version] = GetEngineVersion();
 	if (gameme_plugin[sv_tags] != INVALID_HANDLE) {
 		AddPluginServerTag(GAMEME_TAG);
 		HookConVarChange(gameme_plugin[sv_tags], OnTagsChange);
 	}
 
 	
-	if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII)) {
+	if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII) || (gameme_plugin[mod_id] == MOD_INSMOD)) {
 		HookEvent("player_team", gameME_Event_PlyTeamChange, EventHookMode_Pre);
 	}
 	
@@ -823,6 +848,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	MarkNativeAsOptional("SocketCreate");
 	MarkNativeAsOptional("SocketSendTo");
 
+	MarkNativeAsOptional("GetUserMessageType");
+	MarkNativeAsOptional("PbSetInt");
+	MarkNativeAsOptional("PbSetBool");
+	MarkNativeAsOptional("PbSetString");
+	MarkNativeAsOptional("PbAddString");
+
 #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 3
 	return APLRes_Success;
 #else 	
@@ -838,7 +869,7 @@ public OnAllPluginsLoaded()
 	}
 
 	if (LibraryExists("sdkhooks")) {
-		LogToGame("Extension SDK Hooks is available");
+		LogToGame("gameME Extension SDK Hooks is available");
 		gameme_plugin[sdkhook_available] = true;
 	}
 
@@ -896,6 +927,9 @@ public OnAllPluginsLoaded()
 
 			if (!IsFakeClient(i)) {
 				QueryClientConVar(i, "cl_language", ConVarQueryFinished: ClientConVar, i);
+				if ((gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_DODS) || (gameme_plugin[mod_id] == MOD_HL2MP)) {
+					QueryClientConVar(i, "cl_connectmethod", ConVarQueryFinished: ClientConVar, i);
+				}
 			}
 			
 			if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS)) {
@@ -939,33 +973,7 @@ public OnMapStart()
 		new max_teams_count = GetTeamCount();
 		for (new team_index = 0; (team_index < max_teams_count); team_index++) {
 			decl String: team_name[32];
-			if (gameme_plugin[mod_id] == MOD_INSMOD) {
-				if ((strcmp(map_name, "ins_baghdad") == 0) || (strcmp(map_name, "ins_karam") == 0)) {
-					switch (team_index) {
-						case 1:
-							strcopy(team_name, 32, "Iraqi Insurgents");
-						case 2:
-							strcopy(team_name, 32, "U.S. Marines");
-						case 3:
-							strcopy(team_name, 32, "SPECTATOR");
-						default:
-							strcopy(team_name, 32, "Unassigned");
-					}
-				} else {
-					switch (team_index) {
-						case 1:
-							strcopy(team_name, 32, "U.S. Marines");
-						case 2:
-							strcopy(team_name, 32, "Iraqi Insurgents");
-						case 3:
-							strcopy(team_name, 32, "SPECTATOR");
-						default:
-							strcopy(team_name, 32, "Unassigned");
-					}
-				}
-			} else {
-				GetTeamName(team_index, team_name, 32);
-			}
+			GetTeamName(team_index, team_name, 32);
 
 			if (strcmp(team_name, "") != 0) {
 				team_list[team_index] = team_name;
@@ -973,7 +981,7 @@ public OnMapStart()
 		}
 	}
 	
-	if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII)) {
+	if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII) || (gameme_plugin[mod_id] == MOD_INSMOD)) {
 		find_player_team_slot(2);
 		find_player_team_slot(3);
 	}
@@ -1083,7 +1091,7 @@ get_server_mod()
 				gameme_plugin[mod_id] = MOD_ZPS;
 			}
 			if (strcmp(gameme_plugin[game_mod], "") == 0) {
-				LogToGame("gameME - Game Detection: Failed (%s, %s)", game_description, game_folder);
+				LogToGame("gameME Game Detection: Failed (%s, %s)", game_description, game_folder);
 			}
 		}
 
@@ -1201,12 +1209,12 @@ get_server_mod()
 			
 			}
 			case MOD_INSMOD: {
-				HookEvent("player_hurt",  			 Event_INSMODPlayerHurt); 
 				HookEvent("player_death", 			 Event_INSMODPlayerDeath);
+				HookEvent("player_hurt",  			 Event_INSMODPlayerHurt); 
+				HookEvent("weapon_fire",  			 Event_INSMODEventFired);
 				HookEvent("player_spawn", 			 Event_INSMODPlayerSpawn);
+				HookEvent("player_pick_squad",       Event_INSMODPlayerPickSquad);
 				HookEvent("round_end",    			 Event_INSMODRoundEnd);
-				
-				HookUserMessage(GetUserMessageId("ObjMsg"), Event_INSMODObjMsg);
 			}	
 			case MOD_HL2MP: {
 				HookEvent("player_death",            Event_HL2MPPlayerDeath);
@@ -1246,7 +1254,7 @@ get_server_mod()
 			gameme_plugin[log_locations] = 0;
 		}
 
-		LogToGame("gameME - Game Detection: %s [%s]", game_description, gameme_plugin[game_mod]);
+		LogToGame("gameME Game Detection: %s [%s]", game_description, gameme_plugin[game_mod]);
 
 	}
 }
@@ -1290,6 +1298,9 @@ public OnClientPutInServer(client)
 		
 		if (!IsFakeClient(client)) {
 			QueryClientConVar(client, "cl_language", ConVarQueryFinished:ClientConVar, client);
+			if ((gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_DODS) || (gameme_plugin[mod_id] == MOD_HL2MP)) {
+				QueryClientConVar(client, "cl_connectmethod", ConVarQueryFinished: ClientConVar, client);
+			}
 		}
 
 		if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS)) {
@@ -1317,7 +1328,7 @@ start_gameme_live()
 {
 	if ((gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_CSGO)) {
 		if (gameme_plugin[live_active] == 1) {
-			if (LibraryExists("socket")) {
+			if (GetExtensionFileStatus("socket.ext") == 1) {
 				LogToGame("Extension Socket is available");
 				if (gameme_plugin[mod_id] == MOD_CSS) {
 					css_data[money_offset] = FindSendPropOffs("CCSPlayer", "m_iAccount");
@@ -1571,13 +1582,14 @@ public Action: spectator_player_timer(Handle:timer, any: caller)
 				if (strcmp(player_messages[caller][target][smessage], "") != 0) {
 					if ((caller > 0) && (caller <= MaxClients) && (!IsFakeClient(caller)) && (IsClientInGame(caller))) {
 						if ((GetGameTime() - gameme_players[caller][pspectator][srequested]) > 5) {
-							new Handle: hBf;
-							hBf = StartMessageOne("KeyHintText", caller);
-							if (hBf != INVALID_HANDLE) {
-								if (gameme_plugin[mod_id] != MOD_CSGO) {
-									BfWriteByte(hBf, 1);
-								} 
-								BfWriteString(hBf, player_messages[caller][target][smessage]);
+							new Handle: message_handle = StartMessageOne("KeyHintText", caller);
+							if (message_handle != INVALID_HANDLE) {
+								if (gameme_plugin[protobuf] == 1) {
+									PbAddString(message_handle, "hints", player_messages[caller][target][smessage]);
+								} else {
+									BfWriteByte(message_handle, 1);
+									BfWriteString(message_handle, player_messages[caller][target][smessage]);
+								}
 								EndMessage();
 							}
 							gameme_players[caller][pspectator][srequested] = GetGameTime();
@@ -1586,13 +1598,14 @@ public Action: spectator_player_timer(Handle:timer, any: caller)
 				} else {
 					if (target != gameme_players[caller][pspectator][starget]) {
 						if (gameme_plugin[mod_id] != MOD_CSGO) {
-							new Handle: hBf;
-							hBf = StartMessageOne("KeyHintText", caller);
-							if (hBf != INVALID_HANDLE) {
-								if (gameme_plugin[mod_id] != MOD_CSGO) {
-									BfWriteByte(hBf, 1);
-								} 
-								BfWriteString(hBf, "");
+							new Handle: message_handle = StartMessageOne("KeyHintText", caller);
+							if (message_handle != INVALID_HANDLE) {
+								if (gameme_plugin[protobuf] == 1) {
+									PbAddString(message_handle, "hints", "");
+								} else {
+									BfWriteByte(message_handle, 1);
+									BfWriteString(message_handle, "");
+								}
 								EndMessage();
 							}
 						}
@@ -1677,11 +1690,15 @@ public Action:CollectData(Handle:timer, any:index)
 							if (strcmp(network_packet, "") != 0) {
 								SocketSendTo(gameme_plugin[live_socket], network_packet, strlen(network_packet), gameme_plugin[gameme_live_address_value], gameme_plugin[gameme_live_address_port]);
 								// LogToGame("Send [%s:%d]: |%s|", gameme_plugin[gameme_live_address_value], gameme_plugin[gameme_live_address_port], network_packet);
-								network_packet = "";
+								network_packet[0] = '\0';
+								if (strcmp(send_message, "") != 0) {
+									strcopy(network_packet[1], 1500, send_message);
+								}
 							}
 						}
 						
 					}
+					
 
 					new health = GetClientHealth(player_index);
 					new armor  = GetClientArmor(player_index);
@@ -1708,19 +1725,34 @@ public Action:CollectData(Handle:timer, any:index)
 					}
 					
 					
+					
 					// player equipment
 					if ((health != gameme_players[player_index][phealth]) ||
 					 	(armor  != gameme_players[player_index][parmor]) ||
 					 	(money  != gameme_players[player_index][pmoney]) ||
 					 	((weapon_index > -1) && (weapon_index != gameme_players[player_index][pweapon]))) {
 
+						// LogToGame("Health (%d): %d, %d", player_index, health, gameme_players[player_index][phealth]); 
+						// LogToGame("Armor  (%d): %d, %d", player_index, armor,  gameme_players[player_index][parmor]); 
+						// LogToGame("Money  (%d): %d, %d", player_index, money, gameme_players[player_index][pmoney]); 
+						// LogToGame("Weapon (%d): %d, %d", player_index, weapon_index, gameme_players[player_index][pweapon]); 
+
 						gameme_players[player_index][phealth] = health;
 						gameme_players[player_index][parmor]  = armor;
 						gameme_players[player_index][pmoney]  = money;
 						gameme_players[player_index][pweapon] = weapon_index;
 						
+						new String: weapon_name[32];
+						if (gameme_players[player_index][pweapon] > -1) {
+							if (gameme_plugin[mod_id] == MOD_CSS) {
+								Format(weapon_name, 32, css_weapon_list[gameme_players[player_index][pweapon]]);
+							} else if (gameme_plugin[mod_id] == MOD_CSGO) {
+								Format(weapon_name, 32, csgo_weapon_list[gameme_players[player_index][pweapon]]);
+							} 
+						}
+						
 						decl String: send_message[128];
-						Format(send_message, 128, "\255\255S\254%d\254%d\254%d\254%d\254%s\254%d\254", gameme_plugin[server_port], GetClientUserId(player_index), gameme_players[player_index][phealth], gameme_players[player_index][parmor], css_weapon_list[gameme_players[player_index][pweapon]], gameme_players[player_index][pmoney]); 
+						Format(send_message, 128, "\255\255S\254%d\254%d\254%d\254%d\254%s\254%d\254", gameme_plugin[server_port], GetClientUserId(player_index), gameme_players[player_index][phealth], gameme_players[player_index][parmor], weapon_name, gameme_players[player_index][pmoney]);
 						// LogToGame("|%s|", send_message);
 						
 						new send_message_len = strlen(send_message);
@@ -1731,7 +1763,10 @@ public Action:CollectData(Handle:timer, any:index)
 							if (strcmp(network_packet, "") != 0) {
 								SocketSendTo(gameme_plugin[live_socket], network_packet, strlen(network_packet), gameme_plugin[gameme_live_address_value], gameme_plugin[gameme_live_address_port]);
 								// LogToGame("Send [%s:%d]: |%s|", gameme_plugin[gameme_live_address_value], gameme_plugin[gameme_live_address_port], network_packet);
-								network_packet = "";
+								network_packet[0] = '\0';
+								if (strcmp(send_message, "") != 0) {
+									strcopy(network_packet[1], 1500, send_message);
+								}
 							}
 						}
 
@@ -1885,6 +1920,7 @@ public build_damage_panel(player_index)
 
 	if ((attacked_index > 0) || (wounded_index > 0) || (killed_index > 0) || (killer_index > 0)) {
 		new Handle:panel = CreatePanel();
+		SetPanelKeys(panel, 1023);
 	
 		new is_attacked = 0;
 		for (new i = 0; (i < sizeof(attacked)); i++) {
@@ -2008,12 +2044,21 @@ public build_damage_chat(player_index)
 				if (gameme_plugin[mod_id] == MOD_DODS) {
 					PrintToChat(player_index, killed_message);
 				} else { 
-					new Handle:hBf;
-					hBf = StartMessageOne("SayText2", player_index);
-					if (hBf != INVALID_HANDLE) {
-						BfWriteByte(hBf, player_index); 
-						BfWriteByte(hBf, 0); 
-						BfWriteString(hBf, killed_message);
+					new Handle: message_handle = StartMessageOne("SayText2", player_index);
+					if (message_handle != INVALID_HANDLE) {
+						if (gameme_plugin[protobuf] == 1) {
+							PbSetInt(message_handle, "ent_idx", player_index);
+							PbSetBool(message_handle, "chat", false);
+							PbSetString(message_handle, "msg_name", killed_message);
+							PbAddString(message_handle, "params", "");
+							PbAddString(message_handle, "params", "");
+							PbAddString(message_handle, "params", "");
+							PbAddString(message_handle, "params", "");							
+						} else {					
+							BfWriteByte(message_handle, player_index); 
+							BfWriteByte(message_handle, 0); 
+							BfWriteString(message_handle, killed_message);
+						}
 						EndMessage();
 					}
 				}
@@ -2033,6 +2078,7 @@ public Event_CSGOPlayerFire(Handle: event, const String: name[], bool:dontBroadc
 	if (userid > 0) {
 		decl String: weapon_str[32];
 		GetEventString(event, "weapon", weapon_str, 32);
+		ReplaceString(weapon_str, 32, "weapon_", "", false);
 		new weapon_index = get_weapon_index(csgo_weapon_list, MAX_CSGO_WEAPON_COUNT, weapon_str);
 		if (weapon_index > -1) {
 			if ((weapon_index != 22) && // hegrenade
@@ -2365,48 +2411,6 @@ public Event_L4DInfectedHurt(Handle: event, const String: name[], bool:dontBroad
 	}
 }
 
-
-public Event_INSMODPlayerHurt(Handle: event, const String: name[], bool:dontBroadcast)
-{ 	
-	//  "userid"		"short"			// user ID on server 	
-	//  "attacker"		"short"			// user ID on server of the attacker 	
-	//  "dmg_health"	"short"			// lost health points 	
-	//  "hitgroup"		"short"			// Hit groups 
-	//  "weapon"		"string"		// Weapon name, like WEAPON_AK47
-	
-	new attacker  = GetEventInt(event, "attacker");
-	new victim = GetEventInt(event, "userid");
-
-	if ((attacker > 0) && (attacker != victim)) {
-		decl String: weapon_str[32];
-		GetEventString(event, "weapon", weapon_str, 32);
-		new weapon_index = get_weapon_index(insmod_weapon_list, MAX_INSMOD_WEAPON_COUNT, weapon_str[7]);
-		if (weapon_index > -1) {
-			
-			// we cannot track the shots
-			//if (player_weapons[attacker][weapon_index][wshots] == 0) {
-			//	player_weapons[attacker][weapon_index][wshots]++;
-			//}
-			
-			player_weapons[attacker][weapon_index][whits]++;
-			player_weapons[attacker][weapon_index][wdamage]  += GetEventInt(event, "dmg_health");
-			new hitgroup  = GetEventInt(event, "hitgroup");
-			if (hitgroup < 8) {
-				player_weapons[attacker][weapon_index][hitgroup + LOG_HIT_OFFSET]++;
-			} else {
-				player_weapons[attacker][weapon_index][hitgroup]++;
-			} 
-
-			if (hitgroup == HITGROUP_HEAD) {
-				player_weapons[attacker][weapon_index][wheadshots]++;
-				log_player_event(attacker, "triggered", "headshot");
-			}
-			insmod_players[attacker][last_weapon] = weapon_index;
-		}
-	}
-} 
-
-
 public Event_CSGOPlayerDeath(Handle: event, const String: name[], bool:dontBroadcast)
 {
 	// this extents the original player_death by a new fields
@@ -2651,32 +2655,6 @@ public Event_L4DPlayerDeath(Handle: event, const String: name[], bool:dontBroadc
 }
 
 
-public Event_INSMODPlayerDeath(Handle: event, const String: name[], bool:dontBroadcast)
-{
-	//  "userid"	"short"   	// user ID who died				
-	//  "attacker"	"short"	 	// user ID who killed
-	//  "type"		"byte"		// type of death
-	//  "nodeath"	"bool"		// true if death messages were off when player died
-
-	new victim   = GetClientOfUserId(GetEventInt(event, "userid"));
-	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-
-	if ((victim > 0) && (attacker > 0)) {
-		if (attacker != victim) {
-			new weapon_index = insmod_players[attacker][last_weapon];
-			if (weapon_index > -1) {
-				player_weapons[attacker][weapon_index][wkills]++;
-				player_weapons[victim][weapon_index][wdeaths]++;
-				if (GetClientTeam(attacker) == GetClientTeam(victim)) {
-					player_weapons[attacker][weapon_index][wteamkills]++;
-				}
-			}
-		}
-		dump_player_data(victim);
-	}
-}
-
-
 public Event_HL2MPPlayerDeath(Handle: event, const String: name[], bool:dontBroadcast)
 {
 	// this extents the original player_death by a new fields
@@ -2851,15 +2829,6 @@ public Event_L4DPlayerSpawn(Handle: event, const String: name[], bool:dontBroadc
 }
 
 
-public Event_INSMODPlayerSpawn(Handle: event, const String: name[], bool:dontBroadcast)
-{
-	new userid = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (userid > 0) {
-		reset_player_data(userid);
-	}
-}
-
-
 public Event_HL2MPPlayerSpawn(Handle: event, const String: name[], bool:dontBroadcast)
 {
 	new userid = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -2980,19 +2949,6 @@ public Event_L4DRoundEnd(Handle: event, const String: name[], bool:dontBroadcast
 {
 	for (new i = 1; (i <= MaxClients); i++) {
 		dump_player_data(i);
-	}
-}
-
-
-public Event_INSMODRoundEnd(Handle: event, const String: name[], bool:dontBroadcast)
-{
-	for (new i = 1; (i <= MaxClients); i++) {
-		dump_player_data(i);
-	}
-
-	new team_index = GetEventInt(event, "winner");
-	if (team_index > 0) {
-		log_team_event(team_list[team_index], "Round_Win");
 	}
 }
 
@@ -3630,7 +3586,7 @@ log_player_settings(client, String: verb[32], const String: settings_name[], con
 
 log_player_event(client, String: verb[32], String: player_event[192], additional_player = 0, display_location = 0)
 {
-	if (client > 0 && client <= MaxClients) {
+	if (client > 0) {
 		if (display_location > 0) {
 			new Float: player_origin[3];
 			GetClientAbsOrigin(client, player_origin);
@@ -3769,7 +3725,7 @@ public OnClientDisconnect(client)
 			reset_player_data(client);
 		}
 		if (IsClientInGame(client)) {
-			if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII)) {
+			if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII) || (gameme_plugin[mod_id] == MOD_INSMOD)) {
 				new team_index = GetClientTeam(client);
 				if (client == ColorSlotArray[team_index]) {
 					ColorSlotArray[team_index] = -1;
@@ -4417,7 +4373,7 @@ public Action: gameme_psay(args)
 	
 	if (IsStackEmpty(gameme_plugin[message_recipients]) == false) {
 		new color_index = -1;
-		if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_DODS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII)) {
+		if ((gameme_plugin[mod_id] == MOD_CSGO) || (gameme_plugin[mod_id] == MOD_CSS) || (gameme_plugin[mod_id] == MOD_DODS) || (gameme_plugin[mod_id] == MOD_HL2MP) || (gameme_plugin[mod_id] == MOD_TF2) || (gameme_plugin[mod_id] == MOD_L4D) || (gameme_plugin[mod_id] == MOD_L4DII) || (gameme_plugin[mod_id] == MOD_INSMOD)) {
 
 			if (is_colored > 1) {
 				validate_team_colors();
@@ -4453,12 +4409,21 @@ public Action: gameme_psay(args)
 					if (gameme_plugin[mod_id] == MOD_DODS) {
 						PrintToChat(player_index, client_message);
 					} else { 
-						new Handle:hBf;
-						hBf = StartMessageOne("SayText2", player_index);
-						if (hBf != INVALID_HANDLE) {
-							BfWriteByte(hBf, color_index); 
-							BfWriteByte(hBf, 0); 
-							BfWriteString(hBf, client_message);
+						new Handle: message_handle = StartMessageOne("SayText2", player_index);
+						if (message_handle != INVALID_HANDLE) {
+							if (gameme_plugin[protobuf] == 1) {
+								PbSetInt(message_handle, "ent_idx", color_index);
+								PbSetBool(message_handle, "chat", false);
+								PbSetString(message_handle, "msg_name", client_message);
+								PbAddString(message_handle, "params", "");
+								PbAddString(message_handle, "params", "");
+								PbAddString(message_handle, "params", "");
+								PbAddString(message_handle, "params", "");							
+							} else {					
+								BfWriteByte(message_handle, color_index); 
+								BfWriteByte(message_handle, 0); 
+								BfWriteString(message_handle, client_message);
+							}
 							EndMessage();
 						}
 					}
@@ -4689,13 +4654,14 @@ public Action: gameme_khint(args)
 
 				new player_index = GetClientOfUserId(recipient_client);
 				if ((player_index > 0) && (!IsFakeClient(player_index)) && (IsClientInGame(player_index))) {
-					new Handle: hBf;
-					hBf = StartMessageOne("KeyHintText", player_index);
-					if (hBf != INVALID_HANDLE) {
-						if (gameme_plugin[mod_id] != MOD_CSGO) {
-							BfWriteByte(hBf, 1); 
+					new Handle: message_handle = StartMessageOne("KeyHintText", player_index);
+					if (message_handle != INVALID_HANDLE) {
+						if (gameme_plugin[protobuf] == 1) {
+							PbAddString(message_handle, "hints", client_message);
+						} else {
+							BfWriteByte(message_handle, 1);
+							BfWriteString(message_handle, client_message);
 						}
-						BfWriteString(hBf, client_message);
 						EndMessage();
 					}
 				}
@@ -4919,7 +4885,7 @@ public Action: gameme_block_commands(client, args)
 		
 		decl String: user_command[192];
 		GetCmdArgString(user_command, 192);
-
+		
 		decl String: origin_command[192];
 		new start_index = 0;
 		new command_length = strlen(user_command);
@@ -4932,26 +4898,11 @@ public Action: gameme_block_commands(client, args)
 			}
 			strcopy(origin_command, 192, user_command[start_index]);
 		}
-		
-		new String: command_type[32] = "say";
-		if (gameme_plugin[mod_id] == MOD_INSMOD) {
-			decl String: say_type[1];
-			strcopy(say_type, 2, user_command[start_index]);
-			if (strcmp(say_type, "1") == 0) {
-				command_type = "say";
-			} else if (strcmp(say_type, "2") == 0) {
-				command_type = "say_team";
-			}
-			start_index += 4;
-		}
 
+		new String: command_type[32] = "say";
 		if (command_length > 0) {
 			if (block_chat_commands_enabled > 0) {
 				if (IsClientInGame(client)) {
-					if (gameme_plugin[mod_id] == MOD_INSMOD) {
-						log_player_event(client, command_type, user_command[start_index]);
-					}
-
 					if (is_command_blocked(user_command[start_index]) > 0) {
 						if ((strcmp("gameme", user_command[start_index]) == 0) ||
 							(strcmp("/gameme", user_command[start_index]) == 0) ||
@@ -4961,9 +4912,7 @@ public Action: gameme_block_commands(client, args)
 							(strcmp("!gameme_menu", user_command[start_index]) == 0)) {
 							DisplayMenu(gameme_plugin[menu_main], client, MENU_TIME_FOREVER);
 						}
-						if (gameme_plugin[mod_id] != MOD_INSMOD) {
-							log_player_event(client, command_type, origin_command);
-						}
+						log_player_event(client, command_type, origin_command);
 						return Plugin_Stop;
 					} else {
 						if ((strcmp("gameme", user_command[start_index]) == 0) ||
@@ -4985,10 +4934,6 @@ public Action: gameme_block_commands(client, args)
 						(strcmp("/gameme_menu", user_command[start_index]) == 0) ||
 						(strcmp("!gameme_menu", user_command[start_index]) == 0)) {
 						DisplayMenu(gameme_plugin[menu_main], client, MENU_TIME_FOREVER);
-					}
-					
-					if (gameme_plugin[mod_id] == MOD_INSMOD) {
-						log_player_event(client, command_type, user_command[start_index]);
 					}
 				}
 				return Plugin_Continue;
@@ -5273,16 +5218,17 @@ public CreateGameMEMenuMain(&Handle: MenuHandle)
 {
 	MenuHandle = CreateMenu(gameMEMainCommandHandler, MenuAction_Display | MenuAction_DisplayItem  | MenuAction_Select | MenuAction_Cancel);
 
-	if ((gameme_plugin[mod_id] == MOD_INSMOD) || (gameme_plugin[mod_id] == MOD_HL2MP)) {
+	if (gameme_plugin[mod_id] == MOD_HL2MP) {
 
 		SetMenuTitle(MenuHandle, "gameME - Main Menu");
 
-		AddMenuItem(MenuHandle, "IngameMenu_Menu1", "Display Rank");
-		AddMenuItem(MenuHandle, "IngameMenu_Menu2", "Next Players");
-		AddMenuItem(MenuHandle, "IngameMenu_Menu3", "Top10 Players");
-		AddMenuItem(MenuHandle, "IngameMenu_Menu4", "Auto Ranking");
-		AddMenuItem(MenuHandle, "IngameMenu_Menu5", "Console Events");
-		AddMenuItem(MenuHandle, "IngameMenu_Menu6", "Toggle Ranking Display");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu1",  "Display Rank");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu2",  "Next Players");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu3",  "Top10 Players");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu4",  "Auto Ranking");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu5",  "Console Events");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu6",  "Toggle Ranking Display");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu16" ,"Reset Statistics");
 
 	} else {
 
@@ -5303,6 +5249,7 @@ public CreateGameMEMenuMain(&Handle: MenuHandle)
 		AddMenuItem(MenuHandle, "IngameMenu_Menu13", "Player Kills");
 
 		AddMenuItem(MenuHandle, "IngameMenu_Menu6" , "Toggle Ranking Display");
+		AddMenuItem(MenuHandle, "IngameMenu_Menu16" ,"Reset Statistics");
 		AddMenuItem(MenuHandle, "IngameMenu_Menu14", "VAC Cheaterlist");
 		AddMenuItem(MenuHandle, "IngameMenu_Menu15", "Display Help");
 	}
@@ -5368,11 +5315,11 @@ public gameMEMainCommandHandler(Handle:menu, MenuAction:action, param1, param2)
  
 		new Handle: panel = Handle: param2;
 		SetPanelTitle(panel, buffer);
-
+		
 	} else if (action == MenuAction_Select) {
 
 		if (IsClientInGame(param1)) {
-			if ((gameme_plugin[mod_id] == MOD_INSMOD) || (gameme_plugin[mod_id] == MOD_HL2MP)) {
+			if (gameme_plugin[mod_id] == MOD_HL2MP) {
 				switch (param2) {
 					case 0 : 
 						make_player_command(param1, "/rank");
@@ -5386,6 +5333,8 @@ public gameMEMainCommandHandler(Handle:menu, MenuAction:action, param1, param2)
 						DisplayMenu(gameme_plugin[menu_events], param1, MENU_TIME_FOREVER);
 					case 5 : 
 						make_player_command(param1, "/gameme_hideranking");
+					case 6 : 
+						make_player_command(param1, "/gameme_reset");
 				}
 			} else {
 				switch (param2) {
@@ -5416,9 +5365,13 @@ public gameMEMainCommandHandler(Handle:menu, MenuAction:action, param1, param2)
 					case 12 : 
 						make_player_command(param1, "/gameme_hideranking");
 					case 13 : 
-						make_player_command(param1, "/cheaters");
+						make_player_command(param1, "/gameme_reset");
 					case 14 : 
+						make_player_command(param1, "/cheaters");
+					case 15 : 
 						make_player_command(param1, "/help");
+
+
 				}
 			}
 		}
@@ -5870,13 +5823,13 @@ public Event_TF2WinPanel(Handle: event, const String: name[], bool:dontBroadcast
 	new player2 = GetEventInt(event, "player_2");
 	new player3 = GetEventInt(event, "player_3");
 	
-	if (player1 > 0) {
+	if ((player1 > 0) && (IsClientInGame(player1))) {
 		log_player_event(player1, "triggered", "mvp1");
 	}
-	if (player2 > 0) {
+	if ((player2 > 0) && (IsClientInGame(player2))) {
 		log_player_event(player2, "triggered", "mvp2");
 	}
-	if (player3 > 0) {
+	if ((player3 > 0) && (IsClientInGame(player3))) {
 		log_player_event(player3, "triggered", "mvp3");
 	}
 } 
@@ -6396,7 +6349,12 @@ public OnZPSTakeDamage(victim, attacker, inflictor, Float:damage, damagetype)
 
 stock AddPluginServerTag(const String:tag[]) 
 {
-	if ((gameme_plugin[sv_tags] == INVALID_HANDLE) || ((gameme_plugin[sdk_version] < SOURCE_SDK_ALIENSWARM) && (gameme_plugin[sdk_version] != SOURCE_SDK_EPISODE2) && (gameme_plugin[sdk_version] != SOURCE_SDK_EPISODE2VALVE))) {
+	if ((gameme_plugin[sv_tags] == INVALID_HANDLE) ||
+	    ((gameme_plugin[engine_version] != Engine_CSS) && (gameme_plugin[engine_version] != Engine_HL2DM) &&
+	     (gameme_plugin[engine_version] != Engine_DODS) && (gameme_plugin[engine_version] != Engine_TF2) &&
+	     (gameme_plugin[engine_version] != Engine_NuclearDawn) && (gameme_plugin[engine_version] != Engine_Left4Dead) &&
+	     (gameme_plugin[engine_version] != Engine_Left4Dead2) && (gameme_plugin[engine_version] != Engine_CSGO) &&
+	     (gameme_plugin[engine_version] != Engine_Insurgency))) {
 		return;
 	}
 	
@@ -6407,6 +6365,7 @@ stock AddPluginServerTag(const String:tag[])
 	decl String: current_tags[128];
 	GetConVarString(gameme_plugin[sv_tags], current_tags, 128);
 	if (StrContains(current_tags, tag) > -1) {
+		LogToGame("gameME gameserver tag already exists [%s]", current_tags);
 		return;
 	}
 	
@@ -6419,4 +6378,175 @@ stock AddPluginServerTag(const String:tag[])
 	SetConVarString(gameme_plugin[sv_tags], new_tags);
 	gameme_plugin[ignore_next_tag_change] = false;
 	SetConVarFlags(gameme_plugin[sv_tags], flags);
+
+	LogToGame("Added gameME gameserver tag [%s]", new_tags);
+}
+
+
+public Event_INSMODPlayerDeath(Handle: event, const String: name[], bool:dontBroadcast)
+{
+	//	"deathflags"		"short"
+	//	"attacker"			"short"
+	//	"customkill"		"short"
+	//	"lives"				"short"
+	//	"attackerteam"		"short"
+	//	"damagebits"		"short"
+	//	"weapon"			"string"
+	//	"weaponid"			"short"
+	//	"userid"			"short"
+	//	"priority"			"short"
+	//	"team"				"short"
+	//	"y"					"float"
+	//	"x"					"float"
+	//	"z"					"float"
+	//	"assister"			"short"
+
+	new victim   = GetClientOfUserId(GetEventInt(event, "userid"));
+	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+
+	if ((victim > 0) && (attacker > 0)) {
+		if (attacker != victim) {
+			decl String: weapon_str[32];
+			GetEventString(event, "weapon", weapon_str, 32);
+			ReplaceString(weapon_str, 32, "weapon_", "", false);
+
+			new weapon_index = get_weapon_index(insmod_weapon_list, MAX_INSMOD_WEAPON_COUNT, weapon_str);
+			if (weapon_index > -1) {
+				player_weapons[attacker][weapon_index][wkills]++;
+				player_weapons[victim][weapon_index][wdeaths]++;
+				if (GetClientTeam(attacker) == GetClientTeam(victim)) {
+					player_weapons[attacker][weapon_index][wteamkills]++;
+				}
+			}
+			
+			new assister = GetClientOfUserId(GetEventInt(event, "assister"));
+			if ((assister > 0) && (assister != victim)) {
+				log_player_player_event(assister, victim, "triggered", "kill_assist");
+			}
+		}
+		dump_player_data(victim);
+	}
+}
+
+
+public Event_INSMODPlayerHurt(Handle: event, const String: name[], bool:dontBroadcast)
+{ 	
+	//	"userid"		"short"
+	//	"weapon"		"string"
+	//	"hitgroup"		"short"
+	//	"priority"		"short"
+	//	"attacker"		"short"
+	//	"dmg_health"	"short"
+	//	"health"		"byte"
+
+	new attacker  = GetClientOfUserId(GetEventInt(event, "attacker"));
+	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+
+	if ((attacker > 0) && (attacker != victim)) {
+		decl String: weapon_str[32];
+		GetEventString(event, "weapon", weapon_str, 32);
+		ReplaceString(weapon_str, 32, "weapon_", "", false);
+
+		new weapon_index = get_weapon_index(insmod_weapon_list, MAX_INSMOD_WEAPON_COUNT, weapon_str);
+		if (weapon_index > -1) {
+			player_weapons[attacker][weapon_index][wshots]++;
+			player_weapons[attacker][weapon_index][whits]++;
+			player_weapons[attacker][weapon_index][wdamage]  += GetEventInt(event, "dmg_health");
+			new hitgroup  = GetEventInt(event, "hitgroup");
+			if (hitgroup < 8) {
+				player_weapons[attacker][weapon_index][hitgroup + LOG_HIT_OFFSET]++;
+			} else {
+				player_weapons[attacker][weapon_index][hitgroup]++;
+			} 
+
+			if (hitgroup == HITGROUP_HEAD) {
+				player_weapons[attacker][weapon_index][wheadshots]++;
+				if (IsClientInGame(attacker)) {
+					log_player_event(attacker, "triggered", "headshot");
+				}
+			}
+		}
+	}
+}
+
+
+public Event_INSMODEventFired(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	//	"weaponid"	"short"
+	//	"userid"	"short"
+	//	"shots"		"byte"
+
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	new String: weapon_str[32];
+	GetClientWeapon(client, weapon_str, 32);
+	ReplaceString(weapon_str, 32, "weapon_", "", false);
+
+	new weapon_index = get_weapon_index(insmod_weapon_list, MAX_INSMOD_WEAPON_COUNT, weapon_str);
+	if (weapon_index > -1) {
+		player_weapons[client][weapon_index][wshots]++;
+	}
+
+}
+
+
+public Event_INSMODPlayerSpawn(Handle: event, const String: name[], bool:dontBroadcast)
+{
+	new userid = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (userid > 0) {
+		reset_player_data(userid);
+	}
+}
+
+
+public Event_INSMODRoundEnd(Handle: event, const String: name[], bool:dontBroadcast)
+{
+	for (new i = 1; (i <= MaxClients); i++) {
+		dump_player_data(i);
+	}
+
+	new team_index = GetEventInt(event, "winner");
+	if (team_index > 0) {
+		log_team_event(team_list[team_index], "Round_Win");
+	}
+}
+
+
+/**
+ * Insurgency2 Logger/LogFixer
+ * Based on SuperLogs by psychonic (https://forums.alliedmods.net/showthread.php?t=99231?t=99231)
+ * Author: FZFalzar of Brutus.SG Modded Servers (http://brutus.sg)
+ * Updated and maintained by Jared Ballou (http://jballou.com)
+ * Version: 1.2.0
+ */
+
+
+
+public Event_INSMODPlayerPickSquad(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	//	"squad_slot"		"byte"
+	//	"squad"				"byte"
+	//	"userid"			"short"
+	//	"class_template"	"string"
+	
+	
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+
+	if( client == 0) {
+		return;
+	}
+
+	decl String: class_template[64];
+	GetEventString(event, "class_template", class_template, sizeof(class_template));
+	ReplaceString(class_template, sizeof(class_template), "template_", "", false);
+	ReplaceString(class_template, sizeof(class_template), "_training", "", false);
+	ReplaceString(class_template, sizeof(class_template), "_coop", "", false);
+	ReplaceString(class_template, sizeof(class_template), "coop_", "", false);
+	ReplaceString(class_template, sizeof(class_template), "_security", "", false);
+	ReplaceString(class_template, sizeof(class_template), "_insurgent", "", false);
+	ReplaceString(class_template, sizeof(class_template), "_survival", "", false);
+	
+	if(!StrEqual(insmod_players[client][last_role], class_template)) {
+		LogToGame("\"%L\" changed role to \"%s\"", client, class_template);
+		strcopy(insmod_players[client][last_role], 64, class_template);
+	}
 }

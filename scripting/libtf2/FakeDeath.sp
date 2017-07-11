@@ -246,7 +246,7 @@ public OnPluginStart()
 	LoadTranslations("fake_death.phrases");
 	
 	// コマンド作成
-	CreateConVar("sm_rmf_tf_fake_death", PL_VERSION, "Fake Death", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_rmf_tf_fake_death", PL_VERSION, "Fake Death", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_IsFakeDeathOn = CreateConVar("sm_rmf_fake_death","0","Enable/Disable Fake Death (0 = disabled | 1 = enabled)");
 	g_UseCloakMeter = CreateConVar("sm_rmf_use_cloak_meter","10.0","Cloak Meter required for fake death(0.0-100.0)");
 	g_IsStartMessageOn = CreateConVar("sm_rmf_start_message","0","Enable/Disable start message (0 = disabled | 1 = enabled)");
@@ -818,14 +818,15 @@ stock TF_SpawnFakeBody(client)
 					
 				// 発生位置
 				GetClientAbsOrigin(client, PlayerPosition);
-				new offset = FindSendPropOffs("CTFRagdoll", "m_vecRagdollOrigin");
+				new offset; // = FindSendPropOffs("CTFRagdoll", "m_vecRagdollOrigin");
+				FindSendPropInfo("CTFRagdoll", "m_vecRagdollOrigin", .local_offset=offset);
 				SetEntDataVector(FakeBody, offset, PlayerPosition);
 				
 				// 死体のクラスはスパイ
-				offset = FindSendPropOffs("CTFRagdoll", "m_iClass");
+				FindSendPropInfo("CTFRagdoll", "m_iClass", .local_offset=offset);
 				SetEntData(FakeBody, offset, class);
 				
-				offset = FindSendPropOffs("CTFRagdoll", "m_iPlayerIndex");
+				FindSendPropInfo("CTFRagdoll", "m_iPlayerIndex", .local_offset=offset);
 				//new offset2 = FindSendPropOffs("CTFPlayer", "m_nForceBone");
 				//new aaa = GetEntData(client, offset2); 
 				SetEntData(FakeBody, offset, client);
@@ -834,12 +835,12 @@ stock TF_SpawnFakeBody(client)
 				offset = FindDataMapOffs(client, "m_bitsDamageType");
 				if( (GetEntData(client, offset) & 16779272) != 0 )
 				{
-					offset = FindSendPropOffs("CTFRagdoll", "m_bBurning");
+					FindSendPropInfo("CTFRagdoll", "m_bBurning", .local_offset=offset);
 					SetEntData(FakeBody, offset, 1);
 				}
 */
 				
-//				offset = FindSendPropOffs("CTFPlayer", "m_nDrownDmgRate");
+//				FindSendPropInfo("CTFPlayer", "m_nDrownDmgRate", .local_offset=offset);
 //				offset = FindDataMapOffs(client, "m_nDrownDmgRate");
 			
 				//SetEntData(FakeBody, offset3, 1);
@@ -847,12 +848,12 @@ stock TF_SpawnFakeBody(client)
 
 				// 死体のチームカラー
 				new team = GetClientTeam(client);
-				offset = FindSendPropOffs("CTFRagdoll", "m_iTeam");
+				FindSendPropInfo("CTFRagdoll", "m_iTeam", .local_offset=offset);
 				SetEntData(FakeBody, offset, team);
 
 				if(TF2_IsPlayerInCondition(client,TFCond_OnFire))
 				{
-					offset = FindSendPropOffs("CTFRagdoll", "m_bBurning");
+					FindSendPropInfo("CTFRagdoll", "m_bBurning", .local_offset=offset);
 					SetEntData(FakeBody, offset, 1);
 				}
 

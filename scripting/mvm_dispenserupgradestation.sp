@@ -1,8 +1,10 @@
 #pragma semicolon 1
 #include <sourcemod>
 #include <tf2>
-#include <mdebug>
+//#include <mdebug>
 #include <sdkhooks>
+#include <sdktools>
+#include <entity_flags>
 
 #define PLUGIN_VERSION  "1.0.0"
 
@@ -25,7 +27,7 @@ new Handle:g_hDispenserUpgradeStations = INVALID_HANDLE;
 
 public OnPluginStart()
 {
-	CreateConVar("sm_dispenserupgradestation_version", PLUGIN_VERSION, "Dispenser Upgrade Station Version.", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_dispenserupgradestation_version", PLUGIN_VERSION, "Dispenser Upgrade Station Version.", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	HookEvent("player_builtobject", OnBuiltObject);
 	HookEvent("player_carryobject", OnPickupObject);
@@ -41,10 +43,10 @@ public OnMapStart()
 public Action:OnBuiltObject(Handle:hEvent, String:strEventName[], bool:bDontBroadcast)
 {
 	// new client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-	new object = GetEventInt(hEvent, "object");
+	new obj = GetEventInt(hEvent, "object");
 	new entity = GetEventInt(hEvent, "index");
 	
-	if(object != 0) return Plugin_Continue;
+	if(obj != 0) return Plugin_Continue;
 	
 	new entindex = CreateEntityByName("func_upgradestation");
 	if(entindex == -1) return Plugin_Continue;

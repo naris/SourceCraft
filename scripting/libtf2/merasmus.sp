@@ -107,7 +107,7 @@ public OnPluginStart()
 {
 	CheckGame();
 	
-	CreateConVar("sm_merasmus_version", PLUGIN_VERSION, "Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_merasmus_version", PLUGIN_VERSION, "Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegAdminCmd("sm_merasmus", Meras, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_meras", Meras, ADMFLAG_GENERIC);
 	

@@ -284,7 +284,7 @@ public OnPluginStart()
     LoadTranslations("common.phrases");
     LoadTranslations("ammopacks.phrases");
 
-    HookConVarChange(CreateConVar("sm_tf_ammopacks", PL_VERSION, "Ammopacks", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY), ConVarChange_Version);
+    HookConVarChange(CreateConVar("sm_tf_ammopacks", PL_VERSION, "Ammopacks", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY), ConVarChange_Version);
     g_IsAmmopacksOn = CreateConVar("sm_ammopacks","3","Enable/Disable ammopacks (0=disabled|1=on death|2=on command|3=on death and command)", _, true, 0.0, true, 3.0);
     g_AmmopacksSmall = CreateConVar("sm_ammopacks_small","50","Metal required for small Ammopacks", _, true, 0.0, true, 200.0);
     g_AmmopacksMedium = CreateConVar("sm_ammopacks_medium","100","Metal required for medium Ammopacks", _, true, 0.0, true, 200.0);

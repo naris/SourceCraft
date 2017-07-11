@@ -30,9 +30,9 @@ public OnPluginStart() {
     decl String:strModName[32]; GetGameFolderName(strModName, sizeof(strModName));
     if (!StrEqual(strModName, "tf")) SetFailState("This plugin is only for Team Fortress 2.");
 
-    CreateConVar("ignitelight_version", PLUGIN_VERSION, "[TF2] Ignite Light version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    g_hEnabled = CreateConVar("ignitelight_enable", "1", "Enable/disable the [TF2] Ignite Light plugin.", FCVAR_PLUGIN|FCVAR_NOTIFY);
-    g_hBrightness = CreateConVar("ignitelight_brightness", "5", "Set the [TF2] Ignite Light brightness.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+    CreateConVar("ignitelight_version", PLUGIN_VERSION, "[TF2] Ignite Light version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    g_hEnabled = CreateConVar("ignitelight_enable", "1", "Enable/disable the [TF2] Ignite Light plugin.", FCVAR_NOTIFY);
+    g_hBrightness = CreateConVar("ignitelight_brightness", "5", "Set the [TF2] Ignite Light brightness.", FCVAR_NOTIFY);
     
     HookEvent("player_spawn", PlayerSpawn);
     HookEvent("player_death", PlayerDeath);

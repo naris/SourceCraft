@@ -90,7 +90,7 @@ public OnPluginStart()
 		
 	LoadTranslations("plugin.quakesounds");
 	
-	CreateConVar("sm_quakesounds_version", PLUGIN_VERSION, "Quake Sounds Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_quakesounds_version", PLUGIN_VERSION, "Quake Sounds Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	cvarAnnounce = CreateConVar("sm_quakesounds_announce", "1", "Announcement preferences");
 	cvarTextDefault = CreateConVar("sm_quakesounds_text", "1", "Default text setting for new users");
 	cvarSoundDefault = CreateConVar("sm_quakesounds_sound", "1", "Default sound for new users, 1=Standard, 2=Female, 0=Disabled");

@@ -68,7 +68,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    CreateConVar("thefury", PLUGIN_VERSION, "The Fury version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("thefury", PLUGIN_VERSION, "The Fury version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(FindConVar("thefury"), PLUGIN_VERSION, true, true);
     g_Enable = CreateConVar("thefury_toggle", "1", "Enable/Disable plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
     g_BurnEnemy = CreateConVar("thefury_burn", "1", "Burn enemy when hit Jet Pack's flame", 0, true, 0.0, true, 1.0);

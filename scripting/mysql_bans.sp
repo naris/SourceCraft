@@ -105,12 +105,12 @@ public OnPluginStart()
     RegAdminCmd("mysql_banip",Command_BanIp,ADMFLAG_BAN,"Unbans player by IP");
 
     // Create convars
-    CreateConVar("mysql_bans_version", PLUGIN_VERSION, "MySQL Bans Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    AdminChecking = CreateConVar("mysql_bans_admin_check","1","Check Admins if banned? 1=Skip ban checks for admins, 0=Check admins for bans", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    ErrorChecking = CreateConVar("mysql_bans_error_check","1","Shows Error Messages, 0=don't show, 1=show in logs, 2=show in-game chat", FCVAR_PLUGIN|FCVAR_SPONLY);
-    StoreAllBans = CreateConVar("mysql_bans_store_all_bans","1","Store ALL bans in DB, 0=only store mysql bans, 1=store ALL bans", FCVAR_PLUGIN|FCVAR_SPONLY);
-    BanLocally = CreateConVar("mysql_bans_local_ban","1","Also Ban players locally (using banned_user/ip.cfg), 1=also ban locally, 0=only store bans in DB", FCVAR_PLUGIN|FCVAR_SPONLY);
-    UnbanLocally = CreateConVar("mysql_bans_local_unban","1","Also Unban players locally (using banned_user/ip.cfg), 1=unban players when they connect and aren't in the ban DB, 0=don't check for unbans when connecting", FCVAR_PLUGIN|FCVAR_SPONLY);
+    CreateConVar("mysql_bans_version", PLUGIN_VERSION, "MySQL Bans Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    AdminChecking = CreateConVar("mysql_bans_admin_check","1","Check Admins if banned? 1=Skip ban checks for admins, 0=Check admins for bans", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    ErrorChecking = CreateConVar("mysql_bans_error_check","1","Shows Error Messages, 0=don't show, 1=show in logs, 2=show in-game chat", FCVAR_SPONLY);
+    StoreAllBans = CreateConVar("mysql_bans_store_all_bans","1","Store ALL bans in DB, 0=only store mysql bans, 1=store ALL bans", FCVAR_SPONLY);
+    BanLocally = CreateConVar("mysql_bans_local_ban","1","Also Ban players locally (using banned_user/ip.cfg), 1=also ban locally, 0=only store bans in DB", FCVAR_SPONLY);
+    UnbanLocally = CreateConVar("mysql_bans_local_unban","1","Also Unban players locally (using banned_user/ip.cfg), 1=unban players when they connect and aren't in the ban DB, 0=don't check for unbans when connecting", FCVAR_SPONLY);
 
     if (ConnectToDatabase())
         VerifyTable();

@@ -707,38 +707,38 @@ public OnPluginStart()
     HookEvent("player_death", PlayerDeathEvent, EventHookMode_Pre);
 
     // Create ConVars
-    sm_jetpack = CreateConVar("sm_jetpack", "0", "enable jetpacks on the server", FCVAR_PLUGIN);
-    sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_PLUGIN);
-    sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_PLUGIN);
-    sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_PLUGIN);
-    sm_jetpack_max_refuels = CreateConVar("sm_jetpack_max_refuels", "-1", "number of times the jetpack can be refueled (-1 == unlimited)", FCVAR_PLUGIN);
-    sm_jetpack_refueling_time = CreateConVar("sm_jetpack_refueling_time", "30.0", "amount of time to wait before refueling", FCVAR_PLUGIN);
-    sm_jetpack_onspawn = CreateConVar("sm_jetpack_onspawn", "0", "enable giving players a jetpack when they spawn", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    sm_jetpack_team = CreateConVar("sm_jetpack_team", "0", "team restriction (0=all use, 2 or 3 to only allowed specified team to have a jetpack", FCVAR_PLUGIN, true, 0.0, true, 3.0);
-    sm_jetpack_burn = CreateConVar("sm_jetpack_burn", "1", "Burn enemies that a jetpack's flame hits", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    sm_jetpack_burn_range = CreateConVar("sm_jetpack_burn_range", "500.0", "Range of the jetpack's flame hits", FCVAR_PLUGIN);
-    sm_jetpack_burn_damage = CreateConVar("sm_jetpack_burn_damage", "7", "Damage of the jetpack's flame hits", FCVAR_PLUGIN);
-    sm_jetpack_explode = CreateConVar("sm_jetpack_explode", "1", "Players with a jetpack explode when they die", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    sm_jetpack_explode_fuel = CreateConVar("sm_jetpack_explode_fuel", "10", "Minimum fuel to explode", FCVAR_PLUGIN);
+    sm_jetpack = CreateConVar("sm_jetpack", "0", "enable jetpacks on the server", FCVAR_NONE);
+    sm_jetpack_speed = CreateConVar("sm_jetpack_speed", "100", "speed of the jetpack", FCVAR_NONE);
+    sm_jetpack_volume = CreateConVar("sm_jetpack_volume", "0.5", "volume of the jetpack sound", FCVAR_NONE);
+    sm_jetpack_fuel = CreateConVar("sm_jetpack_fuel", "-1", "amount of fuel to start with (-1 == unlimited)", FCVAR_NONE);
+    sm_jetpack_max_refuels = CreateConVar("sm_jetpack_max_refuels", "-1", "number of times the jetpack can be refueled (-1 == unlimited)", FCVAR_NONE);
+    sm_jetpack_refueling_time = CreateConVar("sm_jetpack_refueling_time", "30.0", "amount of time to wait before refueling", FCVAR_NONE);
+    sm_jetpack_onspawn = CreateConVar("sm_jetpack_onspawn", "0", "enable giving players a jetpack when they spawn", FCVAR_NONE, true, 0.0, true, 1.0);
+    sm_jetpack_team = CreateConVar("sm_jetpack_team", "0", "team restriction (0=all use, 2 or 3 to only allowed specified team to have a jetpack", FCVAR_NONE, true, 0.0, true, 3.0);
+    sm_jetpack_burn = CreateConVar("sm_jetpack_burn", "1", "Burn enemies that a jetpack's flame hits", FCVAR_NONE, true, 0.0, true, 1.0);
+    sm_jetpack_burn_range = CreateConVar("sm_jetpack_burn_range", "500.0", "Range of the jetpack's flame hits", FCVAR_NONE);
+    sm_jetpack_burn_damage = CreateConVar("sm_jetpack_burn_damage", "7", "Damage of the jetpack's flame hits", FCVAR_NONE);
+    sm_jetpack_explode = CreateConVar("sm_jetpack_explode", "1", "Players with a jetpack explode when they die", FCVAR_NONE, true, 0.0, true, 1.0);
+    sm_jetpack_explode_fuel = CreateConVar("sm_jetpack_explode_fuel", "10", "Minimum fuel to explode", FCVAR_NONE);
     sm_jetpack_explode_range = CreateConVar("sm_jetpack_explode_range", "1000.0", "Range of jetpack explosions");
     sm_jetpack_explode_damage = CreateConVar("sm_jetpack_explode_damage", "1", "Damage of jetpack explosons");
 
-    sm_jetpack_gravity = CreateConVar("sm_jetpack_gravity", "1", "Set to 1 to have gravity affect the jetpack (MOVETYPE_FLYGRAVITY), 0 for no gravity (MOVETYPE_FLY).", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    sm_jetpack_announce = CreateConVar("sm_jetpack_announce","0","This will enable announcements that jetpacks are available", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    sm_jetpack_gravity = CreateConVar("sm_jetpack_gravity", "1", "Set to 1 to have gravity affect the jetpack (MOVETYPE_FLYGRAVITY), 0 for no gravity (MOVETYPE_FLY).", FCVAR_NONE, true, 0.0, true, 1.0);
+    sm_jetpack_announce = CreateConVar("sm_jetpack_announce","0","This will enable announcements that jetpacks are available", FCVAR_NONE, true, 0.0, true, 1.0);
+    sm_jetpack_adminonly = CreateConVar("sm_jetpack_adminonly", "0", "only allows admins to have jetpacks when set to 1", FCVAR_NONE, true, 0.0, true, 1.0);
     tf_weapon_criticals = FindConVar("tf_weapon_criticals");
     mp_friendlyfire = FindConVar("mp_friendlyfire");
 
     // Disable noflag if the game isn't TF2.
     if (GetGameType() == tf2)
     {
-        sm_jetpack_start_sound = CreateConVar("sm_jetpack_start_sound", START_SOUND_TF2, "the jetpack start sound", FCVAR_PLUGIN);
-        sm_jetpack_stop_sound = CreateConVar("sm_jetpack_stop_sound", STOP_SOUND_TF2, "the jetpack stop sound", FCVAR_PLUGIN);
-        sm_jetpack_loop_sound = CreateConVar("sm_jetpack_loop_sound", LOOP_SOUND_TF2, "the jetpack loop sound", FCVAR_PLUGIN);
-        sm_jetpack_crit_sound = CreateConVar("sm_jetpack_crit_sound", CRIT_SOUND, "the jetpack crit loop sound", FCVAR_PLUGIN);
-        sm_jetpack_empty_sound = CreateConVar("sm_jetpack_empty_sound", EMPTY_SOUND_TF2, "the jetpack empty sound", FCVAR_PLUGIN);
-        sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", REFUEL_SOUND_TF2, "the jetpack refuel sound", FCVAR_PLUGIN);
-        sm_jetpack_noflag = CreateConVar("sm_jetpack_noflag", "1", "When enabled, prevents TF2 flag carrier from using the jetpack", FCVAR_PLUGIN);
+        sm_jetpack_start_sound = CreateConVar("sm_jetpack_start_sound", START_SOUND_TF2, "the jetpack start sound", FCVAR_NONE);
+        sm_jetpack_stop_sound = CreateConVar("sm_jetpack_stop_sound", STOP_SOUND_TF2, "the jetpack stop sound", FCVAR_NONE);
+        sm_jetpack_loop_sound = CreateConVar("sm_jetpack_loop_sound", LOOP_SOUND_TF2, "the jetpack loop sound", FCVAR_NONE);
+        sm_jetpack_crit_sound = CreateConVar("sm_jetpack_crit_sound", CRIT_SOUND, "the jetpack crit loop sound", FCVAR_NONE);
+        sm_jetpack_empty_sound = CreateConVar("sm_jetpack_empty_sound", EMPTY_SOUND_TF2, "the jetpack empty sound", FCVAR_NONE);
+        sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", REFUEL_SOUND_TF2, "the jetpack refuel sound", FCVAR_NONE);
+        sm_jetpack_noflag = CreateConVar("sm_jetpack_noflag", "1", "When enabled, prevents TF2 flag carrier from using the jetpack", FCVAR_NONE);
 
         sm_jetpack_rate[SCOUT] = CreateConVar("sm_jetpack_rate_scout", "1", "rate at which the jetpack consumes fuel for scouts");
         sm_jetpack_rate[SNIPER] = CreateConVar("sm_jetpack_rate_sniper", "1", "rate at which the jetpack consumes fuel for snipers");
@@ -762,11 +762,11 @@ public OnPluginStart()
     }
     else
     {
-        sm_jetpack_start_sound = CreateConVar("sm_jetpack_start_sound", START_SOUND, "the jetpack start sound", FCVAR_PLUGIN);
-        sm_jetpack_stop_sound = CreateConVar("sm_jetpack_stop_sound", STOP_SOUND, "the jetpack stop sound", FCVAR_PLUGIN);
-        sm_jetpack_loop_sound = CreateConVar("sm_jetpack_loop_sound", LOOP_SOUND, "the jetpack loop sound", FCVAR_PLUGIN);
-        sm_jetpack_empty_sound = CreateConVar("sm_jetpack_empty_sound", EMPTY_SOUND, "the jetpack empty sound", FCVAR_PLUGIN);
-        sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", REFUEL_SOUND, "the jetpack refuel sound", FCVAR_PLUGIN);
+        sm_jetpack_start_sound = CreateConVar("sm_jetpack_start_sound", START_SOUND, "the jetpack start sound", FCVAR_NONE);
+        sm_jetpack_stop_sound = CreateConVar("sm_jetpack_stop_sound", STOP_SOUND, "the jetpack stop sound", FCVAR_NONE);
+        sm_jetpack_loop_sound = CreateConVar("sm_jetpack_loop_sound", LOOP_SOUND, "the jetpack loop sound", FCVAR_NONE);
+        sm_jetpack_empty_sound = CreateConVar("sm_jetpack_empty_sound", EMPTY_SOUND, "the jetpack empty sound", FCVAR_NONE);
+        sm_jetpack_refuel_sound = CreateConVar("sm_jetpack_refuel_sound", REFUEL_SOUND, "the jetpack refuel sound", FCVAR_NONE);
 
         if (GameType == dod)
         {
@@ -796,7 +796,7 @@ public OnPluginStart()
 
     AutoExecConfig();
 
-    CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_PLUGIN | FCVAR_REPLICATED | FCVAR_NOTIFY);
+    CreateConVar("sm_jetpack_version", PLUGIN_VERSION, "", FCVAR_NONE | FCVAR_REPLICATED | FCVAR_NOTIFY);
 
     /* Account for late loading */
     new Handle:topmenu;

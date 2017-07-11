@@ -44,11 +44,11 @@ public SharedPlugin:_pl_gscramble =
 {
 	name = "gscramble",
 	file = "gscramble.smx",
-#if defined REQUIRE_PLUGIN
+	#if defined REQUIRE_PLUGIN
 	required = 1
-#else
+	#else
 	required = 0
-#endif
+	#endif
 };
 
 public _pl_gscramble_SetNTVOptional()

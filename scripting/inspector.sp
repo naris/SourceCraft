@@ -27,7 +27,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    CreateConVar("sm_obj_inspector", PL_VERSION, "Object Inspector", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("sm_obj_inspector", PL_VERSION, "Object Inspector", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     g_InspectionEnabled = CreateConVar("sm_obj_inspection","0","Enable inspecting object on events (0=disabled|1=enabled)", _, true, 0.0, true, 1.0);
 
     if (!HookEvent("player_builtobject", PlayerBuiltObject))
@@ -60,11 +60,11 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         {
             //new objects:type = unknown;
             new objectid = GetEventInt(event,"index");
-            new TFObjectType:object = TFObjectType:GetEventInt(event,"object");
+            new TFObjectType:obj = TFObjectType:GetEventInt(event,"object");
 
             LogMessage("%s: userid=%d:%d:%N, entity=%d, object=%d:%s",
-                       name, userid, client, client, objectid, object,
-                       TF2_ObjectNames[object]);
+                       name, userid, client, client, objectid, obj,
+                       TF2_ObjectNames[obj]);
 
             InspectEntity(0, objectid);
         }
@@ -81,10 +81,10 @@ public ObjectRemoved(Handle:event,const String:name[],bool:dontBroadcast)
         {
             //new objects:type = unknown;
             new objectid = GetEventInt(event,"index");
-            new TFObjectType:object = TFObjectType:GetEventInt(event,"objecttype");
+            new TFObjectType:obj = TFObjectType:GetEventInt(event,"objecttype");
 
             LogMessage("%s: userid=%d:%d:%N, entity=%d, object=%d:%s",
-                       name, userid, client, client, objectid, object, TF2_ObjectNames[object]);
+                       name, userid, client, client, objectid, obj, TF2_ObjectNames[obj]);
 
             InspectEntity(0, objectid);
         }

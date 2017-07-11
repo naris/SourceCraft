@@ -345,7 +345,7 @@ public OnPluginStart()
     LoadTranslations("common.phrases");
     LoadTranslations("medipacks.phrases");
 
-    HookConVarChange(CreateConVar("sm_tf_medipacks", PL_VERSION, "Medipacks", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY), ConVarChange_Version);
+    HookConVarChange(CreateConVar("sm_tf_medipacks", PL_VERSION, "Medipacks", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY), ConVarChange_Version);
     g_IsMedipacksOn = CreateConVar("sm_medipacks","3","Enable/Disable medipacks (0=disabled|1=on death|2=on command|3=on death and command)", _, true, 0.0, true, 3.0);
     g_Advertise = CreateConVar("sm_medipacks_advertise","1","Enable/Disable Advertisements");
     g_DefUberCharge = CreateConVar("sm_medipacks_ubercharge","25","Give medics a default UberCharge on spawn", _, true, 0.0, true, 100.0);

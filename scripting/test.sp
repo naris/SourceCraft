@@ -167,7 +167,7 @@ public Action:InterceptLog(const String:message[])
         new attacker = 0;
         new builder = 0;
         //decl String:buffer[5];
-        decl String:object[64];
+        decl String:obj[64];
         decl String:a[64];
         decl String:b[64];
         //new Handle:re = CompileRegex("\".+<([0-9]+)><.+><.+>.*\" triggered \"killedobject\" \\(object \"([A-Z_])\"\\) .*\\(objectowner \".+<([0-9]+)><.+>\"\\)");
@@ -179,17 +179,17 @@ public Action:InterceptLog(const String:message[])
                 if (GetRegexSubString(re, 1, a, sizeof(a)))
                 {
                     attacker = StringToInt(a);
-                    if (GetRegexSubString(re, 2, object, sizeof(object)))
+                    if (GetRegexSubString(re, 2, obj, sizeof(obj)))
                     {
                         if (GetRegexSubString(re, 3, b, sizeof(b)))
                             builder = StringToInt(b);
                     }
                     else
-                        object[0] = 0;
+                        obj[0] = 0;
                 }
-                LogMessage("===> %d(%s) destroyed %d(%s)'s %s!", attacker, a, builder, b, object);
-                //PrintToChat(attacker, "%d (%N) destroyed %d(%N)'s  %s!", attacker, attacker, builder, builder, object);
-                //PrintToChat(builder, "%d (%N) destroyed %d(%N)'s  %s!", attacker, attacker, builder, builder, object);
+                LogMessage("===> %d(%s) destroyed %d(%s)'s %s!", attacker, a, builder, b, obj);
+                //PrintToChat(attacker, "%d (%N) destroyed %d(%N)'s  %s!", attacker, attacker, builder, builder, obj);
+                //PrintToChat(builder, "%d (%N) destroyed %d(%N)'s  %s!", attacker, attacker, builder, builder, obj);
             }
             else
                 LogMessage("NO MATCH:%s", message);
@@ -209,27 +209,27 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
         new index=GetClientOfUserId(userid);
 
         //new objects:type = unknown;
-        new object = GetEventInt(event,"object");
+        new obj = GetEventInt(event,"obj");
 
         LogMessage("player_objectbuilt: userid=%d(%d), object=%d",
-                   userid, index, object);
+                   userid, index, obj);
     }
 }
 
-public OnObjectKilled(attacker, builder,const String:object[])
+public OnObjectKilled(attacker, builder,const String:obj[])
 {
     new objects:type = unknown;
-    if (StrEqual(object, "OBJ_SENTRYGUN", false))
+    if (StrEqual(obj, "OBJ_SENTRYGUN", false))
         type = sentrygun;
-    else if (StrEqual(object, "OBJ_DISPENSER", false))
+    else if (StrEqual(obj, "OBJ_DISPENSER", false))
         type = dispenser;
-    else if (StrEqual(object, "OBJ_TELEPORTER_ENTRANCE", false))
+    else if (StrEqual(obj, "OBJ_TELEPORTER_ENTRANCE", false))
         type = teleporter_entry;
-    else if (StrEqual(object, "OBJ_TELEPORTER_EXIT", false))
+    else if (StrEqual(obj, "OBJ_TELEPORTER_EXIT", false))
         type = teleporter_exit;
 
     LogMessage("objectkilled: builder=%d, type=%d, object=%s",
-               builder, type, object);
+               builder, type, obj);
 }
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)

@@ -59,7 +59,7 @@ public OnPluginStart() {
     #endif
 
     CreateConVar("sm_advertisements_version", PL_VERSION, 
-        "Display advertisements", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+        "Display advertisements", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     g_hEnabled              = CreateConVar("sm_advertisements_enabled",         "1",                  
         "Enable/disable displaying advertisements.");
     g_hFile                 = CreateConVar("sm_advertisements_file",            "advertisements.txt", 

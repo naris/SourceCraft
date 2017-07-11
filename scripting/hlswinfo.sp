@@ -16,9 +16,9 @@ new Handle:g_hNextMap;
 new Handle:g_hTimeLeft;
 
 public OnPluginStart() {
-	CreateConVar("sm_hlswinfo_version", PL_VERSION, "Shows nextmap and timeleft in HLSW.", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_hNextMap  = CreateConVar("cm_nextmap",  "", "Nextmap in HLSW",  FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_NOTIFY);
-	g_hTimeLeft = CreateConVar("cm_timeleft", "", "Timeleft in HLSW", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_NOTIFY);
+	CreateConVar("sm_hlswinfo_version", PL_VERSION, "Shows nextmap and timeleft in HLSW.", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_hNextMap  = CreateConVar("cm_nextmap",  "", "Nextmap in HLSW",  FCVAR_SPONLY|FCVAR_NOTIFY);
+	g_hTimeLeft = CreateConVar("cm_timeleft", "", "Timeleft in HLSW", FCVAR_SPONLY|FCVAR_NOTIFY);
 	
 	HookConVarChange(FindConVar("sm_nextmap"), NextMap);
 	CreateTimer(15.0, Timeleft, _, TIMER_REPEAT);
@@ -31,9 +31,9 @@ public OnMapStart() {
 }
 
 public NextMap(Handle:convar, const String:oldValue[], const String:newValue[]) {
-	SetCommandFlags("cm_nextmap", FCVAR_PLUGIN|FCVAR_SPONLY);
+	SetCommandFlags("cm_nextmap", FCVAR_SPONLY);
 	SetConVarString(g_hNextMap, newValue);
-	SetCommandFlags("cm_nextmap", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_NOTIFY);
+	SetCommandFlags("cm_nextmap", FCVAR_SPONLY|FCVAR_NOTIFY);
 }
 
 public Action:Timeleft(Handle:timer) {
@@ -51,7 +51,7 @@ public Action:Timeleft(Handle:timer) {
 	}
 	
 	Format(sTimeLeft, sizeof(sTimeLeft), "%d:%02d", iMins, iSecs);
-	SetCommandFlags("cm_timeleft", FCVAR_PLUGIN|FCVAR_SPONLY);
+	SetCommandFlags("cm_timeleft", FCVAR_SPONLY);
 	SetConVarString(g_hTimeLeft, sTimeLeft);
-	SetCommandFlags("cm_timeleft", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_NOTIFY);
+	SetCommandFlags("cm_timeleft", FCVAR_SPONLY|FCVAR_NOTIFY);
 }

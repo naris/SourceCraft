@@ -99,7 +99,7 @@ public OnPluginStart()
 {
     g_fakeClientCount = 0;
     
-    CreateConVar("sm_redirect_version", PLUGIN_VERSION, "Version number of server redirect plugin.", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
+    CreateConVar("sm_redirect_version", PLUGIN_VERSION, "Version number of server redirect plugin.", FCVAR_NONE | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
     g_varServerId = CreateConVar("sm_redirect_serverid", "0", "ID of the server in the database.", 0, true, 0.0, false);
     g_varShowCurrent = CreateConVar("sm_redirect_showcurrent", "1", "Whether to show the current server in the redirect menu", 0, true, 0.0, true, 1.0);
     g_varShowOffline = CreateConVar("sm_redirect_showoffline", "1", "Whether to show offline servers in the redirect menu", 0, true, 0.0, true, 1.0);
@@ -187,12 +187,11 @@ CountFakePlayers()
     g_fakeClientCount = fakeClientCount;
 }
 
-public OnClientConnected(client)
+public void OnClientConnected(client)
 {
     g_playerCountChanged = true;
     
     UpdateStatus();
-    return true;
 }
 
 public OnClientDisconnect_Post(client)
@@ -637,8 +636,8 @@ public Native_RedirectList(Handle:plugin, numParams)
 {
     new bool:showCurrent = GetConVarBool(g_varShowCurrent);
     new bool:showOffline = GetConVarBool(g_varShowOffline);
-    new OnRedirectServersLoaded:callback = OnRedirectServersLoaded:GetNativeCell(1);
-    new any:userData = any:GetNativeCell(2);
+    new any:callback = GetNativeCell(1);
+    new any:userData = GetNativeCell(2);
     Internal_RedirectList(plugin, showCurrent, showOffline, callback, userData);
 }
 
@@ -646,12 +645,12 @@ public Native_RedirectListFiltered(Handle:plugin, numParams)
 {
     new bool:showCurrent = bool:GetNativeCell(1);
     new bool:showOffline = bool:GetNativeCell(2);
-    new OnRedirectServersLoaded:callback = OnRedirectServersLoaded:GetNativeCell(3);
-    new any:userData = any:GetNativeCell(4);
+    new any:callback = GetNativeCell(3);
+    new any:userData = GetNativeCell(4);
     Internal_RedirectList(plugin, showCurrent, showOffline, callback, userData);
 }
 
-Internal_RedirectList(Handle:plugin, bool:showCurrent, bool:showOffline, OnRedirectServersLoaded:callback, any:userData)
+Internal_RedirectList(Handle:plugin, bool:showCurrent, bool:showOffline, any:callback, any:userData)
 {   
     new serverId = GetConVarInt(g_varServerId);
 
@@ -686,7 +685,7 @@ public LoadServerRedirectList_Query(Handle:db, Handle:query, const String:error[
 {
     // read vars from the data
     ResetPack(data);
-    new OnRedirectServersLoaded:callback = OnRedirectServersLoaded:ReadPackCell(data);
+    new any:callback = ReadPackCell(data);
     new Handle:plugin = Handle:ReadPackCell(data);
     new any:userData = any:ReadPackCell(data);
     CloseHandle(data);

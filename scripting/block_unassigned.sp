@@ -123,7 +123,7 @@ public DoClientSentence(client) {
 }
 
 public OnPluginStart() {
-	CreateConVar("sm_bu_version", PLUGIN_VERSION, "Block unassigned team version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_bu_version", PLUGIN_VERSION, "Block unassigned team version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	cvar_Enabled = CreateConVar("sm_bu_enabled", "1", "Enable this entire plugin");
 	cvar_Prevent = CreateConVar("sm_bu_prevent", "1", "Prevent users from exploiting");

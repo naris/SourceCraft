@@ -468,7 +468,8 @@ public Action:Event_PlayerDeath(Handle:hEvent, String:strName[], bool:bDontBroad
 	if(!IsValidClient(iAttacker)) return Plugin_Continue;
 	
 	new String:sAttackerAuth[32];
-	GetClientAuthString(iAttacker, sAttackerAuth, sizeof(sAttackerAuth));
+	//GetClientAuthString(iAttacker, sAttackerAuth, sizeof(sAttackerAuth));
+	GetClientAuthId(iAttacker, AuthId_Steam2, sAttackerAuth, sizeof(sAttackerAuth));
 	if( !(GetUserFlagBits(iAttacker) & ADMFLAG_BAN) ) return Plugin_Continue;
 	
 	if(g_Players[iAttacker]<=NoHammer) return Plugin_Continue;

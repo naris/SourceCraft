@@ -1,0 +1,1395 @@
+Bugs/Issues:
+-------------------------------
+So the other day while playing, I discovered that if you buy Infinite Ammo (not the pack) and have the Crusader's Crossbow equipped, it allows you to unleash a constant volley of needles and mow down enemies like they're paper. As a lone medic using this, one can mow through an entire team and push them back.
+
+*fixed* you can only buy 1 tome of xp per entire game. it isn't used on purchase like the description says.
+*fixed? Regeneration (Zerg Untralisk) is subtracting health instead of adding.
+??????? Regeneration (Zerg Hydralisk) is subtracting health instead of adding.
+*fixed* Burrow isn't available on lurker but it is on hydralisk and other classes. can this be changed?
+??????? Reavers Ultimate (siege attack) costs 300, but cap is 300 (accumulated can be used, cap == 300 so it should be usable either way?)
+
+grab (omegalisk) doesn't work
+Tentacle only returns searching for target no physical tentacle ever shows up at all. I dont know if it is supposed to be designed to be near impossible to use but at 30 crystals a level its not worth it at all. Either the price should be lowered or it should be easier to use. Maybe it just doesn't work on bots? I dont know.
+
+piggyback is permanently on for everyone
+Bubbles (Defensive Matrix, etc.) don't work
+Recall Structure causes the player to be stuck inside the recall structure
+
+Implement new OnWar3EventPostHurt() event
+Implement War3_NotifyPlayerTookDamageFromSkill() fully
+Add particle support to the ResourceManager (see War3Source_PrecacheDownload.inc)
+Add lost_upon_death attribute to CreateShopItem()
+War3Helper::NW3_GenericSkillLevel has to be synced with the War3Source version
+
+MvM has issues with bots.
+spray plugin thing crashes server
+The Twist has issues (the song plays multiple times and plays over itself == annoyance)
+
+Spider Mines crash when shot with non-projectile weapons
+Some items don't go transparent when people are burrowed.
+
+Change Mole to only remain active for a certain time, then teleport the mole back to his spawn
+
+Infection breaks Zerg races?
+
+War3Source_Anivia Crystal Shard (wall):
+Make the wall destroyable by a high amount of team damage. Then if somebody is trying to grief by blocking the exit to spawn. People can just shoot it down.
+
+Someone had negative +crystals or crystals:
+I don't know exactly how it happened, but at about 2:30 today I suddenly received about 130 negative +crystals which prevented me from allocating any skill points that cost crystals. I had 100 regular crystals, and as i continued playing, the number of negative +crystals grew nearer to 0 as I earned more. I was playing with one other person and 4 bots at the time. When I got to under 100 negative +crystals, my regular crystals would counteract them for skill purchases, i.e. i have 100 crystals and -85 +crystals, allowing for skill purchases of up to 15 crystals. Below is a screenshot of my skill selector during the incident.
+
+Mole:
+The bots will not shoot during the setup time for a round, and so, if you mole during the setup time against an all bot team, you can kill them unchallenged until the round start. Not a huge problem, just thought I'd mention it after accidentally discovering it today.
+
+--------------------------------------------------------------------------
+Crystals:
+not only that but it seems like unless you are consistently winning every round you're never going to get to evolve during the course of a game because of the steep crystal values on not only basic skills but also the evolve skill itself. you would think you should earn that skill considering the fact that you have to wait for upwards of 120-200 energy to evolve anyway. 
+
+I miss the old days were skills were retained though games and you didn't have to basically start at level 0 every time you started playing. Having 1200 crystals at the end of the round is nice when you win, but if you're losing and not an MVP - you're ending up with like 8. not 1200. huge discrepancy here.
+
+This may be related to my recent bug post about negative +crystals. Currently, I cannot gain crystals in game from most sources. In one life, the text box reported my gaining 18 crystals from a package, several counts of 2 for pushing the cart, and counts of 1 for touching the cart. However, upon my death, my crystals had only risen from 8 to 9. I cannot tell which event actually awarded crystals.
+
+--------------------------------------------------------------------------
+
+Add attributes, similar to W3 GenericSkill
+
+War3Source fInvisibilitySkill:
+				new Float:falpha=1.0;
+				if(!W3GetBuffHasTrue(client,bInvisibilityDenySkill))
+				{
+					falpha=FloatMul(falpha,W3GetBuffMinFloat(client,fInvisibilitySkill));
+					
+				}
+				//if(!W3GetBuffHasTrue(client,bInvisibilityDenySkillbInvisibl  ///we dont have an item deny yet
+				new Float:itemalpha=W3GetBuffMinFloat(client,fInvisibilityItem);
+				if(falpha!=1.0){
+					//PrintToChatAll("has skill invis");
+					//has skill, reduce stack
+					itemalpha=Pow(itemalpha,0.75);
+				}
+				falpha=FloatMul(falpha,itemalpha);
+				
+				//PrintToChatAll("%f",W3GetBuffMinFloat(client,fInvisibilityItem));
+				
+				new alpha2=RoundFloat(       FloatMul(255.0,falpha)  ); 
+
+
+
+With The Philogistinator, the new pyro flamethrower you have a MMPH bar. When the bar is full, you taunt, and you get a bonus: full health and crits. The downside is that you are vulnerable while you taunt (you take only 10% enemy damage while taunting though) anyways, when you teleport using human alliance, you completely bypass the taunt and go striaght to the crits. This can get really bad if not corrected.Unless it's not an issue for sourcecraft...just thought i'd let you know.
+
+Bunker restores full armor and causes balance issues
+
+
+SC-239  -  protoss Reaver immunity is not working, also, no reaver option in bug reporting area
+I just noticed that I'm being set on fire with the orb of fire when I have level three in reaver immunity. This was from a pyro, but he used a shotgun on me, and the text popped up that said orb of fire.
+I believe the reaver immunity goes like this:
+1. immunity to speed taking
+2. immunity to ultimates
+3. immunity to shop items
+4. immunity to upgrades (skills)
+At least, that is what the game says. I have not seen an ultimate or speed taker effect me, but skills do effect me, so I know the two aren't just swapped.
+-------------------------------
+SC-238  -  Zerg Drone Able to burrow friendly structures
+in title. you can also do it from spawn. 
+when you unburrow the structure it becomes active and invisible
+-------------------------------
+SC-221  -  if player is auto-team balanced, recall still active
+While playing as phase prism and I activated a recall right before the map ended with a win for the side i was on. Teams got auto-shuffled and someone who used to be on my team was now on the opposing side and then i assume used the recall menu to recall into my avatar.
+activate a recall before an auto-team shuffle occurs and have another player who used to be on your side now playing on the opposing side try to see if they can still use the recall menu
+-------------------------------
+SC-220  -  Switching Weapons to Counter Orb of Frost and Other Slowdowns
+If you are under the effect of an orb of frost, or are simply playing a slower race such as ultralisk or lurker, if you switch weapons quickly, such as with the last weapon key, you move as normal while the weapons are switching.
+ 
+While not very applicable in combat, its uses while running away from something are obvious.
+ 
+The reverse is also true; while weapons are switching and you have a speed boost active, you will move as normal.
+1)  Become slowed, whether by orb of frost, an ability, or simply a slow race.
+ 
+2)  Switch weapons rapidly.
+ 
+3)  While your weapons are switching your speed is returned to normal.
+-------------------------------
+SC-214  -  When you purchase an item you already own it gives the item number
+instead of the item name. Minor aesthetic.
+-------------------------------
+SC-211  -  Creep doesn't replenish Sentries's ammo
+issue SC-198: Shield Battery doesn&#039;t replenish sentry&#039;s ammo.
+The same happens for Creep now, Ammo and Rockets are not generated for sentries, regardless of the number of sentries or the method of building (either building it as an Engineer or mutating into one)
+-------------------------------
+First off thank you Naris for hard coding something in to prevent people spamming Health Cabinets.  I also noticed you left it so that moles could replenish their ammo from the health cabinet.  Since it seems to do that it also allows you to replenish TF Nades.  Not sure if that is really wise since it's easy to spam nades in spawn, and limiting someone to four nades each, helps prevent over powered moles.  Not necessarily a bug, but I think an issue worth reviewing.
+-------------------------------
+Graviton Beam Issue Pinpoint #1 - GB'd, rooted and tried to bonk my way out. Crashed server on ctf_vector. Server crashed seconds after i was Entangled while being GB'd and apparently just after i switched to bonk energy drink.
+Update - Obviously switching weapons while GB'd does not crashes the server. It is not possible to drink Bonk while GB'd so i guess that leaves either Entangling or Switching weapons while Entangled and GB'd
+-------------------------------
+SC-206  -  Melee secondary attack allows you to carry people
+Using the secondary attack on melee weapons that do not have any secondary fire (IE Demo C&T and Heavy's Left-Right jabs) as a probe, will let you carry people exactly like Overlord's Ventral Sacs.
+-------------------------------
+SC-205  -  Warp-in amplifiers stop working after first tick.
+a warped-in buff amplifier will work for one tick exactly, then stop working.
+Buff amplifiers will also cancel the crit effect from Intel Capture/Arena First Blood/Round End and   (not tested) will probably negate the first revenge crit of frontier justice.
+-------------------------------
+SC-171  -  Chronos - compilation of bugs
+Concerning Time Lock: it does nothing. The text "Time lock!" triggers at the bottom of the screen, but the affected opponent suffers no such movement freeze at any level of the skill.
+Concerning Time Leap: the sound triggers, but at all levels you are jostled slightly to the right. I assume this is not the intended function.
+Concerning rewind: if one is still "healing" the rewound damage back and uses the supply cabinet, it stops rewinding and can not be restored by the supply  cabinet.
+Concerning Chronosphere: Most opponents can simply walk through the chronosphere. However, occasionally, the ability works as intended and freezes enemy players. Also, the chronosphere activates ~150 HU in front of the user as opposed to on top of them.
+The chronosphere does not block flames of any kind, nor taunt kills which utilize melee damage type (fists, gunslinger).
+-------------------------------
+SC-166  -  Grooved spines and orb of fire.
+Having grooved spines and orb of fire as a hydralisk heavy causes far more damage on burn than it should.
+1.Play heavy hydralisk
+2.Have 4 points in grooved spines
+3.Buy orb of fire.
+4.Shoot some players.
+Instead of doing 1 damage with grooved spines per tick with the fire it does 6 a tic.  Every other class does 1 damage a tic with grooved spines.
+I've included a demo of this in action.
+Pyro oddly does 2 from the demo you posted. Everyone else did 1, and Demo/Pyro/Soldier all activated missile attack on fire damage. But thats not missiles?
+-------------------------------
+SC-164  -  Tentacle and Graviton Beam bugs out FP Weapon Models
+While grabbed by Graviton Beam/Tentacle, Using Assault Tackle will bug out the First Person weapon model. As in, you will not be able to see what weapon you are holding with any class.  Respawning or Changing race doesn't fix the bug.
+-------------------------------
+SC-148  -  sheild batteries bug (minor)
+I noticed when you are an engineer and you have shield batteries that the ammo amount gets messed up so you don't know how much ammo your sentry has. and when you try to build any structure its health goes down and you have too repair it again. i know it may not seem a big deal, and it doesn't completely ruin game play, but it is still annoying, wastes metal, and is unnatural.
+-------------------------------
+SC-147  -  grav beam glitches out low grav races
+if you grab a race with low grav with the grav beam there gravity is glitched untill map change
+-------------------------------
+SC-123  -  Menu not responding, then closing
+Many times when the sourcecraft menu comes up anytime ie. either buy something or change your race, check your stats, when you try to choose an option on it by pushing the corresponding number, it closes and pops back up in a couple seconds, where it will then allow you to access the menu, or it will continue to close and pop back up.
+-------------------------------
+SC-120  -  Getting Stuck Using Nuke
+I'm not sure why or how it happens since it happens to me by chance, but sometimes when I launch a nuke I get stuck until I die. Basically the 15 sec timer that normally freezes you runs out, but I still can't move.
+-------------------------------
+SC-99  -  Respawned as a summoned race (Ultralisk) after death.
+Twice I was able to respawn as an Ultralisk after death.  Even after multiple deaths, I kept respawning as Ultralisk. Both times I had to remedy this bug by using "changerace" to selecting another race, then die normally
+-------------------------------
+SC-82  -  Immortal/Colossus Immunity to Skills broken
+-------------------------------
+Add support for unloading races
+Implement War3_WeaponRestrictTo()
+-------------------------------
+I don't know why or how but spider-mines seem to be crashing the servers  (unless someone is using something that i don't know about every time I try to use spider-mines)
+-------------------------------
+Detect spawnrooms to disable raven, energy farms, etc...
+Check range & Trace to saved spawnpoints used by mole
+or range & trace to info_player_teamspawn/info_player_allies/info_players_axis entities
+or trace to func_respawnroom entity.
+-------------------------------
+Hey naris, if you would be so kind, could you post a version of sidewinder that makes it so sentry rockets don't crit when in wrangled mode so the server can't be spammed with homing rockets as easy?
+-------------------------------
+Ummm, some problems with Blood Hunter, the first race in SC.  The first skill in it, Blood Crazy, doesn't work with items.  I don't if this is intentional or not, that and it doesn't work on the first shot.  Meaning you need to fire a few times at max in order to get the bleed ability working.
+-------------------------------
+firebat training- you don't get any instead of 4 uses upon +ult1 -it tells ypou you have none left
+-------------------------------
+Hate to bother you didn't want to publicly incase it's a glitch and not a purposeful decision.  But it seems that playing as probe if I have the recall menu open before a building is sapped; I am able to recall the building after it has been sapped.  Either way thank you in advanced.
+-------------------------------
+#99  -  Respawned as a summoned race (Ultralisk) after death.
+Twice I was able to respawn as an Ultralisk after death.
+Even after multiple deaths, I kept respawning as Ultralisk. Both times I had to remedy this bug by using "changerace" to selecting another race, then die normally.
+-------------------------------
+Issue #82  -  Immortal/Colossus Immunity to Skills broken:
+Some damage skills seem to be bypassing this, like Consume Enemy and Psionic Shockwave.
+
+This is actually true. I tested this with dragoon (which has exactly the same immunity as collossus and immortal) against consume enemy and it went through immunity. Here is a demo of this in effect: http://www.mediafire.com/?dmamnfahmjj
+I did not test with Psionic Shockwave. But for practical theory this proves this bug is atleast half real. If I can get someone to test Psionic-SHockwave I will most likely see the same results.
+-------------------------------
+-------------------------------
+-------------------------------
+I was in tf2 server 2 playing with friend when i tell him to come to point and i have level 3 sentry burrowed.. i was gonna laugh when i make it pop out but them i kill him WHILE BURROWED..
+So this has been tested.. the sentry only shoots at certain angles and only shoots when it has be burrowed on something thin as in stairs you can go under...
+Find a thin ground like on stairs that you can go under... spawn and burrow sentry on top of stairs and have someone from other team run/walk near it at different angles and boom itll blow them up...
+-------------------------------
+Shop Item Suggestion: Poisoned Resources	    I know there's already a lock-box to prevent theft. I would like to suggest an item that negatively affects the thieving party.  I'm not sure of the implementation, but the idea is simple enough: I buy Poisoned Resources, and for every crystal/vespene stolen from me, the thief takes damage.  It shouldn't be enough damage to negate the usefulness of theft, just to provide a trade off that must be considered by thieves. Since so many thieves orb stack, something like 2-5 damage per event would likely be enough. It could even be more severe for vespene since it's more difficult to accumulate. 
+
+----------
+I'd love to see a Volatile Gas item for 100 crystals that caused thefted vespene to explode when the thief takes it in and takes out all his reserves with it.  Almost none of the vespene thief players actually take the vespene because they need it.  Almost every time I've heard it brought up in chat, I've heard them say something like "I have 30k vespene, I don't need any of it".  They're just taking it to grief and run players off the server. 
+
+In that vein, I'd be happy to see a skill called "Ignite Gas" that does a percentage of damage solely calculated on how much vespene someone has saved.  It could be .25% per level.  Someone with, say, 5k vespene would take 12.5 damage, up to 50 at level 4.  While the griefers that hoard 40k just for the sake of running players off would be instantly killed by taking 400 (extra) per shot.    
+
+I'm not seriously suggesting either of these, but vespene griefers do need to be put in check.  I never understood why vespene theft was ever introduced, when vespene is supposed to be the ultimate control to prevent abuse of certain abilities.  Then of course, it got worse when players learned that they could buy Titty Hunter levels and use them to run off other players. 
+
+In all seriousness, and probably better for a thread of its own, I think a solution to that form of griefing would be a vespene cap.  Once a player reaches it (like 5k), then vespene theft fails.  That way griefers can't steal for the sake of running players off and the ability becomes a utility for people who actually use the vespene.  The actual use of it, combined with the gaining by normal non-theft means, would not require frequent theft and would virtually eliminate the griefing aspect entirely.  The cap wouldn't affect normal gaining, it would just stop theft if the player is above 5k.  As theft, for the sake of theft, has no valid strategic value, since it doesn't aid in map goals (doesn't help capture points/intel, doesn't damage opponents, etc), only griefers would be affected by the change.
+--------------
+
+
+Raven's Auto Turret is broken
+Probes can't recall Amplifiers
+
+Warden is weak
+Succubus Hunter is "broken" -- perhaps heads don't work?
+
+Scarabs need ontouch handling.
+Flying Scarabs need to be explosive.
+
+What is the intended range of Null Void? I used it and had several people (even did a few mock tests) noted they had their energy taken away when I was using it in spawn. So, again, its a matter of "what was the ability intended to do?" The descrpition doesn't denote a radius in units, so it is hard to tell. I assumed it was like an aoe ultimate that took away energy/armor/shields/etc from people. Except, it seems to effect the entire map...I will post a bug report about this if this is not intended to be that far of range (and hell piercing walls), and with a few demos to boot. Also, it seems to give no notification of if it has successfully taken anything from enemies (it should say something like roots of enmesm like "you have used Null void and 3 people were hit", etc) and, conversely, enemies do not get any notice they have had anything taken. Anyway, thank you for your time, keep up the good work.
+
+
+[edit]P.S: on an unrelated note, ive noticed that "damage mod" kills (the little skull icon) seem to give people 1 more point per kill (or half a point if an assist). It would seem this would be caused because you actually get "2" kills. You only get XP for one kill, but the scoreboard notes you making 2. Conversely, you also receive two deaths if you get killed by one. I searched on the forums and "double-kills" were put in to prevent a re-spawning bug, but also gave you double XP so it was removed. The reason I put this claim in, is although it really doesn't cause any issues with the mod, it really skews the scoreboard if you use damage mods a lot (since you literally get double points, and triple if you get a headshot/backstab). *shrugs* Either way, thanks.
+
+
+Donator Chat displays SourceCraft commands. Need way to prevent that, perhaps with a configurable list of commands to ignore.
+
+Zerg Queen as a "tier 0" race causes whinage - Make queen a summon?
+
+-------------------------------
+ToDo:
+-------------------------------
+Add database support for shopmenu items.
+Limit other speed enhancements for players carrying the intel?
+
+-------------------------------
+Protoss Arbiter:
+ Distortion Field (cloaks friendly units)
+ Recall (teleports friendly units)
+ Stasis Field (freezes enemy units)
+
+-------------------------------
+Protoss Corsair:
+ Disruption Web (prevents attacks)
+
+-------------------------------
+Zerg Overlord
+
+S1)Pneumatized Carapace	: Allows you to jump higher by reducing your gravity by 8-64%.
+S2)Metabolic Boost	: Gives you a speed boost, 5-20% faster.
+S3)Regeneration		: Regenerates your Health.
+S4)Healing Aura		: Heals all of your teammates in range (It does NOT heal you).
+S5)Ventral Sacs 	: Supplies your teammates with ammo.
+S6)Antennae		: Detects cloaked units around you.
+
+U1)Flyer		: Allows you to fly until you run out of fuel.
+U2)Enmesh		: Enemies in range are uncloaked, undisguised, detected and enmeshed
+
+Changes:
+*S5)Ventral Sacs	: Rename to Transfusion
+*U2)Enmesh		: Rename to Excrete Creep
+*U2)Excrete Creep	: Excrete creep which starts small and spreads out as long as the overlord remains stationary to a larger max diameter. Any enemies which enter (touch) the creep are uncloaked, undisguised, detected and enmeshed.
++U3)Ventral Sacs 	: Transport a teammate using piggyback plugin
++U4)Overlord Morph
+
+-------------------------------
+Zerg Overseer
+
+The Zerg incorporated Overlords into the Swarm by assimilating the giant space-faring and semi-intelligent Gargantis proximae and used them to help Cerebrates control and coordinate their Broods, as well as taking the role of scouts, using their enhanced senses. The Overlords have been used for scouting, detection, and transportation in the past, but the Zerg has let a genetic strain of the Overlord develop independently, creating the Overseer, which has specialized in scouting and detection, combating the increased advancement for cloaking  enemies.
+
+Overseers will also be able to increase the fine-tuning of their senses if they have time to concentrate, increasing their effective sight range. Their ability to detect units will remain more limited, but the Zerg still take great advantage of this increased ability to notice incoming opponents long before they notice the Swarm.
+
+Overseers use the same type of flying and movement as Overlords using helium-filled gas sacs combined with a weak telekinetic psi-ability for lift and movement. 
+
+
+S1)Pneumatized Carapace	: reduce gravity by 8-64% and speed boost, 5-20% faster.
+S2)Flyer Carapace	: Armor
+S3)Regeneration		: Regenerates your Health.
+S4)Healing Aura		: Heals all of your teammates in range (It does NOT heal you).
+S5)Ventral Sacs 	: Transport a teammate using piggyback plugin.
+S6)Antennae		: Detects cloaked units around you.
+S7)Nydus Worm 		: Decreases the recharge rate of teleporters on your team.
+
+U1)Flyer		: Allows you to fly until you run out of fuel.
+U2)Corrupting Slime	: temporarily disables enemy buildings in range. Perhaps also drains energy. Perhaps also intereferes with capping points?
+U3)Acid Spore Cloud	: Similar to Dark Swarm, covers an area, blocking line of sight for a period of time, also increases damage taken by enemy units.
+U4)Spawn Changeling	: Converts an enemy to a Changling, which is simlar to a Broodling, but has thier m_iTeam switch so they can only attack thier own team.
+-------------------------------
+Zerg Overlord
+
+Excrete Creep
+Overlord Morph
+Ventral Sacs : The overlord can transport units
+
+The overlord has made an appearance in StarCraft II. It functions in a manner similar to its StarCraft I predecessor (a flying control-producing unit). Overlords have lost their detection  abilities. They can evolve into overseers which act as detectors.
+
+Excrete Creep : 
+The overlord can create a small patch of creep through an activated ability, the radius steadily expanding.
+
+A few overlords can create enough creep to cover a screen area. The creep recedes in 30 seconds.
+
+A zerg player will typically have many overlords, and so can create creep over much of the map. 
+
+Overlords used to have a slime ability, but that has been removed from the latest build.
+
+    * Slime (also known as "Corrupt Minerals")
+          o The overlord could drop a non-attacking slime creature, temporarily disabling resource nodes and xel'naga towers. The minerals can be covered as they're being harvested, enabling raids which slow down an enemy's economy. The creature must be killed before the minerals can be accessed.
+
+This ability took some time to "cast" and had a small cooldown timer.
+
+-------------------------------
+Zerg Overseer
+
+Flyer Carapace
+Pneumatized Carapace
+Spawn Changeling
+Spore Cloud
+Acid Spores
+
+The overseer is a zerg unit evolved from the overlord
+The overseer can detect cloaked  and burrowed units.
+The overseer loses the ability to excrete creep or transport units.
+The overseer can create a changeling, which can spy on enemy forces
+
+Overseers used to have similar special abilities as the overlord, but those were removed.
+
+    * Excrete Creep
+          o The overseer can create a small patch of Creep, the radius steadily expanding as long as it remains stationary. This ability is researched at the Evolution Chamber.
+
+    * Slime (also known as "Corrupt Minerals")
+          o The overseer can drop a non-attacking slime creature, temporarily disabling resource nodes and xel'naga towers. The slime can be attacked and removed by other forces. The minerals can be covered as they're being harvested, enabling raids which slow down an enemy's economy. The creature must be killed before the minerals can be accessed.
+          o This ability took time to "cast" and had a small cooldown timer.
+
+The overseer could create a nydus worm after a nydus network had been produced as of October 2008. This ability cost energy. The overseer lost the ability to make nydus worms as of March 2009.
+
+The overseer can create a Spore Cloud, which covers an area, blocking line of sight for a period of time. Units above the fog can see over and into it.
+
+The overseer can create acid spores, which increases damage taken by enemy units by 5.
+-------------------------------
+Zerg Changling
+The changeling is a zerg spy produced by the overseer. It is a very weak and unstable creature with a short lifespan.
+
+The changeling, composed of a protoplasmic substance, is capable of shapeshifting into a form resembling a terran. It can shift between specific appearances. It can even send out psionic impressions leading terrans to believe that everything is "all right".
+
+It is intelligent, capable of operating computers. It possesses more strength than an unarmored human and can transform part of its body into a deadly bone blade, although its primary purpose does not appear to be combat.
+Shapeshifting
+Shifting is an autocast ability. This will fool even detectors.[1]
+
+Shifting occurs when the changeling approaches an enemy unit. The changeling will take on the color of the nearby enemy, and the form of the basic combat unit (marine, zealot, or zergling) of the nearby enemy's race. Its wireframe and portrait changes to that of the assumed form.[1] The transformation is permanent,[3] even in a team or free-for-all game with multiple races.[4]
+
+The changeling's appearance exactly matches the assumed unit's form at the time of transformation; the changeling gains only the visual effects of upgrades.[
+
+-------------------------------
+Zerg Mutalisk
+
+S1)Flyer Carapace
+S2)Flyer Attacks
+S3)Pneumatized Carapace
+
+U1)Flyer
+U2)Glaive Wurm (multiple attacks)
+U3)Devourer Morph
+U4)Queen Morph
+
+The mutalisk is an airborne zerg breed. 
+
+Mutalisks evolved from the mantis screamer, which is from the desolate Dinares Sector. The mutalisk has retained its predecessor's ability to travel through both air and space, although what other forms of propulsion it may have aside from its wings is unknown. The mutalisk spawns small, voracious creatures called "glaive wurms", and projects these creatures to attack. Glaive wurms fly between multiple targets as they degrade explosively. A mutalisk's fangs are also deadly and given that mutalisk blood is acidic, able to melt through even CMC armor, such close quarters are hardly favorable to a mutalisk's intended victim(s). This being said, the mutalisk is not without its vulnerabilities. Its own acidic blood is just as deadly to itself as it is to its foes and its wings are exceptionally fragile, able to be shredded even by glass.  As such, it is a viable tactic for terrans to aim for the wings when trying to down a mutalisk.
+
+In battle, mutalisks form the primary flying forces of the zerg, making hit-and-run attacks against vulnerable installations and wheeling across the skies in prodigious numbers above zerg nests or land-based forces. Many attempted engagements with the zerg have collapsed due to the rapid arrival of large numbers of mutalisks before any meaningful air defense could be mustered. Under these circumstances the total loss of the forces involved is virtually guaranteed. Conversely powerful air defenses have succeeded in keeping mutalisks at a distance, for the creatures are limited in vitality. However, they remain agile and dangerous opponents. In large numbers or against weak defenses, mutalisks will always be a deadly threat.
+
+The mutalisk is not an especially intelligent creature and exercises little initiative, preferring to drift lazily through the air. Once engaged however, it demonstrates a blind bloodlust that makes it dangerous to all those around it, including itself. In addition, mutalisks are able to trace terran transmissions to their source.
+
+A mutalisk can attack foes both in the air and on the ground by expelling a glave wurm: a voracious symbiote that can rapidly strike at several opponents as it explosively disintegrates. In large numbers or against weak defenses, mutalisks will always be a deadly threat.
+
+StarCraft
+
+The mutalisk's attack strikes three targets in succession, dealing 9 damage to the first, 3 to the second, and 1 to the last. Unlike many other air units, the mutalisk is small, making it more resistant to explosive  damage, a common damage type found on anti-air units like dragoons  and goliaths. The mutalisk deals normal  damage and is only affected by the armor of the target. Large groups of mutalisks tend to clump together making them ideal targets against attacks with area of effect or splash damage.
+
+Mutalisks in small groups are also fairly useless; their armor and size is easy for units that deal normal damage such as large groups of marines and battlecruisers. Compared to its terran and protoss counterparts (the Wraith and Scout), the Mutalisk's attack is individually weaker and its attack is not as effective against capital ships. Mutalisks are also fragile against corsairs and valkyries due to their wide area-of-damage and marine-filled bunkers serve as fairly decent counters in defensive terms. 
+
+Originally the mutalisk was armed with an "acid spray" attack rather than glaive wurms. References to the acid spray may be found in the StarCraft manual. It can also be seen in The Death of the Overmind, the final cinematic for StarCraft Episode III where mutalisks attack the Gantrithor.
+
+SC Ghost
+The mutalisk cannot regenerate like most other zerg units; instead, it can "abduct" landbound terran units, draining their life (which restores the mutalisk's health). The mutalisk's attack is a powerful bioplasma attack that does splash damage; the attack becomes more powerful if "charged up".
+
+The mutalisk is the most expensive zerg unit in the Invasion Mode, costing five points.
+
+The mutalisk reappears in StarCraft II.
+
+In StarCraft II, the mutalisk's attack is still be able to strike multiple targets, bouncing to strike up to two additional targets as before. The attack automatically bounces towards the next closest enemy.
+
+Mutalisks are able to stack quite well but it is difficult for them to remain clumped. Mutalisks spread out when they move or attack.
+
+With some micromanagement, mutalisks are able to attack on the move as in StarCraft I.
+
+Mutalisks lost the ability to morph into anti-ground flyers because the anti-air corruptor became "useless" once the zerg player had "swept the sky". The corruptor needed the morph more.
+
+Mutalisks are weak against marines, sentries, phoenixes, and corrupters. 
+
+Strategy:
+Frankly, the Mutalisk is an enigma. It is not known how they are capable of maneuvering through a vacuum, or even of controlled flight within an atmosphere, but they have been able to stand toe-to-toe (so to speak) against Wraith fighters along the Coreward border worlds. The Mutalisk's attack is quite unusual. The Mutalisk produces and projects much smaller, voracious creatures that rapidly fly between enemy targets as it disintegrates explosively.
+
+The Mutalisk serves as the basic flying support unit for the Zerg and has the ability to strike both air and ground targets. However its Glaive Wurm attack has the special property of hitting several targets within close proximity of the inital strike and against packed groups of enemy units, Mutalisks can quickly tear them apart. The inital hit does 9 base points of normal damage (more if upgraded), the 2nd hit strikes the enemy nearest to the first target and does about 1/3 damage and the 3rd hit strikes the enemy nearest to the 2nd target while doing about 1/9 damage.
+
+The Small size classification of the Mutalisks can become critical if an enemy begins producing anti-air units with explosive attacks like Hydralisks, Goliaths or Dragoons since the Mutalisks will only take 50% damage. Use this advantage whenever the chance arises and keep the damage ratios in mind when deciding whether or not to attack an enemy force or not.
+
+The Mutalisk can attain tremendous air speeds and can travel across battlefields in a very short amount of time, making them perfect as scouts, interceptors and hit-and-run attackers. Probably the best use of the Mutalisk is in the hit-and-run tactics. With their mobility, enemy expansions or stray attack groups make easy targets for the Mutalisk and often they can raze an enemy base or force before they have the chance to properly retaliate. But be sure not to fall into an enemy trap since with a fairly weak vitality, the Mutalisks are easy prey for the more powerful anti-air units of any race. Keep the advantage with the Mutalisks by keeping them constantly moving to avoid as much damage as possible while attacking weakly defended enemy areas.
+
+One Mutalisk property that can work both for and against it is the ability to stack when grouped together. For an opponent this can be fairly frustrating since it is very difficult to select individual Mutalisks when they attack. However, this can be a curse when the enemy uses area attack units like the Corsair or Valkyrie or area-effect abilities like Psionic Storm, Ensnare or Irradiate. When facing these kinds of defenses Mutalisks will usually die or be affected en masse. Should the enemy use these area-effect abilities or attacks regularly, try splitting the Mutalisks into smaller groups so that the damage done against the attack force in minimized.
+
+Even if Guardians and Devourers are producible, it is still usually a good idea to keep a few Mutalisks around to serve as escorts, support and fodder. They can supplement the anti-air or anti-ground attacks of the Guardians or Devourers while absorbing the damage and directing attacks away from the more expensive units. 
+
+
+-------------------------------
+Zerg Devourer
+
+S1)Flyer Carapace
+S2)Flyer Attacks
+S3)Pneumatized Carapace
+
+U1)Flyer
+U2)Glaive Wurm (multiple attacks) with acid spores
+U3)Scourge Fuel: Sucks fuel from surrounding flyers, causing them to fall.
+U4)Corruptor Morph
+
+The devourer is a zerg anti-air flyer. 
+
+Devourers are an evolution of the mutalisk  first encountered during the Brood War. Devourers spit a venom of corrosive acid at aerial targets that can eat through the reinforced armor plating of terran and protoss  capital ships. A single spat of venom may splash over multiple targets. The acid spores in the venom may hinder the fighting ability of the target.
+
+Devourers are the anti-air aspect of the mutalisk. They are slower than mutalisks but faster and more resilient than guardians.
+
+The devourer's attack has the additional effect of attaching "acid spores" to anything it hits. A unit affected by spores will be revealed (if cloaked), have its attack speed slowed by 1/8 per spore, and take 1 point of additional damage from every attack for every spore attached. A maximum of 9 spores may affect a target at any one time. Spores will disappear after a period of time.
+
+The fast firing and bouncing attack of mutalisks benefit greatly from the acid spores. Against a group of targets splashed with 9 spores a single mutalisk can deal 18 damage on its first attack instead of the normal 9 damage, this also applies to the mutalisk's second and third attack which makes it effective take out high armor targets faster, like battlecruisers and carriers, and able to go toe to toe with area-of-effect anti-air units like corsairs and Valkyries.
+
+Devourers have a very slow rate of fire, and the attack travels slowly. If a devourer moves before the glob of acid strikes, the glob disappears. The devourer's slow speed and rate of fire also makes it vulnerable to hit-and-run attacks from groups of scouts and wraiths. 
+
+-------------------------------
+Zerg Guardian
+
+Flyer Attacks
+Flyer Carapace
+
+The guardian is a zerg long-range bomber. 
+
+The guardian is evolved from the mutalisk  and thought to be based on the nesting form of the mantis screamer. It possesses a thicker carapace than its counterpart and attacks by lobbing explosive globs of acid. The guardian is much slower than the mutalisk however, and is often designated to guard larvae.
+
+Despite being devastating in terrestrial combat, guardians are next to useless in space combat.
+
+The guardian is converted from an existing mutalisk. It has an anti-ground attack that out-ranges almost all ground-to-air weapons, and in large groups can be particularly devastating as a bomber unit. While the guardian has a respectable attack of 20 (26 when fully upgraded), it has no defense against enemy air units and is vulnerable to ground-to-air units when on the run. The slow speed of the guardian also makes it renders it vulnerable to area-of-effect spells such as psionic storm and irradiate. 
+
+-------------------------------
+Zerg Corrupter
+
+Flyer Attacks
+Flyer Carapace
+Brood Lord Morph
+Corruption: Converts enemy units to sentries when they are killed by the corruptor.
+Enduring Corruption: Increases lifespan of corruptor's corrupted units.
+
+The corruptor is a squid-like zerg flying unit in StarCraft II.
+
+The corruptor attacks air units and aerial structures, including units lifted by Anti-Gravity and even colossi. Corrupters are strong against vikings, phoenixes, and mutalisks.
+
+Corruptors used to convert enemy air units into turrets. The attack was technically a debuff, which lasted for about two seconds. If that unit was destroyed during this time, it became corrupted, regardless of which unit landed the final blow. A corrupted unit became a stationary turret on the side of the zerg player.
+
+Corrupted Units
+
+Corrupted units could attack ground and air units as well as structures. The player can control them, forcing them to attack certain targets.
+
+Corrupted units had a limited life span and would eventually die on their own. A ground unit affected by Anti-Gravity will return to the ground.
+
+If the corruptor corrupted a transport, such as a medivac dropship, the units inside perished.
+
+When corruptors attacked an enemy force, the opposing player must decide whether to destroy any corrupted units, whether to try to kill the corruptors, or whether to retreat.
+
+-------------------------------
+Swarm Guardian
+
+Flyer Attacks
+Flyer Carapace
+
+The swarm guardian functioned much like the original guardian as a siege unit, possessing a long range attack.
+
+They look like a mutalisk laid out flat with its tail section behind it. Their bodies are made up of a total of five individual sections. The front section consists of the head and multiple appendages, maintaining the general appearance of the original crab-like guardian. There are three middle sections similar to the three rib-like claws that appear on the midsection of the mutalisk. Lastly a tail section which has four small spikes pointing backwards like those at the end of the mutalisk's tail. They move with a breaststroke-like swimming motion through the air. They are also much larger than their original counterparts, being only slightly smaller than a battlecruiser. 
+
+When a swarm guardian attacked, it produced broodlings which lasted only a few seconds. The broodlings are very weak but a large number could be quickly created, forcing an enemy to retreat. They spawned when buildings were attacked as well.
+
+The swarm guardian used to spawn swarms with every attack. Swarms could "soak up" damage.
+-------------------------------
+Zerg Brood Lord
+
+Flyer Attacks
+Flyer Carapace
+
+The brood lord is a powerful zerg flying unit derived from the corruptor. It replaces the swarm guardian.
+Brood lords are accompanied by a small number of broodlings. Its attack consists of throwing broodlings at the enemy, doing damage, at which point the two broodling emerging can wreak havoc on the ground. The attack then goes down to one broodling, but if the brood lord does not attack for a while, a second one will be launched on the next attack.
+-------------------------------
+
+Ideas for new items:
+--------------------
+Instant Uber (100 crystals), allows a medic to have a full charge uber upon purchasing this item.
+
+Unstable Mana Potion (80 Crystals) - You lose 2% of your health every second but your attacks do 100% more damage
+-------------------------------
+Add Terran Siege Tank as summon from Vulture
++w/Siege Mode as amplified Bunker with added invulernability.
++Terran Vehicle Weapons 
++Terran Vehicle Armor/Vehicle Plating
+===============================
+Bugs/Issues:
+-------------------------------
+sometimes burrow simply breaks. Perhaps after some strange death involving you dying while in process of burrowing or something but once it has happened, you can't burrow for the rest of the map. It starts to make the burrow sound but then stops and you didn't burrow.
+
+When this happens I try everything changing races, switching back if that doesn't work resetting my levels for zergling. Everything that I thought could work doesn't help until the map changes. I have also noticed another thing if a medic heals me while burrowed and fully healed I become unburrowed and cant burrow again causing such problem stated or if a medic heals me and try to burrow i cant do it silly little things like that.
+
+If you gain a critical from an intel cap you can't burrow, that I know for a fact. I don't know if the same happens if you're given a kritzkrieg, but I would wager so. The only other time I've noticed burrow having issues is being in the other team's spawn, but that makes sense.. it'd be way too abusable. Other than that, I haven't had any issues with my lurker that I can recall.. except for burrow not completely hiding me underground.. but I can't tell if that's just a visual thing on my screen or if I'm really half in/half out.
+
+I haven't repeated this to check, but the one time burrow broke for me was under this scenario: I was burrowed.  Medic came by and uber'ed me which subsequently auto un-burrowed me.  After that my burrow was broken.  Only way to fix was to reconnect to server - which did fix it.
+
+I haven't had a medic uber or kritzs me while burrowed but heal me and then unburrowed and then it broke. Maybe it's a problem that can be fixed or something we have to deal with.
+-------------------------------
+Change EMP and possibly Restore to remove "bubbles".
+-------------------------------
+Shadow Hunter - Healing Wave - won't heal past 100 health.
+
+Blood Mage - Rebirth - I know it was recently fixed to stop drones from using this, however, if the drone is hit by an enemy player before they mutate, the game gives the player who hit the drone a 'finished off' on the player, causing the drone to be able to be rebirthed.  I saw a drone respawned in front of me because of this.
+-------------------------------
+?There is a bug with SCV's Gravity Gun where any member of the opposite team can perma-disable all buildings by just picking them up. Also found out that if they perma-disable the building and then sapp it. It allows for the engineer to restore it functions. Battle carriers grav-gun work as its intended with all buildings.
+-------------------------------
+I got this idea from the rmf_ability that I absolutely loved on server four, the rockets that could home in on your shovel. I noticed that they worked differently from the rockets from Raven, they didn't directly home to them but rather slowly inclined to them after a short period.
+
+THE IDEA Instead of having rockets aim directly at the person the moment they exit the rocket launcher, have them incline towards the target at a fixed rate. As levels increase for the ability, the rockets would be able to make sharper turns towards the target. You wouldn't lose the homing rockets, you would just lose the ability to shoot the aimlessly.
+
+For example, at level 1, the rocket would incline at about 50% of the targets actual position. Meaning if you aimed your crosshair partly away from your target, the rocket would collide with a spot roughly half way between the crosshair and the target, rather than going straight down the crosshair-line or going directly towards the target without any turning transition.
+
+If this isn't possible, than my bad, I'm only in first year computer science, the most advanced thing I've built so far is an integer calculator :P 
+-------------------------------
+I have occasionally forgotten to put points in the gravity gun for battle cruiser (Usually accidentally confusing it with ship propulsion Wink ), I've noticed that if you pick up the gun in such a state, it will permanently disable the gun, even after you drop it.
+this will also happen if you buld bc while holding a gun.
+
+if you drop a gun on an unsure surface as a battlecruiser. I've had tons of energy sentries just disable on me.
+
+I'm not the only one to experience this? There are times if I just throw or drop my gun and it lands, it completely shuts down on me without it turning back on. I thought that having four points into Gravity Accelerator would solve this issue, but it did not.
+
+I noticed they would permanently disable if you throw the gun with only 3 points in Gravity Accelerator (instead of just setting it down).
+
+With 4 points I've never had a problem.
+I noticed they would permanently disable if you throw the gun with only 3 points in Gravity Accelerator (instead of just setting it down).
+With 4 points I've never had a problem.
+
+-------------------------------
+the older periapt bug of winning a round or staying alive to the next round with the item and not getting the benefits of the periapt yet owning is back in play. also a new has risen dealing with medic healing, if you buy a periapt or are a human with devotion aura and a medic heals you then stops your health will drain back to stock max hp and kills the periapt you can't regen it back i tested this out with ultralisk so i'm pretty sure i would have regened the 50 hp. also the cabinet will have the same effect or switching classes i can guess as thats how it used to be pre-overheal bug.
+
+Sidewinder Client Cloaking gets turned off when DTs blink and proabably other times as well. Ensure that it gets properly handled afterwards.
+-------------------------------
+Protoss Warp Prism issue
+*in process*After warping everything and wrenching them all up to lvl 3, i switched class and this is what i got.
+My stuff was still there, i still had everything and i could neatly summon them
+
+[SC] You have lost 15 experience for destroying your own Dispenser.
+[SC] You have lost 15 experience for destroying your own Dispenser.
+[SC] You have lost 15 experience for destroying your own Dispenser.
+[SC] You have lost 15 experience for destroying your own Teleporter Entrance.
+[SC] You have lost 15 experience for destroying your own Teleporter Entrance.
+[SC] You have lost 15 experience for destroying your own Teleporter Entrance.
+[SC] You have lost 15 experience for destroying your own Teleporter Exit.
+[SC] You have lost 15 experience for destroying your own Teleporter Exit.
+[SC] You have lost 15 experience for destroying your own Teleporter Exit.
+[SC] You have lost 15 experience for destroying your own Sentry Gun.
+[SC] You have lost 15 experience for destroying your own Sentry Gun.
+[SC] You have lost 15 experience for destroying your own Sentry Gun.
+
+Very bad thing, specially when jumping inbetwen classes, didnt give the XP back when switching from another class to the engineer. =(
+
+-------------------------------
+*in process*i came across a pretty serious bug or exploit i thought id report  im not sure how i triggered it but i wanted to report it so maby u could find it. on the payload map (its a train yard one not sure the name) some how when i was attackin and rideing the payload as a archon then we won and then we defended i switched class to scv about 10min into the game this was for some reason i was still gettin the bonus for rideing the card  10xp 2 crystals 2 vespain (for 35m every like 5 sec i think it is) it doesnt seem like much but it adds up (and i was no where near the cart i was defending so i shouldnt have gotten this) i didnt even realise it but every time we defended i was gettin this and every time we attacked i got it even if i was nowhere near the cart sorry about this id like it if i did not get banned or loss of levels for this .... sry
+
+and i was playin archon/templar after u fixed the gravity thing and i my levitation was still gettin fuked up i think it was eather tenticle or gravity beam and jw what does templars immunity actualy prevent... i havent seen anythin and i got it to lvl 4
+-------------------------------
+
+Web ToDo:
+-------------------------------
+Add support for puchasing levels/xp using a web interface.
+Add support for puchasing chips using a web interface?
+Add chipmenu to buy experience, levels and perhaps special items?
+Add expiring levels?
+
+-------------------------------
+if a spy is using the dead ringer with dark templer you could disable the blink ultimate just like when you carry the intel blink is not available as most players know that it is very hard to kill a DT with the dead ringer as when there damage they just blink to a safe place to regen DT is very fun race to play  but with the dead ringer it is so hard to kill the player maybe it is just a line of code to disable the blink when they use the dead ringer
+-------------------------------
+-------------------------------
+Lurker comment:
+All of the new changes pretty much make lurker a horrible summonl  It totally doesn't even compare to hyrdralisk.   Not that it did before, I think people are missing the point of summoned races, if you get that high lvl, they should be good, since you can only play them once every so many rounds.  I get that it can be a pain if I kill you instantly but it never really was that great before.  Lurker was a fun way to defend.     
+
+45 energy now from 20, so basically unless your team has someone giving energy, you get maybe 1 or 2  spine attacks, takes a while to build up 90 energy from 30.  So basically you won't want to risk doing a long distance spine attack, which was fun but you could easily use up all of your energy trying to hit someone across the map and usually only for 1 kill.   Not to mention the fact that that person probably has a necklace of immunity seeing as they are cheaper.  And to top it off, I gotta be completely burrowed, I slowly sink down a sitting duck not able to fire, or do anything if someone comes along.   
+
+I can spend the 55 crystals for a pair of boots of speed and go summon, or I can spend 40 crystals on frost orb and own people with my missile attack/grooved spines/poisonous spines combo.  Maybe not quite so harsh of a nerf would help lurker, but for now they pretty much suck lol.
+
+I think all summon ultimates should have cooldowns of only 2 or 3 seconds, but (as now) only do up to 90% of total health. 
+Also, speaking of energy costs being to high; charge really needs to use accumulated energy if it's going to stay at 250, I also think Ultralisk ether should regen energy faster or have a skill as such; it's faster to go ultra, charge, kill yourself, regen energy as omega and repeat.
+
+Here's the current skill set for the Lurker: Carapace, Regeneration, Muscular Augments, Missle Attack, Poisonous Spines, Spine Attack (ultimate), Burrow (ultimate) 
+
+Moving at a much slower pace than Hydralisk and losing Grooved Spines for Spine Attack, Lurkers seem like a more defense oriented race compared to the more offense oriented Hydralisk. 
+
+Here are a few of my suggestions for skills to add to Lurker to make it more playable: 
+Impale - Causes attacks to remove more of the enemy's armor. Maybe removes up to ((level+1)*2) armor every hit? (If its level 4, it won't remove 10 armor every hit. UP TO 10 armor, meaning could take away armor like: 5,3,7,2,10) 
+
+Deep Warren (The Zerg structure in Starcraft II required to make Lurkers. Also was temporarily called Lurker Den) - When Lurker summoned, gain an additional (10*(level+1)) energy.  You should only get this energy gain if you summon Lurker so that if players reset their skills after getting the extra energy, and add all their points to other skills, when they die, the next time they summon Lurker, they would only get 10 extra energy rather than the 50 they could have gotten at level 4. 
+
+Ultimate: Burrowed Attack - A separate ultimate that cannot be used together with Spine Attack. While Burrowed, for ((level+1)*2) seconds, you can attack without unburrowing, but attacks do 50% less damage and Missle Attack/Poisonous Spines do not activate during this time.  (So at level 0, you can attack for 2 seconds with unburrowing and for 10 seconds at level 4.) I wasn't too sure whether to make this skill have a variable time with a set damage reduction or a set time with a variable damage reduction, so I chose the variable time. 
+
+
+I don't play either Hydralisk or Lurker, so I don't know how overpowered these skills may be, so tell me if you think they are. 
+
+I agree that the cooldown for ultimates of summoned races should be around 2-3 seconds, maybe 5 at most.  The 10 second cooldown that it's currently at is really long.  2-3 seconds will prevent it from being spammed, but 10 seconds just disables a race like Lurker from using its distinguishing feature to protect itself.
+
+This includes the following (besides Spine Attack because that was in the update notes):
+# Cleave
+# Charge
+# Psionic Bolt
+# Yamato Cannon
+
+Bugs:
+-------------------------------
+Sometimes reincarnate states "reincarnated for the 0th time"
+
+When dark templar and using death shadow, Whenever you are cloaked death shadow does not use energy.
+
+When dark templar and have cloaking, When ever you start charging up your blink your cloaking dissapears.
+
+Plasma Shields Using Up WAy to much energy Ex; 100 damage the plasma shields absorb means a loss of 100 energy.
+Plasma Shields : quite an issue, it just takes too much energy from my reserves when i play protoss races such as Darchon, taking more energy to maelstrom or mindcontrol when in enemy fire.
+
+shield batts is more a problem of people spawning in the range of it, so they don't get it until they leave the area and come back.
+
+Ultralisk Charge Destroying Everyone and Everything Instead of Heavily Damaging it.
+
+Psi bolt works twice (in a row without wasting twice enough energy) on the person you aim it at it works twice but it works only one time for the enemies around that person.
+
+High templar loses all energy when you spawn as him in the beggining of map.
+
+More bugs..
+Typos..
+Phase Prism Should now Be called Warp Prism.
+Phase Cannon should now be called Warp Cannon.
+Dark Archon's Psi blades needs to be called Warp blades.
+
+Uaw- Negotiations activate without any points added to it.
+
+Probe's Dark pylon Does not Cloak Newly Built Structures and When i activate it agian before it runs out, when it runs out the dark pylon is gone for 19 seconds or something.
+
+Maelstrom Does not always do "All of The Above"
+
+Leg enchancements and probably other speed mods like zergling's metabolic are increasing the velocity to about 360 max i think. What's worst is that bloodlust increases the velocity to 400(scout speed) for some classes.
+
+?fixed?Leg enhancements for dark templar give all slow classes a velocity of 360+
+
+:----------------------------------------------------------------------------
+So as you probably know, this skill is all kinds of glitchy. Sometimes when you die you keep the increased gravity with it, but more importantly it seems to be increasing speed rather than decreasing it. And the speed increase seems to carry over from death too, and do note that I have no put a single point into Anabolic Synthesis either.
+
+The recent fix to resetting your gravity when you changerace/die from Ultralisk has revealed the problem I believe. As I was told by hellotohello, in DOD and CS, if your gravity is increased, your speed is increased, probably by how the Source engine works. As a result, the increased gravity from just being an Ultralisk is enough to counteract any speed loss from the skill itself. I will not that the odd behavior of 4 points in Anabolic Synthesis and 0 in Chitinous Plating results in a speed "decrease" back to base speed.
+
+When you use Charge it seems to do the push effect to everyone on the map for a very long time, possibly even until the map changes. Also, the extra "speed" from it is not very impressive, and feels kind of strange having it in bursts like that.
+
+I don't mind spine attack its just the fact when I find the lurker they'll start burrowing, spam me with the spine attack and run off all without fully going under ground, not to mention this quick succesion of burrowing and unborrowing causes the lurker to became invisible except for their weapon and walk around like that.
+
+Phase Prism Warp In: When you use this skill as a phase prism engineer, it uses the vespine/energy and causes the engineer to select the building, but does not produce the building, effectively making this skill USELESS for engineers. Works fine with any other classes.
+
+Several things seem to not work in Sudden Death:
+-no energy
+-Burrow doesnt work in SD either.
+-Speed enhancers don't work
+
+Descriptions:
+
+1) All of the Zerg races' Burrow skill descriptions need to be changed so that it actually finishes what it's saying
+4) Sack of Looting's description is not finished
+UAW's Negotiations description gets cut off now. As well as Seniority
+
+
+Shopmenu Items
+1) Orb of Frost's shortcut changed from "orb" to "frost" now that Orb of Fire exists as well
+
+Photon/Phase Cannon doesn't say the amount of extra damage it does either.
+
+-------------------------------
+Protoss Corsair:
+Requirements: Overall Level 48
+
+Abilities:
+-Psi Thrusters: Speed boost for the same amount as the Vulture.
+-Plasma Shields: Armor, slightly stronger than Heavy Armor.
+-Argus Jewel: Health Bonus, same as devotion aura.
+
+ULTIMATE: Disruption Web: Prevents all enemy units and sentries in a radius from attacking. The radius would be about the same as Entangled Roots, maybe a bit bigger.
+-------------------------------
+
+-------------------------------
+Terran Marine:
+http://starcraft.wikia.com/wiki/Marine
+
+I found myself thinking about this today, and it seemed like a good idea. The terran marine.
+
+A race designed to be flexible, and useable for a wide variety of classes.
+
+-------------
+As is my usual style, passive abilities are in blue, ultimates are red, and green numbers are levelled values. for example, if an ability does 5..20 damage, then this means it does 5 damage at lv1, and 20 damage at lv4. The lv2 and 3 values can be worked out to 10 and 15 with a little math. Any other colors in this post are merely for formatting and breaking up the wall of text
+-------------
+
+
+Infantry Armor
+An average armor skill. Should be roughly even with the reaper/old terran confed, I think. Little more to say there.
+
+Now, some unique stuff. Ammo types.
+Based on some info here: http://starcraft.wikia.com/wiki/C-14_rifle
+I think it would be an interesting idea to allow alternate ammo types. This would work as follows.
+
+Each of the following ammo types is a passive skill. However, the player can only pick ONE ammo type. The others are locked when you put points into any one.
+===================================================================
+Armor Piercing Rounds
+Would give all of your shots a passive armor penetration ability. This would be an extra calculation done after the armor calculations, but before health is reapplied baack. The amount to be restored to the victim by their armor would be reduced by 25...100%. So at lv4, you would completely ignore armor.
+
+--------------------------------
+
+Uranium-238 shells
+This would be functionally similar to the hydralisk's Grooved Spines - Doing extra damage at long ranges, to make up for damage falloff. But having no effect up close.
+
+--------------------------------
+
+Hollow point spread rounds
+These rounds would have 2 effects:
+1. Extra damage. A reasonable amount, but not too much. Should be somewhat weaker than most other race's damage buffs, but should apply to every shot.
+2. Pushback. Every sucessful hit would knock the opponent backwards. To determine the direction, just get a directional vector from the user to the target's position. I have the math for this if needed. And use the damage dealt to calculate the pushback force.
+
+------------------------------------
+
+Incendiary rounds
+This would function like a permanant mini Orb of Fire. On each sucessful hit, there would be a CHANCE of igniting the enemy. Chance of sucess would be 8...32%
+
+Chance of sucess should be multiplied by 0.5 for the engy/scout pistol, and multiplied by 0.25 for the following weapons:
+Minigun
+Sniper SMG
+Needlegun
+
+This would be disabled for the flamethrower, as they're already on fire anyways.
+
+So with lv4 in the skill, the minigun would have an 8% chance of setting someone on fire, to offset the high rate of fire.
+
+-------------------------------------
+
+Steel Tipped rounds
+This would be functionally similar to incendiary rounds, but with orb of frost. However, it would have a higher chance of working, and do LESS damage (restore a percentage of damage dealt back to the victim on hit).
+
+Chance of sucess would be 15...60%
+
+Same weapon based multipliers as above, flamethrower falls into the same bracket as minigun. So a minigun would have a 15% chance at lv4
+
+And all damage dealt while using this ammo would be multiplied by 0.8 (20% damage penalty)
+
+======================================================
+End of ammo types. Now other normal abilities resume.
+
+Flak Pistol
+This would be a special damage skill that would affect ONLY sidearms (secondary weapon in most cases)
+
+These are as follows: N/A means not applicable. Classes with N/A will derive no benefit from this skill at all. This should be noted in the skill description.
+
+Heavy: Shotgun (sandvich is not applicable)
+Medic: N/A
+Spy: Revolver (primary weapon, but still a sidearm
+Demoman: N/A (The sticky launcher is not a sidearm, despite being his secondary weapon)
+Scout: Pistol
+Engineer: Pistol
+Pyro: Shotgun/Flaregun (both count)
+Sniper: SMG
+Soldier: Shotgun
+
+When damage is dealt with one of the above weapons, it would cause an explosion effect on impact (like reaver scarabs) and would add a significant amount of extra damage, and knockback. Bonuses from this should also stack with the ammo type loaded.
+
+------------------------
+Ultimates:
+
+Ballistic Alloy Combat Shield(lv7)
+This would be a sort of toggleable armor skill. It would cost no energy to use. When used, you would gain extra armor, that would absorb 20...75% of all incoming attacks from the front, until it breaks. (HP = 0.25...1.5 times your class maximum, to prevent near invincible scouts) And would reduce your movement speed by half. The front would be determined from position of the attacker, and facing of the defender, at the time of damage.
+
+Using it again, would lower the shield, removing armor bonus and restoring speed. One shield per life, so if it breaks, you have to die to get a new one. This should stack with the infantry armor.
+
+Caveats: Due to the inability to know if damage comes from a sentry or not, I think to be on the safe side, the shield should always apply if the attacker is an engineer.
+
+This shield would have no effect against fire, whether direct from a flamethrower, or the constant damage over time from burning
+---------------------------------------
+Stimpack (lv8)
+To implement this properly, would be dependant on the new sourcemod functionality mentioned here: http://www.jigglysfunhouse.net/nukeevo/modules.php?name=Forums&file=viewtopic&t=9773
+
+It might be good to just implement another version of the current stimpacks we're using in the meantime.
+
+Anyways. In keeping with starcraft, this would cost some health to use, and would increase your firing rate, and movement speed for a short while (5 secs, I think). so far, so starcraft-y.
+
+I don't think it's going to work to implement the numbers exactly as they are in starcraft, though. In starcraft, it costs 10 HP to use, and doubles your firing rate. That would be clearly horribly overpowered, so some adjustment would be needed for TF2. Numbers are up for dicsussion, my take on it, as follows.
+
+To use, would cost 25% of your MAXIMUM health. (75 hp for a heavy, 31.25 for a scout)
+Would increase firing rate by 50% (1.5)
+And would give a 35% speed increase, for the 5 sec duration.
+---------------------------------------------------------
+Grenade Launcher (lv9)
+
+This would also reqire the new sourcemod functionality. It would have a small energy cost to use. Say 3-5.
+
+When used, your next shot in the current life, would fire a grenade instead of whatever you'd normally fire. This should just be the ammo used by the demoman's primary weapon, not anything from the grenade mod. Low energy cost would allow it to be used fairly often, as the situation demands. Designed to add tactical flexibility, not overwhelming power.
+-------------------------------
+Zerg Roach
+ http://starcraft.wikia.com/wiki/Roach
+
+The idea of this race intrigues me. Would be fairly simple to implement.
+The purpose of the roach, is mainly to soak up damage, and be a tank. They're nothing special in terms of attack, but they have a lot of regen, and thusly are hard to kill.
+
+high regen still isn't going to save you if you come under focused fire though. You can have 10,000 regen per second and it's still not going to save you from a crit rocket. Focused burning from a pyro can do almost 200 damage per second. The strength in regen, would be wars of attrition. This race would be very useful for scouts, normally able to avoid most attacks, but they take a hit here and there, because of their frontline role, and the damage stacks up quickly with such low HP. Likewise, useful for medics. Who don't have to worry about offence, only staying alive.
+
+Burrow
+Nothing new here.
+
+Carapace
+An average armor skill. Maybe 30-40% damage absorption
+
+Missile Attack
+Like the Hydralisk, but should be a little weaker.
+
+Regeneration
+Now this is what this race is all about.
+This would be a super strength version of the regen most other zerg units have.
+
+It would regen 4...15 hp per second
+
+Organic Carapacelv8
+The closest thing to an ultimate, this would be a passive skill that would give +10hp regen per second, stacking with the base regen for a total of 25hp regen per second. This would be a single level skill.
+
+-------------------------------
+Terran Siege Tank
+http://starcraft.wikia.com/wiki/Siege_tank
+
+First of all, this race should be slow. I'm thinking, regardless of what class you are, your speed should be reduced to that of a heavy. Hence, no penalty if you are a heavy. This is obviously a heavy oriented class.
+
+The most notable thing about the siege tank, is it's ability to deploy into an artillery cannon. When it does this, it gains staggering range, and damage potential. But it becomes unable to move, AND it gets a minimum range. So it is incapable of attacking enemies which are too close.
+
+PPG-7 Plasma Cannons
+A fairly simple damage buff. Should boost all non melee attacks.
+
+Tank Armor
+VERY HEAVY armor. This should be more powerful than any other armor skill, on any other race. This skill reduces movement speed by 15..60%, but there would be a minimum speed, slightly slower than a heavy's standard speed.
+
+Crush
+With points in this, you would automatically cause 20..80 damage to any enemy, just by walking into them. Amount of damage would increase with points in the skill. Crush will not trigger if the user has deployed Siege Tech, or is a cloaked/disguised spy. This skill would have a small internal cooldown of 2 seconds or so between triggering multiple times on the same target, to prevent rape. Though it should be able to trigger more often if it's hitting multiple targets.
+
+Mjolnir Artillery Cannon
+30..120 % more damage with all attacks beyond a certain range. Close range attacks do 50% LESS damage.(treat the target like they're wearing armor) Only works when deployed. Cumulative with Plasma Cannons. Effectively Grooved Spines on steroids, but with a downside..
+
+Siege Tech (Ultimate Lv8)
+Single skill point only. Like burrow used to be. When used, it takes 3 seconds to deploy. Once deployed, the Mjolnir Artillery Cannon skill becomes active, and the user becomes completely immobile. Capable of turning, and firing, but not moving. Ideally, incapable of being blasted around too, if that's possible.
+
+Using it again while deployed will undeploy over 3 seconds, and allow movement once more, as well as disabling the artillery cannon, and re-enabling crush
+-------------------------------
+Zerg Drone:
+
+1. Mutate doesn't always work. Even when I have just respawned and have enough energy etc. to use the ultimate it will not give me the menu to choose between a dispenser and a sentry. This does not appear related to whether I already have a sentry made by Mutate standing.
+
+2. After using Mutate to build a sentry as anything except for an engineer you are then unable to build Sentries the normal way even if you changerace and class repeatedly.
+
+3. The menu seems unnecessary. Who actually wants to sacrifice themselves to build a dispenser. Building a teleporter exit/entrance might be interesting though.
+
+-If you burrow and then use Mutate while underground then you build a nearly unkillable death machine. (you have to have a spy burrow and then sap it).
+-if you have sentries still alive at the end of the round then they will stay alive until the opposing team kills them but they won't shoot if you lost the previous round. This is bad because it takes up one of your sentry spawns with a useless building that you can't destroy.
+-The Drone needs a way to kill all the buildings they have built (in case they were alive on a different part of the map). On way to do this is when you build over the limit of buildings then your older building is destroyed instead of just preventing the option from being selected.
+
+
+To Naris/Sourcecraft:
+5/ Although this might be intentional, Spine Attack has a max of 3 targets hit, I have yet to see anymore than that. I see the reason why, or I could kill an entire spawn room with mole at the round start.
+6/ Regenation is very unreliable. If you go with leve l4, you get healed random areas from 2-10 HP every few seconds.
+
+pl crash bug
+-------------------------------
+on PL_dustbowl_b4, i was one of the people pushing the cart suicidily, and when it finally got caught, i got the 2 crystal / gas bonus for pushing the cart, along with some other bonuses for winning the round. then after that, the cart blew up and killed me, but i kept on getting 2 crysals and gas every like 20ish seconds, even on the defending team, through 1 failed defense and 1 half-defense where the server crashed.
+
+Ideas for new classes/abilities
+-------------------------------
+
+Protoss Arbiter
+
+Arbiters were crewed exclusively by Judicators, unlike other warships that were manned predominantly by Templar. The Judicator used the Arbiter as a base to provide support using space-time manipulation.
+
+The Judicator could generate a large reality-warping field that served to conceal nearby friendly units. The Arbiter had to remain firmly anchored in space-time to generate the field and so was not concealed. Arbiters could weaken space-time, tearing rifts in the fabric of space-time, creating a vortex linking another location to the Arbiter's location. This could be used to move personnel and supplies over long distances. On the other hand Arbiters could also strengthen space-time and create discrete pockets of space-time, trapping objects and preventing those objects from interacting with objects outside of their pockets.[1]
+
+After the Judicator Caste was eliminated from the Protoss power structure, the Arbiter quickly fell into disuse. When the Protoss fled Aiur to Shakuras, the Arbiters were lost along with Aiur.[2] 
+
+The Arbiter, like the Terran Science Vessel, is a support unit. They cost lots of resources and time to produce though their special abilities make up for it. They have a cloaking range field that can cloak any unit within its radius (even allies) which is best used for catching the enemy by surprise with a large force.
+
+Arbiters have fairly large shield and hit point reservoirs. It has its own attack though it is widely recommended that the Arbiter shouldn't be used for attacking since it has a very slow rate of fire and deals little damage.
+
+Upgrades: Air Weapons, Air Armor, Plasma Shields
+Abilities
+
+    * Distortion Field
+          o Starting Ability
+          o Always Active, No Energy Cost
+          o Cloaks all nearby friendly units except for the source Arbiter and any other Arbiters. The cloak is disabled under lock-down. 
+    * Recall
+          o Cost: 150 Image:Minerals Terran SC1.png150 Image:Gas Protoss SC1.png
+          o Researched at: Arbiter Tribunal
+          o Energy Cost: 150 Energy
+          o Teleports a group of friendly units to the Arbiter's location. 
+    * Stasis Field
+          o Cost: 150 Image:Minerals Terran SC1.png 150 Image:Gas Protoss SC1.png
+          o Researched at: Arbiter Tribunal
+          o Energy Cost: 100 Energy
+          o Range: 9
+          o Prevents units in a targeted area from moving, attacking, or using special abilities. Trapped units may not be attacked or affected by special abilities, except for, EMP Shockwave. Lasts for about 40 seconds. 
+
+Khaydarin Core
+
+    * Cost: 150 Image:Minerals Terran SC1.png 150 Image:Gas Protoss SC1.png
+    * Upgraded at: Arbiter Tribunal
+    * Increases maximum Arbiter energy by 50. 
+
+-------------------------------
+Whiney Bitch: figured Sick Fucker could use a companion race.  This race would be available at level 0.
+
+Passive Skills:
+
+Inferiority Complex (aka "I don't have high enough skills, I can't compete"):  All enemies in XX yards have the ranks of their passive abilities reduced by YY.
+1 - Enemy skills reduced by 1 rank, 5 yards.
+2 - Enemy skills reduced by 1 ranks, 7 yards.
+3 - Enemy skills reduced by 2 ranks, 10 yards.
+4 - Enemy skills reduced by 2 ranks, 15 yards.
+
+Unfair (aka "Reset the levels because everyone has more xp than I do"):  Increased xp based on enemy's overall level.  
+Variables are defined as:
+PL (Player overall level)
+EL (Enemy overall level)
+
+1 - XP = XP+(EL-PL)*.1
+2 - XP = XP+(EL-PL)*.2
+3 - XP = XP+(EL-PL)*.3
+4 - XP = XP+(EL-PL)*.4
+
+Overpowered (aka "wtf is up with this mod, it's so broken"): Immunity
+
+1 - Immunity to Crystal Theft
+2 - Immunity to Ultimates
+3 - Immunity to Bonus Damage and Reflected Damage
+4 - Immunity to Shopmenu items
+
+Compensation (aka "that class is too powerful or needs restricted"):  Respawn time elimination.
+
+1 - No respawn time if killed by: Pyro or Heavy Weapons
+2 - No respawn time if killed by: Sniper or Spy
+3 - No respawn time if killed by: Demoman or Soldier
+4 - No respawn time if killed by: Engineer/SG, Scout, or Medic
+
+Ultimate - Mod Reset:  All players in XX yards lose all skills/ultimates for XX seconds.
+
+1 - All passives and ultimates lost for 3 seconds in 3 yards.
+2 - All passives and ultimates lost for 5 seconds in 6 yards.
+3 - All passives and ultimates lost for 7 seconds in 10 yards.
+4 - All passives and ultimates lost for 10 seconds in 15 yards.
+-------------------------------
+Protoss Corsair:
+Requirements: Overall Level 48
+
+Abilities:
+-Psi Thrusters: Speed boost for the same amount as the Vulture.
+-Plasma Shields: Armor, slightly stronger than Heavy Armor.
+-Argus Jewel: Health Bonus, same as devotion aura. 
+Also needs levitation and/or jetpack (corsair is a flying unit). 
+-------------------------------
+Litch King:
+Requrements: overall lvl 48, and have human and undead scourge lvl 8
+Race Ability:
+Undead Steed  (increases speed of player, make it 5% slower than confed at lvl 4))
+
+Vampiric Aura (Drains life from enemy when you damage them)
+
+unholy immunity: its human immunitty
+
+DEATH COIL:give a 10%chance at lvl 4 to dammage and steal 150health from a enemie
+
+Ultamate :ANIMATE DEAD,Lvl 8 you and summon a lvl 1 sentry,lvl 10 you can summon a lvl 2, and lvl 12 is a lvl 3 sentry,
+
+you can only put one skill point it a unltamite so you cant stack,you cant summon it while moling
+
+Cool down is once per life and when you die it blows up
+
+Class restrictions:(so you cant be a ass hole as much)
+when spy and you place a sentry you loose your desguise and all of your cloak so make it count,if engy it takes all your metal,and for all other classes it cost 20% of your ammo to summon
+
+Lich King
+Needs to be overall level 48
+Must have at least Level 8 in both Human Allinace and Undead Scourge (Is this possible to do?)
+
+Frostmourne: 20-50% chance of increasing damage by 20-80%.  Also, 50% of the melee damage done to the enemy is added to your health.
+
+Unholy Immunity: Makes you Immune to
+Level 1: Shop Items
+Level 2: Speed/Movement Modifiers
+Level 3: Health Taking/Extra Damage
+Level 4: Ultimates
+
+Undead Steed: Increase speed by 8-32%, based on level.
+
+Death Coil: 1-4% chance of lowering the enemy's health by 20-40%. If the enemy is hit by this effect, they cannot be hit with it again until their next life.
+
+Ultimate: Animate Dead Level 1 (level 8 required): Summon a Level 1 Sentry
+
+Ultimate: Animate Dead Level 2 (level 10 required): Summon a Level 1 Sentry
+
+Ultimate: Animate Dead Level 3 (level 12 required): Summon a Level 1 Sentry
+
+And the same limitations as in the first post
+
+A thought. How about animate dead affecting people around you. Like it gives anyone within x radius a chance to instantly reincarnate upon death, as long as you're still alive.
+
+Oh, and for death coil, how about a small chance of just instantly killing the enemy with any particular shot. Sourcecraft needs an instant death spell, I think.  
+
+not as big as 10% though. Maybe scaling it. like 8-10% (at max level) for soldier, demo, sniper, et al, and a lower rate for faster firing weapons, like 4% max for a heavy/pyro/scout/sentry/etc.
+-------------------------------
+Terran Firebat
+Skills:
+
+Plasma Incinerator Cannon: Increases damage done by direct flamethrower and flare gun hits, and also continuing damage from burning. If possible, I think this would be good to implement in a selective manner, so that it increases the flare gun power MUCH more than the flamethrower. due to flaregun being kind of weak. Basically like U238, but more powerful, and only affects pyros.
+
+Heat Resistant Armor: Would work like terran heavy armor, though it would protect a bit less. However, this armor would protect more against fire, than any other types of attacks, so making it good for fighting other pyros. And, at lv4, regardless of which class you're playing, you would take on the pyro's flame retardant effecct, ie, you can be burned by direct fire, but can't be ignited and continue to burn.
+
+Stimpacks: Self explanatory. Identical to TC
+
+ULTIMATE: Napalm Rocket: Fires a single rocket. It could look exactly like the soldier's by default. But on impact, in addition to damage, it sets on fire everyone nearby. Increasing levels would increase the damage it does, and the explosive radius.
+
+I'm thinking, lvs 1-2 would be weaker than a standard rocket in terms of direct fire, lv3 would be equal, and lv4 would be a bit stronger. The main thing about this attack would be setting everyone in a radius on fire, though.
+
+-------------------------------
+Terran Science Vessel
+defence matrix: like evasion
+sensors: decloaks/undesguises players
+infection: your bullets can infect other team
+ultimate: emp burst: for x seconds people around you lose 1-all their static powers.
+actually defense matrix should be more like heavy armor or plating.
+
+Being able to nullify Archon shields would be very good, seeing as that's what the vessel does.
+I assume EMP burst includes that ?
+
+defensive matrix: like heavy armor+devotion aura
+Grants up to an additional 100 HP + absorbs 50% damage until depleted
+
+sensors: decloaks/undesguises players
+
+Emp: People you shoot lose all their passive abilities, shopitem effects at higher levels. (for example, a templar will lose feedback and a confed will lose U238, but they will not lose psionic storm and jetpack.
+
+Ultimate: Irradiate
+Steadily drains health of all enemies around you
+
+revision and reasons for each skill
+
+defense matrix - works like heavy armor (science vessels had the ability to cast defense matrix on any unit giving it a shield until it was drained)
+
+irradiate - works like medic infection (science vessel could irradiate stuff, basically it would poison any unit and force it to lose health until dead or cleansed by a Terran medic, it would also damage units near to the irradiated unit)
+
+levitation - like the undead one(science vessel was a flying unit)
+
+sensors - uncloaks spies (science vessel was a detector that would be able to uncloak cloaked units)
+
+ultimate - emp burst - basically it would burst around you and stop all static abilities of those within range from activating for a short period of time. (the vessel had an ability called emp burst basically it could shoot out and would create a large burst that would drain all shields and energy of units caught in it, so protoss units shields would drop to 0 and energy using races like the templar couldn't cast hallucinate or psi storm since they wo7uld have 0 energy.)
+Back to top 	
+View user's profile Send private message Send e-mail 	 
+-------------------------------
+
+
+
+==============================================================================================
+
+Bugs:
+
+8. never ending re-spawn in sudden death. The never ending re-spawn in sudden death is someone buying a scroll of re-spawning before dying each time.
+
+-----------------------------------------------------------------------
+I have a few item suggestions:
+1) Armor-piercing ammo (20-30 crystals) -- Reduces the benefit of Terran's Heavy Armor (could apply to other future classes with armor).
+2) Sentry jammer (~75-100 crystals) -- Allows the owner to walk by enemy sentries without them firing upon them.
+3) Flak Jacket (20-30 crystals) -- Reduces the damage received from 'explosions' (suicide bomber, mad bomber, reaver scarabs)
+4) Flame retardant suit (75-100 crystals) -- Reduces fire damage and/or makes you as flammable as a normal pyro (ie, you burn, but you don't continue to burn).
+5) ***Reduction in cost for Cloak of Shadows, 55 crystals is too high to prevent decloak, 20-30 crystals seems reasonable
+
+I could add a few to that although I don't know if some of these are possible:
+Instant Sentry (100 crystals), allows a level 3 Sentry Gun to be build in front of who ever buys it, no matter if they are an engi or not.
+
+
+Super sappers (50-65 crystals) gives the spy sappers a supercharge, allowing them to destroy engineer equipment 2x as fast.
+
+since I was thinking for a Blood Mage ultimate to be Banish, where a person you hit with the same targeting system like the Zerg tentacle would either become a random class or get sent back to their spawn
+
+-----------------------------------------------
+Recorded on 3-PG's Server. This was a bug in attempt be able to attach sentrys to moving objects.(ie trains, cars, ect.)
+
+Below are the mods on their servers:
+
+Change Log
+01/27/08 - Fix a bug with Parenting Enigneer Building that it would attach to players if they are close by.
+01/27/08 - Engineer Buildings now have the ability to Parent with moving entities. If you can build on an elevator or moving car then it will move with it.
+01/23/08 - 1st grenade is completed and working. Not implemented on our server yet. Requires testing :)
+01/23/08 - Fixed bugs with a player death message when a player is killed by pyro explosion.
+01/23/08 - Huge update. Pyro explode code is rewritten from scratch. No longer goes through walls or alive players.
+01/18/08 - Crits Fixed!
+01/15/08 - TF2 update broke crits.
+
+Rules
+
+Sky walking is allowed as long as you are able to shoot and be shot at. If there is only a 1 way wall that allows you to shoot through but blocks n-comming bullets/rockets then it is not allowed.
+
+Anti Exploits/CheatsCurrently blocking certain cvars that allow a player to see a cloak spy.
+
+Currently blocking certain cvars that allow a player to exploit perfui and have a wall hack.
+
+Sudden Death ModeDuring Sudden Death mode a class will be randomly selected and every player will spawn as that class. All weapons are stripped except melee weapons. Melee = Fist, Axe, Glass bottle, etc...
+
+ScoutREMOVED - Double attack speed for Baseball bat and Scatter Gun.
+
+Pyro
+Explodes when killed causing up to 200.0 damage at a 350.0 distance radius to players. The furter away the less damage delt.Maxspeed 340.0 | Default 300.0 Pyro's Maxspeed increased from 300 to 340.Flame Boxsize 16.0 | Default 8.0 Size of the Flamethrower flames.
+REMOVED - Flame Close Range Multiplier 1.5 | Default 1.2 Flamethrower damage multiplier when in close range.
+
+Sniper
+Charge Time Damage 150.0 | Sniper charge time is instant when zoomed in.
+
+Medic
+Heal Aura 30 | Medic puts off a Healing Aura that will heal 30 points of health per a second. Works through walls and emits a ring on the floor. Medics can heal themselves with 10 health per a second. For each player healed per a tick will add 0.01 to the Uber Charge meter. Uber Charge becomes active at 1.00. If you heal 5 of your teammates per a tick it will give you 0.05 a tick until their health is full.
+
+CritsMultiplier 2.0 | Default 3.0 How much the damage of a critical hit gets multiplied by
+Crit Chance 1.0 | Default 0.005 Percentage of having a Critical Hit! 1 = 100%
+RespawnSpawn Timer 8.0 | Default 10.0 Time you have to wait before you can spawn again.
+
+SpyCloak
+Consume Rate 10.0 | Default 10 How fast the cloak energy is used.
+Cloak Regen Rate 10.0 | Default 3.3 How fast the cloak energy is regenerated while uncloaked.
+Cloak No Attack Time 0.0 | Default 2.0 Delay until a spy can attack after uncloaking.
+Invis Time 1.0 | Default 1.0 How long it takes to cloak.Invis Unstealth Time 0.0 | Default 2.0 How long it takes to uncloak.
+
+Sentry Gun
+Ammocheat 1 | Default 0 Turrets have unlimited ammo. No need for engineer to restock.Damage 32 | Default 16 The damage a Sentry Gun does.
+Newtarget Dist 999 | Default 200 Distance a Sentry Gun can lock on and attack.
+
+Teleporter
+Recharge Time 2.0 | Default 10 Teleporters now take 2 seconds to recharge.
+Removed teleporter sickness.
+
+Engineer
+Upgrade Per Hit 200 | Default 25 How much metal to use when a engineer tries to upgrade a Sentry Gun.
+Engineer Buildings now have the ability to Parent with moving entities. If you can build on an elevator or moving car then it will move with it.
+
+Jiggly's uber medic race
+
+Jig: heal teammates
+
+Jig: ultimate to freeze person
+
+//TF2 Teams, 3=Blue Team | 2 = Red Team
+
+Skill Ideas:
+increased Projectile damage
+Blink (teleport very short distance)
+Blink (Total Inis for very short time)
+
+Ultimate Ideas:
+  Portal
+
+
+I was able to find much of the variables such as m_flMaxSpeed and m_nModelIndex while playing with some cheat on that showed a whole load of text and data that was constantly changing. I even found the name for the Cloak meter for not just spy but all classes as for some reason Valve has all of them set at a max of 100 this is how it showed on screen (or at least close to it)
+
+m_flCloakMeter float (100.000000) <-- and this value would decrease at a rate of 10/second until it reached zero then trigering the regeneration of 3.3/second. I know that the rates are changeable by convars and I was wondering how to add cheats to an admins lap without requiring sv_cheats to be set to "1". I have used BeetlesMod and have no problem and if I could do this on there I probably would since I find it more beginner friendly than SourceMod but I am a fast learner when it comes to coding.
+
+
+ Sweet TF2 entity tools.
+
+CODE
+Launch TF2
+Start a multiplayer server
+sv_cheats 1
+developer 2
+build a sentry gun
+place the x-hair over the sentry gun and type ent_text
+This will show a good bit of info about that entity. This works for any entity in game.
+
+
+CODE
+You can also use
+dtwatchent
+This command will show you all the variables of an entity that get updated.
+Using the ent_text above get the entity index number.
+For an example lets say the sentry gun entity index is 12
+I would run the command like this
+dtwatchent 12
+
+It will fill the console with all the changes and names of variables. You can use source mod to modify those variables.
+
+Fixed bugs:
+
+Bug List
+--------
+
+4)  There is a team balancer called the fairteambalancer that can even the teams.  I added some SourceCraft awareness to it, but while it does keep the number of players on the team even, it does not doo a good job of evening abilities.  More work is required to implment a different algorithm to balance abilities.
+
+TODO List:
+-------------------------------
+1) Add "cooldown gauge", to show cooldown status for ultimates similar to jetpack gauge.
+
+Ideas for new abilities/plugins
+-------------------------------
+
+Jiggly wants a teleporter disk for scouts that can be used to telefrag other players
+(NeoTF had one for scouts)
+
+It could be implmented by spawning some kind of object for the disk, and then providing a command (that can be bound to a key) which will teleport the owner to it's location and check for other players within a givin range of that location and damaging or killing them.
+
+Anti Stacker: Would it be possible to do something where, when a team is ahead by say five rounds, it kicks everyone to Spectator for a second, then assigns teams in order of score? Create a list, order it by points scored, then go down that list going Blue, Red, Blue, Red.....
+
+
+Implmented races:
+-------------------------------
+Zergling
+I would propose a complete revamp of this race, into a Zergling.
+
+Firstly, see here: http://starcraft.wikia.com/wiki/Zergling
+
+The zerg's current abilities, I believe
+
+Regen (needs a buff)
+Adrenal Glands (just perfect)
+Healing Aura (illogical)
+Tentacle (I really have no idea)
+
+Firstly, I would say healiung aura should be removed. Perhaps the intention in adding that was to emulate he zerg overlord ? Which we have a seperate race for now in any case.
+
+I don't know about the tentacle ultimate. Is it based on a particular zerg ability? Perhaps it would be better used for another zerg race.
+
+And this race could do with some extra abilities, too.
+
+Burrow: Standard zerg ability. just reuse the code from other implementations. I believe all non flying zerg (ie, not the overlord) should have burrow.
+
+Metabolic Boost: An important thing about zerglings is that they are fast. Speed boost is needed.
+
+Dual Spawning: Another notable characteristic, is that you get two zerglings for a single spawning egg. To reflect that, this ability would be a 1 skill point only thing, like burrow. IT would give 100% chance of reincarnation, but only ONCE per life. Not the orc limit of 4/5.
+
+Ultimate: Lv8 Bloodlust
+Mentioned on the above wiki page. Bloodlust is a buff that increases speed and attack damage, while in packs with other zerglings. I don't think we can really rely on the pack thing, so having it as a cooldown based ultimate would work better.
+
+For 10 seconds, you gain +20...50 speed and deal 20...100% more melee damage. If possible, this speed increase should be in addition to the speed bonus from metabolic boost, so you could use it to charge into a group of enemies, and melee them all to death while they run around confused.... unless you run into a pyro.
+
+Ultimate: Lv10/12
+Evolve Baneling:
+
+New for starcraft 2, the zergling gains the ability to evolve into a baneling: http://starcraft.wikia.com/wiki/Baneling
+
+I have a neat idea on how to implement this. Pretty simple.
+The baneling should have a huge speed penalty. So that they move very slowly under normal circumstances. And no passive abilities. Just two ultimates:
+
+Ultimate 1: Roll    Always available
+Increases your speed to 150% for 10 seconds.
+
+Ultimate 2: Explode    Always available
+An instant selfdestruct attack. Should be more powerful than any other implementation of suicide bomb, as it requires a lv12 zergling to unlock it. Should also trigger automatically when you are killed. This ability should always cause death of the user
+
+Also, banelings would be cool if they had a constant green hue, to make them more identifiable.
+
+Oh, something notable. The baneling's explosion causes a lot of damage to buildings in starcraft. So it wold be logical for it to be able to destroy engineer buildings.
+
+To prevent that from being overpowered, perhaps make it impossible for baneling spies to disguise ? They're supposed to be big bloated sacks of goo, so they wouldn't do too well at stealth. Being unable to disguise and walk up to a sentry should counteract the potential overpowered-ness in the ability to destroy it. You would have to pick your time while it's occupied firing at someone else, or flank it to avoid getting killed on the approach.
+
+My aim with the baneling is to encourage the use of heavies as suicide bombs. They're the closest visually to it. Hence why Roll would set your speed to a static value, instead of increasing it BY a certain value. So slower classes would derive more benefit, and the heavy's high health would therefore make him the logical choice for a suicide charge.
+
+-------------------------------
+Dark Templar
+This class is meant mainly to work best as a spy race - I've noticed that a lot of the other classes have certain races(Orc, SF, and Terran Medic to name a few) that tend to combine well together, but the spy itself doesn't have any classes really meant for his play style. Human Alliance has the extremely useful teleport and immunity, but devotion and bash doesn't synergize well with the spy's role. Confed's abilities altogether help the spy, but altogether they work well with pretty much every class in the game. This race is meant to act as the spy's Terran Medic, in the sense that a few of its ability won't work with any other class. The abilities of the Dark Templar keep to the flavor of the Starcraft unit as well.
+
+Anyway:
+
+Immunity: Same as Templar Immunity.
+Leg Enhancements (Psionic Implants): Increases speed by 6-36A%.
+Void Mastery: Increases cloak time by 5-20 seconds.
+Ultimate: Maelstrom. Prevents nearby enemies from moving (but still able to turn around and fire) for 1-4 seconds. More or less like an Area of Effect bash. Cooldown is about a minute.
+
+These abilities have a good synergy with all of the spy's abilities, while at the same time not giving him enough of an advantage to completely dominate the field. Maelstrom, admittedly, is like Entangling Roots, but hopefully different enough to warrant its existence. It's main purpose is to allow the spy to have a chance to run away in case his cover has been blown.
+
+I'm not exactly sure what the templar immunity gives, but immunity for a spy really needs to protect from uncloaking, shopitems, damage skills, and ultimates. As all of those are things that are easily used to find a spy. Lost count of how many spies I've found by sweeping an orb of frost minigun over an area, and sustaining fire on anyone who changes color.
+
+http://starcraft.wikia.com/wiki/Dark_Templar_%28unit%29
+
+As with all Protoss units, it should have a shield ability. Those can be quite useful for spies, as people can shoot you for what would normally be enough to kill a spy, and then be satisfied that you're not, while you're still there with low health waiting to backstab them as soon as they turn
+
+
+They have an energy sword, so I think a Psionic Blade skill is in order too. Should increase melee damage. Melee boosts are very useful for a spy, as they give you a decent chance of winning anyway if your opponent turns and you end up in a knife fight. I can usually get 2-3 hits on the average opponent, and with a melee boost that could be enough for a kill.
+
+They have a permanant cloak ability, and I think that would be good to implement. Void Mastery seems to be about that, though I'm not sure about the name. I'd just call it cloak or somesuch.
+
+They don't really seem to have a skill that's suitable as a lv8 ultimate. PErsonally, though, I've found the Human Alliance teleport to be highly useful as a spy, and I'd ove to see that code reused for something else too. It would fit fairly well with the theme here, though not being strictly based on a starcraft ability.
+
+And they need the  Dark Archon transformation too, though I'd say lv10, rather than 12 would be better. One potential problem with this, is that Naris seems to have combined the abilities of the Normal, and Dark archons into the templar's archon trans.
+
+Personally, to solve this, I'd recommend splitting the archon up. Remove Maelstrom, Feedback, and Mind control from the templar archon, and give them to this one instead, as i's the dark archon that's supposed to have those.
+http://starcraft.wikia.com/wiki/Dark_Archon
+
+I don't think the normal Archon uses them much anyway. As most people are proccupied with using #Psionic blast and plasma shields. Though I'd personally recommend moving the Archon unlock back to lv10 to compensate for the loss.
+
+The Maelstrom would be more unique if it was implemented properly. It's supposed to stop moving AND firing of all units within range. That includes enemies AND friends. Essentially, everyone but yourself
+
+Void Mastery fits the race's background. I skimmed the Dark Templar bio on the Starcraft II site, and it mentioned that the DT's use the void to provide their cloaking abilities.
+-------------------------------
+Zerg Infestor
+
+Ultimate - Disease: This area-of-effect attack reduces an opponent's hit points by 95% in ten seconds.
+                    with an ensnare component (like orb of frost).
+
+Ultimate - Dark Swarm: large cloud/team evasion it should be evasion from ranged for you and those around you.
+ 	               Dark Swarm appears to be something that should affect friendly units and enemies at the same time.
+
+Ultimate - Swarm Infestation: Gas Attack (Causes buildings to attack in SCII)
+
+Ultimate - Infestation: Enables Infestors to taint structures for 15 seconds
+
+Optional additional skill, since Immunity seems to be all the rage:
+
+Immunity
+1. Bonus damage skills (like human alliance immunity)
+2. DoT affects (plague, infection, pyro/spidermine fire)
+3. Ultimates
+4. Decloaking
+
+or
+
+Immunity
+1. Crystal Theft
+2. Decloaking
+3. Bonus damage skills (like human alliance immunity)
+4. Ultimates
+
+-------------------------------
+Zerg Drone
+-------------------------------
+Sacrifice (passive)
+What I'm thinking is, when the engineer whacks a currently under construction building with his wrench (does not have to be his own) rather than building at double the speed, it could build a LOT faster. Like 10-20 times faster. But, doing so would cost the engineer health, so doing it too much would kill you, and it would at least weaken you in any case.
+
+--------------
+Ultimates:
+
+These are pretty much purely made up, but try to fit with the zerg as close as possible:
+------------
+Shed Skin(Ultimate lv8) [Molt]
+When used, it would cause all currently sapped buildings to instantly lose their sapper, and would deal some damage to the owner of the sapper. Obviously, an anti spy technique. More levels in the skill would decrease recharge time, and increase damage dealt.
+
+deals 20...65 damage per sapper knocked off
+recharges every 40...10 seconds
+
+So if a spy runs through your base sapping everything in sight, you can just kill him instantly with one button. Obviously can't be used if you're dead though, so spies would still have an out by backstabbing the engineer before they sap things. I think this ability would be particularly useful for when you're up at the frontline, and your tele entrance 50 miles back gets sapped. You can remotely protect it and punish the spy.
+
+-------------------------------
+CSS Player Collision Hull
+    32  =  2' 0"    width & length
+    36  =  2' 3"    height crouching
+    72  =  4' 6"    height standing
+
+CSS Player Eyelevel
+    28  =  1' 9"    height crouching
+    64  =  4' 0"    height standing
+
+CSS Architecture
+   128  =  8' 0"    normal corridor height
+    64  =  4' 0"    normal corridor width
+   108  =  6' 9"    normal door height
+    48  =  3' 6"    normal door width
+
+The Offense Classes
+Scout: 86 units high, 33 units wide
+Soldier: 88 units high, 51 units wide
+Pyro: 85 units high, 45 units wide
+
+The Defense Classes
+Demoman: 88 units high, 50 units wide
+Heavy: 93 units high, 60 units wide
+Engineer: 84 units high, 53 units wide
+
+The Support Classes
+Medic: 88 units high, 61 units wide
+Sniper: 90 units high, 49 units wide
+Spy: 86 units high, 48 units wide
+-------------------------------

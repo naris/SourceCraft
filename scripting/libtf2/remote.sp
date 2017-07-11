@@ -605,8 +605,8 @@ public Action:UpdateObjects(Handle:timer)
         new ref = g_RemoteObjectRef[i];
         if (ref != INVALID_ENT_REFERENCE && IsClientInGame(i))
         {
-            new object = EntRefToEntIndex(ref);
-            if (object > 0)
+            new obj = EntRefToEntIndex(ref);
+            if (obj > 0)
             {
                 new permissions = clientPermissions[i];
                 new bool:zombie = (permissions < 0) ? ((permissions & REMOTE_CAN_ZOMBIE) != 0) : defaultZombie;
@@ -640,7 +640,7 @@ public Action:UpdateObjects(Handle:timer)
                     }
 
                     new Float:speed = (clientSpeed[i] > 0.0) ? clientSpeed[i] : defaultSpeed;
-                    new level = GetEntProp(object, Prop_Send, "m_iUpgradeLevel");
+                    new level = GetEntProp(obj, Prop_Send, "m_iUpgradeLevel");
                     if (level > sizeof(levelFactor))
                         speed *= levelFactor[0];
                     else if (level > 0)
@@ -686,16 +686,16 @@ public Action:UpdateObjects(Handle:timer)
 
                     if (buttons & IN_JUMP)
                     {
-                        new flags = GetEntityFlags(object);
+                        new flags = GetEntityFlags(obj);
                         if (flags & FL_ONGROUND)
                             vel[2] += (clientJumpSpeed[i] > 0.0) ? clientJumpSpeed[i] : defaultJumpSpeed;
                     }
 
-                    TeleportEntity(object, NULL_VECTOR, angles, vel);
+                    TeleportEntity(obj, NULL_VECTOR, angles, vel);
 
                     /*
                     new Float:objectpos[3];
-                    GetEntPropVector(object, Prop_Send, "m_vecOrigin", objectpos);
+                    GetEntPropVector(obj, Prop_Send, "m_vecOrigin", objectpos);
 
                     objectpos[0] += fwdvec[0] * -150.0;
                     objectpos[1] += fwdvec[1] * -150.0;
@@ -954,24 +954,24 @@ RemoteControl(client, TFExtObjectType:type)
                 g_RemoteBuild[client] = true;
                 g_RemoteObjectRef[client] = INVALID_ENT_REFERENCE;
 
-                new object, mode;
+                new obj, mode;
                 if (type == TFExtObject_TeleporterEntry ||
                     type == TFExtObject_TeleporterExit)
                 {
-                    object = _:TFExtObject_Teleporter;
+                    obj = _:TFExtObject_Teleporter;
                     mode = _:(type - TFExtObject_TeleporterEntry);
                 }
                 else if (type == TFExtObject_MiniSentry)
                 {
-                    object = _:TFExtObject_Sentry;
+                    obj = _:TFExtObject_Sentry;
                     mode = 1; // Not sure if this will work?
                 }
                 else
                 {
-                    object =_:type;
+                    obj =_:type;
                     mode = 0;
                 }
-                ClientCommand(client, "build %d %d", object, mode);
+                ClientCommand(client, "build %d %d", obj, mode);
             }
             else
             {
@@ -1203,24 +1203,24 @@ public BuildSelected(Handle:menu,MenuAction:action,client,selection)
             {
                 g_RemoteType[client] = type;
 
-                new object, mode;
+                new obj, mode;
                 if (type == TFExtObject_TeleporterEntry ||
                     type == TFExtObject_TeleporterExit)
                 {
-                    object = _:TFExtObject_Teleporter;
+                    obj = _:TFExtObject_Teleporter;
                     mode = _:(type - TFExtObject_TeleporterEntry);
                 }
                 else if (type == TFExtObject_MiniSentry)
                 {
-                    object = _:TFExtObject_Sentry;
+                    obj = _:TFExtObject_Sentry;
                     mode = 1; // Not sure if this will work?
                 }
                 else
                 {
-                    object =_:type;
+                    obj =_:type;
                     mode = 0;
                 }
-                ClientCommand(client, "build %d %d", object, mode);
+                ClientCommand(client, "build %d %d", obj, mode);
             }
             else
             {
@@ -1537,14 +1537,14 @@ public Destroy_Selected(Handle:menu,MenuAction:action,client,selection)
     }
 }
 
-DestroyBuilding(object)
+DestroyBuilding(obj)
 {
-    if (IsValidEdict(object) && IsValidEntity(object))
+    if (IsValidEdict(obj) && IsValidEntity(obj))
     {
         SetVariantInt(1000);
-        AcceptEntityInput(object, "RemoveHealth");
-        //AcceptEntityInput(object, "Kill");
-        g_WasBuilt[object] = false;
+        AcceptEntityInput(obj, "RemoveHealth");
+        //AcceptEntityInput(obj, "Kill");
+        g_WasBuilt[obj] = false;
     }
 }
 
@@ -1612,9 +1612,9 @@ public ObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
     new index = GetClientOfUserId(GetEventInt(event,"userid"));
     if (index > 0)
     {
-        new object = GetEventInt(event,"index");
-        if (object >= 0)
-            g_WasBuilt[object] = false;
+        new obj = GetEventInt(event,"index");
+        if (obj >= 0)
+            g_WasBuilt[obj] = false;
     }
 }
 
@@ -1657,35 +1657,35 @@ public EventRoundOver(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:Activate(Handle:timer,any:ref)
 {
-    new object = EntRefToEntIndex(ref);
-    if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+    new obj = EntRefToEntIndex(ref);
+    if (obj > 0 && IsValidEdict(obj) && IsValidEntity(obj))
     {
-        SetEntProp(object, Prop_Send, "m_bDisabled", 0);
-        AcceptEntityInput(object, "TurnOn");
+        SetEntProp(obj, Prop_Send, "m_bDisabled", 0);
+        AcceptEntityInput(obj, "TurnOn");
 
-        if (TF2_GetObjectType(object) != TFObject_Teleporter &&
-            GetEntProp(object, Prop_Send, "m_CollisionGroup") != 0)
+        if (TF2_GetObjectType(obj) != TFObject_Teleporter &&
+            GetEntProp(obj, Prop_Send, "m_CollisionGroup") != 0)
         {
-            new builder = GetEntPropEnt(object, Prop_Send, "m_hBuilder");
+            new builder = GetEntPropEnt(obj, Prop_Send, "m_hBuilder");
             if (builder > 0 && IsClientInGame(builder) && IsPlayerAlive(builder))
             {
                 decl Float:playerPos[3];
                 GetClientAbsOrigin(builder, playerPos);
 
                 decl Float:objectPos[3];
-                GetEntPropVector(object, Prop_Send, "m_vecOrigin", objectPos);
+                GetEntPropVector(obj, Prop_Send, "m_vecOrigin", objectPos);
 
                 decl Float:size[3];
-                GetEntPropVector(object, Prop_Send, "m_vecBuildMaxs", size);
+                GetEntPropVector(obj, Prop_Send, "m_vecBuildMaxs", size);
 
                 new Float:distance = GetVectorDistance(objectPos, playerPos);
                 if (distance < size[0] * -1.1 || distance > size[0] * 1.1)
-                    SetEntProp(object, Prop_Send, "m_CollisionGroup", 0);
+                    SetEntProp(obj, Prop_Send, "m_CollisionGroup", 0);
                 else
                     CreateTimer(2.0, Activate, ref, TIMER_FLAG_NO_MAPCHANGE);
             }
             else
-                SetEntProp(object, Prop_Send, "m_CollisionGroup", 0);
+                SetEntProp(obj, Prop_Send, "m_CollisionGroup", 0);
         }
     }
     return Plugin_Stop;
@@ -1774,14 +1774,14 @@ public Action:RemoteOff(client, args)
     new objectRef = g_RemoteObjectRef[client];
     if (objectRef != INVALID_ENT_REFERENCE)
     {
-        new object = EntRefToEntIndex(objectRef);
-        if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+        new obj = EntRefToEntIndex(objectRef);
+        if (obj > 0 && IsValidEdict(obj) && IsValidEntity(obj))
         {
             new Float:angles[3];
             GetClientEyeAngles(client, angles);	
             angles[0] = 0.0;
 
-            TeleportEntity(object, NULL_VECTOR, angles, NULL_VECTOR);
+            TeleportEntity(obj, NULL_VECTOR, angles, NULL_VECTOR);
 
             new TFExtObjectType:type = g_RemoteType[client];
             if ((type != TFExtObject_Teleporter &&
@@ -1790,16 +1790,16 @@ public Action:RemoteOff(client, args)
                 IsPlayerAlive(client))
             {
                 new Float:objectPos[3];
-                GetEntPropVector(object, Prop_Send, "m_vecOrigin", objectPos);
+                GetEntPropVector(obj, Prop_Send, "m_vecOrigin", objectPos);
 
                 decl Float:size[3];
-                GetEntPropVector(object, Prop_Send, "m_vecBuildMaxs", size);
+                GetEntPropVector(obj, Prop_Send, "m_vecBuildMaxs", size);
 
                 new Float:distance = GetVectorDistance(objectPos, clientPosition[client]);
                 if (distance < size[0] * -1.1 || distance > size[0] * 1.1)
                 {
-                    SetEntProp(object, Prop_Send, "m_CollisionGroup", 5);
-                    //CreateTimer(2.0, Activate, EntIndexToEntRef(object), TIMER_FLAG_NO_MAPCHANGE);
+                    SetEntProp(obj, Prop_Send, "m_CollisionGroup", 5);
+                    //CreateTimer(2.0, Activate, EntIndexToEntRef(obj), TIMER_FLAG_NO_MAPCHANGE);
                 }
             }
         }
@@ -1832,17 +1832,17 @@ public Action:RemoteGod(client, args)
         PrintToChat(client, "Not controlling a building!");
     else
     {
-        new object = EntRefToEntIndex(objectRef);
-        if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+        new obj = EntRefToEntIndex(objectRef);
+        if (obj > 0 && IsValidEdict(obj) && IsValidEntity(obj))
         {
-            if (GetEntProp(object, Prop_Send, "m_takedamage", 1)) // mortal
+            if (GetEntProp(obj, Prop_Send, "m_takedamage", 1)) // mortal
             {
-                SetEntProp(object, Prop_Send, "m_takedamage", 0, 1);
+                SetEntProp(obj, Prop_Send, "m_takedamage", 0, 1);
                 PrintToChat(client,"\x01\x04Building god mode on");
             }
             else // godmode
             {
-                SetEntProp(object, Prop_Send, "m_takedamage", 1, 1);
+                SetEntProp(obj, Prop_Send, "m_takedamage", 1, 1);
                 PrintToChat(client,"\x01\x04Building god mode off");
             }
         }
@@ -1911,20 +1911,20 @@ public Action:Command_Build(client, args)
         decl String:sMode[16];
         GetCmdArg(2, sMode, sizeof(sMode));
 
-        new TFExtObjectType:object = TFExtObjectType:StringToInt(sObject);
+        new TFExtObjectType:obj = TFExtObjectType:StringToInt(sObject);
         new mode = StringToInt(sMode);
 
         new TFTeam:team = TFTeam:GetClientTeam(client);
-        if (object < TFExtObject_Dispenser || object > TFExtObject_TeleporterExit || team < TFTeam_Red)
+        if (obj < TFExtObject_Dispenser || obj > TFExtObject_TeleporterExit || team < TFTeam_Red)
             return Plugin_Continue;
 
         new iCount = 0;
-        if (!CheckBuild(client, object, mode, iCount))
+        if (!CheckBuild(client, obj, mode, iCount))
             return Plugin_Handled;
 
         Call_StartForward(g_fwdOnBuildCommand);
         Call_PushCell(client);
-        Call_PushCell(object);
+        Call_PushCell(obj);
         Call_PushCell(mode);
         Call_PushCell(iCount);
         Call_Finish(iResult);

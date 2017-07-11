@@ -417,7 +417,7 @@ public OnPluginStart()
     LoadTranslations("common.phrases");
     LoadTranslations("firemines.phrases");
 
-    CreateConVar("sm_tf_firemines", PL_VERSION, "Firemines", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("sm_tf_firemines", PL_VERSION, "Firemines", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     g_IsFireminesOn = CreateConVar("sm_firemines","3","Enable/Disable firemines (0 = disabled | 1 = on death | 2 = on command | 3 = on death and command)", _, true, 0.0, true, 3.0);
     g_FireminesAmmo = CreateConVar("sm_firemines_ammo","100","Ammo required for Firemines", _, true, 0.0, true, 200.0);
     g_FireminesType = CreateConVar("sm_firemines_type","1","Explosion type of Firemines (0 = normal explosion | 1 = fire explosion | 2 = Spider Mine (chases enemies)", _, true, 0.0, true, 1.0);

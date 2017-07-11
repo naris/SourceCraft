@@ -24,7 +24,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_holyarrows_version", PLUGIN_VERSION, "Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_holyarrows_version", PLUGIN_VERSION, "Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	v_Enabled = CreateConVar("sm_holyarrows_enabled", "1", "Enable/Disable Holy Arrows plugin (1/0)", 0, true, 0.0, true, 1.0);
 	v_Mode = CreateConVar("sm_holyarrows_mode", "1", "1 = All players, 2 = Admins with correct flag", 0, true, 1.0, true, 2.0);
 	v_Flag = CreateConVar("sm_holyarrows_adminflag", "b", "Admin flag to use if mode is set to \"2\".");

@@ -93,7 +93,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_ki_version", VERSION, "TF2: Killer's Info", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_ki_version", VERSION, "TF2: Killer's Info", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
 	AddCommandListener(SayCallback, "sm_ki_toggle");
 	HookEvent("player_death", event_player_death, EventHookMode_Post);

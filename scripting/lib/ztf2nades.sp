@@ -879,7 +879,7 @@ public OnPluginStart()
 
     AutoExecConfig(true, "plugin.ztf2nades");
 
-    CreateConVar("sm_tf2nades_version", PLUGIN_VERSION, "TF2NADES version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("sm_tf2nades_version", PLUGIN_VERSION, "TF2NADES version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
     // commands
     RegConsoleCmd("+nade1", Command_Nade1);
@@ -2827,11 +2827,11 @@ public Action:KillGas(Handle:timer, Handle:entitypack)
 
 public Action:Activate(Handle:timer,any:ref)
 {
-    new object = EntRefToEntIndex(ref);
-    if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+    new obj = EntRefToEntIndex(ref);
+    if (obj > 0 && IsValidEdict(obj) && IsValidEntity(obj))
     {
-        SetEntProp(object, Prop_Send, "m_bDisabled", 0);
-        AcceptEntityInput(object, "TurnOn");
+        SetEntProp(obj, Prop_Send, "m_bDisabled", 0);
+        AcceptEntityInput(obj, "TurnOn");
     }                
     return Plugin_Stop;
 }

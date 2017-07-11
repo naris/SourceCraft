@@ -32,7 +32,7 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 
 
-	CreateConVar("sm_multirocket_version", VERSION, "", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_multirocket_version", VERSION, "", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
 	RegAdminCmd("sm_multirocket_toggle", CMD_Toggle, ADMFLAG_SLAY, "Toggle on targeted user");
 

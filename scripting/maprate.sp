@@ -57,14 +57,14 @@ public OnPluginStart()
 	/* RegConsoleCmd("sm_mapratings", Command_Ratings); */
 	RegAdminCmd("sm_maprate_resetratings", Command_ResetRatings, FLAG_RESET_RATINGS);
 	
-	g_cvars[CVAR_DB_CONFIG] = CreateConVar("sm_maprate_db_config", "default", "Database configuration to use for Map Rate plugin", FCVAR_PLUGIN);
-	g_cvars[CVAR_VERSION] = CreateConVar("sm_maprate_version", MR_VERSION, "Map Rate Version", FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_cvars[CVAR_AUTORATE_TIME] = CreateConVar("sm_maprate_autorate_time", "0", "If non-zero, automatically asks dead players to rate map after they have played the map for this number of seconds", FCVAR_PLUGIN);
-	g_cvars[CVAR_ALLOW_REVOTE] = CreateConVar("sm_maprate_allow_revote", "1", "If non-zero, allow a user to override his/her previous vote on a map", FCVAR_PLUGIN);
-	g_cvars[CVAR_TABLE] = CreateConVar("sm_maprate_table", "map_ratings", "The name of the database table to use", FCVAR_PLUGIN);
-	g_cvars[CVAR_AUTORATE_DELAY] = CreateConVar("sm_maprate_autorate_delay", "5", "After a player dies, wait this number of seconds before asking to rate if maprate_autorate_tie is non-zero", FCVAR_PLUGIN);
-	g_cvars[CVAR_DISMISS] = CreateConVar("sm_maprate_dismiss", "0", "If non-zero, the first voting option will be \"Dismiss\"", FCVAR_PLUGIN);
-	g_cvars[CVAR_RESULTS] = CreateConVar("sm_maprate_autoresults", "1", "If non-zero, the results graph will automatically be displayed when a player rates a map", FCVAR_PLUGIN);
+	g_cvars[CVAR_DB_CONFIG] = CreateConVar("sm_maprate_db_config", "default", "Database configuration to use for Map Rate plugin", FCVAR_NONE);
+	g_cvars[CVAR_VERSION] = CreateConVar("sm_maprate_version", MR_VERSION, "Map Rate Version", FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_cvars[CVAR_AUTORATE_TIME] = CreateConVar("sm_maprate_autorate_time", "0", "If non-zero, automatically asks dead players to rate map after they have played the map for this number of seconds", FCVAR_NONE);
+	g_cvars[CVAR_ALLOW_REVOTE] = CreateConVar("sm_maprate_allow_revote", "1", "If non-zero, allow a user to override his/her previous vote on a map", FCVAR_NONE);
+	g_cvars[CVAR_TABLE] = CreateConVar("sm_maprate_table", "map_ratings", "The name of the database table to use", FCVAR_NONE);
+	g_cvars[CVAR_AUTORATE_DELAY] = CreateConVar("sm_maprate_autorate_delay", "5", "After a player dies, wait this number of seconds before asking to rate if maprate_autorate_tie is non-zero", FCVAR_NONE);
+	g_cvars[CVAR_DISMISS] = CreateConVar("sm_maprate_dismiss", "0", "If non-zero, the first voting option will be \"Dismiss\"", FCVAR_NONE);
+	g_cvars[CVAR_RESULTS] = CreateConVar("sm_maprate_autoresults", "1", "If non-zero, the results graph will automatically be displayed when a player rates a map", FCVAR_NONE);
 	
 	HookEvent("player_death", Event_PlayerDeath);
 	

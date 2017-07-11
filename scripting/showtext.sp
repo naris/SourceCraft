@@ -41,7 +41,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_showtext_version", PLUGIN_VERSION, "ShowText Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_showtext_version", PLUGIN_VERSION, "ShowText Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegAdminCmd("sm_showtext", Command_ShowText, ADMFLAG_CHANGEMAP, "sm_showtext <Text>");
 	
 }

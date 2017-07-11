@@ -78,7 +78,7 @@ stock SetupOBeaconLists(list[], alt_list[], &count, &alt_count, client=0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendBeaconToAll(Float:delay=0.0)
+stock void TE_SendBeaconToAll(Float:delay=0.0)
 {
 	new maxClients = GetMaxClients();
 	new total = 0;
@@ -91,7 +91,7 @@ stock TE_SendBeaconToAll(Float:delay=0.0)
 			clients[total++] = i;
 		}
 	}
-	return TE_Send(clients, total, delay);
+	TE_Send(clients, total, delay);
 }
 
 /**
@@ -102,7 +102,7 @@ stock TE_SendBeaconToAll(Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendOBeaconToAll(client=0, Float:delay=0.0)
+stock void TE_SendOBeaconToAll(client=0, Float:delay=0.0)
 {
     new maxClients = GetMaxClients();
     new total = 0;
@@ -122,7 +122,7 @@ stock TE_SendOBeaconToAll(client=0, Float:delay=0.0)
             }
         }
     }
-    return TE_Send(clients, total, delay);
+    TE_Send(clients, total, delay);
 }
 
 /**
@@ -133,7 +133,7 @@ stock TE_SendOBeaconToAll(client=0, Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendQEffectToAll(client=0, victim=0, Float:delay=0.0)
+stock void TE_SendQEffectToAll(client=0, victim=0, Float:delay=0.0)
 {
     new maxClients = GetMaxClients();
     new total = 0;
@@ -151,7 +151,7 @@ stock TE_SendQEffectToAll(client=0, victim=0, Float:delay=0.0)
             }
         }
     }
-    return TE_Send(clients, total, delay);
+    TE_Send(clients, total, delay);
 }
 
 /**
@@ -162,7 +162,7 @@ stock TE_SendQEffectToAll(client=0, victim=0, Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendDEffectToAll(Float:delay=0.0)
+stock void TE_SendDEffectToAll(Float:delay=0.0)
 {
     new maxClients = GetMaxClients();
     new total = 0;
@@ -176,7 +176,7 @@ stock TE_SendDEffectToAll(Float:delay=0.0)
 			clients[total++] = i;
 		}
     }
-    return TE_Send(clients, total, delay);
+    TE_Send(clients, total, delay);
 }
 
 /**
@@ -187,7 +187,7 @@ stock TE_SendDEffectToAll(Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendEffectToAll(Float:delay=0.0)
+stock void TE_SendEffectToAll(Float:delay=0.0)
 {
 	new maxClients = GetMaxClients();
 	new total = 0;
@@ -200,7 +200,7 @@ stock TE_SendEffectToAll(Float:delay=0.0)
 			clients[total++] = i;
 		}
 	}
-	return TE_Send(clients, total, delay);
+	TE_Send(clients, total, delay);
 }
 
 /**
@@ -211,7 +211,7 @@ stock TE_SendEffectToAll(Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendEffectToOthers(client=0, victim=0, Float:delay=0.0)
+stock void TE_SendEffectToOthers(client=0, victim=0, Float:delay=0.0)
 {
     new maxClients = GetMaxClients();
     new total = 0;
@@ -227,7 +227,7 @@ stock TE_SendEffectToOthers(client=0, victim=0, Float:delay=0.0)
             }
         }
     }
-    return TE_Send(clients, total, delay);
+    TE_Send(clients, total, delay);
 }
 
 /**
@@ -239,7 +239,7 @@ stock TE_SendEffectToOthers(client=0, victim=0, Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendEffectToClient(client, Float:delay=0.0)
+stock void TE_SendEffectToClient(client, Float:delay=0.0)
 {
     if (!GetSetting(client, Disable_Effects))
     {
@@ -247,10 +247,8 @@ stock TE_SendEffectToClient(client, Float:delay=0.0)
 
         players[0] = client;
 
-        return TE_Send(players, 1, delay);
+        TE_Send(players, 1, delay);
     }
-    else
-        return 0;
 }
 
 /**
@@ -262,7 +260,7 @@ stock TE_SendEffectToClient(client, Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendEffectToTeam(team,Float:delay=0.0)
+stock void TE_SendEffectToTeam(team,Float:delay=0.0)
 {
     new total = 0;
     new clients[MaxClients];
@@ -277,7 +275,7 @@ stock TE_SendEffectToTeam(team,Float:delay=0.0)
             }
         }
     }
-    return TE_Send(clients, total, delay);
+    TE_Send(clients, total, delay);
 }
 
 /**
@@ -289,7 +287,7 @@ stock TE_SendEffectToTeam(team,Float:delay=0.0)
  * @param delay		Delay in seconds to send the TE.
  * @noreturn
  */
-stock TE_SendEffectToOtherTeam(team,Float:delay=0.0)
+stock void TE_SendEffectToOtherTeam(team,Float:delay=0.0)
 {
     new total = 0;
     new clients[MaxClients];
@@ -304,6 +302,6 @@ stock TE_SendEffectToOtherTeam(team,Float:delay=0.0)
             }
         }
     }
-    return TE_Send(clients, total, delay);
+    TE_Send(clients, total, delay);
 }
 

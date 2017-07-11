@@ -22,7 +22,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_rweapons_version", PLUGIN_VERSION, "Remove weapons plugin Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_rweapons_version", PLUGIN_VERSION, "Remove weapons plugin Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	sm_rweapons_show = CreateConVar("sm_rweapons_show", "1", "Toggles target messages on and off, 0 for off, 1 for on. - Default 1");
 	RegAdminCmd("sm_rweapons", Command_Rweapons, ADMFLAG_KICK,"sm_rweapons <user id | name>");
 	LoadTranslations("common.phrases")

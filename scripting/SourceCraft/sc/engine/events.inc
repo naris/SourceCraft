@@ -941,8 +941,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
             if (drop_money > 0 || drop_crystals > 0 || drop_xp > 0)
             {
-                new package = CreateEntityByName("prop_physics_override");
-                if (package > 0 && IsValidEntity(package))
+                new pkg = CreateEntityByName("prop_physics_override");
+                if (pkg > 0 && IsValidEntity(pkg))
                 {
                     new n;
                     if (GetGameMode() == MvM)
@@ -960,8 +960,8 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                             n = 0;
                     }
 
-                    SetEntityModel(package, mdlPackage[n]);
-                    DispatchSpawn(package);
+                    SetEntityModel(pkg, mdlPackage[n]);
+                    DispatchSpawn(pkg);
 
                     new Float:origin[3];
                     GetClientAbsOrigin(victim_index, origin);
@@ -974,32 +974,32 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     NormalizeVector(velocity,velocity);
                     ScaleVector(velocity,350.0);
 
-                    TeleportEntity(package, origin, angles, velocity);
+                    TeleportEntity(pkg, origin, angles, velocity);
 
-                    m_PackageMoney[package] = drop_money;
+                    m_PackageMoney[pkg] = drop_money;
                     if (drop_money > 0)
                         SetMoney(victim_index, money - drop_money);
 
-                    m_PackageCrystals[package] = drop_crystals;
+                    m_PackageCrystals[pkg] = drop_crystals;
                     if (drop_crystals > 0)
                         SetCrystals(victim_index, crystals - drop_crystals);
 
-                    m_PackagePCrystals[package] = drop_pcrystals;
+                    m_PackagePCrystals[pkg] = drop_pcrystals;
                     if (drop_pcrystals > 0)
                         SetPCrystals(victim_index, crystals - drop_pcrystals);
 
-                    m_PackageEnergy[package] = GetEnergy(victim_index);
+                    m_PackageEnergy[pkg] = GetEnergy(victim_index);
 
-                    m_PackageXP[package] = drop_xp;
+                    m_PackageXP[pkg] = drop_xp;
                     if (drop_xp > 0)
                         SetXP(victim_index, race, xp - drop_xp);
 
                     g_PackageCount++;
-                    m_PackageVictim[package] = victim; // userid
-                    m_PackageRefs[package] = EntIndexToEntRef(package);
-                    SDKHook(package, SDKHook_Touch, OnPackageTouched);
-                    m_PackageTimer[package] = CreateTimer(g_fPackageDuration, RemoveDroppedPackage,
-                                                          package, TIMER_FLAG_NO_MAPCHANGE);
+                    m_PackageVictim[pkg] = victim; // userid
+                    m_PackageRefs[pkg] = EntIndexToEntRef(pkg);
+                    SDKHook(pkg, SDKHook_Touch, OnPackageTouched);
+                    m_PackageTimer[pkg] = CreateTimer(g_fPackageDuration, RemoveDroppedPackage,
+                                                          pkg, TIMER_FLAG_NO_MAPCHANGE);
                 }
             }
         }
@@ -1107,46 +1107,46 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     g_bDamageFromPlayerHurt = false;
 }
 
-public Action:OnPackageTouched(package, client)
+public Action:OnPackageTouched(pkg, client)
 {
-    if (IsValidClientAlive(client) && package > 0 && IsValidEdict(package) &&
-        EntRefToEntIndex(m_PackageRefs[package]) == package)
+    if (IsValidClientAlive(client) && pkg > 0 && IsValidEdict(pkg) &&
+        EntRefToEntIndex(m_PackageRefs[pkg]) == pkg)
     {
-        AcceptEntityInput(package, "kill");
-        m_PackageRefs[package] = INVALID_ENT_REFERENCE;
+        AcceptEntityInput(pkg, "kill");
+        m_PackageRefs[pkg] = INVALID_ENT_REFERENCE;
         g_PackageCount--;
 
-        new Handle:timer = m_PackageTimer[package];
+        new Handle:timer = m_PackageTimer[pkg];
         if (timer != INVALID_HANDLE)
         {
             PrepareAndEmitSoundToClient(client, sndPickup, .channel=SNDCHAN_WEAPON);
 
-            CloseHandle(m_PackageTimer[package]);
-            m_PackageTimer[package] = INVALID_HANDLE;
+            CloseHandle(m_PackageTimer[pkg]);
+            m_PackageTimer[pkg] = INVALID_HANDLE;
 
-            new origin = m_PackageVictim[package];
+            new origin = m_PackageVictim[pkg];
 
-            new money = m_PackageMoney[package];
+            new money = m_PackageMoney[pkg];
             if (money > 0)
             {
                 SetMoney(client, GetMoney(client) + money);
-                m_PackageMoney[package] = 0;
+                m_PackageMoney[pkg] = 0;
             }
 
-            new crystals = m_PackageCrystals[package];
-            new pcrystals = m_PackagePCrystals[package];
+            new crystals = m_PackageCrystals[pkg];
+            new pcrystals = m_PackagePCrystals[pkg];
             if (client == origin)
             {
                 if (crystals > 0)
                 {
                     GiveCrystals(client, crystals, "Recovered");
-                    m_PackageCrystals[package] = 0;
+                    m_PackageCrystals[pkg] = 0;
                 }
 
                 if (pcrystals > 0)
                 {
                     GivePCrystals(client, pcrystals, "Recovered");
-                    m_PackagePCrystals[package] = 0;
+                    m_PackagePCrystals[pkg] = 0;
                 }
             }
             else
@@ -1154,11 +1154,11 @@ public Action:OnPackageTouched(package, client)
                 if (crystals > 0 ||pcrystals > 0)
                 {
                     GiveCrystals(client, crystals +pcrystals, "Package");
-                    m_PackageCrystals[package] = 0;
-                    m_PackagePCrystals[package] = 0;
+                    m_PackageCrystals[pkg] = 0;
+                    m_PackagePCrystals[pkg] = 0;
                 }
 
-                new Float:energy = m_PackageEnergy[package];
+                new Float:energy = m_PackageEnergy[pkg];
                 new Float:extra  = GetRandomFloat(0.0, 10.0) - GetEnergy(client);
                 if (extra > 0)
                     energy += extra;
@@ -1166,54 +1166,54 @@ public Action:OnPackageTouched(package, client)
                 if (energy > 0)
                 {
                     IncrementEnergy(client,energy);
-                    m_PackageEnergy[package] = 0.0;
+                    m_PackageEnergy[pkg] = 0.0;
                 }
             }
 
-            new xp = m_PackageXP[package];
+            new xp = m_PackageXP[pkg];
             if (xp > 0)
             {
                 GiveXP(client, xp, (client == origin) ? "Recovered" : "Package");
-                m_PackageXP[package] = 0;
+                m_PackageXP[pkg] = 0;
             }
         }
     }
 }
 
-public Action:RemoveDroppedPackage(Handle:timer, any:package)
+public Action:RemoveDroppedPackage(Handle:timer, any:pkg)
 {
-    if (EntRefToEntIndex(m_PackageRefs[package]) == package &&
-        IsValidEdict(package))
+    if (EntRefToEntIndex(m_PackageRefs[pkg]) == pkg &&
+        IsValidEdict(pkg))
     {
-        AcceptEntityInput(package, "kill");
-        m_PackageRefs[package] = INVALID_ENT_REFERENCE;
+        AcceptEntityInput(pkg, "kill");
+        m_PackageRefs[pkg] = INVALID_ENT_REFERENCE;
         g_PackageCount--;
 
-        if (m_PackageTimer[package] == timer)
+        if (m_PackageTimer[pkg] == timer)
         {
-            m_PackageTimer[package] = INVALID_HANDLE;
+            m_PackageTimer[pkg] = INVALID_HANDLE;
 
-            new client = GetClientOfUserId(m_PackageVictim[package]);
+            new client = GetClientOfUserId(m_PackageVictim[pkg]);
             if (IsValidClient(client))
             {
                 PrepareAndEmitSoundToClient(client, sndPickup, .channel=SNDCHAN_WEAPON);
 
-                new money = m_PackageMoney[package];
+                new money = m_PackageMoney[pkg];
                 if (money > 0)
                     SetMoney(client, GetMoney(client) + money);
 
-                new crystals = m_PackageCrystals[package];
+                new crystals = m_PackageCrystals[pkg];
                 if (crystals > 0)
                     GiveCrystals(client, crystals, "Recovered");
 
-                new xp = m_PackageXP[package];
+                new xp = m_PackageXP[pkg];
                 if (xp > 0)
                     GiveXP(client, xp, "Recovered");
             }
 
-            m_PackageCrystals[package] = 0;
-            m_PackageMoney[package] = 0;
-            m_PackageXP[package] = 0;
+            m_PackageCrystals[pkg] = 0;
+            m_PackageMoney[pkg] = 0;
+            m_PackageXP[pkg] = 0;
         }
     }
 

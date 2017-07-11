@@ -50,9 +50,9 @@ new g_iHealth[MAXPLAYERS + 1];
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	CreateConVar("behorsemann_version", PLUGIN_VERSION, "[TF2] Be the Horsemann version", FCVAR_REPLICATED|FCVAR_NOTIFY | FCVAR_PLUGIN | FCVAR_SPONLY);
-	g_hCvarThirdPerson = CreateConVar("behorsemann_thirdperson", "1", "Whether or not Horsemenn ought to be in third-person", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_hCvarHealth = CreateConVar("behorsemann_health", "1100", "How much health Horsemenn start with", FCVAR_PLUGIN);
+	CreateConVar("behorsemann_version", PLUGIN_VERSION, "[TF2] Be the Horsemann version", FCVAR_REPLICATED|FCVAR_NOTIFY | FCVAR_NONE | FCVAR_SPONLY);
+	g_hCvarThirdPerson = CreateConVar("behorsemann_thirdperson", "1", "Whether or not Horsemenn ought to be in third-person", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_hCvarHealth = CreateConVar("behorsemann_health", "1100", "How much health Horsemenn start with", FCVAR_NONE);
 	RegAdminCmd("sm_behhh", Command_Horsemann, ADMFLAG_ROOT, "It's a good time to run");
 	AddNormalSoundHook(HorsemannSH);
 	HookEvent("post_inventory_application", EventInventoryApplication,  EventHookMode_Post);

@@ -31,7 +31,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    CreateConVar("sm_wrangleye_version", PLUGIN_VERSION, "[TF2] Wrangle Monoculus Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("sm_wrangleye_version", PLUGIN_VERSION, "[TF2] Wrangle Monoculus Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     HookEvent("player_death", player_death, EventHookMode_Pre);
     RegAdminCmd("sm_wrangleeye", WrangleMonoculus, ADMFLAG_EYEBOSS);
 }

@@ -202,7 +202,7 @@ public Amplifier_Selected(Handle:menu,MenuAction:action,client,selection)
                     else if (TF2_IsPlayerDisguised(client))
                         TF2_RemovePlayerDisguise(client);
 
-                    new object = BuildObject(client, TFExtObject_Dispenser, 1, .check=false);
+                    new obj = BuildObject(client, TFExtObject_Dispenser, 1, .check=false);
                     if (m_AmpNodeAvailable)
                     {
                         new percent, ri;
@@ -237,7 +237,7 @@ public Amplifier_Selected(Handle:menu,MenuAction:action,client,selection)
                                 percent = level * 25;
                             }
                         }
-                        ConvertToAmplifier(object, client, condition[item], g_AmpRange[ri][level], percent);
+                        ConvertToAmplifier(obj, client, condition[item], g_AmpRange[ri][level], percent);
                     }
 
                     PrepareAndEmitSoundToAll(recallDstWav,client);

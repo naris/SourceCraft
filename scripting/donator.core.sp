@@ -81,7 +81,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("basicdonator_version", DONATOR_VERSION, "Basic Donators Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("basicdonator_version", DONATOR_VERSION, "Basic Donators Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	RegAdminCmd("sm_reloaddonators", cmd_ReloadDonators, ADMFLAG_BAN, "Reloads the donator database");
 	
@@ -165,7 +165,8 @@ public OnClientPostAdminCheck(iClient)
 		decl String:szLevelBuffer[2], String:szTagBuffer[256], String:szSteamId[64];
 		GetClientCookie(iClient, g_CookieLevel, szLevelBuffer, sizeof(szLevelBuffer));
 		GetClientCookie(iClient, g_CookieTag, szTagBuffer, sizeof(szTagBuffer));
-		GetClientAuthString(iClient, szSteamId, sizeof(szSteamId));
+		//GetClientAuthString(iClient, szSteamId, sizeof(szSteamId));
+		GetClientAuthId(iClient, AuthId_Steam2, szSteamId, sizeof(szSteamId));
 		if (strlen(szLevelBuffer) > 1)
 		{
 			SetTrieValue(g_hDonatorTrie, szSteamId, StringToInt(szLevelBuffer));
@@ -246,7 +247,8 @@ public Action:cmd_ReloadDonators(client, args)
 		g_bIsDonator[i] = false;
 	
 		decl iLevel, String:szAuthId[64];
-		GetClientAuthString(i, szAuthId, sizeof(szAuthId));
+		//GetClientAuthString(i, szAuthId, sizeof(szAuthId));
+		GetClientAuthId(i, AuthId_Steam2, szAuthId, sizeof(szAuthId));
 		
 		if (GetTrieValue(g_hDonatorTrie, szAuthId, iLevel))
 			g_bIsDonator[i] = true;
@@ -386,7 +388,8 @@ public T_CheckForumById(Handle:owner, Handle:hndl, const String:error[], any:dat
 				strcopy(szName, sizeof(szName), szName[9]);
 				TrimString(szName);
 			}
-
+			
+#if defined SQL_FORUM_CONFIG
 			if (SQL_EscapeString(g_hForumDataBase, szName, szEscapedName, sizeof(szEscapedName)))
 			{
 				decl String:szBuffer[768];
@@ -394,12 +397,14 @@ public T_CheckForumById(Handle:owner, Handle:hndl, const String:error[], any:dat
 				       "SELECT u.user_id, u.username FROM nuke_users u JOIN nuke_donators d ON d.uid = u.user_id WHERE u.username = '%s' AND u.user_id NOT IN (SELECT x.user_id FROM nuke_bbxdata_data x WHERE x.field_id = 10 AND d.donated >= 25.0 AND x.xdata_value LIKE 'STEAM_%') UNION DISTINCT SELECT u.user_id, u.username FROM nuke_users u WHERE u.username = '%s' AND (u.user_rank IN (1, 2, 4) OR u.user_rank2 IN (1, 2, 4) OR u.user_rank3 IN (1, 2, 4) OR u.user_rank4 IN (1, 2, 4) OR u.user_rank5 IN (1, 2, 4)) AND u.user_id NOT IN (SELECT x.user_id FROM nuke_bbxdata_data x WHERE x.field_id = 10 AND x.xdata_value LIKE 'STEAM_%')", szEscapedName, szEscapedName);
 				SQL_TQuery(g_hForumDataBase, T_CheckForumByName, szBuffer, data);
 			}
+#endif
 		}
 	}
 	else
 		LogError("Check Forum By Id Query failed! %s", error);
 }
 
+#if defined SQL_FORUM_CONFIG
 public T_CheckForumByName(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	if (hndl != INVALID_HANDLE)
@@ -407,7 +412,8 @@ public T_CheckForumByName(Handle:owner, Handle:hndl, const String:error[], any:d
 		if (IsClientInGame(data) && SQL_GetRowCount(hndl) == 1 && SQL_FetchRow(hndl))
 		{
 			decl String:szSteamId[64];
-			if (GetClientAuthString(data, szSteamId, sizeof(szSteamId)) && strlen(szSteamId) > 1)
+			//if (GetClientAuthString(data, szSteamId, sizeof(szSteamId)) && strlen(szSteamId) > 1)
+			if (GetClientAuthId(data, AuthId_Steam2, szSteamId, sizeof(szSteamId)) && strlen(szSteamId) > 1)
 			{
 				decl String:szTag[256];
 				SQL_FetchString(hndl, 1, szTag, sizeof(szTag));
@@ -436,6 +442,7 @@ public T_CheckForumByName(Handle:owner, Handle:hndl, const String:error[], any:d
 	else
 		LogError("Check Forum By Name Query failed! %s", error);
 }
+#endif
 
 //-----------------------------------------------------------------------------------------
 
@@ -445,7 +452,8 @@ public T_CheckForumByName(Handle:owner, Handle:hndl, const String:error[], any:d
 public Native_GetDonatorLevel(Handle:plugin, params)
 {
 	decl String:szSteamId[64], iLevel;
-	GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	//GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	GetClientAuthId(GetNativeCell(1), AuthId_Steam2, szSteamId, sizeof(szSteamId));
 	
 	if (GetTrieValue(g_hDonatorTrie, szSteamId, iLevel))
 		return iLevel;
@@ -457,7 +465,8 @@ public Native_SetDonatorLevel(Handle:plugin, params)
 {
 	/*
 	decl String:szSteamId[64], iLevel;
-	GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	//GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	GetClientAuthId(GetNativeCell(1), AuthId_Steam2, szSteamId, sizeof(szSteamId));
 
 	if (GetTrieValue(g_hDonatorTrie, szSteamId, iLevel))
 	{
@@ -485,7 +494,8 @@ public Native_SetDonatorLevel(Handle:plugin, params)
 public Native_IsClientDonator(Handle:plugin, params)
 {
 	decl String:szSteamId[64], iLevel;
-	GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	//GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	GetClientAuthId(GetNativeCell(1), AuthId_Steam2, szSteamId, sizeof(szSteamId));
 	if (GetTrieValue(g_hDonatorTrie, szSteamId, iLevel))
 		return true;
 	return false;
@@ -503,7 +513,8 @@ public Native_FindDonatorBySteamId(Handle:plugin, params)
 public Native_GetDonatorMessage(Handle:plugin, params)
 {
 	decl String:szBuffer[256], String:szSteamId[64];
-	GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	//GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	GetClientAuthId(GetNativeCell(1), AuthId_Steam2, szSteamId, sizeof(szSteamId));
 
 	if (GetTrieString(g_hDonatorTagTrie, szSteamId, szBuffer, 256))
 	{
@@ -516,7 +527,8 @@ public Native_GetDonatorMessage(Handle:plugin, params)
 public Native_SetDonatorMessage(Handle:plugin, params)
 {
 	decl String:szOldTag[256], String:szSteamId[64], String:szNewTag[256];
-	GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	//GetClientAuthString(GetNativeCell(1), szSteamId, sizeof(szSteamId));
+	GetClientAuthId(GetNativeCell(1), AuthId_Steam2, szSteamId, sizeof(szSteamId));
 	
 	if (GetTrieString(g_hDonatorTagTrie, szSteamId, szOldTag, 256))
 	{

@@ -39,10 +39,15 @@ new TopMenuObject:g_Category = INVALID_TOPMENUOBJECT;
 public OnAdminMenuReady(Handle:topmenu)
 {
 	if (!GetConVarBool(cvar_MenuIntegrate))
+	{
 		return;
+	}
 	
 	if (topmenu == g_hAdminMenu)
+	{
 		return;
+	}
+	
 	g_Category = INVALID_TOPMENUOBJECT; 
 	g_hAdminMenu = topmenu;
 	new TopMenuObject:menu_category = FindTopMenuCategory(topmenu, ADMINMENU_SERVERCOMMANDS);
@@ -58,30 +63,36 @@ public Handle_Category(Handle:topmenu, TopMenuAction:action, TopMenuObject:objec
 	switch (action)
 	{
 		case TopMenuAction_DisplayOption:
+		{
 			Format(buffer, maxlength, "gScramble Commands");
+		}
+		
 		case TopMenuAction_SelectOption:
 		{
 			Format(buffer, maxlength, "Select a Function");
 			decl String:sBuffer[33];
-			new style = (g_bMvMMode) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
 			new Handle:hScrambleOptionsMenu = CreateMenu(Handle_ScrambleFunctionMenu);
 			SetMenuTitle(hScrambleOptionsMenu, "Choose A Function");
 			SetMenuExitButton(hScrambleOptionsMenu, true);
 			SetMenuExitBackButton(hScrambleOptionsMenu, true);
+			
 			if (CheckCommandAccess(param, "sm_scrambleround", ADMFLAG_BAN))
 			{
-				AddMenuItem(hScrambleOptionsMenu, "0", "Start a Scramble", style);
+				AddMenuItem(hScrambleOptionsMenu, "0", "Start a Scramble");
 			}
+			
 			if (CheckCommandAccess(param, "sm_scramblevote", ADMFLAG_BAN))
 			{
-				AddMenuItem(hScrambleOptionsMenu, "1", "Start a Vote", style);
+				AddMenuItem(hScrambleOptionsMenu, "1", "Start a Vote");
 				Format(sBuffer, sizeof(sBuffer), "Reset %i Vote(s)", g_iVotes);
 				AddMenuItem(hScrambleOptionsMenu, "2", sBuffer);
 			}
+			
 			if (CheckCommandAccess(param, "sm_forcebalance", ADMFLAG_BAN))
 			{
-				AddMenuItem(hScrambleOptionsMenu, "3", "Force Team Balance", style);
+				AddMenuItem(hScrambleOptionsMenu, "3", "Force Team Balance");
 			}
+			
 			if (CheckCommandAccess(param, "sm_cancel", ADMFLAG_BAN))
 			{
 				if (g_bScrambleNextRound || g_hScrambleDelay != INVALID_HANDLE)
@@ -95,6 +106,7 @@ public Handle_Category(Handle:topmenu, TopMenuAction:action, TopMenuObject:objec
 					AddMenuItem(hScrambleOptionsMenu, "4", sBuffer);
 				}
 			}
+			
 			DisplayMenu(hScrambleOptionsMenu, param, MENU_TIME_FOREVER);
 		}
 	}
@@ -126,8 +138,12 @@ ShowScrambleSelectionMenu(client)
 	SetMenuExitButton(scrambleMenu, true);
 	SetMenuExitBackButton(scrambleMenu, true);
 	AddMenuItem(scrambleMenu, "round", "Scramble Next Round");
+	
 	if (CheckCommandAccess(client, "sm_scramble", ADMFLAG_BAN))
+	{
 		AddMenuItem(scrambleMenu, "now", "Scramble Teams Now");
+	}
+	
 	DisplayMenu(scrambleMenu, client, MENU_TIME_FOREVER);
 }
 
@@ -139,6 +155,7 @@ public Handle_ScrambleFunctionMenu(Handle:functionMenu, MenuAction:action, clien
 		{
 			decl String:sOption[2];
 			GetMenuItem(functionMenu, param2, sOption, sizeof(sOption));
+			
 			switch (StringToInt(sOption))
 			{
 				case 0:
@@ -156,7 +173,9 @@ public Handle_ScrambleFunctionMenu(Handle:functionMenu, MenuAction:action, clien
 		case MenuAction_Cancel:
 		{
 			if (param2 == MenuCancel_ExitBack )
+			{
 				RedisplayAdminMenu(g_hAdminMenu, client);
+			}
 		}		
 		case MenuAction_End:
 			CloseHandle(functionMenu);
@@ -172,20 +191,29 @@ public Handle_ScrambleVote(Handle:scrambleVoteMenu, MenuAction:action, client, p
 			new String:method[6], ScrambleTime:iMethod;
 			GetMenuItem(scrambleVoteMenu, param2, method, sizeof(method));
 			if (StrEqual(method, "round", true))
+			{
 				iMethod = Scramble_Round;			
+			}
 			else
+			{
 				iMethod = Scramble_Now;
+			}
+			
 			PerformVote(client, iMethod);			
 		}
 		
 		case MenuAction_Cancel:
 		{
 			if (param2 == MenuCancel_ExitBack )
+			{
 				RedisplayAdminMenu(g_hAdminMenu, client);
+			}
 		}
 		
 		case MenuAction_End:
+		{
 			CloseHandle(scrambleVoteMenu);	
+		}
 	}
 }
 
@@ -196,7 +224,9 @@ public Handle_Scramble(Handle:scrambleMenu, MenuAction:action, client, param2 )
 		case MenuAction_Select:
 		{
 			if (!param2)
+			{
 				SetupRoundScramble(client);
+			}
 			else
 			{
 				new Handle:scrambleNowMenu = INVALID_HANDLE;
@@ -216,11 +246,15 @@ public Handle_Scramble(Handle:scrambleMenu, MenuAction:action, client, param2 )
 		case MenuAction_Cancel:
 		{
 			if (param2 == MenuCancel_ExitBack )
+			{
 				RedisplayAdminMenu(g_hAdminMenu, client);
+			}
 		}
 		
 		case MenuAction_End:
+		{
 			CloseHandle(scrambleMenu);	
+		}
 	}
 }
 
@@ -234,7 +268,10 @@ public Handle_ScrambleNow(Handle:scrambleNowMenu, MenuAction:action, client, par
 			respawnSelectMenu = CreateMenu(Handle_RespawnMenu);
 		
 			if (g_hScrambleNowPack != INVALID_HANDLE)
+			{
 				CloseHandle(g_hScrambleNowPack);
+			}
+			
 			g_hScrambleNowPack= CreateDataPack();
 		
 			SetMenuTitle(respawnSelectMenu, "Respawn Players After Scramble?");
@@ -252,11 +289,15 @@ public Handle_ScrambleNow(Handle:scrambleNowMenu, MenuAction:action, client, par
 		case MenuAction_Cancel:
 		{
 			if (param2 == MenuCancel_ExitBack )
+			{
 				RedisplayAdminMenu( g_hAdminMenu, client );
+			}
 		}
 	
 		case MenuAction_End:
+		{
 			CloseHandle(scrambleNowMenu);
+		}
 	}
 }
 
@@ -303,11 +344,15 @@ public Handle_RespawnMenu(Handle:scrambleResetMenu, MenuAction:action, client, p
 		case MenuAction_Cancel:
 		{
 			if (param2 == MenuCancel_ExitBack)
+			{
 				RedisplayAdminMenu( g_hAdminMenu, client);
+			}
 		}
 		
 		case MenuAction_End:
+		{
 			CloseHandle(scrambleResetMenu);
+		}
 			
 	}
 }
@@ -322,6 +367,7 @@ public Handle_ModeMenu(Handle:modeMenu, MenuAction:action, client, param2)
 			new e_ScrambleModes:mode,
 				Float:delay = ReadPackFloat(g_hScrambleNowPack),
 				bool:respawn = ReadPackCell(g_hScrambleNowPack) ? true : false;
+				
 			mode = e_ScrambleModes:(param2+1);
 			CloseHandle(g_hScrambleNowPack);
 			g_hScrambleNowPack = INVALID_HANDLE;
@@ -331,11 +377,15 @@ public Handle_ModeMenu(Handle:modeMenu, MenuAction:action, client, param2)
 		case MenuAction_Cancel:
 		{
 			if (param2 == MenuCancel_ExitBack)
+			{
 				RedisplayAdminMenu( g_hAdminMenu, client);
+			}
 		}
 		
 		case MenuAction_End:
+		{
 			CloseHandle(modeMenu);
+		}
 	}
 }
 
@@ -349,6 +399,7 @@ RestoreMenuCheck(rejoinClient, team)
 find out who was the last one swapped
 */
 	new client, iTemp;
+	
 	for (new i = 1; i<= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && GetClientTeam(i) == team)
@@ -360,8 +411,12 @@ find out who was the last one swapped
 			}
 		}
 	}
+	
 	if (!client)
+	{
 		return;
+	}
+	
 	decl String:name[MAX_NAME_LENGTH+1];
 	GetClientName(rejoinClient, name, sizeof(name));
 	
@@ -379,19 +434,25 @@ find out who was the last one swapped
 AddBuddy(client, buddy)
 {
 	if (!client || !buddy || !IsClientInGame(client) || !IsClientInGame(buddy) || client == buddy)
+	{
 		return;
+	}
+	
 	if (g_aPlayers[buddy][iBuddy])
 	{
 		PrintToChat(client, "\x01\x04[SM]\x01 %t", "AlreadyHasABuddy");
 		return;
 	}
+	
 	new String:clientName[MAX_NAME_LENGTH],
 		String:buddyName[MAX_NAME_LENGTH];
 	GetClientName(client, clientName, sizeof(clientName));
 	GetClientName(buddy, buddyName, sizeof(buddyName));
 	
 	if (g_aPlayers[client][iBuddy])
+	{
 		PrintToChat(g_aPlayers[client][iBuddy], "\x01\x04[SM]\x01 %t", "ChoseANewBuddy", clientName);
+	}
 	
 	g_aPlayers[client][iBuddy] = buddy;
 	PrintToChat(buddy, "\x01\x04[SM]\x01 %t", "SomeoneAddedYou", clientName);
@@ -418,7 +479,9 @@ public BuddyMenuCallback(Handle:menu, MenuAction:action, client, param2)
 		}
 		
 		case MenuAction_End:
+		{
 			CloseHandle(menu);
+		}
 	}
 }
 
@@ -446,6 +509,8 @@ public Handle_RestoreMenu(Handle:RestoreMenu, MenuAction:action, client, param2)
 		}
 	
 		case MenuAction_End:
+		{
 			CloseHandle(RestoreMenu);
+		}
 	}
 }

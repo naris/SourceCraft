@@ -30,19 +30,18 @@ public OnPluginStart()
     HookEvent("object_destroyed", Event_ObjectDestroyed, EventHookMode_Post)
     HookEvent("player_team", Event_PlayerChangeTeam, EventHookMode_Post)
     
-    CreateConVar("sm_spawnsentry", PLUGIN_VERSION, "Spawnsentry version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
+    CreateConVar("sm_spawnsentry", PLUGIN_VERSION, "Spawnsentry version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
     
     g_IsSpawnSentryOn = CreateConVar("sm_spawnsentry_enabled", "1", "Enable/Disable spawning a sentry when a player dies. <0|1>", 0, true,0.0, true, 1.0);
     g_SentryInitLevel = CreateConVar("sm_spawnsentry_initlevel", "1", "Initial upgrade level of sentry that is placed when a player dies. <1-3>", 1, true,1.0, true, 3.0);
     g_NumSentries = CreateConVar("sm_spawnsentry_maxsentries", "5", "How many sentries allowable to be created upon player death. <1-20>", 1, true,1.0, true, 20.0);
-    g_SpawnSentryChance = CreateConVar("sm_spawnsentry_chance", "1.0", "Probability that a sentry will be placed on death (0.5 = 50%, 1.0 = 100%, etc.)", FCVAR_PLUGIN);
+    g_SpawnSentryChance = CreateConVar("sm_spawnsentry_chance", "1.0", "Probability that a sentry will be placed on death (0.5 = 50%, 1.0 = 100%, etc.)", FCVAR_NONE);
 
 }
 
-public OnClientConnected(client)
+public void OnClientConnected(client)
 {
     gSentRemaining[client] = GetConVarInt(g_NumSentries);    //Set init sentry count.
-    return true;
 }
 
 public OnClientDisconnect(client) //Destroy all of a player's sentries when he/she disconnects Credit to loop goes to bl4nk

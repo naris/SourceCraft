@@ -39,7 +39,7 @@ new Handle:g_hArrayRadioStationURLs = INVALID_HANDLE;
 
 public OnPluginStart ()
 {
-    CreateConVar ("sm_radio_version", PLUGIN_VERSION, "SourceMod Radio version", FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
+    CreateConVar ("sm_radio_version", PLUGIN_VERSION, "SourceMod Radio version", FCVAR_NONE | FCVAR_SPONLY | FCVAR_REPLICATED | FCVAR_NOTIFY);
     g_cVarRadioEnable = CreateConVar ("sm_radio_enable", "1.0", "Enable SourceMod Radio", 0, true, 0.0, true, 1.0);
     g_cVarRadioStationAdvert = CreateConVar ("sm_radio_advert", "1.0", "Enable advertising the users radio station choice", 0, true, 0.0, true, 1.0);
     g_cVarWelcomeMsg = CreateConVar ("sm_radio_welcome", "1.0", "Enable the welcome message", 0, true, 0.0, true, 1.0);

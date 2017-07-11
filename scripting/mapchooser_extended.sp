@@ -130,7 +130,7 @@ public OnPluginStart()
 	g_OldMapList = CreateArray(arraySize);
 	g_NextMapList = CreateArray(arraySize);
 
-	CreateConVar("sm_mapvote_version", VERSION, "MapChooser Extended Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_mapvote_version", VERSION, "MapChooser Extended Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	g_Cvar_EndOfMapVote = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "10.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);

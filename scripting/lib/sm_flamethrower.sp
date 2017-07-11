@@ -335,14 +335,14 @@ public OnPluginStart()
 {
     RegConsoleCmd("sm_flame", Flame, " -  Use the flamethrower");
 
-    CreateConVar("sm_flame_version", PLUGIN_VERSION, "Version of Flamethrower on this server", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    g_Cvar_FlameAmount = CreateConVar("sm_flame_amount", "5", " Number of flamethrower cells per player at spawn", FCVAR_PLUGIN);
-    g_Cvar_FlameRange  = CreateConVar("sm_flame_range", "600.0", " Range of the flamethrower", FCVAR_PLUGIN);
-    g_Cvar_Admins      = CreateConVar("sm_flame_admins", "0", " Allow Admins only to use the Flamethrower", FCVAR_PLUGIN);
-    g_Cvar_Enable      = CreateConVar("sm_flame_enabled", "1", " Enable/Disable the Flamethrower plugin", FCVAR_PLUGIN);
-    g_Cvar_Delay       = CreateConVar("sm_flame_delay", "3.0", " Delay between flamethrower blasts", FCVAR_PLUGIN);
-    g_Cvar_SpawnDelay  = CreateConVar("sm_flame_spawndelay", "5.0", " Delay before flamethrower is available (0.0 disables)", FCVAR_PLUGIN);
-    g_Cvar_FlameSound  = CreateConVar("sm_flame_sound", "weapons/rpg/rocketfire1.wav", " Flamethrower sound", FCVAR_PLUGIN);
+    CreateConVar("sm_flame_version", PLUGIN_VERSION, "Version of Flamethrower on this server", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    g_Cvar_FlameAmount = CreateConVar("sm_flame_amount", "5", " Number of flamethrower cells per player at spawn", FCVAR_NONE);
+    g_Cvar_FlameRange  = CreateConVar("sm_flame_range", "600.0", " Range of the flamethrower", FCVAR_NONE);
+    g_Cvar_Admins      = CreateConVar("sm_flame_admins", "0", " Allow Admins only to use the Flamethrower", FCVAR_NONE);
+    g_Cvar_Enable      = CreateConVar("sm_flame_enabled", "1", " Enable/Disable the Flamethrower plugin", FCVAR_NONE);
+    g_Cvar_Delay       = CreateConVar("sm_flame_delay", "3.0", " Delay between flamethrower blasts", FCVAR_NONE);
+    g_Cvar_SpawnDelay  = CreateConVar("sm_flame_spawndelay", "5.0", " Delay before flamethrower is available (0.0 disables)", FCVAR_NONE);
+    g_Cvar_FlameSound  = CreateConVar("sm_flame_sound", "weapons/rpg/rocketfire1.wav", " Flamethrower sound", FCVAR_NONE);
 
     GetGameType();
 }

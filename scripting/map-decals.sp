@@ -90,7 +90,7 @@ public OnPluginStart() {
 	RegAdminCmd("sm_decalmenu",		Command_DecalMenu,		ADMIN_LEVEL_SPRAY,	"Shows the Map Decals Menu");
 	
 	// ConVars
-	md_version		= CreateConVar("md_version", PLUGIN_VERSION, "Map Decals plugin version", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_NOTIFY);
+	md_version		= CreateConVar("md_version", PLUGIN_VERSION, "Map Decals plugin version", FCVAR_DONTRECORD||FCVAR_NOTIFY);
 	// Set it to the correct version, in case the plugin gets updated...
 	SetConVarString(md_version, PLUGIN_VERSION);
 

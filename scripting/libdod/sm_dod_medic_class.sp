@@ -137,25 +137,25 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-    CreateConVar("sm_dod_medic_version", PLUGIN_VERSION, "Medic Class for DoDS version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    g_Cvar_MedicWeapon     = CreateConVar("sm_dod_medic_weapon", "0", "The secondary weapon to give to the Medic <0=Pistols,1=Carbine/C96>", FCVAR_PLUGIN);
-    g_Cvar_MedicAmmo       = CreateConVar("sm_dod_medic_ammo", "14", "The amount of ammo to give to the Medic", FCVAR_PLUGIN);
-    g_Cvar_MedicNades      = CreateConVar("sm_dod_medic_nades", "2", "Enable nades for the Medic <0=Disable,1=Smoke,2=Nades>", FCVAR_PLUGIN);
-    g_Cvar_MedicNadeAmmo   = CreateConVar("sm_dod_medic_nades_ammo", "2", "The amount of nades to give to the Medic", FCVAR_PLUGIN);
-    g_Cvar_MedicSpeed      = CreateConVar("sm_dod_medic_speed", "1.1", "Sets the speed of the medic", FCVAR_PLUGIN);
-    g_Cvar_MedicWeight     = CreateConVar("sm_dod_medic_weight", "0.9", "Sets the weight (gravity) of the medic", FCVAR_PLUGIN);
-    g_Cvar_MedicHealth     = CreateConVar("sm_dod_medic_health", "80", "Sets the HP of the medic", FCVAR_PLUGIN);
-    g_Cvar_MedicMaxHeal    = CreateConVar("sm_dod_medic_maxhealing", "50", "Maximum amount of health to heal", FCVAR_PLUGIN);
-    g_Cvar_MedicMaxHealth  = CreateConVar("sm_dod_medic_maxhealth", "100", "Maximum health a player be healed to (100 = full health)", FCVAR_PLUGIN);
-    g_Cvar_MedicMax        = CreateConVar("sm_dod_medic_max", "2", "Maximum number of Medics per team (0 = unlimited)", FCVAR_PLUGIN);
-    g_Cvar_MedicPacks      = CreateConVar("sm_dod_medic_packs", "20", "Number of Medic Packs the Medic carries", FCVAR_PLUGIN);
-    g_Cvar_MedicMessages   = CreateConVar("sm_dod_medic_messages", "1", "Message the Medic/Patient on events", FCVAR_PLUGIN);
-    g_Cvar_MedicRestrict   = CreateConVar("sm_dod_medic_restrict", "0", "Class to restrict Medic to (see forum thread)", FCVAR_PLUGIN);
-    g_Cvar_MedicPickup     = CreateConVar("sm_dod_medic_useweapons", "0", "Allow Medics to pickup and use dropped weapons", FCVAR_PLUGIN);
-    g_Cvar_MedicKeepWeapon = CreateConVar("sm_dod_medic_keepweapons", "0", "Allow Medics to keep thier original classes' weapons", FCVAR_PLUGIN);
-    g_Cvar_MedicMinPlayers = CreateConVar("sm_dod_medic_minplayers", "0", "Minimum number of players before Medic class available", FCVAR_PLUGIN);
-    g_Cvar_MedicSelf       = CreateConVar("sm_dod_medic_minhealth", "20", "Minimum hp before a player can self heal", FCVAR_PLUGIN);
-    g_Cvar_MedicEnable     = CreateConVar("sm_dod_medic_enable", "1", "Enables/Disables Medic Class", FCVAR_PLUGIN);
+    CreateConVar("sm_dod_medic_version", PLUGIN_VERSION, "Medic Class for DoDS version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    g_Cvar_MedicWeapon     = CreateConVar("sm_dod_medic_weapon", "0", "The secondary weapon to give to the Medic <0=Pistols,1=Carbine/C96>", FCVAR_NONE);
+    g_Cvar_MedicAmmo       = CreateConVar("sm_dod_medic_ammo", "14", "The amount of ammo to give to the Medic", FCVAR_NONE);
+    g_Cvar_MedicNades      = CreateConVar("sm_dod_medic_nades", "2", "Enable nades for the Medic <0=Disable,1=Smoke,2=Nades>", FCVAR_NONE);
+    g_Cvar_MedicNadeAmmo   = CreateConVar("sm_dod_medic_nades_ammo", "2", "The amount of nades to give to the Medic", FCVAR_NONE);
+    g_Cvar_MedicSpeed      = CreateConVar("sm_dod_medic_speed", "1.1", "Sets the speed of the medic", FCVAR_NONE);
+    g_Cvar_MedicWeight     = CreateConVar("sm_dod_medic_weight", "0.9", "Sets the weight (gravity) of the medic", FCVAR_NONE);
+    g_Cvar_MedicHealth     = CreateConVar("sm_dod_medic_health", "80", "Sets the HP of the medic", FCVAR_NONE);
+    g_Cvar_MedicMaxHeal    = CreateConVar("sm_dod_medic_maxhealing", "50", "Maximum amount of health to heal", FCVAR_NONE);
+    g_Cvar_MedicMaxHealth  = CreateConVar("sm_dod_medic_maxhealth", "100", "Maximum health a player be healed to (100 = full health)", FCVAR_NONE);
+    g_Cvar_MedicMax        = CreateConVar("sm_dod_medic_max", "2", "Maximum number of Medics per team (0 = unlimited)", FCVAR_NONE);
+    g_Cvar_MedicPacks      = CreateConVar("sm_dod_medic_packs", "20", "Number of Medic Packs the Medic carries", FCVAR_NONE);
+    g_Cvar_MedicMessages   = CreateConVar("sm_dod_medic_messages", "1", "Message the Medic/Patient on events", FCVAR_NONE);
+    g_Cvar_MedicRestrict   = CreateConVar("sm_dod_medic_restrict", "0", "Class to restrict Medic to (see forum thread)", FCVAR_NONE);
+    g_Cvar_MedicPickup     = CreateConVar("sm_dod_medic_useweapons", "0", "Allow Medics to pickup and use dropped weapons", FCVAR_NONE);
+    g_Cvar_MedicKeepWeapon = CreateConVar("sm_dod_medic_keepweapons", "0", "Allow Medics to keep thier original classes' weapons", FCVAR_NONE);
+    g_Cvar_MedicMinPlayers = CreateConVar("sm_dod_medic_minplayers", "0", "Minimum number of players before Medic class available", FCVAR_NONE);
+    g_Cvar_MedicSelf       = CreateConVar("sm_dod_medic_minhealth", "20", "Minimum hp before a player can self heal", FCVAR_NONE);
+    g_Cvar_MedicEnable     = CreateConVar("sm_dod_medic_enable", "1", "Enables/Disables Medic Class", FCVAR_NONE);
     
     RegConsoleCmd("sm_class_medic", beMedic, " - Change class to a Medic");
     RegConsoleCmd("sm_heal", Heal, " - Heal a player");

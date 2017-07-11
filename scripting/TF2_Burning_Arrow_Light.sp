@@ -27,8 +27,8 @@ public OnPluginStart()
 	GetGameFolderName(strModName, sizeof(strModName));
 	if(!StrEqual(strModName, "tf"))
 		SetFailState("This plugin is only for Team Fortress 2.");
-	CreateConVar("arrowlight_version", PLUGIN_VERSION, "Burning Arrow Light version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_hEnabled = CreateConVar("arrowlight_enable", "1", "Enable/disable the Burning Arrow Light plugin.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CreateConVar("arrowlight_version", PLUGIN_VERSION, "Burning Arrow Light version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_hEnabled = CreateConVar("arrowlight_enable", "1", "Enable/disable the Burning Arrow Light plugin.", FCVAR_NOTIFY);
 }
 
 public OnMapStart()

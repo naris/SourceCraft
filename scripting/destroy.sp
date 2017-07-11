@@ -30,7 +30,7 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("destroy.phrases");
 
-	CreateConVar("sm_destroyengybuildings_version", PLUGIN_VERSION, "Destroy Engineer Buildings Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_destroyengybuildings_version", PLUGIN_VERSION, "Destroy Engineer Buildings Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegAdminCmd("sm_destroy", Command_Destroy, ADMFLAG_SLAY, "sm_destroy <name/@all/@red/@blu> [sentry/dispenser/entrance/exit/all]");
 
 	ownerOffset = FindSendPropInfo("CBaseObject", "m_hBuilder");

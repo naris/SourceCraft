@@ -22,7 +22,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	LoadTranslations("birthdayhack.phrases");
-	CreateConVar("sm_bdhack_version", PLUGIN_VERSION, "Birthday Hack Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_bdhack_version", PLUGIN_VERSION, "Birthday Hack Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_Cvar_bd = FindConVar("tf_birthday");
 	RegAdminCmd("sm_bd", bdcmd, ADMFLAG_GENERIC);
 

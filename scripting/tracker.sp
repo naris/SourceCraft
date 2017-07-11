@@ -93,11 +93,11 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	// Plugin version public Cvar
-	CreateConVar("sm_tracker_version", PLUGIN_VERSION, "Very Basic Player Tracker Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	CreateConVar("sm_tracker_version", PLUGIN_VERSION, "Very Basic Player Tracker Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	
 	// Config Cvars
-	cvar_AddTime = CreateConVar("sm_tracker_addtime", "90.0", "Add/update players in the database after this many seconds", FCVAR_PLUGIN, true, 1.0);
-	cvar_GeoIPType = CreateConVar("sm_tracker_geoiptype", "1", "Add player's GeoIP country to the database. 0 = Disabled, 1 = 2 letter Country Code, 2 = 3 letter Country Code, 3 = full Country Name.", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+	cvar_AddTime = CreateConVar("sm_tracker_addtime", "90.0", "Add/update players in the database after this many seconds", FCVAR_NONE, true, 1.0);
+	cvar_GeoIPType = CreateConVar("sm_tracker_geoiptype", "1", "Add player's GeoIP country to the database. 0 = Disabled, 1 = 2 letter Country Code, 2 = 3 letter Country Code, 3 = full Country Name.", FCVAR_NONE, true, 0.0, true, 3.0);
 
 	// Hook Config CVars
 	HookConVarChange(cvar_AddTime, AddTime_Change);

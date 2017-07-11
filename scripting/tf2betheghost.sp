@@ -120,44 +120,44 @@ public OnPluginStart()
 {
 	LoadTranslations("common.phrases.txt");
 	
-	sm_tf2btg_version = CreateConVar( "sm_tf2btg_version", PLUGIN_VERSION, "TF2 Be The Ghost plugin version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED );
+	sm_tf2btg_version = CreateConVar( "sm_tf2btg_version", PLUGIN_VERSION, "TF2 Be The Ghost plugin version", FCVAR_NOTIFY|FCVAR_REPLICATED );
 	SetConVarString( sm_tf2btg_version, PLUGIN_VERSION, true, true );
 	HookConVarChange( sm_tf2btg_version, OnConVarChanged_PluginVersion );
 	
-	sm_tf2btg_debug = CreateConVar( "sm_tf2btg_debug", "0", "Debug mode", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2btg_debug = CreateConVar( "sm_tf2btg_debug", "0", "Debug mode", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2btg_debug, OnConVarChanged );
 	
-	sm_tf2btg_notify = CreateConVar( "sm_tf2btg_notify", "2", "Chat notificationsn2 - public, 1 - private, 0 - disabled", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
+	sm_tf2btg_notify = CreateConVar( "sm_tf2btg_notify", "2", "Chat notificationsn2 - public, 1 - private, 0 - disabled", FCVAR_NONE, true, 0.0, true, 2.0 );
 	HookConVarChange( sm_tf2btg_notify, OnConVarChanged );
 	
-	sm_tf2btg_adminonly = CreateConVar( "sm_tf2btg_adminonly", "1", "", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2btg_adminonly = CreateConVar( "sm_tf2btg_adminonly", "1", "", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2btg_adminonly, OnConVarChanged );
 	
-	sm_tf2btg_scary_delay = CreateConVar( "sm_tf2btg_scary_delay", "0.1", "Delay between checks. Low values could cause extra lags!", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_scary_delay = CreateConVar( "sm_tf2btg_scary_delay", "0.1", "Delay between checks. Low values could cause extra lags!", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_scary_delay, OnConVarChanged );
 	
-	sm_tf2btg_scary_distance = CreateConVar( "sm_tf2btg_scary_distance", "240.0", "", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_scary_distance = CreateConVar( "sm_tf2btg_scary_distance", "240.0", "", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_scary_distance, OnConVarChanged );
 	
-	sm_tf2btg_scary_distance_admin = CreateConVar( "sm_tf2btg_scary_distance_admin", "240.0", "", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_scary_distance_admin = CreateConVar( "sm_tf2btg_scary_distance_admin", "240.0", "", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_scary_distance_admin, OnConVarChanged );
 	
-	sm_tf2btg_scary_duration = CreateConVar( "sm_tf2btg_scary_duration", "5.0", "", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_scary_duration = CreateConVar( "sm_tf2btg_scary_duration", "5.0", "", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_scary_duration, OnConVarChanged );
 	
-	sm_tf2btg_scary_duration_admin = CreateConVar( "sm_tf2btg_scary_duration_admin", "5.0", "", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_scary_duration_admin = CreateConVar( "sm_tf2btg_scary_duration_admin", "5.0", "", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_scary_duration_admin, OnConVarChanged );
 	
-	sm_tf2btg_ghost_speed = CreateConVar( "sm_tf2btg_ghost_speed", "200.0", "", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_ghost_speed = CreateConVar( "sm_tf2btg_ghost_speed", "200.0", "", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_ghost_speed, OnConVarChanged );
 	
-	sm_tf2btg_ghost_speed_admin = CreateConVar( "sm_tf2btg_ghost_speed_admin", "200.0", "", FCVAR_PLUGIN, true, 0.0 );
+	sm_tf2btg_ghost_speed_admin = CreateConVar( "sm_tf2btg_ghost_speed_admin", "200.0", "", FCVAR_NONE, true, 0.0 );
 	HookConVarChange( sm_tf2btg_ghost_speed_admin, OnConVarChanged );
 	
-	sm_tf2btg_scary_objects = CreateConVar( "sm_tf2btg_scary_objects", "0", "2 - everyone, 1 - adminOnly, 0 - disabled", FCVAR_PLUGIN, true, 0.0, true, 2.0 );
+	sm_tf2btg_scary_objects = CreateConVar( "sm_tf2btg_scary_objects", "0", "2 - everyone, 1 - adminOnly, 0 - disabled", FCVAR_NONE, true, 0.0, true, 2.0 );
 	HookConVarChange( sm_tf2btg_scary_objects, OnConVarChanged );
 	
-	sm_tf2btg_spawnroom_protect = CreateConVar( "sm_tf2btg_spawnroom_protect", "1", "Enable/diable spawnroom protection", FCVAR_PLUGIN, true, 0.0, true, 1.0 );
+	sm_tf2btg_spawnroom_protect = CreateConVar( "sm_tf2btg_spawnroom_protect", "1", "Enable/diable spawnroom protection", FCVAR_NONE, true, 0.0, true, 1.0 );
 	HookConVarChange( sm_tf2btg_spawnroom_protect, OnConVarChanged );
 	
 	decl String:strGameDir[8];

@@ -1,0 +1,24 @@
+Documentation on the Level Bug from Y3110W
+
+Steps to reproduce:
+1) reset your skill points in your race
+2) change class so the menu appears
+3) don't put any points in
+4) type 'retry' in console
+5) make sure the database has skills still at 0, if not then go back to step 1
+6) reset again
+7) spend your skill points in just one skill
+8) kill yourself
+9) while dead, reset again
+10) repeat 7, 8 and 9
+11) to save it, retry again
+
+After the fix levels script is run, it converts the extra upgrades into levels
+
+-------
+Some Ideas:
+
+Need to look closely at ResetUpgradesNow and ResetUpgrades starting at line 834
+
+To detect this we'll need to run a query into the DB where we look to see if the
+race level is lower than the sum of the race upgrades for a particular race

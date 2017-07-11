@@ -69,7 +69,7 @@ public OnPluginStart()
 {
 	LoadTranslations("maxclass.phrases");
 
-	CreateConVar("sm_tf_maxclass", PL_VERSION, "TF2 max class", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_tf_maxclass", PL_VERSION, "TF2 max class", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	IsMaxPlayersOn = CreateConVar("sm_maxclass_allow","1","Enable/Disable max class blocking");
 	CheckAdmins = CreateConVar("sm_maxclass_exclude_admins","0","Enable/Disable admin exclusion");
 	CountAdmins = CreateConVar("sm_maxclass_count_admins","0","Enable/Disable admins counting towards class limits");

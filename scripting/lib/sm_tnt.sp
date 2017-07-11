@@ -319,20 +319,20 @@ public OnPluginStart()
     RegConsoleCmd("sm_det", detonate, " -  Detonates a TNT pack under player's crosshairs ");
     RegConsoleCmd("sm_tnt", tnt, " -  Detonates or Defuses a TNT pack under player's crosshairs ");
     
-    CreateConVar("sm_tnt_version", PLUGIN_VERSION, "Version of SourceMod TNT on this server", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    g_Cvar_tntAmount    = CreateConVar("sm_tnt_amount", "2", " Number of tnt packs per player at spawn (max 10)", FCVAR_PLUGIN);
-    g_Cvar_Damage       = CreateConVar("sm_tnt_damage", "200", " Amount of damage that the tnt does", FCVAR_PLUGIN);
-    g_Cvar_Radius       = CreateConVar("sm_tnt_radius", "200.0", " Radius of explosion", FCVAR_PLUGIN);
-    g_Cvar_Admins       = CreateConVar("sm_tnt_admins", "0", " Allow Admins only to use tnt", FCVAR_PLUGIN);
-    g_Cvar_Enable       = CreateConVar("sm_tnt_enabled", "1", " Enable/Disable the TNT plugin", FCVAR_PLUGIN);
-    g_Cvar_Delay        = CreateConVar("sm_tnt_delay", "5.0", " Delay between spawning and making tnt available", FCVAR_PLUGIN);
-    g_Cvar_Restrict     = CreateConVar("sm_tnt_restrict", "0", " Class to restrict TNT to (see forum thread)", FCVAR_PLUGIN);
-    g_Cvar_Mode         = CreateConVar("sm_tnt_mode", "3", " Detonation mode: 0=radio 1=crosshairs 2=timer 3=timer&crosshairs|radio", FCVAR_PLUGIN);
-    g_Cvar_Death        = CreateConVar("sm_tnt_death", "1", " Enable/Disable detonation on owner death/change round", FCVAR_PLUGIN);
-    g_Cvar_tntDetDelay  = CreateConVar("sm_tnt_det_delay", "10.0", " Detonation delay", FCVAR_PLUGIN);
-    g_Cvar_PlantDelay   = CreateConVar("sm_tnt_plant_delay", "5.0", " Delay between planting TNT", FCVAR_PLUGIN);
-    g_Cvar_PrimeDelay   = CreateConVar("sm_tnt_prime_delay", "5.0", " How long it takes TNT to be primed after planting", FCVAR_PLUGIN);
-    g_Cvar_Announce     = CreateConVar("sm_tnt_announce", "1", " Announce usage instructions", FCVAR_PLUGIN);
+    CreateConVar("sm_tnt_version", PLUGIN_VERSION, "Version of SourceMod TNT on this server", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    g_Cvar_tntAmount    = CreateConVar("sm_tnt_amount", "2", " Number of tnt packs per player at spawn (max 10)", FCVAR_NONE);
+    g_Cvar_Damage       = CreateConVar("sm_tnt_damage", "200", " Amount of damage that the tnt does", FCVAR_NONE);
+    g_Cvar_Radius       = CreateConVar("sm_tnt_radius", "200.0", " Radius of explosion", FCVAR_NONE);
+    g_Cvar_Admins       = CreateConVar("sm_tnt_admins", "0", " Allow Admins only to use tnt", FCVAR_NONE);
+    g_Cvar_Enable       = CreateConVar("sm_tnt_enabled", "1", " Enable/Disable the TNT plugin", FCVAR_NONE);
+    g_Cvar_Delay        = CreateConVar("sm_tnt_delay", "5.0", " Delay between spawning and making tnt available", FCVAR_NONE);
+    g_Cvar_Restrict     = CreateConVar("sm_tnt_restrict", "0", " Class to restrict TNT to (see forum thread)", FCVAR_NONE);
+    g_Cvar_Mode         = CreateConVar("sm_tnt_mode", "3", " Detonation mode: 0=radio 1=crosshairs 2=timer 3=timer&crosshairs|radio", FCVAR_NONE);
+    g_Cvar_Death        = CreateConVar("sm_tnt_death", "1", " Enable/Disable detonation on owner death/change round", FCVAR_NONE);
+    g_Cvar_tntDetDelay  = CreateConVar("sm_tnt_det_delay", "10.0", " Detonation delay", FCVAR_NONE);
+    g_Cvar_PlantDelay   = CreateConVar("sm_tnt_plant_delay", "5.0", " Delay between planting TNT", FCVAR_NONE);
+    g_Cvar_PrimeDelay   = CreateConVar("sm_tnt_prime_delay", "5.0", " How long it takes TNT to be primed after planting", FCVAR_NONE);
+    g_Cvar_Announce     = CreateConVar("sm_tnt_announce", "1", " Announce usage instructions", FCVAR_NONE);
 
     g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 

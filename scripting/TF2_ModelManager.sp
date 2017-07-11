@@ -21,7 +21,7 @@
 #define PLUGIN_AUTHOR			"FlaminSarge (based on Damizean's TF2 Equipment Manager)"
 #define PLUGIN_VERSION			"1.0.2" //RIP Attachables
 #define PLUGIN_CONTACT			"http://forums.alliedmods.net/"
-#define CVAR_FLAGS				FCVAR_PLUGIN|FCVAR_NOTIFY
+#define CVAR_FLAGS				FCVAR_NOTIFY
 
 //#define DEBUG					// Uncomment this for debug.information
 

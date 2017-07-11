@@ -20,24 +20,15 @@ You should have received a copy of the GNU General Public License
 along with this plugin.  If not, see <http://www.gnu.org/licenses/>.
 *************************************************************************
 *************************************************************************
-File Information
-$Id: gscramble.sp 164 2012-08-20 09:42:59Z brutalgoergectf@gmail.com $
-$Author: brutalgoergectf@gmail.com $
-$Revision: 164 $
-$Date: 2012-08-20 03:42:59 -0600 (Mon, 20 Aug 2012) $
-$LastChangedBy: brutalgoergectf@gmail.com $
-$LastChangedDate: 2012-08-20 03:42:59 -0600 (Mon, 20 Aug 2012) $
-$URL: https://tf2tmng.googlecode.com/svn/trunk/gscramble/addons/sourcemod/scripting/gscramble.sp $
-$Copyright: (c) Tf2Tmng 2009-2011$
-*************************************************************************
-*************************************************************************
+
 */
 #pragma semicolon 1
 #include <sourcemod>
 #include <tf2>
 #include <tf2_stocks>
+#include <sdktools>
 
-// comment out to disable debuggin
+// comment out to disable debug
 //#define DEBUG
 
 #undef REQUIRE_EXTENSIONS
@@ -45,7 +36,7 @@ $Copyright: (c) Tf2Tmng 2009-2011$
 #define REQUIRE_EXTENSIONS
 
 /**
-comment these 2 lines if you want to compile without those thingies.
+comment these 2 lines if you want to compile without them.
 */
 #define GAMEME_INCLUDED
 #define HLXCE_INCLUDED
@@ -60,11 +51,12 @@ comment these 2 lines if you want to compile without those thingies.
 #endif
 #define REQUIRE_PLUGIN
 
-#define VERSION "3.0.14"
+#define VERSION "3.0.20"
 #define TEAM_RED 2
 #define TEAM_BLUE 3
-#define SCRAMBLE_SOUND "vo/announcer_am_teamscramble03.wav"
+#define SCRAMBLE_SOUND  "vo/announcer_am_teamscramble03.wav"
 #define EVEN_SOUND		"vo/announcer_am_teamscramble01.wav"
+
 /**
 cvar handles
 */
@@ -84,9 +76,9 @@ new Handle:cvar_Version				= INVALID_HANDLE,
 	Handle:cvar_VoteMode			= INVALID_HANDLE,
 	Handle:cvar_PublicNeeded		= INVALID_HANDLE,
 	Handle:cvar_FullRoundOnly		= INVALID_HANDLE,
-	Handle:cvar_AutoScrambleWinStreak			= INVALID_HANDLE,
+	Handle:cvar_AutoScrambleWinStreak = INVALID_HANDLE,
 	Handle:cvar_SortMode			= INVALID_HANDLE,
-	Handle:cvar_TeamSwapBlockImmunity			= INVALID_HANDLE,
+	Handle:cvar_TeamSwapBlockImmunity = INVALID_HANDLE,
 	Handle:cvar_MenuVoteEnd			= INVALID_HANDLE,
 	Handle:cvar_AutoscrambleVote	= INVALID_HANDLE,
 	Handle:cvar_ScrambleImmuneMode	= INVALID_HANDLE,
@@ -110,7 +102,7 @@ new Handle:cvar_Version				= INVALID_HANDLE,
 	Handle:cvar_ScrambleAdmFlags	= INVALID_HANDLE,
 	Handle:cvar_TeamswapAdmFlags	= INVALID_HANDLE,
 	Handle:cvar_Koth				= INVALID_HANDLE,
-	Handle:cvar_AutoScrambleRoundCount				= INVALID_HANDLE,
+	Handle:cvar_AutoScrambleRoundCount = INVALID_HANDLE,
 	Handle:cvar_ForceReconnect		= INVALID_HANDLE,
 	Handle:cvar_TeamworkProtect		= INVALID_HANDLE,
 	Handle:cvar_BalanceActionDelay	= INVALID_HANDLE,
@@ -132,13 +124,14 @@ new Handle:cvar_Version				= INVALID_HANDLE,
 	Handle:cvar_ScrambleDuelImmunity = INVALID_HANDLE,
 	Handle:cvar_AbHumanOnly			= INVALID_HANDLE,
 	Handle:cvar_LockTeamsFullRound  	= INVALID_HANDLE,
-	Handle:cvar_SelectSpectators 		= INVALID_HANDLE;
+	Handle:cvar_SelectSpectators 		= INVALID_HANDLE,
+	Handle:cvar_OneScramblePerRound 		= INVALID_HANDLE;
 
 new Handle:g_hAdminMenu 			= INVALID_HANDLE,
 	Handle:g_hScrambleVoteMenu 		= INVALID_HANDLE,
 	Handle:g_hScrambleNowPack		= INVALID_HANDLE;
 #if defined GAMEME_INCLUDED
-new Handle:g_hGameMeUpdateTimer 	= INVALID_HANDLE;
+	new Handle:g_hGameMeUpdateTimer 	= INVALID_HANDLE;
 #endif
 
 /**
@@ -147,7 +140,7 @@ timer handles
 new Handle:g_hVoteDelayTimer 		= INVALID_HANDLE,
 	Handle:g_hScrambleDelay			= INVALID_HANDLE,
 	Handle:g_hRoundTimeTick 		= INVALID_HANDLE,
-	Handle:g_hForceBalanceTimer			= INVALID_HANDLE,
+	Handle:g_hForceBalanceTimer		= INVALID_HANDLE,
 	Handle:g_hBalanceFlagTimer		= INVALID_HANDLE,
 	Handle:g_hCheckTimer 			= INVALID_HANDLE,
 	Handle:g_hVoteAdTimer			= INVALID_HANDLE;
@@ -168,7 +161,6 @@ new bool:g_bScrambleNextRound = false,
 	bool:g_bIsTimer,
 	bool:g_bArenaMode,
 	bool:g_bKothMode,
-	bool:g_bMvMMode,
 	bool:g_bRedCapped,
 	bool:g_bBluCapped,
 	bool:g_bFullRoundOnly,
@@ -189,6 +181,7 @@ new bool:g_bScrambleNextRound = false,
 	bool:g_bVoteCommandCreated,
 	bool:g_bTeamsLocked,
 	bool:g_bSelectSpectators,
+	
 	/**
 	overrides the auto scramble check
 	*/
@@ -303,126 +296,6 @@ new e_RoundState:g_RoundState,
 new g_iTimerEnt;
 new g_iRoundTimer;
 
-/**
- * Description: Function to determine game/mod type & mode
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-
-    enum Mode
-    {
-	Undefined,
-	Medieval,
-	ControlPoint,
-	CaptureTheFlag,
-	AttackDefend,
-	TerritoryControl,
-	Payload,
-	Invade,
-	Koth,
-	PvP,
-	MvM,
-    };
-
-    stock Game:GameType = undetected;
-    stock Mode:GameMode = Undefined;
-
-    stock Game:GetGameType()
-    {
-	if (GameType == undetected)
-	{
-	    new String:modname[30];
-	    GetGameFolderName(modname, sizeof(modname));
-	    if (StrEqual(modname,"tf",false)) 
-		GameType=tf2;
-	    if (StrEqual(modname,"cstrike",false))
-		GameType=cstrike;
-	    else if (StrEqual(modname,"csgo",false))
-		GameType=csgo;
-	    else if (StrEqual(modname,"dod",false))
-		GameType=dod;
-	    else if (StrEqual(modname,"hl2mp",false))
-		GameType=hl2mp;
-	    else if (StrEqual(modname,"Insurgency",false))
-		GameType=insurgency;
-	    else if (StrEqual(modname,"left4dead", false))
-		GameType=l4d;
-	    else if (StrEqual(modname,"left4dead2", false))
-		GameType=l4d2;
-	    else if (StrEqual(modname,"zps",false))
-		GameType=zps;
-	    else
-		GameType=other_game;
-	}
-	return GameType;
-    }
-
-    stock Mode:GetGameMode(bool:forceUpdate=false)
-    {
-	if ((forceUpdate || GameMode == Undefined) && GetGameType() == tf2)
-	    GameMode = GetTF2GameMode();
-
-	return GameMode;
-    }
-
-    stock Mode:GetTF2GameMode()
-    {
-	new entity = FindEntityByClassname(-1, "tf_logic_mann_vs_machine");
-	if (entity > MaxClients && IsValidEntity(entity))
-	    return MvM;
-	else
-	{
-	    entity = FindEntityByClassname(-1, "tf_logic_medieval");
-	    if (entity > MaxClients && IsValidEntity(entity))
-		return Medieval;
-	    else
-	    {
-		entity = FindEntityByClassname(-1, "tf_logic_koth");
-		if (entity > MaxClients && IsValidEntity(entity))
-		    return Koth;
-		else
-		{
-		    entity = FindEntityByClassname(-1, "mapobj_cart_dispenser");
-		    if (entity > MaxClients && IsValidEntity(entity))
-			return Payload;
-		    else
-		    {
-			entity = FindEntityByClassname(-1, "trigger_capture_area");
-			if (entity > MaxClients && IsValidEntity(entity))
-			    return ControlPoint;
-			else
-			{
-			    entity = FindEntityByClassname(-1, "item_teamflag");
-			    if (entity > MaxClients && IsValidEntity(entity))
-			    {
-				switch (GetEntProp(entity, Prop_Send, "m_nType"))
-				{
-				    case 1: return AttackDefend;
-				    case 2: return TerritoryControl;
-				    case 3: return Invade;
-				}
-				return CaptureTheFlag;
-			    }
-			    else
-			    {
-				entity = FindEntityByClassname(-1, "func_capturezone");
-				if (entity > MaxClients && IsValidEntity(entity))
-				    return CaptureTheFlag;
-			    }
-			}
-		    }
-		}
-	    }
-	}
-	return PvP;
-    }
-
-    //Call ResetGameMode() in OnMapEnd()
-    #define ResetGameMode()     GameMode = Undefined
-
-#endif
-
 #include "gscramble/gscramble_menu_settings.sp"
 #include "gscramble/gscramble_autoscramble.sp"
 #include "gscramble/gscramble_autobalance.sp"
@@ -430,13 +303,12 @@ new g_iRoundTimer;
 
 public Plugin:myinfo = 
 {
-	name = "[TF2] gScramble Team Manager",
-	author = "Goerge",
-	description = "A comprehensive team management plugin.",
+	name = "[TF2] gScramble (Redux)",
+	author = "David",
+	description = "Auto Managed team balancer/scrambler.",
 	version = VERSION,
-	url = "http://tf2tmng.googlecode.com/"
+	url = "https://forums.alliedmods.net/showthread.php?t=219898"
 };
-
 
 public OnPluginStart()
 {
@@ -517,7 +389,9 @@ public OnPluginStart()
 	
 	cvar_BlockJointeam = CreateConVar("gs_block_jointeam",		"0", "If enabled, will block the use of the jointeam and spectate commands and force mp_forceautoteam enabled if it is not enabled", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	
-	cvar_Version			= CreateConVar("sm_gscramble_version", VERSION, "Gscramble version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	cvar_OneScramblePerRound =  CreateConVar("gs_onescrambleperround", "1", "If enabled, will only allow only allow one scramble per round", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	
+	cvar_Version			= CreateConVar("gscramble_version", VERSION, "Gscramble version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	RegCommands();
 	
 	/**
@@ -537,7 +411,7 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("gscramble.phrases");
 		
-	CheckEstensions();	
+	CheckExtensions();	
 		
 	g_iVoters = GetClientCount(false);
 	g_iVotesNeeded = RoundToFloor(float(g_iVoters) * GetConVarFloat(cvar_PublicNeeded));
@@ -549,17 +423,21 @@ public OnPluginStart()
 public OnAllPluginsLoaded()
 {
 	new Handle:gTopMenu;
-	if (LibraryExists("adminmenu") && ((gTopMenu = GetAdminTopMenu()) != INVALID_HANDLE))	
+	
+	if (LibraryExists("adminmenu") && ((gTopMenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{	
 		OnAdminMenuReady(gTopMenu);
+	}
 }
 
 stock CheckTranslation()
 {
 	decl String:sPath[257];
 	BuildPath(Path_SM, sPath, sizeof(sPath), "translations/gscramble.phrases.txt");
+	
 	if (!FileExists(sPath))
 	{
-		SetFailState("Translation file 'gscramble.phrases.txt' is missing. Please download the zip file at 'http://forums.alliedmods.net/showthread.php?t=89136'");
+		SetFailState("Translation file 'gscramble.phrases.txt' is missing. Please download the zip file at 'http://forums.alliedmods.net/showthread.php?t=1983244'");
 	}
 }
 
@@ -576,8 +454,8 @@ RegCommands()
 	AddCommandListener(CMD_Listener, "jointeam");
 	AddCommandListener(CMD_Listener, "spectate");
 	
-	RegConsoleCmd("sm_preference",		cmd_Preference);
-	RegConsoleCmd("sm_addbuddy", 		cmd_AddBuddy);	
+	RegConsoleCmd("sm_preference", cmd_Preference);
+	RegConsoleCmd("sm_addbuddy",   cmd_AddBuddy);	
 }
 
 public Action:CMD_Listener(client, const String:command[], argc)
@@ -597,11 +475,8 @@ public Action:CMD_Listener(client, const String:command[], argc)
 						return Plugin_Continue;
 					}
 				}
-				if (TeamsUnbalanced(false))
+				if (TeamsUnbalanced(false)) //allow clients to change teams during imbalances
 				{
-				/**
-				allow clients to change teams during imbalances
-				*/
 					return Plugin_Continue;
 				}
 				if (GetClientTeam(client) >= 2)
@@ -622,11 +497,8 @@ public Action:CMD_Listener(client, const String:command[], argc)
 				{
 					if (StrEqual(sArg, "blue", false) || StrEqual(sArg, "red", false) || StringToInt(sArg) >= 2)
 					{
-						if (TeamsUnbalanced(false))
+						if (TeamsUnbalanced(false)) //allow clients to change teams during imbalances
 						{
-						/**
-						allow clients to change teams during imbalances
-						*/
 							return Plugin_Continue;
 						}
 					}
@@ -661,20 +533,20 @@ public Action:CMD_Listener(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-CheckEstensions()
+CheckExtensions()
 {
 	new String:sMod[14];
 	GetGameFolderName(sMod, 14);
+	
 	if (!StrEqual(sMod, "TF", false))
 	{
 		SetFailState("This plugin only works on Team Fortress 2");
 	}
+	
 	new String:sExtError[256];
-	/**
-	check to see if client prefs is loaded and configured properly
-	*/		
 	new iExtStatus;
 	
+	//check to see if client prefs is loaded and configured properly				
 	iExtStatus = GetExtensionFileStatus("clientprefs.ext", sExtError, sizeof(sExtError));
 	switch (iExtStatus)
 	{
@@ -703,9 +575,8 @@ CheckEstensions()
 			}
 		}
 	}	
-	/**
-	now that we have checked for the clientprefs ext, see if we can use its natives
-	*/
+	
+	//now that we have checked for the clientprefs ext, see if we can use its natives
 	if (g_bUseClientPrefs)
 	{
 		g_cookie_timeBlocked = RegClientCookie("time blocked", "time player was blocked", CookieAccess_Private);
@@ -720,6 +591,7 @@ public Action:cmd_AddBuddy(client, args)
 	if (!g_bUseBuddySystem)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "BuddyDisabledError");
+		
 		return Plugin_Handled;
 	}
 	if (args == 1)
@@ -737,12 +609,19 @@ public Action:cmd_AddBuddy(client, args)
 			tn_is_ml) == 1)
 			AddBuddy(client, target_list[0]);
 		else
+		{
 			ReplyToTargetError(client, COMMAND_TARGET_NONE);
+		}
 	}
 	else if (!args)
+	{
 		ShowBuddyMenu(client);
+	}
 	else
+	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "BuddyArgError");
+	}
+	
 	return Plugin_Handled;
 }
 
@@ -750,61 +629,75 @@ public Action:cmd_Preference(client, args)
 {
 	if (!g_bHooked)
 	{
+	
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "EnableReply");
 		return Plugin_Handled;
 	}	
+	
 	if (!GetConVarBool(cvar_Preference))
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "PrefDisabled");
+		
 		return Plugin_Handled;
 	}
+	
 	if (!args)
 	{
 		if (g_aPlayers[client][iTeamPreference] != 0)
 		{
 			if (g_aPlayers[client][iTeamPreference] == TEAM_RED)
+			{
 				ReplyToCommand(client, "RED");
+			}
 			else
+			{
 				ReplyToCommand(client, "BLU");
+			}
+			
 			return Plugin_Handled;		
 		}
 	}
+	
 	decl String:Team[10];
 	GetCmdArgString(Team, sizeof(Team));
+	
 	if (StrContains(Team, "red", false) != -1)
 	{
 		g_aPlayers[client][iTeamPreference] = TEAM_RED;
 		ReplyToCommand(client, "RED");
 		return Plugin_Handled;
 	}
+	
 	if (StrContains(Team, "blu", false) != -1)
 	{
 		g_aPlayers[client][iTeamPreference] = TEAM_BLUE;
 		ReplyToCommand(client, "BLU");
 		return Plugin_Handled;
 	}
+	
 	if (StrContains(Team, "clear", false) != -1)
 	{
 		g_aPlayers[client][iTeamPreference] = 0;
 		ReplyToCommand(client, "CLEARED");
 		return Plugin_Handled;
 	}
+	
 	ReplyToCommand(client, "Usage: sm_preference <TEAM|CLEAR>");
 	return Plugin_Handled;
 }
 
 public OnPluginEnd() 
 {
-	if (g_bAutoBalance && !g_bMvMMode)
+	if (g_bAutoBalance)
+	{
 		ServerCommand("mp_autoteambalance 1");
+	}
 }
 
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	/**
-	if late, assume state = setup and check the timer ent
-	*/
+	//if late, assume state = setup and check the timer ent
 	if (late)
 	{
 		CreateTimer(1.0, Timer_load);
@@ -818,6 +711,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	MarkNativeAsOptional("SetClientCookie");
 	MarkNativeAsOptional("GetClientCookie");
 	RegPluginLibrary("gscramble");
+	
 	return APLRes_Success;
 }
 
@@ -838,34 +732,50 @@ public Action:Timer_load(Handle:timer)
 bool:IsBlocked(client)
 {
 	if (!g_bForceTeam)
+	{
 		return false;
+	}
+	
 	if (g_bTeamsLocked)
 	{
 		new String:flags[32];
 		GetConVarString(cvar_TeamswapAdmFlags, flags, sizeof(flags));
+		
 		if (IsAdmin(client, flags))
 		{
 			return false;
 		}
+		
 		return true;
 	}
+	
 	if (g_aPlayers[client][iBlockTime] > GetTime())
+	{
 		return true;
+	}
+	
 	return false;
 }
 
 public Native_GS_IsBlocked(Handle:plugin, numParams)
 {
-	new client = GetNativeCell(1),
-		initiator = GetNativeCell(2);
+	new client = GetNativeCell(1), initiator = GetNativeCell(2);
+	
 	if (!client || client > MaxClients || !IsClientInGame(client))
+	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index");
+	}
+	
 	if (IsBlocked(client))
 	{
 		if (initiator)
+		{
 			HandleStacker(client);
+		}
+		
 		return true;
 	}
+	
 	return false;
 }
 
@@ -876,6 +786,7 @@ stock CreateVoteCommand()
 		decl String:sCommand[256];		
 		GetConVarString(cvar_VoteCommand, sCommand, sizeof(sCommand));
 		ExplodeString(sCommand, ",", g_sVoteCommands, 3, sizeof(g_sVoteCommands[]));
+		
 		for (new i; i < 3; i++)
 		{
 			if (strlen(g_sVoteCommands[i]) > 2)
@@ -893,6 +804,7 @@ public Action:CMD_VoteTrigger(client, args)
 	{
 		AttemptScrambleVote(client);
 	}
+	
 	return Plugin_Handled;
 }
 
@@ -900,36 +812,43 @@ public OnConfigsExecuted()
 {
 	g_bUseGameMe = false;
 	g_bUseHlxCe = false;
+	
 	if (GetFeatureStatus(FeatureType_Native, "HLXCE_GetPlayerData") == FeatureStatus_Available)
 	{
 		g_bUseHlxCe = true;
+		
 		LogMessage("HlxCe Available");
 	}
 	else
 	{
 		LogMessage("HlxCe Unavailable");
 	}
+	
 	CreateVoteCommand();
+	
 	if (GetFeatureStatus(FeatureType_Native, "QueryGameMEStats") == FeatureStatus_Available)
 	{
-		LogMessage("GameMe Available");
 		g_bUseGameMe = true;
+		
+		LogMessage("GameMe Available");
 	}
 	else
 	{
 		g_bUseGameMe = false;
+		
 		LogMessage("GameMe Unavailavble");
 	}
+	
 	decl String:sMapName[32];
 	new bool:bAuto = false;
+	
 	GetCurrentMap(sMapName, 32);
 	SetConVarString(cvar_Version, VERSION);
-	/**
-	load load global values
-	*/
+
+	//load load global values
 	g_bSelectSpectators = GetConVarBool(cvar_SelectSpectators);
 	g_bSilent = GetConVarBool(cvar_Silent);
-	g_bAutoBalance = GetConVarBool(cvar_Balancer) && GetGameMode(true) != MvM;
+	g_bAutoBalance = GetConVarBool(cvar_Balancer);
 	g_bFullRoundOnly = GetConVarBool(cvar_FullRoundOnly);
 	g_bForceTeam = GetConVarBool(cvar_ForceTeam);
 	g_iForceTime = GetConVarInt(cvar_ForceTeam);
@@ -940,15 +859,18 @@ public OnConfigsExecuted()
 	g_bUseBuddySystem = GetConVarBool(cvar_BuddySystem);
 	
 	if (g_bUseClientPrefs)
+	{
 		g_bForceReconnect = GetConVarBool(cvar_ForceReconnect);
+	}
 	
-	if (GetConVarBool(cvar_Enabled) && GetGameMode() != MvM)
+	if (GetConVarBool(cvar_Enabled))
 	{
 		if (g_bAutoBalance)
 		{
 			if (GetConVarBool(FindConVar("mp_autoteambalance")))
 			{
 				LogAction(-1, 0, "set mp_autoteambalance to false");
+				
 				SetConVarBool(FindConVar("mp_autoteambalance"), false);
 			}
 		}
@@ -962,7 +884,6 @@ public OnConfigsExecuted()
 		unHook();
 	}
 		
-	g_bMvMMode = false;
 	g_bKothMode = false; 
 	g_bArenaMode = false;
 	
@@ -977,24 +898,20 @@ public OnConfigsExecuted()
 		g_iRoundTrigger = GetConVarInt(cvar_AutoScrambleRoundCount);
 	}
 	
-	/*
-		shut off tf2's built in auto-scramble
-		if gscramble's auto modes are enabled.
-	*/
+	
+	//shut off tf2's built in auto-scramble
+	//if gscramble's auto modes are enabled.
 	if (bAuto && GetConVarBool(FindConVar("mp_scrambleteams_auto")))
 	{
 		SetConVarBool(FindConVar("mp_scrambleteams_auto"), false);
 		LogMessage("Setting mp_scrambleteams_auto false");
 	}
 	
-	if (strncmp(sMapName, "mvm_", 4, false) == 0 || GetGameMode() == MvM)
+	if (GetConVarBool(cvar_Koth) && strncmp(sMapName, "koth_", 5, false) == 0)
 	{
-		if (g_bHooked)
-		{
-			LogAction(-1, 0, "Unhooking events since it's MvM");
-			unHook();
-		}
-		g_bMvMMode = true;
+		g_bRedCapped = false;
+		g_bBluCapped = false;
+		g_bKothMode = true;
 	}
 	else if (strncmp(sMapName, "arena_", 6, false) == 0)
 	{
@@ -1003,37 +920,37 @@ public OnConfigsExecuted()
 			if (g_bHooked)
 			{
 				LogAction(-1, 0, "Unhooking events since it's arena, and tf_arena_use_queue is enabled");
+				
 				unHook();
 			}
+			
 			g_bArenaMode = true;
 		}
 	}
-	else if (GetConVarBool(cvar_Koth) && (strncmp(sMapName, "koth_", 5, false) == 0 || GetGameMode() == Koth))
-	{
-		g_bRedCapped = false;
-		g_bBluCapped = false;
-		g_bKothMode = true;
-	}
+	
 	if (!GetConVarBool(cvar_MenuIntegrate))
 	{
 		if (g_hAdminMenu != INVALID_HANDLE && g_Category != INVALID_TOPMENUOBJECT)
-		{
-			
+		{			
 			RemoveFromTopMenu(g_hAdminMenu, g_Category);
 			g_hAdminMenu = INVALID_HANDLE;
 			g_Category = INVALID_TOPMENUOBJECT;
 		}
 	}
+	
 	if (g_hVoteAdTimer != INVALID_HANDLE)
 	{
 		KillTimer(g_hVoteAdTimer);
 		g_hVoteAdTimer = INVALID_HANDLE;
 	}
+	
 	new Float:fAd = GetConVarFloat(cvar_VoteAd);
+	
 	if (fAd > 0.0)
 	{
 		g_hVoteAdTimer = CreateTimer(fAd, Timer_VoteAd, _, TIMER_REPEAT);
 	}
+	
 	if (GetConVarBool(cvar_BlockJointeam))
 	{
 		g_bBlockJointeam = true;
@@ -1043,7 +960,8 @@ public OnConfigsExecuted()
 	{
 		g_bBlockJointeam = false;
 	}
-#if defined GAMEME_INCLUDED
+	
+	#if defined GAMEME_INCLUDED
 	if (g_bUseGameMe && e_ScrambleModes:GetConVarInt(cvar_SortMode) == gameMe_SkillChange)
 	{
 		StartSkillUpdates();
@@ -1052,7 +970,7 @@ public OnConfigsExecuted()
 	{
 		StopSkillUpdates();
 	}
-#endif
+	#endif
 }
 
 public Action:Timer_VoteAd(Handle:timer)
@@ -1062,18 +980,22 @@ public Action:Timer_VoteAd(Handle:timer)
 	{
 		Format(sVotes, sizeof(sVotes), "!%s", g_sVoteCommands[0]);
 	}
+	
 	if (strlen(g_sVoteCommands[1]))
 	{
 		Format(sVotes, sizeof(sVotes), "%s, !%s", sVotes, g_sVoteCommands[1]);
 	}
+	
 	if (strlen(g_sVoteCommands[2]))
 	{
 		Format(sVotes, sizeof(sVotes), "%s, or !%s", sVotes, g_sVoteCommands[2]);
 	}
+	
 	if (strlen(sVotes))
 	{
 		PrintToChatAll("\x01\x04[SM]\x01 %t", "VoteAd", sVotes);
 	}
+	
 	return Plugin_Continue;
 }
 
@@ -1083,7 +1005,8 @@ public handler_ConVarChange(Handle:convar, const String:oldValue[], const String
 	if (convar == cvar_Enabled)
 	{
 		new bool:teamBalance;
-		if (!iNewValue && g_bHooked && !g_bMvMMode)
+		
+		if (!iNewValue && g_bHooked)
 		{
 			teamBalance = true;
 			unHook();
@@ -1093,13 +1016,15 @@ public handler_ConVarChange(Handle:convar, const String:oldValue[], const String
 			teamBalance = false;
 			hook();
 		}
+		
 		if (GetConVarBool(cvar_Balancer))
 		{		
 			SetConVarBool(FindConVar("mp_autoteambalance"), teamBalance);	
 			LogAction(0, -1, "set conVar mp_autoteambalance to %i.", teamBalance);
 		}
 	}
-#if defined GAMEME_INCLUDED
+	
+	#if defined GAMEME_INCLUDED
 	if (convar == cvar_SortMode)
 	{
 		if (g_bUseGameMe && e_ScrambleModes:iNewValue == gameMe_SkillChange)
@@ -1111,12 +1036,17 @@ public handler_ConVarChange(Handle:convar, const String:oldValue[], const String
 			StopSkillUpdates();
 		}
 	}
-#endif	
+	#endif	
+	
 	if (convar == cvar_FullRoundOnly)
+	{
 		iNewValue == 1 ? (g_bFullRoundOnly = true) : (g_bFullRoundOnly = false);
+	}
 	
 	if (convar == cvar_Balancer)
-		iNewValue == 1 ? (g_bAutoBalance = (!g_bMvMMode)) : (g_bAutoBalance = false);
+	{
+		iNewValue == 1 ? (g_bAutoBalance = true) : (g_bAutoBalance = false);
+	}
 		
 	if (convar == cvar_ForceTeam)
 	{
@@ -1125,15 +1055,29 @@ public handler_ConVarChange(Handle:convar, const String:oldValue[], const String
 	}
 		
 	if (convar == cvar_ForceReconnect && g_bUseClientPrefs)
+	{
 		iNewValue == 1 ? (g_bForceReconnect = true) : (g_bForceReconnect = false);
+	}
+	
 	if (convar == cvar_TeamworkProtect)
+	{
 		g_iTeamworkProtection = iNewValue;
+	}
+	
 	if (convar == cvar_AutoScramble)
+	{
 		iNewValue == 1  ? (g_bAutoScramble = true):(g_bAutoScramble = false);
+	}
+	
 	if (convar == cvar_MenuVoteEnd)
+	{
 		iNewValue == 1 ? (g_iDefMode = Scramble_Now) : (g_iDefMode = Scramble_Round);
+	}
+	
 	if (convar == cvar_NoSequentialScramble)
+	{
 		g_bNoSequentialScramble = iNewValue?true:false;
+	}
 }
 
 #if defined GAMEME_INCLUDED
@@ -1143,6 +1087,7 @@ stock StartSkillUpdates()
 	{
 		return;
 	}
+	
 	LogMessage("Starting gameMe data update timer");
 	g_hGameMeUpdateTimer = CreateTimer(60.0, Timer_GameMeUpdater, _, TIMER_REPEAT);
 	UpdateSessionSkill();
@@ -1200,6 +1145,7 @@ hook()
 	HookEvent("teamplay_flag_event",		hook_FlagEvent, EventHookMode_Post);
 	HookUserMessage(GetUserMessageId("TextMsg"), UserMessageHook_Class, false);
 	AddGameLogHook(LogHook);
+	
 	HookEvent("teamplay_game_over", hook_GameEnd, EventHookMode_PostNoCopy);
 	HookEvent("player_chargedeployed", hook_UberDeploy, EventHookMode_Post);
 	HookEvent("player_sapped_object", hook_Sapper, EventHookMode_Post);
@@ -1212,7 +1158,9 @@ hook()
 public Action:LogHook(const String:message[])
 {
 	if (g_bBlockDeath)
+	{
 		return Plugin_Handled;
+	}
 	
 	return Plugin_Continue;
 }
@@ -1257,7 +1205,9 @@ public hook_MedicDeath(Handle:event, const String:name[], bool:dontBroadcast)
 public hook_EscortScore(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (g_iTeamworkProtection && g_RoundState == normal)
+	{
 		AddTeamworkTime(GetEventInt(event, "player"));
+	}
 }
 	
 /**
@@ -1278,8 +1228,8 @@ public hook_UberDeploy(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (g_iTeamworkProtection && g_RoundState == normal)
 	{
-		new medic = GetClientOfUserId(GetEventInt(event, "userid")),
-			target = GetClientOfUserId(GetEventInt(event, "targetid"));
+		new medic = GetClientOfUserId(GetEventInt(event, "userid")), target = GetClientOfUserId(GetEventInt(event, "targetid"));
+		
 		AddTeamworkTime(medic);
 		AddTeamworkTime(target);
 	}
@@ -1292,8 +1242,8 @@ public hook_ObjectDestroyed(Handle:event, const String:name[], bool:dontBroadcas
 	*/
 	if (g_iTeamworkProtection && g_RoundState == normal && GetEventInt(event, "objecttype") == 3)
 	{
-		new client = GetClientOfUserId(GetEventInt(event, "attacker")),
-			assister = GetClientOfUserId(GetEventInt(event, "assister"));
+		new client = GetClientOfUserId(GetEventInt(event, "attacker")), assister = GetClientOfUserId(GetEventInt(event, "assister"));
+		
 		AddTeamworkTime(client);
 		AddTeamworkTime(assister);	
 	}
@@ -1313,17 +1263,24 @@ public hook_PointCaptured(Handle:event, const String:name[], bool:dontBroadcast)
 
 		new len = strlen(cappers);
 		for (new i = 0; i < len; i++)
+		{
 			AddTeamworkTime(cappers[i]);
+		}
 	}
 	
 	if (g_bKothMode)
+	{
 		GetEventInt(event, "team") == TEAM_RED ? (g_bRedCapped = true) : (g_bBluCapped = true);
+	}
 }
 
 public hook_RoundStalemate(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (GetConVarBool(cvar_ForceBalance) && g_aTeams[bImbalanced])		
+	if (GetConVarBool(cvar_ForceBalance) && g_aTeams[bImbalanced])
+	{	
 		BalanceTeams(true);	
+	}
+	
 	g_RoundState = suddenDeath;
 }
 
@@ -1333,7 +1290,8 @@ add protection to those interacting with the CTF flag
 public hook_FlagEvent(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetEventInt(event, "player");
-	new type = GetEventInt(event, "evettype");
+	new type = GetEventInt(event, "eventtype");
+	
 	switch (type)
 	{
 		case 1:
@@ -1345,6 +1303,7 @@ public hook_FlagEvent(Handle:event, const String:name[], bool:dontBroadcast)
 			g_aPlayers[client][bHasFlag] = false;
 		}
 	}	
+	
 	AddTeamworkTime(GetEventInt(event, "player"));
 }
 
@@ -1355,6 +1314,7 @@ public Action:Event_PlayerTeam_Pre(Handle:event, const String:name[], bool:dontB
 		SetEventBroadcast(event, true);
 		return Plugin_Continue;
 	}
+	
 	CheckBalance(true);	
 	return Plugin_Continue;
 }	
@@ -1381,6 +1341,7 @@ public OnClientPutInServer(client)
 	{
 		return;
 	}
+	
 	if (g_bUseGameMe && client > 0 && !IsFakeClient(client))
 	{
 		if (GetFeatureStatus(FeatureType_Native, "QueryGameMEStats") == FeatureStatus_Available)
@@ -1392,7 +1353,6 @@ public OnClientPutInServer(client)
 			g_bUseGameMe = false;
 		}
 	}
-
 }
 #endif
 
@@ -1412,6 +1372,7 @@ public QuerygameMEStatsCallback(command, payload, client, &Handle: datapack)
 		g_aPlayers[client][iGameMe_gSkill] = ReadPackCell(data);
 		SetPackPosition(data, GetPackPosition(data) -16);
 		g_aPlayers[client][iGameMe_SkillChange] = ReadPackCell(data);
+		CloseHandle(data);
 	}
 }
 #endif
@@ -1419,21 +1380,30 @@ public QuerygameMEStatsCallback(command, payload, client, &Handle: datapack)
 public OnClientDisconnect(client)
 {
 	if (IsFakeClient(client))
+	{
 		return;
+	}
+	
 	g_aPlayers[client][bHasFlag] = false;
 	if (g_aPlayers[client][bHasVoted] == true)
 	{
 		g_iVotes--;
 		g_aPlayers[client][bHasVoted] = false;
 	}
+	
 	g_iVoters--;	
 	if (g_iVoters < 0)
+	{
 		g_iVoters = 0;	
+	}
+	
 	g_iVotesNeeded = RoundToFloor(float(g_iVoters) * GetConVarFloat(cvar_PublicNeeded));
 	g_aPlayers[client][iTeamPreference] = 0;
 	
 	if (GetConVarBool(cvar_AdminBlockVote) && g_aPlayers[client][bIsVoteAdmin])
+	{
 		g_iNumAdmins--;
+	}
 	
 }
 
@@ -1441,6 +1411,7 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 {
 	CheckBalance(true);
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
 	if (client && !IsFakeClient(client))
 	{		
 		/**
@@ -1449,14 +1420,19 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 		*/
 		if (g_bUseClientPrefs && g_bForceTeam && g_bForceReconnect && IsClientInGame(client) && IsValidTeam(client) && (g_bTeamsLocked || IsBlocked(client)))
 		{
-			decl String:blockTime[128], String:teamIndex[5], iIndex, String:serverIp[50], String:serverPort[10], String:startTime[33];
+			decl String:blockTime[128], String:teamIndex[5], String:serverIp[50], String:serverPort[10], String:startTime[33];
+			new iIndex;
 			GetConVarString(FindConVar("hostip"), serverIp, sizeof(serverIp));
 			GetConVarString(FindConVar("hostport"), serverPort, sizeof(serverPort));
 			Format(serverIp, sizeof(serverIp), "%s%s", serverIp, serverPort);
 			IntToString(GetTime(), blockTime, sizeof(blockTime));
 			IntToString(g_iPluginStartTime, startTime, sizeof(startTime));
+			
 			if (g_iTeamIds[1] == GetClientTeam(client))
+			{
 				iIndex = 1;
+			}
+			
 			IntToString(iIndex, teamIndex, sizeof(teamIndex));
 			SetClientCookie(client, g_cookie_timeBlocked, blockTime);
 			SetClientCookie(client, g_cookie_teamIndex, teamIndex);
@@ -1474,6 +1450,7 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 					{
 						PrintToChat(i, "\x01\x04[SM]\x01 %t", "YourBuddyLeft");
 					}
+					
 					g_aPlayers[i][iBuddy] = 0;
 				}
 			}
@@ -1484,10 +1461,15 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 public OnClientPostAdminCheck(client)
 {
 	if(IsFakeClient(client))
+	{
 		return;
+	}
 		
-	if (GetConVarBool(cvar_Preference) && g_bAutoBalance && g_bHooked && !g_bMvMMode)
+	if (GetConVarBool(cvar_Preference) && g_bAutoBalance && g_bHooked)
+	{
 		CreateTimer(25.0, Timer_PrefAnnounce, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	}
+	
 	g_aPlayers[client][iBlockTime] = 0;
 	g_aPlayers[client][iBalanceTime] = 0;
 	g_aPlayers[client][iTeamworkTime] = 0;
@@ -1495,13 +1477,16 @@ public OnClientPostAdminCheck(client)
 	g_aPlayers[client][iDeaths] = 0;
 	g_aPlayers[client][bHasFlag] = false;
 	g_aPlayers[client][iSpecChangeTime] = 0;
+	
 	if (GetConVarBool(cvar_AdminBlockVote) && CheckCommandAccess(client, "sm_scramblevote", ADMFLAG_BAN))
 	{
 		g_aPlayers[client][bIsVoteAdmin] = true;
 		g_iNumAdmins++;
 	}
 	else 
+	{
 		g_aPlayers[client][bIsVoteAdmin] = false;
+	}
 	
 	g_aPlayers[client][bHasVoted] = false;
 	g_iVoters++;
@@ -1524,11 +1509,14 @@ public HLXCE_OnGotPlayerData(client, const PData[HLXCE_PlayerData])
 public OnClientCookiesCached(client)
 {
 	if (!IsClientConnected(client) || IsFakeClient(client) || !g_bForceTeam || !g_bForceReconnect)
+	{
 		return;
+	}
 	
 	g_aPlayers[client][iBlockWarnings] = 0;
 	decl String:sStartTime[33];
 	GetClientCookie(client, g_cookie_serverStartTime, sStartTime, sizeof(sStartTime));
+	
 	if (StringToInt(sStartTime) != g_iPluginStartTime)
 	{
 		return;
@@ -1536,12 +1524,14 @@ public OnClientCookiesCached(client)
 		bug out since the sessions dont match
 		*/
 	}
+	
 	decl String:time[32], iTime, String:clientServerIp[33], String:serverIp[100], String:serverPort[100];
 	GetConVarString(FindConVar("hostip"), serverIp, sizeof(serverIp));
 	GetConVarString(FindConVar("hostport"), serverPort, sizeof(serverPort));
 	Format(serverIp, sizeof(serverIp), "%s%s", serverIp, serverPort);
 	GetClientCookie(client, g_cookie_timeBlocked, time, sizeof(time));
 	GetClientCookie(client, g_cookie_serverIp, clientServerIp, sizeof(clientServerIp));
+	
 	if ((iTime = StringToInt(time)) && strncmp(clientServerIp, serverIp, true) == 0)
 	{
 		if (iTime > g_iMapStartTime && (GetTime() - iTime) <= GetConVarInt(cvar_ForceTeam))
@@ -1556,8 +1546,12 @@ public OnClientCookiesCached(client)
 public Action:Timer_PrefAnnounce(Handle:timer, any:id)
 {
 	new client;
+	
 	if ((client = GetClientOfUserId(id)))
+	{
 		PrintToChat(client, "\x01\x04[SM]\x01 %t", "PrefAnnounce");
+	}
+	
 	return Plugin_Handled;
 }
 
@@ -1567,12 +1561,17 @@ public Action:timer_Restore(Handle:timer, any:id)
 	make sure that the client is still conneceted
 	*/
 	new client;
+	
 	if (!(client = GetClientOfUserId(id)) || !IsClientInGame(client))
+	{
 		return Plugin_Handled;
-		
+	}
+	
 	new String:sIndex[10], iIndex;
 	GetClientCookie(client, g_cookie_teamIndex, sIndex, sizeof(sIndex));
-	if ((iIndex = StringToInt(sIndex)) > 1)
+	
+	iIndex = StringToInt(sIndex);
+	if (iIndex != 0 || iIndex != 1)
 	{
 		return Plugin_Handled;
 	}
@@ -1586,6 +1585,7 @@ public Action:timer_Restore(Handle:timer, any:id)
 		LogAction(client, -1, "\"%L\" has had his/her old team restored after reconnecting.", client);
 		RestoreMenuCheck(client, g_iTeamIds[iIndex]);
 	}
+	
 	return Plugin_Handled;	
 }
 
@@ -1614,10 +1614,12 @@ public OnMapStart()
 	g_iVotes = 0;
 	PrecacheSound(SCRAMBLE_SOUND, true);
 	PrecacheSound(EVEN_SOUND, true);
+	
 	if (g_hBalanceFlagTimer != INVALID_HANDLE)
 	{
 		KillTimer(g_hBalanceFlagTimer);
-		g_hBalanceFlagTimer = INVALID_HANDLE;	}
+		g_hBalanceFlagTimer = INVALID_HANDLE;	
+	}
 	
 	if (g_hForceBalanceTimer != INVALID_HANDLE)
 	{
@@ -1626,8 +1628,12 @@ public OnMapStart()
 	}
 	
 	g_hCheckTimer = INVALID_HANDLE;
+	
 	if (g_hScrambleNowPack != INVALID_HANDLE)
+	{
 		CloseHandle(g_hScrambleNowPack);
+	}
+	
 	g_hScrambleNowPack = INVALID_HANDLE;
 	g_iLastRoundWinningTeam = 0;
 }
@@ -1635,18 +1641,16 @@ public OnMapStart()
 AddTeamworkTime(client)
 {
 	if (g_RoundState == normal && client && IsClientInGame(client) && !IsFakeClient(client))
+	{
 		g_aPlayers[client][iTeamworkTime] = GetTime()+g_iTeamworkProtection;
+	}
 }
 
 public OnMapEnd()
 {
 	if (g_hScrambleDelay != INVALID_HANDLE)	
 		KillTimer(g_hScrambleDelay);		
-	g_hScrambleDelay = INVALID_HANDLE;
-
-	g_bMvMMode = false;
-	g_bKothMode = false; 
-	g_bArenaMode = false;
+	g_hScrambleDelay = INVALID_HANDLE;	
 }
 
 public Action:TimerEnable(Handle:timer)
@@ -1667,8 +1671,12 @@ PerformVoteReset(client)
 	LogAction(client, -1, "\"%L\" has reset all the public votes", client);
 	ShowActivity(client, "%t", "AdminResetVotes");
 	ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ResetReply", g_iVotes);
+	
 	for (new i = 1; i <= MaxClients; i++)
+	{
 		g_aPlayers[i][bHasVoted] = false;
+	}
+	
 	g_iVotes = 0;
 }
 
@@ -1677,17 +1685,23 @@ HandleStacker(client)
 	if (g_aPlayers[client][iBlockWarnings] < 2) 
 	{
 		new String:clientName[MAX_NAME_LENGTH + 1];
+		
 		GetClientName(client, clientName, 32);
 		LogAction(client, -1, "\"%L\" was blocked from changing teams", client);
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "BlockSwitchMessage");
+		
 		if (!g_bSilent)
 		{
 			PrintToChatAll("\x01\x04[SM]\x01 %t", "ShameMessage", clientName);
 		}
+		
 		g_aPlayers[client][iBlockWarnings]++;
 	}	
+	
 	if (GetConVarBool(cvar_Punish))	
+	{
 		SetupTeamSwapBlock(client);
+	}
 	
 }
 
@@ -1704,6 +1718,7 @@ PerformBalance(client)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ArenaReply");
 		return;
 	}
+	
 	if (!g_bHooked)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "EnableReply");
@@ -1717,27 +1732,41 @@ PerformBalance(client)
 		ShowActivity(client, "%t", "AdminForceBalance");
 	}
 	else
+	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "NoImbalnceReply");
+	}
 	
 }
 
 Float:GetAvgScoreDifference(team)
 {
 	new teamScores, otherScores, Float:otherAvg, Float:teamAvg;
+	
 	for (new i = 1; i <= MaxClients; i++)
 	{
+		new entity = GetPlayerResourceEntity();
+		new Totalscore = GetEntProp(entity, Prop_Send, "m_iScore", _, i); 
+		
 		if (IsClientInGame(i) && IsValidTeam(i))
 		{
 			if (GetClientTeam(i) == team)
-				teamScores += TF2_GetPlayerResourceData(i, TFResource_TotalScore);
+			{
+				teamScores += Totalscore; 
+			}
 			else
-				otherScores += TF2_GetPlayerResourceData(i, TFResource_TotalScore);
+			{
+				otherScores += Totalscore;
+			}
 		}
 	}
 	teamAvg = FloatDiv(float(teamScores),float(GetTeamClientCount(team)));
 	otherAvg = FloatDiv(float(otherScores), float(GetTeamClientCount(team == TEAM_RED ? TEAM_BLUE : TEAM_RED)));
+	
 	if (otherAvg > teamAvg)
+	{
 		return 0.0;
+	}
+	
 	return FloatAbs(teamAvg - otherAvg);
 }
 
@@ -1748,16 +1777,20 @@ public Action:cmd_Scramble_Now(client, args)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "NowCommandReply");
 		return Plugin_Handled;
 	}
+	
 	new Float:fDelay = 5.0, bool:respawn = true, e_ScrambleModes:mode;
+	
 	if (args)
 	{
 		decl String:arg1[5];
 		GetCmdArg(1, arg1, sizeof(arg1));
+		
 		if((fDelay = StringToFloat(arg1)) == 0.0)
 		{
 			ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "NowCommandReply");
 			return Plugin_Handled;
 		}
+		
 		if (args > 1)
 		{
 			decl String:arg2[2];
@@ -1765,6 +1798,7 @@ public Action:cmd_Scramble_Now(client, args)
 			if (!StringToInt(arg2))
 				respawn = false;
 		}
+		
 		if (args > 2)
 		{
 			decl String:arg3[2];
@@ -1776,6 +1810,7 @@ public Action:cmd_Scramble_Now(client, args)
 			}
 		}			
 	}
+	
 	PerformScrambleNow(client, fDelay, respawn, mode);
 	return Plugin_Handled;
 }
@@ -1787,11 +1822,13 @@ stock PerformScrambleNow(client, Float:fDelay = 5.0, bool:respawn = false, e_Scr
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "EnableReply");
 		return;
 	}
+	
 	if (g_bNoSequentialScramble && g_bScrambledThisRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambledAlready");
 		return;
 	}
+	
 	if (g_bScrambleNextRound)
 	{
 		g_bScrambleNextRound = false;
@@ -1801,6 +1838,7 @@ stock PerformScrambleNow(client, Float:fDelay = 5.0, bool:respawn = false, e_Scr
 			g_hScrambleDelay = INVALID_HANDLE;
 		}
 	}
+	
 	LogAction(client, -1, "\"%L\" performed the scramble command", client);
 	ShowActivity(client, "%t", "AdminScrambleNow");
 	StartScrambleDelay(fDelay, respawn, mode);
@@ -1813,16 +1851,19 @@ stock AttemptScrambleVote(client)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ArenaReply");
 		return;
 	}
+	
 	if (GetConVarBool(cvar_AdminBlockVote) && g_iNumAdmins > 0)
 	{
 		ReplyToCommand(client, "\x01x04[SM] %t", "AdminBlockVoteReply");
 		return;
 	}
+	
 	if (!g_bHooked)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "EnableReply");
 		return;
 	}	
+	
 	new bool:Override = false;
 		
 	if (!GetConVarBool(cvar_VoteEnable))
@@ -1830,43 +1871,52 @@ stock AttemptScrambleVote(client)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "VoteDisabledReply");
 		return;
 	}
+	
 	if (g_bNoSequentialScramble && g_bScrambledThisRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambledAlready");
 		return;
 	}
+	
 	if (!g_bVoteAllowed)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "VoteDelayedReply");
 		return;
 	}	
+	
 	if (g_iVotesNeeded - g_iVotes == 1 && GetConVarInt(cvar_VoteMode) == 1 && IsVoteInProgress())
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "Vote in Progress");
 		return;
 	}	
+	
 	if (GetConVarInt(cvar_MinPlayers) > g_iVoters)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "NotEnoughPeopleVote");
 		return;
 	}	
+	
 	if (g_aPlayers[client][bHasVoted] == true)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "AlreadyVoted");
 		return;
 	}	
+	
 	if (g_bScrambleNextRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambleReply");		
 		return;
-	}	
+	}
+	
 	if (g_RoundState == normal && GetConVarBool(cvar_RoundTime) && g_bIsTimer && g_iVotesNeeded - g_iVotes == 1)
 	{
 		new iRoundLimit = GetConVarInt(cvar_RoundTime);
 		if (g_iRoundTimer - iRoundLimit <= 0)
 		{
 			if (GetConVarBool(cvar_RoundTimeMode))
+			{
 				Override = true;
+			}
 			else
 			{
 				ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "VoteRoundTimeReply", iRoundLimit);
@@ -1874,22 +1924,31 @@ stock AttemptScrambleVote(client)
 			}
 		}
 	}
+	
 	g_iVotes++;
 	g_aPlayers[client][bHasVoted] = true;
+	
 	new String:clientName[MAX_NAME_LENGTH + 1];
+	
 	GetClientName(client, clientName, 32);
 	PrintToChatAll("\x01\x04[SM]\x01 %t", "VoteTallied", clientName, g_iVotes, g_iVotesNeeded);	
+	
 	if (g_iVotes >= g_iVotesNeeded && !g_bScrambleNextRound)
 	{
 		if (GetConVarInt(cvar_VoteMode) == 1)
+		{
 			StartScrambleVote(g_iDefMode);		
+		}
 		else if (GetConVarInt(cvar_VoteMode) == 0)
 		{			
 			g_bScrambleNextRound = true;
 			PrintToChatAll("\x01\x04[SM]\x01 %t", "ScrambleRound");			
 		}
 		else if (!Override && GetConVarInt(cvar_VoteMode) == 2)
+		{
 			StartScrambleDelay(5.0, true);	
+		}
+		
 		DelayPublicVoteTriggering();
 	}
 }	
@@ -1901,24 +1960,31 @@ public Action:cmd_Vote(client, args)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "Vote in Progress");
 		return Plugin_Handled;
 	}	
+	
 	if (args < 1)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 Usage: sm_scramblevote <now/end>");
 		return Plugin_Handled;
-	}		
+	}	
+	
 	decl String:arg[16];
 	GetCmdArg(1, arg, sizeof(arg));
 
 	new ScrambleTime:mode;
 	if (StrEqual(arg, "now", false))
+	{
 		mode = Scramble_Now;
+	}
 	else if (StrEqual(arg, "end", false))
+	{
 		mode = Scramble_Round;
+	}
 	else
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "InvalidArgs");
 		return Plugin_Handled;
 	}
+	
 	PerformVote(client, mode);
 	return Plugin_Handled;
 }
@@ -1930,6 +1996,7 @@ PerformVote(client, ScrambleTime:mode)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ArenaReply");
 		return;
 	}
+	
 	if (!g_bHooked)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "EnableReply");
@@ -1941,26 +2008,31 @@ PerformVote(client, ScrambleTime:mode)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "NotEnoughPeopleVote");
 		return;
 	}	
+	
 	if (g_bScrambleNextRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambleReply");
 		return;
 	}	
+	
 	if (IsVoteInProgress())
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "Vote in Progress");
 		return;
 	}
+	
 	if (!g_bVoteAllowed)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "VoteDelayedReply");
 		return;
 	}
+	
 	if (g_bNoSequentialScramble && g_bScrambledThisRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambledAlready");
 		return;
 	}
+	
 	LogAction(client, -1, "\"%L\" has started a scramble vote", client);
 	StartScrambleVote(mode, 20);
 }
@@ -1973,8 +2045,10 @@ StartScrambleVote(ScrambleTime:mode, time=20)
 		CreateTimer(1.0, Timer_ScrambleVoteStarter, mode, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		return;
 	}
+	
 	DelayPublicVoteTriggering();
 	g_hScrambleVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+	
 	new String:sTmpTitle[64];
 	if (mode == Scramble_Now)
 	{
@@ -1986,6 +2060,7 @@ StartScrambleVote(ScrambleTime:mode, time=20)
 		g_bScrambleAfterVote = false;
 		Format(sTmpTitle, 64, "Scramble Teams Next Round?");
 	}
+	
 	SetMenuTitle(g_hScrambleVoteMenu, sTmpTitle);
 	AddMenuItem(g_hScrambleVoteMenu, "1", "Yes");
 	AddMenuItem(g_hScrambleVoteMenu, "2", "No");
@@ -1996,33 +2071,43 @@ StartScrambleVote(ScrambleTime:mode, time=20)
 public Action:Timer_ScrambleVoteStarter(Handle:timer, any:mode)
 {
 	if (IsVoteInProgress())
+	{
 		return Plugin_Continue;
+	}
+	
 	StartScrambleVote(mode, 15);
+	
 	return Plugin_Stop;
 }
 
 public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 {
 	DelayPublicVoteTriggering();
+	
 	if (action == MenuAction_End)
 	{
 		CloseHandle(g_hScrambleVoteMenu);
 		g_hScrambleVoteMenu = INVALID_HANDLE;
 	}		
+	
 	if (action == MenuAction_VoteEnd)
 	{	
 		new m_votes, totalVotes;		
 		GetMenuVoteInfo(param2, m_votes, totalVotes);
+		
 		if (param1 == 1)
 		{
 			m_votes = totalVotes - m_votes;
 		}
+		
 		new Float:comp = FloatDiv(float(m_votes),float(totalVotes));
 		new Float:comp2 = GetConVarFloat(cvar_Needed);
+		
 		if (comp >= comp2)
 		{
 			PrintToChatAll("\x01\x04[SM]\x01 %t", "VoteWin", RoundToNearest(comp*100), totalVotes);	
-			LogAction(-1 , 0, "%T", "VoteWin", LANG_SERVER, RoundToNearest(comp*100), totalVotes);			
+			LogAction(-1 , 0, "%T", "VoteWin", LANG_SERVER, RoundToNearest(comp*100), totalVotes);	
+			
 			if (g_bScrambleAfterVote)
 			{
 				StartScrambleDelay(5.0, true);
@@ -2050,20 +2135,29 @@ DelayPublicVoteTriggering(bool:success = false)  // success means a scramble hap
 	if (GetConVarBool(cvar_VoteEnable))
 	{
 		for (new i = 0; i <= MaxClients; i++)	
+		{
 			g_aPlayers[i][bHasVoted] = false;
+		}
 		
 		g_iVotes = 0;
 		g_bVoteAllowed = false;
+		
 		if (g_hVoteDelayTimer != INVALID_HANDLE)
 		{
 			KillTimer(g_hVoteDelayTimer);
 			g_hVoteDelayTimer = INVALID_HANDLE;
 		}
+		
 		new Float:fDelay;
 		if (success)
+		{
 			fDelay = GetConVarFloat(cvar_VoteDelaySuccess);
+		}
 		else
+		{
 			fDelay = GetConVarFloat(cvar_Delay);
+		}
+		
 		g_hVoteDelayTimer = CreateTimer(fDelay, TimerEnable, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -2085,11 +2179,13 @@ PerformCancel(client)
 	if (g_bScrambleNextRound || g_hScrambleDelay != INVALID_HANDLE)
 	{
 		g_bScrambleNextRound = false;
+		
 		if (g_hScrambleDelay != INVALID_HANDLE)
 		{
 			KillTimer(g_hScrambleDelay);
 			g_hScrambleDelay = INVALID_HANDLE;
 		}
+		
 		ShowActivity(client, "%t", "CancelScramble");
 		LogAction(client, -1, "\"%L\" canceled the pending scramble", client);	
 	}
@@ -2125,16 +2221,19 @@ SetupRoundScramble(client)
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "EnableReply");
 		return;
 	}
+	
 	if (g_bNoSequentialScramble && g_bScrambledThisRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambledAlready");
 		return;
 	}
+	
 	if (g_bScrambleNextRound)
 	{
 		ReplyToCommand(client, "\x01\x04[SM]\x01 %t", "ScrambleReply");
 		return;
 	}	
+	
 	g_bScrambleNextRound = true;
 	ShowActivity(client, "%t", "ScrambleRound");
 	LogAction(client, -1, "\"%L\" toggled a scramble for next round", client);
@@ -2145,9 +2244,13 @@ SwapPreferences()
 	for (new i = 1; i <= MaxClients; i++)
 	{	
 		if (g_aPlayers[i][iTeamPreference] == TEAM_RED)
+		{
 			g_aPlayers[i][iTeamPreference] = TEAM_BLUE;
+		}
 		else if (g_aPlayers[i][iTeamPreference] == TEAM_BLUE)
+		{
 			g_aPlayers[i][iTeamPreference] = TEAM_RED;
+		}
 	}	
 }
 
@@ -2164,11 +2267,16 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	/**
 	execute the trigger
 	*/
+	
 	if (g_bScrambleNextRound)
 	{
 		new rounds = GetConVarInt(cvar_AutoScrambleRoundCount);
+		
 		if (rounds)
+		{
 			g_iRoundTrigger += rounds;
+		}
+		
 		StartScrambleDelay(0.3);
 	}
 	else if (GetConVarBool(cvar_ForceBalance) && g_hForceBalanceTimer == INVALID_HANDLE)
@@ -2199,7 +2307,6 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	else if (g_RoundState == preGame)
 	{
 		g_RoundState = normal;
-
 	}
 
 	/**
@@ -2210,6 +2317,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		CreateTimer(0.1, Timer_GetTime, TIMER_FLAG_NO_MAPCHANGE);
 	}
+	
 	g_iRoundStartTime = GetTime();
 	g_iSpawnTime = g_iRoundStartTime;
 	
@@ -2228,20 +2336,27 @@ public Action:hook_Setup(Handle:event, const String:name[], bool:dontBroadcast)
 	g_RoundState = normal;
 	CreateTimer(1.0, Timer_GetTime, TIMER_FLAG_NO_MAPCHANGE);
 	g_iRoundStartTime = GetTime();
+	
 	if (g_aTeams[bImbalanced])
+	{
 		StartForceTimer();
+	}
+	
 	return Plugin_Continue;
 }
 
 public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 {	
 	g_iRoundTimer = 0;
+	
 	if (GetConVarBool(cvar_ScrLockTeams))
 	{
 		g_bNoSpec = true;
 	}
+	
 	g_RoundState = bonusRound;	
 	g_bWasFullRound = false;	
+	
 	if (GetEventBool(event, "full_round"))
 	{
 		g_bWasFullRound = true;
@@ -2251,6 +2366,7 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		g_iCompleteRounds++;
 	}
+	
 	g_iLastRoundWinningTeam = GetEventInt(event, "team");
 	
 	if (g_hForceBalanceTimer != INVALID_HANDLE)
@@ -2270,22 +2386,36 @@ public Action:Event_PlayerDeath_Pre(Handle:event, const String:name[], bool:dont
 {	
 	new k_client = GetClientOfUserId(GetEventInt(event, "attacker"));
 	new	v_client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
 	if (k_client && IsClientInGame(k_client) && k_client != v_client && g_bBlockDeath)
 	{
 		g_bBlockDeath = false;
 	}
+	
 	if (g_bBlockDeath) 
+	{
 		return Plugin_Handled;
+	}
+	
 	if (g_RoundState != normal || GetEventInt(event, "death_flags") & 32) 
+	{
 		return Plugin_Continue;	
+	}
+	
 	if (IsOkToBalance() && g_bAutoBalance && g_aTeams[bImbalanced] && GetClientTeam(v_client) == GetLargerTeam())	
+	{
 		CreateTimer(0.1, timer_StartBalanceCheck, v_client, TIMER_FLAG_NO_MAPCHANGE);
+	}
 		
 	if (!k_client || k_client == v_client || k_client > MaxClients)
+	{
 		return Plugin_Continue;
+	}
+	
 	g_aPlayers[k_client][iFrags]++;
 	g_aPlayers[v_client][iDeaths]++;
 	GetClientTeam(k_client) == TEAM_RED ? (g_aTeams[iRedFrags]++) : (g_aTeams[iBluFrags]++);	
+	
 	return Plugin_Continue;
 }
 
@@ -2298,27 +2428,46 @@ bool:IsNotTopPlayer(client, team)  // this arranges teams based on their score, 
 {
 	new iSize, iHighestScore;
 	decl iScores[MAXPLAYERS+1][2];
+	
 	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && GetClientTeam(i) == team)
-		{
-			iScores[iSize][1] = 1 + TF2_GetPlayerResourceData(i, TFResource_TotalScore);
+		{		
+			new entity = GetPlayerResourceEntity();
+			new Totalscore = GetEntProp(entity, Prop_Send, "m_iTotalScore", _, i); 
+
+			iScores[iSize][1] = 1 + Totalscore;
 			iScores[iSize][0] = i;
+			
 			if (iScores[iSize][1] > iHighestScore)
+			{
 				iHighestScore = iScores[iSize][1];
+			}
+			
 			iSize++;
 		}
 	}
+	
 	if (iHighestScore <= 10)
+	{
 		return true;
+	}
+	
 	if (iSize < GetConVarInt(cvar_TopProtect) + 4)
+	{
 		return true;
+	
+	}
 	SortCustom2D(iScores, iSize, SortScoreDesc);
+	
 	for (new i = 0; i < GetConVarInt(cvar_TopProtect); i++)
 	{
 		if (iScores[i][0] == client)
+		{
 			return false;
+		}
 	}
+	
 	return true;
 }
 
@@ -2335,6 +2484,7 @@ bool:IsClientBuddy(client)
 			}
 		}
 	}
+	
 	return false;
 }
 
@@ -2346,6 +2496,7 @@ bool:IsValidTarget(client, e_ImmunityModes:mode)
 		{
 			return false;
 		}
+		
 		return true;
 	}
 
@@ -2356,10 +2507,12 @@ bool:IsValidTarget(client, e_ImmunityModes:mode)
 			return false;
 		}
 	}
+	
 	// next check for buddies. if the buddy is on the wrong team, we skip the rest of the immunity checks
 	if (g_bUseBuddySystem && mode == balance)
 	{
 		new buddy;
+		
 		if ((buddy = g_aPlayers[client][iBuddy]))
 		{
 			if (GetClientTeam(buddy) == GetClientTeam(client))
@@ -2373,10 +2526,15 @@ bool:IsValidTarget(client, e_ImmunityModes:mode)
 				return true;				
 			}
 		}
+		
 		if (IsClientBuddy(client))
+		{
 			return false;
+		}
 	}
+	
 	new e_Protection:iImmunity, String:flags[32]; // living players are immune
+	
 	if (mode == scramble)
 	{
 		iImmunity = e_Protection:GetConVarInt(cvar_ScrambleImmuneMode); // living plyers are not immune from scramble
@@ -2393,12 +2551,17 @@ bool:IsValidTarget(client, e_ImmunityModes:mode)
 		if the round started within 10 seconds, override immunity too
 	*/
 	new iStart = GetTime() - g_iSpawnTime;
+	
 	if (iStart <= 10 || mode == scramble || (g_RoundState != normal && g_RoundState != setup))
 	{
 		if (iImmunity == both)
+		{
 			iImmunity = admin;
+		}
 		else if (iImmunity == uberAndBuildings)
+		{
 			return true;
+		}
 	}
 	
 	if (IsClientInGame(client) && IsValidTeam(client))
@@ -2407,8 +2570,12 @@ bool:IsValidTarget(client, e_ImmunityModes:mode)
 		{
 			return false;
 		}
+		
 		if (iImmunity == none) // if no immunity mode set, don't check for it :p
+		{
 			return true;
+		}
+		
 		switch (iImmunity)
 		{
 			case admin:
@@ -2429,10 +2596,12 @@ bool:IsValidTarget(client, e_ImmunityModes:mode)
 		}
 		return true;
 	}
+	
 	if (IsValidSpectator(client))
 	{
 		return true;
 	}
+	
 	return false;
 }
 
@@ -2445,11 +2614,14 @@ stock bool:IsValidSpectator(client)
 			if (GetClientTeam(client) == 1)
 			{
 				new iChangeTime = g_aPlayers[client][iSpecChangeTime];
+				
 				if (iChangeTime && (GetTime() - iChangeTime) < GetConVarInt(cvar_SelectSpectators))
 				{
 					return true;
 				}
+				
 				new Float:fTime = GetClientTime(client);
+				
 				if (fTime <= 60.0)
 				{
 					return true;
@@ -2457,17 +2629,26 @@ stock bool:IsValidSpectator(client)
 			}
 		}
 	}
+	
 	return false;
 }
 			
 stock bool:IsAdmin(client, const String:flags[])
 {
 	new bits = GetUserFlagBits(client);	
+	
 	if (bits & ADMFLAG_ROOT)
+	{
 		return true;
+	}
+	
 	new iFlags = ReadFlagString(flags);
+	
 	if (bits & iFlags)
+	{
 		return true;	
+	}
+	
 	return false;
 }
 
@@ -2477,12 +2658,14 @@ stock BlockAllTeamChange()
 	{
 		g_bTeamsLocked = true; 
 	}
+	
 	for (new i=1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || !IsValidTeam(i) || IsFakeClient(i))
 		{
 			continue;
 		}
+		
 		SetupTeamSwapBlock(i);
 	}
 }
@@ -2490,7 +2673,10 @@ stock BlockAllTeamChange()
 SetupTeamSwapBlock(client)  /* blocks proper clients from spectating*/
 {
 	if (!g_bForceTeam)
+	{
 		return;
+	}
+	
 	if (GetConVarBool(cvar_TeamSwapBlockImmunity))
 	{
 		if (IsClientInGame(client))
@@ -2501,6 +2687,7 @@ SetupTeamSwapBlock(client)  /* blocks proper clients from spectating*/
 				return;				
 		}
 	}
+	
 	g_aPlayers[client][iBlockTime] = GetTime() + g_iForceTime;
 }
 
@@ -2509,8 +2696,11 @@ public Action:TimerStopSound(Handle:timer)	 // cuts off the sound after 1.7 secs
 	for (new i=1; i<=MaxClients;i++)
 	{
 		if (IsClientInGame(i) && !IsFakeClient(i))
+		{
 			StopSound(i, SNDCHAN_AUTO, EVEN_SOUND);
+		}
 	}
+	
 	return Plugin_Handled;
 }
 
@@ -2518,21 +2708,26 @@ public Action:Timer_GetTime(Handle:timer)
 {
 	CheckBalance(true);
 	g_iTimerEnt = FindEntityByClassname(-1, "team_round_timer");
+	
 	if (g_iTimerEnt != -1)
 	{
 		g_bIsTimer = true;
 		new iState = GetEntProp(g_iTimerEnt, Prop_Send, "m_nState");
+		
 		if (!iState)		
 		{
 			g_RoundState = setup;
 			return Plugin_Handled;
 		}
+		
 		g_iRoundTimer = GetEntProp(g_iTimerEnt, Prop_Send, "m_nTimerLength") -2;
+		
 		if (g_hRoundTimeTick != INVALID_HANDLE)
 		{
 			KillTimer(g_hRoundTimeTick);
 			g_hRoundTimeTick = INVALID_HANDLE;
 		}
+		
 		if (g_RoundState == bonusRound || g_RoundState == setup)
 		{
 			g_RoundState = normal;
@@ -2569,45 +2764,67 @@ public Action:Timer_Countdown(Handle:timer)
 stock GetPlayerPriority(client)
 {
 	if (IsFakeClient(client))
+	{
 		return 0;
+	}
+	
 	if (TF2_IsPlayerInDuel(client))
 	{
 		return -10;
 	}
+	
 	if (g_bUseBuddySystem)
 	{
 		if (g_aPlayers[client][iBuddy])
 		{
 			if (GetClientTeam(client) == GetClientTeam(g_aPlayers[client][iBuddy]))
+			{
 				return -10;
+			}
 			else if (IsValidTeam(g_aPlayers[client][iBuddy]))
+			{
 				return 10;
+			}
 		}
+		
 		if (IsClientBuddy(client))
+		{
 			return -2;
+		}
 	}
+	
 	new iPriority;
+	
 	if (IsClientInGame(client) && IsValidTeam(client))
 	{
 		if (g_aPlayers[client][iBalanceTime] > GetTime())
+		{
 			return -5;
-				
+		}
+		
 		if (g_aPlayers[client][iTeamworkTime] >= GetTime())
+		{
 			iPriority -= 3;
-			
+		}
+		
 		if (g_RoundState != bonusRound)
 		{
-			if (TF2_HasBuilding(client)||TF2_IsClientUberCharged(client)||TF2_IsClientUbered(client)||
-				!IsNotTopPlayer(client, GetClientTeam(client))||TF2_IsClientOnlyMedic(client))
+			if (TF2_HasBuilding(client)||TF2_IsClientUberCharged(client)||TF2_IsClientUbered(client)|| !IsNotTopPlayer(client, GetClientTeam(client))||TF2_IsClientOnlyMedic(client))
+			{
 				return -10;
+			}
+			
 			if (!IsPlayerAlive(client))
+			{
 				iPriority += 5;
+			}
 			else
 			{
 				if (g_aPlayers[client][bHasFlag])
 				{
 					iPriority -= 20;
 				}
+				
 				iPriority -= 1;
 			}
 		}		
@@ -2615,27 +2832,42 @@ stock GetPlayerPriority(client)
 		make new clients more likely to get swapped
 		*/
 		if (GetClientTime(client) < 180)		
+		{
 			iPriority += 5;	
+		}
 	}
+	
 	return iPriority;
 }
 
 bool:IsValidTeam(client)
 {
 	new team = GetClientTeam(client);
+	
 	if (team == TEAM_RED || team == TEAM_BLUE)
+	{
 		return true;
+	}
+	
 	return false;
 }	
 
 public OnLibraryRemoved(const String:name[])
 {
 	if (StrEqual(name, "adminmenu"))		
+	{
 		g_hAdminMenu = INVALID_HANDLE;
+	}
+	
 	if (StrEqual(name, "hlxce-sm-api"))
+	{
 		g_bUseHlxCe = false;
+	}
+	
 	if (StrEqual(name, "gameme", false))
+	{
 		g_bUseGameMe = false;
+	}
 }
 
 public OnLibraryAdded(const String:name[])
@@ -2659,18 +2891,28 @@ public OnLibraryAdded(const String:name[])
 public SortScoreDesc(x[], y[], array[][], Handle:data)
 {
     if (Float:x[1] > Float:y[1])
+	{
         return -1;
+	}
 	else if (Float:x[1] < Float:y[1])
+	{
 		return 1;
+	}
+	
     return 0;
 }
 
 public SortScoreAsc(x[], y[], array[][], Handle:data)
 {
     if (Float:x[1] > Float:y[1])
+	{
         return 1;
+	}
 	else if (Float:x[1] < Float:y[1])
+	{
 		return -1;
+	}
+	
     return 0;
 }
 
@@ -2679,13 +2921,16 @@ bool:CheckSpecChange(client)
 	if (GetConVarBool(cvar_TeamSwapBlockImmunity))
 	{
 		new String:flags[32];
+		
 		GetConVarString(cvar_TeamswapAdmFlags, flags, sizeof(flags));
+		
 		if (IsAdmin(client, flags))
+		{
 			return false;
+		}
 	}
-	new redSize = GetTeamClientCount(TEAM_RED),
-		bluSize = GetTeamClientCount(TEAM_BLUE),
-		difference;
+	new redSize = GetTeamClientCount(TEAM_RED), bluSize = GetTeamClientCount(TEAM_BLUE), difference;
+	
 	if (GetClientTeam(client) == TEAM_RED)
 	{
 		redSize -= 1;
@@ -2696,29 +2941,41 @@ bool:CheckSpecChange(client)
 	}
 	
 	difference = GetAbsValue(redSize, bluSize);
+	
 	if (difference >= GetConVarInt(cvar_BalanceLimit))
 	{
 		PrintToChat(client, "\x01\x04[SM]\x01 %t", "SpecChangeBlock");
 		LogAction(client, -1, "Client \"%L\" is being blocked from swapping to spectate", client);
 		return true;
 	}
+	
 	return false;
 }
 
 public SortIntsAsc(x[], y[], array[][], Handle:data)		// this sorts everything in the info array ascending
 {
     if (x[1] > y[1]) 
+	{
 		return 1;
+	}
     else if (x[1] < y[1]) 
+	{
 		return -1;    
+	}
+	
     return 0;
 }
 
 public SortIntsDesc(x[], y[], array[][], Handle:data)		// this sorts everything in the info array descending
 {
     if (x[1] > y[1]) 
+	{
 		return -1;
+	}
     else if (x[1] < y[1]) 
-		return 1;    
+	{
+		return 1;   
+	}		
+	
     return 0;
 }

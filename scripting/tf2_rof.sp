@@ -28,7 +28,7 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 	OffAW = FindSendPropInfo("CBasePlayer", "m_hActiveWeapon");
 	
-	CreateConVar("sm_tf2_rof_version", PLUGIN_VERSION, "TF2 Rate of Fire version", FCVAR_PLUGIN|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_tf2_rof_version", PLUGIN_VERSION, "TF2 Rate of Fire version", FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_hcvarSniperScope = CreateConVar("sm_tf2_rof_scope", "0", "Set if rof should effect sniper scope", 0, true, 0.0, true, 1.0);
 	g_hcvarHuntsman = CreateConVar("sm_tf2_rof_huntsman", "1", "Set if rof should effect huntsman", 0, true, 0.0, true, 1.0);
 	

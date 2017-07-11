@@ -117,7 +117,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_horsemann_version", PL_VERSION, "Horsemann Spaner Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_horsemann_version", PL_VERSION, "Horsemann Spaner Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	Cvar_Horseman_AllowPublic = CreateConVar("sm_horsemann_allowvoting", "0", "Allow public horsemann voting?(1/0 = yes/no)");
 	Cvar_Horseman_Votesneeded = CreateConVar("sm_horsemann_votesneeded", "0.50", "Percent of votes required for successful horseman vote. (0.50 = 50%)", _, true, 0.10, true, 1.0);
 	Cvar_Horseman_VoteDelay = CreateConVar("sm_horsemann_votedelay", "120.0", "Delay time in seconds between calling votes.");

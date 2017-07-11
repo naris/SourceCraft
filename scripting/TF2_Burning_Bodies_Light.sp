@@ -28,8 +28,8 @@ public OnPluginStart()
 	GetGameFolderName(strModName, sizeof(strModName));
 	if(!StrEqual(strModName, "tf"))
 		SetFailState("This plugin is only for Team Fortress 2.");
-	CreateConVar("bodylight_version", PLUGIN_VERSION, "Burning Bodies Light version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	g_hEnabled = CreateConVar("bodylight_enable", "1", "Enable/disable the Burning Bodies Light plugin.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CreateConVar("bodylight_version", PLUGIN_VERSION, "Burning Bodies Light version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_hEnabled = CreateConVar("bodylight_enable", "1", "Enable/disable the Burning Bodies Light plugin.", FCVAR_NOTIFY);
 	g_iOffsetPlayerCond = FindSendPropInfo("CTFPlayer", "m_nPlayerCond");
 	if(g_iOffsetPlayerCond<=0)
 		SetFailState("Offset CTFPlayer::m_nPlayerCond isn't available");

@@ -42,9 +42,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-	Version = CreateConVar("sm_resizehead_version", PLUGIN_VERSION, "Version of Resize Heads", FCVAR_REPLICATED | FCVAR_PLUGIN | FCVAR_SPONLY | FCVAR_DONTRECORD | FCVAR_NOTIFY);
-	cvarEnabled = CreateConVar("sm_resizehead_enabled", "1", "Enable Resize Heads", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarLogs = CreateConVar("sm_resizehead_logs", "1", "Enable logs of head resizes", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	Version = CreateConVar("sm_resizehead_version", PLUGIN_VERSION, "Version of Resize Heads", FCVAR_REPLICATED | FCVAR_NONE | FCVAR_SPONLY | FCVAR_DONTRECORD | FCVAR_NOTIFY);
+	cvarEnabled = CreateConVar("sm_resizehead_enabled", "1", "Enable Resize Heads", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarLogs = CreateConVar("sm_resizehead_logs", "1", "Enable logs of head resizes", FCVAR_NONE, true, 0.0, true, 1.0);
 	
 	HookConVarChange(cvarEnabled, CVarChange);
 	HookConVarChange(cvarLogs, CVarChange);

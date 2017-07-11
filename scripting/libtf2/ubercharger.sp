@@ -277,24 +277,24 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-    g_IsUberchargerOn = CreateConVar("sm_ubercharger","1","Enable/Disable ubercharger",FCVAR_PLUGIN);
+    g_IsUberchargerOn = CreateConVar("sm_ubercharger","1","Enable/Disable ubercharger",FCVAR_NONE);
     g_ChargeAmount = CreateConVar("sm_ubercharger_charge_amount", "0.03", "Sets the amount of uber charge to add time for ubercharger.",
-                                  FCVAR_PLUGIN, true, 0.0, true, 1.0);
+                                  FCVAR_NONE, true, 0.0, true, 1.0);
 
-    g_ChargeTimer = CreateConVar("sm_ubercharger_charge_timer", "3.0", "Sets the time interval for ubercharger.",FCVAR_PLUGIN);
+    g_ChargeTimer = CreateConVar("sm_ubercharger_charge_timer", "3.0", "Sets the time interval for ubercharger.",FCVAR_NONE);
 
-    g_EnableBeacon = CreateConVar("sm_ubercharger_beacon","1","Enable/Disable ubercharger beacon",FCVAR_PLUGIN);
-    g_BeaconTimer = CreateConVar("sm_ubercharger_beacon_timer","3.0","Sets the time interval of beacons for ubercharger",FCVAR_PLUGIN);
+    g_EnableBeacon = CreateConVar("sm_ubercharger_beacon","1","Enable/Disable ubercharger beacon",FCVAR_NONE);
+    g_BeaconTimer = CreateConVar("sm_ubercharger_beacon_timer","3.0","Sets the time interval of beacons for ubercharger",FCVAR_NONE);
     g_BeaconRadius = CreateConVar("sm_ubercharger_beacon_radius", "375", "Sets the radius for medic enhancer beacon's light rings.",
-                                  FCVAR_PLUGIN, true, 50.0, true, 1500.0);
+                                  FCVAR_NONE, true, 50.0, true, 1500.0);
 
-    g_EnablePing = CreateConVar("sm_ubercharger_ping","1","Enable/Disable ubercharger ping",FCVAR_PLUGIN);
-    g_PingTimer = CreateConVar("sm_ubercharger_ping_timer", "12.0", "Sets the time interval of pings for ubercharger.",FCVAR_PLUGIN);
+    g_EnablePing = CreateConVar("sm_ubercharger_ping","1","Enable/Disable ubercharger ping",FCVAR_NONE);
+    g_PingTimer = CreateConVar("sm_ubercharger_ping_timer", "12.0", "Sets the time interval of pings for ubercharger.",FCVAR_NONE);
 
     // Execute the config file
     AutoExecConfig(true, "sm_ubercharger");
 
-    CreateConVar("sm_tf_ubercharger", PL_VERSION, "TF2 Medic Uber Charger Version", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    CreateConVar("sm_tf_ubercharger", PL_VERSION, "TF2 Medic Uber Charger Version", FCVAR_DONTRECORD|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 }
 
 public OnConfigsExecuted()

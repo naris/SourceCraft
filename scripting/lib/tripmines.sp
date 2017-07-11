@@ -474,8 +474,8 @@ public OnPluginStart()
         cvMineCost = CreateConVar("sm_tripmines_cost", "50", "Price to purchase Tripmines in Counter-Strike (0=give mines at round start,-1=also disable buying mines)");
 
         // prop offset
-        gInBuyZone = FindSendPropOffs("CCSPlayer", "m_bInBuyZone");
-        gAccount = FindSendPropOffs("CCSPlayer", "m_iAccount");
+        FindSendPropInfo("CCSPlayer", "m_bInBuyZone", .local_offset=gInBuyZone);
+        FindSendPropInfo("CCSPlayer", "m_iAccount", .local_offset=gAccount);
         RegConsoleCmd("sm_buytripmines", Command_BuyTripMines);
     }
     else
@@ -512,7 +512,7 @@ public OnPluginStart()
     }
 
     // convars
-    CreateConVar("sm_tripmines_version", PLUGIN_VERSION, "Tripmines", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+    CreateConVar("sm_tripmines_version", PLUGIN_VERSION, "Tripmines", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     cvActTime = CreateConVar("sm_tripmines_activate_time", "2.0", "Tripmine activation time.");
     cvReactTime = CreateConVar("sm_tripmines_reactivate_time", "0.0", "Tripmine reactivation time, after touched by a teammate (0.0=instant).");
     cvModel = CreateConVar("sm_tripmines_model", mdlMine, "Tripmine model");

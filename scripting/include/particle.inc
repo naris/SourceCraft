@@ -37,7 +37,7 @@ stock CreateParticle(const String:particleType[], Float:time=5.0, entity=-1,
                      const Float:ang[3]=NULL_VECTOR,
                      target=-1, const String:targetBone[]="flag",
                      &target_particle=0,
-                     Timer:deleteFunc=Timer:0,
+                     Timer:deleteFunc=Timer:INVALID_FUNCTION,
                      &Handle:timerHandle=INVALID_HANDLE)
 {
     new particle = CreateEntityByName("info_particle_system");
@@ -117,7 +117,7 @@ stock CreateParticle(const String:particleType[], Float:time=5.0, entity=-1,
 
         if (time > 0.0)
         {
-            if (deleteFunc)
+            if (deleteFunc != INVALID_FUNCTION)
             {
                 timerHandle = CreateTimer(time, deleteFunc, EntIndexToEntRef(particle));
             }
@@ -141,40 +141,40 @@ stock CreateParticle(const String:particleType[], Float:time=5.0, entity=-1,
     return particle;
 }
 
-#define AttachParticle(%1,%2,%3,%4,%5) CreateParticle(%2,%4,%1,Attach,"head",%3)
-//stock AttachParticle(ent, String:particleType[], Timer:func=Timer:0, Float:time=5.0,
+#define AttachParticleToHead(%1,%2,%3,%4,%5) CreateParticle(%2,%4,%1,Attach,"head",%3)
+//stock AttachParticleToHead(ent, const String:particleType[], Timer:func=Timer:0, Float:time=5.0,
 //                     const Float:offsetVec[3]=NULL_VECTOR)
 //{
 //    return CreateParticle(particleType, time, ent, Attach, "head", offsetVec);
 //}
 
 #define AttachParticleEx(%1,%2,%3,%4,%5) CreateParticle(%2,%3,%1,Attach,"",%4,%5)
-//stock AttachParticleEx(ent, String:particleType[], Float:time, Float:addPos[3]=NULL_VECTOR, Float:addAngle[3]=NULL_VECTOR)
+//stock AttachParticleEx(ent, const String:particleType[], Float:time, Float:addPos[3]=NULL_VECTOR, Float:addAngle[3]=NULL_VECTOR)
 //{
 //    return CreateParticle(particleType, time, ent, Attach, "", addPos, addAngle);
 //}
 
 #define AttachParticleBone(%1,%2,%3,%4,%5,%6) CreateParticle(%2,%4,%1,Attach,%3,%5,%6)
-//stock AttachParticleBone(ent, String:particleType[], String:attachBone[], Float:time,
+//stock AttachParticleBone(ent, const String:particleType[], String:attachBone[], Float:time,
 //                         Float:addPos[3]=NULL_VECTOR, Float:addAngle[3]=NULL_VECTOR)
 //{
 //    return CreateParticle(particleType, time, ent, Attach, attachBone, addPos, addAngle);
 //}
 
 #define ShowParticle(%1,%2,%3,%4) CreateParticle(%2,%3,0,NoAttach,"",%1,NULL_VECTOR,NULL_VECTOR,%4)
-//stock ShowParticle(Float:pos[3], String:particleType[], Float:time, Timer:func)
+//stock ShowParticle(Float:pos[3], const String:particleType[], Float:time, Timer:func)
 //{
 //    return CreateParticle(particleType, time, 0, NoAttach, "", pos,NULL_VECTOR,NULL_VECTOR,func);
 //}
 
 #define ShowParticleEx(%1,%2,%3,%4,%5) CreateParticle(%2,%3,0,NoAttach,"",%1,%4,%5)
-//stock ShowParticleEx(String:particlename[], Float:time, Float:pos[3], Float:ang[3]=NULL_VECTOR)
+//stock ShowParticleEx(const String:particlename[], Float:time, Float:pos[3], Float:ang[3]=NULL_VECTOR)
 //{
 //    return CreateParticle(particleType, time, 0, NoAttach, "", pos, ang);
 //}
 
 #define ShowParticleEntity(%1,%2,%3,%4,%5) CreateParticle(%2,%3,%1,Attach,"",%4,%5)
-//stock ShowParticleEntity(ent, String:particleType[], Float:time, Float:addPos[3]=NULL_VECTOR, Float:addAngle[3]=NULL_VECTOR)
+//stock ShowParticleEntity(ent, const String:particleType[], Float:time, Float:addPos[3]=NULL_VECTOR, Float:addAngle[3]=NULL_VECTOR)
 //{
 //    return CreateParticle(particleType, time, ent, Attach, "", pos, ang);
 //}

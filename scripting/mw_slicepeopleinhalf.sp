@@ -29,10 +29,10 @@ public Plugin:myinfo = {
 };
 
 public OnPluginStart() {
-    CreateConVar("slice_version", PLUGIN_VERSION, "Plugin version", FCVAR_DONTRECORD|FCVAR_PLUGIN|FCVAR_NOTIFY);
-    g_hChance = CreateConVar("slice_chance", "1.0", "Chance for the slice to happen. 1.0 = always, 0.0 = never", FCVAR_PLUGIN);
-    g_hIcon = CreateConVar("slice_icon", "2", "1: Always changes the slice icon to sawblade, 2: Only on sm_slice or sm_sliceme", FCVAR_PLUGIN);
-    g_hSuicide = CreateConVar("slice_suicide", "0", "If on, allows sm_sliceme suicides", FCVAR_PLUGIN);
+    CreateConVar("slice_version", PLUGIN_VERSION, "Plugin version", FCVAR_DONTRECORD|FCVAR_NOTIFY);
+    g_hChance = CreateConVar("slice_chance", "1.0", "Chance for the slice to happen. 1.0 = always, 0.0 = never", FCVAR_NONE);
+    g_hIcon = CreateConVar("slice_icon", "2", "1: Always changes the slice icon to sawblade, 2: Only on sm_slice or sm_sliceme", FCVAR_NONE);
+    g_hSuicide = CreateConVar("slice_suicide", "0", "If on, allows sm_sliceme suicides", FCVAR_NONE);
 
     HookEvent("player_death", Event_PlayerDeath, EventHookMode_Pre);
     HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Pre);

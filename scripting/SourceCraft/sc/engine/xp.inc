@@ -358,32 +358,32 @@ GiveChargeDeployedXP(client)
     GiveXP(client,CHARGE_XP, "DeployUber");
 }
 
-GiveObjectBuiltXP(client,TFObjectType:object)
+GiveObjectBuiltXP(client,TFObjectType:obj)
 {
     // Called when a player builds an object
     GiveXP(client, BUILD_XP, "Building",
-           .object=object);
+           .obj=obj);
 }
 
-GiveObjectUpgradedXP(client,TFObjectType:object, bool:isBuilder)
+GiveObjectUpgradedXP(client,TFObjectType:obj, bool:isBuilder)
 {
     // Called when a player upgrades an object
     GiveXP(client, isBuilder ? UPGRADE_XP : UPGRADE_XP*2,
-           "Upgrading", .object=object);
+           "Upgrading", .obj=obj);
 }
 
-TakeObjectBuiltXP(client,TFObjectType:object)
+TakeObjectBuiltXP(client,TFObjectType:obj)
 {
     // Called when a player destroys thier own object
     TakeXP(client,BUILD_XP, "DestroyingOwn",
-           .object=object);
+           .obj=obj);
 }
 
-GiveObjectDestroyedXP(client,TFObjectType:object)
+GiveObjectDestroyedXP(client,TFObjectType:obj)
 {
     // Called when a player destroys an object
     GiveXP(client,DESTROY_XP, "Destroying",
-           .object=object);
+           .obj=obj);
 }
 
 GiveFlagCapturedXP(client)
@@ -437,7 +437,7 @@ GiveMvpXP(client, place, points)
 }
 
 GiveXP(client, amount, const String:phrase[], place=-1,
-       points=-1, TFObjectType:object=TFObject_Unknown)
+       points=-1, TFObjectType:obj=TFObject_Unknown)
 {
     if (GetRaceCount() > 1 && GetClientCount() >= g_iMinPlayers)
     {
@@ -457,10 +457,10 @@ GiveXP(client, amount, const String:phrase[], place=-1,
                 Format(reason, sizeof(reason), "%T",
                        phrase, client, place, points);
             }
-            else if (object != TFObject_Unknown)
+            else if (obj != TFObject_Unknown)
             {
                 Format(reason, sizeof(reason), "%T",
-                       phrase, client, TF2_ObjectNames[object]);
+                       phrase, client, TF2_ObjectNames[obj]);
             }
             else
             {
@@ -488,7 +488,7 @@ GiveXP(client, amount, const String:phrase[], place=-1,
 }
 
 TakeXP(client, amount, const String:phrase[], place=-1,
-       points=-1, TFObjectType:object=TFObject_Unknown)
+       points=-1, TFObjectType:obj=TFObject_Unknown)
 {
     if (GetRaceCount() > 1 && GetClientCount() >= g_iMinPlayers)
     {
@@ -507,10 +507,10 @@ TakeXP(client, amount, const String:phrase[], place=-1,
                 Format(reason, sizeof(reason), "%T",
                        phrase, client, place, points);
             }
-            else if (object != TFObject_Unknown)
+            else if (obj != TFObject_Unknown)
             {
                 Format(reason, sizeof(reason), "%T",
-                       phrase, client, TF2_ObjectNames[object]);
+                       phrase, client, TF2_ObjectNames[obj]);
             }
             else
             {

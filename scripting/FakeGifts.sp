@@ -25,7 +25,7 @@ public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 
-	CreateConVar("sm_fakegifts_version", PLUGIN_VERSION, "", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
+	CreateConVar("sm_fakegifts_version", PLUGIN_VERSION, "", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY)
 
 	RegAdminCmd("sm_fakegift", FakeGift, ADMFLAG_CHEATS);
 	RegAdminCmd("sm_makemegift", MakeMeAGift, ADMFLAG_CHEATS);

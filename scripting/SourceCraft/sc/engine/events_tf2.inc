@@ -585,22 +585,22 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
             new index = GetClientOfUserId(userid);
             if (IsValidClient(index))
             {
-                new object = GetEventInt(event,"index");
+                new obj = GetEventInt(event,"index");
                 new TFObjectType:type = TFObjectType:GetEventInt(event,"object");
 
                 TraceInto("Events_TF2", "PlayerBuiltObject", "object=%d,type=%d,userid=%d,%D:%N", \
-                          object, type, userid,index, ValidClientIndex(index));
+                          obj, type, userid,index, ValidClientIndex(index));
 
-                if (m_ObjectBuilt[object] != index)
+                if (m_ObjectBuilt[obj] != index)
                 {
                     GiveObjectBuiltXP(index, type);
-                    m_ObjectBuilt[object] = index;
+                    m_ObjectBuilt[obj] = index;
 
                     new Action:result = Plugin_Continue;
                     Call_StartForward(g_OnPlayerBuiltObject);
                     Call_PushCell(event);
                     Call_PushCell(index);
-                    Call_PushCell(object);
+                    Call_PushCell(obj);
                     Call_PushCell(type);
                     Call_Finish(result);
                 }
@@ -613,9 +613,9 @@ public PlayerBuiltObject(Handle:event,const String:name[],bool:dontBroadcast)
 
 public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new object = GetEventInt(event,"index");
-    if (object > 0)
-        m_ObjectBuilt[object] = 0;
+    new obj = GetEventInt(event,"index");
+    if (obj > 0)
+        m_ObjectBuilt[obj] = 0;
 
     if (g_RoundState >= RoundActive && g_RoundState < RoundOver)
     {
@@ -630,7 +630,7 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
         new assister_index = GetClientOfUserId(assister);
 
         TraceInto("Events_TF2", "EventObjectDestroyed", "object=%d,type=%d,userid=%d,%D:%N, attacker=%d,%d:%N, assister=%d,%d:%N", \
-                  object, type, userid,index, ValidClientIndex(index), \
+                  obj, type, userid,index, ValidClientIndex(index), \
                   attacker,attacker_index, ValidClientIndex(attacker_index), \
                   assister,assister_index, ValidClientIndex(assister_index));
 
@@ -658,9 +658,9 @@ public EventObjectDestroyed(Handle:event,const String:name[],bool:dontBroadcast)
 
 public EventObjectRemoved(Handle:event,const String:name[],bool:dontBroadcast)
 {
-    new object = GetEventInt(event,"index");
-    if (object > 0)
-        m_ObjectBuilt[object] = 0;
+    new obj = GetEventInt(event,"index");
+    if (obj > 0)
+        m_ObjectBuilt[obj] = 0;
 
     if (g_RoundState >= RoundActive && g_RoundState < RoundOver)
     {
@@ -671,7 +671,7 @@ public EventObjectRemoved(Handle:event,const String:name[],bool:dontBroadcast)
             new TFObjectType:type = TFObjectType:GetEventInt(event,"objecttype");
 
             TraceInto("Events_TF2", "EventObjectRemoved", "object=%d,type=%d,userid=%d,%D:%N", \
-                    object, type, userid,index, ValidClientIndex(index));
+                    obj, type, userid,index, ValidClientIndex(index));
 
             TakeObjectBuiltXP(index,type);
         }
@@ -690,9 +690,9 @@ public EventObjectUpgraded(Handle:event,const String:name[],bool:dontBroadcast)
         new bool:isBuilder = GetEventBool(event,"isbuilder");
 
         #if defined _TRACE
-            new object = GetEventInt(event,"index");
+            new obj = GetEventInt(event,"index");
             TraceInto("Events_TF2", "EventObjectUpgraded", "object=%d,type=%d,userid=%d,%D:%N",
-                      object, type, userid,index, ValidClientIndex(index));
+                      obj, type, userid,index, ValidClientIndex(index));
         #endif
 
         GiveObjectUpgradedXP(index, type, isBuilder);
@@ -738,7 +738,8 @@ public EventFlagEvent(Handle:event,const String:name[],bool:dontBroadcast)
 public EventPointCapture(Handle:event,const String:name[],bool:dontBroadcast)
 {
     decl String:cappers[MAXPLAYERS+1];
-    if (GetEventString(event,"cappers", cappers, MAXPLAYERS)>0)
+    GetEventString(event,"cappers", cappers, MAXPLAYERS);
+    if (strlen(cappers)>0)
     {
         new bool:startcap = StrEqual(name, "teamplay_point_startcapture");
         new len = strlen(cappers);

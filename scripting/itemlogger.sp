@@ -17,7 +17,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_item_logger_version", PL_VERSION, "TF2 Item Logger", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_item_logger_version", PL_VERSION, "TF2 Item Logger", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	HookEvent("item_found", Event_item_found);
 	decl String:ip[24], String:port[8];
 	GetConVarString(FindConVar("ip"), ip, sizeof(ip));

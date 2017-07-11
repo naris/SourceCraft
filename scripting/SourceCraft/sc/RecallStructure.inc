@@ -292,45 +292,45 @@ stock RecallIt(client, raceId, upgradeId, target, bool:disable)
 
 public Action:Activate(Handle:timer,any:ref)
 {
-    new object = EntRefToEntIndex(ref);
-    if (object > 0 && IsValidEdict(object) && IsValidEntity(object))
+    new obj = EntRefToEntIndex(ref);
+    if (obj > 0 && IsValidEdict(obj) && IsValidEntity(obj))
     {
-        if (!GetEntProp(object, Prop_Send, "m_bHasSapper"))
-            SetEntProp(object, Prop_Send, "m_bDisabled", 0);
+        if (!GetEntProp(obj, Prop_Send, "m_bHasSapper"))
+            SetEntProp(obj, Prop_Send, "m_bDisabled", 0);
         else
             CreateTimer(0.2, Activate, ref, TIMER_FLAG_NO_MAPCHANGE);
     }
     return Plugin_Stop;
 }
 
-public Action:ResetCollisionGroup(Handle:timer,any:object)
+public Action:ResetCollisionGroup(Handle:timer,any:obj)
 {
-    if (IsValidEdict(object) && IsValidEntity(object))
+    if (IsValidEdict(obj) && IsValidEntity(obj))
     {
-        if (TF2_GetExtObjectType(object) != TFExtObject_Unknown)
+        if (TF2_GetExtObjectType(obj) != TFExtObject_Unknown)
         {
-            if (GetEntProp(object, Prop_Send, "m_CollisionGroup") != 0)
+            if (GetEntProp(obj, Prop_Send, "m_CollisionGroup") != 0)
             {
-                new builder = GetEntPropEnt(object, Prop_Send, "m_hBuilder");
+                new builder = GetEntPropEnt(obj, Prop_Send, "m_hBuilder");
                 if (IsValidClientAlive(builder))
                 {
                     decl Float:playerPos[3];
                     GetClientAbsOrigin(builder, playerPos);
 
                     decl Float:objectPos[3];
-                    GetEntPropVector(object, Prop_Send, "m_vecOrigin", objectPos);
+                    GetEntPropVector(obj, Prop_Send, "m_vecOrigin", objectPos);
 
                     decl Float:size[3];
-                    GetEntPropVector(object, Prop_Send, "m_vecBuildMaxs", size);
+                    GetEntPropVector(obj, Prop_Send, "m_vecBuildMaxs", size);
 
                     new Float:distance = GetVectorDistance(objectPos, playerPos);
                     if (distance < size[0] * -1.1 || distance > size[0] * 1.1)
-                        SetEntProp(object, Prop_Send, "m_CollisionGroup", 0);
+                        SetEntProp(obj, Prop_Send, "m_CollisionGroup", 0);
                     else
-                        CreateTimer(2.0, ResetCollisionGroup, object, TIMER_FLAG_NO_MAPCHANGE);
+                        CreateTimer(2.0, ResetCollisionGroup, obj, TIMER_FLAG_NO_MAPCHANGE);
                 }
                 else
-                    SetEntProp(object, Prop_Send, "m_CollisionGroup", 0);
+                    SetEntProp(obj, Prop_Send, "m_CollisionGroup", 0);
             }
         }
     }

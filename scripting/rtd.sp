@@ -95,7 +95,7 @@ public OnPluginStart()
         c_Sudden   = CreateConVar("sm_rtd_suddendeath","0","Allow rtd commands during sudden death.")
         c_Disabled = CreateConVar("sm_rtd_disabled","","Disabled commands, seperated by commas.");
 
-        CreateConVar("sm_rtd_version", VERSION, "TF2: rtd version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+        CreateConVar("sm_rtd_version", VERSION, "TF2: rtd version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
         RegConsoleCmd("rtd", Command_rtd);
         RegAdminCmd("sm_rtd", Command_admin, ADMFLAG_GENERIC);

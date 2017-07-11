@@ -128,7 +128,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_monospawn_version", PLUGIN_VERSION, "Monoculus Spawner Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_monospawn_version", PLUGIN_VERSION, "Monoculus Spawner Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	Cvar_Eyeboss_AllowPublic = CreateConVar("sm_eyeboss_allowvoting", "0", "Allow public Monoculus voting?(1/0 = yes/no)", _, true, 0.0, true, 1.0);
 	Cvar_Eyeboss_Votesneeded = CreateConVar("sm_eyeboss_votesneeded", "0.50", "Percent of votes required for successful Monoculus vote. (0.50 = 50%)", _, true, 0.10, true, 1.0);
 	Cvar_Eyeboss_VoteDelay = CreateConVar("sm_eyeboss_votedelay", "120.0", "Delay time in seconds between calling votes.");

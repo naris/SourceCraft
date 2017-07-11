@@ -273,38 +273,38 @@ public OnPluginStart()
     CreateConVar("ampnode_version", PLUGIN_VERSION, "The Amplifier Version", FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
 
     cvarAnnounce = CreateConVar("ampnode_announce", "1", "Announce usage instructions (1=yes,0=no)");
-    cvarSpawnMenu = CreateConVar("ampnode_spawn_menu", "0", "Display selection menu when engineers spawn?", FCVAR_PLUGIN);
-    cvarRegeneration = CreateConVar("ampnode_regeneration", "10.0", "Amount of metal to regenerate per second.", FCVAR_PLUGIN);
-    cvarMetalMax = CreateConVar("ampnode_max", "400.0", "Maximum amount of metal an amplifier or repair node can hold.", FCVAR_PLUGIN);
+    cvarSpawnMenu = CreateConVar("ampnode_spawn_menu", "0", "Display selection menu when engineers spawn?", FCVAR_NONE);
+    cvarRegeneration = CreateConVar("ampnode_regeneration", "10.0", "Amount of metal to regenerate per second.", FCVAR_NONE);
+    cvarMetalMax = CreateConVar("ampnode_max", "400.0", "Maximum amount of metal an amplifier or repair node can hold.", FCVAR_NONE);
 
     cvarAmplifierEnabled = CreateConVar("amplifier_enable", "1", "Enable the amplifier? (1=yes,0=no)", FCVAR_NOTIFY);
-    cvarAmplifierPercent = CreateConVar("amplifier_percent", "100.0", "Percent chance of the amplifier applying the condition.", FCVAR_PLUGIN, true, 0.0, true, 100.0);
-    cvarParticle = CreateConVar("amplifier_particle", "1", "Enable the Buffed Particle? (1=yes,0=no)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-    cvarMiniCritToSG = CreateConVar("amplifier_sg_wrangler_mini_crit", "1", "Controlled (by Wrangler) SentryGun will get mini-crits, if engineer near AMP", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    cvarAmplifierPercent = CreateConVar("amplifier_percent", "100.0", "Percent chance of the amplifier applying the condition.", FCVAR_NONE, true, 0.0, true, 100.0);
+    cvarParticle = CreateConVar("amplifier_particle", "1", "Enable the Buffed Particle? (1=yes,0=no)", FCVAR_NONE, true, 0.0, true, 1.0);
+    cvarMiniCritToSG = CreateConVar("amplifier_sg_wrangler_mini_crit", "1", "Controlled (by Wrangler) SentryGun will get mini-crits, if engineer near AMP", FCVAR_NONE, true, 0.0, true, 1.0);
     cvarAmplifierUpgradable = CreateConVar("amplifier_upgradable", "1", "Allow the amplifier to be upgraded? (1=yes,0=no)", FCVAR_NOTIFY);
-    cvarWallBlock = CreateConVar("amplifier_wallblock", "0", "Teammates can (0) or can not (1) get crits through walls, players, props etc", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+    cvarWallBlock = CreateConVar("amplifier_wallblock", "0", "Teammates can (0) or can not (1) get crits through walls, players, props etc", FCVAR_NONE, true, 0.0, true, 1.0);
 
-    cvarCondition = CreateConVar("amplifier_condition", "16", "Condition that The amplifier dispenses (11=full crits, 16=mini crits, etc...).", FCVAR_PLUGIN);
-    cvarAmplifierRange[1] = CreateConVar("amplifier_range_1", "100.0", "Distance the amplifier works at level 1.", FCVAR_PLUGIN);
-    cvarAmplifierRange[2] = CreateConVar("amplifier_range_2", "200.0", "Distance the amplifier works at level 2.", FCVAR_PLUGIN);
-    cvarAmplifierRange[3] = CreateConVar("amplifier_range_3", "300.0", "Distance the amplifier works at level 3.", FCVAR_PLUGIN);
-    cvarAmplifierMetal = CreateConVar("amplifier_metal", "5.0", "Amount of metal to use to apply a condition to a player (per second).", FCVAR_PLUGIN);
+    cvarCondition = CreateConVar("amplifier_condition", "16", "Condition that The amplifier dispenses (11=full crits, 16=mini crits, etc...).", FCVAR_NONE);
+    cvarAmplifierRange[1] = CreateConVar("amplifier_range_1", "100.0", "Distance the amplifier works at level 1.", FCVAR_NONE);
+    cvarAmplifierRange[2] = CreateConVar("amplifier_range_2", "200.0", "Distance the amplifier works at level 2.", FCVAR_NONE);
+    cvarAmplifierRange[3] = CreateConVar("amplifier_range_3", "300.0", "Distance the amplifier works at level 3.", FCVAR_NONE);
+    cvarAmplifierMetal = CreateConVar("amplifier_metal", "5.0", "Amount of metal to use to apply a condition to a player (per second).", FCVAR_NONE);
 
     cvarRepairNodeEnabled = CreateConVar("repair_node_enable", "1", "Enable the repair node? (1=yes,0=no)", FCVAR_NOTIFY);
-    cvarRepairNodePercent = CreateConVar("repair_node_percent", "100.0", "Percent chance of the repair node repairing something.", FCVAR_PLUGIN, true, 0.0, true, 100.0);
+    cvarRepairNodePercent = CreateConVar("repair_node_percent", "100.0", "Percent chance of the repair node repairing something.", FCVAR_NONE, true, 0.0, true, 100.0);
     cvarRepairNodeMetal = CreateConVar("repair_node_metal", "1", "Repair nodes use metal? (1=yes,0=no)", FCVAR_NOTIFY);
     cvarTeam = CreateConVar("repair_node_team", "0", "Allow repair nodes to teammates buildings? (1=yes,0=no)", FCVAR_NOTIFY);
     cvarMini = CreateConVar("repair_node_mini", "0", "Allow repair nodes to repair mini sentries? (1=yes,0=no)", FCVAR_NOTIFY);
 
-    cvarRepairNodeRange[1] = CreateConVar("repair_node_range_1", "300.0", "How far away the Repair Node will heal a building at level 1.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+    cvarRepairNodeRange[1] = CreateConVar("repair_node_range_1", "300.0", "How far away the Repair Node will heal a building at level 1.", FCVAR_NOTIFY);
     cvarRepairNodeRange[2] = CreateConVar("repair_node_range_2", "400.0", "How far away the Repair Node will heal a building at level 2.", FCVAR_NOTIFY);
     cvarRepairNodeRange[3] = CreateConVar("repair_node_range_3", "500.0", "How far away the Repair Node will heal a building at level 3.", FCVAR_NOTIFY);
 
-    cvarRepairNodeRegen[1] = CreateConVar("repair_node_regen_1", "15", "How much the Repair Node will heal a building, per 2 seconds, at level 1.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+    cvarRepairNodeRegen[1] = CreateConVar("repair_node_regen_1", "15", "How much the Repair Node will heal a building, per 2 seconds, at level 1.", FCVAR_NOTIFY);
     cvarRepairNodeRegen[2] = CreateConVar("repair_node_regen_2", "25", "How much the Repair Node will heal a building, per 2 seconds, at level 2.", FCVAR_NOTIFY);
     cvarRepairNodeRegen[3] = CreateConVar("repair_node_regen_3", "35", "How much the Repair Node will heal a building, per 2 seconds, at level 3.", FCVAR_NOTIFY);
 
-    cvarRepairNodeShells[1] = CreateConVar("repair_node_ammo_1", "0", "How much ammo the Repair Node will replenish, per 2 seconds, at level 1.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+    cvarRepairNodeShells[1] = CreateConVar("repair_node_ammo_1", "0", "How much ammo the Repair Node will replenish, per 2 seconds, at level 1.", FCVAR_NOTIFY);
     cvarRepairNodeShells[2] = CreateConVar("repair_node_ammo_2", "5", "How much ammo the Repair Node will replenish, per 2 seconds, at level 2.", FCVAR_NOTIFY);
     cvarRepairNodeShells[3] = CreateConVar("repair_node_ammo_3", "10", "How much ammo the Repair Node will replenish, per 2 seconds, at level 3.", FCVAR_NOTIFY);
 

@@ -28,14 +28,14 @@ new Float:g_fTeleportersModifier;
 new Float:g_fDispenserModifier;
 
 public OnPluginStart() {
-	CreateConVar("sm_tbuildingtakecrits_version", VERSION, "[TF2] tBuildingsTakeCrits", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+	CreateConVar("sm_tbuildingtakecrits_version", VERSION, "[TF2] tBuildingsTakeCrits", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 
-	g_hCvarShowParticle = CreateConVar("sm_tbuildingtakecrits_showparticle", "1", "Show particle crit text.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	g_hCvarPlayCritHitSound = CreateConVar("sm_tbuildingtakecrits_playsound", "1", "Play crit-hit sounds.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	g_hCvarShowParticle = CreateConVar("sm_tbuildingtakecrits_showparticle", "1", "Show particle crit text.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_hCvarPlayCritHitSound = CreateConVar("sm_tbuildingtakecrits_playsound", "1", "Play crit-hit sounds.", FCVAR_NONE, true, 0.0, true, 1.0);
 
-	g_hCvarModifierSentries = CreateConVar("sm_tbuildingtakecrits_modifier_sentry", "1.3", "Modifier for critical hits against sentries", FCVAR_PLUGIN, true, 0.0);
-	g_hCvarModifierTeleporters = CreateConVar("sm_tbuildingtakecrits_modifier_teleporter", "1.5", "Modifier for critical hits against teleporters", FCVAR_PLUGIN, true, 0.0);
-	g_hCvarModifierDispenser = CreateConVar("sm_tbuildingtakecrits_modifier_dispenser", "1.5", "Modifier for critical hits against dispenser", FCVAR_PLUGIN, true, 0.0);
+	g_hCvarModifierSentries = CreateConVar("sm_tbuildingtakecrits_modifier_sentry", "1.3", "Modifier for critical hits against sentries", FCVAR_NONE, true, 0.0);
+	g_hCvarModifierTeleporters = CreateConVar("sm_tbuildingtakecrits_modifier_teleporter", "1.5", "Modifier for critical hits against teleporters", FCVAR_NONE, true, 0.0);
+	g_hCvarModifierDispenser = CreateConVar("sm_tbuildingtakecrits_modifier_dispenser", "1.5", "Modifier for critical hits against dispenser", FCVAR_NONE, true, 0.0);
 
 	HookConVarChange(g_hCvarPlayCritHitSound, Cvar_Changed);
 	HookConVarChange(g_hCvarModifierSentries, Cvar_Changed);

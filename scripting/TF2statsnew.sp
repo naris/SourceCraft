@@ -70,7 +70,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_tf2_stats_version", PLUGIN_VERSION, "TF2 Player Stats", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_tf2_stats_version", PLUGIN_VERSION, "TF2 Player Stats", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	DatabaseInit();
 	RegConsoleCmd("say", Command_Say);
 	HookEvent("player_death", EventPlayerDeath);

@@ -2367,7 +2367,7 @@ forward OnPlayerSpawnEvent(Handle:event, client, race);
  * @param type:           The type of the object.
  * @noreturn
  */
-forward OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type);
+forward OnPlayerBuiltObject(Handle:event, client, obj, TFObjectType:type);
 
 /**
  * Gets called when a health cabinet is used (opened)

@@ -20,7 +20,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_sqlfeedback_version", PLUGIN_VERSION, "SQL Feedback Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_sqlfeedback_version", PLUGIN_VERSION, "SQL Feedback Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	RegConsoleCmd("feedback", Command_Feedback, "feedback <text>");
 
 	GetConVarString(FindConVar("ip"), g_sServerInfo[0], sizeof(g_sServerInfo[]));

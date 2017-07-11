@@ -23,7 +23,7 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	CreateConVar("sm_fakegift_version", PL_VERSION, "Fake Gift Spaner Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_REPLICATED);
+	CreateConVar("sm_fakegift_version", PL_VERSION, "Fake Gift Spaner Version", FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_REPLICATED);
 	RegAdminCmd("sm_fakegift", Command_Spawn, ADMFLAG_ROOT);
 }
 

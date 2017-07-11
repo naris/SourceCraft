@@ -70,7 +70,7 @@ new Handle:g_kv = INVALID_HANDLE;
 
 public OnPluginStart()
 {
-	CreateConVar("sm_team_join_control_version", PLUGIN_VERSION, "Auto Join Control Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_team_join_control_version", PLUGIN_VERSION, "Auto Join Control Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	g_CvarEnable = CreateConVar("sm_team_join_control_enable", "1", "Set to 1 if you want you admins to be immune");
 	g_CvarAdminImmunity = CreateConVar("sm_team_join_control_admin_immunity", "0", "Set to 1 if you want you admins to be immune");
 	g_CvarLockTeams = CreateConVar("sm_team_join_control_lock_teams", "0", "Set to 1 if you want to force each player to stay in the teams assigned");

@@ -1,7 +1,7 @@
 /**
  * gameME Plugin - Raw Messages Interface
  * http://www.gameme.com
- * Copyright (C) 2007-2013 TTS Oetzel & Goerz GmbH
+ * Copyright (C) 2007-2016 TTS Oetzel & Goerz GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,7 +50,7 @@ public Plugin:myinfo = {
 
 public OnPluginStart() 
 {
-	LogToGame("gameME Raw Messages Example Plugin %s (http://www.gameme.com), copyright (c) 2007-2012 by TTS Oetzel & Goerz GmbH", GAMEME_MESSAGES_PLUGIN_VERSION);
+	LogToGame("gameME Raw Messages Example Plugin %s (http://www.gameme.com), copyright (c) 2007-2014 by TTS Oetzel & Goerz GmbH", GAMEME_MESSAGES_PLUGIN_VERSION);
 
 	QueryGameMEStatsTop10("top10", -1, QuerygameMEStatsTop10Callback);
 }
@@ -518,11 +518,10 @@ public onGameMEStatsNext(command, client, String: message_prefix[], &Handle: dat
 				decl String: entry_message[192];
 				if (i == 0) {
 					Format(entry_message, 192, "   %02d  %d       -      %s\\n", rank, skill, name);
-					strcopy(message[strlen(message)], 192, entry_message);
 				} else {
 					Format(entry_message, 192, "   %02d  %d  +%04d  %s\\n", rank, skill, diff, name);
-					strcopy(message[strlen(message)], 192, entry_message);
 				}
+				strcopy(message[strlen(message)], 192, entry_message);
 
 				if (prev_skill == -1) {
 					prev_skill = skill;

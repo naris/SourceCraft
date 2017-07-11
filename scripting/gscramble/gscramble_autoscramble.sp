@@ -37,7 +37,7 @@ stock bool:ScrambleCheck()
 {
 	if (g_bScrambleNextRound)
 	{
-		return (GetGameMode() != MvM);
+		return true;
 	}
 	
 	if (!g_iLastRoundWinningTeam)
@@ -46,6 +46,7 @@ stock bool:ScrambleCheck()
 	}
 
 	new bool:bOkayToCheck = false;
+	
 	if (g_iVoters >= GetConVarInt(cvar_MinAutoPlayers))
 	{
 		if (g_RoundState == bonusRound)
@@ -55,12 +56,12 @@ stock bool:ScrambleCheck()
 			{
 				if (!g_bScrambledThisRound)
 				{
-					bOkayToCheck = (GetGameMode() != MvM);
+					bOkayToCheck = true;
 				}
 			}
 			else
 			{
-				bOkayToCheck = (GetGameMode() != MvM);
+				bOkayToCheck = true;
 			}
 		}
 	}
@@ -73,8 +74,10 @@ stock bool:ScrambleCheck()
 				StartScrambleVote(g_iDefMode, 15);
 				return false;
 			}
-			else			
+			else		
+			{			
 				return true;
+			}
 		}		
 	}
 	return false;
@@ -82,21 +85,32 @@ stock bool:ScrambleCheck()
 
 stock bool:WinStreakCheck(winningTeam)
 {
-	if (g_bScrambleNextRound || !g_bWasFullRound || GetGameMode() == MvM)
+	if (g_bScrambleNextRound || !g_bWasFullRound)
+	{
 		return false;
+	}
+	
 	if (GetConVarBool(cvar_AutoScrambleRoundCount) && g_iRoundTrigger == g_iCompleteRounds)
 	{
 		PrintToChatAll("\x01\x04[SM]\x01 %t", "RoundMessage");
 		LogAction(0, -1, "Rount limit reached");
 		return true;
 	}
+	
 	if (!GetConVarBool(cvar_AutoScrambleWinStreak))
+	{
 		return false;
+	}
+	
 	if (winningTeam == TEAM_RED)
 	{
 		if (g_aTeams[iBluWins] >= 1)
+		{
 			g_aTeams[iBluWins] = 0;	
+		}
+		
 		g_aTeams[iRedWins]++;
+		
 		if (g_aTeams[iRedWins] >= GetConVarInt(cvar_AutoScrambleWinStreak))
 		{
 			PrintToChatAll("\x01\x04[SM]\x01 %t", "RedStreak");
@@ -104,11 +118,16 @@ stock bool:WinStreakCheck(winningTeam)
 			return true;
 		}
 	}
+	
 	if (winningTeam == TEAM_BLUE)
 	{
 		if (g_aTeams[iRedWins] >= 1)
+		{
 			g_aTeams[iRedWins] = 0;
+		}
+		
 		g_aTeams[iBluWins]++;
+		
 		if (g_aTeams[iBluWins] >= GetConVarInt(cvar_AutoScrambleWinStreak))
 		{
 			PrintToChatAll("\x01\x04[SM]\x01 %t", "BluStreak");
@@ -116,6 +135,7 @@ stock bool:WinStreakCheck(winningTeam)
 			return true;
 		}
 	}
+	
 	return false;
 }
 
@@ -124,17 +144,26 @@ stock StartScrambleDelay(Float:delay = 5.0, bool:respawn = false, e_ScrambleMode
 	if (g_hScrambleDelay != INVALID_HANDLE)
 	{
 		KillTimer(g_hScrambleDelay);
-		g_hScrambleDelay = INVALID_HANDLE;
+		{
+			g_hScrambleDelay = INVALID_HANDLE;
+		}
 	}
+	
 	if (mode == invalid)
+	{
 		mode = e_ScrambleModes:GetConVarInt(cvar_SortMode);
+	}
 	
 	new Handle:data;
 	g_hScrambleDelay = CreateDataTimer(delay, timer_ScrambleDelay, data, TIMER_FLAG_NO_MAPCHANGE|TIMER_DATA_HNDL_CLOSE );
 	WritePackCell(data, respawn);
 	WritePackCell(data, _:mode);
+	
 	if (delay == 0.0)
+	{
 		delay = 1.0;	
+	}
+	
 	if (delay >= 2.0)
 	{
 		PrintToChatAll("\x01\x04[SM]\x01 %t", "ScrambleDelay", RoundFloat(delay));
@@ -150,8 +179,12 @@ public Action:timer_AfterScramble(Handle:timer, any:spawn)
 {
 	
 	new iEnt = -1;
+	
 	while ((iEnt = FindEntityByClassname(iEnt, "tf_ammo_pack")) != -1)
+	{
 		AcceptEntityInput(iEnt, "Kill");
+	}	
+	
 	TF2_RemoveRagdolls();
 	
 	if (spawn)
@@ -164,6 +197,7 @@ public Action:timer_AfterScramble(Handle:timer, any:spawn)
 				{
 					TF2_RespawnPlayer(i);
 				}
+				
 				if (TF2_GetPlayerClass(i) == TFClass_Unknown)
 				{
 					TF2_SetPlayerClass(i, TFClass_Scout);
@@ -171,18 +205,22 @@ public Action:timer_AfterScramble(Handle:timer, any:spawn)
 			}
 		}
 	}
+	
 	if (GetTime() - g_iRoundStartTime <= 3)
 	{
 		return Plugin_Handled;
 	}
+	
 	if (g_RoundState == setup && GetConVarBool(cvar_SetupCharge))	
 	{
 		LogAction(0, -1, "Filling up medic cannons due to setting");
+		
 		for (new i= 1; i<=MaxClients; i++)
 		{
 			if (IsClientInGame(i) && IsValidTeam(i))
 			{
 				new TFClassType:class = TF2_GetPlayerClass(i);
+				
 				if (class == TFClass_Medic)
 				{
 					new index = GetPlayerWeaponSlot(i, 1);
@@ -190,6 +228,7 @@ public Action:timer_AfterScramble(Handle:timer, any:spawn)
 					{
 						decl String:sClass[33];
 						GetEntityNetClass(index, sClass, sizeof(sClass));
+						
 						if (StrEqual(sClass, "CWeaponMedigun", true))
 						{
 							SetEntPropFloat(index, Prop_Send, "m_flChargeLevel", 1.0);	
@@ -204,8 +243,11 @@ public Action:timer_AfterScramble(Handle:timer, any:spawn)
 
 bool:AutoScrambleCheck(winningTeam)
 {
-	if (g_bFullRoundOnly && !g_bWasFullRound || GetGameMode() == MvM)
+	if (g_bFullRoundOnly && !g_bWasFullRound)
+	{
 		return false;
+	}
+	
 	if (g_bKothMode)
 	{
 		if (!g_bRedCapped || !g_bBluCapped)
@@ -217,9 +259,11 @@ bool:AutoScrambleCheck(winningTeam)
 			return true;
 		}
 	}
+	
 	new totalFrags = g_aTeams[iRedFrags] + g_aTeams[iBluFrags],
 		losingTeam = winningTeam == TEAM_RED ? TEAM_BLUE : TEAM_RED,
 		dominationDiffVar = GetConVarInt(cvar_DominationDiff);
+		
 	if (dominationDiffVar && totalFrags > 20)
 	{
 		new winningDoms = TF2_GetTeamDominations(winningTeam),
@@ -236,17 +280,20 @@ bool:AutoScrambleCheck(winningTeam)
 		}
 	}
 	new Float:iDiffVar = GetConVarFloat(cvar_AvgDiff);
+	
 	if (totalFrags > 20 && iDiffVar > 0.0 && GetAvgScoreDifference(winningTeam) >= iDiffVar)
 	{
 		LogAction(0, -1, "Average score diff detected");
 		PrintToChatAll("\x01\x04[SM]\x01 %t", "RatioMessage");
 		return true;
 	}
+	
 	new winningFrags = winningTeam == TEAM_RED ? g_aTeams[iRedFrags] : g_aTeams[iBluFrags],
 		losingFrags	= winningTeam == TEAM_RED ? g_aTeams[iBluFrags] : g_aTeams[iRedFrags],
 		Float:ratio = float(winningFrags) / float(losingFrags),
 		iSteamRollVar = GetConVarInt(cvar_Steamroll),
 		roundTime = GetTime() - g_iRoundStartTime;
+		
 	if (iSteamRollVar && winningFrags > losingFrags && iSteamRollVar >= roundTime && ratio >= GetConVarFloat(cvar_SteamrollRatio))
 	{
 		new minutes = iSteamRollVar / 60;
@@ -255,7 +302,9 @@ bool:AutoScrambleCheck(winningTeam)
 		LogAction(0, -1, "steam roll detected");
 		return true;		
 	}
+	
 	new Float:iFragRatioVar = GetConVarFloat(cvar_FragRatio);
+	
 	if (totalFrags > 20 && winningFrags > losingFrags && iFragRatioVar > 0.0)	
 	{		
 		if (ratio >= iFragRatioVar)
@@ -265,6 +314,7 @@ bool:AutoScrambleCheck(winningTeam)
 			return true;			
 		}
 	}
+	
 	return false;
 }
 
@@ -278,13 +328,20 @@ public Action:timer_ScrambleDelay(Handle:timer, any:data)  // scramble logic
 {
 	g_hScrambleDelay = INVALID_HANDLE;
 	g_bScrambleNextRound = false;
-	g_bScrambledThisRound = true;
+
+	if (GetConVarBool(cvar_OneScramblePerRound))
+	{
+		g_bScrambledThisRound = true;
+	}
+	
 	ResetPack(data);
 	new respawn = ReadPackCell(data),
 		e_ScrambleModes:scrambleMode = e_ScrambleModes:ReadPackCell(data);
+		
 	g_aTeams[iRedWins] = 0;
 	g_aTeams[iBluWins] = 0;
 	g_aTeams[bImbalanced] = false;	
+	
 	if (g_bPreGameScramble)
 	{
 		scrambleMode = random;
@@ -334,8 +391,12 @@ public Action:timer_ScrambleDelay(Handle:timer, any:data)  // scramble logic
 	CreateTimer(1.0, Timer_ScrambleSound);
 	DelayPublicVoteTriggering(true);
 	new bool:spawn = false;
+	
 	if (respawn || g_bPreGameScramble)
+	{
 		spawn = true;
+	}
+	
 	CreateTimer(0.1, timer_AfterScramble, spawn, TIMER_FLAG_NO_MAPCHANGE);	
 	if (g_bPreGameScramble)
 	{
@@ -343,9 +404,15 @@ public Action:timer_ScrambleDelay(Handle:timer, any:data)  // scramble logic
 		g_bPreGameScramble = false;
 	}
 	else
+	{
 		PrintToChatAll("\x01\x04[SM]\x01 %t", "Scrambled");		
+	}
+	
 	if (g_bIsTimer && g_RoundState == setup && GetConVarBool(cvar_SetupRestore))
+	{
 		TF2_ResetSetup();
+	}
+	
 	return Plugin_Handled;
 }
 
@@ -359,6 +426,7 @@ stock PerformTopSwap()
 		iArray2[MaxClients][2],
 		iCount1,
 		iCount2;
+		
 	if (iSwaps > iTeam1 || iSwaps > iTeam2)
 	{
 		if (iTeam1 > iTeam2)
@@ -435,7 +503,10 @@ stock DoRandomSort(array[], count)
 	for (new i = 0; i < count; i++)
 	{
 		if (!array[i])
+		{
 			continue;
+		}
+		
 		if (GetClientTeam(array[i]) == TEAM_RED)
 		{
 			aReds[iRedValidCount][0] = array[i];
@@ -451,6 +522,7 @@ stock DoRandomSort(array[], count)
 	}
 	iRedSelections = RoundToFloor(FloatDiv(FloatMul(fSelections, (float(iRedCount) + float(iBluCount))), 2.0));
 	iBluSelections = iRedSelections;
+	
 	if ((iTeamDiff = RoundFloat(FloatAbs(FloatSub(float(iRedCount),float(iBluCount))))) >= 2)
 	{
 		iLargerTeam = GetLargerTeam();
@@ -472,6 +544,7 @@ stock DoRandomSort(array[], count)
 			iRedSelections = iRedValidCount;
 			iBluSelections = iBluValidCount;
 		}
+		
 		new iTestRed, iTestBlu, iTestDiff;
 		iTestBlu -= iBluSelections;
 		iTestBlu += iRedSelections;
@@ -492,6 +565,7 @@ stock DoRandomSort(array[], count)
 		}
 	
 	}
+	
 	SelectRandom(aReds, iRedValidCount, iRedSelections);
 	SelectRandom(aBlus, iBluValidCount, iBluSelections);
 	g_bBlockDeath = true;
@@ -552,7 +626,10 @@ Force recent spectators onto a team before certain scramble modes
 stock ForceSpecToTeam()
 {
 	if (!g_bSelectSpectators)
+	{
 		return;
+	}
+	
 	new iLarger = GetLargerTeam(),
 		iSwapped = 1;
 	if (iLarger)
@@ -586,14 +663,19 @@ stock ForceSpecToTeam()
 
 Float:GetClientScrambleScore(client, e_ScrambleModes:mode)
 {
+	new entity = GetPlayerResourceEntity(); 
+	new Totalscore = GetEntProp(entity, Prop_Send, "m_iScore", _, client);  
+	
 	switch (mode)
 	{
 		case score:
 		{
-#if defined DEBUG
-	LogToFile("gscramble.debug.txt", "GRABBING TOTAL SCORE");
-#endif
-			return float(TF2_GetPlayerResourceData(client, TFResource_TotalScore));
+			#if defined DEBUG
+			LogToFile("gscramble.debug.txt", "GRABBING TOTAL SCORE");
+			#endif		
+			
+			return float(Totalscore);
+			//return float(TF2_GetPlayerResourceData(client, TFResource_TotalScore));
 		}
 		case kdRatio:		
 		{
@@ -636,7 +718,9 @@ Float:GetClientScrambleScore(client, e_ScrambleModes:mode)
 		}
 		default:
 		{
-			new Float:fScore = float(TF2_GetPlayerResourceData(client, TFResource_TotalScore));
+			//new Float:fScore = float(TF2_GetPlayerResourceData(client, TFResource_TotalScore));
+			new Float:fScore = float(Totalscore);
+			
 			fScore = FloatMul(fScore, fScore);
 			if (!IsFakeClient(client))
 			{
@@ -667,6 +751,7 @@ stock ScramblePlayers(e_ScrambleModes:scrambleMode)
 		BlockAllTeamChange();
 		return;
 	}
+	
 	new i, iCount, iRedImmune, iBluImmune, iSwaps, iTempTeam,
 		bool:bToRed, iImmuneTeam, iImmuneDiff, client;
 	new iValidPlayers[GetClientCount()];
@@ -685,13 +770,18 @@ stock ScramblePlayers(e_ScrambleModes:scrambleMode)
 			}
 			else
 			{
-#if defined DEBUG
+				#if defined DEBUG
 				LogToFile("gscramble.debug.txt", "Found a scramble immune person");
-#endif
+				#endif
 				if (GetClientTeam(i) == TEAM_RED)
+				{
 					iRedImmune++;
+				}
+				
 				if (GetClientTeam(i) == TEAM_BLUE)
+				{
 					iBluImmune++;
+				}
 			}
 		}
 	}
@@ -732,28 +822,30 @@ stock ScramblePlayers(e_ScrambleModes:scrambleMode)
 			scoreArray[i][0] = float(iValidPlayers[i]);
 			scoreArray[i][1] = GetClientScrambleScore(iValidPlayers[i], scrambleMode);
 		}
-#if defined DEBUG
+		#if defined DEBUG
 		// print the array bore and after sorting
 		for (i = 0; i < iCount; i++)
 		{
 			LogToFile("gscramble.debug.txt", "%f %f", scoreArray[i][0], scoreArray[i][1]);
 		}
 		LogToFile("gscramble.debug.txt", "---------------------------");
-#endif
+		#endif
 		
 		/** 
 		now sort score descending 
 		and copy the array into the integer one
 		*/
 		SortCustom2D(_:scoreArray, iCount, SortScoreAsc);
-#if defined DEBUG
+		
+		#if defined DEBUG
 		// print the array bore and after sorting
 		for (i = 0; i < iCount; i++)
 		{
 			LogToFile("gscramble.debug.txt", "%f %f", scoreArray[i][0], scoreArray[i][1]);
 		}
 		LogToFile("gscramble.debug.txt", "---------------------------\nEND\n");
-#endif
+		#endif
+		
 		for (i = 0; i < iCount; i++)
 		{
 			iValidPlayers[i] = RoundFloat(scoreArray[i][0]);
@@ -781,6 +873,7 @@ stock ScramblePlayers(e_ScrambleModes:scrambleMode)
 		return;
 	}
 	g_bBlockDeath = true;
+	
 	if (iImmuneTeam)
 	{
 		iImmuneTeam == TEAM_RED ? (bToRed = false):(bToRed = true);
@@ -812,6 +905,7 @@ stock ScramblePlayers(e_ScrambleModes:scrambleMode)
 			TF2_SetPlayerClass(client, TFClass_Scout);
 		}
 	}
+	
 	g_bBlockDeath = false;
 	LogMessage("Scramble changed %i client's teams", iSwaps);
 	PrintScrambleStats(iSwaps);

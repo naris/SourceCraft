@@ -82,7 +82,7 @@ public OnPluginStart()
 {
 	g_enabled = CreateConVar("sm_damage_enabled","1");
 	g_info = CreateConVar("sm_damage_info","1");
-	g_version = CreateConVar("sm_damage_version", PLUGIN_VERSION,"SM Damage Version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_REPLICATED);
+	g_version = CreateConVar("sm_damage_version", PLUGIN_VERSION,"SM Damage Version", FCVAR_NOTIFY|FCVAR_REPLICATED);
 	g_init = CreateConVar("sm_damage_init","1.0");
 	g_iArmor = FindSendPropOffs("CCSPlayer", "m_ArmorValue");
 	

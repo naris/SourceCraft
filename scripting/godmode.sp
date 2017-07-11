@@ -25,7 +25,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_buddha", Command_Buddha, 0, "sm_buddha [#userid|name] [0/1] - Toggles buddha mode on player(s)");
 	RegAdminCmd("sm_mortal", Command_Mortal, 0, "sm_mortal [#userid|name] - Makes specified players mortal");
 
-	CreateConVar("sm_godmode_version", PLUGIN_VERSION, "Plugin Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_godmode_version", PLUGIN_VERSION, "Plugin Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	v_Spawn = CreateConVar("sm_godmode_spawn", "0", "1 = Players spawn with godmode, 2 = Players spawn with buddha, 0 = Players spawn mortal", 0, true, 0.0, true, 2.0);
 	v_Remember = CreateConVar("sm_godmode_remember", "0", "1 = When players respawn the plugin will return their godmode to whatever it was set to prior to death. 0 = Players will respawn with godmode off.", 0, true, 0.0, true, 1.0);
 	v_Announce = CreateConVar("sm_godmode_announce", "1", "Tell players if an admin gives/removes their godmode", 0, true, 0.0, true, 1.0);

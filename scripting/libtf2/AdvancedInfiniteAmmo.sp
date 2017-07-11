@@ -67,7 +67,7 @@ new bool:g_bNativeControl = false;
 
 public OnPluginStart()
 {
-	CreateConVar("sm_aia_version", PLUGIN_VERSION, "Advanced Infinite Ammo", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_aia_version", PLUGIN_VERSION, "Advanced Infinite Ammo", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	LoadTranslations("common.phrases");
 
 	g_hAllInfiniteAmmo = CreateConVar("sm_aia_all", "0", "Advanced Infinite Ammo for everyone");

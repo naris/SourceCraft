@@ -686,9 +686,9 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
     }
 }
 
-public OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type)
+public OnPlayerBuiltObject(Handle:event, client, obj, TFObjectType:type)
 {
-    if (object > 0 && type != TFObject_Sapper && cfgAllowSentries >= 1)
+    if (obj > 0 && type != TFObject_Sapper && cfgAllowSentries >= 1)
     {
         if (IsValidClientNotSpec(client) && GetRace(client) == raceID &&
             !GetRestriction(client, Restriction_NoUpgrades) &&
@@ -696,8 +696,8 @@ public OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type)
         {
             if (GetUpgradeLevel(client,raceID,forgeID) > 0)
             {
-                new Float:time = (GetEntPropFloat(object, Prop_Send, "m_flPercentageConstructed") >= 1.0) ? 0.1 : 10.0;
-                CreateTimer(time, ForgeTimer, EntIndexToEntRef(object), TIMER_FLAG_NO_MAPCHANGE);
+                new Float:time = (GetEntPropFloat(obj, Prop_Send, "m_flPercentageConstructed") >= 1.0) ? 0.1 : 10.0;
+                CreateTimer(time, ForgeTimer, EntIndexToEntRef(obj), TIMER_FLAG_NO_MAPCHANGE);
             }
         }
     }
@@ -705,53 +705,53 @@ public OnPlayerBuiltObject(Handle:event, client, object, TFObjectType:type)
 
 public Action:ForgeTimer(Handle:timer,any:ref)
 {
-    new object = EntRefToEntIndex(ref);
-    if (object > 0 && IsValidEntity(object) && IsValidEdict(object))
+    new obj = EntRefToEntIndex(ref);
+    if (obj > 0 && IsValidEntity(obj) && IsValidEdict(obj))
     {
-        new builder = GetEntPropEnt(object, Prop_Send, "m_hBuilder");
+        new builder = GetEntPropEnt(obj, Prop_Send, "m_hBuilder");
         if (builder > 0 && GetRace(builder) == raceID &&
             !GetRestriction(builder, Restriction_NoUpgrades) &&
             !GetRestriction(builder, Restriction_Stunned))
         {
-            if (GetEntPropFloat(object, Prop_Send, "m_flPercentageConstructed") >= 1.0)
+            if (GetEntPropFloat(obj, Prop_Send, "m_flPercentageConstructed") >= 1.0)
             {
                 new build_level = GetUpgradeLevel(builder,raceID,forgeID);
                 if (build_level > 0)
                 {
-                    new health = GetEntProp(object, Prop_Data, "m_iMaxHealth");
+                    new health = GetEntProp(obj, Prop_Data, "m_iMaxHealth");
                     health = RoundToNearest(float(health)*g_ForgeFactor[build_level]);
 
                     new maxHealth = TF2_SentryHealth[4]; //[iLevel+1];
                     if (health > maxHealth)
                         health = maxHealth;
 
-                    SetEntProp(object, Prop_Data, "m_iMaxHealth", health);
-                    SetEntityHealth(object, health);
+                    SetEntProp(obj, Prop_Data, "m_iMaxHealth", health);
+                    SetEntityHealth(obj, health);
 
-                    if (TF2_GetObjectType(object) == TFObject_Sentry)
+                    if (TF2_GetObjectType(obj) == TFObject_Sentry)
                     {
-                        new iShells = GetEntProp(object, Prop_Send, "m_iAmmoShells");
+                        new iShells = GetEntProp(obj, Prop_Send, "m_iAmmoShells");
                         iShells = RoundToNearest(float(iShells)*g_ForgeFactor[build_level]);
                         if (iShells > 511)
                             iShells = 511;
-                        SetEntProp(object, Prop_Send, "m_iAmmoShells", iShells);
+                        SetEntProp(obj, Prop_Send, "m_iAmmoShells", iShells);
 
-                        new iRockets = GetEntProp(object, Prop_Send, "m_iAmmoRockets");
+                        new iRockets = GetEntProp(obj, Prop_Send, "m_iAmmoRockets");
                         if (iRockets > 0)
                         {
                             iRockets = RoundToNearest(float(iRockets)*g_ForgeFactor[build_level]);
                             if (iRockets > 63)
                                 iRockets = 63;
-                            SetEntProp(object, Prop_Send, "m_iAmmoRockets", iRockets);
+                            SetEntProp(obj, Prop_Send, "m_iAmmoRockets", iRockets);
                         }
                     }
 
-                    PrepareAndEmitSoundToAll(forgeWav,object);
+                    PrepareAndEmitSoundToAll(forgeWav,obj);
                 }
             }
             else
             {
-                CreateTimer(1.0, ForgeTimer, object, TIMER_FLAG_NO_MAPCHANGE);
+                CreateTimer(1.0, ForgeTimer, obj, TIMER_FLAG_NO_MAPCHANGE);
             }
         }
     }

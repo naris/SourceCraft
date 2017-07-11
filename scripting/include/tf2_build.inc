@@ -107,14 +107,14 @@ stock BuildSentry(hBuilder, const Float:fOrigin[3], const Float:fAngle[3], iLeve
         SetEntPropEnt(iSentry, Prop_Send, "m_hBuilder", 	                hBuilder);
 
         SetEntPropFloat(iSentry, Prop_Send, "m_flPercentageConstructed", 	flPercentage);
-        SetEntPropFloat(iSentry, Prop_Send, "m_flModelWidthScale", 	        1.0);
+        SetEntPropFloat(iSentry, Prop_Send, "m_flModelScale", 	            1.0);
         SetEntPropFloat(iSentry, Prop_Send, "m_flPlaybackRate", 			1.0);
         SetEntPropFloat(iSentry, Prop_Send, "m_flCycle", 					0.0);
 
         SetEntPropVector(iSentry, Prop_Send, "m_vecOrigin", 			    fOrigin);
         SetEntPropVector(iSentry, Prop_Send, "m_angRotation", 		        fAngle);
         SetEntPropVector(iSentry, Prop_Send, "m_vecBuildMaxs", 		        fBuildMaxs);
-        //SetEntDataVector(iSentry, FindSendPropOffs("CObjectSentrygun","m_flModelWidthScale"),	fMdlWidth, true);
+        //SetEntDataVector(iSentry, FindSendPropOffs("CObjectSentrygun","m_flModelScale"),	fMdlWidth, true);
 
         if (bMini)
         {
@@ -151,7 +151,7 @@ stock BuildSentry(hBuilder, const Float:fOrigin[3], const Float:fAngle[3], iLeve
 
 stock BuildDispenser(hBuilder, const Float:fOrigin[3], const Float:fAngle[3], iLevel=1,
                      bool:iDisabled=false, iHealth=-1, iMaxHealth=-1, iMetal=-1,
-                     Float:flPercentage=1.0, TFExtObject:type=TFExtObject_Dispenser)
+                     Float:flPercentage=1.0, TFExtObject:type=TFExtObject:TFExtObject_Dispenser)
 {
     static const Float:fBuildMaxs[3] = { 24.0, 24.0, 66.0 };
 
@@ -222,7 +222,7 @@ stock BuildDispenser(hBuilder, const Float:fOrigin[3], const Float:fAngle[3], iL
         SetEntPropEnt(iDispenser, Prop_Send, "m_hBuilder",                      hBuilder);
 
         SetEntPropFloat(iDispenser, Prop_Send, "m_flPercentageConstructed", 	flPercentage);
-        SetEntPropFloat(iDispenser, Prop_Send, "m_flModelWidthScale", 	        1.0);
+        SetEntPropFloat(iDispenser, Prop_Send, "m_flModelScale", 	            1.0);
         SetEntPropFloat(iDispenser, Prop_Send, "m_flPlaybackRate", 			    1.0);
         SetEntPropFloat(iDispenser, Prop_Send, "m_flCycle", 					0.0);
 
@@ -303,7 +303,7 @@ stock BuildTeleporterEntry(hBuilder, const Float:fOrigin[3], const Float:fAngle[
         SetEntPropEnt(iTeleporter, Prop_Send, "m_hBuilder", 	                hBuilder);
 
         SetEntPropFloat(iTeleporter, Prop_Send, "m_flPercentageConstructed", 	flPercentage);
-        SetEntPropFloat(iTeleporter, Prop_Send, "m_flModelWidthScale", 	        1.0);
+        SetEntPropFloat(iTeleporter, Prop_Send, "m_flModelScale", 	            1.0);
         SetEntPropFloat(iTeleporter, Prop_Send, "m_flPlaybackRate", 			1.0);
         SetEntPropFloat(iTeleporter, Prop_Send, "m_flCycle", 					0.0);
 
@@ -383,7 +383,7 @@ stock BuildTeleporterExit(hBuilder, const Float:fOrigin[3], const Float:fAngle[3
         SetEntPropEnt(iTeleporter, Prop_Send, "m_hBuilder", 	                hBuilder);
 
         SetEntPropFloat(iTeleporter, Prop_Send, "m_flPercentageConstructed", 	flPercentage);
-        SetEntPropFloat(iTeleporter, Prop_Send, "m_flModelWidthScale", 	        1.0);
+        SetEntPropFloat(iTeleporter, Prop_Send, "m_flModelScale", 	            1.0);
         SetEntPropFloat(iTeleporter, Prop_Send, "m_flPlaybackRate", 			1.0);
         SetEntPropFloat(iTeleporter, Prop_Send, "m_flCycle", 					0.0);
 

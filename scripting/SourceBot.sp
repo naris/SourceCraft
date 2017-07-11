@@ -87,7 +87,7 @@ public OnPluginStart()
 	HookEvent("teamplay_win_panel", RoundEnd);
 	HookEvent("teamplay_broadcast_audio", RoundEnd);
 
-	CreateConVar("sourcebot_version", PLUGIN_VERSION, "SourceBot version.", FCVAR_PLUGIN|FCVAR_NOTIFY);
+	CreateConVar("sourcebot_version", PLUGIN_VERSION, "SourceBot version.", FCVAR_NOTIFY);
 
 	BotSpeed = 0.0;
 	Learning = 30;

@@ -38,7 +38,7 @@ new Float:g_faUpgradingAngle[MAXPLAYERS+1][3];
 
 public OnPluginStart()
 {
-	CreateConVar("sm_mobileupgrades_version", PLUGIN_VERSION, "Mobile Upgrades Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	CreateConVar("sm_mobileupgrades_version", PLUGIN_VERSION, "Mobile Upgrades Version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	
 	g_hcvEnabled = CreateConVar("sm_mu_enabled", "1", "Globally enable/disable the Mobile Upgrades plugin.", _, true, 0.0, true, 1.0);
 	g_hcvAllowMedic = CreateConVar("sm_mu_allowmedic", "1", "Allow calling for medic to trigger opening upgrade station if other requirements are met.", _, true, 0.0, true, 1.0);

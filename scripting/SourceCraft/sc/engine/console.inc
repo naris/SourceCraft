@@ -13,7 +13,7 @@
 
 InitCVars()
 {
-    CreateConVar("sc_version",SOURCECRAFT_VERSION,"SourceCraft version.",FCVAR_PLUGIN|FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_UNLOGGED|FCVAR_DONTRECORD);
+    CreateConVar("sc_version",SOURCECRAFT_VERSION,"SourceCraft version.",FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_UNLOGGED|FCVAR_DONTRECORD);
 
     RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_SOURCECRAFT,"Set a player's XP (for Admins)");
     RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_SOURCECRAFT,"Give a player XP (for Admins)");
