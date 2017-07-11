@@ -1,8 +1,0 @@
-"Phrases"
-{
-	"Toggled dizziness on target"
-	{
-		"#format"	"{1:t}"
-		"en"		"toggled dizziness on {1}"
-	}
-}
