@@ -1,6 +1,5 @@
 AfterBurner
 FlareFirework
-AdrenalinDash
 SpikeShoes
 StickyFlash
 DeliciousSandvich
@@ -11,7 +10,6 @@ MetalHopper
 SapperThrow
 DopingInjection
 Styptic
-JumpBoots
 ReverseEngineer
 CurvingArrow
 Supercharger
@@ -21,3 +19,4 @@ DisguiseJutsu
 HomingRocket
 FlyingDoctor
 BurnsdayPresent
+KingKongDrumming

@@ -2,18 +2,11 @@
 // tags: {NAME} {STEAM_ID} {USER_ID} {FRIEND_ID} {IP} {SERVER_IP} {SERVER_PORT} {TARGET_NAME} {TARGET_STEAM_ID} {TARGET_FRIEND_ID} {TARGET_USER_ID}
 "sourcemod" "SourceMod" http://www.sourcemod.net
 "gamemonitor" "Game-Monitor Stats" http://www.game-monitor.com/GameServer/{SERVER_IP}:{SERVER_PORT}/
-"sourcecraft" "Jiggly's Funhouse" http://sc.jigglysfunhouse.net/sc/sc/player/show/steamid/STEAM_{TARGET_STEAM_ID}
-"sc" "SourceCraft" http://sc.jigglysfunhouse.net/sc/sc/player/show/steamid/STEAM_{TARGET_STEAM_ID}
-"!sc" "SourceCraft" http://sc.jigglysfunhouse.net/sc/sc/player/show/steamid/STEAM_{TARGET_STEAM_ID}
-"races" "List Races" http://sc.jigglysfunhouse.net/sc/sc/faction/list/has_races/1
-"!races" "List Races" http://sc.jigglysfunhouse.net/sc/sc/faction/list/has_races/1
-"items" "List Items" http://sc.jigglysfunhouse.net/sc/sc/item/list
-"!items" "List Items" http://sc.jigglysfunhouse.net/sc/sc/item/list
 "jigglysfunhouse" "Jiggly's Funhouse" http://jigglysfunhouse.net
-"jfh" "Jiggly's Funhouse" http://jigglysfunhouse.net
-"!jfh" "Jiggly's Funhouse" http://jigglysfunhouse.net
-"backpack" "TF2 Backpack Inspector" http://www.funhousetradingpost.com/viewBackpack.php?steamID={TARGET_FRIEND_ID}
-"!backpack" "TF2 Backpack Inspector" http://www.funhousetradingpost.com/viewBackpack.php?steamID={TARGET_FRIEND_ID}
-"bp" "TF2 Backpack Inspector" http://www.funhousetradingpost.com/viewBackpack.php?steamID={TARGET_FRIEND_ID}
-"!bp" "TF2 Backpack Inspector" http://www.funhousetradingpost.com/viewBackpack.php?steamID={TARGET_FRIEND_ID}
+"backpack" "TF2 Backpack Inspector" http://backpack.jigglysfunhouse.net/?id={TARGET_FRIEND_ID}
+"!backpack" "TF2 Backpack Inspector" http://backpack.jigglysfunhouse.net/?id={TARGET_FRIEND_ID}
+"bp" "TF2 Backpack Inspector" http://backpack.jigglysfunhouse.net/?id={TARGET_FRIEND_ID}
+"!bp" "TF2 Backpack Inspector" http://backpack.jigglysfunhouse.net/?id={TARGET_FRIEND_ID}
+"sourceop" "TF2 Backpack Examiner" http://tf2ite.ms/{TARGET_FRIEND_ID}
+"examine" "TF2 Backpack Examiner" http://tf2ite.ms/{TARGET_FRIEND_ID}
 
