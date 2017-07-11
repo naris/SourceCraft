@@ -1,0 +1,44 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_SAPPERTHROW"
+	{
+		"en"			"Sapper Throw"
+		"jp"			"サッパースロー"
+	}
+
+	"MESSAGE_RECHARGED_SAPPER"
+	{
+		"en"			"Charge of sapper was completed."
+		"jp"			"サッパーの充電が完了した。"
+	}
+	"MESSAGE_NO_CHARGE"
+	{
+		"#format"		"{1:.1f}"
+		"en"			"Can't throw until charge of sapper is completed.\nCharge is completed in {1} more seconds."
+		"jp"			"サッパーの充電が完了するまで投げることはできない。\nあと {1} 秒で充電が完了する。"
+	}
+
+	"DESCRIPTION_SAPPERTHROW_ATTRIBUTE_0"
+	{
+		"en"			"Electro sapper can be throw, and electronic device of around can be stopped and give damage"
+		"jp"			"エレクトロサッパーを投げて周囲の電子機器を停止させダメージを与えることができる"
+	}
+	"DESCRIPTION_SAPPERTHROW_ATTRIBUTE_1"
+	{
+		"en"			"*Throw by taunt key"
+		"jp"			"・エレクトロサッパーを構えて挑発ボタンで投げる"
+	}
+	"DESCRIPTION_SAPPERTHROW_ATTRIBUTE_2"
+	{
+		"en"			"*Cancel disguise and cloak of enemy Spy and self nearby"
+		"jp"			"・周囲にいるスパイの変装及び透明化を解除（自分を含む）"
+	}
+	"DESCRIPTION_SAPPERTHROW_ATTRIBUTE_3"
+	{
+		"#format"		"{1:.1f}"
+		"en"			"*Charging time: {1} seconds"
+		"jp"			"・充電時間: {1}秒"
+	}		
+}
+

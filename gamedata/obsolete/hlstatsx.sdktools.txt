@@ -1,0 +1,48 @@
+/**
+ * HLstatsX - SourceMod plugin to display ingame messages
+ * http://www.hlstatsx.com/
+ * Copyright (C) 2007 Tobias Oetzel (Tobi@hlstatsx.com)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+"Games"
+{
+	"cstrike"
+	{
+		"Signatures"
+		{
+			"SwitchTeam"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x10\x56\x57\x8B\x7C\x24\x1C\x57\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\x85\xC0\x0F\x84\xEA\x00\x00\x00\x83\xFF\x03\x74\x09\x83\xFF\x02\x0F\x85\xDC\x00\x00\x00\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x3B\xF8\x0F\x84\xDC\x00\x00\x00\x57\x8B\xCE\xC6\x86\x14\x0E"
+				"linux"		"@_ZN9CCSPlayer10SwitchTeamEi"
+			}
+			"RoundRespawn"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\xF1\x8B\x06\xFF\x90*\x04\x00\x00\x8B\x86*\x0D\x00"
+				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
+			}
+			"SetModel"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8b\x74\x24\x08\x57\x8b\xf9\x2A\x2A\x2A\x2A\x2A\x2A\x8b\x01\x56\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x8b\x11\x50\x2A\x2A\x2A\x85\xc0\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x8b\x11\x50\x2A\x2A\x24\x83\xf8\x01"
+				"linux"		"@_ZN11CBaseEntity8SetModelEPKc"
+			}
+			
+		}
+	}
+}

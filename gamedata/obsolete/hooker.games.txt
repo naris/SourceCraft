@@ -1,0 +1,115 @@
+"Games"
+{
+	"cstrike"
+	{
+		"Offsets"
+		{
+			"WeaponDrop"
+			{
+				"windows"	"219"
+				"linux"		"220"
+			}
+			"WeaponCanUse"
+			{
+				"windows"	"216"
+				"linux"		"217"
+			}
+			"WeaponCanSwitchTo"
+			{
+				"windows"	"222"
+				"linux"		"223"
+			}
+			"Touch"
+			{
+				"windows"	"89"
+				"linux"		"90"
+			}
+			"StartTouch"
+			{
+				"windows"	"88"
+				"linux"		"89"
+			}
+			"EndTouch"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+			"EventKilled"
+			{
+				"windows"	"62"
+				"linux"		"63"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"60"
+				"linux"		"61"
+			}
+			"TraceAttack"
+			{
+				"windows"	"58"
+				"linux"		"59"
+			}
+			"Spawn"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+		}
+	}
+	"tf"
+	{
+		"Offsets"
+		{
+			"WeaponDrop"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+			"WeaponCanUse"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
+			"WeaponCanSwitchTo"
+			{
+				"windows"	"233"
+				"linux"		"234"
+			}
+			"Touch"
+			{
+				"windows"	"91"
+				"linux"		"92"
+			}
+			"StartTouch"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+			"EndTouch"
+			{
+				"windows"	"92"
+				"linux"		"93"
+			}
+			"EventKilled"
+			{
+				"windows"	"63"
+				"linux"		"62"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"60"
+				"linux"		"61"
+			}
+			"TraceAttack"
+			{
+				"windows"	"58"
+				"linux"		"59"
+			}
+			"Spawn"
+			{
+				"windows"	"21"
+				"linux"		"22"
+			}
+		}
+	}
+}

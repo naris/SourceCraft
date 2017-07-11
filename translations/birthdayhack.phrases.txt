@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Activate Birthday MOD"
+	{
+		"en"		"Activate Birthday MOD"
+		"fr"		"Activer le mode Anniversaire"
+	}
+
+	"Deactivate Birthday MOD"
+	{
+		"en"		"Deactivate Birthday MOD"
+		"fr"		"Desactiver le mode Anniversaire"
+	}
+
+	"Birthday MOD Activated"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} activate Birthday Mod"
+		"fr"		"{1} a active le mode Anniversaire"
+	}
+
+	"Birthday MOD Deactivated"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} deactivate Birthday Mod"
+		"fr"		"{1} a desactive le mode Anniversaire"
+	}
+}

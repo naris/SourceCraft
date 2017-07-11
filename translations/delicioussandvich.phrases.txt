@@ -1,0 +1,26 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_DELICIOUSSANDVICH"
+	{
+		"en"			"Delicious Sandvich"
+		"jp"			"デリシャスサンドヴィッチ"
+	}
+
+	"DESCRIPTION_DELICIOUSSANDVICH_ATTRIBUTE_0"
+	{
+		"en"			"In the during of the critical effect of K.G.B, Increases amount of healing of Sandvich"
+		"jp"			"K.G.Bのクリティカル効果中サンドヴィッチの回復量が増加する"
+	}
+	"DESCRIPTION_DELICIOUSSANDVICH_ATTRIBUTE_1"
+	{
+		"en"			"*The amount of recovery increases further by the continuation kill of K.G.B"
+		"jp"			"・K.G.Bの連続キルで回復量はさらに増加"
+	}
+	"DESCRIPTION_DELICIOUSSANDVICH_ATTRIBUTE_2"
+	{
+		"en"			"*When it threw and eats by Alt-Fire, health recovers completely"
+		"jp"			"・セカンダリで投げて食べた場合はヘルスが全快"
+	}
+}
+

@@ -1,0 +1,31 @@
+"Phrases"
+{
+	"Welcome"
+	{
+		"#format"	"{1:s}"
+		"en"		"Welcome {1}, this server is running SourceMod Radio"
+		"de"		"Willkommen {1}, auf diesem Server läuft SourceMod Radio"
+	}
+	"Radio Command Info"
+	{
+		"en"		"Type in chat !radio to bring up the radio menu, or !radiooff to switch the radio off"
+		"de"		"Tippe im Chat !radio um das Radiomenü vorzubringen oder !radiooff um das Radio auszuschalten"
+	}
+	"Stations Menu Title"
+	{
+		"en"		"Please select a radio station"
+		"de"		"Bitte wähle eine Radiostation"
+	}
+	"Started Listening"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} started listening to {2}"
+		"de"		"{1} hört jetzt {2}"
+	}
+	"Stopped Listening"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} stopped listening to the radio"
+		"de"		"{1} hörte auf Radio zu hören"
+	}
+}

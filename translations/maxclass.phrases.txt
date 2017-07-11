@@ -1,0 +1,24 @@
+"Phrases"
+{
+	"Class Overflow"
+	{
+		"#format"	"{1:s}"
+		"en"		"There is a overflow of {1} in your team. Please, choose another class."
+		"fr"		"Il y a trop de {1} dans votre equipe. Merci de choisir une autre classe."
+	}
+
+	"Not allowed"
+	{
+		"#format"	"{1:s}"
+		"en"		"No {1}s are allowed on your team now. Please, choose an other."
+		"fr"		"La classe {1} n'est pas disponible pour le moment. Merci d'en choisir une autre."
+	}
+
+	"Classfull"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} class is full. Please, choose an other."
+		"fr"		"La classe {1} est pleine! Merci d'en choisir une autre."
+	}
+
+}

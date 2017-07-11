@@ -1,0 +1,27 @@
+"Phrases"
+{
+	"Invalid Time"
+	{
+		"en"			"The amount specified for the ban time was incorrect"
+	}
+	"Invalid SteamID"
+	{
+		"en"			"You specified an invlaid Steam ID"
+	}
+	"Ban Added"
+	{
+		"en"			"The ban was added"
+	}
+	"Removed Matching Bans"
+	{
+		"en"			"Removed matching bans"
+	}
+	"Cannot ban that IP"
+	{
+		"en"			"You cannot ban that IP address"
+	}		
+	"No Access"
+	{
+		"en"			"You do not have access to that command. You silly bear"
+	}
+}

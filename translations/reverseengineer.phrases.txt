@@ -1,0 +1,25 @@
+﻿"Phrases"
+{
+	"ABILITYNAME_REVERSEENGINEER"
+	{
+		"en"			"Reverse Engineer"
+		"jp"			"リバースエンジニア"
+	}
+	
+	"DESCRIPTION_REVERSEENGINEER_ATTRIBUTE_0"
+	{
+		"en"			"Teleport can be from Teleporter Exit to Teleporter Entrance"
+		"jp"			"テレポーター出口からテレポーター入口へテレポートすることができる"
+	}
+	"DESCRIPTION_REVERSEENGINEER_ATTRIBUTE_1"
+	{
+		"en"			"*Teleport by Alt-Fire on its own Teleporter Exit."
+		"jp"			"・自分のテレポーター出口にのってセカンダリでテレポート"
+	}
+	"DESCRIPTION_REVERSEENGINEER_ATTRIBUTE_2"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Teleporter charge time: {1} percent"
+		"jp"			"・テレポーターチャージ時間: {1}％"
+	}	
+}

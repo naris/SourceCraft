@@ -1,0 +1,26 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_STYPTIC"
+	{
+		"en"			"Styptic"
+		"jp"			"スティップティック"
+	}
+
+	"DESCRIPTION_STYPTIC_ATTRIBUTE_0"
+	{
+		"en"			"Health is healing by Ubercharge consumption"
+		"jp"			"ユーバーチャージを消費して自分のヘルスを回復することができる"
+	}
+	"DESCRIPTION_STYPTIC_ATTRIBUTE_1"
+	{
+		"en"			"*Heals by Alt-Fire press and hold of Medigun or Kritzkrieg"
+		"jp"			"・メディガン及びクリッツクリーグのセカンダリ長押しで回復"
+	}
+	"DESCRIPTION_STYPTIC_ATTRIBUTE_2"
+	{
+		"#format"		"{1:d}{2:d}"
+		"en"			"{1} persent of Ubercharge is consumed and health is healed {2}"
+		"jp"			"・{1}％のユーバーを消費してヘルスを{2}回復"
+	}		
+}

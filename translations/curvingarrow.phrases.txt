@@ -1,0 +1,32 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_CURVINGARROW"
+	{
+		"en"			"Curving Arrow"
+		"jp"			"カービングアロー"
+	}
+	
+	
+	"DESCRIPTION_CURVINGARROW_ATTRIBUTE_0"
+	{
+		"en"			"Huntsman's arrow can be curving any direction"
+		"jp"			"ハンツマンの矢を好きな方向にカーブさせることができる"
+	}
+	"DESCRIPTION_CURVINGARROW_ATTRIBUTE_1"
+	{
+		"en"			"*Press and hold movement key during aim with Huntsman"
+		"jp"			"・照準中に方向キー長押しでカーブ方向を決める"
+	}
+	"DESCRIPTION_CURVINGARROW_ATTRIBUTE_2"
+	{
+		"en"			"*Curves so greatly that aim time is long"
+		"jp"			"・照準時間が長いほど大きくカーブする"
+	}
+	"DESCRIPTION_CURVINGARROW_ATTRIBUTE_3"
+	{
+		"en"			"*When aim: Can't move"
+		"jp"			"・照準中: 移動不可"
+	}
+
+}

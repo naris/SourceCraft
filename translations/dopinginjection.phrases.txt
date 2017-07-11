@@ -1,0 +1,37 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_DOPINGINJECTION"
+	{
+		"en"			"Doping Injection"
+		"jp"			"ドーピングインジェクション"
+	}
+	
+	"DESCRIPTION_DOPINGINJECTION_ATTRIBUTE_0"
+	{
+		"en"			"Give friend an injection and his health can be recovered automatically"
+		"jp"			"味方に注射を打ち、ヘルスを自動回復させることができる。"
+	}
+	"DESCRIPTION_DOPINGINJECTION_ATTRIBUTE_1"
+	{
+		"en"			"Get close to friend and press Alt-Fire with Syringe gun or Blutsauger."
+		"jp"			"味方に近づいてシリンジガンまたはブルートザオガーのセカンダリで注射"
+	}
+	"DESCRIPTION_DOPINGINJECTION_ATTRIBUTE_2"
+	{
+		"#format"		"{1:d}"
+		"en"			"*When shot: Consumes {1} Syringe gun or Blutsauger ammo"
+		"jp"			"・注射時： シリンジガンまたはブルートザオガーの弾薬を{1}消費"
+	}
+	"MESSAGE_INJECTION"
+	{
+		"en"			"Friend Medic are injection for you."
+		"jp"			"味方メディックに注射を打ってもらった！"
+	}
+	"MESSAGE_END"
+	{
+		"en"			"Effect of injection was end."
+		"jp"			"注射の効果が切れた。"
+	}
+	
+}

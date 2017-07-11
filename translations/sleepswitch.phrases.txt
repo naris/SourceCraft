@@ -1,0 +1,30 @@
+﻿"Phrases"
+{
+	"ABILITYNAME_SLEEPSWITCH"
+	{
+		"en"			"Sleep Switch"
+		"jp"			"スリープスイッチ"
+	}
+	
+	"MESSAGE_LONG_DISTANCE"
+	{
+		"en"			"Too far from Sentrygun"
+		"jp"			"セントリーガンから離れすぎている。"
+	}
+	
+	"DESCRIPTION_SLEEPSWITCH_ATTRIBUTE_0"
+	{
+		"en"			"Sentrygun can be made into a sleep mode and health can be recovered automatically"
+		"jp"			"セントリーガンをスリープ状態にしてヘルスを自動回復させることができる"
+	}
+	"DESCRIPTION_SLEEPSWITCH_ATTRIBUTE_1"
+	{
+		"en"			"*Change of a state by Alt-Fire of Wrench"
+		"jp"			"・レンチのセカンダリで状態の切り替え"
+	}
+	"DESCRIPTION_SLEEPSWITCH_ATTRIBUTE_2"
+	{
+		"en"			"*When active: Sentrygun stops"
+		"jp"			"・発動中: セントリーガン停止"
+	}
+}

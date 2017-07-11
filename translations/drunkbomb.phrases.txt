@@ -1,0 +1,38 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_DRUNKBOMB"
+	{
+		"en"			"Drunk Bomb"
+		"jp"			"ドランクボム"
+	}
+	
+	"DESCRIPTION_DRUNKBOMB_ATTRIBUTE_0"
+	{
+		"en"			"Suicide attack can be performed"
+		"jp"			"巨大な爆弾を背負って自爆攻撃を仕掛けることができる"
+	}
+	"DESCRIPTION_DRUNKBOMB_ATTRIBUTE_1"
+	{
+		"en"			"*Invokes by performing Grenade launcher taunto to the next of Bottle taunt."
+		"jp"			"・グレネードランチャーの挑発の直後ボトルの挑発で発動"
+	}
+	"DESCRIPTION_DRUNKBOMB_ATTRIBUTE_2"
+	{
+		"en"			"*When active: Can't use other than Bottle"
+		"jp"			"・発動中: 泥酔効果及びボトル以外使用不可"
+	}
+	"DESCRIPTION_DRUNKBOMB_ATTRIBUTE_3"
+	{
+		"#format"		"{1:.1f}"
+		"en"			"*Timer: {1} seconds"
+		"jp"			"・爆発までの猶予: {1}秒"
+	}
+	"DESCRIPTION_DRUNKBOMB_ATTRIBUTE_4"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Movement speed(when active): {1} percent"
+		"jp"			"・移動速度(発動中): {1}％"
+	}
+
+}

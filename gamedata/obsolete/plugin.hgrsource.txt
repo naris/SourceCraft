@@ -1,0 +1,19 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"EyePosition"
+			{
+				"windows"	"117"
+				"linux"		"118"
+			}
+			"EyeAngles"
+			{
+				"windows"	"206"
+				"linux"		"207"
+			}
+		}
+	}
+}

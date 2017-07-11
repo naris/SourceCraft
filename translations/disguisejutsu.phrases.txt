@@ -1,0 +1,39 @@
+﻿"Phrases"
+{
+	"ABILITYNAME_DISGUISEJUTSU"
+	{
+		"en"			"Disguise Jutsu"
+		"jp"			"隠れ蓑の術"
+	}
+
+	"DESCRIPTION_DISGUISEJUTSU_ATTRIBUTE_0"
+	{
+		"en"			"Can hide in wooden barrel"
+		"jp"			"木製の樽に隠れて敵の目を欺くことができる"
+	}
+	"DESCRIPTION_DISGUISEJUTSU_ATTRIBUTE_1"
+	{
+		"en"			"*It hides by Alt-Fire with Backburner"
+		"jp"			"・バックバーナーを構えてセカンダリで発動"
+	}
+	"DESCRIPTION_DISGUISEJUTSU_ATTRIBUTE_2"
+	{
+		"en"			"*When active: Movement and weapon change are impossible"
+		"jp"			"・発動中: 移動及び武器変更不可"
+	}
+
+
+	
+	"MESSAGE_NO_CHARGE"
+	{
+		"#format"		"{1:.1f}"
+		"en"			"Pyro Power not charged!.\nIt will become available in {1} seconds"
+		"jp"			"パイロパワーが溜まっていない。\nあと {1} 秒が経過すれば使用可能になる。"
+	}
+	
+	"MESSAGE_POWER_CHARGED"
+	{
+		"en"			"Pyro Power is charged!"
+		"jp"			"パイロパワーが充填された。"
+	}
+}

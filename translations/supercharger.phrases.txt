@@ -1,0 +1,27 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_SUPERCHARGER"
+	{
+		"en"			"Supercharger"
+		"jp"			"スーパーチャージャー"
+	}
+	
+
+	"DESCRIPTION_SUPERCHARGER_ATTRIBUTE_0"
+	{
+		"en"			"Charge speed of Ubercharge increases"
+		"jp"			"ユーバーチャージのチャージ速度が増大する"
+	}
+	"DESCRIPTION_SUPERCHARGER_ATTRIBUTE_1"
+	{
+		"en"			"*Can't use other than Medigun and Kritzkrieg"
+		"jp"			"・メディガン及びクリッツクリーグ以外使用不可"
+	}
+	"DESCRIPTION_SUPERCHARGER_ATTRIBUTE_2"
+	{
+		"en"			"*Ubercharge decreases when do not heal."
+		"jp"			"・回復対象がいない場合、ユーバーチャージが減少"
+	}
+
+}

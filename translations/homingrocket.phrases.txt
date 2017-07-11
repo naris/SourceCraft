@@ -1,0 +1,47 @@
+﻿"Phrases"
+{
+	"ABILITYNAME_HOMINGROCKET"
+	{
+		"en"			"Homing Rocket"
+		"jp"			"ホーミングロケット"
+	}
+
+	"DESCRIPTION_HOMINGROCKET_ATTRIBUTE_0"
+	{
+		"en"			"Can be placed in the homing system which guides a rocket"
+		"jp"			"発射したロケット弾がホーミングする誘導装置を設置することができる"
+	}
+	"DESCRIPTION_HOMINGROCKET_ATTRIBUTE_1"
+	{
+		"en"			"*Placed in a homing system by a Shovel alt-fire"
+		"jp"			"・ショベルのセカンダリで誘導装置を設置"
+	}
+	"DESCRIPTION_HOMINGROCKET_ATTRIBUTE_2"
+	{
+		"en"			"*It will take up, if a homing system is neared and alt-fire is pushed."
+		"jp"			"・誘導装置に近づいてセカンダリを押すと回収"
+	}
+	"DESCRIPTION_HOMINGROCKET_ATTRIBUTE_3"
+	{
+		"#format"		"{1:.1f}"
+		"en"			"*Homing system battery life: {1} second"
+		"jp"			"・誘導装置駆動時間: {1}秒"
+	}
+	"DESCRIPTION_HOMINGROCKET_ATTRIBUTE_4"
+	{
+		"en"			"*When active: Can't use Shovel"
+		"jp"			"・発動中: ショベル使用不可"
+	}
+	
+	"MESSAGE_OUT_OF_BATTERY"
+	{
+		"en"			"Battery of the homing system was run out"
+		"jp"			"誘導装置のバッテリーが切れた。"
+	}
+	
+	"MESSAGE_CHANGE_BATTERY"
+	{
+		"en"			"Battery of the homing system was replacement"
+		"jp"			"誘導装置のバッテリーを交換した。"
+	}
+}

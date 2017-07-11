@@ -1,0 +1,38 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_MARKINGSHOT"
+	{
+		"en"			"Marking Shot"
+		"jp"			"マーキングショット"
+	}
+	
+	"MARKINGSHOT_TAKE_MARK"
+	{
+		"en"			"You was shot at the enemy sniper's Marking Shot!"
+		"jp"			"敵スナイパーのマーキングショットを喰らった！"
+	}
+	
+	"DESCRIPTION_MARKINGSHOT_ATTRIBUTE_0"
+	{
+		"en"			"Sniped enemies take mini-critsf for a given length of time"
+		"jp"			"スナイパーライフルで狙撃した敵は一定時間受けるダメージがミニクリティカルになる"
+	}
+	"DESCRIPTION_MARKINGSHOT_ATTRIBUTE_1"
+	{
+		"en"			"*Time of minicrits changes by charge amount"
+		"jp"			"・チャージ量によってミニクリティカルになる時間が変化"
+	}
+	"DESCRIPTION_MARKINGSHOT_ATTRIBUTE_2"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Maximum charge amount: {1} percent"
+		"jp"			"・最大チャージ量: {1}％"
+	}
+	"DESCRIPTION_MARKINGSHOT_ATTRIBUTE_3"
+	{
+		"en"			"*Can't use SMG and Jarate"
+		"jp"			"・SMG及びジャラテ使用不可"
+	}
+
+}

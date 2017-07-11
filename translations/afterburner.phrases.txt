@@ -1,0 +1,25 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_AFTERBURNER"
+	{
+		"en"			"After Burner"
+		"jp"			"アフターバーナー"
+	}
+	
+	"DESCRIPTION_AFTERBURNER_ATTRIBUTE_0"
+	{
+		"en"			"Can jump more highly than usual"
+		"jp"			"燃料タンクから炎を噴射して通常よりも高くジャンプすることができる"
+	}
+	"DESCRIPTION_AFTERBURNER_ATTRIBUTE_1"
+	{
+		"en"			"*When it is in the air, it moves by jump button press and hold"
+		"jp"			"・空中にいる時ジャンプボタン長押しで発動"
+	}
+	"DESCRIPTION_AFTERBURNER_ATTRIBUTE_2"
+	{
+		"en"			"*When active: Fuel of Flamethrower or Backburner is consumed"
+		"jp"			"・発動中: 火炎放射器またはバックバーナーの燃料を消費"
+	}
+}

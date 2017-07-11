@@ -1,0 +1,28 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_ADRENALINDASH"
+	{
+		"en"			"Adrenaline Dash"
+		"jp"			"アドレナリンダッシュ"
+	}
+
+	"DESCRIPTION_0_ADRENALINDASH"
+	{
+		"en"			"\"Adrenaline Dash\"\nAfter the shovel taunt, you can hurl yourself at the enemy when moving forwards"
+		"jp"			"「アドレナリンダッシュ」\nショベルの挑発後、前進キーを押し続けると\n猛ダッシュで敵に体当たりする事ができる。"
+	}
+
+//	"DESCRIPTION_1_ADRENALINDASH"
+//	{
+//		"en"			"When you move any other way then forwards the effect is cancelled"
+//		"jp"			"横移動をしたり速度が低下すると効果が切れてしまう。"
+//	}
+	
+	"DESCRIPTION_1_ADRENALINDASH"
+	{
+		"#format"		"{1:d}"
+		"en"			"Damage reduction (when active): {1} percent"
+		"jp"			"・被ダメージ(発動中)： -{1}％"
+	}
+}

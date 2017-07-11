@@ -1,0 +1,81 @@
+// Advertisements 0.5
+// by Tsunami
+// 
+// Types
+// -----
+// C: Center message
+// H: Hint message
+// M: Menu message
+// D: Dialog message
+// S: Say message
+//    - Colors:  {DEFAULT}, {TEAM}, {GREEN}, {LIGHTGREEN}
+//    - Example: {GREEN}Current {LIGHTGREEN}Map: {DEFAULT}{CURRENTMAP}
+// T: Top message
+//    - Colors:  {WHITE},  {RED},  {GREEN}, {BLUE}, {YELLOW}, {PURPLE}, {CYAN},
+//               {ORANGE}, {PINK}, {OLIVE}, {LIME}, {VIOLET}, {LIGHTBLUE}
+//    - Example: {ORANGE} www.domain.com
+//
+// Flags (optional)
+// -----
+// Accepts flags of admins that will not see the advertisement.
+// When omitted everyone will see the advertisement.
+// When left empty only admins will see the advertisement.
+
+"Advertisements"
+{
+	"1"
+	{
+		"type"		"T"
+		"text"		"{GREEN} Visit us at www.jigglysfunhouse.net."
+	}
+	"2"
+	{
+		"type"		"H"
+		"text"		"Visit Jigglys New Trade Webiste\nwww.FunHouseTradingPost.Com"
+	}
+	"3"
+	{
+		"type"		"T"
+		"text"		"{ORANGE} Type nominate to pick the next map"
+	}
+	"4"
+	{
+		"type"		"H"
+		"text"		"Know a good map?\nType nominate to add it to the vote!"
+	}
+	"5"
+	{
+		"type"		"S"
+		"text"		"{GREEN}Current {LIGHTGREEN}Map: {DEFAULT}{CURRENTMAP}"
+	}
+	"6"
+	{
+		"type"		"H"
+		"text"		"Say !sc to view someone's SourceCraft levels"
+	}
+	"7"
+	{
+		"type"		"T"
+		"text"		"Say !races to view race information"
+	}
+	"8"
+	{
+		"type"		"H"
+		"text"		"Say !maprate to rate the map\nYour rating effects the rotation!"
+	}
+	"9"
+	{
+		"type"		"T"
+		"text"		"{PINK} Say rtv to change the map"
+	}
+	"10"
+	{
+		"type"		"H"
+		"text"		"Want to change the map?\nType RTV to change the map!"
+	}
+	"11"
+	{
+		"type"		"T"
+		"text"		"Say !items to view item information"
+	}
+}

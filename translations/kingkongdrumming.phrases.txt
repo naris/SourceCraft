@@ -1,0 +1,55 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_KINGKONGDRUMMING"
+	{
+		"en"			"King Kong Drumming"
+		"jp"			"キングコングドラミング"
+	}
+	
+	"DESCRIPTION_KINGKONGDRUMMING_ATTRIBUTE_0"
+	{
+		"en"			"Special effects appear according to the number of times of taunting of Direct Hit"
+		"jp"			"ダイレクトヒットの挑発をするとその回数に応じて特殊効果が表れる"
+	}
+	"DESCRIPTION_KINGKONGDRUMMING_ATTRIBUTE_1"
+	{
+		"#format"		"{1:s}{2:s}"
+		"en"			"*1 time: Movement speed {1} percent\n*2 time: Firing speed {1} percent\n*3 times: All attack is critical\n*4 times: ???"
+		"jp"			"・1回: 移動速度 {1}％\n・連続2回: 発射速度 {2}％\n・連続3回: 全ての攻撃がクリティカルに\n・連続4回: ？？？"
+	}
+	"DESCRIPTION_KINGKONGDRUMMING_ATTRIBUTE_2"
+	{
+		"en"			"*Damage when taunting"
+		"jp"			"・挑発時にダメージ"
+	}
+	"DESCRIPTION_KINGKONGDRUMMING_ATTRIBUTE_3"
+	{
+		"en"			"*Can't use Shotgun and Buff Banner"
+		"jp"			"・ショットガン及びバフバナー使用不可"
+	}
+	
+	"MESSAGE_POWERUP_LV1"
+	{
+		"en"			"Movement speed boost!"
+		"jp"			"移動速度上昇！"
+	}
+	
+	"MESSAGE_POWERUP_LV2"
+	{
+		"en"			"Firing speed boost!"
+		"jp"			"発射速度上昇！"
+	}
+	
+	"MESSAGE_POWERUP_LV3"
+	{
+		"en"			"All attack is critical!"
+		"jp"			"オールクリティカル！"
+	}
+	
+	"MESSAGE_RELEASE_SAFETY"
+	{
+		"en"			"Safety lever of grenade has released!"
+		"jp"			"手榴弾の安全レバーが外れてしまった！"
+	}
+}

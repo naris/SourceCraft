@@ -1,0 +1,21 @@
+"Games"
+{
+	"tf"
+	{
+		"Offsets"
+		{
+			"Weapon_Switch"
+			{
+				"windows"	"260"
+                	"linux"		"261"
+                	"mac"			"261"
+			}
+			"WeaponReset"
+			{
+				"windows"	"398"
+				"linux"		"405"
+				"mac"			"405"
+			}
+		}
+	}
+}

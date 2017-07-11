@@ -1,0 +1,39 @@
+﻿"Phrases"
+{
+	"ABILITYNAME_BURNSDAYPRESENT"
+	{
+		"en"			"Burnsday Present"
+		"jp"			"バーンズデイプレゼント"
+	}
+
+	"DESCRIPTION_BURNSDAYPRESENT_ATTRIBUTE_0"
+	{
+		"en"			"Barnsday present which burns at the stopped place can be launched"
+		"jp"			"停止した場所で一定時間燃え続けるバーンズデイプレゼントを発射することができる"
+	}
+	"DESCRIPTION_BURNSDAYPRESENT_ATTRIBUTE_1"
+	{
+		"en"			"*Launch by Alt-Fire of Backburner"
+		"jp"			"・バックバーナーのセカンダリで発射"
+	}
+	"DESCRIPTION_BURNSDAYPRESENT_ATTRIBUTE_2"
+	{
+		"#format"		"{1:d}"
+		"en"			"*When launched: Consumes {1} Backburner ammo"
+		"jp"			"・発射時： バックバーナーの弾薬を{1}消費"
+	}
+	
+	
+	"MESSAGE_NO_EXTINGISH"
+	{
+		"en"			"Can't yet use"
+		"jp"			"先に発射したバーンズデイプレゼントの炎が消えるまで発射できない。"
+	}
+
+	"MESSAGE_NO_AMMO"
+	{
+		"en"			"No Ammo"
+		"jp"			"弾薬が足りない。"
+	}
+
+}

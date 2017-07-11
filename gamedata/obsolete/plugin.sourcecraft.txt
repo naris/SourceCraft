@@ -1,0 +1,118 @@
+"Games"
+{
+	"cstrike"
+	{
+		"Signatures"
+		{
+			"RoundRespawn"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\xF1\x8B\x06\xFF\x90*\x04\x00\x00\x8B\x86*\x0D\x00"
+				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
+			}
+			"ExplosionCreate"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x9C\x00\x00\x00\x8B\x84\x24\xA4\x00\x00\x00\x8B\x8C\x24"
+				"linux"		"@_Z15ExplosionCreateRK6VectorRK6QAngleP11CBaseEntityiiifS6_"
+			}
+			"UTIL_Remove"
+			{
+				"library"	"server"
+				"windows"	"\x8b\x44\x24\x04\x85\xc0*******\x89\x44\x24\x04*****\xc3"
+				"linux"		"@_Z11UTIL_RemoveP11CBaseEntity"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x3A\x01\x00\x00"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+			}
+			"UTIL_SetModel"
+			{
+				"library"	"server"
+				"windows"	"******\x8B\x01\x83\xEC\x18\x53\x8B\x5C\x24\x24\x56\x57\x53\xFF\x50\x08\x8B\x74\x24\x28\x8B\xF8\x85\xFF**"
+				"linux"		"@_Z13UTIL_SetModelP11CBaseEntityPKc"
+			}
+			"FollowEntity"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57************\x8B\x03\x8B\xCB"
+				"linux"		"@_ZN11CBaseEntity12FollowEntityEPS_b"
+			}
+		}
+	}
+
+	/* Team Fortress 2 Offsets */
+	"tf"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"406"
+				"linux"		"410"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"229"
+				"linux"		"230"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"234"
+				"linux"		"235"
+			}
+			"Ignite"
+			{
+				"windows"	"191"
+				"linux"		"192"
+			}
+			"Extinguish"
+			{
+				"windows"	"195"
+				"linux"		"196"
+			}
+		}
+	}
+
+	/* Day of Defeat: Source */
+	"dod"
+	{
+		"Offsets"
+		{
+			"Spawn"
+			{
+				"windows"	"21"
+				"linux"		"22"
+			}
+			"Respawn"
+			{
+				"windows"	"111"
+				"linux"		"112"
+			}
+			"ForceRespawn"
+			{
+				"windows"	"288"
+				"linux"		"289"
+			}
+			"IsReadyToSpawn"
+			{
+				"windows"	"390"
+				"linux"		"391"
+			}
+			"ShouldGainInstantSpawn"
+			{
+				"windows"	"391"
+				"linux"		"392"
+			}
+		}
+     
+	}
+}

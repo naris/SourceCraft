@@ -1,0 +1,29 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_METALHOPPER"
+	{
+		"en"			"Metal Hopper"
+		"jp"			"メタルホッパー"
+	}
+	
+	"DESCRIPTION_METALHOPPER_ATTRIBUTE_0"
+	{
+		"en"			"Dispenser can be exploded and it can jump highly by the retroaction"
+		"jp"			"ディスペンサーを爆破してその反動で高くジャンプすることができる"
+	}
+	"DESCRIPTION_METALHOPPER_ATTRIBUTE_1"
+	{
+		"en"			"*Invoke by Alt-Fire on its own dispenser"
+		"jp"			"・自分のディスペンサーの上でセカンダリを押すと発動"
+	}
+	"DESCRIPTION_METALHOPPER_ATTRIBUTE_2"
+	{
+		"en"			"*Amount of damage and size of retroaction is variable with level and the residual quantity of metal"
+		"jp"			"・レベルやメタルの残量によってダメージと反動の大きさが変化する"
+	}
+
+	
+}
+
+

@@ -1,0 +1,28 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_SPIKESHOES"
+	{
+		"en"			"Spike Shoes"
+		"jp"			"スパイクシューズ"
+	}
+	
+	"DESCRIPTION_SPIKESHOES_ATTRIBUTE_0"
+	{
+		"en"			"If an enemy's head is stamped on after a double jump, it can do stun."
+		"jp"			"ダブルジャンプの後に敵の頭を踏むとスタンさせることができる"
+	}
+	"DESCRIPTION_SPIKESHOES_ATTRIBUTE_1"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Movement speed: {1} percent"
+		"jp"			"・移動速度: {1}％"
+	}
+	"DESCRIPTION_SPIKESHOES_ATTRIBUTE_2"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Double jump height: {1} percent"
+		"jp"			"・ダブルジャンプの高さ: {1}％"
+	}
+
+}

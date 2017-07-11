@@ -1,0 +1,61 @@
+﻿"Phrases"
+{
+
+	"ABILITYMENU_TITLE"
+	{
+		"en"			"Special Ability Selection"
+		"jp"			"特殊能力を選択"
+	}
+	
+	"ABILITYMENU_CANCEL"
+	{
+		"en"			"Cancel Special Ability"
+		"jp"			"特殊能力解除"
+	}
+
+
+	"DESCRIPTION_MENU"
+	{
+		"en"			"Type \"rmf_menu\" or \"!r\" in chat and a special ability menu will be displayed."
+		"jp"			"チャットウィンドウで\"rmf_menu\"または\"!r\"と打つと特殊能力メニューを表示。"
+	}
+	
+	
+	"ABILITYMENU_CHANGED"
+	{
+		"en"			"Special ability has changed. This applies after next respawn."
+		"jp"			"特殊能力を変更。次回復活時から適用されます。"
+	}
+	
+	"ABILITYMENU_EQUIPPED"
+	{
+	
+		"#format"		"{1:s}"
+		"en"			"\"{1}\" was equipped."
+		"jp"			"「{1}」 を装備しました。"
+	}
+	
+	"ABILITYMENU_UNEQUIPPED"
+	{
+	
+		"en"			"Special ability was cancelled."
+		"jp"			"特殊能力を解除しました。"
+	}
+	
+	"ABILITYMENU_CANT_CHANGE"
+	{
+		"en"			"Can't equip here. This applies after next respawn."
+		"jp"			"この場所では装備できません。次回復活時から適用されます。"
+	}
+	"ABILITYMENU_CANT_CHANGE_NOW"
+	{
+		"en"			"Can't equip now. This applies after next respawn."
+		"jp"			"今は装備できません。次回復活時から適用されます。"
+	}	
+	
+	"MESSAGE_ADMIN_ONLY"
+	{
+		"en"			"You can't access to Ability Menu."
+		"jp"			"アビリティメニューにアクセスする権限がありません。"
+	}	
+}

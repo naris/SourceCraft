@@ -1,0 +1,29 @@
+"Games"
+{
+	"tf"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"385"
+				"linux"		"386"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"249"
+				"linux"		"250"
+			}
+			"EquipWearable"
+			{
+				"windows"	"411"
+				"linux"		"412"
+			}
+			"RemoveWearable"
+			{
+				"windows"	"412"
+				"linux"		"413"
+			}
+		}
+	}
+}

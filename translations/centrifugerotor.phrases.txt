@@ -1,0 +1,32 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_CENTRIFUGEROTOR"
+	{
+		"en"			"Centrifuge Rotor"
+		"jp"			"セントリフュージロータ"
+	}
+
+	"DESCRIPTION_CENTRIFUGEROTOR_ATTRIBUTE_0"
+	{
+		"en"			"Knockback effect by a blast etc. can be decrease with a centrifuge rotor."
+		"jp"			"重力発生装置により爆風などによるノックバック効果を低減することができる"
+	}
+	"DESCRIPTION_CENTRIFUGEROTOR_ATTRIBUTE_1"
+	{
+		"en"			"*Invoked by Minigun or Natascha spin up"
+		"jp"			"・サーシャまたはナターシャをスピンアップ(セカンダリ長押し)すると発動"
+	}
+	"DESCRIPTION_CENTRIFUGEROTOR_ATTRIBUTE_2"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Gained Gravity (when active): {1} percent"
+		"jp"			"・被重力(発動中): {1}％"
+	}
+	"DESCRIPTION_CENTRIFUGEROTOR_ATTRIBUTE_3"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Movement speed(when active): {1} percent"
+		"jp"			"・移動速度(発動中): {1}％"
+	}
+}

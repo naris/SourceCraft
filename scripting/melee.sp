@@ -4,11 +4,7 @@
 #include <tf2>
 #include <tf2_stocks>
 
-#define PLUGIN_VERSION "0.3.8"
-
-#define SLOT_PRIMARY 0
-#define SLOT_SECONDARY 1
-#define SLOT_MELEE 2
+#define PLUGIN_VERSION "0.4.1"
 
 #define ITEM_SPYCICLE 649
 
@@ -27,7 +23,6 @@ new Handle:g_hCvarDisabled;
 new Handle:g_hCvarArena;
 new Handle:g_hCvarJumper;
 new Handle:g_hCvarCircuit;
-
 new Handle:g_hCvarHint;
 
 new Handle:g_hWeaponSwitch;
@@ -65,10 +60,10 @@ public OnPluginStart()
 	LookupOffset(g_iOffsetState, "CTFMinigun", "m_iWeaponState");
 	LookupOffset(g_iOffsetMelt, "CTFKnife", "m_flKnifeMeltTimestamp");
 	
-	new Handle:hConf = LoadGameConfigFile("melee");
+	new Handle:hConf = LoadGameConfigFile("sdkhooks.games");
 	if(hConf == INVALID_HANDLE)
 	{
-		SetFailState("Could not locate melee.txt in sourcemod/gamedata");
+		SetFailState("Could not read sdkhooks.games gamedata.");
 		return;
 	}
 	StartPrepSDKCall(SDKCall_Player);
@@ -80,6 +75,14 @@ public OnPluginStart()
 	{
 		SetFailState("Could not initialize call for CTFPlayer::Weapon_Switch");
 		CloseHandle(hConf);
+		return;
+	}
+	CloseHandle(hConf);
+	
+	hConf = LoadGameConfigFile("melee");
+	if(hConf == INVALID_HANDLE)
+	{
+		SetFailState("Could not read melee gamedata: gamedata/melee.txt.");
 		return;
 	}
 	StartPrepSDKCall(SDKCall_Entity);
@@ -116,7 +119,8 @@ public OnPluginStart()
 	HookConVarChange(g_hCvarJumper, ConVarChange_Jumper);
 	HookConVarChange(g_hCvarCircuit, ConVarChange_Circuit);
 	
-	LoadTranslations("melee.phrases.txt");
+	LoadTranslations("melee.phrases");
+	LoadTranslations("common.phrases");
 	
 	Format(g_strOn, sizeof(g_strOn), "%T", "On", LANG_SERVER);
 	Format(g_strOff, sizeof(g_strOff), "%T", "Off", LANG_SERVER);
@@ -182,9 +186,13 @@ public Action:Command_Melee(client, args)
 {
 	if(client > 0)
 	{
-		decl String:strFlags[5];
+		decl String:strFlags[10];
 		GetConVarString(g_hCvarFlags, strFlags, sizeof(strFlags));
-		if(!CheckAdminFlagsByString(client, strFlags)) return Plugin_Handled;
+		if(!CheckAdminFlagsByString(client, strFlags))
+		{
+			PrintToChat(client, "\x01[SM] You are not allowed to do that.");
+			return Plugin_Handled;
+		}
 	}
 	
 	if(GetConVarInt(g_hCvarDisabled))
@@ -257,7 +265,7 @@ SetMeleeMode(bool:bEnabled, bool:bVerbose=true)
 			if(IsClientInGame(i) && IsPlayerAlive(i))
 			{
 				new iActive = GetActiveWeapon(i);
-				new iMelee = GetPlayerWeaponSlot(i, SLOT_MELEE);
+				new iMelee = GetPlayerWeaponSlot(i, TFWeaponSlot_Melee);
 				
 				if(iActive && IsValidEntity(iActive) && iMelee && IsValidEntity(iMelee) && iActive != iMelee)
 				{
@@ -297,7 +305,7 @@ public OnGameFrame()
 		{
 			if(IsClientInGame(i) && IsPlayerAlive(i))
 			{
-				new iWeapon = GetPlayerWeaponSlot(i, SLOT_MELEE);
+				new iWeapon = GetPlayerWeaponSlot(i, TFWeaponSlot_Melee);
 				new iActive = GetActiveWeapon(i);
 				
 				if(iWeapon && IsValidEntity(iWeapon) && iActive && IsValidEntity(iActive) && iWeapon != iActive)
@@ -336,14 +344,14 @@ bool:CanUseWeapon(iItemDef)
 {
 	switch(iItemDef)
 	{
-		case 735,736,810,831: return true; // Spy Sapper / Upgradable Sapper / Recorder / Recorder Promo
+		case 735,736,810,831,933: return true; // Spy Sapper / Upgradable Sapper / Recorder / Recorder Promo / Ap-Sap
 		case 25,26,28,737: return true; // Engineer's Build & Destroy PDAs / Builder / Upgradable Build PDA
 		case 140: return true; // Wrangler
 		case 58: return true; // Jarate
-		case 42,159,311,433: return true; // Sandvich / Chocolate Bar / Buffalo Steak / Fishcake
+		case 42,159,311,433,863,1002: return true; // Sandvich / Chocolate Bar / Buffalo Steak / Fishcake / Robo-Sandvich / Festive Sandvich
 		case 46,163,222: return true; // Bonk / Crit-a-Cola / Mad Milk
 		case 27: return true; // Spy Disguise PDA
-		case 129,226,354: return true; // The Buff Banner / The Battalion's Backup / The Concheror
+		case 129,226,354,1001: return true; // The Buff Banner / The Battalion's Backup / The Concheror / Festive Buff Banner
 		case 29,35,411,211,663: return g_bHealing; // Medigun / Kritzcrieg / The Quick-Fix / Strange Medigun / Festive Medigun
 		case 237,265: return g_bJumper; // Rocket/Sticky Jumper
 		case 528: return g_bCircuit; // Short Circuit
@@ -390,9 +398,9 @@ ResetMinigun(weapon, iState)
 
 SetSentryDisable(bool:bEnabled)
 {
-	new Handle:hTarget = FindConVar("tf_sentrygun_notarget");
-	SetConVarBool(hTarget, bEnabled);
-	CloseHandle(hTarget);
+	new Handle:hCvar = FindConVar("tf_sentrygun_notarget");
+	SetConVarBool(hCvar, bEnabled);
+	CloseHandle(hCvar);
 }
 
 SetBotMelee(bool:bEnabled)
@@ -402,15 +410,15 @@ SetBotMelee(bool:bEnabled)
 	CloseHandle(hCvar);
 }
 
-stock bool:CheckAdminFlagsByString(client, const String:flagString[])
+stock bool:CheckAdminFlagsByString(client, const String:strFlagString[])
 {
-	if(!StrEqual(flagString, ""))
+	if(strlen(strFlagString))
 	{
-		new iFlags = ReadFlagString(flagString);
-		return bool:(GetUserFlagBits(client) & iFlags);
+		new iUserFlags = GetUserFlagBits(client);
+		return bool:(iUserFlags & ADMFLAG_ROOT || iUserFlags & ReadFlagString(strFlagString));
 	}
 	
-	return bool:(GetUserFlagBits(client) & ADMFLAG_ROOT);
+	return true;
 }
 
 public OnAdminMenuReady(Handle:hTopMenu)
@@ -464,12 +472,15 @@ public AdminMenu_Melee(Handle:topmenu, TopMenuAction:action, TopMenuObject:objec
 
 public AdminMenu_VoteMelee(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
 {
-	if(action == TopMenuAction_DisplayOption && !IsVoteInProgress())
+	if(action == TopMenuAction_DisplayOption)
 	{
 		Format(buffer, maxlength, "Melee vote: %s", g_bEnabled ? g_strOff : g_strOn);
 	}else if(action == TopMenuAction_SelectOption)
 	{
 		Command_VoteMelee(param, 0);
+	}else if(action == TopMenuAction_DrawOption)
+	{
+		buffer[0] = !IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 	}
 }
 
@@ -477,9 +488,13 @@ public Action:Command_VoteMelee(client, args)
 {
 	if(client > 0)
 	{
-		decl String:strFlags[5];
+		decl String:strFlags[10];
 		GetConVarString(g_hCvarFlagsVoting, strFlags, sizeof(strFlags));
-		if(!CheckAdminFlagsByString(client, strFlags)) return Plugin_Handled;
+		if(!CheckAdminFlagsByString(client, strFlags))
+		{
+			PrintToChat(client, "\x01[SM] You are not allowed to do that.");
+			return Plugin_Handled;
+		}
 	}
 	
 	if(GetConVarInt(g_hCvarDisabled))
@@ -491,6 +506,11 @@ public Action:Command_VoteMelee(client, args)
 	if(IsVoteInProgress())
 	{
 		ReplyToCommand(client, "\x01[SM] Vote is already in progress.");
+		return Plugin_Handled;
+	}
+	
+	if(!TestVoteDelay(client))
+	{
 		return Plugin_Handled;
 	}
 	
@@ -578,4 +598,25 @@ public Native_SetMeleeMode(Handle:plugin, numParams)
 public Native_GetMeleeMode(Handle:plugin, numParams)
 {
 	return _:g_bEnabled;
+}
+
+bool:TestVoteDelay(client)
+{
+ 	new delay = CheckVoteDelay();
+ 	
+ 	if (delay > 0)
+ 	{
+ 		if (delay > 60)
+ 		{
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", delay % 60);
+ 		}
+ 		else
+ 		{
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Seconds", delay);
+ 		}
+ 		
+ 		return false;
+ 	}
+ 	
+	return true;
 }

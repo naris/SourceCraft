@@ -1,0 +1,27 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_FLAREFIREWORK"
+	{
+		"en"			"Flare Firework"
+		"jp"			"フレアファイヤワーク"
+	}
+	
+	
+	"DESCRIPTION_FLAREFIREWORK_ATTRIBUTE_0"
+	{
+		"en"			"Fired projectile of Flaregun is burst and the around enemy can be burned"
+		"jp"			"発射したフレアガンの弾を破裂させ周囲の敵を燃やすことができる"
+	}
+	"DESCRIPTION_FLAREFIREWORK_ATTRIBUTE_1"
+	{
+		"en"			"*Projectile is burst in Alt-Fire after firing Flaregun"
+		"jp"			"・フレアガンを発射後セカンダリで弾を破裂させる"
+	}
+	"DESCRIPTION_FLAREFIREWORK_ATTRIBUTE_2"
+	{
+		"#format"		"{1:s}"
+		"en"			"*Projectile speed: {1} percent"
+		"jp"			"・投射速度: {1}％"
+	}
+}

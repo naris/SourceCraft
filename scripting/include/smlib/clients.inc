@@ -1,14 +1,7 @@
-/**
- * vim: set ai et ts=4 sw=4 :
- */
-
 #if defined _smlib_client_included
 	#endinput
 #endif
 #define _smlib_client_included
-
-//Define _INLINE to use inline macros
-//#define _INLINE
 
 #include <sourcemod>
 #include <entity_prop_stocks>
@@ -20,184 +13,178 @@
 #include <smlib/teams>
 #include <smlib/weapons>
 
-#if defined _INLINE
-    #define Client_SetObserverLastMode(%1,%2) SetEntProp(%1, Prop_Data, "m_iObserverLastMode", _:%2)
-#endif
-
 // Hud Element hiding flags (possibly outdated)
-#define	HIDEHUD_WEAPONSELECTION	    ( 1<<0 )    // Hide ammo count & weapon selection
-#define	HIDEHUD_FLASHLIGHT          ( 1<<1 )
-#define	HIDEHUD_ALL                 ( 1<<2 )
-#define HIDEHUD_HEALTH              ( 1<<3 )    // Hide health & armor / suit battery
-#define HIDEHUD_PLAYERDEAD          ( 1<<4 )    // Hide when local player's dead
-#define HIDEHUD_NEEDSUIT            ( 1<<5 )    // Hide when the local player doesn't have the HEV suit
-#define HIDEHUD_MISCSTATUS          ( 1<<6 )    // Hide miscellaneous status elements (trains, pickup history, death notices, etc)
-#define HIDEHUD_CHAT                ( 1<<7 )    // Hide all communication elements (saytext, voice icon, etc)
-#define	HIDEHUD_CROSSHAIR           ( 1<<8 )    // Hide crosshairs
-#define	HIDEHUD_VEHICLE_CROSSHAIR   ( 1<<9 )    // Hide vehicle crosshair
-#define HIDEHUD_INVEHICLE           ( 1<<10 )
-#define HIDEHUD_BONUS_PROGRESS      ( 1<<11 )   // Hide bonus progress display (for bonus map challenges)
+#define	HIDEHUD_WEAPONSELECTION		( 1<<0 )	// Hide ammo count & weapon selection
+#define	HIDEHUD_FLASHLIGHT			( 1<<1 )
+#define	HIDEHUD_ALL					( 1<<2 )
+#define HIDEHUD_HEALTH				( 1<<3 )	// Hide health & armor / suit battery
+#define HIDEHUD_PLAYERDEAD			( 1<<4 )	// Hide when local player's dead
+#define HIDEHUD_NEEDSUIT			( 1<<5 )	// Hide when the local player doesn't have the HEV suit
+#define HIDEHUD_MISCSTATUS			( 1<<6 )	// Hide miscellaneous status elements (trains, pickup history, death notices, etc)
+#define HIDEHUD_CHAT				( 1<<7 )	// Hide all communication elements (saytext, voice icon, etc)
+#define	HIDEHUD_CROSSHAIR			( 1<<8 )	// Hide crosshairs
+#define	HIDEHUD_VEHICLE_CROSSHAIR	( 1<<9 )	// Hide vehicle crosshair
+#define HIDEHUD_INVEHICLE			( 1<<10 )
+#define HIDEHUD_BONUS_PROGRESS		( 1<<11 )	// Hide bonus progress display (for bonus map challenges)
 
 /**
 * Sets the Hide-Hud flags of a client
 *
-* @param client     Client index.
-* @param flags      Flag to set, use one of the HIDEHUD_ hiding constants
+* @param client		Client index.
+* @param flags		Flag to set, use one of the HIDEHUD_ hiding constants
 * @noreturn
 */
-#if defined _INLINE
-    #define Client_SetHideHud(%1,%2) SetEntProp(%1, Prop_Send, "m_iHideHUD", %2)
-#else
 stock Client_SetHideHud(client, flags)
 {
-    SetEntProp(client, Prop_Send, "m_iHideHUD", flags);
+	SetEntProp(client, Prop_Send, "m_iHideHUD", flags);
 }
-#endif
 
 /**
 * Checks if the specified index is a player and connected.
 *
-* @param entity             An entity index.
-* @param checkConnected     Set to false to skip the IsClientConnected check
-* @return                   Returns true if the specified entity index is a player connected, false otherwise.
+* @param entity				An entity index.
+* @param checkConnected		Set to false to skip the IsClientConnected check
+* @return					Returns true if the specified entity index is a player connected, false otherwise.
 */
 stock bool:Client_IsValid(client, bool:checkConnected=true)
 {
-    if (client > 4096)
-        client = EntRefToEntIndex(client);
+	if (client > 4096) {
+		client = EntRefToEntIndex(client);
+	}
 
-    if (client < 1 || client > MaxClients)
-        return false;
-    else if (checkConnected && !IsClientConnected(client))
-        return false;
-    else
-        return true;
+	if (client < 1 || client > MaxClients) {
+		return false;
+	}
+
+	if (checkConnected && !IsClientConnected(client)) {
+		return false;
+	}
+	
+	return true;
 }
 
 /**
 * Checks if the specified index is a player and ingame.
 *
-* @param entity     An entity index.
-* @return           Returns true if the specified index is a player and ingame, false otherwise.
+* @param entity		An entity index.
+* @return			Returns true if the specified index is a player and ingame, false otherwise.
 */
-#if defined _INLINE
-    #define Client_IsIngame(%1) (Client_IsValid(%1, false) && IsClientInGame(%1))
-#else
 stock bool:Client_IsIngame(client)
 {
-    return Client_IsValid(client, false) && IsClientInGame(client);
+	if (!Client_IsValid(client, false)) {
+		return false;
+	}
+
+	return IsClientInGame(client);
 }
-#endif
 
 /**
 * Checks if the specified index is a player, ingame and authorized.
 *
-* @param entity     An entity index.
-* @return           Returns true if the specified index is a player, ingame and authed, false otherwise.
+* @param entity		An entity index.
+* @return			Returns true if the specified index is a player, ingame and authed, false otherwise.
 */
-#if defined _INLINE
-    #define Client_IsIngameAuthorized(%1) (Client_IsIngame(%1) && IsClientAuthorized(%1))
-#else
 stock bool:Client_IsIngameAuthorized(client)
 {
-    return Client_IsIngame(client) && IsClientAuthorized(client);
+	if (!Client_IsIngame(client)) {
+		return false;
+	}
+
+	return IsClientAuthorized(client);
 }
-#endif
 
 #define MAX_STEAMAUTH_LENGTH 21
 
 /**
 * Finds a player by his SteamID
 *
-* @param auth           SteamID to search for
-* @return               Client Index or -1
+* @param auth			SteamID to search for
+* @return				Client Index or -1
 */
 stock Client_FindBySteamId(const String:auth[])
 {
-    new String:clientAuth[MAX_STEAMAUTH_LENGTH];
-    for (new client=1; client <= MaxClients; client++)
-    {
-        if (IsClientAuthorized(client))
-        {
-            GetClientAuthString(client, clientAuth, sizeof(clientAuth));
+	new String:clientAuth[MAX_STEAMAUTH_LENGTH];
+	for (new client=1; client <= MaxClients; client++) {
+		if (!IsClientAuthorized(client)) {
+			continue;
+		}
+		
+		GetClientAuthString(client, clientAuth, sizeof(clientAuth));
 
-            if (StrEqual(auth, clientAuth))
-                return client;
-        }
-    }
-
-    return -1;
+		if (StrEqual(auth, clientAuth)) {
+			return client;
+		}
+	}
+	
+	return -1;
 }
 
 /**
 * Finds a player by his name.
 * Only returns the first matching player.
 *
-* @param name           Name to search for.
-* @param partOfName     Whether to search for the part of a name or compare the full name.
-* @param caseSensitive  If true, comparison is case sensitive. If false (default), comparison is case insensitive.
-* @return               Client Index or -1
+* @param name			Name to search for.
+* @param partOfName		Whether to search for the part of a name or compare the full name.
+* @param caseSensitive	If true, comparison is case sensitive. If false (default), comparison is case insensitive.
+* @return				Client Index or -1
 */
 stock Client_FindByName(const String:name[], bool:partOfName=true, bool:caseSensitive=false)
 {
-    new String:clientName[MAX_STEAMAUTH_LENGTH];
-    for (new client=1; client <= MaxClients; client++)
-    {
-        if (IsClientAuthorized(client))
-        {
-            GetClientName(client, clientName, sizeof(clientName));
+	new String:clientName[MAX_STEAMAUTH_LENGTH];
+	for (new client=1; client <= MaxClients; client++) {
+		if (!IsClientAuthorized(client)) {
+			continue;
+		}
+		
+		GetClientName(client, clientName, sizeof(clientName));
 
-            if (partOfName)
-            {
-                if (StrContains(clientName, name, caseSensitive) != -1)
-                    return client;
-            }
-            else if (StrEqual(name, clientName, caseSensitive))
-                return client;
-        }
-    }
-
-    return -1;
+		if (partOfName) {
+			if (StrContains(clientName, name, caseSensitive) != -1) {
+				return client;
+			}
+		}
+		else if (StrEqual(name, clientName, caseSensitive)) {
+			return client;
+		}
+	}
+	
+	return -1;
 }
 
 // Spectator Movement modes
 enum Obs_Mode
 {
-    OBS_MODE_NONE = 0,  // not in spectator mode
-    OBS_MODE_DEATHCAM,  // special mode for death cam animation
-    OBS_MODE_FREEZECAM, // zooms to a target, and freeze-frames on them
-    OBS_MODE_FIXED,     // view from a fixed camera position
-    OBS_MODE_IN_EYE,    // follow a player in first person view
-    OBS_MODE_CHASE,     // follow a player in third person view
-    OBS_MODE_ROAMING,   // free roaming
+	OBS_MODE_NONE = 0,	// not in spectator mode
+	OBS_MODE_DEATHCAM,	// special mode for death cam animation
+	OBS_MODE_FREEZECAM,	// zooms to a target, and freeze-frames on them
+	OBS_MODE_FIXED,		// view from a fixed camera position
+	OBS_MODE_IN_EYE,	// follow a player in first person view
+	OBS_MODE_CHASE,		// follow a player in third person view
+	OBS_MODE_ROAMING,	// free roaming
 
-    NUM_OBSERVER_MODES
+	NUM_OBSERVER_MODES
 };
 
 // Force Camera Restrictions with mp_forcecamera
 enum Obs_Allow
 {
-    OBS_ALLOW_ALL = 0,  // allow all modes, all targets
-    OBS_ALLOW_TEAM,     // allow only own team & first person, no PIP
-    OBS_ALLOW_NONE,     // don't allow any spectating after death (fixed & fade to black)
+	OBS_ALLOW_ALL = 0,	// allow all modes, all targets
+	OBS_ALLOW_TEAM,		// allow only own team & first person, no PIP
+	OBS_ALLOW_NONE,		// don't allow any spectating after death (fixed & fade to black)
 
-    OBS_ALLOW_NUM_MODES,
+	OBS_ALLOW_NUM_MODES,
 };
 
 /**
  * Gets the client's  observer mode (Obs_Mode).
  * 
- * @param client        Client Index.
- * @return              The current observer mode (ObsMode).
+ * @param client		Client Index.
+ * @return				The current observer mode (ObsMode).
  */
-#if defined _INLINE
-    #define Client_GetObserverMode(%1) (Obs_Mode:GetEntProp(%1, Prop_Send, "m_iObserverMode"))
-#else
 stock Obs_Mode:Client_GetObserverMode(client)
 {
-    return Obs_Mode:GetEntProp(client, Prop_Send, "m_iObserverMode");
+	return Obs_Mode:GetEntProp(client, Prop_Send, "m_iObserverMode");
 }
-#endif
 
 
 /**
@@ -205,442 +192,390 @@ stock Obs_Mode:Client_GetObserverMode(client)
  * Use a value of the Obs_Mode enum.
  * This is a rewrite of CBasePlayer::SetObserverMode().
  * 
- * @param client            Client Index.
- * @param mode              New Observer mode value (Obs_Mode).
- * @param updateMoveType    Set to true (default) to allow this function updating the movetype, false otherwise.
+ * @param client			Client Index.
+ * @param mode				New Observer mode value (Obs_Mode).
+ * @param updateMoveType	Set to true (default) to allow this function updating the movetype, false otherwise.
  * @noreturn
  */
 stock bool:Client_SetObserverMode(client, Obs_Mode:mode, bool:updateMoveType=true)
 {
-    if (mode < OBS_MODE_NONE || mode >= NUM_OBSERVER_MODES)
-        return false;
+	if (mode < OBS_MODE_NONE || mode >= NUM_OBSERVER_MODES) {
+		return false;
+	}
+	
+	// check mp_forcecamera settings for dead players
+	if (mode > OBS_MODE_FIXED && GetClientTeam(client) > TEAM_SPECTATOR)
+	{
+		new Handle:mp_forcecamera = FindConVar("mp_forcecamera");
 
-    // check mp_forcecamera settings for dead players
-    if (mode > OBS_MODE_FIXED && GetClientTeam(client) > TEAM_SPECTATOR)
-    {
-        new Handle:mp_forcecamera = FindConVar("mp_forcecamera");
+		if (mp_forcecamera != INVALID_HANDLE) {
+			switch (GetConVarInt(mp_forcecamera))
+			{
+				case OBS_ALLOW_TEAM: {
+					mode = OBS_MODE_IN_EYE;
+				}
+				case OBS_ALLOW_NONE: {
+					mode = OBS_MODE_FIXED; // don't allow anything
+				}
+			}
+		}
+	}
 
-        if (mp_forcecamera != INVALID_HANDLE)
-        {
-            switch (GetConVarInt(mp_forcecamera))
-            {
-                case OBS_ALLOW_TEAM:
-                {
-                    mode = OBS_MODE_IN_EYE;
-                }
-                case OBS_ALLOW_NONE:
-                {
-                    mode = OBS_MODE_FIXED; // don't allow anything
-                }
-            }
-        }
-    }
+	new Obs_Mode:observerMode = Client_GetObserverMode(client);
+	if (observerMode > OBS_MODE_DEATHCAM) {
+		// remember mode if we were really spectating before
+		Client_SetObserverLastMode(client, observerMode);
+	}
 
-    new Obs_Mode:observerMode = Client_GetObserverMode(client);
-    if (observerMode > OBS_MODE_DEATHCAM)
-    {
-        // remember mode if we were really spectating before
-        Client_SetObserverLastMode(client, observerMode);
-    }
+	SetEntProp(client, Prop_Send, "m_iObserverMode", _:mode);
 
-    SetEntProp(client, Prop_Send, "m_iObserverMode", _:mode);
+	switch (mode) {
+		case OBS_MODE_NONE, OBS_MODE_FIXED, OBS_MODE_DEATHCAM: {
+			Client_SetFOV(client, 0);	// Reset FOV
+			
+			if (updateMoveType) {
+				SetEntityMoveType(client, MOVETYPE_NONE);
+			}
+		}
+		case OBS_MODE_CHASE, OBS_MODE_IN_EYE: {
+			// udpate FOV and viewmodels
+			Client_SetViewOffset(client, NULL_VECTOR);
+			
+			if (updateMoveType) {
+				SetEntityMoveType(client, MOVETYPE_OBSERVER);
+			}
+		}
+		case OBS_MODE_ROAMING: {
+			Client_SetFOV(client, 0);	// Reset FOV
+			Client_SetViewOffset(client, NULL_VECTOR);
+			
+			if (updateMoveType) {
+				SetEntityMoveType(client, MOVETYPE_OBSERVER);
+			}
+		}
+	}
 
-    switch (mode)
-    {
-        case OBS_MODE_NONE, OBS_MODE_FIXED, OBS_MODE_DEATHCAM:
-        {
-            Client_SetFOV(client, 0);	// Reset FOV
-
-            if (updateMoveType)
-                SetEntityMoveType(client, MOVETYPE_NONE);
-        }
-        case OBS_MODE_CHASE, OBS_MODE_IN_EYE:
-        {
-            // udpate FOV and viewmodels
-            Client_SetViewOffset(client, NULL_VECTOR);
-
-            if (updateMoveType)
-                SetEntityMoveType(client, MOVETYPE_OBSERVER);
-        }
-        case OBS_MODE_ROAMING:
-        {
-            Client_SetFOV(client, 0);	// Reset FOV
-            Client_SetViewOffset(client, NULL_VECTOR);
-
-            if (updateMoveType)
-                SetEntityMoveType(client, MOVETYPE_OBSERVER);
-        }
-    }
-
-    return true;
+	return true;
 }
 
 /**
  * Gets the client's last oberserver mode
  * 
- * @param client        Client Index.
- * @return              Last Observer mode
+ * @param client		Client Index.
+ * @return				Last Observer mode
  */
-#if defined _INLINE
-    #define Client_GetObserverLastMode(%1) (Obs_mode:GetEntProp(%1, Prop_Data, "m_iObserverLastMode"))
-#else
 stock Obs_mode:Client_GetObserverLastMode(client)
 {
-    return Obs_mode:GetEntProp(client, Prop_Data, "m_iObserverLastMode");
+	return Obs_mode:GetEntProp(client, Prop_Data, "m_iObserverLastMode");
 }
-#endif
 
 /**
  * Sets the client's last oberserver mode
  * 
- * @param client        Client Index.
- * @param mode          Last Observer mode
+ * @param client		Client Index.
+ * @param mode			Last Observer mode
  * @noreturn
  */
-#if defined _INLINE
-    //#define Client_SetObserverLastMode(%1,%2) SetEntProp(%1, Prop_Data, "m_iObserverLastMode", _:%2)
-#else
 stock Client_SetObserverLastMode(client, Obs_Mode:mode)
 {
-    SetEntProp(client, Prop_Data, "m_iObserverLastMode", _:mode);
+	SetEntProp(client, Prop_Data, "m_iObserverLastMode", _:mode);
 }
-#endif
 
 /**
  * Gets the client's view offset.
  * This is the position relative to the client itself.
  * 
- * @param client        Client Index.
- * @param vec           Vector Buffer.
+ * @param client		Client Index.
+ * @param vec			Vector Buffer.
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_GetViewOffset(%1,%2) GetEntPropVector(%1, Prop_Data, "m_vecViewOffset", %2)
-#else
 stock Client_GetViewOffset(client, Float:vec[3])
 {
-    GetEntPropVector(client, Prop_Data, "m_vecViewOffset", vec);
+	GetEntPropVector(client, Prop_Data, "m_vecViewOffset", vec);
 }
-#endif
 
 /**
  * Sets the client's view offset.
  * This is the position relative to the client itself.
  * 
- * @param client        Client Index.
- * @param vec           Vector buffer.
+ * @param client		Client Index.
+ * @param vec			Vector buffer.
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_SetViewOffset(%1,%2) SetEntPropVector(%1, Prop_Data, "m_vecViewOffset", %2)
-#else
 stock Client_SetViewOffset(client, Float:vec[3])
 {
-    SetEntPropVector(client, Prop_Data, "m_vecViewOffset", vec);
+	SetEntPropVector(client, Prop_Data, "m_vecViewOffset", vec);
 }
-#endif
 
 /**
  * Gets the client's current observer target entity.
  * 
- * @param client        Client Index.
- * @return              Observed Entity Index.
+ * @param client		Client Index.
+ * @return				Observed Entity Index.
  */
-#if defined _INLINE
-    #define Client_GetObserverTarget(%1) GetEntPropEnt(%1, Prop_Send, "m_hObserverTarget")
-#else
 stock Client_GetObserverTarget(client)
 {
-    return GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
+	return GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 }
-#endif
 
 /**
  * Sets the client's current observer target entity.
  * 
- * @param client        Client Index.
- * @param entity        Observed Entity Index.
- * @param resetFOV      If to reset the client's field of view.
+ * @param client		Client Index.
+ * @param entity		Observed Entity Index.
+ * @param resetFOV		If to reset the client's field of view.
  * @noreturn
  */
 stock Client_SetObserverTarget(client, entity, bool:resetFOV=true)
 {
-    SetEntPropEnt(client, Prop_Send, "m_hObserverTarget", entity);
-
-    if (resetFOV)
-        Client_SetFOV(client, 0);
+	SetEntPropEnt(client, Prop_Send, "m_hObserverTarget", entity);
+	
+	if (resetFOV) {
+		Client_SetFOV(client, 0);
+	}
 }
 
 /**
  * Gets the client's Field Of View.
  * 
- * @param client        Client Index.
- * @return              Field Of View
+ * @param client		Client Index.
+ * @return				Field Of View
  */
-#if defined _INLINE
-    #define Client_GetFOV(%1) GetEntProp(%1, Prop_Send, "m_iFOV")
-#else
 stock Client_GetFOV(client)
 {
-    return GetEntProp(client, Prop_Send, "m_iFOV");
+	return GetEntProp(client, Prop_Send, "m_iFOV");
 }
-#endif
 
 /**
  * Sets the client's Field Of View.
  * 
- * @param client        Client Index.
- * @param value         Field Of View
+ * @param client		Client Index.
+ * @param value			Field Of View
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_SetFOV(%1,%2) SetEntProp(%1, Prop_Send, "m_iFOV", %2)
-#else
 stock Client_SetFOV(client, value)
 {
-    SetEntProp(client, Prop_Send, "m_iFOV", value);
+	SetEntProp(client, Prop_Send, "m_iFOV", value);
 }
-#endif
 
 /**
  * Checks if the client's View Model is drawn for the client.
  * 
- * @param client        Client Index.
- * @return              True if the viewmodel is drawn, false otherwise.
+ * @param client		Client Index.
+ * @return				True if the viewmodel is drawn, false otherwise.
  */
-#if defined _INLINE
-    #define Client_DrawViewModel(%1) bool:GetEntProp(%1, Prop_Send, "m_bDrawViewmodel")
-#else
 stock bool:Client_DrawViewModel(client)
 {
-    return bool:GetEntProp(client, Prop_Send, "m_bDrawViewmodel");
+	return bool:GetEntProp(client, Prop_Send, "m_bDrawViewmodel");
 }
-#endif
 
 /**
  * Sets if to draw the client's view model for the client.
  * 
- * @param client        Client Index.
- * @param drawViewModel Set to true if to draw, false otherwise.
+ * @param client		Client Index.
+ * @param drawViewModel	Set to true if to draw, false otherwise.
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_SetDrawViewModel(%1,%2) SetEntProp(%1, Prop_Send, "m_bDrawViewmodel", %2)
-#else
 stock Client_SetDrawViewModel(client, bool:drawViewModel)
 {
-    SetEntProp(client, Prop_Send, "m_bDrawViewmodel", drawViewModel);
+	SetEntProp(client, Prop_Send, "m_bDrawViewmodel", drawViewModel);
 }
-#endif
 
 /**
  * Puts the specified client into thirdperson or back to firstperson when false
  * This doesn't work correctly in all games, it works in CS:S and DOD:S and some other games.
  * Todo: Enhance this
  *
- * @param client        Client Index.
- * @param enable        If set to true, the client will be put into thirdperson mode,
- *                      if false the client will be put in firstperson mode.
+ * @param client 		Client Index.
+ * @param enable		If set to true, the client will be put into thirdperson mode,
+ * 						if false the client will be put in firstperson mode.
  * @noreturn
  */
 stock Client_SetThirdPersonMode(client, enable=true)
 {
-    if (enable)
-    {
-        Client_SetObserverTarget(client, 0);
-        Client_SetObserverMode(client, OBS_MODE_DEATHCAM, false);
-        Client_SetDrawViewModel(client, false);
-        Client_SetFOV(client, 120);
-    }
-    else
-    {
-        Client_SetObserverTarget(client, -1);
-        Client_SetObserverMode(client, OBS_MODE_NONE, false);
-        Client_SetDrawViewModel(client, true);
-        Client_SetFOV(client, 90);
-    }
+	if (enable) {
+		Client_SetObserverTarget(client, 0);
+		Client_SetObserverMode(client, OBS_MODE_DEATHCAM, false);
+		Client_SetDrawViewModel(client, false);
+		Client_SetFOV(client, 120);
+	}
+	else {
+		Client_SetObserverTarget(client, -1);
+		Client_SetObserverMode(client, OBS_MODE_NONE, false);
+		Client_SetDrawViewModel(client, true);
+		Client_SetFOV(client, 90);
+	}
 }
 
 /**
  * Checks if the client is in thirdperson mode
  *
- * @param client		client index
+ * @param client	Cient Undex
  * @return			true if the client is currently in thirdperson mode, false otherwise
  */
-#if defined _INLINE
-    #define Client_IsInThirdPersonMode(%1) GetEntProp(%1, Prop_Data, "m_iObserverMode")
-#else
 stock Client_IsInThirdPersonMode(client)
 {
 	return GetEntProp(client, Prop_Data, "m_iObserverMode");
 }
-#endif
 
-#define FFADE_IN            0x0001      // Just here so we don't pass 0 into the function
-#define FFADE_OUT           0x0002      // Fade out (not in)
-#define FFADE_MODULATE      0x0004      // Modulate (don't blend)
-#define FFADE_STAYOUT       0x0008      // ignores the duration, stays faded out until new ScreenFade message received
-#define FFADE_PURGE         0x0010      // Purges all other fades, replacing them with this one
+#define FFADE_IN			0x0001		// Just here so we don't pass 0 into the function
+#define FFADE_OUT			0x0002		// Fade out (not in)
+#define FFADE_MODULATE		0x0004		// Modulate (don't blend)
+#define FFADE_STAYOUT		0x0008		// ignores the duration, stays faded out until new ScreenFade message received
+#define FFADE_PURGE			0x0010		// Purges all other fades, replacing them with this one
 
 /**
  * Fades a client's screen to a specified color
  * Your adviced to read the FFADE_ Comments
  *
- * @param client        Player for which to fade the screen
- * @param duration      duration in seconds the effect stays
- * @param mode          fade mode, see FFADE_ defines
- * @param holdtime      holdtime in seconds
- * @param r             red amount
- * @param g             green amount
- * @param b             blue amount
- * @param a             transparency
- * @return              True on success, false otherwise
+ * @param client		Player for which to fade the screen
+ * @param duration		duration in seconds the effect stays
+ * @param mode			fade mode, see FFADE_ defines
+ * @param holdtime		holdtime in seconds
+ * @param r				red amount
+ * @param g				green amount
+ * @param b				blue amount
+ * @param a				transparency
+ * @return				True on success, false otherwise
  */
 stock bool:Client_ScreenFade(client, duration, mode, holdtime=-1, r=0, g=0, b=0, a=255, bool:reliable=true)
 {
-    new Handle:userMessage = StartMessageOne("Fade", client, (reliable?USERMSG_RELIABLE:0));
+	new Handle:userMessage = StartMessageOne("Fade", client, (reliable?USERMSG_RELIABLE:0));
+	
+	if (userMessage == INVALID_HANDLE) {
+		return false;
+	}
 
-    if (userMessage == INVALID_HANDLE)
-        return false;
-    else
-    {
-        BfWriteShort(userMessage,   duration);  // Fade duration
-        BfWriteShort(userMessage,   holdtime);  // Fade hold time
-        BfWriteShort(userMessage,   mode);      // What to do
-        BfWriteByte(userMessage,    r);         // Color R
-        BfWriteByte(userMessage,    g);         // Color G
-        BfWriteByte(userMessage,    b);         // Color B
-        BfWriteByte(userMessage,    a);         // Color Alpha
-        EndMessage();
-        return true;
-    }
+	BfWriteShort(userMessage,	duration);	// Fade duration
+	BfWriteShort(userMessage,	holdtime);	// Fade hold time
+	BfWriteShort(userMessage,	mode);		// What to do
+	BfWriteByte(userMessage,	r);			// Color R
+	BfWriteByte(userMessage,	g);			// Color G
+	BfWriteByte(userMessage,	b);			// Color B
+	BfWriteByte(userMessage,	a);			// Color Alpha
+	EndMessage();
+	
+	return true;
 }
 
 /**
  * This function retrieves an array that holds all clones of a client by IP check.
  * Size of CloneList has to be MaxClients at least, or MAX_PLAYERS
  *
- * @param client        Client index.
- * @param closelist	    An array that holds all clones of a client.
- * @return              Returns how many clones a client has.
+ * @param client		Client index.
+ * @param closelist		An array that holds all clones of a client.
+ * @return				Returns how many clones a client has.
  */
 stock Client_GetClones(client, cloneList[])
 {
-    new x=0;
-    decl String:ip_client[16], String:ip_player[16];
+	new x=0;
+	decl String:ip_client[16], String:ip_player[16];
+	
+	GetClientIP(client, ip_client, sizeof(client));
+	
+	for (new player=1; player <= MaxClients; player++) {
+		
+		if (IsClientInGame(player)) {
+			GetClientIP(player, ip_player, sizeof(ip_player));
+			
+			if (StrEqual(ip_client, ip_player, false)) {
+				cloneList[x++] = player;
+			}
+		}
+	}
 
-    GetClientIP(client, ip_client, sizeof(client));
-
-    for (new player=1; player <= MaxClients; player++)
-    {
-        if (IsClientInGame(player))
-        {
-            GetClientIP(player, ip_player, sizeof(ip_player));
-
-            if (StrEqual(ip_client, ip_player, false))
-                cloneList[x++] = player;
-        }
-    }
-
-    return x;
+	return x;
 }
 
 /*
  * This function returns true if the client is at a ladder..
  *
- * @param client        Client index.
- * @return              Returns true if the client is on a ladder other wise false.
+ * @param client		Client index.
+ * @return				Returns true if the client is on a ladder other wise false.
  */
-#if defined _INLINE
-    #define Client_IsOnLadder(%1) (GetEntityMoveType(%1) == MOVETYPE_LADDER)
-#else
 stock bool:Client_IsOnLadder(client)
-{
-    return (GetEntityMoveType(client) == MOVETYPE_LADDER);
+{	
+	new MoveType:movetype = GetEntityMoveType(client);
+	
+	if (movetype == MOVETYPE_LADDER) {
+		return true;
+	}
+	else{	
+		return false;
+	}
 }
-#endif
 
 enum Water_level
 {
-    WATER_LEVEL_NOT_IN_WATER = 0,
-    WATER_LEVEL_FEET_IN_WATER,
-    WATER_LEVEL_WAIST_IN_WATER,
-    WATER_LEVEL_HEAD_IN_WATER
+	WATER_LEVEL_NOT_IN_WATER = 0,
+	WATER_LEVEL_FEET_IN_WATER,
+	WATER_LEVEL_WAIST_IN_WATER,
+	WATER_LEVEL_HEAD_IN_WATER
 };
 
 /*
  * This function returns how deep a client is in water.
  *
- * @param client        Client index.
- * @return              Returns 0 if not in water. 1 if feets are in water. 2 if waist is in water. 3 if head is in water.
+ * @param client		Client index.
+ * @return				Returns 0 if not in water. 1 if feets are in water. 2 if waist is in water. 3 if head is in water.
  */
-#if defined _INLINE
-    #define Client_GetWaterLevel(%1) (Water_Level:GetEntProp(%1, Prop_Send, "m_nWaterLevel"))
-#else
 stock Water_Level:Client_GetWaterLevel(client)
-{
-    return Water_Level:GetEntProp(client, Prop_Send, "m_nWaterLevel");
+{	
+	return Water_Level:GetEntProp(client, Prop_Send, "m_nWaterLevel");
 }
-#endif
 
 /*
  * Returns how much suit sprint power a client has left in percent.
  *
- * @param client        Client index.
- * @return              returns the actual power left in percent.
+ * @param client		Client index.
+ * @return				returns the actual power left in percent.
  */
-#if defined _INLINE
-    #define Client_GetSuitSprintPower(%1) GetEntPropFloat(%1, Prop_Send, "m_flSuitPower")
-#else
 stock Float:Client_GetSuitSprintPower(client)
 {
-    return GetEntPropFloat(client, Prop_Send, "m_flSuitPower");
+	return GetEntPropFloat(client, Prop_Send, "m_flSuitPower");
 }
-#endif
 
 /*
  * Sets a client suit sprint power in percent.
  * 
- * @param client        Client index.
- * @param power         power (0.0 to 100.0)
+ * @param client		Client index.
+ * @param power			power (0.0 to 100.0)
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_SetSuitSprintPower(%1,%2) SetEntPropFloat(%1, Prop_Send, "m_flSuitPower", %2)
-#else
 stock Client_SetSuitSprintPower(client, Float:power)
-{
-    SetEntPropFloat(client, Prop_Send, "m_flSuitPower", power);
+{	
+	SetEntPropFloat(client, Prop_Send, "m_flSuitPower", power);
 }
-#endif
 
 /*
  * Returns the client count put in the server. 
  *
- * @param inGameOnly    If false connecting players are also counted.
- * @param countBots     If true bots will be counted too.
- * @return              Client count in the server.
+ * @param inGameOnly	If false connecting players are also counted.
+ * @param countBots		If true bots will be counted too.
+ * @return				Client count in the server.
  */
 stock Client_GetCount(bool:countInGameOnly=true, bool:countFakeClients=false)
 {
-    new numClients = 0;
+	new numClients = 0;
+	
+	for (new client=1; client <= MaxClients; client++) {
+		
+		if (!IsClientConnected(client)) {
+			continue;
+		}
+		
+		if (countInGameOnly && !IsClientInGame(client)) {
+			continue;
+		}
+		
+		if (!countFakeClients && IsFakeClient(client)) {
+			continue;
+		}
+		
+		numClients++;
+	}
 
-    for (new client=1; client <= MaxClients; client++)
-    {
-        if (!IsClientConnected(client))
-            continue;
-
-        else if (countInGameOnly && !IsClientInGame(client))
-            continue;
-
-        else if (!countFakeClients && IsFakeClient(client))
-            continue;
-
-        else
-            numClients++;
-    }
-
-    return numClients;
+	return numClients;
 }
 
 /*
@@ -650,99 +585,84 @@ stock Client_GetCount(bool:countInGameOnly=true, bool:countFakeClients=false)
  * The Scoreboard uses the goldSource corrected Ping, the net_graph doesn't
  * For Fake Clients 0 is returned.
  *
- * @param inGameOnly        Wether players not ingame yet are also counted
- * @param countBots         If true bots will be counted too.
- * @return                  Client's ping or 0 for fake clients
+ * @param inGameOnly	Wether players not ingame yet are also counted
+ * @param countBots		If true bots will be counted too.
+ * @return				Client's ping or 0 for fake clients
  */
 stock Client_GetFakePing(client, bool:goldSource=true)
 {
-    if (IsFakeClient(client))
-        return 0;
+	if (IsFakeClient(client)) {
+		return 0;
+	}
 
-    new ping;
-    new Float:latency = GetClientLatency(client, NetFlow_Outgoing); // in seconds
+	new ping;
+	new Float:latency = GetClientLatency(client, NetFlow_Outgoing); // in seconds
+		
+	// that should be the correct latency, we assume that cmdrate is higher 
+	// then updaterate, what is the case for default settings
+	decl String:cl_cmdrate[4];
+	GetClientInfo(client, "cl_cmdrate", cl_cmdrate, sizeof(cl_cmdrate));
 
-    // that should be the correct latency, we assume that cmdrate is higher 
-    // then updaterate, what is the case for default settings
-    decl String:cl_cmdrate[4];
-    GetClientInfo(client, "cl_cmdrate", cl_cmdrate, sizeof(cl_cmdrate));
+	new Float:tickRate = GetTickInterval();
+	latency -= (0.5 / StringToInt(cl_cmdrate)) + TICKS_TO_TIME(1.0); // correct latency
 
-    new Float:tickRate = GetTickInterval();
-    latency -= (0.5 / StringToInt(cl_cmdrate)) + TICKS_TO_TIME(1.0); // correct latency
+	if (goldSource) {
+		// in GoldSrc we had a different, not fixed tickrate. so we have to adjust
+		// Source pings by half a tick to match the old GoldSrc pings.
+		latency -= tickRate * 0.5;
+	}
 
-    if (goldSource)
-    {
-        // in GoldSrc we had a different, not fixed tickrate. so we have to adjust
-        // Source pings by half a tick to match the old GoldSrc pings.
-        latency -= tickRate * 0.5;
-    }
-
-    ping = RoundFloat(latency * 1000.0); // as msecs
-    ping = Math_Clamp(ping, 5, 1000); // set bounds, dont show pings under 5 msecs
-
-    return ping;
+	ping = RoundFloat(latency * 1000.0); // as msecs
+	ping = Math_Clamp(ping, 5, 1000); // set bounds, dont show pings under 5 msecs
+	
+	return ping;
 }
 
 /**
  * Searches for the closest client in relation to the given client.
  *
- * @param client            Client index
- * @return                  The closest client or -1
+ * @param client		Client index
+ * @return				The closest client or -1
  */
-#if defined _INLINE
-    #define Client_GetClosestToClient(%1) Edict_GetClosestToEdict(%1, true)
-#else
 stock Client_GetClosestToClient(client)
 {
-    return Edict_GetClosestToEdict(client, true);
+	return Edict_GetClosestToEdict(client, true);
 }
-#endif
 
 /**
  * Gets the name of the last place (if set by the game)
  *
- * @param entity            Entity index.
- * @param buffer            String buffer
- * @param size              Size of the String buffer
+ * @param entity			Entity index.
+ * @param buffer			String buffer
+ * @param size				Size of the String buffer
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_GetLastPlaceName(%1,%2,%3) GetEntPropString(%1, Prop_Send, "m_szLastPlaceName", %2, %3)
-#else
 stock Client_GetLastPlaceName(client, String:buffer[], size)
 {
-    GetEntPropString(client, Prop_Send, "m_szLastPlaceName", buffer, size);
+	GetEntPropString(client, Prop_Send, "m_szLastPlaceName", buffer, size);
 }
-#endif
 
 /**
  * Returns the client's Score. 
  *
- * @param client            Client's index.
- * @return                  Score.
+ * @param client			Client's index.
+ * @return					Score.
  */
-#if defined _INLINE
-    #define Client_GetScore(%1) GetClientFrags(%1)
-#else
 stock Client_GetScore(client)
 {
-    return GetClientFrags(client);
+	return GetClientFrags(client);
 }
-#endif
 
 /**
  * Sets the client's Score.
  *
- * @param client            Client's index.
- * @param value             Score.
+ * @param client			Client's index.
+ * @param value				Score.
  * @noreturn
  */
-#if defined _INLINE
-    #define Client_SetScore(%1,%2) SetEntProp(%1, Prop_Data, "m_iFrags", %2)
-#else
 stock Client_SetScore(client, value)
 {
-    SetEntProp(client, Prop_Data, "m_iFrags", value);
+	SetEntProp(client, Prop_Data, "m_iFrags", value);
 }
 
 /**
@@ -753,7 +673,7 @@ stock Client_SetScore(client, value)
  */
 stock Client_GetDeaths(client)
 {
-    return GetEntProp(client, Prop_Data, "m_iDeaths");
+	return GetEntProp(client, Prop_Data, "m_iDeaths");
 }
 
 /**
@@ -765,7 +685,7 @@ stock Client_GetDeaths(client)
  */
 stock Client_SetDeaths(client, value)
 {
-    SetEntProp(client, Prop_Data, "m_iDeaths", value);
+	SetEntProp(client, Prop_Data, "m_iDeaths", value);
 }
 
 /**
@@ -776,7 +696,7 @@ stock Client_SetDeaths(client, value)
  */
 stock Client_GetArmor(client)
 {
-    return GetEntProp(client, Prop_Data, "m_ArmorValue");
+	return GetEntProp(client, Prop_Data, "m_ArmorValue");
 }
 
 /**
@@ -788,7 +708,7 @@ stock Client_GetArmor(client)
  */
 stock Client_SetArmor(client, value)
 {
-    SetEntProp(client, Prop_Data, "m_ArmorValue", value);
+	SetEntProp(client, Prop_Data, "m_ArmorValue", value);
 }
 
 /**
@@ -799,7 +719,7 @@ stock Client_SetArmor(client, value)
  */
 stock Float:Client_GetSuitPower(client)
 {
-    return Float:GetEntPropFloat(client, Prop_Data, "m_flSuitPower");
+	return Float:GetEntPropFloat(client, Prop_Data, "m_flSuitPower");
 }
 
 /**
@@ -811,7 +731,7 @@ stock Float:Client_GetSuitPower(client)
  */
 stock Client_SetSuitPower(client, Float:value)
 {
-    SetEntPropFloat(client, Prop_Data, "m_flSuitPower", value);
+	SetEntPropFloat(client, Prop_Data, "m_flSuitPower", value);
 }
 
 // suit usage bits
@@ -830,7 +750,7 @@ stock Client_SetSuitPower(client, Float:value)
  */
 stock Client_GetActiveDevices(client)
 {
-    return GetEntProp(client, Prop_Send, "m_bitsActiveDevices");
+	return GetEntProp(client, Prop_Send, "m_bitsActiveDevices");
 }
 
 /**
@@ -842,7 +762,7 @@ stock Client_GetActiveDevices(client)
  */
 stock Float:Client_GetNextDecalTime(client)
 {
-    return GetEntPropFloat(client, Prop_Data, "m_flNextDecalTime");
+	return GetEntPropFloat(client, Prop_Data, "m_flNextDecalTime");
 }
 
 /**
@@ -853,7 +773,7 @@ stock Float:Client_GetNextDecalTime(client)
  */
 stock bool:Client_CanSprayDecal(client)
 {
-    return Client_GetNextDecalTime(client) <= GetGameTime();
+	return Client_GetNextDecalTime(client) <= GetGameTime();
 }
 
 /**
@@ -865,9 +785,9 @@ stock bool:Client_CanSprayDecal(client)
  */
 stock Client_GetVehicle(client)
 {
-    new m_hVehicle = GetEntPropEnt(client, Prop_Send, "m_hVehicle");
+	new m_hVehicle = GetEntPropEnt(client, Prop_Send, "m_hVehicle");
 
-    return m_hVehicle;
+	return m_hVehicle;
 }
 
 /**
@@ -878,7 +798,7 @@ stock Client_GetVehicle(client)
  */
 stock bool:Client_IsInVehicle(client)
 {
-    return !(Client_GetVehicle(client) == -1);
+	return !(Client_GetVehicle(client) == -1);
 }
 
 /**
@@ -889,7 +809,7 @@ stock bool:Client_IsInVehicle(client)
  */
 stock Client_RemoveAllDecals(client)
 {
-    ClientCommand(client, "r_cleardecals");
+	ClientCommand(client, "r_cleardecals");
 }
 
 /**
@@ -900,13 +820,13 @@ stock Client_RemoveAllDecals(client)
  */
 stock bool:Client_ExitVehicle(client)
 {
-    new vehicle = Client_GetVehicle(client);
+	new vehicle = Client_GetVehicle(client);
 
-    if (vehicle == -1) {
-        return false;
-    }
-
-    return AcceptEntityInput(vehicle, "ExitVehicle");
+	if (vehicle == -1) {
+		return false;
+	}
+	
+	return AcceptEntityInput(vehicle, "ExitVehicle");
 }
 
 /**
@@ -923,19 +843,19 @@ stock bool:Client_ExitVehicle(client)
  */
 stock bool:Client_RawAudio(client, const emitter, const String:soundfile[], Float:length = 0.0, pitch = 100)
 {
-    new Handle:message = StartMessageOne("RawAudio", client);
+	new Handle:message = StartMessageOne("RawAudio", client);
 
-    if (message == INVALID_HANDLE) {
-        return false;
-    }
+	if (message == INVALID_HANDLE) {
+		return false;
+	}
 
-    BfWriteByte(message,	pitch);
-    BfWriteByte(message,	emitter);
-    BfWriteFloat(message,	length);
-    BfWriteString(message,	soundfile);
-    EndMessage();
+	BfWriteByte(message,	pitch);
+	BfWriteByte(message,	emitter);
+	BfWriteFloat(message,	length);
+	BfWriteString(message,	soundfile);
+	EndMessage();
 
-    return true;
+	return true;
 }
 
 /**
@@ -951,19 +871,19 @@ stock bool:Client_RawAudio(client, const emitter, const String:soundfile[], Floa
  */
 stock bool:Client_RawAudioToAll(const emitter, const String:soundfile[], Float:length = 0.0, pitch = 100)
 {
-    new Handle:message = StartMessageAll("RawAudio");
+	new Handle:message = StartMessageAll("RawAudio");
 
-    if (message == INVALID_HANDLE) {
-        return false;
-    }
+	if (message == INVALID_HANDLE) {
+		return false;
+	}
 
-    BfWriteByte(message,	pitch);
-    BfWriteByte(message,	emitter);
-    BfWriteFloat(message,	length);
-    BfWriteString(message,	soundfile);
-    EndMessage();
+	BfWriteByte(message,	pitch);
+	BfWriteByte(message,	emitter);
+	BfWriteFloat(message,	length);
+	BfWriteString(message,	soundfile);
+	EndMessage();
 
-    return true;
+	return true;
 }
 
 /**
@@ -976,7 +896,7 @@ stock bool:Client_RawAudioToAll(const emitter, const String:soundfile[], Float:l
  */
 stock Client_Impulse(client, value)
 {
-    SetEntProp(client, Prop_Data, "m_nImpulse", value);
+	SetEntProp(client, Prop_Data, "m_nImpulse", value);
 }
 
 /**
@@ -988,13 +908,13 @@ stock Client_Impulse(client, value)
  */
 stock Client_GetWeaponsOffset(client)
 {
-    static offset = -1;
+	static offset = -1;
 
-    if (offset == -1) {
-        offset = FindDataMapOffs(client, "m_hMyWeapons");
-    }
-
-    return offset;
+	if (offset == -1) {
+		offset = FindDataMapOffs(client, "m_hMyWeapons");
+	}
+	
+	return offset;
 }
 
 /**
@@ -1005,13 +925,13 @@ stock Client_GetWeaponsOffset(client)
  */
 stock Client_GetActiveWeapon(client)
 {
-    new weapon =  GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
-
-    if (!Entity_IsValid(weapon)) {
-        return INVALID_ENT_REFERENCE;
-    }
-
-    return weapon;
+	new weapon =  GetEntPropEnt(client, Prop_Data, "m_hActiveWeapon");
+	
+	if (!Entity_IsValid(weapon)) {
+		return INVALID_ENT_REFERENCE;
+	}
+	
+	return weapon;
 }
 
 /**
@@ -1024,16 +944,16 @@ stock Client_GetActiveWeapon(client)
  */
 stock bool:Client_GetActiveWeaponName(client, String:buffer[], size)
 {
-    new weapon = Client_GetActiveWeapon(client);
-
-    if (weapon == INVALID_ENT_REFERENCE) {
-        buffer[0] = '\0';
-        return false;
-    }
-
-    Entity_GetClassName(weapon, buffer, size);
-
-    return true;
+	new weapon = Client_GetActiveWeapon(client);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		buffer[0] = '\0';
+		return false;
+	}
+	
+	Entity_GetClassName(weapon, buffer, size);
+	
+	return true;
 }
 
 /**
@@ -1046,8 +966,8 @@ stock bool:Client_GetActiveWeaponName(client, String:buffer[], size)
  */
 stock Client_SetActiveWeapon(client, weapon)
 {
-    SetEntPropEnt(client, Prop_Data, "m_hActiveWeapon", weapon);
-    ChangeEdictState(client, FindDataMapOffs(client, "m_hActiveWeapon"));
+	SetEntPropEnt(client, Prop_Data, "m_hActiveWeapon", weapon);
+	ChangeEdictState(client, FindDataMapOffs(client, "m_hActiveWeapon"));
 }
 
 /**
@@ -1060,15 +980,15 @@ stock Client_SetActiveWeapon(client, weapon)
  */
 stock bool:Client_ChangeWeapon(client, const String:className[])
 {
-    new weapon = Client_GetWeapon(client, className);
+	new weapon = Client_GetWeapon(client, className);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return false;
+	}
 
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return false;
-    }
-
-    Client_SetActiveWeapon(client,weapon);
-
-    return true;
+	Client_SetActiveWeapon(client,weapon);
+	
+	return true;
 }
 
 /**
@@ -1082,23 +1002,23 @@ stock bool:Client_ChangeWeapon(client, const String:className[])
  */
 stock Client_ChangeToLastWeapon(client)
 {
-    new weapon = Client_GetLastActiveWeapon(client);
-
-    if (weapon == INVALID_ENT_REFERENCE) {
-        weapon = Client_GetDefaultWeapon(client);
-
-        if (weapon == INVALID_ENT_REFERENCE) {
-            weapon = Client_GetFirstWeapon(client);
-
-            if (weapon == INVALID_ENT_REFERENCE) {
-                return INVALID_ENT_REFERENCE;
-            }
-        }
-    }
-
-    Client_SetActiveWeapon(client, weapon);
-
-    return weapon;
+	new weapon = Client_GetLastActiveWeapon(client);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		weapon = Client_GetDefaultWeapon(client);
+		
+		if (weapon == INVALID_ENT_REFERENCE) {
+			weapon = Client_GetFirstWeapon(client);
+			
+			if (weapon == INVALID_ENT_REFERENCE) {
+				return INVALID_ENT_REFERENCE;
+			}
+		}
+	}
+	
+	Client_SetActiveWeapon(client, weapon);
+	
+	return weapon;
 }
 
 /**
@@ -1109,13 +1029,13 @@ stock Client_ChangeToLastWeapon(client)
  */
 stock Client_GetLastActiveWeapon(client)
 {
-    new weapon = GetEntPropEnt(client, Prop_Data, "m_hLastWeapon");
-
-    if (!Entity_IsValid(weapon)) {
-        return INVALID_ENT_REFERENCE;
-    }
-
-    return weapon;
+	new weapon = GetEntPropEnt(client, Prop_Data, "m_hLastWeapon");
+	
+	if (!Entity_IsValid(weapon)) {
+		return INVALID_ENT_REFERENCE;
+	}
+	
+	return weapon;
 }
 
 /**
@@ -1128,16 +1048,16 @@ stock Client_GetLastActiveWeapon(client)
  */
 stock bool:Client_GetLastActiveWeaponName(client, String:buffer[], size)
 {
-    new weapon = Client_GetLastActiveWeapon(client);
-
-    if (weapon == INVALID_ENT_REFERENCE) {
-        buffer[0] = '\0';
-        return false;
-    }
-
-    Entity_GetClassName(weapon, buffer, size);
-
-    return true;
+	new weapon = Client_GetLastActiveWeapon(client);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		buffer[0] = '\0';
+		return false;
+	}
+	
+	Entity_GetClassName(weapon, buffer, size);
+	
+	return true;
 }
 
 /**
@@ -1149,8 +1069,8 @@ stock bool:Client_GetLastActiveWeaponName(client, String:buffer[], size)
  */
 stock Client_SetLastActiveWeapon(client, weapon)
 {
-    SetEntPropEnt(client, Prop_Data, "m_hLastWeapon", weapon);
-    ChangeEdictState(client, FindDataMapOffs(client, "m_hLastWeapon"));
+	SetEntPropEnt(client, Prop_Data, "m_hLastWeapon", weapon);
+	ChangeEdictState(client, FindDataMapOffs(client, "m_hLastWeapon"));
 }
 
 /**
@@ -1163,11 +1083,11 @@ stock Client_SetLastActiveWeapon(client, weapon)
  */
 stock Client_EquipWeapon(client, weapon, bool:switchTo=false)
 {
-    EquipPlayerWeapon(client, weapon);
-
-    if (switchTo) {
-        Client_SetActiveWeapon(client, weapon);
-    }
+	EquipPlayerWeapon(client, weapon);
+	
+	if (switchTo) {
+		Client_SetActiveWeapon(client, weapon);
+	}
 }
 
 /**
@@ -1180,15 +1100,15 @@ stock Client_EquipWeapon(client, weapon, bool:switchTo=false)
  */
 stock bool:Client_DetachWeapon(client, weapon)
 {
-    if (!RemovePlayerItem(client, weapon)) {
-        return false;
-    }
-
-    if (Client_GetActiveWeapon(client) == INVALID_ENT_REFERENCE) {
-        Client_ChangeToLastWeapon(client);
-    }
-
-    return true;
+	if (!RemovePlayerItem(client, weapon)) {
+		return false;
+	}
+	
+	if (Client_GetActiveWeapon(client) == INVALID_ENT_REFERENCE) {
+		Client_ChangeToLastWeapon(client);
+	}
+	
+	return true;
 }
 
 /**
@@ -1201,19 +1121,19 @@ stock bool:Client_DetachWeapon(client, weapon)
  */
 stock Client_GiveWeapon(client, const String:className[], bool:switchTo=true)
 {
-    new weapon = Client_GetWeapon(client, className);
+	new weapon = Client_GetWeapon(client, className);
 
-    if (weapon == INVALID_ENT_REFERENCE) {
-        weapon = Weapon_CreateForOwner(client, className);
+	if (weapon == INVALID_ENT_REFERENCE) {
+		weapon = Weapon_CreateForOwner(client, className);
+		
+		if (weapon == INVALID_ENT_REFERENCE) {
+			return INVALID_ENT_REFERENCE;
+		}
+	}
 
-        if (weapon == INVALID_ENT_REFERENCE) {
-            return INVALID_ENT_REFERENCE;
-        }
-    }
+	Client_EquipWeapon(client, weapon, switchTo);
 
-    Client_EquipWeapon(client, weapon, switchTo);
-
-    return weapon;
+	return weapon;
 }
 
 /**
@@ -1230,16 +1150,16 @@ stock Client_GiveWeapon(client, const String:className[], bool:switchTo=true)
  */
 stock Client_GiveWeaponAndAmmo(client, const String:className[], bool:switchTo=true, primaryAmmo=-1, secondaryAmmo=-1, primaryClip=-1, secondaryClip=-1)
 {
-    new weapon = Client_GiveWeapon(client, className, switchTo);
+	new weapon = Client_GiveWeapon(client, className, switchTo);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return INVALID_ENT_REFERENCE;
+	}
 
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return INVALID_ENT_REFERENCE;
-    }
+	Weapon_SetClips(weapon, primaryClip, secondaryClip);
+	Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo, secondaryAmmo);
 
-    Weapon_SetClips(weapon, primaryClip, secondaryClip);
-    Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo, secondaryAmmo);
-
-    return weapon;
+	return weapon;
 }
 
 /**
@@ -1253,39 +1173,39 @@ stock Client_GiveWeaponAndAmmo(client, const String:className[], bool:switchTo=t
  */
 stock bool:Client_RemoveWeapon(client, const String:className[], bool:firstOnly=true, bool:clearAmmo=false)
 {
-    new offset = Client_GetWeaponsOffset(client) - 4;
+	new offset = Client_GetWeaponsOffset(client) - 4;
 
-    for (new i=0; i < MAX_WEAPONS; i++) {
-        offset += 4;
+	for (new i=0; i < MAX_WEAPONS; i++) {
+		offset += 4;
 
-        new weapon = GetEntDataEnt2(client, offset);
+		new weapon = GetEntDataEnt2(client, offset);
+		
+		if (!Weapon_IsValid(weapon)) {
+			continue;
+		}
+		
+		if (!Entity_ClassNameMatches(weapon, className)) {
+			continue;
+		}
+		
+		if (clearAmmo) {
+			Client_SetWeaponPlayerAmmoEx(client, weapon, 0, 0);
+		}
+		
+		if (Client_GetActiveWeapon(client) == weapon) {
+			Client_ChangeToLastWeapon(client);
+		}
+		
+		if (RemovePlayerItem(client, weapon)) {
+			Entity_Kill(weapon);
+		}
+		
+		if (firstOnly) {
+			return true;
+		}
+	}
 
-        if (!Weapon_IsValid(weapon)) {
-            continue;
-        }
-
-        if (!Entity_ClassNameMatches(weapon, className)) {
-            continue;
-        }
-
-        if (clearAmmo) {
-            Client_SetWeaponPlayerAmmoEx(client, weapon, 0, 0);
-        }
-
-        if (Client_GetActiveWeapon(client) == weapon) {
-            Client_ChangeToLastWeapon(client);
-        }
-
-        if (RemovePlayerItem(client, weapon)) {
-            Entity_Kill(weapon);
-        }
-
-        if (firstOnly) {
-            return true;
-        }
-    }
-
-    return false;
+	return false;
 }
 
 /**
@@ -1300,35 +1220,35 @@ stock bool:Client_RemoveWeapon(client, const String:className[], bool:firstOnly=
  */
 stock Client_RemoveAllWeapons(client, const String:exclude[]="", bool:clearAmmo=false)
 {
-    new offset = Client_GetWeaponsOffset(client) - 4;
+	new offset = Client_GetWeaponsOffset(client) - 4;
+	
+	new numWeaponsRemoved = 0;
+	for (new i=0; i < MAX_WEAPONS; i++) {
+		offset += 4;
 
-    new numWeaponsRemoved = 0;
-    for (new i=0; i < MAX_WEAPONS; i++) {
-        offset += 4;
+		new weapon = GetEntDataEnt2(client, offset);
+		
+		if (!Weapon_IsValid(weapon)) {
+			continue;
+		}
+		
+		if (exclude[0] != '\0' && Entity_ClassNameMatches(weapon, exclude)) {
+			Client_SetActiveWeapon(client, weapon);
+			continue;
+		}
+		
+		if (clearAmmo) {
+			Client_SetWeaponPlayerAmmoEx(client, weapon, 0, 0);
+		}
 
-        new weapon = GetEntDataEnt2(client, offset);
+		if (RemovePlayerItem(client, weapon)) {
+			Entity_Kill(weapon);
+		}
 
-        if (!Weapon_IsValid(weapon)) {
-            continue;
-        }
-
-        if (exclude[0] != '\0' && Entity_ClassNameMatches(weapon, exclude)) {
-            Client_SetActiveWeapon(client, weapon);
-            continue;
-        }
-
-        if (clearAmmo) {
-            Client_SetWeaponPlayerAmmoEx(client, weapon, 0, 0);
-        }
-
-        if (RemovePlayerItem(client, weapon)) {
-            Entity_Kill(weapon);
-        }
-
-        numWeaponsRemoved++;
-    }
-
-    return numWeaponsRemoved;
+		numWeaponsRemoved++;
+	}
+	
+	return numWeaponsRemoved;
 }
 
 /**
@@ -1340,9 +1260,9 @@ stock Client_RemoveAllWeapons(client, const String:exclude[]="", bool:clearAmmo=
  */
 stock Client_HasWeapon(client, const String:className[])
 {
-    new weapon = Client_GetWeapon(client, className);
-
-    return (weapon != INVALID_ENT_REFERENCE);
+	new weapon = Client_GetWeapon(client, className);
+	
+	return (weapon != INVALID_ENT_REFERENCE);
 }
 
 /**
@@ -1354,23 +1274,23 @@ stock Client_HasWeapon(client, const String:className[])
  */
 stock Client_GetWeapon(client, const String:className[])
 {
-    new offset = Client_GetWeaponsOffset(client) - 4;
+	new offset = Client_GetWeaponsOffset(client) - 4;
 
-    for (new i=0; i < MAX_WEAPONS; i++) {
-        offset += 4;
+	for (new i=0; i < MAX_WEAPONS; i++) {
+		offset += 4;
 
-        new weapon = GetEntDataEnt2(client, offset);
-
-        if (!Weapon_IsValid(weapon)) {
-            continue;
-        }
-
-        if (Entity_ClassNameMatches(weapon, className)) {
-            return weapon;
-        }
-    }
-
-    return INVALID_ENT_REFERENCE;
+		new weapon = GetEntDataEnt2(client, offset);
+		
+		if (!Weapon_IsValid(weapon)) {
+			continue;
+		}
+		
+		if (Entity_ClassNameMatches(weapon, className)) {
+			return weapon;
+		}
+	}
+	
+	return INVALID_ENT_REFERENCE;
 }
 
 /**
@@ -1384,7 +1304,7 @@ stock Client_GetWeapon(client, const String:className[])
  */
 stock Client_GetWeaponBySlot(client, slot)
 {
-    return GetPlayerWeaponSlot(client, slot);
+	return GetPlayerWeaponSlot(client, slot);
 }
 
 /**
@@ -1395,12 +1315,12 @@ stock Client_GetWeaponBySlot(client, slot)
  */
 stock Client_GetDefaultWeapon(client)
 {
-    decl String:weaponName[MAX_WEAPON_STRING];
-    if (Client_GetDefaultWeaponName(client, weaponName, sizeof(weaponName))) {
-        return INVALID_ENT_REFERENCE;
-    }
-
-    return Client_GetWeapon(client, weaponName);
+	decl String:weaponName[MAX_WEAPON_STRING];
+	if (Client_GetDefaultWeaponName(client, weaponName, sizeof(weaponName))) {
+		return INVALID_ENT_REFERENCE;
+	}
+	
+	return Client_GetWeapon(client, weaponName);
 }
 
 /**
@@ -1415,12 +1335,12 @@ stock Client_GetDefaultWeapon(client)
  */
 stock bool:Client_GetDefaultWeaponName(client, String:buffer[], size)
 {
-    if (!GetClientInfo(client, "cl_defaultweapon", buffer, size)) {
-        buffer[0] = '\0';
-        return false;
-    }
-
-    return true;
+	if (!GetClientInfo(client, "cl_defaultweapon", buffer, size)) {
+		buffer[0] = '\0';
+		return false;
+	}
+	
+	return true;
 }
 
 /**
@@ -1432,21 +1352,21 @@ stock bool:Client_GetDefaultWeaponName(client, String:buffer[], size)
  */
 stock Client_GetFirstWeapon(client)
 {
-    new offset = Client_GetWeaponsOffset(client) - 4;
+	new offset = Client_GetWeaponsOffset(client) - 4;
 
-    for (new i=0; i < MAX_WEAPONS; i++) {
-        offset += 4;
+	for (new i=0; i < MAX_WEAPONS; i++) {
+		offset += 4;
 
-        new weapon = GetEntDataEnt2(client, offset);
-
-        if (!Weapon_IsValid(weapon)) {
-            continue;
-        }
-
-        return weapon;
-    }
-
-    return INVALID_ENT_REFERENCE;
+		new weapon = GetEntDataEnt2(client, offset);
+		
+		if (!Weapon_IsValid(weapon)) {
+			continue;
+		}
+		
+		return weapon;
+	}
+	
+	return INVALID_ENT_REFERENCE;
 }
 
 /**
@@ -1457,23 +1377,23 @@ stock Client_GetFirstWeapon(client)
  */
 stock Client_GetWeaponCount(client)
 {	
-    new numWeapons = 0;
+	new numWeapons = 0;
+	
+	new offset = Client_GetWeaponsOffset(client) - 4;
 
-    new offset = Client_GetWeaponsOffset(client) - 4;
+	for (new i=0; i < MAX_WEAPONS; i++) {
+		offset += 4;
 
-    for (new i=0; i < MAX_WEAPONS; i++) {
-        offset += 4;
-
-        new weapon = GetEntDataEnt2(client, offset);
-
-        if (!Weapon_IsValid(weapon)) {
-            continue;
-        }
-
-        numWeapons++;
-    }
-
-    return numWeapons;
+		new weapon = GetEntDataEnt2(client, offset);
+		
+		if (!Weapon_IsValid(weapon)) {
+			continue;
+		}
+		
+		numWeapons++;
+	}
+	
+	return numWeapons;
 }
 
 /**
@@ -1484,13 +1404,13 @@ stock Client_GetWeaponCount(client)
  */
 stock bool:Client_IsReloading(client)
 {
-    new weapon = Client_GetActiveWeapon(client);
-
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return false;
-    }
-
-    return Weapon_IsReloading(weapon);
+	new weapon = Client_GetActiveWeapon(client);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return false;
+	}
+	
+	return Weapon_IsReloading(weapon);
 }
 
 /**
@@ -1504,21 +1424,21 @@ stock bool:Client_IsReloading(client)
  */
 stock bool:Client_SetWeaponClipAmmo(client, const String:className[], primaryClip=-1, secondoaryClip=-1)
 {
-    new weapon = Client_GetWeapon(client, className);
+	new weapon = Client_GetWeapon(client, className);
 
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return false;
-    }
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return false;
+	}
 
-    if (primaryClip != -1) {
-        Weapon_SetPrimaryClip(weapon, primaryClip);
-    }
+	if (primaryClip != -1) {
+		Weapon_SetPrimaryClip(weapon, primaryClip);
+	}
 
-    if (secondoaryClip != -1) {
-        Weapon_SetSecondaryClip(weapon, primaryClip);
-    }
+	if (secondoaryClip != -1) {
+		Weapon_SetSecondaryClip(weapon, primaryClip);
+	}
 
-    return true;
+	return true;
 }
 
 /**
@@ -1532,25 +1452,25 @@ stock bool:Client_SetWeaponClipAmmo(client, const String:className[], primaryCli
  */
 stock bool:Client_GetWeaponPlayerAmmo(client, const String:className[], &primaryAmmo=-1, &secondaryAmmo=-1)
 {
-    new weapon = Client_GetWeapon(client, className);
+	new weapon = Client_GetWeapon(client, className);
 
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return false;
-    }
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return false;
+	}
+	
+	new offset_ammo = FindDataMapOffs(client, "m_iAmmo");
+	
+	if (primaryAmmo != -1) {
+		new offset = offset_ammo + (Weapon_GetPrimaryAmmoType(weapon) * 4);
+		primaryAmmo = GetEntData(client, offset);
+	}
+	
+	if (secondaryAmmo != -1) {
+		new offset = offset_ammo + (Weapon_GetSecondaryAmmoType(weapon) * 4);
+		secondaryAmmo = GetEntData(client, offset);
+	}
 
-    new offset_ammo = FindDataMapOffs(client, "m_iAmmo");
-
-    if (primaryAmmo != -1) {
-        new offset = offset_ammo + (Weapon_GetPrimaryAmmoType(weapon) * 4);
-        primaryAmmo = GetEntData(client, offset);
-    }
-
-    if (secondaryAmmo != -1) {
-        new offset = offset_ammo + (Weapon_GetSecondaryAmmoType(weapon) * 4);
-        secondaryAmmo = GetEntData(client, offset);
-    }
-
-    return true;
+	return true;
 }
 
 /**
@@ -1564,15 +1484,15 @@ stock bool:Client_GetWeaponPlayerAmmo(client, const String:className[], &primary
  */
 stock bool:Client_SetWeaponPlayerAmmo(client, const String:className[], primaryAmmo=-1, secondaryAmmo=-1)
 {
-    new weapon = Client_GetWeapon(client, className);
+	new weapon = Client_GetWeapon(client, className);
 
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return false;
-    }
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return false;
+	}
 
-    Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo, secondaryAmmo);
+	Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo, secondaryAmmo);
 
-    return true;
+	return true;
 }
 
 /**
@@ -1586,17 +1506,17 @@ stock bool:Client_SetWeaponPlayerAmmo(client, const String:className[], primaryA
  */
 stock Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo=-1, secondaryAmmo=-1)
 {
-    new offset_ammo = FindDataMapOffs(client, "m_iAmmo");
+	new offset_ammo = FindDataMapOffs(client, "m_iAmmo");
 
-    if (primaryAmmo != -1) {
-        new offset = offset_ammo + (Weapon_GetPrimaryAmmoType(weapon) * 4);
-        SetEntData(client, offset, primaryAmmo, 4, true);
-    }
+	if (primaryAmmo != -1) {
+		new offset = offset_ammo + (Weapon_GetPrimaryAmmoType(weapon) * 4);
+		SetEntData(client, offset, primaryAmmo, 4, true);
+	}
 
-    if (secondaryAmmo != -1) {
-        new offset = offset_ammo + (Weapon_GetSecondaryAmmoType(weapon) * 4);
-        SetEntData(client, offset, secondaryAmmo, 4, true);
-    }
+	if (secondaryAmmo != -1) {
+		new offset = offset_ammo + (Weapon_GetSecondaryAmmoType(weapon) * 4);
+		SetEntData(client, offset, secondaryAmmo, 4, true);
+	}
 }
 
 /**
@@ -1612,16 +1532,16 @@ stock Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo=-1, secondaryAmmo
  */
 stock Client_SetWeaponAmmo(client, const String:className[], primaryAmmo=-1, secondaryAmmo=-1, primaryClip=-1, secondaryClip=-1)
 {
-    new weapon = Client_GetWeapon(client, className);
-
-    if (weapon == INVALID_ENT_REFERENCE) {
-        return false;
-    }
-
-    Weapon_SetClips(weapon, primaryClip, secondaryClip);
-    Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo, secondaryAmmo);
-
-    return true;
+	new weapon = Client_GetWeapon(client, className);
+	
+	if (weapon == INVALID_ENT_REFERENCE) {
+		return false;
+	}
+	
+	Weapon_SetClips(weapon, primaryClip, secondaryClip);
+	Client_SetWeaponPlayerAmmoEx(client, weapon, primaryAmmo, secondaryAmmo);
+	
+	return true;
 }
 
 /**
@@ -1636,23 +1556,23 @@ stock Client_SetWeaponAmmo(client, const String:className[], primaryAmmo=-1, sec
  */
 stock bool:Client_PrintHintText(client, const String:format[], any:...)
 {
-    new Handle:userMessage = StartMessageOne("HintText", client);
+	new Handle:userMessage = StartMessageOne("HintText", client);
+	
+	if (userMessage == INVALID_HANDLE) {
+		return false;
+	}
 
-    if (userMessage == INVALID_HANDLE) {
-        return false;
-    }
+	decl String:buffer[254];
 
-    decl String:buffer[254];
+	SetGlobalTransTarget(client);
+	VFormat(buffer, sizeof(buffer), format, 3);
 
-    SetGlobalTransTarget(client);
-    VFormat(buffer, sizeof(buffer), format, 3);
+	BfWriteByte(userMessage, 1); 
+	BfWriteString(userMessage, buffer); 
 
-    BfWriteByte(userMessage, 1); 
-    BfWriteString(userMessage, buffer); 
-
-    EndMessage();
-
-    return true;
+	EndMessage();
+	
+	return true;
 }
 
 /**
@@ -1666,18 +1586,18 @@ stock bool:Client_PrintHintText(client, const String:format[], any:...)
  */
 stock Client_PrintHintTextToAll(const String:format[], any:...)
 {
-    decl String:buffer[254];
+	decl String:buffer[254];
+	
+	for (new client=1; client <= MaxClients; client++) {
 
-    for (new client=1; client <= MaxClients; client++) {
+		if (!IsClientInGame(client)) {
+			continue;
+		}
 
-        if (!IsClientInGame(client)) {
-            continue;
-        }
-
-        SetGlobalTransTarget(client);
-        VFormat(buffer, sizeof(buffer), format, 2);
-        Client_PrintHintText(client, buffer);
-    }
+		SetGlobalTransTarget(client);
+		VFormat(buffer, sizeof(buffer), format, 2);
+		Client_PrintHintText(client, buffer);
+	}
 }
 
 /**
@@ -1692,23 +1612,23 @@ stock Client_PrintHintTextToAll(const String:format[], any:...)
  */
 stock bool:Client_PrintKeyHintText(client, const String:format[], any:...)
 {
-    new Handle:userMessage = StartMessageOne("KeyHintText", client);
+	new Handle:userMessage = StartMessageOne("KeyHintText", client);
+	
+	if (userMessage == INVALID_HANDLE) {
+		return false;
+	}
 
-    if (userMessage == INVALID_HANDLE) {
-        return false;
-    }
+	decl String:buffer[254];
 
-    decl String:buffer[254];
+	SetGlobalTransTarget(client);
+	VFormat(buffer, sizeof(buffer), format, 3);
 
-    SetGlobalTransTarget(client);
-    VFormat(buffer, sizeof(buffer), format, 3);
+	BfWriteByte(userMessage, 1); 
+	BfWriteString(userMessage, buffer); 
 
-    BfWriteByte(userMessage, 1); 
-    BfWriteString(userMessage, buffer); 
-
-    EndMessage();
-
-    return true;
+	EndMessage();
+	
+	return true;
 }
 
 /**
@@ -1722,26 +1642,26 @@ stock bool:Client_PrintKeyHintText(client, const String:format[], any:...)
  */
 stock Client_PrintKeyHintTextToAll(const String:format[], any:...)
 {
-    decl String:buffer[254];
+	decl String:buffer[254];
+	
+	for (new client=1; client <= MaxClients; client++) {
 
-    for (new client=1; client <= MaxClients; client++) {
+		if (!IsClientInGame(client)) {
+			continue;
+		}
 
-        if (!IsClientInGame(client)) {
-            continue;
-        }
-
-        SetGlobalTransTarget(client);
-        VFormat(buffer, sizeof(buffer), format, 2);
-        Client_PrintHintText(client, buffer);
-    }
+		SetGlobalTransTarget(client);
+		VFormat(buffer, sizeof(buffer), format, 2);
+		Client_PrintHintText(client, buffer);
+	}
 }
 
-#define	SHAKE_START                 0   // Starts the screen shake for all players within the radius.
-#define	SHAKE_STOP                  1   // Stops the screen shake for all players within the radius.
-#define	SHAKE_AMPLITUDE             2   // Modifies the amplitude of an active screen shake for all players within the radius.
-#define	SHAKE_FREQUENCY             3   // Modifies the frequency of an active screen shake for all players within the radius.
-#define	SHAKE_START_RUMBLEONLY      4   // Starts a shake effect that only rumbles the controller, no screen effect.
-#define	SHAKE_START_NORUMBLE        5   // Starts a shake that does NOT rumble the controller.
+#define	SHAKE_START					0			// Starts the screen shake for all players within the radius.
+#define	SHAKE_STOP					1			// Stops the screen shake for all players within the radius.
+#define	SHAKE_AMPLITUDE				2			// Modifies the amplitude of an active screen shake for all players within the radius.
+#define	SHAKE_FREQUENCY				3			// Modifies the frequency of an active screen shake for all players within the radius.
+#define	SHAKE_START_RUMBLEONLY		4			// Starts a shake effect that only rumbles the controller, no screen effect.
+#define	SHAKE_START_NORUMBLE		5			// Starts a shake that does NOT rumble the controller.
 
 /**
  * Shakes a client's screen with the specified amptitude,
@@ -1756,26 +1676,26 @@ stock Client_PrintKeyHintTextToAll(const String:format[], any:...)
  */
 stock bool:Client_Shake(client, command=SHAKE_START, Float:amplitude=50.0, Float:frequency=150.0, Float:duration=3.0)
 {
-    new Handle:userMessage = StartMessageOne("Shake", client);
-
-    if (userMessage == INVALID_HANDLE) {
-        return false;
-    }
-
-    if (command == SHAKE_STOP) {
-        amplitude = 0.0;
-    }
-    else if (amplitude <= 0.0) {
-        return false;
-    }
-
-    BfWriteByte(userMessage,	command);	// Shake Command
-    BfWriteFloat(userMessage,	amplitude);	// shake magnitude/amplitude
-    BfWriteFloat(userMessage,	frequency);	// shake noise frequency
-    BfWriteFloat(userMessage,	duration);	// shake lasts this long
-    EndMessage();
-
-    return true;
+	new Handle:userMessage = StartMessageOne("Shake", client);
+	
+	if (userMessage == INVALID_HANDLE) {
+		return false;
+	}
+	
+	if (command == SHAKE_STOP) {
+		amplitude = 0.0;
+	}
+	else if (amplitude <= 0.0) {
+		return false;
+	}
+	
+	BfWriteByte(userMessage,	command);	// Shake Command
+	BfWriteFloat(userMessage,	amplitude);	// shake magnitude/amplitude
+	BfWriteFloat(userMessage,	frequency);	// shake noise frequency
+	BfWriteFloat(userMessage,	duration);	// shake lasts this long
+	EndMessage();
+	
+	return true;
 }
 
 /**
@@ -1786,13 +1706,13 @@ stock bool:Client_Shake(client, command=SHAKE_START, Float:amplitude=50.0, Float
  */
 stock bool:Client_IsAdmin(client)
 {
-    new AdminId:adminId = GetUserAdmin(client);
-
-    if (adminId == INVALID_ADMIN_ID) {
-        return false;
-    }
-
-    return GetAdminFlag(adminId, Admin_Generic);
+	new AdminId:adminId = GetUserAdmin(client);
+	
+	if (adminId == INVALID_ADMIN_ID) {
+		return false;
+	}
+	
+	return GetAdminFlag(adminId, Admin_Generic);
 }
 
 /**
@@ -1805,39 +1725,39 @@ stock bool:Client_IsAdmin(client)
  */
 stock bool:Client_IsLookingAtWall(client, Float:distance=40.0) {
 
-    decl Float:posEye[3], Float:posEyeAngles[3];
-    new bool:isClientLookingAtWall = false;
+	decl Float:posEye[3], Float:posEyeAngles[3];
+	new bool:isClientLookingAtWall = false;
+	
+	GetClientEyePosition(client,	posEye);
+	GetClientEyeAngles(client,		posEyeAngles);
+	
+	posEyeAngles[0] = 0.0;
 
-    GetClientEyePosition(client,	posEye);
-    GetClientEyeAngles(client,		posEyeAngles);
+	new Handle:trace = TR_TraceRayFilterEx(posEye, posEyeAngles, CONTENTS_SOLID, RayType_Infinite, _smlib_TraceEntityFilter);
+	
+	if (TR_DidHit(trace)) {
+		
+		if (TR_GetEntityIndex(trace) > 0) {
+			return false;
+		}
+		
+		decl Float:posEnd[3];
 
-    posEyeAngles[0] = 0.0;
-
-    new Handle:trace = TR_TraceRayFilterEx(posEye, posEyeAngles, CONTENTS_SOLID, RayType_Infinite, _smlib_TraceEntityFilter);
-
-    if (TR_DidHit(trace)) {
-
-        if (TR_GetEntityIndex(trace) > 0) {
-            return false;
-        }
-
-        decl Float:posEnd[3];
-
-        TR_GetEndPosition(posEnd, trace);
-
-        if (GetVectorDistance(posEye, posEnd) <= distance) {
-            isClientLookingAtWall = true;
-        }
-    }
-
-    CloseHandle(trace);
-
-    return isClientLookingAtWall;
+		TR_GetEndPosition(posEnd, trace);
+		
+		if (GetVectorDistance(posEye, posEnd) <= distance) {
+			isClientLookingAtWall = true;
+		}
+	}
+	
+	CloseHandle(trace);
+	
+	return isClientLookingAtWall;
 }
 
 public bool:_smlib_TraceEntityFilter(entity, contentsMask)
 {
-    return entity == 0;
+	return entity == 0;
 }
 
 /**
@@ -1850,11 +1770,11 @@ public bool:_smlib_TraceEntityFilter(entity, contentsMask)
  */
 stock Client_GetClass(client)
 {
-    if (GuessSDKVersion() == SOURCE_SDK_DARKMESSIAH) {
-        GetEntProp(client, Prop_Send, "m_iPlayerClass");
-    }
+	if (GuessSDKVersion() == SOURCE_SDK_DARKMESSIAH) {
+		GetEntProp(client, Prop_Send, "m_iPlayerClass");
+	}
 
-    return GetEntProp(client, Prop_Send, "m_iClass");
+	return GetEntProp(client, Prop_Send, "m_iClass");
 }
 
 /**
@@ -1868,16 +1788,16 @@ stock Client_GetClass(client)
  */
 stock Client_SetClass(client, class, bool:persistant=false)
 {
-    if (GuessSDKVersion() == SOURCE_SDK_DARKMESSIAH) {
-        GetEntProp(client, Prop_Send, "m_iPlayerClass");
-    }
-    else {
-        SetEntProp(client, Prop_Send, "m_iClass", class);
-
-        if (persistant) {
-            SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", class);
-        }
-    }
+	if (GuessSDKVersion() == SOURCE_SDK_DARKMESSIAH) {
+		GetEntProp(client, Prop_Send, "m_iPlayerClass");
+	}
+	else {
+		SetEntProp(client, Prop_Send, "m_iClass", class);
+		
+		if (persistant) {
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", class);
+		}
+	}
 }
 
 /**
@@ -1888,7 +1808,7 @@ stock Client_SetClass(client, class, bool:persistant=false)
  */
 stock Client_GetButtons(client)
 {	
-    return GetClientButtons(client);
+	return GetClientButtons(client);
 }
 
 /**
@@ -1901,7 +1821,7 @@ stock Client_GetButtons(client)
  */
 stock Client_SetButtons(client, buttons)
 {
-    SetEntProp(client, Prop_Data, "m_nButtons", buttons);
+	SetEntProp(client, Prop_Data, "m_nButtons", buttons);
 }
 
 /**
@@ -1914,9 +1834,9 @@ stock Client_SetButtons(client, buttons)
  */
 stock Client_AddButtons(client, buttons)
 {
-    new newButtons = Client_GetButtons(client);
-    newButtons |= buttons;
-    Client_SetButtons(client, newButtons);
+	new newButtons = Client_GetButtons(client);
+	newButtons |= buttons;
+	Client_SetButtons(client, newButtons);
 }
 
 /**
@@ -1929,9 +1849,9 @@ stock Client_AddButtons(client, buttons)
  */
 stock Client_RemoveButtons(client, buttons)
 {
-    new newButtons = Client_GetButtons(client);
-    newButtons &= ~buttons;
-    Client_SetButtons(client, newButtons);
+	new newButtons = Client_GetButtons(client);
+	newButtons &= ~buttons;
+	Client_SetButtons(client, newButtons);
 }
 
 /**
@@ -1943,7 +1863,7 @@ stock Client_RemoveButtons(client, buttons)
  */
 stock Client_ClearButtons(client)
 {
-    Client_SetButtons(client,0);
+	Client_SetButtons(client,0);
 }
 
 /**
@@ -1955,7 +1875,7 @@ stock Client_ClearButtons(client)
  */
 stock bool:Client_HasButtons(client, buttons)
 {
-    return bool:(Client_GetButtons(client) & buttons);
+	return bool:(Client_GetButtons(client) & buttons);
 }
 
 /**
@@ -1968,13 +1888,12 @@ stock bool:Client_HasButtons(client, buttons)
  */
 stock Client_GetChangedButtons(client)
 {
-    static oldButtons[MAXPLAYERS+1] = {0,...};
-
-    new buttons = Client_GetButtons(client);
-    new changedButtons = buttons | oldButtons[client];
-
-    oldButtons[client] = buttons;
-
-    return changedButtons;
+	static oldButtons[MAXPLAYERS+1] = {0,...};
+	
+	new buttons = Client_GetButtons(client);
+	new changedButtons = buttons | oldButtons[client];
+	
+	oldButtons[client] = buttons;
+	
+	return changedButtons;
 }
-

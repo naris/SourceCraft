@@ -1,0 +1,26 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_UBERTRANSPLANT"
+	{
+		"en"			"Uber Transplant"
+		"jp"			"ユーバートランスプラント"
+	}
+	
+	"DESCRIPTION_UBERTRANSPLANT_ATTRIBUTE_0"
+	{
+		"en"			"Ubercharge is transplantable to side Medic"
+		"jp"			"味方メディックに自分のユーバーチャージを移植することができる"
+	}
+	"DESCRIPTION_UBERTRANSPLANT_ATTRIBUTE_1"
+	{
+		"en"			"*While healing friend Medic, it transplants by Alt-Fire press and hold"
+		"jp"			"・味方メディックを回復中にセカンダリ長押しで移植"
+	}
+	"DESCRIPTION_UBERTRANSPLANT_ATTRIBUTE_2"
+	{
+		"#format"		"{1:d}"
+		"en"			" *{1} percent of Ubercharge is required to transplant 1 percent of Ubercharge."
+		"jp"			"・1％のユーバーを移植するために{1}％のユーバーが必要"
+	}		
+}

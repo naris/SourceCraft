@@ -11,37 +11,25 @@
 #endif
 #define _entlimit_included
 
-stock bool:IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-{
-    return (EntitiesAvailable(warn,critical,client,message) < warn);
-}
-
-stock EntitiesAvailable(warn=20,critical=16,client=0,const String:message[]="")
+stock IsEntLimitReached(warn=20,critical=16, const String:message[]="")
 {
     new max = GetMaxEntities();
     new count = GetEntityCount();
     new remaining = max - count;
-    if (remaining <= critical)
+    if (remaining <= warn)
     {
-        PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-        LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-        if (client > 0)
+        if (count <= critical)
         {
-            PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                           count, max, remaining, message);
+            PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
+            LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
         }
-    }
-    else if (remaining <= warn)
-    {
-        PrintToServer("Caution: Entity count is getting high!");
-        LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-        if (client > 0)
+        else
         {
-            PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                           count, max, remaining, message);
+            PrintToServer("Caution: Entity count is getting high!");
+            LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
         }
+        return count;
     }
-    return remaining;
+    else
+        return 0;
 }

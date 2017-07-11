@@ -1,0 +1,34 @@
+"Games"
+{
+    "tf"
+    {
+	"Signatures"
+	{
+		"GiveNamedItem"
+		{
+			"library"	"server"
+			"linux"		"_ZN9CTFPlayer13GiveNamedItemEPKciP18CScriptCreatedItemb"
+			"windows"	"\x83\xEC\x28\x53\x8A\x5C\x24\x3C\x84\xDB\x55\x57\x8B\xF9\x75\x18\x8B\x87\x2A\x2A\x00\x00\x50\x8B\x44\x24\x3C\x50\xE8"
+		}
+		"WeaponEquip"
+		{
+			"library"	"server"
+			"linux"		"@_ZN11CBasePlayer12Weapon_EquipEP17CBaseCombatWeapon"
+			"windows"	"\x56\x57\x8B\x7C\x24\x0C\x57\x8B\xF1\xE8\x82\x41\xF0\xFF\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x01\x8B\x90\xC8\x00\x00\x00\x57\x56\xFF"
+		}
+	}
+        "Offsets"
+        {
+            "GiveNamedItem"
+            {
+                "windows"    "449"
+                "linux"      "455"
+            }
+            "WeaponEquip"
+            {
+                "windows"    "249"
+                "linux"      "250"
+            }
+        }
+    }
+}  

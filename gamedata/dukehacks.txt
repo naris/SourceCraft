@@ -1,0 +1,126 @@
+"Games"
+{
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"dod"
+			"game"		"tf"
+		}
+
+		"Offsets"
+		{
+			/* Offset into LevelShutdown */
+			"gEntList"
+			{
+				"windows"	"11"
+			}
+
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+
+			"Touch"
+			{
+				"windows"		"96"
+				"linux"			"97"
+			}
+
+			"VPhysicsUpdate"
+			{
+				"windows"		"150"
+				"linux"			"151"
+			}
+
+			"TraceAttack"
+			{
+				"windows"		"58"
+				"linux"			"59"
+			}
+
+			"ProcessUsercmds"
+			{
+				"windows"		"374"
+				"linux"			"375"
+			}
+
+			"PreThink"
+			{
+				"windows"		"295"
+				"linux"			"296"
+			}
+
+			"PostThink"
+			{
+				"windows"		"296"
+				"linux"			"297"
+			}
+
+			"SetTransmit"
+			{
+				"windows"		"19"
+				"linux"			"20"
+			}
+
+			/* data offsets */
+			"CTakeDamageInfo.m_flDamage"
+			{
+				"windows"		"48"
+				"linux"			"48"
+			}
+		}
+
+		"Signatures"
+		{
+			"AddListenerEntity"
+			{
+				"library"	"server"
+				"windows"	"\x8B\x91\x2A\x2A\x2A\x2A\x81\xC1\x2A\x2A\x2A\x2A\x56\x33\xC0\x85"
+				"linux"		"@_ZN17CGlobalEntityList17AddListenerEntityEP15IEntityListener"
+			}
+
+			"LevelShutdown"		// needed for gEntList on Windows
+			{
+				"library"	"server"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+			}
+
+			"gEntList"		// gEntList on linux
+			{
+				"library"	"server"
+				"linux"		"@gEntList"
+			}
+
+			"TakeDamage"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x58\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x0F\x84"
+				"linux"		"@_ZN11CBaseEntity10TakeDamageERK15CTakeDamageInfo"
+			}
+		}
+	}
+
+
+	/* Team Fortress 2 */
+	"tf"
+	{
+		"Signatures"
+		{
+			"Regenerate"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x08\xD9\xE8\x53\x55\xD9\x2A\x2A\x2A\x56\x8B\xF1\x8B\x06"
+				"linux"		"@_ZN9CTFPlayer10RegenerateEv"
+			}
+		}
+	}
+
+
+	/* Day of Defeat: Source */
+	"dod"
+	{
+
+	}
+}

@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Advert1"
+	{
+		"en"		"{green}[Trade Chat] {default}Remember, say {lightgreen}/trade {default} before messages about trading."
+		"pl"		"{green}[Trade Chat] {default}Pamiętaj, by wszelkie wiadomości na temat wymiany przedmiotów poprzedzać {lightgreen}/trade"
+	}
+	"Advert2"
+	{
+		"en"		"{green}[Trade Chat] {default}If you don't want to see trade chat, say {lightgreen}/hidechat"
+		"pl"		"{green}[Trade Chat] {default}Jeśli nie chcesz widzieć wiadomości na temat wymiany, wpisz {lightgreen}/hidechat"
+	}
+	"HideChatOn"
+	{
+		"en"		"{green}[Trade Chat] {lightgreen}You {green}will not {lightgreen}see the trade chat."
+		"pl"		"{green}[Trade Chat] {lightgreen}Od teraz {green}nie będziesz {lightgreen}widział wiadomości dotyczących wymiany przedmiotów."
+	}
+	"HideChatOff"
+	{
+		"en"		"{green}[Trade Chat] {lightgreen}You {green}will {lightgreen}see the trade chat."
+		"pl"		"{green}[Trade Chat] {lightgreen}Od teraz {green}będziesz {lightgreen}widział wiadomości dotyczące wymiany przedmiotów."
+	}
+	"TradeDisabledForYou"
+	{
+		"en"		"{green}[Trade Chat] {lightgreen}You can't use {green}/trade {lightgreen}when you have disabled trade chat."
+		"pl"		"{green}[Trade Chat] {lightgreen}Nie możesz używać {green}/trade {lightgreen}gdy wyłączyłeś widok wiadomości na temat wymiany przedmiotów."
+	}
+	"TradeBanned"
+	{
+		"en"		"{green}[Trade Chat] {lightgreen}You are banned from trade chat."
+		"pl"		"{green}[Trade Chat] {lightgreen}Zostałeś pozbawiony możliwości korzystania z {green}/trade"
+	}
+	"TradeBan"
+	{
+		"en"		"{green}[Trade Chat] {lightgreen}%s {default}has banned {lightgreen}%s {default}from trade chat"
+		"pl"		"{green}[Trade Chat] {lightgreen}%s {default}zablokował {lightgreen}%s {default}możliwość korzystania z {green}/trade"
+	}
+	"TradeUnBan"
+	{
+		"en"		"{green}[Trade Chat] {lightgreen}%s {default}has unbanned {lightgreen}%s {default}from trade chat"
+		"pl"		"{green}[Trade Chat] {lightgreen}%s {default}odblokował {lightgreen}%s {default}możliwość korzystania z {green}/trade"
+	}
+	"TradeGagUsage"
+	{
+		"en"		"Usage: sm_trade_gag <#userid|name> | sm_trade_ungag <#userid|name>"
+		"pl"		"Użycie: sm_trade_gag <#userid|name> | sm_trade_ungag <#userid|name>"
+	}
+}

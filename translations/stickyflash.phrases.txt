@@ -1,0 +1,29 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_STICKYFLASH"
+	{
+		"en"			"Sticky Flash"
+		"jp"			"スティッキーフラッシュ"
+	}
+
+	
+	"DESCRIPTION_STICKYFLASH_ATTRIBUTE_0"
+	{
+		"en"			"Sticky bomb emits a powerful light and blinds enemy's eyes"
+		"jp"			"粘着爆弾が強力な光を放ち敵の目を眩ませる"
+	}
+	"DESCRIPTION_STICKYFLASH_ATTRIBUTE_1"
+	{
+		"en"			"*Flashing by taunt of the Grenade launcher after lay down Sticky bombs"
+		"jp"			"・粘着爆弾設置後グレネードランチャーの挑発で発動"
+	}
+	"DESCRIPTION_STICKYFLASH_ATTRIBUTE_2"
+	{
+		"en"			"*After active: Broke laid Sticky bombs"
+		"jp"			"・発動時: 粘着爆弾消滅"
+	}
+
+	
+	
+}

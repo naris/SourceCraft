@@ -1,0 +1,160 @@
+"MaxClassPlayers"
+{
+	//Default config if the map tree is not found
+	"default"
+	{
+			//When there are 1 to 5 players in the server
+			"1-5"
+			{
+			 	//Team2 = red AND team3 = blue
+			 	//set to 0 if you want this to only work on one team
+			 	"red"		"1"
+			 	"blue"		"0"
+			 
+				//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+				"scout"		"-1"
+				"sniper"	"-1"
+				"soldier"	"-1"
+				"demoman"	"-1"
+				"medic"		"-1"
+				"heavy"		"-1"
+				"pyro"		"-1"
+				"spy"		"-1"
+				"engineer"	"-1"
+			}
+			
+			//When there are 1 to 5 players in the server
+			"1-5"
+			{
+			 	//Team2 = red AND team3 = blue
+			 	//set to 0 if you want this to only work on one team
+			 	"red"		"0"
+			 	"blue"		"1"
+			 
+				//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+				"scout"		"-1"
+				"sniper"	"-1"
+				"soldier"	"-1"
+				"demoman"	"-1"
+				"medic"		"-1"
+				"heavy"		"-1"
+				"pyro"		"-1"
+				"spy"		"-1"
+				"engineer"	"-1"
+			}
+			
+			//When there are 6 players in the server
+			"6"
+			{
+			 	//Team2 = red AND team3 = blue
+			 	//set to 0 if you want this to only work on one team
+			 	"red"		"1"
+			 	"blue"		"1"
+			 	
+				//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+				"scout"		"-1"
+				"sniper"	"-1"
+				"soldier"	"-1"
+				"demoman"	"-1"
+				"medic"		"-1"
+				"heavy"		"-1"
+				"pyro"		"-1"
+				"spy"		"-1"
+				"engineer"	"-1"
+			}
+			//Anything that is not set, will be -1 (no limit)
+	}
+	//Put the map name as the name for specif-map config
+	"ctf_2fort"
+	{
+		//When there are 1 to 5 players in the server
+		"1-5"
+		{
+		 	//If the team is not set, it will be 1
+			//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+			"scout"		"-1"
+			"sniper"	"1"
+			"soldier"	"-1"
+			"demoman"	"-1"
+			"medic"		"-1"
+			"heavy"		"-1"
+			"pyro"		"-1"
+			"spy"		"-1"
+			"engineer"	"-1"
+		}
+		
+		//When there are 6 players in the server
+		"6"
+		{
+		 	//If the team is not set, it will be 1
+			//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+			"scout"		"-1"
+			"sniper"	"2"
+			"soldier"	"-1"
+			"demoman"	"-1"
+			"medic"		"-1"
+			"heavy"		"-1"
+			"pyro"		"-1"
+			"spy"		"-1"
+			"engineer"	"-1"
+		}
+		//Anything that is not set, will be -1 (no limit)
+	}
+	"cp_canyon"
+	{
+		//When there are any number of players in the server
+		"1-32"
+		{
+		 	//If the team is not set, it will be 1
+			//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+			"scout"		"-1"
+			"sniper"	"0"
+			"soldier"	"-1"
+			"demoman"	"-1"
+			"medic"		"-1"
+			"heavy"		"-1"
+			"pyro"		"-1"
+			"spy"		"-1"
+			"engineer"	"-1"
+		}
+		//Anything that is not set, will be -1 (no limit)
+	}
+	"billiards_b6"
+	{
+		//When there are any number of players in the server
+		"1-32"
+		{
+		 	//If the team is not set, it will be 1
+			//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+			"scout"		"-1"
+			"sniper"	"0"
+			"soldier"	"-1"
+			"demoman"	"-1"
+			"medic"		"-1"
+			"heavy"		"-1"
+			"pyro"		"-1"
+			"spy"		"-1"
+			"engineer"	"-1"
+		}
+		//Anything that is not set, will be -1 (no limit)
+	}
+	"koth_barn"
+	{
+		//When there are any number of players in the server
+		"1-32"
+		{
+		 	//If the team is not set, it will be 1
+			//Put -1 for no limit, 0 for disalowed, and any other number to set the limit
+			"scout"		"-1"
+			"sniper"	"0"
+			"soldier"	"-1"
+			"demoman"	"-1"
+			"medic"		"-1"
+			"heavy"		"-1"
+			"pyro"		"-1"
+			"spy"		"-1"
+			"engineer"	"-1"
+		}
+		//Anything that is not set, will be -1 (no limit)
+	}
+}

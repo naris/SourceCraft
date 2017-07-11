@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Enabled Fake Death"
+	{
+		"en"			"Fake Death plugin is now enabled"
+		"jp"			"Fake Deathプラグイン有効"
+	}
+	
+	"Disabled Fake Death"
+	{
+		"en"			"Fake Death plugin is now disabled"
+		"jp"			"Fake Deathプラグイン無効"
+	}
+
+	"OnCommand Fake Death"
+	{
+		"#format"		"{1:d}"
+		"en"			"TWhen cloaked, the spy can use primary fire to make a fake corpse appear, at the cost of {1} percent of his cloak meter to make it appear as if he has died."
+		"jp"			"透明マントを使用中にプライマリを押す事で偽の死体を 出現させる事が出来る(クロークメーターを{1}％消費)"
+		
+	}
+}
+

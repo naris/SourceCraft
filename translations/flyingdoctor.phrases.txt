@@ -1,0 +1,25 @@
+﻿"Phrases"
+{
+
+	"ABILITYNAME_FLYINGDOCTOR"
+	{
+		"en"			"Flying Doctor"
+		"jp"			"飛行往診医"
+	}
+
+	"DESCRIPTION_FLYINGDOCTOR_ATTRIBUTE_0"
+	{
+		"en"			"Can approach a friend quickly"
+		"jp"			"メディガン及びクリッツクリーグのビームを利用して味方に素早く近づくことができる"
+	}
+	"DESCRIPTION_FLYINGDOCTOR_ATTRIBUTE_1"
+	{
+		"en"			"*While healing the friend, it nears by jump key press and hold"
+		"jp"			"・味方を回復中にジャンプキー長押しで近づく"
+	}
+	"DESCRIPTION_FLYINGDOCTOR_ATTRIBUTE_2"
+	{
+		"en"			"*Can't use Bonesaw and Ubersaw"
+		"jp"			"・ボーンソウ及びユーバーソウ使用不可"
+	}
+}
