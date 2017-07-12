@@ -25,10 +25,10 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
-#include <tripmines>
-#include <firemines>
-#include <ztf2nades>
+#include <lib/jetpack>
+#include <lib/tripmines>
+#include <lib/firemines>
+#include <lib/ztf2nades>
 #include <sidewinder>
 #include <dod_ignite>
 #include <Hallucinate>
