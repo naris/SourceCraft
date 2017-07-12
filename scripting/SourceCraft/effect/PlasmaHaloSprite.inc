@@ -10,7 +10,7 @@
 #endif
 #define _PlasmaHaloSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupPlasmaHaloSprite() SetupModel(g_plasmaHaloModel, g_plasmaHaloSprite)
 #define PlasmaHaloSprite()      PrepareModel(g_plasmaHaloModel, g_plasmaHaloSprite)

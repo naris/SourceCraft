@@ -17,7 +17,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sm_tnt>
+#include <lib/sm_tnt>
 #include "sc/RateOfFire"
 #define REQUIRE_PLUGIN
 

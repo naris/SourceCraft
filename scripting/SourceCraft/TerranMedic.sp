@@ -17,11 +17,11 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
+#include <lib/jetpack>
+#include <lib/Hallucinate>
 #include <medipacks>
 #include <ubercharger>
 #include <MedicInfect>
-#include <Hallucinate>
 #include <sm_dod_medic_class>
 #include <dod_drophealthkit_source>
 

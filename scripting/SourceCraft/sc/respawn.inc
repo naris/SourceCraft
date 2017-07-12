@@ -10,7 +10,7 @@
 #endif
 #define _respawn_included
 
-#include <trace>
+#include <lib/trace>
 #include <gametype>
 
 #undef REQUIRE_EXTENSIONS

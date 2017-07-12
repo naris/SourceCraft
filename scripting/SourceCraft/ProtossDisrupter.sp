@@ -20,9 +20,9 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <hgrsource>
+#include <lib/hgrsource>
 #include <sidewinder>
-#include <ubershield>
+#include <lib/ubershield>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

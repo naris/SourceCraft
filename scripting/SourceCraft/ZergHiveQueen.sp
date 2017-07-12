@@ -24,7 +24,7 @@
 #undef REQUIRE_PLUGIN
 #include <remote>
 #include <amp_node>
-#include <ztf2grab>
+#include <lib/ztf2grab>
 #include <tf2teleporter>
 #define REQUIRE_PLUGIN
 

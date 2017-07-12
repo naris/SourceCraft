@@ -12,11 +12,11 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <gametype>
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <trace>
+#include <lib/trace>
 
 #include "sc/SourceCraft"
 #include "sc/maxhealth"

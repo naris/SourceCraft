@@ -10,8 +10,8 @@
 #endif
 #define schallucinate_included
 
-#include <ResourceManager>
-#include <Hallucinate>
+#include <lib/ResourceManager>
+#include <lib/Hallucinate>
 
 #include "sc/client"
 

@@ -10,7 +10,7 @@
 #endif
 #define _CrystalSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupCrystalSprite() SetupModel(g_crystalModel, g_crystalSprite)
 #define CrystalSprite()      PrepareModel(g_crystalModel, g_crystalSprite)

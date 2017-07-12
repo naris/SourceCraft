@@ -14,7 +14,9 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
-#include "hgrsource.inc"
+#undef REQUIRE_PLUGIN
+#include <lib/hgrsource.inc>
+#define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"
 #include "sc/util"

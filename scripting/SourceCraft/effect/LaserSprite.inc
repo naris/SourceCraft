@@ -10,7 +10,7 @@
 #endif
 #define _LaserSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupLaserSprite() SetupModel(g_laserModel, g_laserSprite)
 #define LaserSprite()      PrepareModel(g_laserModel, g_laserSprite)

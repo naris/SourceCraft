@@ -10,7 +10,7 @@
 #endif
 #define _SendEffects_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 /**
  * Sets up the list[] and alt_list[] for beacon effects.

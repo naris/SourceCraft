@@ -10,7 +10,7 @@
 #endif
 #define _TPBeamSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupTPBeamSprite() SetupModel(g_tpBeamModel, g_tpBeamSprite)
 #define TPBeamSprite()      PrepareModel(g_tpBeamModel, g_tpBeamSprite)

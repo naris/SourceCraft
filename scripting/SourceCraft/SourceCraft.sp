@@ -20,7 +20,7 @@
 
 #include <colors>
 #include <gametype>
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
@@ -32,12 +32,12 @@
 
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
-#include <jetpack>
+#include <lib/jetpack>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <trace>
+#include <lib/trace>
 
 // Define TRACK_DAMAGE to enable damage tracking
 // Required for mods that don't report damage

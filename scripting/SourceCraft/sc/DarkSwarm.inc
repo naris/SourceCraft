@@ -10,7 +10,7 @@
 #endif
 #define darkswarm_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 #include <entlimit>
 
 #undef REQUIRE_EXTENSIONS

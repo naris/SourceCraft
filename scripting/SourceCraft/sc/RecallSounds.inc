@@ -10,7 +10,7 @@
 #endif
 #define _RecallSounds_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #include "sc/sounds"
 

@@ -10,7 +10,7 @@
 #endif
 #define _Lightning_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupLightning() SetupModel(g_lightningModel, g_lightningSprite)
 #define Lightning()      PrepareModel(g_lightningModel, g_lightningSprite)

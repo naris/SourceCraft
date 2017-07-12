@@ -10,9 +10,9 @@
 #endif
 #define _bunker_included
 
-#include <ResourceManager>
 #include <gametype>
 #include <tf2_flag>
+#include <lib/ResourceManager>
 
 #include "sc/ShopItems"
 #include "sc/burrow"

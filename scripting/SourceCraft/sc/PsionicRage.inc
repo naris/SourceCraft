@@ -10,7 +10,7 @@
 #endif
 #define _PsionicRage_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 #include "sc/shields"
 #include "sc/sounds"
 

@@ -24,7 +24,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <sidewinder>
-#include <ubershield>
+#include <lib/ubershield>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

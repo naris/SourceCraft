@@ -10,7 +10,7 @@
 #endif
 #define _BlueGlow_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupBlueGlow() SetupModel(g_blueModel, g_blueGlow)
 #define BlueGlow()      PrepareModel(g_blueModel, g_blueGlow)

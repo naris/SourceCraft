@@ -19,7 +19,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <hgrsource>
+#include <lib/hgrsource>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

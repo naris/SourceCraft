@@ -17,7 +17,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
+#include <lib/jetpack>
 #include <remote>
 #define REQUIRE_PLUGIN
 

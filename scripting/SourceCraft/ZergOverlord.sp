@@ -20,8 +20,8 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
-#include <piggyback>
+#include <lib/jetpack>
+#include <lib/piggyback>
 #include <sidewinder>
 #include <AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN

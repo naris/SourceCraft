@@ -10,7 +10,7 @@
 #endif
 #define _SteamSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupSteamSprite() SetupModel(g_steamModel, g_steamSprite)
 #define SteamSprite()      PrepareModel(g_steamModel, g_steamSprite)

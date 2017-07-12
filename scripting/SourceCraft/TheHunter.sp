@@ -22,13 +22,13 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
+#include <lib/jetpack>
 #include <sidewinder>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <trace>
+#include <lib/trace>
 
 #include "sc/SourceCraft"
 #include "sc/PlagueInfect"

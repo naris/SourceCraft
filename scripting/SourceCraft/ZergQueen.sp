@@ -18,7 +18,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
+#include <lib/jetpack>
 #include <sidewinder>
 #define REQUIRE_PLUGIN
 

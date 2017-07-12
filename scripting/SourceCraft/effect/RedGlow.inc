@@ -10,7 +10,7 @@
 #endif
 #define _RedGlow_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupRedGlow() SetupModel(g_redModel, g_redGlow)
 #define RedGlow()      PrepareModel(g_redModel, g_redGlow)

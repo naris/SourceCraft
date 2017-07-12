@@ -10,7 +10,7 @@
 #endif
 #define sounds_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 stock const String:errorWav[]    = "sc/perror.mp3";
 stock const String:deniedWav[]   = "sc/buzz.wav";

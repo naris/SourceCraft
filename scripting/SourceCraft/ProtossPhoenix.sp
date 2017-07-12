@@ -17,8 +17,8 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include "jetpack"
-#include "hgrsource"
+#include <lib/jetpack>
+#include <lib/hgrsource>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

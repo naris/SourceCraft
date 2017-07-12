@@ -19,7 +19,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <sidewinder>
-#include <hgrsource>
+#include <lib/hgrsource>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

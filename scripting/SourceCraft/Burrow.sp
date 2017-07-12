@@ -11,7 +11,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <gametype>
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
@@ -23,15 +23,15 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <hgrsource>
-#include <ztf2grab>
-#include <jetpack>
+#include <lib/hgrsource>
+#include <lib/ztf2grab>
+#include <lib/jetpack>
 #include <remote>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <trace>
+#include <lib/trace>
 
 #include "sc/SourceCraft"
 #include "sc/ShopItems"

@@ -19,12 +19,12 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
+#include <lib/ztf2grab>
+#include <lib/ztf2nades>
+#include <lib/tripmines>
 #include <dod_ammo>
 #include <amp_node>
-#include <ztf2grab>
-#include <ztf2nades>
 #include <ammopacks>
-#include <tripmines>
 #include <tf2teleporter>
 #include <AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN

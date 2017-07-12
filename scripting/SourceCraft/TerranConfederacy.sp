@@ -14,7 +14,7 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
-#include "jetpack.inc"
+#include <lib/jetpack.inc>
 
 #include "sc/SourceCraft"
 #include "sc/util"

@@ -10,7 +10,7 @@
 #endif
 #define _PhysCannonGlow_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupPhysCannonGlow()  SetupModel(g_physCannonModel, g_physCannonGlow)
 #define PhysCannonGlow()       PrepareModel(g_physCannonModel, g_physCannonGlow)

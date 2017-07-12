@@ -10,10 +10,10 @@
 #endif
 #define _freeze_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #undef REQUIRE_PLUGIN
-#include <jetpack>
+#include <lib/jetpack>
 #define REQUIRE_PLUGIN
 
 #include "sc/burrow"

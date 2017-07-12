@@ -20,9 +20,9 @@
 
 #undef REQUIRE_PLUGIN
 #include <remote>
-#include <jetpack>
+#include <lib/jetpack>
 #include <amp_node>
-#include <ztf2grab>
+#include <lib/ztf2grab>
 #include <tf2teleporter>
 #include <AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN

@@ -21,7 +21,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sm_flamethrower>
+#include <lib/sm_flamethrower>
 #include <dod_ignite>
 
 #include "sc/RateOfFire"

@@ -10,7 +10,7 @@
 #endif
 #define _MissileAttack_included
 
-#include <trace>
+#include <lib/trace>
 
 #include "sc/weapons"
 

@@ -20,7 +20,7 @@
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <trace>
+#include <lib/trace>
 
 #include "sc/SourceCraft"
 #include "sc/PlagueInfect"

@@ -11,7 +11,7 @@
 #endif
 #define _Shake_included
 
-#include <Hallucinate>
+#include <lib/Hallucinate>
 #include "effect/message"
 
 stock Shake(const clients[],numClients,on_off=0,Float:amplitude=30.0,Float:duration=1.0,Float:frequency=30.0)

@@ -15,7 +15,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <remote>
-#include <ztf2grab>
+#include <lib/ztf2grab>
 #define REQUIRE_PLUGIN
 
 #include "sc/RecallSounds"

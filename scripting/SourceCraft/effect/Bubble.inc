@@ -10,7 +10,7 @@
 #endif
 #define _bubble_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 stock g_bubbleModel;
 

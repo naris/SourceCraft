@@ -16,14 +16,14 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sm_tnt>
-#include <jetpack>
+#include <lib/sm_tnt>
+#include <lib/jetpack>
 #include "sc/RateOfFire"
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 #define _TRACE
-#include <trace>
+#include <lib/trace>
 
 #include "sc/SourceCraft"
 #include "sc/SpeedBoost"

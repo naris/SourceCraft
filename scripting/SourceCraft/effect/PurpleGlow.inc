@@ -10,7 +10,7 @@
 #endif
 #define _PurpleGlow_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupPurpleGlow()  SetupModel(g_purpleModel, g_purpleGlow)
 #define PurpleGlow()       PrepareModel(g_purpleModel, g_purpleGlow)

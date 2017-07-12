@@ -21,9 +21,9 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <hgrsource>
+#include <lib/hgrsource>
+#include <lib/ubershield>
 #include <sidewinder>
-#include <ubershield>
 #include <ubercharger>
 #define REQUIRE_PLUGIN
 

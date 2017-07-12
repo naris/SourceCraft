@@ -19,8 +19,8 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include "jetpack"
-#include "ztf2grab"
+#include <lib/jetpack>
+#include <lib/ztf2grab>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

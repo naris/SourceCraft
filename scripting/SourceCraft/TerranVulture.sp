@@ -18,9 +18,9 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <firemines>
-#include <tripmines>
-#include <ztf2nades>
+#include <lib/firemines>
+#include <lib/tripmines>
+#include <lib/ztf2nades>
 #include <AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN
 

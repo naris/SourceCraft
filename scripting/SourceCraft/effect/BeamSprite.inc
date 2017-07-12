@@ -10,7 +10,7 @@
 #endif
 #define _BeamSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupBeamSprite() SetupModel(g_beamModel, g_beamSprite)
 #define BeamSprite()      PrepareModel(g_beamModel, g_beamSprite)

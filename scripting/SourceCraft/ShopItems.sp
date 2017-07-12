@@ -29,15 +29,15 @@
 #include <lib/tripmines>
 #include <lib/firemines>
 #include <lib/ztf2nades>
+#include <lib/Hallucinate>
 #include <sidewinder>
 #include <dod_ignite>
-#include <Hallucinate>
 #include <MedicInfect>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <trace>
+#include <lib/trace>
 
 #include "sc/SourceCraft"
 #include "sc/HealthParticle"

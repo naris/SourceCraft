@@ -10,7 +10,7 @@
 #endif
 #define _Explosion_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupFireSprite()      SetupModel(g_fireModel, g_fireSprite)
 #define FireSprite()           PrepareModel(g_fireModel, g_fireSprite)

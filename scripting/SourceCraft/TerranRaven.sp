@@ -27,10 +27,10 @@
 #undef REQUIRE_PLUGIN
 #include <remote>
 #include <amp_node>
-#include <ztf2nades>
-#include <firemines>
-#include <hgrsource>
-#include <ubershield>
+#include <lib/ztf2nades>
+#include <lib/firemines>
+#include <lib/hgrsource>
+#include <lib/ubershield>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

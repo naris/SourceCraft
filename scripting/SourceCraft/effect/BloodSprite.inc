@@ -10,7 +10,7 @@
 #endif
 #define _BloodSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupBloodSpray() SetupModel(g_bloodSprayModel, g_bloodSpray)
 #define BloodSpray()      PrepareModel(g_bloodSprayModel, g_bloodSpray)

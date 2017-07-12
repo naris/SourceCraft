@@ -10,12 +10,12 @@
 #endif
 #define _Mutate_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #undef REQUIRE_PLUGIN
 #include <remote>
 #include <amp_node>
-#include <ztf2grab>
+#include <lib/ztf2grab>
 #define REQUIRE_PLUGIN
 
 #include "sc/menuitemt"

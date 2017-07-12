@@ -9,7 +9,7 @@
 #endif
 #define _stocks_misc_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 /**
  * Adds a file to the downloadables network string table.

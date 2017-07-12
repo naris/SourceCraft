@@ -17,7 +17,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sm_gas>
+#include <lib/sm_gas>
 
 #include "sc/MindControl"
 #define REQUIRE_PLUGIN

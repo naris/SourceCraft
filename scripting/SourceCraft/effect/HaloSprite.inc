@@ -10,7 +10,7 @@
 #endif
 #define _HaloSprite_included
 
-#include <ResourceManager>
+#include <lib/ResourceManager>
 
 #define SetupHaloSprite()  SetupModel(g_haloModel, g_haloSprite)
 #define HaloSprite()       PrepareModel(g_haloModel, g_haloSprite)
