@@ -11,8 +11,8 @@
 #define _WarpIn_included
 
 #undef REQUIRE_PLUGIN
-#include <remote>
-#include <amp_node>
+#include <libtf2/remote>
+#include <libtf2/amp_node>
 #define REQUIRE_PLUGIN
 
 #include "sc/plugins"

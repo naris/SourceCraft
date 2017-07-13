@@ -21,7 +21,7 @@
 #include <lib/firemines>
 #include <lib/tripmines>
 #include <lib/ztf2nades>
-#include <AdvancedInfiniteAmmo>
+#include <libtf2/AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

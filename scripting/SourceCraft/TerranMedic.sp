@@ -19,11 +19,11 @@
 #undef REQUIRE_PLUGIN
 #include <lib/jetpack>
 #include <lib/Hallucinate>
-#include <medipacks>
-#include <ubercharger>
-#include <MedicInfect>
-#include <sm_dod_medic_class>
-#include <dod_drophealthkit_source>
+#include <libtf2/medipacks>
+#include <libtf2/ubercharger>
+#include <libtf2/MedicInfect>
+#include <libdod/sm_dod_medic_class>
+#include <libdod/dod_drophealthkit_source>
 
 #include "sc/PlagueInfect"
 #define REQUIRE_PLUGIN

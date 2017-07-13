@@ -18,7 +18,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <lib/jetpack>
-#include <remote>
+#include <libtf2/remote>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

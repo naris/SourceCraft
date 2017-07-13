@@ -20,7 +20,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sidewinder>
+#include <libtf2/sidewinder>
 #include "sc/MindControl"
 #define REQUIRE_PLUGIN
 

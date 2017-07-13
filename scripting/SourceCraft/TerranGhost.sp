@@ -23,8 +23,8 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sidewinder>
 #include <lib/ubershield>
+#include <libtf2/sidewinder>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

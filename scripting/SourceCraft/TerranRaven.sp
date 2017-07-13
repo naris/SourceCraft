@@ -21,16 +21,16 @@
 #include <tf2_player>
 #include <tf2_meter>
 #include <tf2_flag>
-#include <sidewinder>
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <remote>
-#include <amp_node>
 #include <lib/ztf2nades>
 #include <lib/firemines>
 #include <lib/hgrsource>
 #include <lib/ubershield>
+#include <libtf2/remote>
+#include <libtf2/amp_node>
+#include <libtf2/sidewinder>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

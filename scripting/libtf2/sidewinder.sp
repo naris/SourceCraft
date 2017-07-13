@@ -23,10 +23,10 @@ public Plugin:myinfo =
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 #include <tf2>
 #include <tf2_stocks>
-#include "sdkhooks"
-#include "sidewinder"
+#include <libtf2/sidewinder>
 
 new Handle:g_cvarWeaponList = INVALID_HANDLE;
 new Handle:g_cvarTrackCrits = INVALID_HANDLE;

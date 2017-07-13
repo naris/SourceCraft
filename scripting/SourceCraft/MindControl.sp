@@ -10,12 +10,13 @@
 #include <sourcemod>
 #include <sdktools>
 #include <raytrace>
-#include <remote>
 #include <range>
 
 #include <tf2_stocks>
 #include <tf2_player>
 #include <tf2_objects>
+
+#include <libtf2/remote>
 
 #include "sc/SourceCraft"
 #include "sc/sounds"

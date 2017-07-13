@@ -19,8 +19,8 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sidewinder>
-#include <FakeDeath>
+#include <libtf2/sidewinder>
+#include <libtf2/FakeDeath>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

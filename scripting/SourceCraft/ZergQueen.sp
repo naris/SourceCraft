@@ -19,7 +19,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <lib/jetpack>
-#include <sidewinder>
+#include <libtf2/sidewinder>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

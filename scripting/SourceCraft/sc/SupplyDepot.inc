@@ -18,7 +18,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <AdvancedInfiniteAmmo>
+#include <libtf2/AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN
 
 #include "sc/plugins"

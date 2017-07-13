@@ -502,14 +502,20 @@ new Handle:fwdOnNadeExplode = INVALID_HANDLE;
 #endif
 
 #undef REQUIRE_PLUGIN
-#tryinclude <dod_ignite>
+#tryinclude <libdod/dod_ignite>
+#if !defined _dod_ignite_included
+    #tryinclude <dod_ignite>
+#endif
 #define REQUIRE_PLUGIN
 
 
 /**
  * Description: Manage precaching resources.
  */
-#tryinclude "ResourceManager"
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+	#tryinclude <ResourceManager>
+#endif
 #if !defined _ResourceManager_included
     #define AUTO_DOWNLOAD   -1
 	#define DONT_DOWNLOAD    0

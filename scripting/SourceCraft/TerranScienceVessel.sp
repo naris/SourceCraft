@@ -23,8 +23,8 @@
 #undef REQUIRE_PLUGIN
 #include <lib/hgrsource>
 #include <lib/ubershield>
-#include <sidewinder>
-#include <ubercharger>
+#include <libtf2/sidewinder>
+#include <libtf2/ubercharger>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

@@ -23,10 +23,10 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/hgrsource>
-#include <lib/ztf2grab>
 #include <lib/jetpack>
-#include <remote>
+#include <lib/ztf2grab>
+#include <lib/hgrsource>
+#include <libtf2/remote>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging

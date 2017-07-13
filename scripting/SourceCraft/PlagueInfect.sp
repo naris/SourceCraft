@@ -20,7 +20,7 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <dod_ignite>
+#include <libdod/dod_ignite>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging

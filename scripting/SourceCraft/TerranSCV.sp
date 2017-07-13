@@ -22,11 +22,11 @@
 #include <lib/ztf2grab>
 #include <lib/ztf2nades>
 #include <lib/tripmines>
-#include <dod_ammo>
-#include <amp_node>
-#include <ammopacks>
-#include <tf2teleporter>
-#include <AdvancedInfiniteAmmo>
+#include <libdod/dod_ammo>
+#include <libtf2/amp_node>
+#include <libtf2/ammopacks>
+#include <libtf2/tf2teleporter>
+#include <libtf2/AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

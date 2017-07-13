@@ -21,8 +21,8 @@
 
 #undef REQUIRE_PLUGIN
 #include <lib/hgrsource>
-#include <sidewinder>
 #include <lib/ubershield>
+#include <libtf2/sidewinder>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

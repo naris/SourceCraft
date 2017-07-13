@@ -16,15 +16,22 @@
 #include <tf2_stocks>
 
 #undef REQUIRE_PLUGIN
-#tryinclude "amp_node"
-#tryinclude "ztf2grab"
+#tryinclude <lib/ztf2grab>
+#if !defined _ztf2grab_included
+    #tryinclude <ztf2grab>
+#endif
+
+#tryinclude <libtf2/amp_node>
+#if !defined _amp_node_included
+    #tryinclude <amp_node>
+#endif
 #define REQUIRE_PLUGIN
 
 #define MAXENTITIES 2048
 
 #define PLUGIN_VERSION "5.1"
 
-//#include <remote>
+//#include <libtf2/remote>
 // These define the permissions
 #define HAS_REMOTE 		            (1 << 0)
 #define REMOTE_CAN_ZOMBIE		    (1 << 1)

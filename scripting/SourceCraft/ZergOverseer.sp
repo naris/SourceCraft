@@ -22,8 +22,8 @@
 #undef REQUIRE_PLUGIN
 #include <lib/jetpack>
 #include <lib/piggyback>
-#include <sidewinder>
-#include <AdvancedInfiniteAmmo>
+#include <libtf2/sidewinder>
+#include <libtf2/AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

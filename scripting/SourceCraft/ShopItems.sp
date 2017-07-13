@@ -21,7 +21,6 @@
 #include <tf2_ammo>
 #include <cstrike>
 #include <TeleportPlayer>
-#include <AdvancedInfiniteAmmo>
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
@@ -30,9 +29,10 @@
 #include <lib/firemines>
 #include <lib/ztf2nades>
 #include <lib/Hallucinate>
-#include <sidewinder>
-#include <dod_ignite>
-#include <MedicInfect>
+#include <libdod/dod_ignite>
+#include <libtf2/sidewinder>
+#include <libtf2/MedicInfect>
+#include <libtf2/AdvancedInfiniteAmmo>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging

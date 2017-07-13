@@ -18,8 +18,8 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <sidewinder>
 #include <lib/hgrsource>
+#include <libtf2/sidewinder>
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

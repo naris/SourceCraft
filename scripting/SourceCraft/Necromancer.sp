@@ -24,10 +24,10 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <horsemann>
-#include <MonoSpawn>
-#include <wrangleye>
-#include <behorsemann>
+#include <libtf2/horsemann>
+#include <libtf2/MonoSpawn>
+#include <libtf2/wrangleye>
+#include <libtf2/behorsemann>
 #include "sc/RateOfFire"
 #define REQUIRE_PLUGIN
 

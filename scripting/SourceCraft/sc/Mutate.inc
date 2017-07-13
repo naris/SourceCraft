@@ -13,9 +13,9 @@
 #include <lib/ResourceManager>
 
 #undef REQUIRE_PLUGIN
-#include <remote>
-#include <amp_node>
 #include <lib/ztf2grab>
+#include <libtf2/remote>
+#include <libtf2/amp_node>
 #define REQUIRE_PLUGIN
 
 #include "sc/menuitemt"

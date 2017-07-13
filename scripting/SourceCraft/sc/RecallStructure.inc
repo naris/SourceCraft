@@ -14,8 +14,8 @@
 #include <tf2_flag>
 
 #undef REQUIRE_PLUGIN
-#include <remote>
 #include <lib/ztf2grab>
+#include <libtf2/remote>
 #define REQUIRE_PLUGIN
 
 #include "sc/RecallSounds"

@@ -22,7 +22,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <lib/sm_flamethrower>
-#include <dod_ignite>
+#include <libdod/dod_ignite>
 
 #include "sc/RateOfFire"
 #define REQUIRE_PLUGIN
