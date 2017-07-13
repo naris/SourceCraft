@@ -113,18 +113,18 @@ public OnPluginStart()
         {
             HookEvent("player_jump",PlayerJumpEvent);
 
-            m_iAccount = FindSendPropOffs("CCSPlayer", "m_iAccount");
+            FindSendPropInfo("CCSPlayer", "m_iAccount", .local_offset=m_iAccount);
         }
         case Game_TF:
         {
-            HookEvent("player_changeclass",PlayerChangeClassEvent);
-            HookEvent("teamplay_teambalanced_player",PlayerChangeClassEvent);
+			HookEvent("player_changeclass",PlayerChangeClassEvent);
+			HookEvent("teamplay_teambalanced_player",PlayerChangeClassEvent);
 
-            HookEvent("arena_round_start",RoundStartEvent,EventHookMode_PostNoCopy);
-            HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy);
-            HookEvent("teamplay_round_active",RoundStartEvent,EventHookMode_PostNoCopy);
+			HookEvent("arena_round_start",RoundStartEvent,EventHookMode_PostNoCopy);
+			HookEvent("teamplay_round_start",RoundStartEvent,EventHookMode_PostNoCopy);
+			HookEvent("teamplay_round_active",RoundStartEvent,EventHookMode_PostNoCopy);
 
-            m_iAccount = FindSendPropOffs("CTFPlayer", "m_nCurrency");
+			FindSendPropInfo("CTFPlayer", "m_nCurrency", .local_offset=m_iAccount);
         }
     }
 

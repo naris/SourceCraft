@@ -22,7 +22,7 @@ DisplayDamage(client, victim, hp, const String:weapon[],
 
         if (IsValidClient(client))
         {
-            GetClientAuthString(client,steamID,sizeof(steamID));
+            GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
             GetTeamName(GetClientTeam(client), team, sizeof(team));
             clientIsFake = IsFakeClient(client);
             clientInGame = true;
@@ -53,7 +53,7 @@ DisplayDamage(client, victim, hp, const String:weapon[],
         }
         else if (IsValidClient(victim))
         {
-            GetClientAuthString(victim,victimID,sizeof(victimID));
+            GetClientAuthId(victim, AuthId_Steam2, victimID, sizeof(victimID));
             GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
             victimIsFake = IsFakeClient(victim);
             victimInGame = true;
@@ -354,7 +354,7 @@ DisplayKill(client, victim, xp=0, const String:weapon[]="",
 
         if (IsValidClient(client))
         {
-            GetClientAuthString(client,steamID,sizeof(steamID));
+            GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
             GetTeamName(GetClientTeam(client), team, sizeof(team));
             clientIsFake = IsFakeClient(client);
             clientInGame = true;
@@ -385,7 +385,7 @@ DisplayKill(client, victim, xp=0, const String:weapon[]="",
         }
         else if (IsValidClient(victim))
         {
-            GetClientAuthString(victim,victimID,sizeof(victimID));
+            GetClientAuthId(victim, AuthId_Steam2, victimID, sizeof(victimID));
             GetTeamName(GetClientTeam(victim), victimTeam, sizeof(victimTeam));
             victimIsFake = IsFakeClient(victim);
             victimInGame = true;

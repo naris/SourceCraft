@@ -73,9 +73,9 @@ public OnMapStart()
 
 public OnPluginStart()
 {
-    m_vecBaseVelocity = FindSendPropOffs( "CBasePlayer", "m_vecBaseVelocity" );
-    m_vecVelocity_0 = FindSendPropOffs( "CBasePlayer", "m_vecVelocity[0]" );
-    m_vecVelocity_1 = FindSendPropOffs( "CBasePlayer", "m_vecVelocity[1]" );
+    FindSendPropInfo("CBasePlayer", "m_vecVelocity[0]", .local_offset=m_vecVelocity_0);
+    FindSendPropInfo("CBasePlayer", "m_vecVelocity[1]", .local_offset=m_vecVelocity_1);
+    FindSendPropInfo("CBasePlayer", "m_vecBaseVelocity", .local_offset=m_vecBaseVelocity);
 
     g_GameType = War3_GetGame();
     if(g_GameType==CS)

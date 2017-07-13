@@ -73,10 +73,10 @@ public OnPluginStart()
 #endif
     
     CreateTimer(0.2,CalcBlink,_,TIMER_REPEAT);
-    OriginOffset=FindSendPropOffs("CBaseEntity","m_vecOrigin");
-    MyWeaponsOffset=FindSendPropOffs("CBaseCombatCharacter","m_hMyWeapons");
-    //Clip1Offset=FindSendPropOffs("CBaseCombatWeapon","m_iClip1");
-    AmmoOffset=FindSendPropOffs("CBasePlayer","m_iAmmo");
+    FindSendPropInfo("CBaseEntity", "m_vecOrigin", .local_offset=OriginOffset);
+    FindSendPropInfo("CBaseCombatCharacter", "m_hMyWeapons", .local_offset=MyWeaponsOffset);
+//  FindSendPropInfo("CBaseCombatWeapon", "m_iClip1", .local_offset=Clip1Offset);
+    FindSendPropInfo("CBasePlayer", "m_iAmmo", .local_offset=AmmoOffset);
     
     if(GAMECSANY){
         HookEvent("player_death",PlayerDeathEvent);

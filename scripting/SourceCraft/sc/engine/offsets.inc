@@ -13,7 +13,7 @@ bool:InitOffsets()
 {
     new bool:ret=true;
 
-    m_clrRender = FindSendPropOffs("CBaseAnimating","m_clrRender");
+    FindSendPropInfo("CBaseAnimating", "m_clrRender", .local_offset=m_clrRender);
     if (m_clrRender==-1)
     {
         LogError("Error finding m_clrRender offset.");

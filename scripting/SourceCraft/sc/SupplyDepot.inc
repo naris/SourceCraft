@@ -474,7 +474,8 @@ stock SupplyAmmo(client, amount, const String:source[],
                 }
             }
 
-            new m_iAmmo = FindSendPropOffs("CDODPlayer", "m_iAmmo");
+            new m_iAmmo; // = FindSendPropOffs("CDODPlayer", "m_iAmmo");
+            FindSendPropInfo("CDODPlayer", "m_iAmmo", .local_offset=m_iAmmo);
             for (new i=0; i < sizeof(Slot); i++)
             {
                 if (i == 0 && !(!types || (types & SupplyDefault) || (types & SupplyPrimary)))

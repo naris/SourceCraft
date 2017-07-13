@@ -1059,7 +1059,7 @@ LoadPlayerData(client)
               client, ValidClientIndex(client));
 
     decl String:steamid[CLASS_STRING_LENGTH];
-    if (GetClientAuthString(client,steamid,sizeof(steamid)))
+    if (GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
     {
         // Generate the 'other' steamid and check that one also.
         decl String:steamidalt[CLASS_STRING_LENGTH];
@@ -1711,7 +1711,7 @@ SavePlayerData(client)
         decl String:key[CLASS_STRING_LENGTH];
         decl String:steamid[CLASS_STRING_LENGTH];
         if (IsClientConnected(client) &&
-                GetClientAuthString(client,steamid,sizeof(steamid)))
+			GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
         {
             strcopy(key, sizeof(key), steamid);
         }
@@ -2055,7 +2055,7 @@ InsertPlayerData(client, bool:threaded)
               client, ValidClientIndex(client), threaded);
 
     decl String:steamid[ID_STRING_LENGTH];
-    if (GetClientAuthString(client,steamid,sizeof(steamid)))
+    if (GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
     {
         if (DatabaseAvailable(DB_MAIN))
         {
@@ -2987,7 +2987,7 @@ DisablePlayer(admin, target)
         {
             decl String:steamid[ID_STRING_LENGTH];
             if (IsClientConnected(target) &&
-                GetClientAuthString(target,steamid,sizeof(steamid)))
+                GetClientAuthId(target, AuthId_Steam2, steamid, sizeof(steamid)))
             {
                 decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
                 Format(SQLString,sizeof(SQLString),
@@ -3087,7 +3087,7 @@ EnablePlayer(admin, target)
         {
             decl String:steamid[ID_STRING_LENGTH];
             if (IsClientConnected(target) &&
-                GetClientAuthString(target,steamid,sizeof(steamid)))
+                GetClientAuthId(target, AuthId_Steam2, steamid, sizeof(steamid)))
             {
                 decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
                 Format(SQLString,sizeof(SQLString),
@@ -3188,7 +3188,7 @@ DeletePlayer(admin, target)
         {
             decl String:steamid[ID_STRING_LENGTH];
             if (IsClientConnected(target) &&
-                GetClientAuthString(target,steamid,sizeof(steamid)))
+                GetClientAuthId(target, AuthId_Steam2, steamid, sizeof(steamid)))
             {
                 decl String:SQLString[SHORT_QUERY_STRING_LENGTH];
                 Format(SQLString,sizeof(SQLString),

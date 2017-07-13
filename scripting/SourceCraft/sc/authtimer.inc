@@ -22,7 +22,7 @@ stock Handle:AuthTimer(Float:delay,index,Timer:func, flags=0)
 stock Handle:AuthTimerEx(Float:delay,index,Timer:func, &Handle:pack, flags=0)
 {
     decl String:auth[64];
-    GetClientAuthString(index,auth,sizeof(auth));
+    GetClientAuthId(index, AuthId_Steam2, auth, sizeof(auth));
 
     new Handle:timer = CreateDataTimer(delay,func,pack, flags);
     if (timer != INVALID_HANDLE && pack != INVALID_HANDLE)
@@ -42,7 +42,7 @@ stock ClientOfAuthString(const String:auth[])
     {
         if (IsClientInGame(x))
         {
-            GetClientAuthString(x,authStr,sizeof(authStr));
+            GetClientAuthId(x, AuthId_Steam2, authStr, sizeof(authStr));
             if (StrEqual(auth,authStr))
             {
                 index = x;
@@ -69,7 +69,7 @@ stock ClientOfAuthTimer(Handle:pack)
         if (IsClientInGame(index))
         {
             decl String:authStr[64];
-            GetClientAuthString(index,authStr,sizeof(authStr));
+            GetClientAuthId(index, AuthId_Steam2, authStr, sizeof(authStr));
             if (!StrEqual(auth,authStr))
                 index = 0;
         }

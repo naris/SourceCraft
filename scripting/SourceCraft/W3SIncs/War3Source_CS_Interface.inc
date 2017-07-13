@@ -53,8 +53,8 @@ stock bool:War3_GetCSArmorHasHelmet(client) {
  * @param hashelmet   True to give helmet, false to remove
  * @noreturn
  */
-stock War3_SetCSArmorHasHelmet(client,bool:hashelmet) {
-    return SetEntProp(client, Prop_Send, "m_bHasHelmet",hashelmet? 1:0, 1);
+stock void War3_SetCSArmorHasHelmet(client,bool:hashelmet) {
+    SetEntProp(client, Prop_Send, "m_bHasHelmet",hashelmet? 1:0, 1);
 }
 
 #if !defined SOURCECRAFT // Not Implemented!

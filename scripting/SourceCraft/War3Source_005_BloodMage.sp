@@ -117,9 +117,9 @@ public OnPluginStart()
     MoneyOffsetCS=FindSendPropInfo("CCSPlayer","m_iAccount");
 #endif
 
-    MyWeaponsOffset=FindSendPropOffs("CBaseCombatCharacter","m_hMyWeapons");
-//    Clip1Offset=FindSendPropOffs("CBaseCombatWeapon","m_iClip1");
-    AmmoOffset=FindSendPropOffs("CBasePlayer","m_iAmmo");
+    FindSendPropInfo("CBaseCombatCharacter", "m_hMyWeapons", .local_offset=MyWeaponsOffset);
+//  FindSendPropInfo("CBaseCombatWeapon", "m_iClip1", .local_offset=Clip1Offset);
+    FindSendPropInfo("CBasePlayer", "m_iAmmo", .local_offset=AmmoOffset);
     
     HookEvent("player_death",PlayerDeathEvent);
     HookEvent("player_team",PlayerTeamEvent);

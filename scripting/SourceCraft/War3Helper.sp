@@ -1543,21 +1543,21 @@ bool:War3Source_InitOffset()
 {
     new bool:ret=true;
 
-    MyWeaponsOffset=FindSendPropOffs("CBaseCombatCharacter","m_hMyWeapons");
+    FindSendPropInfo("CBaseCombatCharacter", "m_hMyWeapons", .local_offset=MyWeaponsOffset);
     if(MyWeaponsOffset==-1)
     {
         PrintToServer("[War3Source] Error finding weapon list offset.");
         ret=false;
     }
 
-    Clip1Offset=FindSendPropOffs("CBaseCombatWeapon","m_iClip1");
+    FindSendPropInfo("CBaseCombatWeapon", "m_iClip1", .local_offset=Clip1Offset);
     if(Clip1Offset==-1)
     {
         PrintToServer("[War3Source] Error finding clip1 offset.");
         ret=false;
     }
 
-    AmmoOffset=FindSendPropOffs("CBasePlayer","m_iAmmo");
+    FindSendPropInfo("CBasePlayer", "m_iAmmo", .local_offset=AmmoOffset);
     if(AmmoOffset==-1)
     {
         PrintToServer("[War3Source] Error finding ammo offset.");

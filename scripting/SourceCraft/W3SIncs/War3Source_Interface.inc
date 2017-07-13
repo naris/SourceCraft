@@ -1713,7 +1713,9 @@ native W3IsBuffInvised(client); //returns true if client alpha is <50
 #else
 stock W3IsBuffInvised(client) //returns true if client alpha is <50
 {
-    return GetEntData(client,FindSendPropOffs("CBaseAnimating","m_clrRender")+3,1)<50;
+	new m_clrRender;
+	FindSendPropInfo("CBaseAnimating", "m_clrRender", .local_offset=m_clrRender);
+	return GetEntData(client,m_clrRender+3,1)<50;
 }
 #endif
 

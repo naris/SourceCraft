@@ -406,7 +406,7 @@ ShowInfo(client)
 {
     decl String:url[128];
     decl String:steamid[CLASS_STRING_LENGTH];
-    if (GetClientAuthString(client,steamid,sizeof(steamid)))
+    if (GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
         Format(url, sizeof(url), g_InfoURL, steamid);
     else
         strcopy(url, sizeof(url), g_InfoBaseURL);

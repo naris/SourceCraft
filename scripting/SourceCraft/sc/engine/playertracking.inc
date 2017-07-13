@@ -1036,7 +1036,7 @@ ResetPlayer(client, bool:clear)
 
     // Get The Player's ID (for debugging)
     playerID[client][0] ='\0';
-    GetClientAuthString(client,playerID[client],sizeof(playerID[]));
+    GetClientAuthId(client, AuthId_Steam2, playerID[client], sizeof(playerID[]));
 
     // Get The Player's Name (for debugging)
     playerName[client][0] ='\0';

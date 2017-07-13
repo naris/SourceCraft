@@ -1043,7 +1043,8 @@ public EventMissionComplete(Handle:event,const String:name[],bool:dontBroadcast)
 
 GiveTeamMvpAwards(team)
 {
-    new ScoreOffset = FindSendPropOffs("CTFPlayerResource", "m_iTotalScore");
+    new ScoreOffset; // = FindSendPropOffs("CTFPlayerResource", "m_iTotalScore");
+    FindSendPropInfo("CTFPlayerResource", "m_iTotalScore", .local_offset=ScoreOffset);
     new EntPlayerManager = FindEntityByClassname(-1, "tf_player_manager");
     if (EntPlayerManager > 0 && ScoreOffset > 0)
     {
