@@ -139,7 +139,7 @@ public OnWar3EventPostHurt(victim, attacker, Float:damage, const String:weapon[3
     newdamage = newdamage + DamageIncrease;
     if(newdamage > 0 && ValidPlayer(victim, true))
     {
-        //new victimHealth = GetClientHealth(victim);
+        new victimHealth = GetClientHealth(victim);
         War3_LogInfo("Dealing crit damage %i of player \"{client %i}\" to victim \"{client %i}\" (%i hp)", newdamage, attacker, victim, victimHealth);
         War3_DealDamage(victim, newdamage, attacker, _, "weapon_crit");
     }

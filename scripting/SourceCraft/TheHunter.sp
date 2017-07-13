@@ -23,7 +23,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <lib/jetpack>
-#include <sidewinder>
+#include <libtf2/sidewinder>
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
