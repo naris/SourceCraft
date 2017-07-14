@@ -202,7 +202,10 @@ public Plugin:myinfo = {
 /**
  * Description: Manage precaching resources.
  */
-#tryinclude "ResourceManager"
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #tryinclude <ResourceManager>
+#endif
 #if !defined _ResourceManager_included
     stock SetupModel(const String:model[], &index=0, bool:download=false,
                      bool:precache=false, bool:preload=false)

@@ -111,7 +111,10 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 /**
  * Description: Manage precaching resources.
  */
-#tryinclude "ResourceManager"
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #tryinclude <ResourceManager>
+#endif
 #if !defined _ResourceManager_included
     #define AUTO_DOWNLOAD   -1
 	#define DONT_DOWNLOAD    0

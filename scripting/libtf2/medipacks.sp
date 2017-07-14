@@ -204,7 +204,10 @@ new Handle:g_MedipacksRef = INVALID_HANDLE;
 /**
  * Description: Manage precaching resources.
  */
-#tryinclude "ResourceManager"
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #tryinclude <ResourceManager>
+#endif
 #if !defined _ResourceManager_included
     #define AUTO_DOWNLOAD   -1
 	#define DONT_DOWNLOAD    0

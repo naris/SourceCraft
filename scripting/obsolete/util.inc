@@ -45,7 +45,7 @@ stock StringToLower(String:text[], maxlength=0)
 
 #define USE_RESMANAGER
 #if defined USE_RESMANAGER
-#include <ResourceManager>
+#include <lib/ResourceManager>
 stock SetupPreloadTrie()
 {
     // Replaced with the ResourceManager
