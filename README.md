@@ -60,8 +60,8 @@ Sourcecraft options are accessed by typing 'menu' into chat. From there you can 
 
 Sourcecraft, in all its glory, does a lot of unusual and unexpected things. Do not be surprised to spawn and find someone from the other team waiting there to greet you. Some engineers can carry their sentry guns, some spies run as fast as a scout and cloak for a lot longer than normal, and medics often charge ubers quicker. Just about anything can happen.
 
-Commands:|
--------------------
+Commands:          |                              |
+-------------------|------------------------------|
 say menu:|Bring up the SourceCraft menu.
 sc_menu:|Allows you to bind a key to bring up the SourceCraft menu.
 say showxp:|Show the current experience information for the current race.
