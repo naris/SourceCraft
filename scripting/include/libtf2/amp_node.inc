@@ -141,9 +141,9 @@ public SharedPlugin:__pl_amp_node =
 public __pl_amp_node_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlAmpNode");
-	MarkNativeAsOptional("SetBuildingType");
 	MarkNativeAsOptional("SetAmplifier");
 	MarkNativeAsOptional("SetRepairNode");
+	MarkNativeAsOptional("SetUpgradeStation");
 	MarkNativeAsOptional("CountConvertedBuildings");
 	MarkNativeAsOptional("ConvertToUpgradeStation");
 	MarkNativeAsOptional("ConvertToRepairNode");
