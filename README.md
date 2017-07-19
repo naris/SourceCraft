@@ -60,35 +60,35 @@ Sourcecraft options are accessed by typing 'menu' into chat. From there you can 
 
 Sourcecraft, in all its glory, does a lot of unusual and unexpected things. Do not be surprised to spawn and find someone from the other team waiting there to greet you. Some engineers can carry their sentry guns, some spies run as fast as a scout and cloak for a lot longer than normal, and medics often charge ubers quicker. Just about anything can happen.
 
-Commands:
-
-say menu: 	  Bring up the SourceCraft menu.
-sc_menu: 	  Allows you to bind a key to bring up the SourceCraft menu.
-say showxp: 	  Show the current experience information for the current race.
-say changerace:   Change to a different race
-say raceinfo:	  Display information for all the races.
-say upgradeinfo:  Display the upgrade information for the current race.
-say reset:	  Resets all your upgrade levels for the current race and allows you to rechoose
-say upgrade:	  Spend any unused upgrade points you have.
-say showupgrades: Show which upgrade levels you currently have.
-say shopmenu:	  Bring up the shop menu to buy items.
-say info:	  Show your status (race, level, upgrades and items).
-say inv:	  Show what items you currently possess
-say crystals:	  Show your current crystal count.
-say vespene:	  Show your current vespene gas amount.
-say energy:	  Show your current energy
-say playerinfo:   Show someone else\'s status.
-say settings:	  Change your settings
-sc_admin:	  Bring up the admin menu to modify player info.
-sc_buy:		  Allows you to bind buying shop items.
-+ultimate1:	  Use your 1st ultimate that requires a bind
-+ultimate2:	  Use your 2nd ultimate that requires a bind
-+ultimate3:	  Use your 3rd ultimate that requires a bind
-+ultimate4:	  Use your 4th ultimate that requires a bind
-+item1:		  Throw a frag nade if you have one
-+item2:		  Throw a special nade if you have one
-+item3:		  Plant a mine if you have one
-+item4:		  Plant a tripmine if you have one
-+nade1:		  Throw a frag nade if you have one
-+nade2:		  Throw a special nade if you have one
+Commands:|
+-------------------
+say menu:|Bring up the SourceCraft menu.
+sc_menu:|Allows you to bind a key to bring up the SourceCraft menu.
+say showxp:|Show the current experience information for the current race.
+say changerace:|Change to a different race
+say raceinfo:|Display information for all the races.
+say upgradeinfo:|Display the upgrade information for the current race.
+say reset:|Resets all your upgrade levels for the current race and allows you to rechoose
+say upgrade:|Spend any unused upgrade points you have.
+say showupgrades:|Show which upgrade levels you currently have.
+say shopmenu:|Bring up the shop menu to buy items.
+say info:|Show your status (race, level, upgrades and items).
+say inv:|Show what items you currently possess
+say crystals:|Show your current crystal count.
+say vespene:|Show your current vespene gas amount.
+say energy:|Show your current energy
+say playerinfo:|Show someone else\'s status.
+say settings:|Change your settings
+sc_admin:|Bring up the admin menu to modify player info.
+sc_buy:|Allows you to bind buying shop items.
++ultimate1:|Use your 1st ultimate that requires a bind
++ultimate2:|Use your 2nd ultimate that requires a bind
++ultimate3:|Use your 3rd ultimate that requires a bind
++ultimate4:|Use your 4th ultimate that requires a bind
++item1:|Throw a frag nade if you have one
++item2:|Throw a special nade if you have one
++item3:|Plant a mine if you have one
++item4:|Plant a tripmine if you have one
++nade1:|Throw a frag nade if you have one
++nade2:|Throw a special nade if you have one
 
