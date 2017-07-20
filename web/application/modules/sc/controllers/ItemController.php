@@ -253,4 +253,3 @@ class Sc_ItemController extends Zend_Controller_Action
 	}
 }
 ?>
-

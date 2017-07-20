@@ -240,4 +240,3 @@ class Sc_PlayerController extends Zend_Controller_Action
     }
 }
 ?>
-

@@ -195,4 +195,3 @@ class Sc_RaceController extends Zend_Controller_Action
 	}
 }
 ?>
-
