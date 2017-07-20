@@ -5,9 +5,9 @@
  * @author  
  * @version 
  */
-set_include_path('.' . PATH_SEPARATOR . '../../library' . PATH_SEPARATOR .
-                 '../../application/modules/default/models/' . PATH_SEPARATOR . 
-                 '../../application/modules/sc/models/' . PATH_SEPARATOR .
+set_include_path('.' . PATH_SEPARATOR . '../library' . PATH_SEPARATOR .
+                 '../application/modules/default/models/' . PATH_SEPARATOR . 
+                 '../application/modules/sc/models/' . PATH_SEPARATOR .
                  get_include_path());
 
 require_once 'Initializer.php';
