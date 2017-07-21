@@ -142,7 +142,10 @@ Handle:ConnectToDatabase(connection, bool:threaded)
             SQL_SetOptions(g_DbHandle[connection]);
 
             if (SQL_CheckRaceTable(g_DbHandle[connection]))
+            {
+                LogMessage("sc_races table not found in Database, creating tables!");
                 SQL_CreateRaceTables(g_DbHandle[connection]);
+            }
 
             if (g_bCreate || SQL_CheckItemTable(g_DbHandle[connection]))
                 SQL_CreateItemTable(g_DbHandle[connection]);
@@ -270,10 +273,8 @@ bool:SQL_CheckRaceTable(Handle:dbHandle)
     new Handle:query=SQL_Query(dbHandle,"show tables like 'sc_races'");
     if (query)
     {
-        if (!SQL_HasResultSet(query) ||
-            !SQL_FetchRow(query))
+        if (!SQL_HasResultSet(query) || !SQL_FetchRow(query))
         {
-            LogError("sc_races table not found in Database!");
             g_bCreate = true;
         }
         CloseHandle(query);
