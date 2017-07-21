@@ -238,7 +238,7 @@ SQL_CreateItemTable(Handle:dbHandle)
     new String:create_sc_items[][] = {
         "CREATE TABLE IF NOT EXISTS sc_items",
         "(item_ident int not null auto_increment,",
-        " item_name varchar(20) not null,",
+        " item_name varchar(32) not null,",
         " long_name varchar(64),",
         " category varchar(64),",
         " description text,",
@@ -249,8 +249,9 @@ SQL_CreateItemTable(Handle:dbHandle)
         " image varchar(64),",
         " add_date timestamp NOT NULL default current_timestamp,",
         "PRIMARY KEY(item_ident),",
-        "INDEX(long_name))",
-        "ENGINE=INNODB" };
+        "UNIQUE KEY `item_name_UNIQUE` (`item_name`),",
+        "KEY `long_name` (`long_name`)",
+        ") ENGINE=INNODB" };
 
     LogMessage("Creating Item Table");
 
@@ -294,8 +295,8 @@ SQL_CreateRaceTables(Handle:dbHandle)
         " description text,",
         " image varchar(64),",
         " add_date timestamp NOT NULL default current_timestamp,",
-        "PRIMARY KEY(faction))",
-        "ENGINE=INNODB" };
+        "PRIMARY KEY(faction)",
+        ") ENGINE=INNODB" };
 
     LogMessage("Creating Race Tables");
 
@@ -315,11 +316,11 @@ SQL_CreateRaceTables(Handle:dbHandle)
         new String:create_sc_races[][] = {
             "CREATE TABLE IF NOT EXISTS sc_races ",
             "(race_ident int not null auto_increment,",
-            " race_name varchar(20) not null,",
+            " race_name varchar(32) not null,",
             " long_name varchar(64),",
             " required_level int,",
             " tech_level int,",
-            " parent_name varchar(20),",
+            " parent_name varchar(32),",
             " description text,",
             " image varchar(64),",
             " add_date timestamp default current_timestamp,",
@@ -332,9 +333,10 @@ SQL_CreateRaceTables(Handle:dbHandle)
             "               'Sentinel', 'Naga', 'Titan', 'XelNaga',",
             "               'Pony'),",
             "PRIMARY KEY(race_ident),",
-            "INDEX(type,race_name),",
-            "INDEX(race_name))",
-            "ENGINE=INNODB" };
+            "UNIQUE KEY `race_name_UNIQUE` (`race_name`),",
+            "KEY `type` (`type`,`race_name`),",
+            "KEY `race_name` (`race_name`)",
+            ") ENGINE=INNODB" };
 
         ImplodeStrings(create_sc_races, sizeof(create_sc_races),
                        " ", SQLString, sizeof(SQLString));
@@ -353,7 +355,7 @@ SQL_CreateRaceTables(Handle:dbHandle)
                 "(race_ident int NOT NULL,",
                 " upgrade int NOT NULL,",
                 " category int,",
-                " upgrade_name VARCHAR(20),",
+                " upgrade_name VARCHAR(32),",
                 " long_name VARCHAR(64),",
                 " description TEXT,",
                 " image varchar(64),",
@@ -369,6 +371,7 @@ SQL_CreateRaceTables(Handle:dbHandle)
                 " cooldown int NOT NULL default '0',",
                 " add_date timestamp NOT NULL default current_timestamp,",
                 "PRIMARY KEY (race_ident, upgrade),",
+                "UNIQUE KEY `race-upgrade_name` (`race_ident`,`upgrade_name`),",
                 "FOREIGN KEY (race_ident)",
                 "        REFERENCES sc_races(race_ident)",
                 "        ON DELETE CASCADE ON UPDATE CASCADE)",

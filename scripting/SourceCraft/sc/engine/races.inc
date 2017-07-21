@@ -750,6 +750,9 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
                     new Handle:upgradeHandle=GetUpgradeHandle(raceHandle, upgrade);
                     if (!GetArrayCell(upgradeHandle, _:UpgradeData_Completed))
                     {
+                        decl String:upgradeShortName[NAME_STRING_LENGTH];
+                        GetUpgradeShortName(raceHandle, upgrade, upgradeShortName, sizeof(upgradeShortName));
+
                         decl String:upgradeName[NAME_STRING_LENGTH];
                         GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName));
 
@@ -773,7 +776,7 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
 
                         // Update database
                         if (InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
-                                          short, upgradeName, upgradeDesc, upgradeImage,
+                                          upgradeShortName, upgradeName, upgradeDesc, upgradeImage,
                                           cost_crystals, cost_vespene, req_level,
                                           max_level, energy, accumulated,
                                           recurring_energy, crystals,
@@ -1001,6 +1004,9 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
 
     if (GetRaceIsNew(raceHandle) || g_bCreate || g_bUpdate)
     {
+        decl String:upgradeShortName[SHORT_STRING_LENGTH];
+        GetUpgradeShortName(raceHandle, upgrade, upgradeShortName, sizeof(upgradeShortName));
+
         decl String:upgradeName[NAME_STRING_LENGTH];
         GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName));
 
@@ -1012,7 +1018,7 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
 
         // Update database with upgrade description
         if (InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
-                          short, upgradeName, upgradeDesc, upgradeImage,
+                          upgradeShortName, upgradeName, upgradeDesc, upgradeImage,
                           cost_crystals, cost_vespene, required_level,
                           max_level, energy, accumulated,
                           recurring_energy, crystals,
