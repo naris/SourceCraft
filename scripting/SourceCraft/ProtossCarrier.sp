@@ -104,7 +104,7 @@ public OnSourceCraftReady()
     if (GameType != tf2 || !IsRemoteAvailable())
     {
         SetUpgradeDisabled(raceID, capacityID, true);
-        LogError("Disabling Protoss Carrier:Capacity due to remote is not available (or gametype != tf2)");
+        LogMessage("Disabling Protoss Carrier:Capacity due to remote is not available (or gametype != tf2)");
     }
     else if (cfgAllowSentries <= 1 || cfgMaxObjects <= 1)
     {
@@ -119,7 +119,7 @@ public OnSourceCraftReady()
     if (!IsJetpackAvailable())
     {
         SetUpgradeDisabled(raceID, jetpackID, true);
-        LogError("Disabling Protoss Carrier:Gravitic Drive due to jetpack is not available");
+        LogMessage("Disabling Protoss Carrier:Gravitic Drive due to jetpack is not available");
     }
 
     // Ultimate 2
