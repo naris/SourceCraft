@@ -89,7 +89,7 @@ UpdateThreadsInFlight(const String:key[], value)
         threads += value;
         if (threads > 0 || value > 0)
             SetTrieValue(g_SaveThreadsInFlight, key, threads, true);
-        else                
+        else
             RemoveFromTrie(g_SaveThreadsInFlight, key);
     }
 
@@ -161,12 +161,12 @@ public SQL_Connected(Handle:owner, Handle:hndl, const String:error[], any:connec
 {
     g_DbHandle[connection] = hndl;
     if (hndl == INVALID_HANDLE || error[0] != '\0')
-	{
+    {
         LogError("Error connecting to the database:%s",
                  error);
-	}
-	else
-	{
+    }
+    else
+    {
         LogToGame("Connection %d:%08x connected to the database",
                   connection, hndl);
 
@@ -1436,9 +1436,8 @@ public SQL_LoadPlayerRaceData(Handle:owner, Handle:query, const String:error[], 
                     SetRaceInfoLoaded(raceInfo,DataOK);
                     SetRaceInfoSavedXP(raceInfo,xp);
 
-                    Trace("Load %d:%L's data, race=%d, xp=%d, level=%d", \
-                          client, ValidClientIndex(client), \
-                          raceId, xp, level);
+                    Trace("Load %d:%L's data, race=%d, xp=%d, level=%d, g_bSaveUpgrades=%d, g_bChargeForUpgrades=%d", \
+                          client, ValidClientIndex(client), raceId, xp, level, g_bSaveUpgrades, g_bChargeForUpgrades);
 
                     if (g_bSaveUpgrades || !g_bChargeForUpgrades)
                     {
@@ -1715,11 +1714,11 @@ SavePlayerData(client)
         decl String:key[CLASS_STRING_LENGTH];
         decl String:steamid[CLASS_STRING_LENGTH];
         if (IsClientConnected(client) &&
-			GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
+            GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
         {
             strcopy(key, sizeof(key), steamid);
         }
-        else                
+        else
         {
             Format(key, sizeof(key), "%d", player_ident);
             steamid[0] = '\0';
@@ -2231,7 +2230,7 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
               "client=%d:%L, player_ident=%d, race=%d, threaded=%d, key=%s", \
               client, ValidClientIndex(client), player_ident, race, threaded, key);
 
-    new bool:success    = false;           
+    new bool:success    = false;
     new Handle:raceInfo = GetRaceInfo(client, race);
     if (raceInfo != INVALID_HANDLE)
     {
@@ -2241,8 +2240,8 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
         new level = GetRaceInfoLevel(raceInfo);
         new xp    = GetRaceInfoXP(raceInfo);
 
-        Trace("%d:%L Save Race Data, race=%d, raceInfo=0x%08x, race_ident=%d, level=%d, xp=%d", \
-              client, ValidClientIndex(client), race, raceInfo, race_ident, level, xp);
+        Trace("%d:%L Save Race Data, race=%d, raceInfo=0x%08x, race_ident=%d, level=%d, xp=%d, threaded=%d", \
+              client, ValidClientIndex(client), race, raceInfo, race_ident, level, xp, threaded);
 
         new String:SQLString[QUERY_STRING_LENGTH];
         Format(SQLString,sizeof(SQLString), "INSERT INTO sc_player_races (player_ident,race_ident,xp,level) VALUES (%d,%d,%d,%d) ON DUPLICATE KEY UPDATE xp=%d,level=%d", player_ident, race_ident, xp, level, xp, level);
@@ -2268,6 +2267,7 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
             WritePackCell(dataPack, !saveUpgrades);
             WritePackString(dataPack, key);
 
+            Trace("Save player data in thread, saveUpgrades=%d", saveUpgrades);
             UpdateThreadsInFlight(key, 1);
             SQL_TQuery(g_DbHandle[DB_THREAD], SQL_SavePlayerRaceData, SQLString, dataPack);
 
@@ -2285,6 +2285,7 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
             decl String:error[ERROR_STRING_LENGTH]; error[0] = '\0';
             decl String:raceName[SHORT_STRING_LENGTH]; raceName[0] = '\0';
 
+            Trace("Save player data no thread");
             SQL_LockDatabase(g_DbHandle[DB_MAIN]);
 
             success = SQL_FastQuery(g_DbHandle[DB_MAIN],SQLString);
@@ -2334,6 +2335,7 @@ bool:SavePlayerRaceData(client, player_ident, race, bool:threaded, const String:
             {
                 SetRaceInfoSavedXP(raceInfo,xp);
 
+                Trace("Save player upgrade data, g_bSaveUpgrades=%d, g_bChargeForUpgrades=%d", g_bSaveUpgrades, g_bChargeForUpgrades);
                 //if (g_bSaveUpgrades || !g_bChargeForUpgrades)
                 {
                     if (threaded && DatabaseAvailable(DB_THREAD))
@@ -2822,6 +2824,7 @@ ThreadedSavePlayerUpgrades(client, player_ident, race_ident, raceId,
             WritePackCell(dataPack, upgradeLevel);
             WritePackString(dataPack, key);
 
+            Trace("ThreadedSavePlayerUpgrades: SQL=%s", SQLString);
             UpdateThreadsInFlight(key, 1);
             SQL_TQuery(g_DbHandle[DB_THREAD], SQL_SavePlayerUpgrades, SQLString, dataPack);
         }

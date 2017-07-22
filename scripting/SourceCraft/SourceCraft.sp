@@ -74,13 +74,13 @@ new String:g_WikiURL[LONG_STRING_LENGTH]     = "http://www.jigglysfunhouse.net/W
 new String:g_BugURL[LONG_STRING_LENGTH]      = "http://www.jigglysfunhouse.net/thebuggenie";
 
 new bool:g_bSourceCraftLoaded     = false;
-new bool:g_bDatabaseConnected     = true;
+new bool:g_bDatabaseConnected     = false;
 new bool:g_bUseMoney              = false;
 new bool:g_bUpdate                = false;
 new bool:g_bCreate                = false;
+new bool:g_bChargeForUpgrades     = true;
+new bool:g_bSaveUpgrades          = true;
 new bool:g_bSaveXP                = true;
-new bool:g_bChargeForUpgrades     = false;
-new bool:g_bSaveUpgrades          = false;
 
 new g_iMaxCrystals                = 100;
 new g_iMaxVespene                 = 5000;
@@ -489,6 +489,7 @@ public OnClientDisconnect(client)
             new race = GetRace(client);
             if (race <= 0 || GetRaceLoaded(client, race) >= DataOK)
             {
+                Trace("Saving Player Data, g_bDatabaseConnected=%d",g_bDatabaseConnected);
                 if (g_bDatabaseConnected)
                     SavePlayerData(client);
                 else

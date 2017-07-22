@@ -1811,6 +1811,7 @@ ChangeRace(client, race, Handle:raceHandle, bool:forceNow=false, bool:check=true
         GetDatabaseLoaded(client) >= DataOK &&
         GetRaceLoaded(client, oldrace) >= DataOK)
     {
+        Trace("Saving Player Data, g_bDatabaseConnected=%d",g_bDatabaseConnected);
         if (g_bDatabaseConnected)
         {
             Trace("Save %d:%N's race=%d Data", \

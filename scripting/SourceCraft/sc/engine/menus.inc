@@ -725,6 +725,7 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                              GetDatabaseLoaded(client) >= DataOK &&
                              GetRaceLoaded(client, race) >= DataOK)
                     {
+                        Trace("Saving Player Data, g_bDatabaseConnected=%d",g_bDatabaseConnected);
                         if (g_bDatabaseConnected)
                             SavePlayerData(client);
                         else
