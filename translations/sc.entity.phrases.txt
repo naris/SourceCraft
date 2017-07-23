@@ -16,4 +16,28 @@
 	{
 		"en"	"a Tank"
 	}
+	"tf_zombie"
+	{
+		"en"	"a Skeleton"
+	}
+	"tf_robot_destruction_robot"
+	{
+		"en"	"a Robot"
+	}
+    "obj_sentrygun"
+	{
+		"en"	"a Sentry Gun"
+	}
+    "obj_dispenser"
+	{
+		"en"	"a Dispenser"
+	}
+    "obj_teleporter"
+	{
+		"en"	"a Teleporter"
+	}
+    "obj_attachment_sapper"
+	{
+		"en"	"a Sapper"
+	}
 }

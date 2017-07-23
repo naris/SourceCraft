@@ -483,6 +483,10 @@ public Action:OnObjectTakeDamage(victim,&attacker,&inflictor,&Float:damage,&dama
 
 ProcessEntityHurt(Handle:event, victim_index, attacker_index, damage)
 {
+    SetTraceCategory("Event");
+    TraceInto("Events", "ProcessEntityHurt", "victim=%d:%L, attacker=%d:%L, damage=%f", \
+              victim_index, ValidClientIndex(victim_index), attacker_index, ValidClientIndex(attacker_index), damage);
+
     new Action:result = Plugin_Continue;
     new attacker_race = GetRace(attacker_index);
 
@@ -540,6 +544,7 @@ ProcessEntityHurt(Handle:event, victim_index, attacker_index, damage)
                 result = rcassist;
         }
     }
+    TraceReturn();
 }
 
 bool:CheckAssist(attacker_index, &assister_index, &assister_race)
