@@ -665,7 +665,7 @@ native SetUpgradeDisabled(race,upgrade,flag=true);
  * @param money:            The cost of the item in money (game currency).
  * @param use_pcrystals:    Set true if item can be purchased using +crystals.
  * @param xp:               The cost of the item in xp.
- * @param max:              The maximum number of this item that the player can own.
+ * @param max:              The maximum number of this item that the player can own (0=not available, -1=unlimited/not applicable).
  * @param required_level:   The overall level the player must obtain before buying this item.
  * @param store:            The store ID returned from CreateStore() or 0 for the default store.
  * @param translation:      The format of the translation file (defaults to auto detection)
@@ -729,7 +729,7 @@ native GetItemDescription(item, String:description[], maxlength, lang=LANG_SERVE
 
 /**
  * Gets the plugin Handle for a shop item.
- * @param race:     The race ID returned from CreateItem()
+ * @param item:     The item ID returned from CreateItem()
  * @return          The return value will be the Handle of the plugin that created the shop item.
  */
 native Handle:GetItemPlugin(item);

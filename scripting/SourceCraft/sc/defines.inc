@@ -27,6 +27,10 @@
 // Define nodes used by Config natives
 #define NONE                   -1
 
+// Define values used as unlimited amount in CreateShopItem()
+#define NOT_AVAILABLE           0
+#define UNLIMITED              -1
+
 // Utility to check a bit pattern
 #define IsSet(%1,%2)            ((%1 & %2) == %2)
 #define IsNotSet(%1,%2)         ((%1 & %2) != %2)
