@@ -86,7 +86,7 @@
 #define ITEM_ANTIRAD         32 // Antirad - Cures or prevents radiation illness
 #define ITEM_ANTIDOTE        33 // Antidote - Cures or prevents poison, infection and radiation
 #define ITEM_RESTORATION     34 // Potion of Restoration - Cures most ills (restores players)
-#define ITEM_MAGNIFYER       35 // Experience Magnifyer - Experience multiplied by 1.5 for remainder of life
+#define ITEM_MAGNIFIER       35 // Experience Magnifier - Experience multiplied by 1.5 for remainder of life
 #define ITEM_FUEL            36 // Jetpack Fuel
 #define ITEM_JACKET          37 // Flack Jacket - Protects from explosions.
 #define ITEM_SILVER          38 // Silver Ammo - Prevents victims from reincarnating.
@@ -225,7 +225,7 @@ public OnSourceCraftReady()
     shopItem[ITEM_HELM]             = CreateShopItem("helm",        15);
     shopItem[ITEM_PERIAPT]          = CreateShopItem("periapt",     40);
     shopItem[ITEM_TOME]             = CreateShopItem("tome",        50, 2,	.max=UNLIMITED);
-    shopItem[ITEM_MAGNIFYER]        = CreateShopItem("magnifier",   85, 5);
+    shopItem[ITEM_MAGNIFIER]        = CreateShopItem("magnifier",   85, 5);
     shopItem[ITEM_SCROLL]           = CreateShopItem("scroll",      15);
     shopItem[ITEM_SOCK]             = CreateShopItem("sock",        45);
     shopItem[ITEM_PACK]             = CreateShopItem("pack",        35);
@@ -971,8 +971,8 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
             SetOwnsItem(victim_index,shopItem[ITEM_PERIAPT],false);
     }
 
-    if (GetOwnsItem(victim_index,shopItem[ITEM_MAGNIFYER]))
-        SetOwnsItem(victim_index,shopItem[ITEM_MAGNIFYER],false);
+    if (GetOwnsItem(victim_index,shopItem[ITEM_MAGNIFIER]))
+        SetOwnsItem(victim_index,shopItem[ITEM_MAGNIFIER],false);
 
     if (!GetImmunity(victim_index,Immunity_ShopItems) &&
         !GetImmunity(victim_index,Immunity_Theft))
@@ -1224,7 +1224,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
 
 public Action:OnXPGiven(client,&amount,bool:taken)
 {
-    if (GetOwnsItem(client,shopItem[ITEM_MAGNIFYER]) &&
+    if (GetOwnsItem(client,shopItem[ITEM_MAGNIFIER]) &&
         !GetRestriction(client, Restriction_NoShopItems) &&
         !GetRestriction(client, Restriction_Stunned))
     {
