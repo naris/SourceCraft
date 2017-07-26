@@ -14,7 +14,16 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION  "4.0"
+#include <tf2_player>
+#include <gametype>
+#include <entlimit>
+
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #include <ResourceManager>
+#endif
+
+#define PLUGIN_VERSION  "5.0"
 
 #define MAXENTITIES     2048
 
@@ -126,322 +135,6 @@ public Plugin:myinfo = {
     url = "http://www.lduke.com/"
 };
 
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false)) 
-                GameType=tf2;
-            else if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false)) 
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false)) 
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false)) 
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false)) 
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false)) 
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false)) 
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock bool:IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        return (EntitiesAvailable(warn,critical,client,message) < warn);
-    }
-
-    stock EntitiesAvailable(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= critical)
-        {
-            PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-            LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-            if (client > 0)
-            {
-                PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                               count, max, remaining, message);
-            }
-        }
-        else if (remaining <= warn)
-        {
-            PrintToServer("Caution: Entity count is getting high!");
-            LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-            if (client > 0)
-            {
-                PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                               count, max, remaining, message);
-            }
-        }
-        return remaining;
-    }
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (download && value < Download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-
-            if (value < Precached)
-            {
-                value  = Precached;
-                update = true;
-            }
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-	/**
-	 * Prepares and Emits a sound to a list of clients.
-	 *
-	 * @param clients		Array of client indexes.
-	 * @param numClients	Number of clients in the array.
-	 * @param sample		Sound file name relative to the "sounds" folder.
-	 * @param entity		Entity to emit from.
-	 * @param channel		Channel to emit with.
-	 * @param level			Sound level.
-	 * @param flags			Sound flags.
-	 * @param volume		Sound volume.
-	 * @param pitch			Sound pitch.
-	 * @param speakerentity	Unknown.
-	 * @param origin		Sound origin.
-	 * @param dir			Sound direction.
-	 * @param updatePos		Unknown (updates positions?)
-	 * @param soundtime		Alternate time to play sound for.
-	 * @noreturn
-	 * @error				Invalid client index.
-	 */
-	stock PrepareAndEmitSound(const clients[],
-					 numClients,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSound(clients, numClients, sample, entity, channel,
-			  level, flags, volume, pitch, speakerentity,
-			  origin, dir, updatePos, soundtime);
-	    }
-	}
-
-	stock PrepareAndEmitSoundToClient(client,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSoundToClient(client, sample, entity, channel,
-				  level, flags, volume, pitch, speakerentity,
-				  origin, dir, updatePos, soundtime);
-	    }
-	}
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-
-    stock SetupModel(const String:model[], &index, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
-
-/**
- * Description: Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-    #define TF2_IsPlayerDisguised(%1)    TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)      TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-    #define TF2_IsPlayerUbercharged(%1)  TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerDeadRingered(%1) TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-    #define TF2_IsPlayerBonked(%1)       TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-#endif
-
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
     // Register Natives
@@ -527,8 +220,8 @@ public OnPluginStart()
     cvStay = CreateConVar("sm_tripmines_stay","1","Tripmines stay if the owner dies. (0=no|1=yes|2=destruct)", _, true, 0.0, true, 2.0);
     cvTouch = CreateConVar("sm_tripmines_touch","0","Tripmines explode when touched. (0=no|1=yes)", _, true, 0.0, true, 1.0);
     cvRadius = CreateConVar("sm_tripmines_radius", "256.0", "Tripmines Explosion Radius");
-    cvDamage = CreateConVar("sm_tripmines_damage", "200", "Tripmines Explosion Damage");
-    cvHealth = CreateConVar("sm_tripmines_health", "10", "Tripmines Health");
+    cvDamage = CreateConVar("sm_tripmines_damage", "400", "Tripmines Explosion Damage");
+    cvHealth = CreateConVar("sm_tripmines_health", "0", "Tripmines Health");
 
     cvFriendlyFire = FindConVar("mp_friendlyfire");
 
@@ -579,14 +272,6 @@ public OnPluginEnd()
 
 public OnConfigsExecuted()
 {
-    #if !defined _ResourceManager_included
-        // Setup trie to keep track of precached sounds
-        if (g_soundTrie == INVALID_HANDLE)
-            g_soundTrie = CreateTrie();
-        else
-            ClearTrie(g_soundTrie);
-    #endif
-
     // Get the Allow Spectator setting
     gAllowSpectators = GetConVarBool(cvAllowSpectators);
     gTeamSpecific = GetConVarInt(cvTeamSpecific);
@@ -1017,18 +702,18 @@ SetMine(client)
         new team = GetClientTeam(client);
 
         // setup unique target names for entities to be created with
-        decl String:beamname[16];
-        decl String:minename[16];
-        decl String:tmp[64];
+        decl String:beamname[64];
+        decl String:minename[64];
+        decl String:tmp[128];
         Format(beamname, sizeof(beamname), "tripbeam%d", gCount);
         Format(minename, sizeof(minename), "tripmine%d", gCount);
+
         gCount++;
         if (gCount > 10000)
             gCount = 1;
 
-
         // create tripmine model
-        new mine_ent = CreateEntityByName("prop_physics_override");
+        new mine_ent = CreateEntityByName("prop_dynamic_override");
         if (mine_ent > 0 && IsValidEdict(mine_ent))
         {
             PrepareModel(mdlMine, gTripmineModelIndex);
@@ -1050,25 +735,18 @@ SetMine(client)
 
             if (DispatchSpawn(mine_ent))
             {
-                SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES); //  DAMAGE_AIM);
-                //SetEntProp(mine_ent, Prop_Send, "m_usSolidFlags", 152);
-                //DispatchKeyValue(mine_ent, "physdamagescale", "1.0");
-
                 TeleportEntity(mine_ent, end, normal, NULL_VECTOR);
-                DispatchKeyValue(mine_ent, "targetname", minename);
-
+                SetEntProp(mine_ent, Prop_Send, "m_usSolidFlags", 152);
+                SetEntProp(mine_ent, Prop_Send, "m_CollisionGroup", 1);
+                SetEntityMoveType(mine_ent, MOVETYPE_NONE);
                 SetEntProp(mine_ent, Prop_Data, "m_MoveCollide", 0);
-
                 SetEntProp(mine_ent, Prop_Send, "m_nSolidType", 6);
-                SetEntProp(mine_ent, Prop_Send, "m_iTeamNum", team, 4);
-                SetEntProp(mine_ent, Prop_Send, "m_CollisionGroup", 1); // 2);
-
                 SetEntPropEnt(mine_ent, Prop_Data, "m_hLastAttacker", client);
                 SetEntPropEnt(mine_ent, Prop_Data, "m_hPhysicsAttacker", client);
                 SetEntPropEnt(mine_ent, Prop_Send, "m_hOwnerEntity", client);
+                SetEntProp(mine_ent, Prop_Send, "m_iTeamNum", team, 4);
 
-                AcceptEntityInput(mine_ent, "DisableMotion");
-                //SetEntityMoveType(mine_ent, MOVETYPE_NONE);
+                DispatchKeyValue(mine_ent, "targetname", minename);
 
                 GetConVarString(cvRadius, tmp, sizeof(tmp));
                 DispatchKeyValue(mine_ent, "ExplodeRadius", tmp);
@@ -1076,37 +754,39 @@ SetMine(client)
                 GetConVarString(cvDamage, tmp, sizeof(tmp));
                 DispatchKeyValue(mine_ent, "ExplodeDamage", tmp);
 
+                SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
+                //DispatchKeyValue(mine_ent, "physdamagescale", "1.0");
+
+                //AcceptEntityInput(mine_ent, "DisableMotion");                       // not in 2016
+
                 //DispatchKeyValue(mine_ent, "SetHealth", "10");
                 new health = GetConVarInt(cvHealth);
                 if (health > 0)
-                    SetEntityHealth(mine_ent, health);
-
-                HookSingleEntityOutput(mine_ent, "OnBreak", mineBreak, true);
-
-                if (gTouch)
                 {
-                    if (gTeamSpecific > 0)
-                        HookSingleEntityOutput(mine_ent, "OnTouchedByEntity", mineTouched, true);
-                    else
-                        DispatchKeyValue(mine_ent, "OnTouchedByEntity", "!self,Break,,0,-1");
+                    SetEntityHealth(mine_ent, health);
                 }
 
-                DispatchKeyValue(mine_ent, "classname", "tripmine");
+                //DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
 
-                new prop_ref = EntIndexToEntRef(mine_ent);
-                g_SavedEntityRef[mine_ent] = prop_ref;
+                Format(tmp, sizeof(tmp), "%s,Kill,,0,-1", beamname);
+                DispatchKeyValue(mine_ent, "OnBreak", tmp);
+
+                AcceptEntityInput(mine_ent, "Enable");
+                HookSingleEntityOutput(mine_ent, "OnBreak", mineBreak, true);
+
+                //DispatchKeyValue(mine_ent, "classname", "tripmine");          // not in 2016
+
+                new mine_ref = EntIndexToEntRef(mine_ent);
+                g_SavedEntityRef[mine_ent] = mine_ref;
 
                 // create laser beam
                 new beam_ent = CreateEntityByName("env_beam");
                 if (beam_ent > 0 && IsValidEdict(beam_ent))
                 {
-                    DispatchKeyValueVector(beam_ent, "origin", end);
-                    SetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", beamend);
+                    TeleportEntity(beam_ent, beamend, NULL_VECTOR, NULL_VECTOR);
 
                     PrepareModel(LASER_SPRITE, gLaserModelIndex);
                     SetEntityModel(beam_ent, LASER_SPRITE);
-
-                    SetEntPropFloat(beam_ent, Prop_Send, "m_fWidth", 4.0);
 
                     DispatchKeyValue(beam_ent, "texture", LASER_SPRITE);
                     //DispatchKeyValue(beam_ent, "parentname", minename);
@@ -1121,37 +801,39 @@ SetMine(client)
                     DispatchKeyValue(beam_ent, "decalname", "Bigshot");
                     DispatchKeyValue(beam_ent, "StrikeTime", "0");
                     DispatchKeyValue(beam_ent, "TextureScroll", "35");
+                    SetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
+                    SetEntPropFloat(beam_ent, Prop_Send, "m_fWidth", 4.0);
 
-                    if (DispatchSpawn(mine_ent))
+                    if (DispatchSpawn(beam_ent))
                     {
                         if (gTeamSpecific > 0)
+                        {
                             HookSingleEntityOutput(beam_ent, "OnTouchedByEntity", beamTouched, false);
+                        }
                         else
                         {
                             Format(tmp, sizeof(tmp), "%s,Break,,0,-1", minename);
                             DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
                         }
 
-                        HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
+                        //HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
                         AcceptEntityInput(beam_ent, "TurnOff");
 
                         // Set the mine's m_hEffectEntity to point at the beam
-                        SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
+                        //SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
 
-                        AcceptEntityInput(mine_ent, "Enable");
-                        SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
+                        //SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
 
                         new beam_ref = EntIndexToEntRef(beam_ent);
                         g_SavedEntityRef[beam_ent] = beam_ref;
-                        g_TripmineOfBeam[beam_ent] = prop_ref;
+                        g_TripmineOfBeam[beam_ent] = mine_ref;
 
                         new Handle:data;
                         new Float:delay = GetConVarFloat(cvActTime);
-                        CreateDataTimer(delay, ActivateTripmine, data,
-                                        TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+                        CreateDataTimer(delay, ActivateTripmine, data, TIMER_FLAG_NO_MAPCHANGE);
 
                         WritePackCell(data, client);
-                        WritePackCell(data, prop_ref);
+                        WritePackCell(data, mine_ref);
                         WritePackCell(data, beam_ref);
                         WritePackFloat(data, end[0]);
                         WritePackFloat(data, end[1]);
@@ -1191,49 +873,55 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
 {
     ResetPack(data);
     new client = ReadPackCell(data);
-    new prop_ref = ReadPackCell(data);
-    new beam_ref = ReadPackCell(data);
-
-    new mine_ent = EntRefToEntIndex(prop_ref);
-    new beam_ent = EntRefToEntIndex(beam_ref);
-    if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client))
+	new mine_ent = EntRefToEntIndex(ReadPackCell(data));
+	new beam_ent = EntRefToEntIndex(ReadPackCell(data));
+    if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client) && IsPlayerAlive(client))
     {
-        if (IsPlayerAlive(client))
-        {
-            new team = GetEntProp(mine_ent, Prop_Send, "m_iTeamNum");
+		new team = GetEntProp(mine_ent, Prop_Send, "m_iTeamNum");
 
-            new String:color[4][4];
-            if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
+		new String:color[4][4];
+		if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
+		{
+			SetEntityRenderMode(beam_ent, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(beam_ent, StringToInt(color[0]), StringToInt(color[1]),
+										   StringToInt(color[2]), StringToInt(color[3]));
+		}
+		else
+			DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[team]);
+
+		DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
+		DispatchKeyValue(mine_ent, "OnTakeDamage", "!self,Break,,0,-1");
+
+        if (gTouch)
+        {
+            if (gTeamSpecific > 0)
             {
-                SetEntityRenderMode(beam_ent, RENDER_TRANSCOLOR);
-                SetEntityRenderColor(beam_ent, StringToInt(color[0]), StringToInt(color[1]),
-                                               StringToInt(color[2]), StringToInt(color[3]));
+                HookSingleEntityOutput(mine_ent, "OnTouchedByEntity", mineTouched, true);
             }
             else
-                DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[team]);
-
-            DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
-            DispatchKeyValue(mine_ent, "OnTakeDamage", "!self,Break,,0,-1");
-
-            AcceptEntityInput(beam_ent, "TurnOn");
-
-            if (gSndActivated[0])
             {
-                new Float:end[3];
-                end[0] = ReadPackFloat(data);
-                end[1] = ReadPackFloat(data);
-                end[2] = ReadPackFloat(data);
-
-                PrepareAndEmitSoundToAll(gSndActivated, beam_ent, SNDCHAN_AUTO,
-                                         SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
-                                         100, beam_ent, end, NULL_VECTOR, true, 0.0);
+                DispatchKeyValue(mine_ent, "OnTouchedByEntity", "!self,Break,,0,-1");
             }
-
-            return Plugin_Stop;
         }
+
+		AcceptEntityInput(beam_ent, "TurnOn");
+
+		if (gSndActivated[0])
+		{
+			new Float:end[3];
+			end[0] = ReadPackFloat(data);
+			end[1] = ReadPackFloat(data);
+			end[2] = ReadPackFloat(data);
+
+			PrepareAndEmitSoundToAll(gSndActivated, beam_ent, SNDCHAN_AUTO,
+									 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+									 100, beam_ent, end, NULL_VECTOR, true, 0.0);
+		}
+
+		return Plugin_Stop;
     }
 
-    // Player died before activation or something happened to the tripmine,
+    // Player died before activation or something happened to the tripmine and/or the beam,
     RemoveBeamEntity(beam_ent);
     RemoveMineEntity(mine_ent);
     return Plugin_Stop;
@@ -1243,25 +931,22 @@ public Action:TurnBeamOn(Handle:timer, Handle:data)
 {
     ResetPack(data);
     new client = ReadPackCell(data);
-    new prop_ref = ReadPackCell(data);
-    new beam_ref = ReadPackCell(data);
-
-    new mine_ent = EntRefToEntIndex(prop_ref);
-    new beam_ent = EntRefToEntIndex(beam_ref);
+	new mine_ent = EntRefToEntIndex(ReadPackCell(data));
+	new beam_ent = EntRefToEntIndex(ReadPackCell(data));
     if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client))
     {
-        AcceptEntityInput(beam_ent, "TurnOn");
+		AcceptEntityInput(beam_ent, "TurnOn");
 
-        if (gSndReactivated[0])
-        {
-            decl Float:end[3];
-            GetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
+		if (gSndReactivated[0])
+		{
+			decl Float:end[3];
+			GetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
 
-            PrepareAndEmitSoundToAll(gSndReactivated, beam_ent, SNDCHAN_AUTO,
-                                     SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
-                                     100, beam_ent, end, NULL_VECTOR, true, 0.0);
-        }                       
-        return Plugin_Stop;
+			PrepareAndEmitSoundToAll(gSndReactivated, beam_ent, SNDCHAN_AUTO,
+									 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+									 100, beam_ent, end, NULL_VECTOR, true, 0.0);
+		}                       
+		return Plugin_Stop;
     }
 
     // Player left or something happened to the tripmine,
@@ -1319,8 +1004,7 @@ public beamTouched(const String:output[], caller, activator, Float:delay)
                     AcceptEntityInput(caller, "TurnOff");
 
                     new Handle:data;
-                    CreateDataTimer(reactTime, TurnBeamOn, data,
-                                    TIMER_FLAG_NO_MAPCHANGE);
+                    CreateDataTimer(reactTime, TurnBeamOn, data, TIMER_FLAG_NO_MAPCHANGE);
 
                     WritePackCell(data, owner);
                     WritePackCell(data, g_TripmineOfBeam[caller]);
@@ -1350,7 +1034,7 @@ public beamTouched(const String:output[], caller, activator, Float:delay)
     }
 }
 
-public beamBreak(const String:output[], caller, activator, Float:delay)
+/*public beamBreak(const String:output[], caller, activator, Float:delay)
 {
     new mine_ent = EntRefToEntIndex(g_TripmineOfBeam[caller]);
     if (mine_ent > 0 && IsValidEntity(mine_ent))
@@ -1366,7 +1050,7 @@ public beamBreak(const String:output[], caller, activator, Float:delay)
             RemoveBeamEntity(caller);
         }
     }
-}
+}*/
 
 public mineTouched(const String:output[], caller, activator, Float:delay)
 {
