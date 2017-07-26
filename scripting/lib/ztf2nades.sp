@@ -12,9 +12,39 @@
 #include <sourcemod>
 #include <sdktools>
 
+#include <damage>
+#include <gametype>
+#include <entlimit>
+
+#include <tf2_player>
+#include <tf2_meter>
+#include <dod>
+
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
+
+#undef REQUIRE_PLUGIN
+#tryinclude <libdod/dod_ignite>
+#if !defined _dod_ignite_included
+    #tryinclude <dod_ignite>
+#endif
+#define REQUIRE_PLUGIN
+
+/**
+ * Description: Manage precaching resources.
+ */
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+	#include <ResourceManager>
+#endif
+
+/**
+ * Description: Use the SourceCraft API, if available.
+ */
+#undef REQUIRE_PLUGIN
+#tryinclude <sc/SourceCraft>
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "3.3"
 
@@ -158,28 +188,27 @@ new String:gnParticle[256];
 new bool:gCanRun = false;
 new bool:gWaitOver = false;
 new Float:gMapStart;
-new gNade[MAX_PLAYERS+1]                            = { INVALID_ENT_REFERENCE, ... };   // pointer to the player's nade
-new gKilledBy[MAX_PLAYERS+1];                       // player that killed
-new gTargeted[MAX_PLAYERS+1];                       // flag is player is targetted and by whom.
-new gCountdown[MAX_PLAYERS+1];                      // countdown before the nade explodes
-new gRemaining1[MAX_PLAYERS+1];                     // how many nades player has this spawn
-new gRemaining2[MAX_PLAYERS+1];                     // how many nades player has this spawn
-new HoldType:gHolding[MAX_PLAYERS+1];               // what kind of nade player is holding
-new Handle:gNadeTimer[MAX_PLAYERS+1];               // pointer to nade timer
-new Handle:gNadeTimer2[MAX_PLAYERS+1];              // pointer to 2nd nade timer
-new bool:gTriggerTimer[MAX_PLAYERS+1];              // flags that timer was triggered
-new Float:PlayersInRange[MAX_PLAYERS+1];            // players are in radius ?
-new String:gKillWeapon[MAX_PLAYERS+1][STRLENGTH];   // weapon that killed
-new Float:gKillTime[MAX_PLAYERS+1];                 // time plugin requested kill
-new gStopInfoPanel[MAX_PLAYERS+1];                  // flag to disable help
-new gRingModel;                                     // model for beams
-new gNapalmSprite;                                  // sprite index
-new gBeamSprite;                                    // sprite index
+new Float:gHoldingArea[3] = {-10000.0, -10000.0, -10000.0}; // point to store unused objects
+new gNade[MAX_PLAYERS+1] = { INVALID_ENT_REFERENCE, ... };  // pointer to the player's nade
+new gKilledBy[MAX_PLAYERS+1];                       		// player that killed
+new gTargeted[MAX_PLAYERS+1];                       		// flag is player is targetted and by whom.
+new gCountdown[MAX_PLAYERS+1];                      		// countdown before the nade explodes
+new gRemaining1[MAX_PLAYERS+1];                     		// how many nades player has this spawn
+new gRemaining2[MAX_PLAYERS+1];                     		// how many nades player has this spawn
+new HoldType:gHolding[MAX_PLAYERS+1];               		// what kind of nade player is holding
+new Handle:gNadeTimer[MAX_PLAYERS+1];               		// pointer to nade timer
+new Handle:gNadeTimer2[MAX_PLAYERS+1];              		// pointer to 2nd nade timer
+new bool:gTriggerTimer[MAX_PLAYERS+1];              		// flags that timer was triggered
+new Float:PlayersInRange[MAX_PLAYERS+1];            		// players are in radius ?
+new String:gKillWeapon[MAX_PLAYERS+1][STRLENGTH];   		// weapon that killed
+new Float:gKillTime[MAX_PLAYERS+1];                 		// time plugin requested kill
+new gStopInfoPanel[MAX_PLAYERS+1];                  		// flag to disable help
+new gRingModel;                                     		// model for beams
+new gNapalmSprite;                                  		// sprite index
+new gBeamSprite;                                    		// sprite index
 new gEmpSprite;
 new gSmokeSprite;
 new gExplosionSprite;
-
-new Float:gHoldingArea[3] = {-10000.0, -10000.0, -10000.0}; // point to store unused objects
 
 new g_FragModelIndex;
 new g_ConcModelIndex;
@@ -267,486 +296,17 @@ new NadeType:gSpecialType[MAX_PLAYERS+1];   // what nade type the special nade i
 new bool:gNativeOverride = false;
 new bool:gTargetOverride = false;
 
-// forwards
-new Handle:fwdOnNadeExplode = INVALID_HANDLE;
-
-/**
- * Description: Stocks to damage a player or an entity using a point_hurt entity.
- */
-#tryinclude <damage>
-#if !defined _damage_included
-    #define DMG_GENERIC                 0
-    #define DMG_BURN                    (1 << 3)
-    #define DMG_BLAST                   (1 << 6)
-    #define DMG_NERVEGAS                (1 << 16)
-
-    stock g_damagePointRef = INVALID_ENT_REFERENCE;
-
-    stock DamagePlayer(victim,damage,attacker=0,dmg_type=DMG_GENERIC,const String:weapon[]="")
-    {
-        if (damage > 0 && victim > 0 && IsClientInGame(victim) && IsPlayerAlive(victim))
-        {
-            decl String:dmg_str[16];
-            IntToString(damage,dmg_str,sizeof(dmg_str));
-
-            decl String:dmg_type_str[32];
-            IntToString(dmg_type,dmg_type_str,sizeof(dmg_type_str));
-
-            new pointHurt = EntRefToEntIndex(g_damagePointRef);
-            if (pointHurt < 1)
-            {
-                if (!IsEntLimitReached(.message="Unable to create point_hurt in DamagePlayer()"))
-                {
-                    pointHurt=CreateEntityByName("point_hurt");
-                    if (pointHurt > 0 && IsValidEdict(pointHurt))
-                    {
-                        //DispatchSpawn(pointHurt);
-                        g_damagePointRef = EntIndexToEntRef(pointHurt);
-                    }
-                    else
-                    {
-                        LogError("Unable to create point_hurt in DamagePlayer()");
-                        return;
-                    }
-                }
-            }
-
-            if (pointHurt > 0 && IsValidEdict(pointHurt))
-            {
-                decl String:targetname[16];
-                Format(targetname,sizeof(targetname), "target%d", victim);
-
-                DispatchKeyValue(victim,"targetname",targetname);
-                DispatchKeyValue(pointHurt,"DamageTarget",targetname);
-                DispatchKeyValue(pointHurt,"Damage",dmg_str);
-                DispatchKeyValue(pointHurt,"DamageType",dmg_type_str);
-
-                if (weapon[0] != '\0')
-                    DispatchKeyValue(pointHurt,"classname",weapon);
-
-                DispatchSpawn(pointHurt);
-
-                AcceptEntityInput(pointHurt,"Hurt",(attacker>0)?attacker:-1);
-                DispatchKeyValue(pointHurt,"classname","point_hurt");
-
-                IntToString(victim,targetname,sizeof(targetname));
-                DispatchKeyValue(victim,"targetname",targetname);
-            }
-            else
-                LogError("Unable to spawn point_hurt in DamagePlayer()");
-        }
-    }
-
-    stock CleanupDamageEntity()
-    {
-        if (g_damagePointRef != INVALID_ENT_REFERENCE)
-        {
-            new pointHurt = EntRefToEntIndex(g_damagePointRef);
-            if (pointHurt > 0)
-                AcceptEntityInput(pointHurt, "kill");
-
-            g_damagePointRef = INVALID_ENT_REFERENCE;
-        }
-    }
-#endif
-
-/**
- * Description: Use the SourceCraft API, if available.
- */
-#undef REQUIRE_PLUGIN
-#tryinclude <sc/SourceCraft>
-#define REQUIRE_PLUGIN
+// *************************************************
+// SourceCraft variables
+// *************************************************
 
 #if defined SOURCECRAFT
     stock bool:m_SourceCraftAvailable = false;
     new DamageFrom:gCategory[MAX_PLAYERS+1];// what category to use in HurtPlayer()
-#else    
-
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false))
-                GameType=tf2;
-            else if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false))
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false))
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false))
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false))
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false))
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false))
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
 #endif
 
-/**
- * Description: Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-    #define TF2_IsPlayerDisguised(%1)    TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)      TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-    #define TF2_IsPlayerUbercharged(%1)  TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerTaunting(%1)     TF2_IsPlayerInCondition(%1,TFCond_Taunting)
-    #define TF2_IsPlayerDeadRingered(%1) TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-    #define TF2_IsPlayerBonked(%1)       TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-#endif
-
-#endif
-
-/**
- * Description: Functions to return information about TF2 spy cloak.
- */
-#tryinclude <tf2_meter>
-#if !defined _tf2_meter_included
-    stock Float:TF2_GetCloakMeter(client)
-    {
-        return GetEntPropFloat(client, Prop_Send, "m_flCloakMeter");
-    }
-
-    stock TF2_SetCloakMeter(client,Float:cloakMeter)
-    {
-        SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", cloakMeter);
-    }
-
-    stock Float:TF2_GetChargeMeter(client)
-    {
-        return GetEntPropFloat(client, Prop_Send, "m_flChargeMeter");
-    }
-
-    stock TF2_SetChargeMeter(client,Float:chargeMeter)
-    {
-        SetEntPropFloat(client, Prop_Send, "m_flChargeMeter", chargeMeter);
-    }
-
-    stock Float:TF2_GetRageMeter(client)
-    {
-        return GetEntPropFloat(client, Prop_Send, "m_flRageMeter");
-    }
-
-    stock TF2_SetRageMeter(client,Float:rageMeter)
-    {
-        SetEntPropFloat(client, Prop_Send, "m_flRageMeter", rageMeter);
-    }
-
-    stock Float:TF2_GetHypeMeter(client)
-    {
-        return GetEntPropFloat(client, Prop_Send, "m_flHypeMeter");
-    }
-
-    stock TF2_SetHypeMeter(client,Float:hypeMeter)
-    {
-        SetEntPropFloat(client, Prop_Send, "m_flHypeMeter", hypeMeter);
-    }
-
-    stock Float:TF2_GetEnergyDrinkMeter(client)
-    {
-        return GetEntPropFloat(client, Prop_Send, "m_flEnergyDrinkMeter");
-    }
-
-    stock TF2_SetEnergyDrinkMeter(client,Float:energyDrinkMeter)
-    {
-        SetEntPropFloat(client, Prop_Send, "m_flEnergyDrinkMeter", energyDrinkMeter);
-    }
-#endif
-
-/**
- * Description: Stocks for DoD
- */
-#tryinclude <dod>
-#if !defined _dod_included
-    enum DODClassType
-    {
-        DODClass_Unassigned = -1,
-        DODClass_Rifleman = 0,
-        DODClass_Assault,
-        DODClass_Support,
-        DODClass_Sniper,
-        DODClass_MachineGunner,
-        DODClass_Rocketman
-    };
-
-    /**
-     * Get's a Clients current class.
-     *
-     * @param client		Player's index.
-     * @return				Current DODClassType of player.
-     * @error				Invalid client index.
-     */
-    stock DODClassType:DOD_GetPlayerClass(client)
-    {
-        return DODClassType:GetEntProp(client, Prop_Send, "m_iPlayerClass");
-    }
-#endif
-
-#undef REQUIRE_PLUGIN
-#tryinclude <libdod/dod_ignite>
-#if !defined _dod_ignite_included
-    #tryinclude <dod_ignite>
-#endif
-#define REQUIRE_PLUGIN
-
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-	#tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (value < Download && download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            value  = Precached;
-            update = true;
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-	stock PrepareAndEmitSoundToClient(client,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSoundToClient(client, sample, entity, channel,
-				              level, flags, volume, pitch, speakerentity,
-				              origin, dir, updatePos, soundtime);
-	    }
-	}
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-
-    stock SetupModel(const String:model[], &index=0, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-
-    stock AddFolderToDownloadTable(const String:Directory[], bool:recursive=false)
-    {
-        decl String:Path[PLATFORM_MAX_PATH+1];
-        decl String:FileName[PLATFORM_MAX_PATH+1];
-
-        new Handle:Dir = OpenDirectory(Directory), FileType:Type;
-        while(ReadDirEntry(Dir, FileName, sizeof(FileName), Type))     
-        {
-            if (Type == FileType_Directory && recursive)         
-            {           
-                FormatEx(Path, sizeof(Path), "%s/%s", Directory, FileName);
-                AddFolderToDownloadTable(FileName);
-            }                 
-            else if (Type == FileType_File)
-            {
-                FormatEx(Path, sizeof(Path), "%s/%s", Directory, FileName);
-                AddFileToDownloadsTable(Path);
-            }
-        }
-    }
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= warn)
-        {
-            if (count <= critical)
-            {
-                PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-                LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            else
-            {
-                PrintToServer("Caution: Entity count is getting high!");
-                LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            return count;
-        }
-        else
-            return 0;
-    }
-#endif
+// forwards
+new Handle:fwdOnNadeExplode = INVALID_HANDLE;
 
 // *************************************************
 // main plugin
