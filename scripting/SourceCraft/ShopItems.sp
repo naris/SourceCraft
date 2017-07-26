@@ -86,7 +86,7 @@
 #define ITEM_ANTIRAD         32 // Antirad - Cures or prevents radiation illness
 #define ITEM_ANTIDOTE        33 // Antidote - Cures or prevents poison, infection and radiation
 #define ITEM_RESTORATION     34 // Potion of Restoration - Cures most ills (restores players)
-#define ITEM_MAGNIFYER       35 // Experience Magnifyer - Experience multiplied by 1.5 for remainder of life
+#define ITEM_MAGNIFIER       35 // Experience Magnifier - Experience multiplied by 1.5 for remainder of life
 #define ITEM_FUEL            36 // Jetpack Fuel
 #define ITEM_JACKET          37 // Flack Jacket - Protects from explosions.
 #define ITEM_SILVER          38 // Silver Ammo - Prevents victims from reincarnating.
@@ -192,7 +192,7 @@ public OnPluginStart()
 
 public OnSourceCraftReady()
 {
-    //                                CreateShopItem(short_name,    crystals,vespene,energon,money,use_pcrystals,max,required_level,...);
+    //                                CreateShopItem(short_name,    crystals,vespene,energon,money,pcrystals,max,required_level,...);
     shopItem[ITEM_BLINDERS]         = CreateShopItem("blinders",    0);
     shopItem[ITEM_ANKH]             = CreateShopItem("ankh",        60, 2);
     shopItem[ITEM_BOOTS]            = CreateShopItem("boots",       55);
@@ -205,19 +205,18 @@ public OnSourceCraftReady()
     }
     else
     {
-        shopItem[ITEM_CLOAK]        = CreateShopItem("cloak",       10,
-                                                     .desc="%cloak_noinvis_desc");
+        shopItem[ITEM_CLOAK]        = CreateShopItem("cloak",       10,		.desc="%cloak_noinvis_desc");
     }
     
     shopItem[ITEM_DARKNESS]         = CreateShopItem("darkness",    15);
     shopItem[ITEM_MASK]             = CreateShopItem("mask",        10);
     shopItem[ITEM_NECKLACE]         = CreateShopItem("necklace",    15);
     shopItem[ITEM_JACKET]           = CreateShopItem("jacket",      10);
-    shopItem[ITEM_ANTIBIOTIC]       = CreateShopItem("antibiotic",  5,  0, .max=10);
+    shopItem[ITEM_ANTIBIOTIC]       = CreateShopItem("antibiotic",  5,  0,	.max=10);
     shopItem[ITEM_ANTIVENOM]        = CreateShopItem("antivenom",   30);
     shopItem[ITEM_ANTIRAD]          = CreateShopItem("antirad",     30);
     shopItem[ITEM_ANTIDOTE]         = CreateShopItem("antidote",    60);
-    shopItem[ITEM_RESTORATION]      = CreateShopItem("restoration", 75, 0, .max=10);
+    shopItem[ITEM_RESTORATION]      = CreateShopItem("restoration", 75, 0,	.max=10);
     shopItem[ITEM_GOGGLES]          = CreateShopItem("goggles",     10);
     shopItem[ITEM_LUBE]             = CreateShopItem("lube",        30);
     shopItem[ITEM_ORB_FROST]        = CreateShopItem("orb",         40);
@@ -225,8 +224,8 @@ public OnSourceCraftReady()
     shopItem[ITEM_SILVER]           = CreateShopItem("silver",      50);
     shopItem[ITEM_HELM]             = CreateShopItem("helm",        15);
     shopItem[ITEM_PERIAPT]          = CreateShopItem("periapt",     40);
-    shopItem[ITEM_TOME]             = CreateShopItem("tome",        50, 2);
-    shopItem[ITEM_MAGNIFYER]        = CreateShopItem("magnifier",   85, 5);
+    shopItem[ITEM_TOME]             = CreateShopItem("tome",        50, 2,	.max=UNLIMITED);
+    shopItem[ITEM_MAGNIFIER]        = CreateShopItem("magnifier",   85, 5);
     shopItem[ITEM_SCROLL]           = CreateShopItem("scroll",      15);
     shopItem[ITEM_SOCK]             = CreateShopItem("sock",        45);
     shopItem[ITEM_PACK]             = CreateShopItem("pack",        35);
@@ -256,7 +255,7 @@ public OnSourceCraftReady()
 
     if (IsTripminesAvailable())
     {
-        shopItem[ITEM_TRIPMINE]     = CreateShopItem("tripmine",    60, 5, .max=5);
+        shopItem[ITEM_TRIPMINE]     = CreateShopItem("tripmine",    60, 5,	.max=5);
     }                                               
     else
     {
@@ -266,7 +265,7 @@ public OnSourceCraftReady()
 
     if (IsFireminesAvailable())
     {
-        shopItem[ITEM_FIREMINE]     = CreateShopItem("mine",        35, 0, .max=5);
+        shopItem[ITEM_FIREMINE]     = CreateShopItem("mine",        35, 0,	.max=5);
     }                                               
     else
     {
@@ -276,7 +275,7 @@ public OnSourceCraftReady()
 
     if (IsJetpackAvailable())
     {
-        shopItem[ITEM_FUEL]         = CreateShopItem("fuel",        25, 50);
+        shopItem[ITEM_FUEL]         = CreateShopItem("fuel",        25, 50,	.pcrystals=true);	// Can use +crystals
     }                                               
     else
     {
@@ -289,10 +288,10 @@ public OnSourceCraftReady()
     new bool:defEnergyItem = (cfgEnergyRate < 1.0 || cfgEnergyFactor < 1.0);
     if (GetConfigNum("energy_item", defEnergyItem, SHOPITEM))
     {
-        shopItem[ITEM_ENERGY]       = CreateShopItem("energy",       -1,  0, true); // Use all available +crystals
-        shopItem[ITEM_ENERGY10]     = CreateShopItem("energy10",     10,  0, true);
-        shopItem[ITEM_ENERGY50]     = CreateShopItem("energy50",     50,  0, true);
-        shopItem[ITEM_ENERGY100]    = CreateShopItem("energy100",    100, 0, true);
+        shopItem[ITEM_ENERGY]       = CreateShopItem("energy",       -1,	.pcrystals=true);	// Can use +crystals
+        shopItem[ITEM_ENERGY10]     = CreateShopItem("energy10",     10,	.pcrystals=true);
+        shopItem[ITEM_ENERGY50]     = CreateShopItem("energy50",     50,	.pcrystals=true);
+        shopItem[ITEM_ENERGY100]    = CreateShopItem("energy100",    100,	.pcrystals=true);
     }
     else
     {
@@ -552,7 +551,7 @@ public OnItemPurchase(client,item)
     else if (item==shopItem[ITEM_TOME])                                  // Tome of Experience
     {
         returnCode = Plugin_Handled;
-        SetOwnsItem(client,shopItem[ITEM_TOME],false);
+        SetOwnsItem(client,item,false);
         SetXP(client,GetRace(client),GetXP(client,GetRace(client))+100);
 
         DisplayMessage(client, Display_Item | Display_XP,
@@ -972,8 +971,8 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
             SetOwnsItem(victim_index,shopItem[ITEM_PERIAPT],false);
     }
 
-    if (GetOwnsItem(victim_index,shopItem[ITEM_MAGNIFYER]))
-        SetOwnsItem(victim_index,shopItem[ITEM_MAGNIFYER],false);
+    if (GetOwnsItem(victim_index,shopItem[ITEM_MAGNIFIER]))
+        SetOwnsItem(victim_index,shopItem[ITEM_MAGNIFIER],false);
 
     if (!GetImmunity(victim_index,Immunity_ShopItems) &&
         !GetImmunity(victim_index,Immunity_Theft))
@@ -1225,7 +1224,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
 
 public Action:OnXPGiven(client,&amount,bool:taken)
 {
-    if (GetOwnsItem(client,shopItem[ITEM_MAGNIFYER]) &&
+    if (GetOwnsItem(client,shopItem[ITEM_MAGNIFIER]) &&
         !GetRestriction(client, Restriction_NoShopItems) &&
         !GetRestriction(client, Restriction_Stunned))
     {

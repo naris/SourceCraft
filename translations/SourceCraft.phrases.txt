@@ -1545,6 +1545,11 @@
 		"#format"	"{1:s}"
 		"en"		"You have successfully purchased the {blue}{1}{default}."
 	}
+	"ItemNotAvailable"
+	{
+		"#format"	"{1:s}"
+		"en"		"Sorry, {blue}{1}{default} is not available to purchase."
+	}
 	"AlreadyOwnMax"
 	{
 		"#format"	"{1:d},{2:s}"

@@ -504,7 +504,8 @@ bool:PurchaseShopItem(client,item)
                     if (experience >= xp)
                     {
                         new num = GetOwnsItem(client,item);
-                        if (num < GetItemMax(itemHandle))
+						new max = GetItemMax(itemHandle)
+                        if (num < max || max < 0)
                         {
                             new Action:result = Plugin_Continue;
                             Call_StartForward(g_OnItemPurchaseExHandle);
@@ -583,9 +584,13 @@ bool:PurchaseShopItem(client,item)
                             {
                                 CPrintToChat(client, "{green}[SC]{default} %t", "AlreadyOwnMax", num, itemName);
                             }
-                            else
+                            else if (num == 1)
                             {
                                 CPrintToChat(client, "{green}[SC]{default} %t", "AlreadyOwn", itemName);
+                            }
+							else // if (num == 0)
+                            {
+                                CPrintToChat(client, "{green}[SC]{default} %t", "ItemNotAvailable", itemName);
                             }
                         }
                     }
