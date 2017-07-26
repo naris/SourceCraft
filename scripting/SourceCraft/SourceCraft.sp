@@ -78,7 +78,7 @@ new bool:g_bDatabaseConnected     = false;
 new bool:g_bUseMoney              = false;
 new bool:g_bUpdate                = false;
 new bool:g_bCreate                = false;
-new bool:g_bChargeForUpgrades     = true;
+new bool:g_bChargeForUpgrades     = false;
 new bool:g_bSaveUpgrades          = true;
 new bool:g_bSaveXP                = true;
 

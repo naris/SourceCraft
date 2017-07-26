@@ -25,8 +25,17 @@ GetOwnsItem(client,item)
     if (count >= 1 && item < count)
     {
         new Handle:shopitems=GetShopitems(client);
-        if (shopitems != INVALID_HANDLE)
+        if (shopitems != INVALID_HANDLE &&
+            item < GetArraySize(shopitems))
+        {
             owns = GetArrayCell(shopitems,item);
+        }
+        else
+        {
+            Trace("Unable to determine if client=%d:%N owns item=%d; shopitems=0x%08x, size=%d", \
+                  client, ValidClientIndex(client), item, shopitems, \
+                  (shopitems != INVALID_HANDLE) ? GetArraySize(shopitems) : 0);
+        }
     }
 
     TraceReturn("owns=%d", owns);
@@ -41,8 +50,17 @@ SetOwnsItem(client,item,owns)
     if (GetShopItemCount() >= 1)
     {
         new Handle:shopitems=GetShopitems(client);
-        if (shopitems != INVALID_HANDLE)
+        if (shopitems != INVALID_HANDLE &&
+            item < GetArraySize(shopitems))
+        {
             SetArrayCell(shopitems,item,owns);
+        }
+        else
+        {
+            LogError("Unable to set that client=%d:%N owns item=%d; shopitems=0x%08x, size=%d",
+                     client, ValidClientIndex(client), item, shopitems,
+                     (shopitems != INVALID_HANDLE) ? GetArraySize(shopitems) : 0);
+        }
     }
 
     TraceReturn();
@@ -1025,7 +1043,7 @@ ResetPlayer(client, bool:clear)
     SetInitialEnergy(client, -1.0);                 // Initial Energy
     SetCrystalsValue(client, 0);                    // Crystals
     SetVespeneValue(client, 0);                     // Vespene
-    SetPCrystals(client, 0);                          // PCrystals
+    SetPCrystals(client, 0);                        // PCrystals
     SetPendingRace(client, -1);                     // Pending race
     SetPendingUpgradeReset(client, 0);              // Pending upgrade reset
     SetOverallLevelValue(client, 0);                // Overall Level

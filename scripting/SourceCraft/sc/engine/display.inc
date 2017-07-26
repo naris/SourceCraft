@@ -1045,10 +1045,17 @@ bool:GetEntityName(entIndex, String:entName[], nameMax, lang=LANG_SERVER)
     decl String:entClass[NAME_STRING_LENGTH];
     GetEdictClassname(entIndex, entClass, sizeof(entClass));
 
-    if (StrEqual(entClass, "headless_hatman")   || 
-        StrEqual(entClass, "eyeball_boss")      ||
-        StrEqual(entClass, "merasmus")          ||
-        StrEqual(entClass, "tank_boss"))
+    if (StrEqual(entClass, "headless_hatman")               ||
+        StrEqual(entClass, "eyeball_boss")                  ||
+        StrEqual(entClass, "merasmus")                      ||
+        StrEqual(entClass, "tank_boss")                     ||
+        StrEqual(entClass, "tf_zombie")                     ||
+        StrEqual(entClass, "tf_robot_destruction_robot")    ||
+        StrEqual(entClass, "ghost")                         ||
+        StrEqual(entClass, "obj_sentrygun")                 ||
+        StrEqual(entClass, "obj_dispenser")                 ||
+        StrEqual(entClass, "obj_teleporter")                ||
+        StrEqual(entClass, "obj_attachment_sapper"))
     {
         Format(entName, nameMax, "%T", entClass, lang);
         return true;
@@ -1057,7 +1064,7 @@ bool:GetEntityName(entIndex, String:entName[], nameMax, lang=LANG_SERVER)
     {
         decl String:translation_path[PLATFORM_MAX_PATH];
         BuildPath(Path_SM, translation_path, sizeof(translation_path), "translations/sc.entity.phrases.txt");
-        if (FileContains("", entClass))        
+        if (FileContains("", entClass))
         {
             LogMessage("Entity Class %s is defined in sc.entity.phrases.txt, but not in GetEntityName()", entClass);
             Format(entName, nameMax, "%T", entClass, lang);
@@ -1067,7 +1074,8 @@ bool:GetEntityName(entIndex, String:entName[], nameMax, lang=LANG_SERVER)
         {
             // Log other entity classes for addition to this code.
             LogError("Unknown Entity Class %s has no name", entClass);
-            entName[0] = '\0';
+            strcopy(entName, nameMax, entClass);
+            //entName[0] = '\0';
             return false;
         }
     }

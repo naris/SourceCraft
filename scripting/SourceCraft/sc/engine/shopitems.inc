@@ -156,7 +156,7 @@ ClearShopVector()
     TraceReturn();
 }
 
-CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcrystals=false, xp=0, max=1,
+CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:use_pcrystals=false, xp=0, max=1,
                required_level=0, storeId=0, Translation:translation=Translation_Auto, const String:translation_file[]="",
                const String:category[]="", const String:name[]="", const String:desc[]="", const String:image[]="",
                Handle:plugin=INVALID_HANDLE)
@@ -190,7 +190,7 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
                 crystals = KvGetNum(itemConfig,"crystals", crystals);
                 vespene = KvGetNum(itemConfig,"vespene", vespene);
                 money = KvGetNum(itemConfig,"money", money);
-                pcrystals = bool:KvGetNum(itemConfig,"can_use_pcrystals", pcrystals);
+                use_pcrystals = bool:KvGetNum(itemConfig,"can_use_pcrystals", use_pcrystals);
                 xp = KvGetNum(itemConfig,"xp", xp);
                 max = KvGetNum(itemConfig,"max", max);
             }
@@ -217,8 +217,8 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
                 if (money > 0)
                     KvSetNum(itemConfig,"money", money);
 
-                if (pcrystals)
-                    KvSetNum(itemConfig,"can_use_pcrystals", pcrystals);
+                if (use_pcrystals)
+                    KvSetNum(itemConfig,"can_use_pcrystals", use_pcrystals);
 
                 if (xp > 0)
                     KvSetNum(itemConfig,"xp", xp);
@@ -325,7 +325,7 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
         SetItemCrystals(itemHandle,crystals);
         SetItemVespene(itemHandle,vespene);
         SetItemMoney(itemHandle,money);
-        SetItemCanUsePCrystals(itemHandle,pcrystals);
+        SetItemCanUsePCrystals(itemHandle,use_pcrystals);
         SetItemXP(itemHandle,xp);
         SetItemMax(itemHandle,max);
         SetItemRequiredLevel(itemHandle,required_level);
@@ -355,7 +355,7 @@ CreateShopItem(const String:short[], crystals=0, vespene=0, money=0, bool:pcryst
         PushArrayCell(newItem,crystals);
         PushArrayCell(newItem,vespene);
         PushArrayCell(newItem,money);
-        PushArrayCell(newItem,pcrystals);
+        PushArrayCell(newItem,use_pcrystals);
         PushArrayCell(newItem,xp);
         PushArrayCell(newItem,max);
         PushArrayCell(newItem,required_level);
@@ -504,7 +504,7 @@ bool:PurchaseShopItem(client,item)
                     if (experience >= xp)
                     {
                         new num = GetOwnsItem(client,item);
-						new max = GetItemMax(itemHandle)
+                        new max = GetItemMax(itemHandle);
                         if (num < max || max < 0)
                         {
                             new Action:result = Plugin_Continue;

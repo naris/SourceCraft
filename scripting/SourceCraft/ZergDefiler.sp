@@ -17,6 +17,10 @@
 #include <tf2_player>
 #define REQUIRE_EXTENSIONS
 
+// Define _TRACE to enable trace logging for debugging
+//#define _TRACE
+#include <lib/trace>
+
 #include "sc/SourceCraft"
 #include "sc/HealthParticle"
 #include "sc/clienttimer"
@@ -333,6 +337,10 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
                           const String:weapon[], bool:is_equipment, customkill,
                           bool:headshot, bool:backstab, bool:melee)
 {
+    TraceInto("ZergDefiler", "OnPlayerDeathEvent", "victim_index=%d:%N, victim_race=%d, attacker_index=%d:%N, attacker_race=%d", \
+              victim_index, ValidClientIndex(victim_index), victim_race, \
+              attacker_index, ValidClientIndex(attacker_index), attacker_race);
+
     ResetProtected(victim_index);
 
     if (g_infestorRace < 0)
@@ -345,6 +353,8 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
                        .type=Cooldown_CreateNotify
                             |Cooldown_AlwaysNotify);
     }
+    
+    TraceReturn();
 }
 
 public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
@@ -354,8 +364,15 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
         attacker_index != victim_index &&
         attacker_race == raceID)
     {
+        TraceInto("ZergDefiler", "OnPlayerHurtEvent", "victim_index=%d:%N, victim_race=%d, attacker_index=%d:%N, attacker_race=%d, damage=%d, absorbed=%d, from_sc=%d", \
+                  victim_index, ValidClientIndex(victim_index), victim_race, attacker_index, ValidClientIndex(attacker_index), attacker_race, damage, absorbed, from_sc);
+
         if (ConsumeEnemy(damage + absorbed, attacker_index, victim_index))
+        {
+            TraceReturn();
             return Plugin_Handled;
+        }
+        TraceReturn();
     }
 
     return Plugin_Continue;
@@ -367,8 +384,15 @@ public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
 {
     if (assister_race == raceID)
     {
+        TraceInto("ZergDefiler", "OnPlayerAssistEvent", "victim_index=%d:%N, victim_race=%d, attacker_index=%d:%N, attacker_race=%d, damage=%d, absorbed=%d", \
+                  victim_index, ValidClientIndex(victim_index), victim_race, attacker_index, ValidClientIndex(attacker_index), attacker_race, damage, absorbed);
+
         if (ConsumeEnemy(damage + absorbed, assister_index, victim_index))
+        {
+            TraceReturn();
             return Plugin_Handled;
+        }
+        TraceReturn();
     }
 
     return Plugin_Continue;
@@ -376,6 +400,9 @@ public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
 
 bool:ConsumeEnemy(damage, index, victim_index)
 {
+    TraceInto("ZergDefiler", "ConsumeEnemy", "victim_index=%d:%N, index=%d:%N, damage=%d", \
+              victim_index, ValidClientIndex(victim_index), index, ValidClientIndex(index), damage);
+              
     new level = GetUpgradeLevel(index, raceID, consumeID);
     if (level > 0 && GetRandomInt(1,10) <= 6 &&
         IsValidClientAlive(index) &&
@@ -465,10 +492,12 @@ bool:ConsumeEnemy(damage, index, victim_index)
                     DisplayDamage(index, victim_index, leechhealth, "sc_consume");
                 }
 
+                TraceReturn();
                 return true;
             }
         }
     }
+    TraceReturn();
     return false;
 }
 
