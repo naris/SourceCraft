@@ -50,16 +50,20 @@ new String:gSndReactivated[PLATFORM_MAX_PATH] = "npc/roller/mine/rmine_blades_in
 new String:gSndRemoved[PLATFORM_MAX_PATH]     = "ui/hint.wav";
 
 // Colors
-new String:gMineColor[4][16] = { "255 255 255", // Unassigned
-                                 "0 255 255",   // Spectator
-                                 "255 0 0",     // Red  / Allies / Terrorists
-                                 "0 0 255"      // Blue / Axis   / Counter-Terrorists
+new String:gMineColor[6][16] = { "",			// 0:Unassigned / Default
+                                 "",			// 1:Spectator
+                                 "255 0 0",     // 2:Red  / Allies / Terrorists
+                                 "0 0 255",     // 3:Blue / Axis   / Counter-Terrorists
+                                 "", 			// 4:No Team?
+                                 ""  			// 5:Boss?
                                };
 
-new String:gBeamColor[4][16] = { "255 255 255", // Unassigned
-                                 "0 255 255",   // Spectator
-                                 "255 0 0",     // Red  / Allies / Terrorists
-                                 "0 0 255"      // Blue / Axis   / Counter-Terrorists
+new String:gBeamColor[6][16] = { "255 255 255", // 0:Unassigned / Default
+                                 "0 255 255",   // 1:Spectator
+                                 "255 0 0",     // 2:Red  / Allies / Terrorists
+                                 "0 0 255",     // 3:Blue / Axis   / Counter-Terrorists
+                                 "255 0 255", 	// 4:No Team?
+                                 "200 200 200"  // 5:Boss?
                                };
 
 // globals
@@ -719,10 +723,10 @@ SetMine(client)
             PrepareModel(mdlMine, gTripmineModelIndex);
             SetEntityModel(mine_ent,mdlMine);
 
-            DispatchKeyValue(mine_ent, "spawnflags", "152");
+            //DispatchKeyValue(mine_ent, "spawnflags", "152");						// TODO: DEBUG not in 2016
             DispatchKeyValue(mine_ent, "StartDisabled", "false");
 
-            if (gMineColor[team][0] != '\0')
+            if (gTeamSpecific > 0 && team >= 0 && team < sizeof(gMineColor) && gMineColor[team][0] != '\0')
             {
                 decl String:color[4][4];
                 if (ExplodeString(gMineColor[team], " ", color, sizeof(color), sizeof(color[])) <= 3)
@@ -742,9 +746,9 @@ SetMine(client)
                 SetEntProp(mine_ent, Prop_Data, "m_MoveCollide", 0);
                 SetEntProp(mine_ent, Prop_Send, "m_nSolidType", 6);
                 SetEntPropEnt(mine_ent, Prop_Data, "m_hLastAttacker", client);
-                SetEntPropEnt(mine_ent, Prop_Data, "m_hPhysicsAttacker", client);
-                SetEntPropEnt(mine_ent, Prop_Send, "m_hOwnerEntity", client);
-                SetEntProp(mine_ent, Prop_Send, "m_iTeamNum", team, 4);
+                //SetEntPropEnt(mine_ent, Prop_Data, "m_hPhysicsAttacker", client);	// TODO: DEBUG not in 2016
+                //SetEntPropEnt(mine_ent, Prop_Send, "m_hOwnerEntity", client);		// TODO: DEBUG not in 2016
+                //SetEntProp(mine_ent, Prop_Send, "m_iTeamNum", team, 4);			// TODO: DEBUG not in 2016
 
                 DispatchKeyValue(mine_ent, "targetname", minename);
 
@@ -757,16 +761,18 @@ SetMine(client)
                 SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
                 //DispatchKeyValue(mine_ent, "physdamagescale", "1.0");
 
-                //AcceptEntityInput(mine_ent, "DisableMotion");                       // not in 2016
+                //AcceptEntityInput(mine_ent, "DisableMotion");                     // TODO: DEBUG not in 2016
 
+				/* 																	// TODO: DEBUG not in 2016
                 //DispatchKeyValue(mine_ent, "SetHealth", "10");
                 new health = GetConVarInt(cvHealth);
                 if (health > 0)
                 {
                     SetEntityHealth(mine_ent, health);
                 }
+				*/
 
-                //DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
+                DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");	// TODO: DEBUG is in 2016
 
                 Format(tmp, sizeof(tmp), "%s,Kill,,0,-1", beamname);
                 DispatchKeyValue(mine_ent, "OnBreak", tmp);
@@ -774,7 +780,7 @@ SetMine(client)
                 AcceptEntityInput(mine_ent, "Enable");
                 HookSingleEntityOutput(mine_ent, "OnBreak", mineBreak, true);
 
-                //DispatchKeyValue(mine_ent, "classname", "tripmine");          // not in 2016
+                //DispatchKeyValue(mine_ent, "classname", "tripmine");          	// TODO: DEBUG not in 2016
 
                 new mine_ref = EntIndexToEntRef(mine_ent);
                 g_SavedEntityRef[mine_ent] = mine_ref;
@@ -804,22 +810,23 @@ SetMine(client)
                     SetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
                     SetEntPropFloat(beam_ent, Prop_Send, "m_fWidth", 4.0);
 
-                    if (DispatchSpawn(beam_ent))
+                    //if (DispatchSpawn(beam_ent))									// TODO: DEBUG not in 2016
                     {
-                        if (gTeamSpecific > 0)
+                        /*															// TODO: DEBUG not in 2016
+						if (gTeamSpecific > 0)
                         {
                             HookSingleEntityOutput(beam_ent, "OnTouchedByEntity", beamTouched, false);
                         }
-                        else
+                        else*/
                         {
                             Format(tmp, sizeof(tmp), "%s,Break,,0,-1", minename);
                             DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
                         }
 
-                        HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
+                        //HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true); // TODO: DEBUG not in 2016
                         AcceptEntityInput(beam_ent, "TurnOff");
 
-                        // Set the mine's m_hEffectEntity to point at the beam
+                        // Set the mine's m_hEffectEntity to point at the beam			// TODO: DEBUG not in 2016
                         //SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
 
                         //SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
@@ -851,8 +858,8 @@ SetMine(client)
                         if (gRemaining[client] >= 0)
                             PrintHintText(client, "%t", "left", gRemaining[client]);
                     }
-                    else
-                        LogError("Unable to spawn a beam_ent");
+                    //else
+                    //    LogError("Unable to spawn a beam_ent");
                 }
                 else
                     LogError("Unable to create a beam_ent");
@@ -877,18 +884,29 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
     new beam_ent = EntRefToEntIndex(ReadPackCell(data));
     if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client) && IsPlayerAlive(client))
     {
+		/*																			// TODO: DEBUG
         new team = GetEntProp(mine_ent, Prop_Send, "m_iTeamNum");
+		if (gTeamSpecific > 0 && team >= 0 && team < sizeof(gBeamColor) && gBeamColor[team][0] != '\0')
+		{
+			new String:color[4][4];
+			if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
+			{
+				SetEntityRenderMode(beam_ent, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(beam_ent, StringToInt(color[0]), StringToInt(color[1]),
+											   StringToInt(color[2]), StringToInt(color[3]));
+			}
+			else
+			{
+				DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[team]);
+			}
+		}
+		else	// Invalid team? Set to default color!
+		*/
+		{
+			DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[0]);
+		}
 
-        new String:color[4][4];
-        if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
-        {
-            SetEntityRenderMode(beam_ent, RENDER_TRANSCOLOR);
-            SetEntityRenderColor(beam_ent, StringToInt(color[0]), StringToInt(color[1]),
-                                           StringToInt(color[2]), StringToInt(color[3]));
-        }
-        else
-            DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[team]);
-
+		/*																			// TODO: DEBUG not in 2016
         DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
         DispatchKeyValue(mine_ent, "OnTakeDamage", "!self,Break,,0,-1");
 
@@ -903,6 +921,7 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
                 DispatchKeyValue(mine_ent, "OnTouchedByEntity", "!self,Break,,0,-1");
             }
         }
+		*/
 
         AcceptEntityInput(beam_ent, "TurnOn");
 
@@ -917,16 +936,21 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
                                      SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
                                      100, beam_ent, end, NULL_VECTOR, true, 0.0);
         }
-
+		
+		//delete data;	// TODO: free the pack here!
         return Plugin_Stop;
     }
 
     // Player died before activation or something happened to the tripmine and/or the beam,
     RemoveBeamEntity(beam_ent);
     RemoveMineEntity(mine_ent);
+	
+	//delete data;	// TODO: free the pack here!
     return Plugin_Stop;
 }
 
+/* TODO: This was replaced by ActivateTripMine
+ *
 public Action:TurnBeamOn(Handle:timer, Handle:data)
 {
     ResetPack(data);
@@ -954,6 +978,7 @@ public Action:TurnBeamOn(Handle:timer, Handle:data)
     RemoveMineEntity(mine_ent);
     return Plugin_Stop;
 }
+*/
 
 CountMines(client)
 {
