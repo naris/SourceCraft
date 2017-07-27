@@ -35,10 +35,10 @@
 #define LASER_SPRITE    "sprites/laser.vmt"
 
 // settings for m_takedamage
-#define	DAMAGE_NO				0
-#define DAMAGE_EVENTS_ONLY		1		// Call damage functions, but don't modify health
-#define	DAMAGE_YES				2
-#define	DAMAGE_AIM				3
+#define DAMAGE_NO               0
+#define DAMAGE_EVENTS_ONLY      1       // Call damage functions, but don't modify health
+#define DAMAGE_YES              2
+#define DAMAGE_AIM              3
 
 new const String:gSndBuy[]                    = "items/itempickup.wav";
 new const String:gSndError[]                  = "common/wpn_denyselect.wav";
@@ -264,9 +264,9 @@ public OnPluginStart()
 /*
 public OnPluginEnd()
 {
-	UnhookEvent("player_changeclass", PlayerChange);
-	UnhookEvent("player_death", PlayerDeath);
-	UnhookEvent("player_spawn",PlayerSpawn);
+    UnhookEvent("player_changeclass", PlayerChange);
+    UnhookEvent("player_death", PlayerDeath);
+    UnhookEvent("player_spawn",PlayerSpawn);
 }
 */
 
@@ -432,23 +432,23 @@ public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
     new stay = GetConVarInt(cvStay);
     if (stay != 1)
-	{
-		new Handle:pack;
-		CreateDataTimer(0.1, RemovePlayersTripmines, pack, TIMER_FLAG_NO_MAPCHANGE);
-		WritePackCell(pack, client);
-		WritePackCell(pack, (stay > 1));
-	}
+    {
+        new Handle:pack;
+        CreateDataTimer(0.1, RemovePlayersTripmines, pack, TIMER_FLAG_NO_MAPCHANGE);
+        WritePackCell(pack, client);
+        WritePackCell(pack, (stay > 1));
+    }
 
     return Plugin_Continue;
 }
 
 public Action:RemovePlayersTripmines(Handle:timer, Handle:pack)
 { 
-	ResetPack(pack);
-	new client = ReadPackCell(pack);
-	new bool:explode = bool:ReadPackCell(pack);
-	RemoveTripmines(client, explode);
-	return Plugin_Stop;
+    ResetPack(pack);
+    new client = ReadPackCell(pack);
+    new bool:explode = bool:ReadPackCell(pack);
+    RemoveTripmines(client, explode);
+    return Plugin_Stop;
 }
 
 public Action:RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
@@ -816,7 +816,7 @@ SetMine(client)
                             DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
                         }
 
-                        //HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
+                        HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
                         AcceptEntityInput(beam_ent, "TurnOff");
 
                         // Set the mine's m_hEffectEntity to point at the beam
@@ -873,24 +873,24 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
 {
     ResetPack(data);
     new client = ReadPackCell(data);
-	new mine_ent = EntRefToEntIndex(ReadPackCell(data));
-	new beam_ent = EntRefToEntIndex(ReadPackCell(data));
+    new mine_ent = EntRefToEntIndex(ReadPackCell(data));
+    new beam_ent = EntRefToEntIndex(ReadPackCell(data));
     if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client) && IsPlayerAlive(client))
     {
-		new team = GetEntProp(mine_ent, Prop_Send, "m_iTeamNum");
+        new team = GetEntProp(mine_ent, Prop_Send, "m_iTeamNum");
 
-		new String:color[4][4];
-		if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
-		{
-			SetEntityRenderMode(beam_ent, RENDER_TRANSCOLOR);
-			SetEntityRenderColor(beam_ent, StringToInt(color[0]), StringToInt(color[1]),
-										   StringToInt(color[2]), StringToInt(color[3]));
-		}
-		else
-			DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[team]);
+        new String:color[4][4];
+        if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
+        {
+            SetEntityRenderMode(beam_ent, RENDER_TRANSCOLOR);
+            SetEntityRenderColor(beam_ent, StringToInt(color[0]), StringToInt(color[1]),
+                                           StringToInt(color[2]), StringToInt(color[3]));
+        }
+        else
+            DispatchKeyValue(beam_ent, "rendercolor", gBeamColor[team]);
 
-		DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
-		DispatchKeyValue(mine_ent, "OnTakeDamage", "!self,Break,,0,-1");
+        DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
+        DispatchKeyValue(mine_ent, "OnTakeDamage", "!self,Break,,0,-1");
 
         if (gTouch)
         {
@@ -904,21 +904,21 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
             }
         }
 
-		AcceptEntityInput(beam_ent, "TurnOn");
+        AcceptEntityInput(beam_ent, "TurnOn");
 
-		if (gSndActivated[0])
-		{
-			new Float:end[3];
-			end[0] = ReadPackFloat(data);
-			end[1] = ReadPackFloat(data);
-			end[2] = ReadPackFloat(data);
+        if (gSndActivated[0])
+        {
+            new Float:end[3];
+            end[0] = ReadPackFloat(data);
+            end[1] = ReadPackFloat(data);
+            end[2] = ReadPackFloat(data);
 
-			PrepareAndEmitSoundToAll(gSndActivated, beam_ent, SNDCHAN_AUTO,
-									 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
-									 100, beam_ent, end, NULL_VECTOR, true, 0.0);
-		}
+            PrepareAndEmitSoundToAll(gSndActivated, beam_ent, SNDCHAN_AUTO,
+                                     SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+                                     100, beam_ent, end, NULL_VECTOR, true, 0.0);
+        }
 
-		return Plugin_Stop;
+        return Plugin_Stop;
     }
 
     // Player died before activation or something happened to the tripmine and/or the beam,
@@ -931,22 +931,22 @@ public Action:TurnBeamOn(Handle:timer, Handle:data)
 {
     ResetPack(data);
     new client = ReadPackCell(data);
-	new mine_ent = EntRefToEntIndex(ReadPackCell(data));
-	new beam_ent = EntRefToEntIndex(ReadPackCell(data));
+    new mine_ent = EntRefToEntIndex(ReadPackCell(data));
+    new beam_ent = EntRefToEntIndex(ReadPackCell(data));
     if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client))
     {
-		AcceptEntityInput(beam_ent, "TurnOn");
+        AcceptEntityInput(beam_ent, "TurnOn");
 
-		if (gSndReactivated[0])
-		{
-			decl Float:end[3];
-			GetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
+        if (gSndReactivated[0])
+        {
+            decl Float:end[3];
+            GetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
 
-			PrepareAndEmitSoundToAll(gSndReactivated, beam_ent, SNDCHAN_AUTO,
-									 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
-									 100, beam_ent, end, NULL_VECTOR, true, 0.0);
-		}                       
-		return Plugin_Stop;
+            PrepareAndEmitSoundToAll(gSndReactivated, beam_ent, SNDCHAN_AUTO,
+                                     SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+                                     100, beam_ent, end, NULL_VECTOR, true, 0.0);
+        }                       
+        return Plugin_Stop;
     }
 
     // Player left or something happened to the tripmine,
@@ -1034,7 +1034,7 @@ public beamTouched(const String:output[], caller, activator, Float:delay)
     }
 }
 
-/*public beamBreak(const String:output[], caller, activator, Float:delay)
+public beamBreak(const String:output[], caller, activator, Float:delay)
 {
     new mine_ent = EntRefToEntIndex(g_TripmineOfBeam[caller]);
     if (mine_ent > 0 && IsValidEntity(mine_ent))
@@ -1050,7 +1050,7 @@ public beamTouched(const String:output[], caller, activator, Float:delay)
             RemoveBeamEntity(caller);
         }
     }
-}*/
+}
 
 public mineTouched(const String:output[], caller, activator, Float:delay)
 {

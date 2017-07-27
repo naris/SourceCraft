@@ -422,6 +422,8 @@ SpawnEyeBoss(client, iLevel, const String:model[])
     new entity = CreateEntityByName("eyeball_boss");
     if (entity > 0 && IsValidEntity(entity))
     {
+        SetEntProp(entity, Prop_Data, "m_iTeamNum", 5);
+        
         if (DispatchSpawn(entity))
         {
             if (model[0] != '\0')
