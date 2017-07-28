@@ -57,8 +57,11 @@ SetOwnsItem(client,item,owns)
         }
         else
         {
-            LogError("Unable to set that client=%d:%N owns item=%d; shopitems=0x%08x, size=%d",
-                     client, ValidClientIndex(client), item, shopitems,
+			decl String:itemName[NAME_STRING_LENGTH];
+			new Handle:itemHandle = GetItemIndexHandle(item);
+			GetItemName(itemHandle, itemName, sizeof(itemName));
+            LogError("Unable to set that client=%d:%N owns item=%d:%s; shopitems=0x%08x, size=%d",
+                     client, ValidClientIndex(client), item, itemName, shopitems,
                      (shopitems != INVALID_HANDLE) ? GetArraySize(shopitems) : 0);
         }
     }
