@@ -770,7 +770,7 @@ SetMine(client)
                     SetEntityHealth(mine_ent, health);
                 }
 
-                //DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1"); // TODO: DEBUG is in 2016
+                DispatchKeyValue(mine_ent, "OnHealthChanged", "!self,Break,,0,-1");
 
                 if (gTeamSpecific == 0)
                 {
