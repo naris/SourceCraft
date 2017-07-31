@@ -1131,19 +1131,27 @@ ResetPlayer(client, bool:clear)
     new Handle:shopitems=GetShopitems(client);
     if (shopitems == INVALID_HANDLE)
     {
-        shopitems = SetShopitems(client, CreateArray());
+        shopItemCount = shopVectorCount;
+        shopitems = SetShopitems(client, CreateArray(1, shopItemCount));
 
-        for(new x=0;x<shopVectorCount;x++)
-            PushArrayCell(shopitems,0);     // Owns item x
-
-        shopItemCount=GetArraySize(shopitems);
+        for (new x=0;x<shopVectorCount;x++)
+            SetArrayCell(shopitems,x,0);     // Owns item x
 
         TraceCat("Array", "CreateArray playerArray[%d,ShopItems]=0x%08x", \
                  client, shopitems);
     }
     else
     {
-        shopItemCount=GetArraySize(shopitems);
+        shopItemCount = GetArraySize(shopitems);
+		if (shopItemCount < shopVectorCount)
+		{
+			LogError("ERROR: Player %d:%N's shop data got fubared! %d != %d",
+					 client, ValidClientIndex(client), shopItemCount, shopVectorCount);
+
+			shopItemCount = shopVectorCount;
+			ResizeArray(shopitems, shopVectorCount);
+		}
+		
         for (new x=0;x<shopItemCount;x++)
             SetArrayCell(shopitems,x,0);     // Owns item x
     }
@@ -1382,7 +1390,7 @@ ClearPlayer(client)
     if (propData != INVALID_HANDLE)
     {
         new numprops=GetArraySize(propData);
-        for(new x=0;x<numprops;x++)
+        for (new x=0;x<numprops;x++)
         {
             new Handle:propInfo=GetArrayCell(propData,x);
             if (propInfo != INVALID_HANDLE)
