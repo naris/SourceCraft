@@ -862,9 +862,15 @@
 		"#format"	"{1:s},{2:N}"
 		"en"		"You received a {blue}{1}{default} from admin {olive}{2}{default}."
 	}
-	"PlayerOwnsItem"
+	"PlayerOwnsMax"
 	{
-		"en"		"The player already owns this item."
+		"#format"	"{1:d},{2:s}"
+		"en"		"The player already owns the maximum allowed {1} {blue}{2}{default}s."
+	}
+	"AlreadyOwn"
+	{
+		"#format"	"{1:s}"
+		"en"		"The player  already owns the {blue}{1}{default}."
 	}
 	"SelectRace"
 	{

@@ -435,9 +435,12 @@ public Admin_Item_Selected(Handle:menu,MenuAction:action,client,selection)
         if (IsValidClient(target))
         {
             new item=StringToInt(SelectionData[1]);
-            if(!GetOwnsItem(target,item))
+			new Handle:itemHandle=GetShopItemHandle(item);
+			new num = GetOwnsItem(target,item);
+			new max = GetItemMax(itemHandle);
+			if (num < max || max < 0)
             {
-                SetOwnsItem(target,item,1);
+                SetOwnsItem(target,item,num+1);
 
                 new result;
                 Call_StartForward(g_OnItemPurchaseHandle);
@@ -445,7 +448,6 @@ public Admin_Item_Selected(Handle:menu,MenuAction:action,client,selection)
                 Call_PushCell(item);
                 Call_Finish(result);
 
-                new Handle:itemHandle=GetShopItemHandle(item);
                 decl String:itemname[NAME_STRING_LENGTH];
                 GetItemName(itemHandle, itemname, sizeof(itemname),client);
 
@@ -455,7 +457,18 @@ public Admin_Item_Selected(Handle:menu,MenuAction:action,client,selection)
             }
             else
             {
-                CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnsItem");
+				if (num > 1)
+				{
+					CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnMax", num, itemName);
+				}
+				else if (num == 1)
+				{
+					CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnsItem", itemName);
+				}
+				else // if (num == 0)
+				{
+					CPrintToChat(client, "{green}[SC]{default} %t", "ItemNotAvailable", itemName);
+				}
             }
             Admin_Player(client,target);
         }
