@@ -179,26 +179,10 @@ public OnSourceCraftReady()
     }
     else
     {
-        cfgAllowSentries = GetConfigNum("allow_sentries", 2);
-        if (cfgAllowSentries < 2)
-        {
-            SetUpgradeDisabled(raceID, forgeID, true);
-            LogMessage("Disabling Protoss Probe:Forge due to configuration: sc_allow_sentries=%d",
-                       cfgAllowSentries);
-        }
-
         if (!IsTeleporterAvailable())
         {
             SetUpgradeDisabled(raceID, warpGateID, true);
             LogMessage("Disabling Protoss Probe:Warp Gate due to tf2teleporter is not available");
-        }
-
-        cfgAllowTeleport = bool:GetConfigNum("allow_teleport", true);
-        if (!cfgAllowTeleport || !IsRemoteAvailable() || cfgAllowSentries < 1)
-        {
-            SetUpgradeDisabled(raceID, recallStructureID, true);
-            LogMessage("Disabling Protoss Probe:Recall Structure due to remote is not available or configuration: sc_allow_sentries=%d, sc_allow_teleport=%d",
-                        cfgAllowSentries, cfgAllowTeleport);
         }
 
         cfgAllowInvisibility = bool:GetConfigNum("allow_invisibility", true);
@@ -209,7 +193,23 @@ public OnSourceCraftReady()
                         cfgAllowInvisibility);
         }
 
-        if (!IsAmpNodeAvailable() || !IsRemoteAvailable())
+        cfgAllowSentries = GetConfigNum("allow_sentries", 2);
+        if (GameType != tf2 || cfgAllowSentries < 2)
+        {
+            SetUpgradeDisabled(raceID, forgeID, true);
+            LogMessage("Disabling Protoss Probe:Forge due to configuration: sc_allow_sentries=%d",
+                       cfgAllowSentries);
+        }
+
+        cfgAllowTeleport = bool:GetConfigNum("allow_teleport", true);
+        if (GameType != tf2 || !cfgAllowTeleport || cfgAllowSentries < 1 || !IsRemoteAvailable())
+        {
+            SetUpgradeDisabled(raceID, recallStructureID, true);
+            LogMessage("Disabling Protoss Probe:Recall Structure due to remote is not available or configuration: sc_allow_sentries=%d, sc_allow_teleport=%d",
+                        cfgAllowSentries, cfgAllowTeleport);
+        }
+
+        if (GameType != tf2 || !IsAmpNodeAvailable() || !IsRemoteAvailable())
         {
             SetUpgradeDisabled(raceID, amplifierID, true);
             LogMessage("Disabling Protoss Probe:Warp In Amplifier due to amp_node and/or remote are not available");

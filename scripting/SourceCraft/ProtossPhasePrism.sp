@@ -199,10 +199,10 @@ public OnSourceCraftReady()
     recallStructureID = AddUpgrade(raceID, "recall_structure", 3, 1, 1, .energy=30.0,
                                    .vespene=5, .cooldown=5.0, .cost_crystals=50);
 
-    if (GameType != tf2 || !cfgAllowTeleport || cfgAllowSentries < 1)
+    if (GameType != tf2 || !cfgAllowTeleport || cfgAllowSentries < 1 || !IsRemoteAvailable())
     {
         SetUpgradeDisabled(raceID, recallStructureID, true);
-        LogMessage("Disabling Protoss Warp Prism:Recall Structure due to configuration: sc_allow_sentries=%d, sc_allow_teleport=%d (or gametype != tf2)",
+        LogMessage("Disabling Protoss Warp Prism:Recall Structure due to remote is not available or configuration: sc_allow_sentries=%d, sc_allow_teleport=%d (or gametype != tf2)",
                    cfgAllowSentries, cfgAllowTeleport);
     }
 

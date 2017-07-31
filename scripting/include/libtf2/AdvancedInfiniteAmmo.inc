@@ -14,9 +14,10 @@
  * Assume control of the TF2 AdvancedInfiniteAmmo plugin
  *
  * @param plugin_only 	Set to 1 to assume complete control of the AdvancedInfiniteAmmo plugin.
+ * @param announce	 	Set to 1 to show Advanced Infinite Ammo changes in chat.
  * @return		    	none
  */
-native ControlInfiniteAmmo(bool:plugin_only=true);
+native ControlInfiniteAmmo(bool:plugin_only=true, bool:announce=false);
 
 /**
  * Enable AdvancedInfiniteAmmo for the player

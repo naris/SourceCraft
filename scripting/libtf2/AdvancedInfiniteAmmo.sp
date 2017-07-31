@@ -64,6 +64,7 @@ new Handle:g_hAmmoOnly = INVALID_HANDLE;
 new Handle:g_hExtraStuff = INVALID_HANDLE;
 
 new bool:g_bNativeControl = false;
+new bool:g_bAnnounce = true;
 
 public OnPluginStart()
 {
@@ -139,8 +140,14 @@ public OnConfigsExecuted()
 				}
 			}
 		}
-		if(iAdminOnly == 1 || iAdminOnly == 2) PrintToChatAll("[SM] Advanced Infinite Ammo for admins enabled");
-		else PrintToChatAll("[SM] Advanced Infinite Ammo for everyone enabled");
+
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+		{
+			if (iAdminOnly == 1 || iAdminOnly == 2)
+				PrintToChatAll("[SM] Advanced Infinite Ammo for admins enabled");
+			else
+				PrintToChatAll("[SM] Advanced Infinite Ammo for everyone enabled");
+		}
 	}
 }
 
@@ -184,8 +191,14 @@ public CvarChange_AllInfiniteAmmo(Handle:Cvar, const String:strOldValue[], const
 				}
 			}
 		}
-		if(iAdminOnly == 1 || iAdminOnly == 2) PrintToChatAll("[SM] Advanced Infinite Ammo for admins enabled");
-		else PrintToChatAll("[SM] Advanced Infinite Ammo for everyone enabled");
+		
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+		{
+			if (iAdminOnly == 1 || iAdminOnly == 2)
+				PrintToChatAll("[SM] Advanced Infinite Ammo for admins enabled");
+			else
+				PrintToChatAll("[SM] Advanced Infinite Ammo for everyone enabled");
+		}
 	}
 	else
 	{
@@ -194,9 +207,10 @@ public CvarChange_AllInfiniteAmmo(Handle:Cvar, const String:strOldValue[], const
 		{
 			g_bInfiniteAmmo[client] = false;
 			ResetAmmo(client);
-			
 		}
-		PrintToChatAll("[SM] Advanced Infinite Ammo for everyone disabled");
+		
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+			PrintToChatAll("[SM] Advanced Infinite Ammo for everyone disabled");
 	}
 }
 
@@ -297,16 +311,23 @@ public Action:Command_SetAIA(client, args)
 			{
 				g_bInfiniteAmmo[client] = false;
 				ResetAmmo(client);
-				if(GetConVarBool(g_hLog)) LogAction(client, client, "\"%L\" Disabled Advanced Infinite Ammo for  \"%L\"", client, client);		
-				if(GetConVarBool(g_hChat)) ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %N disabled", client);
 				
+				if(GetConVarBool(g_hLog))
+					LogAction(client, client, "\"%L\" Disabled Advanced Infinite Ammo for  \"%L\"", client, client);		
+				
+				if (g_bAnnounce && GetConVarBool(g_hChat))
+					ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %N disabled", client);
 			}
 			else
 			{
 				g_bInfiniteAmmo[client] = true;
-				if(GetConVarBool(g_hLog)) LogAction(client, client, "\"%L\" Enabled Advanced Infinite Ammo for  \"%L\"", client, client);
-				if(GetConVarBool(g_hChat)) ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %N enabled", client);
-			}			
+				
+				if(GetConVarBool(g_hLog))
+					LogAction(client, client, "\"%L\" Enabled Advanced Infinite Ammo for  \"%L\"", client, client);
+					
+				if (g_bAnnounce && GetConVarBool(g_hChat))
+					ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %N enabled", client);
+			}
 		}
 		case 2:
 		{
@@ -334,7 +355,9 @@ public Action:Command_SetAIA(client, args)
 					g_bInfiniteAmmo[target_list[i]] = true;
 					if(bLogging) LogAction(client, target_list[i], "\"%L\" enabled Advanced Infinite Ammo for  \"%L\"", client, target_list[i]);
 				}
-				if(GetConVarBool(g_hChat)) ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %s enabled", target_name);
+				
+				if (g_bAnnounce && GetConVarBool(g_hChat))
+					ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %s enabled", target_name);
 			}
 			else 
 			{
@@ -344,7 +367,9 @@ public Action:Command_SetAIA(client, args)
 					ResetAmmo(target_list[i]);
 					if(bLogging) LogAction(client, target_list[i], "\"%L\" disabled Advanced Infinite Ammo for  \"%L\"", client, target_list[i]);
 				}
-				if(GetConVarBool(g_hChat)) ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %s disabled", target_name);				
+				
+				if (g_bAnnounce && GetConVarBool(g_hChat))
+					ShowActivity2(client, "[SM] ","Advanced Infinite Ammo for %s disabled", target_name);				
 			}
 		}
 		default:
@@ -394,7 +419,9 @@ public Action:Command_SetAIATimed(client, args)
 		CreateTimer(time, Timer_RemoveAIA, target_list[i], TIMER_FLAG_NO_MAPCHANGE);
 		if(bLogging) LogAction(client, target_list[i], "\"%L\" Advanced Infinite Ammo enabled for \"%L\" for %f Seconds", client, target_list[i], time); 
 	}
-	if(GetConVarBool(g_hChat)) ShowActivity2(client, "[SM] ","Advanced Infinite Ammo enabled for %s for %-.2f seconds", target_name, time);
+	
+	if (g_bAnnounce && GetConVarBool(g_hChat))
+		ShowActivity2(client, "[SM] ","Advanced Infinite Ammo enabled for %s for %-.2f seconds", target_name, time);
 
 	return Plugin_Handled;	
 }
@@ -414,7 +441,8 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	if(g_bInfiniteAmmoToggle && !g_bWaitingForPlayers)
 	{
 		g_bInfiniteAmmoToggle = false;
-		if(GetConVarBool(g_hChat)) PrintToChatAll("[SM] Round Start - Advanced Infinite Ammo disabled");
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+			PrintToChatAll("[SM] Round Start - Advanced Infinite Ammo disabled");
 	}
 }
 
@@ -423,11 +451,13 @@ public Event_MVMWaveStart(Handle:event, const String:name[], bool:dontBroadcast)
 	if(g_bInfiniteAmmoToggle && !g_bWaitingForPlayers)
 	{
 		g_bInfiniteAmmoToggle = false;
-		if(GetConVarBool(g_hChat)) PrintToChatAll("[SM] Round Start - Advanced Infinite Ammo disabled");
 		for(new client = 1; client <= MaxClients; client++)
 		{
 			ResetAmmo(client);
 		}
+		
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+			PrintToChatAll("[SM] Round Start - Advanced Infinite Ammo disabled");
 	}
 }
 
@@ -436,7 +466,8 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if(!GetConVarBool(g_hAllInfiniteAmmo) && GetConVarBool(g_hRoundWin))
 	{
 		g_bInfiniteAmmoToggle = true;	
-		if(GetConVarBool(g_hChat)) PrintToChatAll("[SM] Round Win - Advanced Infinite Ammo enabled");
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+			PrintToChatAll("[SM] Round Win - Advanced Infinite Ammo enabled");
 	}
 }
 
@@ -445,7 +476,8 @@ public Event_ArenaRoundStart(Handle:event, const String:name[], bool:dontBroadca
 	if(g_bInfiniteAmmoToggle && !g_bWaitingForPlayers)
 	{
 		g_bInfiniteAmmoToggle = false;
-		if(GetConVarBool(g_hChat)) PrintToChatAll("[SM] Round Start - Advanced Infinite Ammo disabled");
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+			PrintToChatAll("[SM] Round Start - Advanced Infinite Ammo disabled");
 	}
 }
 
@@ -486,7 +518,9 @@ public TF2_OnWaitingForPlayersStart()
 	if(!GetConVarBool(g_hAllInfiniteAmmo) && GetConVarBool(g_hWaitingForPlayers))
 	{
 		g_bInfiniteAmmoToggle = true;
-		if(GetConVarBool(g_hChat)) PrintToChatAll("[SM] Waiting For Players Started - Advanced Infinite Ammo enabled");
+		
+		if (g_bAnnounce && GetConVarBool(g_hChat))
+			PrintToChatAll("[SM] Waiting For Players Started - Advanced Infinite Ammo enabled");
 	}	
 }
 
@@ -911,7 +945,8 @@ stock bool:HasRazorback(client)
 
 public Native_ControlInfiniteAmmo(Handle:plugin, numParams)
 {
-    g_bNativeControl = GetNativeCell(1);
+    g_bNativeControl = (numParams >= 1) ? GetNativeCell(1) : true;
+    g_bAnnounce = (numParams >= 2) ? GetNativeCell(2) : false;
 }
 
 public Native_SetInfiniteAmmo(Handle:plugin, numParams)
