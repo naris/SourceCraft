@@ -194,10 +194,10 @@ public OnSourceCraftReady()
         }
 
         cfgAllowTeleport = bool:GetConfigNum("allow_teleport", true);
-        if (!cfgAllowTeleport || cfgAllowSentries < 1)
+        if (!cfgAllowTeleport || !IsRemoteAvailable() || cfgAllowSentries < 1)
         {
             SetUpgradeDisabled(raceID, recallStructureID, true);
-            LogMessage("Disabling Protoss Probe:Recall Structure due to configuration: sc_allow_sentries=%d, sc_allow_teleport=%d",
+            LogMessage("Disabling Protoss Probe:Recall Structure due to remote is not available or configuration: sc_allow_sentries=%d, sc_allow_teleport=%d",
                         cfgAllowSentries, cfgAllowTeleport);
         }
 
@@ -209,7 +209,7 @@ public OnSourceCraftReady()
                         cfgAllowInvisibility);
         }
 
-        if (!IsAmpNodeAvailable() || !IsBuildAvailable())
+        if (!IsAmpNodeAvailable() || !IsRemoteAvailable())
         {
             SetUpgradeDisabled(raceID, amplifierID, true);
             LogMessage("Disabling Protoss Probe:Warp In Amplifier due to amp_node and/or remote are not available");

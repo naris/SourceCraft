@@ -1346,77 +1346,74 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
             }
         #endif
 
-        if (IsClient(attacker_index))
+        if (IsClient(attacker_index) && attacker_index < sizeof(m_IsMole) && m_IsMole[attacker_index])
         {
-            if (m_IsMole[attacker_index])
+            new reflection = GetOwnsItem(victim_index,shopItem[ITEM_MOLE_REFLECTION]);
+            new protection = GetOwnsItem(victim_index,shopItem[ITEM_MOLE_PROTECTION]);
+            if (reflection || protection)
             {
-                new reflection = GetOwnsItem(victim_index,shopItem[ITEM_MOLE_REFLECTION]);
-                new protection = GetOwnsItem(victim_index,shopItem[ITEM_MOLE_PROTECTION]);
-                if (reflection || protection)
+                new victim_health = GetClientHealth(victim_index);
+                new prev_health   = victim_health+damage;
+                new new_health    = (victim_health+prev_health)/2;
+
+                if (new_health <= victim_health)
+                    new_health = victim_health+(damage/2);
+
+                if (reflection && protection && GetRandomInt(1,100)<=50)
+                    new_health += (damage*GetRandomFloat(0.25,0.75));
+
+                new amount = new_health-victim_health;
+                handled=true;
+
+                if (reflection)
                 {
-                    new victim_health = GetClientHealth(victim_index);
-                    new prev_health   = victim_health+damage;
-                    new new_health    = (victim_health+prev_health)/2;
-
-                    if (new_health <= victim_health)
-                        new_health = victim_health+(damage/2);
-
-                    if (reflection && protection && GetRandomInt(1,100)<=50)
-                        new_health += (damage*GetRandomFloat(0.25,0.75));
-
-                    new amount = new_health-victim_health;
-                    handled=true;
-
-                    if (reflection)
+                    // Don't allow Restore Immunity for moles.
+                    if(!GetImmunity(attacker_index,Immunity_ShopItems) &&
+                       !GetImmunity(attacker_index,Immunity_HealthTaking) &&
+                       !IsInvulnerable(attacker_index))
                     {
-                        // Don't allow Restore Immunity for moles.
-                        if(!GetImmunity(attacker_index,Immunity_ShopItems) &&
-                           !GetImmunity(attacker_index,Immunity_HealthTaking) &&
-                           !IsInvulnerable(attacker_index))
+                        new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
+                        FlashScreen(attacker_index,RGBA_COLOR_RED);
+                        HurtPlayer(attacker_index, reflect, victim_index,
+                                   "sc_mole_reflection", .xp=10,
+                                   .in_hurt_event=true);
+
+                        if (amount < reflect)
                         {
-                            new reflect=RoundToNearest(damage * GetRandomFloat(0.50,1.10));
-                            FlashScreen(attacker_index,RGBA_COLOR_RED);
-                            HurtPlayer(attacker_index, reflect, victim_index,
-                                       "sc_mole_reflection", .xp=10,
-                                       .in_hurt_event=true);
-
-                            if (amount < reflect)
-                            {
-                                new_health += reflect - amount;
-                                amount = reflect;
-                            }
-                        }
-
-                        decl String:itemName[64];
-                        GetItemName(shopItem[ITEM_MOLE_REFLECTION], itemName, sizeof(itemName), victim_index);
-                        DisplayMessage(victim_index, Display_Item | Display_Defense,
-                                       "%t", "ReceivedHPFrom", amount, attacker_index,
-                                       itemName);
-                    }
-                    else
-                    {
-                        decl String:itemName[64];
-                        GetItemName(shopItem[ITEM_MOLE_PROTECTION], itemName, sizeof(itemName), victim_index);
-                        DisplayMessage(victim_index, Display_Item | Display_Defense,
-                                       "%t", "ReceivedHP", amount, itemName);
-                    }
-
-                    if (new_health > victim_health)
-                    {
-                        new max_health = (GameType == tf2) ? TF2_GetPlayerResourceData(attacker_index, TFResource_MaxHealth) : 100;
-                        if (victim_health < max_health)
-                        {
-                            SetEntityHealth(victim_index,(new_health>max_health) ? max_health : new_health);
-                            FlashScreen(victim_index,RGBA_COLOR_GREEN);
-                            ShowHealthParticle(victim_index);
+                            new_health += reflect - amount;
+                            amount = reflect;
                         }
                     }
 
-                    if (GetOwnsItem(victim_index,shopItem[ITEM_MOLE_RETENTION]))
+                    decl String:itemName[64];
+                    GetItemName(shopItem[ITEM_MOLE_REFLECTION], itemName, sizeof(itemName), victim_index);
+                    DisplayMessage(victim_index, Display_Item | Display_Defense,
+                                   "%t", "ReceivedHPFrom", amount, attacker_index,
+                                   itemName);
+                }
+                else
+                {
+                    decl String:itemName[64];
+                    GetItemName(shopItem[ITEM_MOLE_PROTECTION], itemName, sizeof(itemName), victim_index);
+                    DisplayMessage(victim_index, Display_Item | Display_Defense,
+                                   "%t", "ReceivedHP", amount, itemName);
+                }
+
+                if (new_health > victim_health)
+                {
+                    new max_health = (GameType == tf2) ? TF2_GetPlayerResourceData(attacker_index, TFResource_MaxHealth) : 100;
+                    if (victim_health < max_health)
                     {
-                        SetOwnsItem(victim_index,shopItem[ITEM_MOLE_RETENTION],false);
-                        DisplayMessage(victim_index, Display_Item, "%t", "UsedMoleRetention");
+                        SetEntityHealth(victim_index,(new_health>max_health) ? max_health : new_health);
+                        FlashScreen(victim_index,RGBA_COLOR_GREEN);
+                        ShowHealthParticle(victim_index);
                     }
+                }
+
+                if (GetOwnsItem(victim_index,shopItem[ITEM_MOLE_RETENTION]))
+                {
+                    SetOwnsItem(victim_index,shopItem[ITEM_MOLE_RETENTION],false);
+                    DisplayMessage(victim_index, Display_Item, "%t", "UsedMoleRetention");
                 }
             }
 

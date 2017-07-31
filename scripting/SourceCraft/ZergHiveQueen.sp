@@ -169,6 +169,12 @@ public OnSourceCraftReady()
         LogMessage("Disabling Zerg Hive Queen:Transfusion & Toxic Creep due to tf2teleporter is not available (or gametype != tf2)");
     }
 
+    if (!IsBuildAvailable())
+    {
+        SetUpgradeDisabled(raceID, tunnelID, true);
+        LogMessage("Disabling Zerg Hive Queen:Deep Tunnel due to remote is not available (or gametype != tf2)");
+    }
+
     if (!IsBuildAvailable() || cfgAllowSentries < 1)
     {
         SetUpgradeDisabled(raceID, mutateID, true);

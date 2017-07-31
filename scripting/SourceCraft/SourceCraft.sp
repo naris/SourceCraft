@@ -347,8 +347,6 @@ public OnClientPutInServer(client)
     TraceInto("SourceCraft", "OnClientPutInServer", "client=%d:%L", \
               client, ValidClientIndex(client));
 
-    LogMessage("OnClientPutInServer:client=%d:%L", client, ValidClientIndex(client));
-			  
     SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 
     if (GameType == tf2)
@@ -367,8 +365,6 @@ public Action:OnClientPreAdminCheck(client)
     SetTraceCategory("Connect");
     TraceInto("SourceCraft", "OnClientPreAdminCheck", "client=%d:%L", \
               client, ValidClientIndex(client));
-
-    LogMessage("OnClientPreAdminCheck:client=%d:%L", client, ValidClientIndex(client));
 
     // Load players in OnClientPreAdminCheck() to ensure
     // they have been PutInServer and Authorized.
@@ -464,8 +460,6 @@ public OnClientDisconnect(client)
     TraceInto("SourceCraft", "OnClientDisconnect", "client=%d:%L", \
               client, ValidClientIndex(client));
 
-    LogMessage("OnClientDisconnect:client=%d:%L", client, ValidClientIndex(client));
-
     g_IsInSpawn[client]  = false;
     g_FirstSpawn[client] = true;
 
@@ -507,14 +501,12 @@ public OnClientDisconnect(client)
     TraceReturn();
 }
 
-//#if defined _TRACE
+#if defined _TRACE
     public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
     {
         SetTraceCategory("Connect");
         TraceInto("SourceCraft", "OnClientConnect", "client=%d:%L", \
                   client, ValidClientIndex(client));
-
-		LogMessage("OnClientConnect:client=%d:%L", client, ValidClientIndex(client));
 
         TraceReturn();
         return true;
@@ -526,8 +518,6 @@ public OnClientDisconnect(client)
         TraceInto("SourceCraft", "OnClientConnected", "client=%d:%L", \
                   client, ValidClientIndex(client));
 
-		LogMessage("OnClientConnected:client=%d:%L", client, ValidClientIndex(client));
-
         TraceReturn();
     }
 
@@ -536,8 +526,6 @@ public OnClientDisconnect(client)
         SetTraceCategory("Connect");
         TraceInto("SourceCraft", "OnClientAuthorized", "client=%d:%L Authorized as %s", \
                   client, ValidClientIndex(client), auth);
-
-        LogMessage("OnClientAuthorized:client=%d:%L Authorized as %s", client, ValidClientIndex(client), auth);
 
         TraceReturn();
     }
@@ -548,8 +536,6 @@ public OnClientDisconnect(client)
         TraceInto("SourceCraft", "OnClientPostAdminCheck", "client=%d:%L", \
                   client, ValidClientIndex(client));
 
-        LogMessage("OnClientPostAdminCheck:client=%d:%L", client, ValidClientIndex(client));
-
         TraceReturn();
     }
 
@@ -559,8 +545,6 @@ public OnClientDisconnect(client)
         TraceInto("SourceCraft", "OnClientDisconnect_Post", "client=%d", \
                   client);
 
-        LogMessage("OnClientDisconnect_Post:client=%d", client);
-
         TraceReturn();
     }
-//#endif
+#endif
