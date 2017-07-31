@@ -68,15 +68,15 @@ native HasTripmines(client,bool:allowed=false);
  * Sets (Plants) a tripmine.
  *
  * @param index 	Client index
- * @return			none
+ * @return			true if a Tripmine was successfully set.
  */
-native SetTripmine(client);
+native bool:SetTripmine(client);
 
 /**
  * Counts how many tripmines the player has active.
  *
- * @param index 	Client index
- * @return			none
+ * @param index 	Client index or -1 to count all tripmines
+ * @return			The number of tripmines
  */
 native CountTripmines(client);
 

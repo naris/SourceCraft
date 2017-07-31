@@ -116,8 +116,9 @@ new Handle:cvActivatedSound = INVALID_HANDLE;
 new Handle:cvReactivatedSound = INVALID_HANDLE;
 new Handle:cvRemovedSound = INVALID_HANDLE;
 
-new Handle:cvMaxMines = INVALID_HANDLE;
 new Handle:cvNumMines = INVALID_HANDLE;
+new Handle:cvMaxMines = INVALID_HANDLE;
+new Handle:cvMaxMinesPerClient = INVALID_HANDLE;
 new Handle:cvNumMinesScout = INVALID_HANDLE;
 new Handle:cvNumMinesSniper = INVALID_HANDLE;
 new Handle:cvNumMinesSoldier = INVALID_HANDLE;
@@ -242,8 +243,9 @@ public OnPluginStart()
     cvBeamColor[2] = CreateConVar("sm_tripmines_beam_color_2", gBeamColor[2], "Beam Color (can include alpha) for team 2 (Red  / Allies / Terrorists)");
     cvBeamColor[3] = CreateConVar("sm_tripmines_beam_color_3", gBeamColor[3], "Beam Color (can include alpha) for team 3 (Blue / Axis   / Counter-Terrorists)");
 
-    cvMaxMines = CreateConVar("sm_tripmines_maximum", "6", "Maximum Number of tripmines allowed to be active per client (-1=unlimited)");
     cvNumMines = CreateConVar("sm_tripmines_allowed", "3", "Number of tripmines allowed per life (-1=unlimited)");
+    cvMaxMines = CreateConVar("sm_tripmines_max_total", "10", "Maximum Number of tripmines allowed to be active at the same time (-1=unlimited)");
+    cvMaxMinesPerClient = CreateConVar("sm_tripmines_max_per_client", "6", "Maximum Number of tripmines allowed to be active per client (-1=unlimited)");
 
     HookConVarChange(cvPlacedSound, CvarChange);
     HookConVarChange(cvRemovedSound, CvarChange);
@@ -376,7 +378,7 @@ public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
         if (gNativeControl)
             amount = gRemaining[client] = gAllowed[client];
         else            
-            gMaximum[client] = GetConVarInt(cvMaxMines);
+            gMaximum[client] = GetConVarInt(cvMaxMinesPerClient);
 
         if (amount == -1)
         {
@@ -615,16 +617,16 @@ public Action:Command_TripMine(client, args)
     return Plugin_Handled;
 }
 
-SetMine(client)
+bool:SetMine(client)
 {
     if (gRemaining[client] == 0)
     {
         PrintHintText(client, "%t", "nomines");
-        return;
+        return false;
     }
 
     if (IsEntLimitReached(100, .message="unable to create tripmine"))
-        return;
+        return false;
 
     new max = gMaximum[client];
     if (max > 0)
@@ -633,7 +635,18 @@ SetMine(client)
         if (count > max)
         {
             PrintHintText(client, "%t", "toomany", count);
-            return;
+            return false;
+        }
+    }
+
+    new max = GetConVarInt(cvMaxMines);
+    if (max > 0)
+    {
+        new count = CountMines(-1);	// Count all mines of any client.
+        if (count > max)
+        {
+            PrintHintText(client, "%t", "toomany", count);
+            return false;
         }
     }
 
@@ -642,7 +655,7 @@ SetMine(client)
     Call_PushCell(client);
     Call_Finish(res);
     if (res != Plugin_Continue)
-        return;
+        return false;
 
     if (GameType == tf2)
     {
@@ -811,55 +824,52 @@ SetMine(client)
                     SetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
                     SetEntPropFloat(beam_ent, Prop_Send, "m_fWidth", 4.0);
 
-                    //if (DispatchSpawn(beam_ent))                                  // TODO: DEBUG not in 2016
-                    {
-                        if (gTeamSpecific > 0)
-                        {
-                            HookSingleEntityOutput(beam_ent, "OnTouchedByEntity", beamTouched, false);
-                        }
-                        else
-                        {
-                            Format(tmp, sizeof(tmp), "%s,Break,,0,-1", minename);
-                            DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
-                        }
+					if (gTeamSpecific > 0)
+					{
+						HookSingleEntityOutput(beam_ent, "OnTouchedByEntity", beamTouched, false);
+					}
+					else
+					{
+						Format(tmp, sizeof(tmp), "%s,Break,,0,-1", minename);
+						DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
+					}
 
-                        HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true); // TODO: DEBUG not in 2016
-                        AcceptEntityInput(beam_ent, "TurnOff");
+					HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
+					AcceptEntityInput(beam_ent, "TurnOff");
 
-                        // Set the mine's m_hEffectEntity to point at the beam			// TODO: DEBUG not in 2016
-                        //SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
+					// Set the mine's m_hEffectEntity to point at the beam			// TODO: DEBUG not in 2016
+					//SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
 
-                        //SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
+					//SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
 
-                        new beam_ref = EntIndexToEntRef(beam_ent);
-                        g_SavedEntityRef[beam_ent] = beam_ref;
-                        g_TripmineOfBeam[beam_ent] = mine_ref;
+					new beam_ref = EntIndexToEntRef(beam_ent);
+					g_SavedEntityRef[beam_ent] = beam_ref;
+					g_TripmineOfBeam[beam_ent] = mine_ref;
 
-                        new Handle:data;
-                        new Float:delay = GetConVarFloat(cvActTime);
-                        CreateDataTimer(delay, ActivateTripmine, data, TIMER_FLAG_NO_MAPCHANGE);
+					new Handle:data;
+					new Float:delay = GetConVarFloat(cvActTime);
+					CreateDataTimer(delay, ActivateTripmine, data, TIMER_FLAG_NO_MAPCHANGE);
 
-                        WritePackCell(data, client);
-                        WritePackCell(data, mine_ref);
-                        WritePackCell(data, beam_ref);
-                        WritePackFloat(data, end[0]);
-                        WritePackFloat(data, end[1]);
-                        WritePackFloat(data, end[2]);
+					WritePackCell(data, client);
+					WritePackCell(data, mine_ref);
+					WritePackCell(data, beam_ref);
+					WritePackFloat(data, end[0]);
+					WritePackFloat(data, end[1]);
+					WritePackFloat(data, end[2]);
 
-                        // play sound
-                        if (gSndPlaced[0])
-                        {
-                            PrepareAndEmitSoundToAll(gSndPlaced, beam_ent, SNDCHAN_AUTO,
-                                                     SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
-                                                     100, beam_ent, end, NULL_VECTOR, true, 0.0);
-                        }                           
+					// play sound
+					if (gSndPlaced[0])
+					{
+						PrepareAndEmitSoundToAll(gSndPlaced, beam_ent, SNDCHAN_AUTO,
+												 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+												 100, beam_ent, end, NULL_VECTOR, true, 0.0);
+					}                           
 
-                        // send message
-                        if (gRemaining[client] >= 0)
-                            PrintHintText(client, "%t", "left", gRemaining[client]);
-                    }
-                    //else
-                    //    LogError("Unable to spawn a beam_ent");
+					// send message
+					if (gRemaining[client] >= 0)
+						PrintHintText(client, "%t", "left", gRemaining[client]);
+					
+					return true;
                 }
                 else
                     LogError("Unable to create a beam_ent");
@@ -874,6 +884,7 @@ SetMine(client)
     {
         PrintHintText(client, "%t", "locationerr");
     }
+	return false;
 }
 
 public Action:ActivateTripmine(Handle:timer, Handle:data)
@@ -985,7 +996,7 @@ CountMines(client)
             GetEntityNetClass(c, classname, sizeof(classname));
             if (!StrEqual(classname, "CBeam")) // It's not a beam, must be a tripmine
             {
-                if (GetEntPropEnt(c, Prop_Send, "m_hOwnerEntity") == client)
+                if (client < 0 || GetEntPropEnt(c, Prop_Send, "m_hOwnerEntity") == client)
                     count++;
             }
         }
@@ -1038,13 +1049,13 @@ public beamTouched(const String:output[], caller, activator, Float:delay)
             }
             else
             {
-                LogMessage("Orphan tripmine %d encountered!", mine_ent);
+                LogError("Orphan tripmine %d encountered in beamTouched()!", mine_ent);
                 AcceptEntityInput(mine_ent, "Break");
             }
         }
         else
         {
-            LogError("Orphan beam %d encountered!", caller);
+            LogError("Orphan beam %d encountered in beamTouched()!", caller);
             RemoveBeamEntity(caller);
         }
     }
@@ -1062,7 +1073,7 @@ public beamBreak(const String:output[], caller, activator, Float:delay)
         new ref = g_SavedEntityRef[caller];
         if (ref != INVALID_ENT_REFERENCE && EntRefToEntIndex(ref) == caller)
         {
-            LogError("Orphan beam %d encountered!", caller);
+            LogError("Orphan beam %d encountered in beamBreak()!", caller);
             RemoveBeamEntity(caller);
         }
     }
@@ -1227,7 +1238,7 @@ public Native_GiveTripmines(Handle:plugin,numParams)
     gMaximum[client] = GetNativeCell(4);
 
     if (gMaximum[client] < 0)
-        gMaximum[client] = GetConVarInt(cvMaxMines);
+        gMaximum[client] = GetConVarInt(cvMaxMinesPerClient);
 }
 
 public Native_TakeTripmines(Handle:plugin,numParams)
@@ -1258,7 +1269,7 @@ public Native_HasTripmines(Handle:plugin,numParams)
 
 public Native_SetTripmine(Handle:plugin,numParams)
 {
-    SetMine(GetNativeCell(1));
+    return SetMine(GetNativeCell(1));
 }
 
 public Native_CountTripmines(Handle:plugin,numParams)
