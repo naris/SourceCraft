@@ -1,4 +1,23 @@
 /**
+ * vim: set ai et ts=4 sw=4 syntax=sourcepawn :
+ * File: hgr.inc
+ * Description: Native Interface to HookGrabRope
+ * Author(s): Sheepdude and SumGuy14
+ */
+
+#if defined _hgr_included
+ #endinput
+#endif
+#define _hgr_included
+
+#define HGR_GIVE 0
+#define HGR_TAKE 1
+
+#define HGR_HOOK 0
+#define HGR_GRAB 1
+#define HGR_ROPE 2
+
+/**
  * Called when a player tries to hook.
  *
  * @param client     Player index.
@@ -13,6 +32,14 @@ forward Action:HGR_OnClientHook(client);
  * @return           Plugin_Handled; to stop the player from searching.
  */
 forward Action:HGR_OnClientGrabSearch(client);
+
+/**
+ * Called when a player stops grabbing (drops) the target.
+ *
+ * @param client     Player index.
+ * @return           Plugin_Handled; has no effect.
+ */
+forward Action:HGR_OnClientGrabStop(client);
 
 /**
  * Called when a player tries to grab a valid target.
@@ -52,6 +79,18 @@ native HGR_Access(const String:target[], access, action);
  * @error            Player index is out of bounds.
  */
 native bool:HGR_ClientAccess(client, access, action);
+
+/**
+ * Gives or removes client access to hook, grab, or rope.
+ * The client will receive a notification in chat.
+ *
+ * @param client     Player index (integer)
+ * @param duration   How long (in seconds) player has access, <=0 is unlimited
+ * @param action     0 - Hook, 1 - Grab, 2 - Rope (integer)
+ * @return           True if successful, false if client is a bot.
+ * @error            Player index is out of bounds.
+ */
+native bool:HGR_TimedClientAccess(client, Float:duration, action);
 
 /**
  * Returns whether or not a client is using the hook.
@@ -328,3 +367,40 @@ public SharedPlugin:__pl_hookgrabrope =
     required = 0,
 #endif
 };
+
+#if !defined REQUIRE_PLUGIN
+public __pl_hookgrabrope_SetNTVOptional()
+{
+	MarkNativeAsOptional("HGR_Access");
+	MarkNativeAsOptional("HGR_ClientAccess");
+	MarkNativeAsOptional("HGR_IsHooking");
+	MarkNativeAsOptional("HGR_IsGrabbing");
+	MarkNativeAsOptional("HGR_IsBeingGrabbed");
+	MarkNativeAsOptional("HGR_IsRoping");
+	MarkNativeAsOptional("HGR_IsPushing");
+	MarkNativeAsOptional("HGR_IsAttracting");
+	MarkNativeAsOptional("HGR_IsRepelling");
+	MarkNativeAsOptional("HGR_IsAscending");
+	MarkNativeAsOptional("HGR_IsDescending");
+	MarkNativeAsOptional("HGR_GetHookLocation");
+	MarkNativeAsOptional("HGR_GetGrabLocation");
+	MarkNativeAsOptional("HGR_GetRopeLocation");
+	MarkNativeAsOptional("HGR_GetPushLocation");
+	MarkNativeAsOptional("HGR_GetHookDistance");
+	MarkNativeAsOptional("HGR_GetGrabDistance");
+	MarkNativeAsOptional("HGR_GetRopeDistance");
+	MarkNativeAsOptional("HGR_GetPushDistance");
+	MarkNativeAsOptional("HGR_GetHookTarget");
+	MarkNativeAsOptional("HGR_GetGrabTarget");
+	MarkNativeAsOptional("HGR_GetRopeTarget");
+	MarkNativeAsOptional("HGR_GetPushTarget");
+	MarkNativeAsOptional("HGR_ForceHook");
+	MarkNativeAsOptional("HGR_ForceGrab");
+	MarkNativeAsOptional("HGR_ForceRope");
+	MarkNativeAsOptional("HGR_ForcePush");
+	MarkNativeAsOptional("HGR_StopHook");
+	MarkNativeAsOptional("HGR_StopGrab");
+	MarkNativeAsOptional("HGR_StopRope");
+	MarkNativeAsOptional("HGR_StopPush");
+}
+#endif

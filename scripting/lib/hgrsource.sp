@@ -44,7 +44,7 @@
 
 #define SEEKING_SOUND       "weapons/crossbow/bolt_fly4.wav" // "weapons/tripwire/ropeshoot.wav";
 #define GRABHIT_SOUND       "weapons/crossbow/bolt_skewer1.wav"
-#define PULLER_SOUND        "weapons/crowwbow/hitbod2.wav"
+#define PULLER_SOUND        "weapons/crossbow/hitbod2.wav"
 #define DENIED_SOUND        "buttons/combine_button_locked.wav"
 #define ERROR_SOUND         "player/suit_denydevice.wav"
 

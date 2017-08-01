@@ -46,7 +46,20 @@
 
 	"No Permission"
 	{
-		"en"			"You don't have permission to use"
+		"#format"		"{1:s}"
+		"en"			"You don't have permission to use {1}"
+	}
+
+	"No Flag"
+	{
+		"#format"		"{1:s}"
+		"en"			"You can't use the {1} while carrying the flag"
+	}
+
+	"No Flag On"
+	{
+		"#format"		"{1:s}"
+		"en"			"You can't use the {1} on someone carrying the flag"
 	}
 
 	"Error"

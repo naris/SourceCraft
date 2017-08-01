@@ -13,7 +13,12 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <hgr>
+//#include <hgr>
+
+#undef REQUIRE_EXTENSIONS
+#include <tf2_stocks>
+#include <tf2_player>
+#include <tf2_flag>
 
 #pragma semicolon 1
 
@@ -28,6 +33,33 @@ public Plugin:myinfo =
 	url = "http://www.clan-psycho.com"
 };
 
+enum HGRAction
+{
+	Hook = 0, /** User is using hook */
+	Grab = 1, /** User is using grab */
+	Rope = 2, /** User is using rope */
+};
+
+enum HGRAccess
+{
+	Give = 0, /** Gives access to user */
+	Take = 1, /** Takes access from user */
+};
+
+enum HGRSounds
+{
+	HookFireSound = 0, /** User is using hook */
+	GrabFireSound = 1, /** User is using grab */
+	RopeFireSound = 2, /** User is using rope */
+	HookHitSound = 3, /** User is using hook */
+	GrabHitSound = 4, /** User is using grab */
+	RopeHitSound = 5, /** User is using rope */
+	GrabSeekSound = 6, /** User is using rope */
+	GrabPullSound = 7, /** User is using rope */
+	DeniedSound = 8, /** User is using rope */
+	ErrorSound = 9, /** User is using rope */
+};
+
 // General handles
 new Handle:h_cvarAnnounce;
 new Handle:h_cvarSoundAmplify;
@@ -35,6 +67,8 @@ new Handle:h_cvarOverrideMode;
 new Handle:h_cvarRopeOldMode;
 new Handle:h_cvarUpButton;
 new Handle:h_cvarDownButton;
+new Handle:h_cvarErrorSound;
+new Handle:h_cvarDeniedSound;
 
 // Hook handles
 new Handle:h_cvarHookEnable;
@@ -50,7 +84,9 @@ new Handle:h_cvarHookRed;
 new Handle:h_cvarHookGreen;
 new Handle:h_cvarHookBlue;
 new Handle:h_cvarHookAlpha;
-new Handle:h_cvarHookSound;
+new Handle:h_cvarHookFireSound;
+new Handle:h_cvarHookHitSound;
+new Handle:h_cvarHookNoFlag;
 
 // Grab handles
 new Handle:h_cvarGrabEnable;
@@ -66,7 +102,11 @@ new Handle:h_cvarGrabRed;
 new Handle:h_cvarGrabGreen;
 new Handle:h_cvarGrabBlue;
 new Handle:h_cvarGrabAlpha;
-new Handle:h_cvarGrabSound;
+new Handle:h_cvarGrabFireSound;
+new Handle:h_cvarGrabSeekSound;
+new Handle:h_cvarGrabPullSound;
+new Handle:h_cvarGrabHitSound;
+new Handle:h_cvarGrabNoFlag;
 
 // Rope handles
 new Handle:h_cvarRopeEnable;
@@ -82,11 +122,14 @@ new Handle:h_cvarRopeRed;
 new Handle:h_cvarRopeGreen;
 new Handle:h_cvarRopeBlue;
 new Handle:h_cvarRopeAlpha;
-new Handle:h_cvarRopeSound;
+new Handle:h_cvarRopeFireSound;
+new Handle:h_cvarRopeHitSound;
+new Handle:h_cvarRopeNoFlag;
 
 // Forward handles
 new Handle:FwdClientHook;
 new Handle:FwdClientGrabSearch;
+new Handle:FwdClientGrabStop;
 new Handle:FwdClientGrab;
 new Handle:FwdClientRope;
 
@@ -95,20 +138,20 @@ new g_cvarSoundAmplify;
 new bool:g_cvarAnnounce;
 new bool:g_cvarOverrideMode;
 new bool:g_cvarRopeOldMode;
-new bool:g_cvarFreeze[3];
-new bool:g_cvarSlide[3];
-new bool:g_cvarEnable[3];
-new bool:g_cvarAdminOnly[3];
-new Float:g_cvarSpeed[3];
-new Float:g_cvarInitWidth[3];
-new Float:g_cvarEndWidth[3];
-new Float:g_cvarAmplitude[3];
-new g_cvarBeamColor[3];
-new g_cvarBeamRed[3];
-new g_cvarBeamGreen[3];
-new g_cvarBeamBlue[3];
-new g_cvarBeamAlpha[3];
-new String:g_cvarSound[3][64];
+new bool:g_cvarFreeze[HGRAction];
+new bool:g_cvarSlide[HGRAction];
+new bool:g_cvarEnable[HGRAction];
+new bool:g_cvarAdminOnly[HGRAction];
+new Float:g_cvarSpeed[HGRAction];
+new Float:g_cvarInitWidth[HGRAction];
+new Float:g_cvarEndWidth[HGRAction];
+new Float:g_cvarAmplitude[HGRAction];
+new g_cvarBeamColor[HGRAction];
+new g_cvarBeamRed[HGRAction];
+new g_cvarBeamGreen[HGRAction];
+new g_cvarBeamBlue[HGRAction];
+new g_cvarBeamAlpha[HGRAction];
+new String:g_cvarSound[HGRSounds][64];
 
 // Client status arrays
 new bool:g_Status[MAXPLAYERS+1][3]; // Is client using hook, grab, or rope
@@ -144,21 +187,16 @@ new GetVelocityOffset_z;
 // Precache variables
 new precache_laser;
 
-enum HGRAction
-{
-	Hook = 0, /** User is using hook */
-	Grab = 1, /** User is using grab */
-	Rope = 2, /** User is using rope */
-};
-
-enum HGRAccess
-{
-	Give = 0, /** Gives access to user */
-	Take = 1, /** Takes access from user */
-};
+// Other variables
+new bool:g_bIsTF2 = false;
 
 public OnPluginStart()
 {
+    // Detect TF2.
+    decl String:modname[30];
+    GetGameFolderName(modname, sizeof(modname));
+    g_bIsTF2 = StrEqual(modname,"tf",false);
+	
 	// Load Translation Files
 	LoadTranslations("common.phrases");
 	LoadTranslations("hookgrabrope.phrases");
@@ -168,6 +206,7 @@ public OnPluginStart()
 	// Create global forwards
 	FwdClientHook = CreateGlobalForward("HGR_OnClientHook", ET_Hook, Param_Cell);
 	FwdClientGrabSearch = CreateGlobalForward("HGR_OnClientGrabSearch", ET_Hook, Param_Cell);
+	FwdClientGrabStop = CreateGlobalForward("HGR_OnClientGrabStop", ET_Hook, Param_Cell);
 	FwdClientGrab = CreateGlobalForward("HGR_OnClientGrab", ET_Hook, Param_Cell);
 	FwdClientRope = CreateGlobalForward("HGR_OnClientRope", ET_Hook, Param_Cell);
 	
@@ -230,6 +269,8 @@ public OnPluginStart()
 	h_cvarRopeOldMode   = CreateConVar("sm_hgr_rope_oldmode", "0", "Use the old rope type, 1 - Use old type, 0 - Don't use old type", 0, true, 0.0, true, 1.0);
 	h_cvarUpButton      = CreateConVar("sm_hgr_upbutton", "IN_JUMP", "Button to use for ascending rope, hooking forward, and pushing grab target");
 	h_cvarDownButton    = CreateConVar("sm_hgr_downbutton", "IN_DUCK", "Button to use for descending rope, hooking backward, and pulling grab target");
+	h_cvarErrorSound  	= CreateConVar("sm_hgr_error_sound", "player/suit_denydevice.wav", "Location of error sound effect relative to /sound/");
+	h_cvarDeniedSound  	= CreateConVar("sm_hgr_denied_sound", "buttons/combine_button_locked.wav", "Location of denied sound effect relative to /sound/");
 
 	// Hook convars
 	h_cvarHookEnable    = CreateConVar("sm_hgr_hook_enable", "1", "This will enable the hook feature of this plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -245,7 +286,8 @@ public OnPluginStart()
 	h_cvarHookGreen     = CreateConVar("sm_hgr_hook_green", "0", "The green component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
 	h_cvarHookBlue      = CreateConVar("sm_hgr_hook_blue", "0", "The blue component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
 	h_cvarHookAlpha     = CreateConVar("sm_hgr_hook_alpha", "255", "The alpha component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
-	h_cvarHookSound     = CreateConVar("sm_hgr_hook_sound", "hgr/hookhit.mp3", "Location of hook sound effect relative to /sound/music/");
+	h_cvarHookHitSound  = CreateConVar("sm_hgr_hook_fire_sound", "", "Location of hook fire sound effect relative to /sound/");
+	h_cvarHookFireSound = CreateConVar("sm_hgr_hook_hit_sound", "music/hgr/hookhit.mp3", "Location of hook hit sound effect relative to /sound/");
 
 	// Grab convars
 	h_cvarGrabEnable    = CreateConVar("sm_hgr_grab_enable", "1", "This will enable the grab feature of this plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -261,7 +303,10 @@ public OnPluginStart()
 	h_cvarGrabGreen     = CreateConVar("sm_hgr_grab_green", "0", "The green component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
 	h_cvarGrabBlue      = CreateConVar("sm_hgr_grab_blue", "255", "The blue component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
 	h_cvarGrabAlpha     = CreateConVar("sm_hgr_grab_alpha", "255", "The alpha component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
-	h_cvarGrabSound     = CreateConVar("sm_hgr_grab_sound", "hgr/hookhit.mp3", "Location of grab sound effect relative to /sound/music/");
+	h_cvarGrabHitSound  = CreateConVar("sm_hgr_grab_hit_sound", "weapons/crossbow/bolt_skewer1.wav", "Location of grab hit sound effect relative to /sound/");
+	h_cvarGrabFireSound = CreateConVar("sm_hgr_grab_fire_sound", "", "Location of grab fire sound effect relative to /sound/");
+	h_cvarGrabSeekSound = CreateConVar("sm_hgr_grab_seek_sound", "weapons/crossbow/bolt_fly4.wav", "Location of grab seek sound effect relative to /sound/");
+	h_cvarGrabPullSound = CreateConVar("sm_hgr_grab_pull_sound", "weapons/crossbow/hitbod2.wav", "Location of grab pull sound effect relative to /sound/");
 
 	// Rope convars
 	h_cvarRopeEnable    = CreateConVar("sm_hgr_rope_enable", "1", "This will enable the rope feature of this plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -277,7 +322,20 @@ public OnPluginStart()
 	h_cvarRopeGreen     = CreateConVar("sm_hgr_rope_green", "255", "The green component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
 	h_cvarRopeBlue      = CreateConVar("sm_hgr_rope_blue", "0", "The blue component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
 	h_cvarRopeAlpha     = CreateConVar("sm_hgr_rope_alpha", "255", "The alpha component of the beam (Only if you are using a custom color)", 0, true, 0.0, true, 255.0);
-	h_cvarRopeSound     = CreateConVar("sm_hgr_rope_sound", "hgr/hookhit.mp3", "Location of rope sound effect relative to /sound/music/");
+	h_cvarRopeHitSound  = CreateConVar("sm_hgr_rope_hit_sound", "music/hgr/hookhit.mp3", "Location of rope hit sound effect relative to /sound/");
+	h_cvarRopeFireSound = CreateConVar("sm_hgr_rope_fire_sound", "", "Location of rope fire sound effect relative to /sound/");
+
+	// TF2 convars
+    if (g_bIsTF2) 
+    {
+        h_cvarHookNoFlag = CreateConVar("sm_hgr_hook_noflag", "1", "If 1, prevents TF2 flag carrier from using the hook", 0, true, 0.0, true, 1.0);
+        h_cvarGrabNoFlag = CreateConVar("sm_hgr_hook_noflag", "1", "If 1, prevents TF2 flag carrier from being grabbed", 0, true, 0.0, true, 1.0);
+        h_cvarRopeNoFlag = CreateConVar("sm_hgr_rope_noflag", "1", "If 1, prevents TF2 flag carrier from using the rope", 0, true, 0.0, true, 1.0);
+    }
+	else
+	{
+		h_cvarHookNoFlag = h_cvarGrabNoFlag = h_cvarRopeNoFlag = INVALID_HANDLE;
+	}
 	
 	// General convar changes
 	HookConVarChange(h_cvarAnnounce, ConvarChanged);
@@ -286,6 +344,8 @@ public OnPluginStart()
 	HookConVarChange(h_cvarRopeOldMode, ConvarChanged);
 	HookConVarChange(h_cvarUpButton, ConvarChanged);
 	HookConVarChange(h_cvarDownButton, ConvarChanged);
+	HookConVarChange(h_cvarErrorSound, ConvarChanged);
+	HookConVarChange(h_cvarDeniedSound, ConvarChanged);
 	
 	// Hook convar changes
 	HookConVarChange(h_cvarHookEnable, ConvarChanged);
@@ -301,7 +361,8 @@ public OnPluginStart()
 	HookConVarChange(h_cvarHookGreen, ConvarChanged);
 	HookConVarChange(h_cvarHookBlue, ConvarChanged);
 	HookConVarChange(h_cvarHookAlpha, ConvarChanged);
-	HookConVarChange(h_cvarHookSound, ConvarChanged);
+	HookConVarChange(h_cvarHookHitSound, ConvarChanged);
+	HookConVarChange(h_cvarHookFireSound, ConvarChanged);
 	
 	// Grab convar changes
 	HookConVarChange(h_cvarGrabEnable, ConvarChanged);
@@ -317,7 +378,10 @@ public OnPluginStart()
 	HookConVarChange(h_cvarGrabGreen, ConvarChanged);
 	HookConVarChange(h_cvarGrabBlue, ConvarChanged);
 	HookConVarChange(h_cvarGrabAlpha, ConvarChanged);
-	HookConVarChange(h_cvarGrabSound, ConvarChanged);
+	HookConVarChange(h_cvarGrabHitSound, ConvarChanged);
+	HookConVarChange(h_cvarGrabFireSound, ConvarChanged);
+	HookConVarChange(h_cvarGrabSeekSound, ConvarChanged);
+	HookConVarChange(h_cvarGrabPullSound, ConvarChanged);
 	
 	// Rope convar changes
 	HookConVarChange(h_cvarRopeEnable, ConvarChanged);
@@ -333,7 +397,8 @@ public OnPluginStart()
 	HookConVarChange(h_cvarRopeGreen, ConvarChanged);
 	HookConVarChange(h_cvarRopeBlue, ConvarChanged);
 	HookConVarChange(h_cvarRopeAlpha, ConvarChanged);
-	HookConVarChange(h_cvarRopeSound, ConvarChanged);
+	HookConVarChange(h_cvarRopeHitSound, ConvarChanged);
+	HookConVarChange(h_cvarRopeFireSound, ConvarChanged);
   
 	// Auto-generate configuration file
 	AutoExecConfig(true, "hookgrabrope");
@@ -406,13 +471,18 @@ public OnConfigsExecuted()
 	// Precache sounds
 	if(g_cvarSoundAmplify > 0) // Don't download sounds if sound is disabled
 	{
-		for(new HGRAction:i = Hook; i <= Rope; i++)
+		//for(new HGRAction:i = Hook; i <= Rope; i++)
+		for(new i = 0; i < sizeof(g_cvarSound); i++)
 		{
-			Format(g_cvarSound[i], sizeof(g_cvarSound[]), "music/%s", g_cvarSound[i]);
-			decl String:path[64];
-			Format(path, sizeof(path), "sound/%s", g_cvarSound[i]);
-			AddFileToDownloadsTable(path);
-			PrecacheSound(g_cvarSound[i], true);
+			if (g_cvarSound[i][0]) // != 0)
+			{
+				//Don't force sounds to be in music!
+				//Format(g_cvarSound[i], sizeof(g_cvarSound[]), "music/%s", g_cvarSound[i]);
+				decl String:path[64];
+				Format(path, sizeof(path), "sound/%s", g_cvarSound[i]);
+				AddFileToDownloadsTable(path);
+				PrecacheSound(g_cvarSound[i], true);
+			}
 		}
 	}
 }
@@ -455,6 +525,18 @@ public __ClientAccess(Handle:plugin, numParams)
 	return ClientAccess(client, access, action) == 1;
 }
 
+public __TimedClientAccess(Handle:plugin, numParams)
+{
+	new client = GetNativeCell(1);
+	new Float:duration = Float:GetNativeCell(2);
+	new HGRAction:action = GetNativeCell(3);
+	if(client < 1 || client > MaxClients)
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
+	else if(!IsClientInGame(client))
+        return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
+	return TimedClientAccess(client, duration, action) == 1;
+}
+
 public __IsHooking(Handle:plugin, numParams)
 {
 	new client = GetNativeCell(1);
@@ -462,7 +544,8 @@ public __IsHooking(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	return g_Status[client][Hook];
+	else
+		return g_Status[client][Hook];
 }
 
 public __IsGrabbing(Handle:plugin, numParams)
@@ -472,7 +555,8 @@ public __IsGrabbing(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	return g_Status[client][Grab];
+	else
+		return g_Status[client][Grab];
 }
 
 public __IsBeingGrabbed(Handle:plugin, numParams)
@@ -482,7 +566,8 @@ public __IsBeingGrabbed(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	return g_Grabbed[client];
+	else
+		return g_Grabbed[client];
 }
 
 public __IsRoping(Handle:plugin, numParams)
@@ -492,7 +577,8 @@ public __IsRoping(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	return g_Status[client][Rope];
+	else
+		return g_Status[client][Rope];
 }
 
 public __IsPushing(Handle:plugin, numParams)
@@ -502,9 +588,10 @@ public __IsPushing(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 		return g_Backward[client];
-	return false;
+	else
+		return false;
 }
 
 public __IsAttracting(Handle:plugin, numParams)
@@ -514,9 +601,10 @@ public __IsAttracting(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Grab])
+	else if(g_Status[client][Grab])
 		return g_Attracting[client][1];
-	return false;
+	else
+		return false;
 }
 
 public __IsRepelling(Handle:plugin, numParams)
@@ -526,9 +614,10 @@ public __IsRepelling(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Grab])
+	else if(g_Status[client][Grab])
 		return g_Attracting[client][0];
-	return false;
+	else
+		return false;
 }
 
 public __IsAscending(Handle:plugin, numParams)
@@ -538,9 +627,10 @@ public __IsAscending(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Rope])
+	else if(g_Status[client][Rope])
 		return g_Climbing[client][0];
-	return false;
+	else
+		return false;
 }
 
 public __IsDescending(Handle:plugin, numParams)
@@ -550,9 +640,10 @@ public __IsDescending(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Rope])
+	else if(g_Status[client][Rope])
 		return g_Climbing[client][1];
-	return false;
+	else
+		return false;
 }
 
 public __GetHookLocation(Handle:plugin, numParams)
@@ -562,12 +653,13 @@ public __GetHookLocation(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 	{
 		SetNativeArray(2, g_Location[client][0], 3);
 		return true;
 	}
-	return false;
+	else
+		return false;
 }
 
 public __GetGrabLocation(Handle:plugin, numParams)
@@ -577,7 +669,7 @@ public __GetGrabLocation(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Grab])
+	else if(g_Status[client][Grab])
 	{
 		new Float:buffer[3];
 		GetEntityOrigin(g_Targetindex[client][Grab], buffer);
@@ -595,7 +687,7 @@ public __GetRopeLocation(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Rope])
+	else if(g_Status[client][Rope])
 	{
 		SetNativeArray(2, g_Location[client][2], 3);
 		return true;
@@ -611,7 +703,7 @@ public __GetPushLocation(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 	{
 		SetNativeArray(2, g_Location[client][3], 3);
 		return true;
@@ -640,7 +732,7 @@ public __GetGrabDistance(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Grab])
+	else if(g_Status[client][Grab])
 		return _:g_Distance[client][1];
 	else
 		return -1;
@@ -653,7 +745,7 @@ public __GetRopeDistance(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Rope])
+	else if(g_Status[client][Rope])
 		return _:g_Distance[client][2];
 	else
 		return -1;
@@ -666,7 +758,7 @@ public __GetPushDistance(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 		return _:g_Distance[client][3];
 	else
 		return -1;
@@ -679,7 +771,7 @@ public __GetHookTarget(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 		return g_Targetindex[client][Hook];
 	else
 		return -1;
@@ -690,9 +782,10 @@ public __GetGrabTarget(Handle:plugin, numParams)
 	new client = GetNativeCell(1);
 	if(client < 1 || client > MaxClients)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
-	else if(!IsClientInGame(client))
-        return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Grab])
+	//Need to be able to get grab target of disconnected clients so the target can be dropped by the calling plugin!
+	//else if(!IsClientInGame(client))
+    //    return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
+	else if(g_Status[client][Grab])
 		return g_Targetindex[client][Grab];
 	else
 		return -1;
@@ -705,7 +798,7 @@ public __GetRopeTarget(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Rope])
+	else if(g_Status[client][Rope])
 		return g_Targetindex[client][Rope];
 	else
 		return -1;
@@ -718,7 +811,7 @@ public __GetPushTarget(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 		return g_Targetindex[client][3];
 	else
 		return -1;
@@ -731,7 +824,7 @@ public __ForceHook(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
+	else if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
 	{
 		HookCmd(client, 0);
 		return true;
@@ -746,7 +839,7 @@ public __ForceGrab(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
+	else if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
 	{
 		GrabCmd(client, 0);
 		return true;
@@ -761,7 +854,7 @@ public __ForceRope(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
+	else if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
 	{
 		RopeCmd(client, 0);
 		return true;
@@ -776,7 +869,7 @@ public __ForcePush(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
+	else if(!g_Status[client][Hook] && !g_Status[client][Grab] && !g_Status[client][Rope] && !g_Grabbed[client])
 	{
 		PushCmd(client, 0);
 		return true;
@@ -791,7 +884,7 @@ public __StopHook(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook])
+	else if(g_Status[client][Hook])
 	{
 		UnHookCmd(client, 0);
 		return true;
@@ -806,7 +899,7 @@ public __StopGrab(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Grab])
+	else if(g_Status[client][Grab])
 	{
 		DropCmd(client, 0);
 		return true;
@@ -821,7 +914,7 @@ public __StopRope(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Rope])
+	else if(g_Status[client][Rope])
 	{
 		DetachCmd(client, 0);
 		return true;
@@ -836,7 +929,7 @@ public __StopPush(Handle:plugin, numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%d]", client);
 	else if(!IsClientInGame(client))
         return ThrowNativeError(SP_ERROR_NATIVE, "Client is not currently ingame [%d]", client);
-	if(g_Status[client][Hook] && g_Backward[client])
+	else if(g_Status[client][Hook] && g_Backward[client])
 	{
 		DetachCmd(client, 0);
 		return true;
@@ -1263,6 +1356,34 @@ public ClientAccess(client, HGRAccess:access, HGRAction:action)
 	return 1;
 }
 
+public TimedClientAccess(client, Float:duration, HGRAction:action)
+{
+	if (ClientAccess(client, 1, action))
+	{
+		if (duration > 0.0)
+		{
+			//Start timer to revoke action
+			new Handle:pack;
+			CreateDataTimer(duration, RemoveClientAccess, pack, TIMER_FLAG_NO_MAPCHANGE);
+			WritePackCell(pack, client);
+			WritePackCell(pack, action);
+		}
+		
+		return 1;
+	}
+	else
+		return 0;
+}
+
+public Action:RemoveClientAccess(Handle:timer, Handle:pack)
+{ 
+    ResetPack(pack);
+    new client = ReadPackCell(pack);
+    new HGRAction:action = HGRAction:ReadPackCell(pack);
+    ClientAccess(client, 0, action);
+    return Plugin_Stop;
+}
+
 public bool:HasAccess(client, HGRAction:action)
 {
 	// Hook, Grab, or Rope is disabled
@@ -1338,8 +1459,10 @@ public ConvarChanged(Handle:cvar, const String:oldVal[], const String:newVal[])
 		g_cvarBeamBlue[Hook]  = GetConVarInt(h_cvarHookBlue);
 	else if(cvar == h_cvarHookAlpha)
 		g_cvarBeamAlpha[Hook] = GetConVarInt(h_cvarHookAlpha);
-	else if(cvar == h_cvarHookSound)
-		GetConVarString(h_cvarHookSound, g_cvarSound[Hook], sizeof(g_cvarSound[]));
+	else if(cvar == h_cvarHookFireSound)
+		GetConVarString(h_cvarHookFireSound, g_cvarSound[HookFireSound], sizeof(g_cvarSound[]));
+	else if(cvar == h_cvarHookHitSound)
+		GetConVarString(h_cvarHookHitSound, g_cvarSound[HookHitSound], sizeof(g_cvarSound[]));
 
 	// Grab convars
 	else if(cvar == h_cvarGrabEnable)
@@ -1368,8 +1491,10 @@ public ConvarChanged(Handle:cvar, const String:oldVal[], const String:newVal[])
 		g_cvarBeamBlue[Grab]  = GetConVarInt(h_cvarGrabBlue);
 	else if(cvar == h_cvarGrabAlpha)
 		g_cvarBeamAlpha[Grab] = GetConVarInt(h_cvarGrabAlpha);
-	else if(cvar == h_cvarGrabSound)
-		GetConVarString(h_cvarGrabSound, g_cvarSound[Grab], sizeof(g_cvarSound[]));
+	else if(cvar == h_cvarGrabFireSound)
+		GetConVarString(h_cvarGrabFireSound, g_cvarSound[GrabFireSound], sizeof(g_cvarSound[]));
+	else if(cvar == h_cvarGrabHitSound)
+		GetConVarString(h_cvarGrabHitSound, g_cvarSound[GrabHitSound], sizeof(g_cvarSound[]));
 
 	// Rope convars
 	else if(cvar == h_cvarRopeEnable)
@@ -1398,8 +1523,10 @@ public ConvarChanged(Handle:cvar, const String:oldVal[], const String:newVal[])
 		g_cvarBeamBlue[Rope]  = GetConVarInt(h_cvarRopeBlue);
 	else if(cvar == h_cvarRopeAlpha)
 		g_cvarBeamAlpha[Rope] = GetConVarInt(h_cvarRopeAlpha);
-	else if(cvar == h_cvarRopeSound)
-		GetConVarString(h_cvarRopeSound, g_cvarSound[Rope], sizeof(g_cvarSound[]));
+	else if(cvar == h_cvarRopeFireSound)
+		GetConVarString(h_cvarRopeFireSound, g_cvarSound[RopeFireSound], sizeof(g_cvarSound[]));
+	else if(cvar == h_cvarRopeHitSound)
+		GetConVarString(h_cvarRopeHitSound, g_cvarSound[RopeHitSound], sizeof(g_cvarSound[]));
 }
 
 public UpdateAllConvars()
@@ -1409,12 +1536,17 @@ public UpdateAllConvars()
 	g_cvarSoundAmplify    = GetConVarInt(h_cvarSoundAmplify);
 	g_cvarOverrideMode    = GetConVarBool(h_cvarOverrideMode);
 	g_cvarRopeOldMode     = GetConVarBool(h_cvarRopeOldMode);
+	
 	decl String:UpButton[24];
 	GetConVarString(h_cvarUpButton, UpButton, sizeof(UpButton));
 	g_cvarUpButton = GetButtonBitString(UpButton, 1 << 1);
+	
 	decl String:DownButton[24];
 	GetConVarString(h_cvarDownButton, DownButton, sizeof(DownButton));
 	g_cvarDownButton = GetButtonBitString(DownButton, 1 << 2);
+	
+	GetConVarString(h_cvarErrorSound, g_cvarSound[ErrorSound], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarDeniedSound, g_cvarSound[DeniedSound], sizeof(g_cvarSound[]));
 
 	// Hook convars
 	g_cvarEnable[Hook]    = GetConVarBool(h_cvarHookEnable);
@@ -1430,7 +1562,8 @@ public UpdateAllConvars()
 	g_cvarBeamGreen[Hook] = GetConVarInt(h_cvarHookGreen);
 	g_cvarBeamBlue[Hook]  = GetConVarInt(h_cvarHookBlue);
 	g_cvarBeamAlpha[Hook] = GetConVarInt(h_cvarHookAlpha);
-	GetConVarString(h_cvarHookSound, g_cvarSound[Hook], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarHookHitSound, g_cvarSound[HookHitSound], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarHookFireSound, g_cvarSound[HookFireSound], sizeof(g_cvarSound[]));
 
 	// Grab convars
 	g_cvarEnable[Grab]    = GetConVarBool(h_cvarGrabEnable);
@@ -1446,7 +1579,10 @@ public UpdateAllConvars()
 	g_cvarBeamGreen[Grab] = GetConVarInt(h_cvarGrabGreen);
 	g_cvarBeamBlue[Grab]  = GetConVarInt(h_cvarGrabBlue);
 	g_cvarBeamAlpha[Grab] = GetConVarInt(h_cvarGrabAlpha);
-	GetConVarString(h_cvarGrabSound, g_cvarSound[Grab], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarGrabHitSound, g_cvarSound[GrabHitSound], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarGrabFireSound, g_cvarSound[GrabFireSound], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarGrabSeekSound, g_cvarSound[GrabSeekSound], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarGrabPullSound, g_cvarSound[GrabPullSound], sizeof(g_cvarSound[]));
 
 	// Rope convars
 	g_cvarEnable[Rope]    = GetConVarBool(h_cvarRopeEnable);
@@ -1462,7 +1598,8 @@ public UpdateAllConvars()
 	g_cvarBeamGreen[Rope] = GetConVarInt(h_cvarRopeGreen);
 	g_cvarBeamBlue[Rope]  = GetConVarInt(h_cvarRopeBlue);
 	g_cvarBeamAlpha[Rope] = GetConVarInt(h_cvarRopeAlpha);
-	GetConVarString(h_cvarRopeSound, g_cvarSound[Rope], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarRopeHitSound, g_cvarSound[RopeHitSound], sizeof(g_cvarSound[]));
+	GetConVarString(h_cvarRopeFireSound, g_cvarSound[RopeFireSound], sizeof(g_cvarSound[]));
 	
 	// Freezetime variables
 	for(new HGRAction:i = Hook; i <= Rope; i++)
@@ -1532,6 +1669,21 @@ public Action_Hook(client)
 		{
 			if(HasAccess(client, Hook))
 			{
+				if (g_bIsTF2 && GetConVarBool(h_cvarHookNoFlag) && TF2_HasTheFlag(client))
+				{
+					PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t.", "No Flag", "\x04hook\x01");
+					if (g_cvarSound[ErrorSound][0])
+					{
+						EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+					}
+					return;
+				}
+				
+				if (g_cvarSound[HookFireSound][0])
+				{
+					EmitSoundToAll(g_cvarSound[HookFireSound], client);
+				}
+				
 				// Init variables
 				new Float:clientloc[3], Float:clientang[3];
 				GetClientEyePosition(client, clientloc);
@@ -1570,18 +1722,41 @@ public Action_Hook(client)
 				
 				// Finish hooking
 				SetEntityGravity(client, 0.0); // Set gravity to 0 so client floats in a straight line
-				EmitSoundFromOrigin(g_cvarSound[Hook], g_Location[client][0]); // Emit sound from where the hook landed
+				
+				if (g_cvarSound[HookHitSound][0])
+				{
+					EmitSoundFromOrigin(g_cvarSound[HookHitSound], g_Location[client][0]); // Emit sound from where the hook landed
+				}
+				
 				Hook_Push(client);
 				CreateTimer(0.1, Hooking, client, TIMER_REPEAT); // Create hooking loop
 			}
 			else
-				PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t\x04 hook", "No Permission");
+			{
+				PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t.", "No Permission", "\x04hook\x01");
+				if (g_cvarSound[DeniedSound][0])
+				{
+					EmitSoundToClient(client,g_cvarSound[DeniedSound]);
+				}
+			}
 		}
 		else if(client > 0 && client <= MaxClients && IsPlayerAlive(client))
+		{
 			PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t", "Error");
+			if (g_cvarSound[ErrorSound][0])
+			{
+				EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+			}
+		}
 	}
 	else
+	{
 		PrintToChat(client,"\x01\x0B\x04[HGR] Hook\x01 %t", "Disabled");
+		if (g_cvarSound[ErrorSound][0])
+		{
+			EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+		}
+	}
 }
 
 public Hook_Push(client)
@@ -1670,6 +1845,11 @@ public Action_Grab(client)
 		{
 			if(HasAccess(client, Grab))
 			{
+				if (g_cvarSound[GrabFireSound][0])
+				{
+					EmitSoundToAll(g_cvarSound[GrabFireSound], client);
+				}
+				
 				g_Status[client][Grab] = true; // Tell plugin the seeker is grabbing a player
 				
 				// Call grab search forward
@@ -1687,13 +1867,31 @@ public Action_Grab(client)
 				CreateTimer(0.1, GrabSearch, client, TIMER_REPEAT); // Start a timer that searches for a client to grab
 			}
 			else
-				PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t\x04 grab.", "No Permission");
+			{
+				PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t.", "No Permission", "\x04grab\x01");
+				if (g_cvarSound[DeniedSound][0])
+				{
+					EmitSoundToClient(client,g_cvarSound[DeniedSound]);
+				}
+			}
 		}
 		else if(client > 0 && client <= MaxClients && IsPlayerAlive(client))
+		{
 			PrintToChat(client, "\x01\x0B\x04[HGR]\x01 %t", "Error");
+			if (g_cvarSound[DeniedSound][0])
+			{
+				EmitSoundToClient(client,g_cvarSound[DeniedSound]);
+			}
+		}
     }
 	else
+	{
 		PrintToChat(client, "\x01\x0B\x04[HGR] Grab\x01 %t", "Disabled");
+		if (g_cvarSound[DeniedSound][0])
+		{
+			EmitSoundToClient(client,g_cvarSound[DeniedSound]);
+		}
+	}
 }
 
 public Action:GrabSearch(Handle:timer, any:client)
@@ -1717,6 +1915,39 @@ public Action:GrabSearch(Handle:timer, any:client)
 		// Found a player or object
 		if(g_Targetindex[client][Grab] > 0 && IsValidEntity(g_Targetindex[client][Grab]))
 		{
+			if (g_cvarSound[GrabSeekSound][0])
+			{
+				StopSound(client,SNDCHAN_AUTO,g_cvarSound[GrabSeekSound]);
+			}
+			
+			if (g_bIsTF2)
+			{
+				new target = g_Targetindex[client][Grab];
+				if (GetConVarBool(h_cvarGrabNoFlag) && TF2_HasTheFlag(target))
+				{
+					PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t.", "No Flag On", "\x04grab\x01");
+					if (g_cvarSound[ErrorSound][0])
+					{
+						EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+					}
+					return Plugin_Stop;
+				}
+				else
+				{
+					new stunFlags = GetEntProp(target, Prop_Send, "m_iStunFlags");
+					if (stunFlags != 0 || TF2_IsPlayerDazed(target) || TF2_IsPlayerBonked(target) ||
+						TF2_IsPlayerCritCola(target) || TF2_IsPlayerTaunting(target) ||
+						TF2_IsPlayerCharging(target))
+					{
+						if (g_cvarSound[ErrorSound][0])
+						{
+							EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+						}
+						return Plugin_Stop;
+					}
+				}
+			}
+			
 			// Init variables
 			new Float:targetloc[3];
 			GetEntityOrigin(g_Targetindex[client][Grab], targetloc); // Find the target's xyz coordinate
@@ -1738,11 +1969,20 @@ public Action:GrabSearch(Handle:timer, any:client)
 			if(ret)
 			{
 				Action_Drop(client);
+				if (g_cvarSound[ErrorSound][0])
+				{
+					EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+				}
 				return Plugin_Stop;
 			}
 			
 			// Finish grabbing
-			EmitSoundFromOrigin(g_cvarSound[Grab], targetloc); // Emit sound from the entity being grabbed
+			
+			if (g_cvarSound[GrabHitSound][0])
+			{
+				EmitSoundFromOrigin(g_cvarSound[GrabHitSound], targetloc); // Emit sound from the entity being grabbed
+			}
+			
 			CreateTimer(0.05, Grabbing, client, TIMER_REPEAT); // Start a repeating timer that will reposition the target in the grabber's crosshairs
 			return Plugin_Stop; // Stop the search timer
 		}
@@ -1751,6 +1991,12 @@ public Action:GrabSearch(Handle:timer, any:client)
 	{
 		Action_Drop(client);
 		return Plugin_Stop; // Stop the timer
+	}
+	
+	if (g_cvarSound[GrabSeekSound][0])
+	{
+		StopSound(client,SNDCHAN_AUTO,g_cvarSound[GrabSeekSound]);
+		EmitSoundToClient(client,g_cvarSound[GrabSeekSound]);
 	}
 	return Plugin_Continue;
 }
@@ -1825,6 +2071,12 @@ public Action:Grabbing(Handle:timer, any:client)
 
 public Action_Drop(client)
 {
+	// Call grab stop forward
+	new ret;
+	Call_StartForward(FwdClientGrabStop);
+	Call_PushCell(client);
+	Call_Finish(ret);
+	
 	if( IsClientInGame(client) &&
 		IsPlayerAlive(client) &&
 		g_Status[client][Grab] )
@@ -1862,45 +2114,86 @@ public Action_Rope(client)
 			!g_Status[client][Hook] &&
 			!g_Grabbed[client])
 		{
-		if(HasAccess(client,Rope))
-		{
-			// Init variables
-			new Float:clientloc[3], Float:clientang[3];
-			GetClientEyePosition(client, clientloc); // Get the position of the player's eyes
-			GetClientEyeAngles(client, clientang); // Get the angle the player is looking
-			
-			// Rope traceray
-			TR_TraceRayFilter(clientloc, clientang, MASK_ALL, RayType_Infinite, TraceRayTryToHit); // Create a ray that tells where the player is looking
-			TR_GetEndPosition(g_Location[client][2]); // Get the end xyz coordinate of where a player is looking
-			g_Targetindex[client][Rope] = TR_GetEntityIndex();
-			
-			// Change client status
-			g_Status[client][Rope] = true; // Tell plugin the player is roping
-			g_Distance[client][2] = GetVectorDistance(clientloc, g_Location[client][2]);
-			
-			// Call rope forward
-			new ret;
-			Call_StartForward(FwdClientRope);
-			Call_PushCell(client);
-			Call_Finish(ret);
-			if(ret)
+			if(HasAccess(client,Rope))
 			{
-				Action_Detach(client);
-				return;
+				if (g_bIsTF2 && GetConVarBool(h_cvarRopeNoFlag) && TF2_HasTheFlag(client))
+				{
+					PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t.", "No Flag", "\x04rope\x01");
+					if (g_cvarSound[ErrorSound][0])
+					{
+						EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+					}
+					return;
+				}
+				
+				if (g_cvarSound[RopeFireSound][0])
+				{
+					EmitSoundToAll(g_cvarSound[RopeFireSound], client);
+				}
+				
+				// Init variables
+				new Float:clientloc[3], Float:clientang[3];
+				GetClientEyePosition(client, clientloc); // Get the position of the player's eyes
+				GetClientEyeAngles(client, clientang); // Get the angle the player is looking
+				
+				// Rope traceray
+				TR_TraceRayFilter(clientloc, clientang, MASK_ALL, RayType_Infinite, TraceRayTryToHit); // Create a ray that tells where the player is looking
+				TR_GetEndPosition(g_Location[client][2]); // Get the end xyz coordinate of where a player is looking
+				g_Targetindex[client][Rope] = TR_GetEntityIndex();
+				
+				// Change client status
+				g_Status[client][Rope] = true; // Tell plugin the player is roping
+				g_Distance[client][2] = GetVectorDistance(clientloc, g_Location[client][2]);
+				
+				// Call rope forward
+				new ret;
+				Call_StartForward(FwdClientRope);
+				Call_PushCell(client);
+				Call_Finish(ret);
+				if(ret)
+				{
+					Action_Detach(client);
+					if (g_cvarSound[ErrorSound][0])
+					{
+						EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+					}
+					return;
+				}
+				
+				// Finish roping
+				if (g_cvarSound[RopeHitSound][0])
+				{
+					EmitSoundFromOrigin(g_cvarSound[RopeHitSound], g_Location[client][2]); // Emit sound from the end of the rope
+				}
+				
+				CreateTimer(0.1, Roping, client, TIMER_REPEAT); // Create roping loop
 			}
-			
-			// Finish roping
-			EmitSoundFromOrigin(g_cvarSound[Rope], g_Location[client][2]); // Emit sound from the end of the rope
-			CreateTimer(0.1, Roping, client, TIMER_REPEAT); // Create roping loop
-		}
-		else
-			PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t\x04 rope.", "No Permission");
+			else
+			{
+				PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t.", "No Permission", "\x04rope\x01");
+				if (g_cvarSound[DeniedSound][0])
+				{
+					EmitSoundToClient(client,g_cvarSound[DeniedSound]);
+				}
+			}
 		}
 		else if(client > 0 && client <= MaxClients && IsPlayerAlive(client))
+		{
 			PrintToChat(client,"\x01\x0B\x04[HGR]\x01 %t", "Error");
+			if (g_cvarSound[ErrorSound][0])
+			{
+				EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+			}
+		}
 	}
 	else
+	{
 		PrintToChat(client,"\x01\x0B\x04[HGR] Rope\x01 %t", "Disabled");
+		if (g_cvarSound[ErrorSound][0])
+		{
+			EmitSoundToClient(client,g_cvarSound[ErrorSound]);
+		}
+	}
 }
 
 public Action:Roping(Handle:timer,any:client)
