@@ -214,9 +214,9 @@ forward Action:OnDropPlayer(client,target);
 forward Action:OnHook(client);
 
 /**
- * Gets called when hooking
+ * Gets called when roping
  *
- * @param client: The index of the client that used the hook.
+ * @param client: The index of the client that used the rope.
  */
 forward Action:OnRope(client);
 
