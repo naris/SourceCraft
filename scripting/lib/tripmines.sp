@@ -639,10 +639,10 @@ bool:SetMine(client)
         }
     }
 
-    new max = GetConVarInt(cvMaxMines);
+    max = GetConVarInt(cvMaxMines);
     if (max > 0)
     {
-        new count = CountMines(-1);	// Count all mines of any client.
+        new count = CountMines(-1); // Count all mines of any client.
         if (count > max)
         {
             PrintHintText(client, "%t", "toomany", count);
@@ -667,7 +667,7 @@ bool:SetMine(client)
                     TF2_IsPlayerDeadRingered(client))
                 {
                     PrepareAndEmitSoundToClient(client, gSndError);
-                    return;
+                    return false;
                 }
                 else if (TF2_IsPlayerDisguised(client))
                     TF2_RemovePlayerDisguise(client);
@@ -677,7 +677,7 @@ bool:SetMine(client)
                 if (TF2_IsPlayerBonked(client))
                 {
                     PrepareAndEmitSoundToClient(client, gSndError);
-                    return;
+                    return false;
                 }
             }
         }
@@ -824,52 +824,52 @@ bool:SetMine(client)
                     SetEntPropVector(beam_ent, Prop_Send, "m_vecEndPos", end);
                     SetEntPropFloat(beam_ent, Prop_Send, "m_fWidth", 4.0);
 
-					if (gTeamSpecific > 0)
-					{
-						HookSingleEntityOutput(beam_ent, "OnTouchedByEntity", beamTouched, false);
-					}
-					else
-					{
-						Format(tmp, sizeof(tmp), "%s,Break,,0,-1", minename);
-						DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
-					}
+                    if (gTeamSpecific > 0)
+                    {
+                        HookSingleEntityOutput(beam_ent, "OnTouchedByEntity", beamTouched, false);
+                    }
+                    else
+                    {
+                        Format(tmp, sizeof(tmp), "%s,Break,,0,-1", minename);
+                        DispatchKeyValue(beam_ent, "OnTouchedByEntity", tmp);
+                    }
 
-					HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
-					AcceptEntityInput(beam_ent, "TurnOff");
+                    HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
+                    AcceptEntityInput(beam_ent, "TurnOff");
 
-					// Set the mine's m_hEffectEntity to point at the beam			// TODO: DEBUG not in 2016
-					//SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
+                    // Set the mine's m_hEffectEntity to point at the beam			// TODO: DEBUG not in 2016
+                    //SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
 
-					//SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
+                    //SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
 
-					new beam_ref = EntIndexToEntRef(beam_ent);
-					g_SavedEntityRef[beam_ent] = beam_ref;
-					g_TripmineOfBeam[beam_ent] = mine_ref;
+                    new beam_ref = EntIndexToEntRef(beam_ent);
+                    g_SavedEntityRef[beam_ent] = beam_ref;
+                    g_TripmineOfBeam[beam_ent] = mine_ref;
 
-					new Handle:data;
-					new Float:delay = GetConVarFloat(cvActTime);
-					CreateDataTimer(delay, ActivateTripmine, data, TIMER_FLAG_NO_MAPCHANGE);
+                    new Handle:data;
+                    new Float:delay = GetConVarFloat(cvActTime);
+                    CreateDataTimer(delay, ActivateTripmine, data, TIMER_FLAG_NO_MAPCHANGE);
 
-					WritePackCell(data, client);
-					WritePackCell(data, mine_ref);
-					WritePackCell(data, beam_ref);
-					WritePackFloat(data, end[0]);
-					WritePackFloat(data, end[1]);
-					WritePackFloat(data, end[2]);
+                    WritePackCell(data, client);
+                    WritePackCell(data, mine_ref);
+                    WritePackCell(data, beam_ref);
+                    WritePackFloat(data, end[0]);
+                    WritePackFloat(data, end[1]);
+                    WritePackFloat(data, end[2]);
 
-					// play sound
-					if (gSndPlaced[0])
-					{
-						PrepareAndEmitSoundToAll(gSndPlaced, beam_ent, SNDCHAN_AUTO,
-												 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
-												 100, beam_ent, end, NULL_VECTOR, true, 0.0);
-					}                           
+                    // play sound
+                    if (gSndPlaced[0])
+                    {
+                        PrepareAndEmitSoundToAll(gSndPlaced, beam_ent, SNDCHAN_AUTO,
+                                                 SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL,
+                                                 100, beam_ent, end, NULL_VECTOR, true, 0.0);
+                    }                           
 
-					// send message
-					if (gRemaining[client] >= 0)
-						PrintHintText(client, "%t", "left", gRemaining[client]);
-					
-					return true;
+                    // send message
+                    if (gRemaining[client] >= 0)
+                        PrintHintText(client, "%t", "left", gRemaining[client]);
+                    
+                    return true;
                 }
                 else
                     LogError("Unable to create a beam_ent");
@@ -884,7 +884,7 @@ bool:SetMine(client)
     {
         PrintHintText(client, "%t", "locationerr");
     }
-	return false;
+    return false;
 }
 
 public Action:ActivateTripmine(Handle:timer, Handle:data)

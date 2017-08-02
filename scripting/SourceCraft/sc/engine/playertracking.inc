@@ -1143,15 +1143,15 @@ ResetPlayer(client, bool:clear)
     else
     {
         shopItemCount = GetArraySize(shopitems);
-		if (shopItemCount < shopVectorCount)
-		{
-			LogError("ERROR: Player %d:%N's shop data got fubared! %d != %d",
-					 client, ValidClientIndex(client), shopItemCount, shopVectorCount);
+        if (shopItemCount < shopVectorCount)
+        {
+            LogError("ERROR: Player %d:%N's shop data got fubared! %d != %d",
+                     client, ValidClientIndex(client), shopItemCount, shopVectorCount);
 
-			shopItemCount = shopVectorCount;
-			ResizeArray(shopitems, shopVectorCount);
-		}
-		
+            shopItemCount = shopVectorCount;
+            ResizeArray(shopitems, shopVectorCount);
+        }
+        
         for (new x=0;x<shopItemCount;x++)
             SetArrayCell(shopitems,x,0);     // Owns item x
     }

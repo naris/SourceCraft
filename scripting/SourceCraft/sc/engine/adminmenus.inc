@@ -435,10 +435,14 @@ public Admin_Item_Selected(Handle:menu,MenuAction:action,client,selection)
         if (IsValidClient(target))
         {
             new item=StringToInt(SelectionData[1]);
-			new Handle:itemHandle=GetShopItemHandle(item);
-			new num = GetOwnsItem(target,item);
-			new max = GetItemMax(itemHandle);
-			if (num < max || max < 0)
+            new Handle:itemHandle=GetShopItemHandle(item);
+            
+            decl String:itemName[NAME_STRING_LENGTH];
+            GetItemName(itemHandle, itemName, sizeof(itemName),client);
+
+            new num = GetOwnsItem(target,item);
+            new max = GetItemMax(itemHandle);
+            if (num < max || max < 0)
             {
                 SetOwnsItem(target,item,num+1);
 
@@ -448,27 +452,24 @@ public Admin_Item_Selected(Handle:menu,MenuAction:action,client,selection)
                 Call_PushCell(item);
                 Call_Finish(result);
 
-                decl String:itemname[NAME_STRING_LENGTH];
-                GetItemName(itemHandle, itemname, sizeof(itemname),client);
-
-                LogAction(client, target, "[SC] %L gave %L a %s", client, target, itemname);
-                CPrintToChat(client, "{green}[SC]{default} %t", "AdminGaveItem", target, itemname);
-                CPrintToChat(target, "{green}[SC]{default} %t", "PlayerReceivedItem", itemname, client);
+                LogAction(client, target, "[SC] %L gave %L a %s", client, target, itemName);
+                CPrintToChat(client, "{green}[SC]{default} %t", "AdminGaveItem", target, itemName);
+                CPrintToChat(target, "{green}[SC]{default} %t", "PlayerReceivedItem", itemName, client);
             }
             else
             {
-				if (num > 1)
-				{
-					CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnMax", num, itemName);
-				}
-				else if (num == 1)
-				{
-					CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnsItem", itemName);
-				}
-				else // if (num == 0)
-				{
-					CPrintToChat(client, "{green}[SC]{default} %t", "ItemNotAvailable", itemName);
-				}
+                if (num > 1)
+                {
+                    CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnMax", num, itemName);
+                }
+                else if (num == 1)
+                {
+                    CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnsItem", itemName);
+                }
+                else // if (num == 0)
+                {
+                    CPrintToChat(client, "{green}[SC]{default} %t", "ItemNotAvailable", itemName);
+                }
             }
             Admin_Player(client,target);
         }
