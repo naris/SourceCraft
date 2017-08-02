@@ -837,8 +837,8 @@ bool:SetMine(client)
                     HookSingleEntityOutput(beam_ent, "OnBreak", beamBreak, true);
                     AcceptEntityInput(beam_ent, "TurnOff");
 
-                    // Set the mine's m_hEffectEntity to point at the beam			// TODO: DEBUG not in 2016
-                    //SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
+                    // Set the mine's m_hEffectEntity to point at the beam
+                    SetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity", beam_ent);
 
                     //SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
 
