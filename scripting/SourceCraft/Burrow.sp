@@ -225,17 +225,25 @@ public OnEntityDestroyed(entity)
 
         if (builder > 0)
             ResetBurrowedStructure(builder, entity, false);
-    }        
+    }
 }
 
 public Action:OnGrabPlayer(client, target)
 {
+    TraceInto("Burrow", "OnGrabPlayer", "client=%d:%N, target=%d:%N", \
+              client, ValidClientIndex(client), \
+              target, ValidClientIndex(target));
     if (m_Burrowed[target] > 0)
     {
         PrepareAndEmitSoundToClient(client,deniedWav);
+        TraceReturn("Burrow:OnGrabPlayer; IsBurrowed() failed;");
         return Plugin_Stop;
     }
-    return Plugin_Continue;
+    else
+    {
+        TraceReturn();
+        return Plugin_Continue;
+    }
 }
 
 public Action:OnJetpack(client)
@@ -454,10 +462,13 @@ public Action:BurrowTimer(Handle:timer,any:client)
                 if (m_Burrowed[client] > 0)
                     UnBurrow(client);
 
-                TraceReturn("Burrow Stopped for %d:%N, m_Burrowed=%d, NumHealers=%d, IsUbered=%d, IsKritzkrieged=%d, IsHealing=%d, HealingTarget=%d, ubered=%d", \
-                            client, ValidClientIndex(client), m_Burrowed[client], numHealers, TF2_IsUbercharged(pcond), TF2_IsKritzkrieged(pcond), \
-                            TF2_IsHealing(pcond), TF2_GetHealingTarget(client, ubered), ubered);
-
+                #if defined _TRACE
+                    new pcond = TF2_GetPlayerConditionLowBits(client);
+                    TraceReturn("Burrow Stopped for %d:%N, m_Burrowed=%d, NumHealers=%d, IsUbered=%d, IsKritzkrieged=%d, IsHealing=%d, HealingTarget=%d, ubered=%d", \
+                                client, ValidClientIndex(client), m_Burrowed[client], numHealers, TF2_IsUbercharged(pcond), TF2_IsKritzkrieged(pcond), \
+                                TF2_IsHealing(pcond), TF2_GetHealingTarget(client, ubered), ubered);
+                #endif
+                
                 return Plugin_Stop;
             }
         }
@@ -1046,9 +1057,12 @@ public Native_Burrow(Handle:plugin,numParams)
                         PrepareAndEmitSoundToAll(burrowDeniedWav, client);
                     }
 
-                    TraceReturn("Burrow Denied to %d:%N, m_Burrowed=%d, IsUbered=%d, IsKritzkrieged=%d, IsHealing=%d, HealingTarget=%d, ubered=%d", \
-                                client, ValidClientIndex(client), m_Burrowed[client], TF2_IsUbercharged(pcond), TF2_IsKritzkrieged(pcond), \
-                                TF2_IsHealing(pcond), TF2_GetHealingTarget(client, ubered), ubered);
+                    #if defined _TRACE
+                        new pcond = TF2_GetPlayerConditionLowBits(client);
+                        TraceReturn("Burrow Denied to %d:%N, m_Burrowed=%d, IsUbered=%d, IsKritzkrieged=%d, IsHealing=%d, HealingTarget=%d, ubered=%d", \
+                                    client, ValidClientIndex(client), m_Burrowed[client], TF2_IsUbercharged(pcond), TF2_IsKritzkrieged(pcond), \
+                                    TF2_IsHealing(pcond), TF2_GetHealingTarget(client, ubered), ubered);
+                    #endif
 
                     return false;
                 }

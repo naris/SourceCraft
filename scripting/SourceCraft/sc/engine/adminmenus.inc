@@ -460,7 +460,7 @@ public Admin_Item_Selected(Handle:menu,MenuAction:action,client,selection)
             {
                 if (num > 1)
                 {
-                    CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnMax", num, itemName);
+                    CPrintToChat(client, "{green}[SC]{default} %t", "PlayerOwnsMax", num, itemName);
                 }
                 else if (num == 1)
                 {

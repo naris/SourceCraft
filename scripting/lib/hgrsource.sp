@@ -14,47 +14,41 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
+#include <tf2_player>
+#include <tf2_flag>
+
+/**
+ * Description: Manage precaching resources.
+ */
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #include <ResourceManager>
+#endif
 
 // Define _TRACE to enable trace logging for debugging
-//#define _TRACE
-#tryinclude <trace>
-#if !defined _trace_included
-    #define TraceInto(%1);
-    #define TraceDump(%1);
-    #define TraceReturn(%1);
-    #define SetTraceCat(%1);
-    #define SetTraceCategory(%1);
-    #define ResetTraceCategory(%1);
+#define _TRACE
+#include <lib/trace>
 
-    #define TraceAudit(%1);
-    #define TraceCritical(%1);
-    #define TraceError(%1);
-    #define TraceProblem(%1);
-    #define TraceWarning(%1);
-    #define TraceInfo(%1);
-    #define TraceDecision(%1);
-    #define TraceDebug(%1);
-    #define TraceDetail(%1);
-    #define TraceCat(%1,%2);
-    #define Trace(%1);
+//Use SourceCraft sounds if it is present
+#tryinclude "../SourceCraft/sc/version"
+#if defined SOURCECRAFT_VERSION
+    #define SEEKING_SOUND       "sc/ropeshoot2.wav"
+    #define GRABHIT_SOUND  	    "sc/zluhit00.mp3"
+    #define PULLER_SOUND        "sc/intonydus.mp3"
+    #define DENIED_SOUND        "sc/buzz.wav"
+    #define ERROR_SOUND         "sc/perror.mp3"
+#else
+    #define SEEKING_SOUND       "weapons/crossbow/bolt_fly4.wav"
+    #define GRABHIT_SOUND       "weapons/crossbow/bolt_skewer1.wav"
+    #define PULLER_SOUND        "weapons/crossbow/hitbod2.wav"
+    #define DENIED_SOUND        "buttons/combine_button_locked.wav"
+    #define ERROR_SOUND         "player/suit_denydevice.wav"
 #endif
 
 #define IsValidClient(%1) (%1 > 0 && %1 <= MaxClients && IsClientInGame(%1))
 #define ValidClientIndex(%1) (IsValidClient(%1) ? %1 : 0)
 
-#define SEEKING_SOUND       "weapons/crossbow/bolt_fly4.wav" // "weapons/tripwire/ropeshoot.wav";
-#define GRABHIT_SOUND       "weapons/crossbow/bolt_skewer1.wav"
-#define PULLER_SOUND        "weapons/crossbow/hitbod2.wav"
-#define DENIED_SOUND        "buttons/combine_button_locked.wav"
-#define ERROR_SOUND         "player/suit_denydevice.wav"
-
-#define SC_SEEKING_SOUND    "sc/ropeshoot2.wav"
-#define SC_GRABHIT_SOUND  	"sc/zluhit00.mp3"
-#define SC_PULLER_SOUND     "sc/intonydus.mp3"
-#define SC_DENIED_SOUND     "sc/buzz.wav"
-#define SC_ERROR_SOUND      "sc/perror.mp3"
-
-#define LASER_MODEL         "materials/sprites/laserbeam.vmt"
+#define LASER_MODEL             "materials/sprites/laserbeam.vmt"
 
 #define ACTION_HOOK 0
 #define ACTION_GRAB 1
@@ -196,271 +190,13 @@ new g_iNativeGrabs;
 new g_iNativeRopes;
 
 // Sounds
-new String:fireWav[PLATFORM_MAX_PATH]           = "weapons/crossbow/fire1.wav";
-new String:hitWav[PLATFORM_MAX_PATH]            = "weapons/crossbow/hit1.wav";
-
-//Use SourceCraft sounds if it is present
-#tryinclude "../SourceCraft/sc/version"
-#if defined SOURCECRAFT_VERSION
-    new String:errorWav[PLATFORM_MAX_PATH]      = SC_ERROR_SOUND;
-    new String:pullerWav[PLATFORM_MAX_PATH]     = SC_PULLER_SOUND;
-    new String:deniedWav[PLATFORM_MAX_PATH]     = SC_DENIED_SOUND;
-    new String:grabberHitWav[PLATFORM_MAX_PATH] = SC_GRABHIT_SOUND;
-    new String:seekingWav[PLATFORM_MAX_PATH]    = SC_SEEKING_SOUND;
-#else
-    new String:errorWav[PLATFORM_MAX_PATH]      = ERROR_SOUND;
-    new String:pullerWav[PLATFORM_MAX_PATH]     = PULLER_SOUND;
-    new String:deniedWav[PLATFORM_MAX_PATH]     = DENIED_SOUND;
-    new String:grabberHitWav[PLATFORM_MAX_PATH] = GRABHIT_SOUND;
-    new String:seekingWav[PLATFORM_MAX_PATH]    = SEEKING_SOUND;
-#endif
-
-/**
- * Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-
-    #define TF2_IsPlayerTaunting(%1)            TF2_IsPlayerInCondition(%1,TFCond_Taunting)
-    #define TF2_IsPlayerBonked(%1)              TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-    #define TF2_IsPlayerDazed(%1)               TF2_IsPlayerInCondition(%1,TFCond_Dazed)
-    #define TF2_IsPlayerCharging(%1)            TF2_IsPlayerInCondition(%1,TFCond_Charging)
-    #define TF2_IsPlayerCritCola(%1)            TF2_IsPlayerInCondition(%1,TFCond_CritCola)
-
-    #define TF2_IsSlowed(%1)                    (((%1) & TF_CONDFLAG_SLOWED) != TF_CONDFLAG_NONE)
-    #define TF2_IsZoomed(%1)                    (((%1) & TF_CONDFLAG_ZOOMED) != TF_CONDFLAG_NONE)
-    #define TF2_IsDisguising(%1)                (((%1) & TF_CONDFLAG_DISGUISING) != TF_CONDFLAG_NONE)
-    #define TF2_IsDisguised(%1)                 (((%1) & TF_CONDFLAG_DISGUISED) != TF_CONDFLAG_NONE)
-    #define TF2_IsCloaked(%1)                   (((%1) & TF_CONDFLAG_CLOAKED) != TF_CONDFLAG_NONE)
-    #define TF2_IsUbercharged(%1)               (((%1) & TF_CONDFLAG_UBERCHARGED) != TF_CONDFLAG_NONE)
-    #define TF2_IsTeleportedGlow(%1)            (((%1) & TF_CONDFLAG_TELEPORTGLOW) != TF_CONDFLAG_NONE)
-    #define TF2_IsTaunting(%1)                  (((%1) & TF_CONDFLAG_TAUNTING) != TF_CONDFLAG_NONE)
-    #define TF2_IsUberchargeFading(%1)          (((%1) & TF_CONDFLAG_UBERCHARGEFADE) != TF_CONDFLAG_NONE)
-    #define TF2_IsCloakFlicker(%1)              (((%1) & TF_CONDFLAG_CLOAKFLICKER) != TF_CONDFLAG_NONE)
-    #define TF2_IsTeleporting(%1)               (((%1) & TF_CONDFLAG_TELEPORTING) != TF_CONDFLAG_NONE)
-    #define TF2_IsKritzkrieged(%1)              (((%1) & TF_CONDFLAG_KRITZKRIEGED) != TF_CONDFLAG_NONE)
-    #define TF2_IsDeadRingered(%1)              (((%1) & TF_CONDFLAG_DEADRINGERED) != TF_CONDFLAG_NONE)
-    #define TF2_IsBonked(%1)                    (((%1) & TF_CONDFLAG_BONKED) != TF_CONDFLAG_NONE)
-    #define TF2_IsDazed(%1)                     (((%1) & TF_CONDFLAG_DAZED) != TF_CONDFLAG_NONE)
-    #define TF2_IsBuffed(%1)                    (((%1) & TF_CONDFLAG_BUFFED) != TF_CONDFLAG_NONE)
-    #define TF2_IsCharging(%1)                  (((%1) & TF_CONDFLAG_CHARGING) != TF_CONDFLAG_NONE)
-    #define TF2_IsDemoBuff(%1)                  (((%1) & TF_CONDFLAG_DEMOBUFF) != TF_CONDFLAG_NONE)
-    #define TF2_IsCritCola(%1)                  (((%1) & TF_CONDFLAG_CRITCOLA) != TF_CONDFLAG_NONE)
-    #define TF2_IsInHealRadius(%1)              (((%1) & TF_CONDFLAG_INHEALRADIUS) != TF_CONDFLAG_INHEALRADIUS)
-    #define TF2_IsHealing(%1)                   (((%1) & TF_CONDFLAG_HEALING) != TF_CONDFLAG_NONE)
-    #define TF2_IsOnFire(%1)                    (((%1) & TF_CONDFLAG_ONFIRE) != TF_CONDFLAG_NONE)
-    #define TF2_IsOverhealed(%1)                (((%1) & TF_CONDFLAG_OVERHEALED) != TF_CONDFLAG_NONE)
-    #define TF2_IsJarated(%1)                   (((%1) & TF_CONDFLAG_JARATED) != TF_CONDFLAG_NONE)
-    #define TF2_IsBleeding(%1)                  (((%1) & TF_CONDFLAG_BLEEDING) != TF_CONDFLAG_NONE)
-    #define TF2_IsDefenseBuffed(%1)             (((%1) & TF_CONDFLAG_DEFENSEBUFFED) != TF_CONDFLAG_NONE)
-    #define TF2_IsMilked(%1)                    (((%1) & TF_CONDFLAG_MILKED) != TF_CONDFLAG_NONE)
-    #define TF2_IsMegaHealed(%1)                (((%1) & TF_CONDFLAG_MEGAHEAL) != TF_CONDFLAG_MEGAHEAL)
-    #define TF2_IsRegenBuffed(%1)               (((%1) & TF_CONDFLAG_REGENBUFFED) != TF_CONDFLAG_REGENBUFFED)
-    #define TF2_IsMarkedForDeath(%1)            (((%1) & TF_CONDFLAG_MARKEDFORDEATH) != TF_CONDFLAG_MARKEDFORDEATH)
-
-    #define TF_CONDFLAGEX_SPEEDBUFFALLY         (1 << (_:TFCond_SpeedBuffAlly-32))
-
-    #define TF2_IsSpeedBuffAlly(%1)             (((%1) & TF_CONDFLAGEX_SPEEDBUFFALLY) != TF_CONDFLAGEX_SPEEDBUFFALLY)
-
-    /**
-     * Gets a player's lower 32 condition bits
-     *
-     * @param client		Player's index.
-     * @return				Player's lower 32 condition bits
-     */
-    stock TF2_GetPlayerConditionLowBits(client)
-    {
-        return GetEntProp(client, Prop_Send, "m_nPlayerCond")|GetEntProp(client, Prop_Send, "_condition_bits");
-    }
-
-    /**
-     * Gets a player's upper 32 condition bits
-     *
-     * @param client		Player's index.
-     * @return				Player's upper 32 condition bits
-     */
-    stock TF2_GetPlayerConditionHighBits(client)
-    {
-        return GetEntProp(client, Prop_Send, "m_nPlayerCondEx");
-    }
-
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=true)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (download && value < Download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            value  = Precached;
-            update = true;
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-	stock PrepareAndEmitSoundToClient(client,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSoundToClient(client, sample, entity, channel,
-				              level, flags, volume, pitch, speakerentity,
-				              origin, dir, updatePos, soundtime);
-	    }
-	}
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-
-    stock SetupModel(const String:model[], &index=0, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
+new String:fireWav[PLATFORM_MAX_PATH]       = "weapons/crossbow/fire1.wav";
+new String:hitWav[PLATFORM_MAX_PATH]        = "weapons/crossbow/hit1.wav";
+new String:errorWav[PLATFORM_MAX_PATH]      = ERROR_SOUND;
+new String:pullerWav[PLATFORM_MAX_PATH]     = PULLER_SOUND;
+new String:deniedWav[PLATFORM_MAX_PATH]     = DENIED_SOUND;
+new String:grabberHitWav[PLATFORM_MAX_PATH] = GRABHIT_SOUND;
+new String:seekingWav[PLATFORM_MAX_PATH]    = SEEKING_SOUND;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -1622,87 +1358,87 @@ public Action:GrabSearch(Handle:timer,any:userid)
                             //                        00000000001111111111222222222233333333334
                             //                        01234567890123456789012345678901234567890
                             new String:condFlags[] = "                                        ";
-                            new pcond = TF2_GetPlayerConditionLowBits(client);
-                            new pcond2 = TF2_GetPlayerConditionHighBits(client);
-                            if (TF2_IsPlayerSlowed(client))
+                            new pcond = TF2_GetPlayerConditionLowBits(target);
+                            new pcond2 = TF2_GetPlayerConditionHighBits(target);
+                            if (TF2_IsPlayerSlowed(target))
                                 condFlags[0]  = 'S';
-                            if (TF2_IsPlayerZoomed(client))
+                            if (TF2_IsPlayerZoomed(target))
                                 condFlags[1]  = 'Z';
-                            if (TF2_IsPlayerDisguising(client))
+                            if (TF2_IsPlayerDisguising(target))
                                 condFlags[2]  = 'd';
-                            if (TF2_IsPlayerDisguised(client))
+                            if (TF2_IsPlayerDisguised(target))
                                 condFlags[3]  = 'D';
-                            if (TF2_IsPlayerCloaked(client))
+                            if (TF2_IsPlayerCloaked(target))
                                 condFlags[4]  = 'C';
-                            if (TF2_IsPlayerUbercharged(client))
+                            if (TF2_IsPlayerUbercharged(target))
                                 condFlags[5]  = 'U';
-                            if (TF2_IsPlayerTeleportedGlow(client))
+                            if (TF2_IsPlayerTeleportedGlow(target))
                                 condFlags[6]  = 'g';
-                            if (TF2_IsPlayerTaunting(client))
+                            if (TF2_IsPlayerTaunting(target))
                                 condFlags[7]  = 'T';
-                            if (TF2_IsPlayerUberchargeFading(client))
+                            if (TF2_IsPlayerUberchargeFading(target))
                                 condFlags[8]  = 'f';
-                            if (TF2_IsPlayerCloakFlicker(client))
+                            if (TF2_IsPlayerCloakFlicker(target))
                                 condFlags[9]  = 'c';
-                            if (TF2_IsPlayerTeleporting(client))
+                            if (TF2_IsPlayerTeleporting(target))
                                 condFlags[10] = 'p';
-                            if (TF2_IsPlayerKritzkrieged(client))
+                            if (TF2_IsPlayerKritzkrieged(target))
                                 condFlags[11] = 'K';
-                            if (TF2_IsPlayerTmpDamageBonus(client))
+                            if (TF2_IsPlayerTmpDamageBonus(target))
                                 condFlags[12] = '2';
-                            if (TF2_IsPlayerDeadRingered(client))
+                            if (TF2_IsPlayerDeadRingered(target))
                                 condFlags[13] = 'R';
-                            if (TF2_IsPlayerBonked(client))
+                            if (TF2_IsPlayerBonked(target))
                                 condFlags[14] = 'b';
-                            if (TF2_IsPlayerDazed(client))
+                            if (TF2_IsPlayerDazed(target))
                                 condFlags[15] = 'A';
-                            if (TF2_IsPlayerBuffed(client))
+                            if (TF2_IsPlayerBuffed(target))
                                 condFlags[16] = 'B';
-                            if (TF2_IsPlayerCharging(client))
+                            if (TF2_IsPlayerCharging(target))
                                 condFlags[17] = '-';
-                            if (TF2_IsPlayerDemoBuff(client))
+                            if (TF2_IsPlayerDemoBuff(target))
                                 condFlags[18] = '>';
-                            if (TF2_IsPlayerCritCola(client))
+                            if (TF2_IsPlayerCritCola(target))
                                 condFlags[19] = 'r';
-                            if (TF2_IsPlayerInHealRadius(client))
+                            if (TF2_IsPlayerInHealRadius(target))
                                 condFlags[20] = '+';
-                            if (TF2_IsPlayerHealing(client))
+                            if (TF2_IsPlayerHealing(target))
                                 condFlags[21] = 'H';
-                            if (TF2_IsPlayerOnFire(client))
+                            if (TF2_IsPlayerOnFire(target))
                                 condFlags[22] = 'F';
-                            if (TF2_IsPlayerOverhealed(client))
+                            if (TF2_IsPlayerOverhealed(target))
                                 condFlags[23] = 'O';
-                            if (TF2_IsPlayerJarated(client))
+                            if (TF2_IsPlayerJarated(target))
                                 condFlags[24] = 'J';
-                            if (TF2_IsPlayerBleeding(client))
+                            if (TF2_IsPlayerBleeding(target))
                                 condFlags[25] = 'L';
-                            if (TF2_IsPlayerDefenseBuffed(client))
+                            if (TF2_IsPlayerDefenseBuffed(target))
                                 condFlags[26] = 'E';
-                            if (TF2_IsPlayerMilked(client))
+                            if (TF2_IsPlayerMilked(target))
                                 condFlags[27] = 'M';
-                            if (TF2_IsPlayerMegaHealed(client))
+                            if (TF2_IsPlayerMegaHealed(target))
                                 condFlags[28] = '!';
-                            if (TF2_IsPlayerRegenBuffed(client))
+                            if (TF2_IsPlayerRegenBuffed(target))
                                 condFlags[29] = 'G';
-                            if (TF2_IsPlayerMarkedForDeath(client))
+                            if (TF2_IsPlayerMarkedForDeath(target))
                                 condFlags[30] = 'e';
-                            if (TF2_IsPlayerNoHealingDamageBuff(client))
+                            if (TF2_IsPlayerNoHealingDamageBuff(target))
                                 condFlags[31] = '3';
-                            if (TF2_IsPlayerSpeedBuffAlly(client))
+                            if (TF2_IsPlayerSpeedBuffAlly(target))
                                 condFlags[32] = 'a';
-                            if (TF2_IsPlayerHalloweenCritCandy(client))
+                            if (TF2_IsPlayerHalloweenCritCandy(target))
                                 condFlags[33] = 'y';
-                            if (TF2_IsPlayerCritHype(client))
+                            if (TF2_IsPlayerCritHype(target))
                                 condFlags[34] = 'h';
-                            if (TF2_IsPlayerCritOnFirstBlood(client))
+                            if (TF2_IsPlayerCritOnFirstBlood(target))
                                 condFlags[35] = '1';
-                            if (TF2_IsPlayerCritOnWin(client))
+                            if (TF2_IsPlayerCritOnWin(target))
                                 condFlags[36] = 'W';
-                            if (TF2_IsPlayerCritOnFlagCapture(client))
+                            if (TF2_IsPlayerCritOnFlagCapture(target))
                                 condFlags[37] = '#';
-                            if (TF2_IsPlayerCritOnKill(client))
+                            if (TF2_IsPlayerCritOnKill(target))
                                 condFlags[38] = '*';
-                            if (TF2_IsPlayerRestrictToMelee(client))
+                            if (TF2_IsPlayerRestrictToMelee(target))
                                 condFlags[39] = 'M';
                         #endif
 
@@ -2435,20 +2171,3 @@ public bool:TraceRayHitCollidable(entity, mask)
     else
         return false;
 }
-
-/**
- * Determine if client has the flag
- */
-#tryinclude <tf2_flag>
-#if !defined _tf2_flag_included
-    stock bool:TF2_HasTheFlag(client)
-    {
-        new ent = -1;
-        while ((ent = FindEntityByClassname(ent, "item_teamflag")) != -1)
-        {
-            if (GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")==client)
-                return true;
-        }
-        return false;
-    }
-#endif

@@ -16,7 +16,7 @@
 #define REQUIRE_EXTENSIONS
 
 // Define _TRACE to enable trace logging for debugging
-#define _TRACE
+//#define _TRACE
 #include <lib/trace>
 
 #include "weapons"
