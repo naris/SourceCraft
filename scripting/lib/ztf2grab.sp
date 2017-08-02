@@ -19,6 +19,54 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
+#include <tf2_player>
+#include <gametype>
+
+/**
+ * Description: Define the grabber permissions
+ */
+#define _zgrabber_plugin
+#include "ztf2grab"
+
+/**
+ * Description: Manage resources.
+ */
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #tryinclude <ResourceManager>
+	#if !defined _ResourceManager_included
+		#define AUTO_DOWNLOAD   -1
+		#define DONT_DOWNLOAD    0
+		#define DOWNLOAD         1
+		#define ALWAYS_DOWNLOAD  2
+
+		#define PrepareModel(%1)
+		#define PrepareSound(%1)
+		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
+		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
+		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
+		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+		
+		stock SetupModel(const String:model[], &index=0, bool:download=false,
+						 bool:precache=true, bool:preload=true)
+		{
+			if (download && FileExists(model))
+				AddFileToDownloadsTable(model);
+
+			index = PrecacheModel(model,preload);
+		}
+		
+		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+						 bool:precache=true, bool:preload=true)
+		{
+			if (download != DONT_DOWNLOAD && FileExists(sound))
+				AddFileToDownloadsTable(sound);
+
+			index = PrecacheSound(sound,preload);
+		}
+	#endif
+#endif
+
 //Define the enabled bits
 #define ENABLE_ALT_SHOTGUN      (1 << 0)
 #define ENABLE_RELOAD_WRENCH    (1 << 1)
@@ -114,212 +162,6 @@ public Plugin:myinfo = {
     version = PLUGIN_VERSION,
     url = "http://www.lduke.com/"
 };
-
-/**
- * Description: Define the grabber permissions
- */
-#define _zgrabber_plugin
-#tryinclude "ztf2grab"
-#if !defined _ztf2grab_included
-    // These define the permissions
-    #define HAS_GRABBER		            (1 << 0)
-    #define CAN_STEAL		            (1 << 1)
-    #define CAN_GRAB_PROPS		        (1 << 2)
-    #define CAN_GRAB_BUILDINGS		    (1 << 3)
-    #define CAN_GRAB_OTHER_BUILDINGS    (1 << 4)
-    #define CAN_THROW_BUILDINGS         (1 << 5)
-    #define CAN_HOLD_ENABLED_BUILDINGS  (1 << 6)
-    #define CAN_THROW_ENABLED_BUILDINGS (1 << 7)
-    #define CAN_JUMP_WHILE_HOLDING      (1 << 8)
-    #define DISABLE_OPPONENT_BUILDINGS  (1 << 9)
-    #define CAN_REPAIR_WHILE_HOLDING    (1 << 10)
-    #define CAN_HOLD_WHILE_SAPPED       (1 << 11)
-#endif
-
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false)) 
-                GameType=tf2;
-            else if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false))
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false))
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false))
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false))
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false))
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false))
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
-#endif
-
-/**
- * Description: Functions to return information about TF2 player condition.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-    #define TF2_IsPlayerDisguised(%1)    TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)      TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-    #define TF2_IsPlayerUbercharged(%1)  TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerDeadRingered(%1) TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-    #define TF2_IsPlayerBonked(%1)       TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (download && value < Download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            value  = Precached;
-            update = true;
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-#endif
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {

@@ -43,6 +43,52 @@
 #tryinclude <sc/SourceCraft>
 #define REQUIRE_PLUGIN
 
+#include <tf2_player>
+#include <gametype>
+#include <dod>
+#include <topmessage>
+#include <entlimit>
+#include "particle"
+
+/**
+ * Description: Manage resources.
+ */
+#tryinclude <lib/ResourceManager>
+#if !defined _ResourceManager_included
+    #tryinclude <ResourceManager>
+	#if !defined _ResourceManager_included
+		#define AUTO_DOWNLOAD   -1
+		#define DONT_DOWNLOAD    0
+		#define DOWNLOAD         1
+		#define ALWAYS_DOWNLOAD  2
+
+		#define PrepareModel(%1)
+		#define PrepareSound(%1)
+		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
+		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
+		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
+		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+		
+		stock SetupModel(const String:model[], &index=0, bool:download=false,
+						 bool:precache=true, bool:preload=true)
+		{
+			if (download && FileExists(model))
+				AddFileToDownloadsTable(model);
+
+			index = PrecacheModel(model,preload);
+		}
+		
+		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+						 bool:precache=true, bool:preload=true)
+		{
+			if (download != DONT_DOWNLOAD && FileExists(sound))
+				AddFileToDownloadsTable(sound);
+
+			index = PrecacheSound(sound,preload);
+		}
+	#endif
+#endif
+
 #define PLUGIN_VERSION          "3.1"
 
 #define MOVECOLLIDE_DEFAULT	    0
@@ -306,358 +352,6 @@ public Plugin:myinfo =
     }
 #endif
 
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false)) 
-                GameType=tf2;
-            if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false))
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false))
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false))
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false))
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false))
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false))
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
-#endif
-
-/**
- * Description: Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _dod_included
-	#define TF2_IsPlayerSlowed(%1)              TF2_IsPlayerInCondition(%1,TFCond_Slowed)
-	#define TF2_IsPlayerZoomed(%1)              TF2_IsPlayerInCondition(%1,TFCond_Zoomed)
-	#define TF2_IsPlayerDisguised(%1)           TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-	#define TF2_IsPlayerCloaked(%1)             TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-	#define TF2_IsPlayerTaunting(%1)            TF2_IsPlayerInCondition(%1,TFCond_Taunting)
-    #define TF2_IsPlayerUbercharged(%1)         TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerKritzkrieged(%1)        TF2_IsPlayerInCondition(%1,TFCond_Kritzkrieged)
-	#define TF2_IsPlayerDeadRingered(%1)        TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-	#define TF2_IsPlayerBonked(%1)              TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-	#define TF2_IsPlayerDazed(%1)               TF2_IsPlayerInCondition(%1,TFCond_Dazed)
-    #define TF2_IsPlayerCritCola(%1)            TF2_IsPlayerInCondition(%1,TFCond_CritCola)
-    #define TF2_IsPlayerHalloweenCritCandy(%1)  TF2_IsPlayerInCondition(%1,TFCond_HalloweenCritCandy)
-    #define TF2_IsPlayerCritHype(%1)            TF2_IsPlayerInCondition(%1,TFCond_CritHype)
-    #define TF2_IsPlayerCritOnFirstBlood(%1)    TF2_IsPlayerInCondition(%1,TFCond_CritOnFirstBlood)
-    #define TF2_IsPlayerCritOnWin(%1)           TF2_IsPlayerInCondition(%1,TFCond_CritOnWin)
-    #define TF2_IsPlayerCritOnFlagCapture(%1)   TF2_IsPlayerInCondition(%1,TFCond_CritOnFlagCapture)
-    #define TF2_IsPlayerCritOnKill(%1)          TF2_IsPlayerInCondition(%1,TFCond_CritOnKill)
-
-    #define TF2_IsPlayerCrit(%1) (TF2_IsPlayerKritzkrieged(%1)       || \
-                                  TF2_IsPlayerCritCola(%1)           || \
-                                  TF2_IsPlayerHalloweenCritCandy(%1) || \
-                                  TF2_IsPlayerCritHype(%1)           || \
-                                  TF2_IsPlayerCritOnFirstBlood(%1)   || \
-                                  TF2_IsPlayerCritOnWin(%1)          || \
-                                  TF2_IsPlayerCritOnFlagCapture(%1)  || \
-                                  TF2_IsPlayerCritOnKill(%1))
-#endif
-
-/**
- * Description: Stocks for DoD
- */
-#tryinclude <dod>
-#if !defined _dod_included
-    enum DODClassType
-    {
-        DODClass_Unassigned = -1,
-        DODClass_Rifleman = 0,
-        DODClass_Assault,
-        DODClass_Support,
-        DODClass_Sniper,
-        DODClass_MachineGunner,
-        DODClass_Rocketman
-    };
-
-    /**
-     * Get's a Clients current class.
-     *
-     * @param client		Player's index.
-     * @return				Current DODClassType of player.
-     * @error				Invalid client index.
-     */
-    stock DODClassType:DOD_GetPlayerClass(client)
-    {
-        return DODClassType:GetEntProp(client, Prop_Send, "m_iPlayerClass");
-    }
-#endif
-
-/**
- * Description: stock for SendTopMessage
- */
-#tryinclude <topmessage>
-#if !defined _topmessage_included
-	stock SendTopMessage(client, level, time, r, g, b, a, String:text[], any:...)
-	{
-		new String:message[100];
-		VFormat(message,sizeof(message),text, 9);
-		
-		new Handle:kv = CreateKeyValues("message", "title", message);
-		KvSetColor(kv, "color", r, g, b, a);
-		KvSetNum(kv, "level", level);
-		KvSetNum(kv, "time", time);
-
-		CreateDialog(client, kv, DialogType_Msg);
-
-		CloseHandle(kv);
-	}
-#endif
-
-/**
- * Description: Functions to show TF2 particles
- */
-#tryinclude "particle"
-#if !defined _particle_included
-	// Particle Attachment Types  -------------------------------------------------
-	enum ParticleAttachmentType
-	{
-		NoAttach = 0,
-		Attach,
-		AttachMaintainOffset
-	};
-
-	// Particles ------------------------------------------------------------------
-
-	/* CreateParticle()
-	**
-	** Creates a particle at an entity's position. Attach determines the attachment
-	** type (0 = not attached, 1 = normal attachment, 2 = head attachment). Allows
-	** offsets from the entity's position.
-	** ------------------------------------------------------------------------- */
-	stock CreateParticle(const String:particleType[], Float:time=5.0, entity=0,
-						 ParticleAttachmentType:attach=Attach,
-						 const String:attachToBone[]="head",
-						 const Float:pos[3]=NULL_VECTOR,
-						 const Float:ang[3]=NULL_VECTOR,
-						 Timer:deleteFunc=Timer:0,
-						 &Handle:timerHandle=INVALID_HANDLE)
-	{
-		new particle = CreateEntityByName("info_particle_system");
-		if (particle > 0 && IsValidEdict(particle))
-		{
-			decl String:tName[32];
-			Format(tName, sizeof(tName), "target%i", entity);
-			DispatchKeyValue(entity, "targetname", tName);
-
-			DispatchKeyValue(particle, "targetname", "sc2particle");
-			DispatchKeyValue(particle, "parentname", tName);
-			DispatchKeyValue(particle, "effect_name", particleType);
-
-			if (attach > NoAttach)
-			{
-				SetVariantString("!activator");
-				AcceptEntityInput(particle, "SetParent", entity, particle, 0);
-
-				if (attachToBone[0] != '\0')
-				{
-					SetVariantString(attachToBone);
-					AcceptEntityInput(particle, (attach >= AttachMaintainOffset)
-												? "SetParentAttachmentMaintainOffset"
-												: "SetParentAttachment",
-									  particle, particle, 0);
-				}
-			}
-
-			DispatchSpawn(particle);
-			ActivateEntity(particle);
-
-			TeleportEntity(particle, pos, ang, NULL_VECTOR);
-			AcceptEntityInput(particle, "start");
-
-			if (time > 0.0)
-			{
-				timerHandle = CreateTimer(time, deleteFunc ? deleteFunc : DeleteParticles,
-										  EntIndexToEntRef(particle));
-			}
-		}
-		else
-			LogError("CreateParticle: could not create info_particle_system");
-
-		return particle;
-	}
-
-	stock DeleteParticle(&particleRef)
-	{
-        if (particleRef != INVALID_ENT_REFERENCE)
-        {
-            new particle = EntRefToEntIndex(particleRef);
-            if (particle > 0 && IsValidEntity(particle))
-                AcceptEntityInput(particle, "kill");
-
-            particleRef = INVALID_ENT_REFERENCE;
-        }
-    }
-
-	public Action:DeleteParticles(Handle:timer, any:particleRef)
-	{
-		DeleteParticle(particleRef);
-		return Plugin_Stop;
-	}
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= warn)
-        {
-            if (count <= critical)
-            {
-                PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-                LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            else
-            {
-                PrintToServer("Caution: Entity count is getting high!");
-                LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            return count;
-        }
-        else
-            return 0;
-    }
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        #pragma unused force, precache, preload
-
-        if (download != DONT_DOWNLOAD)
-        {
-            decl String:dl[PLATFORM_MAX_PATH+1];
-            Format(dl, sizeof(dl), "sound/%s", sound);
-
-            if (FileExists(dl))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(dl, "ambient", 7) ||
-                        !strncmp(dl, "beams", 5) ||
-                        !strncmp(dl, "buttons", 7) ||
-                        !strncmp(dl, "coach", 5) ||
-                        !strncmp(dl, "combined", 8) ||
-                        !strncmp(dl, "commentary", 10) ||
-                        !strncmp(dl, "common", 6) ||
-                        !strncmp(dl, "doors", 5) ||
-                        !strncmp(dl, "friends", 7) ||
-                        !strncmp(dl, "hl1", 3) ||
-                        !strncmp(dl, "items", 5) ||
-                        !strncmp(dl, "midi", 4) ||
-                        !strncmp(dl, "misc", 4) ||
-                        !strncmp(dl, "music", 5) ||
-                        !strncmp(dl, "npc", 3) ||
-                        !strncmp(dl, "physics", 7) ||
-                        !strncmp(dl, "pl_hoodoo", 9) ||
-                        !strncmp(dl, "plats", 5) ||
-                        !strncmp(dl, "player", 6) ||
-                        !strncmp(dl, "resource", 8) ||
-                        !strncmp(dl, "replay", 6) ||
-                        !strncmp(dl, "test", 4) ||
-                        !strncmp(dl, "ui", 2) ||
-                        !strncmp(dl, "vehicles", 8) ||
-                        !strncmp(dl, "vo", 2) ||
-                        !strncmp(dl, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(dl);
-                }
-            }
-        }
-
-        PrecacheSound(sound, preload);
-    }
-
-    #define PrepareAndEmitSoundToClient EmitSoundToClient
-    #define PrepareAndEmitSoundToAll    EmitSoundToAll
-
-    stock SetupModel(const String:model[], &index=0, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
 /*****************************************************************/
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)

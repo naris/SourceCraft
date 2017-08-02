@@ -32,11 +32,42 @@
 #define REQUIRE_PLUGIN
 
 /**
- * Description: Manage precaching resources.
+ * Description: Manage resources.
  */
 #tryinclude <lib/ResourceManager>
 #if !defined _ResourceManager_included
-	#include <ResourceManager>
+    #tryinclude <ResourceManager>
+	#if !defined _ResourceManager_included
+		#define AUTO_DOWNLOAD   -1
+		#define DONT_DOWNLOAD    0
+		#define DOWNLOAD         1
+		#define ALWAYS_DOWNLOAD  2
+
+		#define PrepareModel(%1)
+		#define PrepareSound(%1)
+		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
+		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
+		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
+		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+		
+		stock SetupModel(const String:model[], &index=0, bool:download=false,
+						 bool:precache=true, bool:preload=true)
+		{
+			if (download && FileExists(model))
+				AddFileToDownloadsTable(model);
+
+			index = PrecacheModel(model,preload);
+		}
+		
+		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+						 bool:precache=true, bool:preload=true)
+		{
+			if (download != DONT_DOWNLOAD && FileExists(sound))
+				AddFileToDownloadsTable(sound);
+
+			index = PrecacheSound(sound,preload);
+		}
+	#endif
 #endif
 
 /**

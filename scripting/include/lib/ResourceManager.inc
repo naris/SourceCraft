@@ -19,7 +19,7 @@
 #define ALWAYS_DOWNLOAD  2
 
 /**
- * Adds all the files in a directory tothe Download Table
+ * Adds all the files in a directory to the Download Table
  *
  * @param Directory		Name of the directory.
  * @param recursive		If true, descends child directories to recursively add all files therein.
