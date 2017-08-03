@@ -19,7 +19,7 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
-#include <gametype>
+#include "gametype"
 
 #define COLOR_DEFAULT 0x01
 #define COLOR_GREEN 0x04
@@ -108,11 +108,7 @@ new Handle:OnInfectionHurtHandle = INVALID_HANDLE;
 
 new Handle:g_precacheTrie = INVALID_HANDLE;
 
-#if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 3
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
-#else
-public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
-#endif
 {
     // Register Natives
     CreateNative("ControlMedicInfect",Native_ControlMedicInfect);
@@ -125,12 +121,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
     OnInfectedHandle=CreateForward(ET_Hook,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Array);
     OnInfectionHurtHandle=CreateForward(ET_Hook,Param_Cell,Param_Cell,Param_CellByRef);
     RegPluginLibrary("MedicInfect");
-
-    #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 3
-        return APLRes_Success;
-    #else
-        return true;
-    #endif  
+	return APLRes_Success;
 }
 
 public OnPluginStart()

@@ -12,12 +12,13 @@
 #include <sdktools>
 #include <sdkhooks>
 
+#include "colors"
+
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
 #include <tf2_stocks>
-
 #include "tf2_flag"
-#include "colors"
+#define REQUIRE_EXTENSIONS
 
 #define PLUGIN_VERSION "2.4"
 

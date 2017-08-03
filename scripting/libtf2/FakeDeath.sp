@@ -11,13 +11,19 @@
 #include <tf2>
 #include <tf2_stocks>
 
+#include "entlimit"
+
+#undef REQUIRE_PLUGIN
+#include "lib/ResourceManager"
+#define REQUIRE_PLUGIN
+
 #define PL_VERSION "0.0.2"
 #define SOUND_A "misc/talk.wav"
 
 new String:DeathSound[][] = { "vo/spy_painsevere01.wav", "vo/spy_painsevere02.wav",  "vo/spy_painsevere03.wav",
                               "vo/spy_painsevere04.wav",  "vo/spy_painsevere05.wav",  "vo/spy_painsharp01.wav",
                               "vo/spy_painsharp02.wav", "vo/spy_painsharp03.wav", "vo/spy_painsharp04.wav",
-			      "vo/spy_paincrticialdeath01.wav", "vo/spy_paincrticialdeath02.wav", "vo/spy_paincrticialdeath03.wav" };
+							  "vo/spy_paincrticialdeath01.wav", "vo/spy_paincrticialdeath02.wav", "vo/spy_paincrticialdeath03.wav" };
 
 new String:GenericDeathSound[][]  = { "player/death.wav" };
 /*
@@ -52,184 +58,6 @@ new bool:g_NativeControl = false;
 new g_Limit[MAXPLAYERS+1];    // how many fakes player allowed
 new g_Remaining[MAXPLAYERS+1];  // how many fakes player has this spawn
 new bool:g_NativeDissolve[MAXPLAYERS+1];  // which players should dissolve.
-
-/////////////////////////////////////////////////////////////////////
-//
-// Manage precaching resources.
-//
-/////////////////////////////////////////////////////////////////////
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (download && value < Download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            value  = Precached;
-            update = true;
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-	stock PrepareAndEmitSoundToClient(client,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSoundToClient(client, sample, entity, channel,
-				              level, flags, volume, pitch, speakerentity,
-				              origin, dir, updatePos, soundtime);
-	    }
-	}
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-
-    stock SetupModel(const String:model[], &index=0, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -948,41 +776,3 @@ public Native_FakeDeath(Handle:plugin,numParams)
 	TF_SpawnFakeBody(client);
     }
 }
-
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-	new max = GetMaxEntities();
-	new count = GetEntityCount();
-	new remaining = max - count;
-	if (remaining <= warn)
-	{
-	    if (count <= critical)
-	    {
-		PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-		LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-		if (client > 0)
-		{
-		    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-				   count, max, remaining, message);
-		}
-	    }
-	    else
-	    {
-		PrintToServer("Caution: Entity count is getting high!");
-		LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-		if (client > 0)
-		{
-		    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-				   count, max, remaining, message);
-		}
-	    }
-	    return count;
-	}
-	else
-	    return 0;
-    }
-#endif

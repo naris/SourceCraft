@@ -11,10 +11,21 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
+
 #include <tf2>
 #include <tf2_stocks>
+#include "tf2_player"
+#include "tf2_objects"
 
-#tryinclude <sdkhooks>
+#include "colors"
+#include "raytrace"
+#include "particle"
+
+#undef REQUIRE_PLUGIN
+#include "lib/ResourceManager"
+#include "libtf2/ztf2grab"
+#define REQUIRE_PLUGIN
 
 enum SolidType_t
 {
@@ -128,105 +139,6 @@ public Plugin:myinfo = {
 	description = "Allows players to build The Amplifier and The Repair Node",
 	version = PLUGIN_VERSION,
 };
-
-/**
- * Colored Chat Functions
- */
-#tryinclude <colors>
-
-/**
- * Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-
-    #define TF2_IsPlayerDisguised(%1) TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)   TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-
-#endif
-
-/**
- * Functions to return infomation about TF2 objects.
- */
-#tryinclude <tf2_objects>
-#if !defined _tf2_objects_included
-    enum TFExtObjectType
-    {
-        TFExtObject_Unknown = -1,
-        TFExtObject_CartDispenser = 0,
-        TFExtObject_Dispenser = 0,
-        TFExtObject_Teleporter = 1,
-        TFExtObject_Sentry = 2,
-        TFExtObject_Sapper = 3,
-        TFExtObject_TeleporterEntry,
-        TFExtObject_TeleporterExit,
-        TFExtObject_MiniSentry,
-        TFExtObject_Amplifier,
-        TFExtObject_RepairNode,
-        TFExtObject_UpgradeStation
-    };
-
-    stock const String:TF2_ObjectClassNames[TFExtObjectType][] =
-    {
-        "obj_dispenser",
-        "obj_teleporter",
-        "obj_sentrygun",
-        "obj_sapper",
-        "obj_teleporter", // _entrance
-        "obj_teleporter", // _exit
-        "obj_sentrygun",  // minisentry
-        "obj_dispenser",  // amplifier
-        "obj_dispenser",  // repair_node
-        "obj_dispenser"   // upgrade_station
-    };
-
-    stock const String:TF2_ObjectNames[TFExtObjectType][] =
-    {
-        "Dispenser",
-        "Teleporter",
-        "Sentry Gun",
-        "Sapper",
-        "Teleporter Entrance",
-        "Teleporter Exit",
-        "Mini Sentry Gun",
-        "Amplifier",
-        "Repair Node",
-        "Upgrade Station"
-    };
-
-    // Max Sentry Ammo for Level:         mini,   1,   2,   3, max
-    stock const TF2_MaxSentryShells[]  = { 150, 100, 120, 144, 255 };
-    stock const TF2_MaxSentryRockets[] = {   0,   0,   0,  20,  64 };
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    stock SetupModel(const String:model[], &index=0, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
 
 new TFExtObjectType:BuildingType[MAXENTITIES] = { TFExtObject_Unknown, ... };
 new Float:BuildingRange[MAXENTITIES][4];
@@ -2453,65 +2365,18 @@ public Native_ConvertToUpgradeStation(Handle:plugin,numParams)
 }
 
 /**
- * Description: Ray Trace functions and variables
+ *  If ztf2grab (gravgun) is loaded and someone tries to pickup certain Amplifiers, don't allow it.
  */
-#tryinclude <raytrace>
-#if !defined _raytrace_included
-    stock bool:TraceTargetIndex(client, target, Float:clientLoc[3], Float:targetLoc[3])
-    {
-        targetLoc[2] += 50.0; // Adjust trace position of target
-        TR_TraceRayFilter(clientLoc, targetLoc, MASK_SOLID,
-                          RayType_EndPoint, TraceRayDontHitSelf,
-                          client);
-
-        return (!TR_DidHit() || TR_GetEntityIndex() == target);
-    }
-
-    /***************
-     *Trace Filters*
-    ****************/
-
-    public bool:TraceRayDontHitSelf(entity, mask, any:data)
-    {
-        return (entity != data); // Check if the TraceRay hit the owning entity.
-    }
-#endif
-
-/**
- * Description: Functions to show TF2 particles
- */
-#tryinclude <particle>
-#if !defined _particle_included
-    stock DeleteParticle(&particleRef)
-    {
-        if (particleRef != INVALID_ENT_REFERENCE)
-        {
-            new particle = EntRefToEntIndex(particleRef);
-            if (particle > 0 && IsValidEntity(particle))
-                AcceptEntityInput(particle, "kill");
-
-            particleRef = INVALID_ENT_REFERENCE;
-        }
-    }
-#endif
-
-/**
- *  Native Interface to ztf2grab (gravgun)
- */
-#undef REQUIRE_PLUGIN
-#tryinclude "ztf2grab"
-#if defined _ztf2grab_included
-    public Action:OnPickupObject(client, builder, ent)
-    {
-        if (BuildingRef[ent] != INVALID_ENT_REFERENCE && EntRefToEntIndex(BuildingRef[ent]) == ent)
-        {
-            switch (AmplifierCondition[ent])
-            {
-                case TFCond_Ubercharged, TFCond_Kritzkrieged, TFCond_Buffed:
-                    return Plugin_Stop;
-            }
-        }
-        return Plugin_Continue;
-    }
-#endif
+public Action:OnPickupObject(client, builder, ent)
+{
+	if (BuildingRef[ent] != INVALID_ENT_REFERENCE && EntRefToEntIndex(BuildingRef[ent]) == ent)
+	{
+		switch (AmplifierCondition[ent])
+		{
+			case TFCond_Ubercharged, TFCond_Kritzkrieged, TFCond_Buffed:
+				return Plugin_Stop;
+		}
+	}
+	return Plugin_Continue;
+}
 

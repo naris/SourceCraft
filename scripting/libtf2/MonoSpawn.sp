@@ -17,6 +17,8 @@
 
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
+#include "lib/ResourceManager"
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "2.1.1"
 
@@ -66,66 +68,6 @@ public Plugin:myinfo =
 	version = PLUGIN_VERSION,
 	url = "DarthNinja.com"
 }
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-    new Handle:g_modelTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-    stock SetupModel(const String:model[], &index=0, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (g_modelTrie == INVALID_HANDLE)
-            g_modelTrie = CreateTrie();
-
-        if (index <= 0)
-            GetTrieValue(g_modelTrie, model, index);
-
-        if (index <= 0)
-        {
-            index = PrecacheModel(model, preload);
-            SetTrieValue(g_modelTrie, model, index);
-        }
-        return index;
-    }
-#endif
 
 //SM CALLBACKS
 
@@ -782,4 +724,3 @@ public Native_SummonEyeBoss(Handle:plugin,numParams)
     return SummonEyeBoss(GetNativeCell(1), model);
 }
 */
-

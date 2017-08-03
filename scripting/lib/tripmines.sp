@@ -10,52 +10,17 @@
 #include <sourcemod>
 #include <sdktools>
 
-#undef REQUIRE_EXTENSIONS
-#include <tf2_stocks>
-#define REQUIRE_EXTENSIONS
-
 #include "tf2_player"
 #include "gametype"
 #include "entlimit"
 
-/**
- * Description: Manage resources.
- */
-#tryinclude "lib/ResourceManager"
-#if !defined _ResourceManager_included
-    #tryinclude "ResourceManager"
-    #if !defined _ResourceManager_included
-        #define AUTO_DOWNLOAD   -1
-        #define DONT_DOWNLOAD    0
-        #define DOWNLOAD         1
-        #define ALWAYS_DOWNLOAD  2
+#undef REQUIRE_EXTENSIONS
+#include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
 
-        #define PrepareModel(%1)
-        #define PrepareSound(%1)
-        #define PrepareAndEmitSound(%1)         EmitSound(%1)
-        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
-        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
-        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-        
-        stock SetupModel(const String:model[], &index=0, bool:download=false,
-                         bool:precache=true, bool:preload=true)
-        {
-            if (download && FileExists(model))
-                AddFileToDownloadsTable(model);
-
-            index = PrecacheModel(model,preload);
-        }
-        
-        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-                         bool:precache=true, bool:preload=true)
-        {
-            if (download != DONT_DOWNLOAD && FileExists(sound))
-                AddFileToDownloadsTable(sound);
-
-            index = PrecacheSound(sound,preload);
-        }
-    #endif
-#endif
+#undef REQUIRE_PLUGIN
+#include "lib/ResourceManager"
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION  "5.0"
 
@@ -101,9 +66,11 @@ new String:gBeamColor[6][16] = { "255 255 255", // 0:Unassigned / Default
                                };
 
 // globals
-new gRemaining[MAXPLAYERS+1];    // how many tripmines player has this spawn
-new gMaximum[MAXPLAYERS+1];      // how many tripmines player can have active at once
-new gCount = 1;
+new gRemaining[MAXPLAYERS+1];   // how many tripmines player has this spawn
+new gMaximum[MAXPLAYERS+1];     // how many tripmines player can have active at once
+new gAllowed[MAXPLAYERS+1];		// how many tripmines player allowed
+new gActive[MAXPLAYERS+1];		// how many tripmines player has active
+new gCount = 1;					// used as an identifer for mine & beam entities
 
 new gTeamSpecific = 1;
 new bool:gAllowSpectators = false;
@@ -115,7 +82,6 @@ new gAccount = -1;
 
 new bool:gNativeControl = false;
 new bool:gChangingClass[MAXPLAYERS+1];
-new gAllowed[MAXPLAYERS+1];    // how many tripmines player allowed
 
 new gTripmineModelIndex = 0;
 new gLaserModelIndex = 0;
@@ -127,6 +93,7 @@ new String:mdlMine[256] = "models/props_lab/tpplug.mdl";
 
 // forwards
 new Handle:fwdOnSetTripmine;
+new Handle:fwdOnTripmineExplode;
 
 // convars
 new Handle:cvActTime = INVALID_HANDLE;
@@ -188,6 +155,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
     // Register Forwards
     fwdOnSetTripmine=CreateGlobalForward("OnSetTripmine",ET_Hook,Param_Cell);
+    fwdOnTripmineExplode=CreateGlobalForward("OnTripmineExplode",ET_Hook,Param_Cell);
 
     RegPluginLibrary("tripmines");
     return APLRes_Success;
@@ -488,6 +456,7 @@ public Action:RemovePlayersTripmines(Handle:timer, Handle:pack)
     new client = ReadPackCell(pack);
     new bool:explode = bool:ReadPackCell(pack);
     RemoveTripmines(client, explode);
+	gActive[client] = 0;
     return Plugin_Stop;
 }
 
@@ -535,21 +504,21 @@ RemoveTripmines(client, bool:explode=false)
                 new mine_ent = EntRefToEntIndex(g_TripmineOfBeam[c]);
                 if (mine_ent > 0 && GetEntPropEnt(mine_ent, Prop_Send, "m_hOwnerEntity") == client)
                 {
-                    RemoveEntities(mine_ent, c, explode, time);
+                    RemoveEntities(mine_ent, c, client, explode, time);
                 }
             }
             else // it must be a tripmine
             {
                 if (GetEntPropEnt(c, Prop_Send, "m_hOwnerEntity") == client)
                 {
-                    RemoveEntities(c, GetEntPropEnt(c, Prop_Send, "m_hEffectEntity"), explode,time);
+                    RemoveEntities(c, GetEntPropEnt(c, Prop_Send, "m_hEffectEntity"), client, explode, time);
                 }
             }
         }
     }
 }
 
-RemoveEntities(mine_ent, beam_ent, bool:explode,&Float:time)
+RemoveEntities(mine_ent, beam_ent, client, bool:explode=false, &Float:time=0.0)
 {
     RemoveBeamEntity(beam_ent);
 
@@ -567,6 +536,7 @@ RemoveEntities(mine_ent, beam_ent, bool:explode,&Float:time)
                 PrepareAndEmitSoundToAll(gSndRemoved, mine_ent, _, _, _, 0.75);
             }
 
+			gActive[client]--;
             RemoveMineEntity(mine_ent);
         }
     }
@@ -653,7 +623,7 @@ public Action:Command_TripMine(client, args)
 
 bool:SetMine(client)
 {
-    if (gRemaining[client] == 0)
+    if (gRemaining[client] <= 0)
     {
         PrintHintText(client, "%t", "nomines");
         return false;
@@ -662,27 +632,22 @@ bool:SetMine(client)
     if (IsEntLimitReached(100, .message="unable to create tripmine"))
         return false;
 
-    new max = gMaximum[client];
-    if (max > 0)
-    {
-        new count = CountMines(client);
-        if (count > max)
-        {
-            PrintHintText(client, "%t", "toomany", count);
-            return false;
-        }
-    }
-
-    max = GetConVarInt(cvMaxMines);
-    if (max > 0)
-    {
-        new count = CountMines(-1); // Count all mines of any client.
-        if (count > max)
-        {
-            PrintHintText(client, "%t", "toomany", count);
-            return false;
-        }
-    }
+	// DEBUG: Verify if the active count works
+	new count = CountMines(client);
+	if (gActive[client] != count)
+	{
+		LogError("Active count off for client %d, active=%d != count=%d!", client, gActive[client], count);
+	}
+	else
+	{
+		LogMessage("Active count for client %d is correct, active=%d == count=%d!", client, gActive[client], count);
+	}
+	
+	if (CheckMineCount(client, gMaximum[client], GetConVarInt(cvMaxMines)))
+	{
+		PrintHintText(client, "%t", "toomany", count);
+		return false;
+	}
 
     new Action:res = Plugin_Continue;
     Call_StartForward(fwdOnSetTripmine);
@@ -737,10 +702,6 @@ bool:SetMine(client)
 
     if (TR_DidHit(INVALID_HANDLE))
     {
-        // update client's inventory
-        if (gRemaining[client] > 0)
-            gRemaining[client]--;
-
         // find angles for tripmine
         TR_GetEndPosition(end, INVALID_HANDLE);
         TR_GetPlaneNormal(INVALID_HANDLE, normal);
@@ -753,9 +714,9 @@ bool:SetMine(client)
         new team = GetClientTeam(client);
 
         // setup unique target names for entities to be created with
+        decl String:tmp[128];
         decl String:beamname[64];
         decl String:minename[64];
-        decl String:tmp[128];
         Format(beamname, sizeof(beamname), "tripbeam%d", gCount);
         Format(minename, sizeof(minename), "tripmine%d", gCount);
 
@@ -774,7 +735,7 @@ bool:SetMine(client)
             DispatchKeyValue(mine_ent, "spawnflags", "152");
             DispatchKeyValue(mine_ent, "StartDisabled", "false");
 
-            if (gTeamSpecific > 0 && team >= 0 && team < sizeof(gMineColor) && gMineColor[team][0] != '\0')
+            if (team >= 0 && team < sizeof(gMineColor) && gMineColor[team][0] != '\0')
             {
                 decl String:color[4][4];
                 if (ExplodeString(gMineColor[team], " ", color, sizeof(color), sizeof(color[])) <= 3)
@@ -807,11 +768,7 @@ bool:SetMine(client)
                 DispatchKeyValue(mine_ent, "ExplodeDamage", tmp);
 
                 SetEntProp(mine_ent, Prop_Data, "m_takedamage", DAMAGE_YES);
-                //DispatchKeyValue(mine_ent, "physdamagescale", "1.0");
 
-                //AcceptEntityInput(mine_ent, "DisableMotion");                     // TODO: DEBUG not in 2016
-
-                //DispatchKeyValue(mine_ent, "SetHealth", "10");
                 new health = GetConVarInt(cvHealth);
                 if (health > 0)
                 {
@@ -828,8 +785,6 @@ bool:SetMine(client)
 
                 AcceptEntityInput(mine_ent, "Enable");
                 HookSingleEntityOutput(mine_ent, "OnBreak", mineBreak, true);
-
-                //DispatchKeyValue(mine_ent, "classname", "tripmine");              // TODO: DEBUG not in 2016
 
                 new mine_ref = EntIndexToEntRef(mine_ent);
                 g_SavedEntityRef[mine_ent] = mine_ref;
@@ -900,6 +855,11 @@ bool:SetMine(client)
                                                  100, beam_ent, end, NULL_VECTOR, true, 0.0);
                     }                           
 
+					// update client's inventory
+					gActive[client]++;
+					if (gRemaining[client] > 0)
+						gRemaining[client]--;
+
                     // send message
                     if (gRemaining[client] >= 0)
                         PrintHintText(client, "%t", "left", gRemaining[client]);
@@ -907,13 +867,20 @@ bool:SetMine(client)
                     return true;
                 }
                 else
+				{
+					RemoveMineEntity(mine_ent);
                     LogError("Unable to create a beam_ent");
+				}
             }
             else
+			{
                 LogError("Unable to spawn a mine_ent");
+			}
         }
         else
+		{
             LogError("Unable to create a mine_ent");
+		}
     }
     else
     {
@@ -928,10 +895,10 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
     new client = ReadPackCell(data);
     new mine_ent = EntRefToEntIndex(ReadPackCell(data));
     new beam_ent = EntRefToEntIndex(ReadPackCell(data));
-    if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client) && IsPlayerAlive(client))
+    if (mine_ent > 0 && beam_ent > 0 && client > 0 && IsClientInGame(client))
     {
         new team = GetEntProp(mine_ent, Prop_Send, "m_iTeamNum");
-        if (gTeamSpecific > 0 && team >= 0 && team < sizeof(gBeamColor) && gBeamColor[team][0] != '\0')
+        if (team >= 0 && team < sizeof(gBeamColor) && gBeamColor[team][0] != '\0')
         {
             new String:color[4][4];
             if (ExplodeString(gBeamColor[team], " ", color, sizeof(color), sizeof(color[])) > 3)
@@ -979,13 +946,19 @@ public Action:ActivateTripmine(Handle:timer, Handle:data)
                                      100, beam_ent, end, NULL_VECTOR, true, 0.0);
         }
         
+		if (!IsPlayerAlive(client))
+		{
+			new stay = GetConVarInt(cvStay);
+			if (stay != 1)
+			{
+				RemoveEntities(mine_ent, beam_ent, client, (stay > 1));
+			}
+		}
         return Plugin_Stop;
     }
 
-    // Player died before activation or something happened to the tripmine and/or the beam,
-    RemoveBeamEntity(beam_ent);
-    RemoveMineEntity(mine_ent);
-    
+    // Player left or something happened to the tripmine and/or the beam
+	RemoveEntities(mine_ent, beam_ent, client, (GetConVarInt(cvStay) > 1))
     return Plugin_Stop;
 }
 
@@ -1011,9 +984,9 @@ public Action:TurnBeamOn(Handle:timer, Handle:data)
         return Plugin_Stop;
     }
 
-    // Player left or something happened to the tripmine,
-    RemoveBeamEntity(beam_ent);
-    RemoveMineEntity(mine_ent);
+    // Player left or something happened to the tripmine and/or the beam
+	LogError("Orphan tripmine %d with beam %d encountered in TurnBeamOn()!", mine_ent, beam_ent);
+	RemoveEntities(mine_ent, beam_ent, client, (GetConVarInt(cvStay) > 1))
     return Plugin_Stop;
 }
 
@@ -1033,6 +1006,33 @@ CountMines(client)
             {
                 if (client < 0 || GetEntPropEnt(c, Prop_Send, "m_hOwnerEntity") == client)
                     count++;
+            }
+        }
+    }
+    return count;
+}
+
+bool:CheckMineCount(client, clientMax, globalMax)
+{
+    decl String:classname[64];
+
+    new globalCount = clientCount = 0;
+    new maxents = GetMaxEntities();
+    for (new c = MaxClients; c < maxents; c++)
+    {
+        new ref = g_SavedEntityRef[c];
+        if (ref != INVALID_ENT_REFERENCE && EntRefToEntIndex(ref) == c) // it's an entity we created
+        {
+            GetEntityNetClass(c, classname, sizeof(classname));
+            if (!StrEqual(classname, "CBeam")) // It's not a beam, must be a tripmine
+            {
+                if (client < 0 || GetEntPropEnt(c, Prop_Send, "m_hOwnerEntity") == client)
+				{
+                    if (++clientCount >  clientMax)
+						return false;
+				}
+				if (++globalCount >  globalMax)
+					return false;
             }
         }
     }
@@ -1094,6 +1094,10 @@ public beamTouched(const String:output[], caller, activator, Float:delay)
             RemoveBeamEntity(caller);
         }
     }
+	else
+	{
+		LogError("Orphan tripmine %d with ref %d encountered in beamTouched()!", caller, ref);
+	}
 }
 
 public beamBreak(const String:output[], caller, activator, Float:delay)
@@ -1108,8 +1112,13 @@ public beamBreak(const String:output[], caller, activator, Float:delay)
         new ref = g_SavedEntityRef[caller];
         if (ref != INVALID_ENT_REFERENCE && EntRefToEntIndex(ref) == caller)
         {
+            LogError("Orphan beam %d encountered in beamBreak()!", caller);
             RemoveBeamEntity(caller);
         }
+		else
+		{
+			LogError("Abandoned beam %d with ref %d encountered in beamBreak()!", caller, ref);
+		}
     }
 }
 
@@ -1132,6 +1141,10 @@ public mineTouched(const String:output[], caller, activator, Float:delay)
             HookSingleEntityOutput(caller, output, mineTouched, true);
         }
     }
+	else
+	{
+		LogError("Abandoned mine %d with ref %d encountered in mineTouched()!", caller, ref);
+	}
 }
 
 public mineBreak(const String:output[], caller, activator, Float:delay)
@@ -1141,6 +1154,10 @@ public mineBreak(const String:output[], caller, activator, Float:delay)
     {
         mineExplode(caller);
     }
+	else
+	{
+		LogError("Abandoned mine %d with ref %d encountered in mineBreak()!", caller, ref);
+	}
 }
 
 mineExplode(mine_ent)
@@ -1159,6 +1176,12 @@ mineExplode(mine_ent)
         GetEntPropVector(mine_ent, Prop_Send, "m_vecOrigin", vecPos);
 
         new owner = GetEntPropEnt(mine_ent, Prop_Send, "m_hOwnerEntity");
+		new Action:res = Plugin_Continue;
+		Call_StartForward(fwdOnTripmineExplode);
+		Call_PushCell(owner);
+		Call_Finish(res);
+		gActive[owner]--;
+		
         new Float:maxdistance = GetConVarFloat(cvRadius);
         for (new i = 1; i <= MaxClients; i++)
         {

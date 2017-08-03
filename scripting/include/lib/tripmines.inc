@@ -83,8 +83,16 @@ native CountTripmines(client);
 /**
  * Gets called when when a tripmine is set
  * @param client 	Client index of the player setting the tripmine
+ * @return		  	Plugin_Stop will prevent the tripmine from being set.
  */
 forward Action:OnSetTripmine(client);
+
+/**
+ * Gets called when when a tripmine explodes
+ * @param client 	Client index of the player that set the tripmine
+ * @return		  	none
+ */
+forward Action:OnTripmineExplode(client);
 
 /* DO NOT EDIT BELOW THIS LINE */
 

@@ -56,13 +56,13 @@ public Plugin:myinfo = {
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
     // Register Natives
-    CreateNative("SetupDecal",Native_SetupDecal);
-    CreateNative("PrepareDecal",Native_PrepareDecal);
-    CreateNative("SetupModel",Native_SetupModel);
-    CreateNative("PrepareModel",Native_PrepareModel);
-    CreateNative("SetupSound",Native_SetupSound);
-    CreateNative("PrepareSound",Native_PrepareSound);
-    CreateNative("AddFolderToDownloadTable",Native_AddFolderToDownloadTable);
+    CreateNative("AddDirToDownloadTable",	Native_AddDirToDownloadTable);
+    CreateNative("PreSetupModel",			Native_SetupModel);
+    CreateNative("PreSetupDecal",			Native_SetupDecal);
+    CreateNative("PreSetupSound",			Native_SetupSound);
+    CreateNative("PrepModel",				Native_PrepareModel);
+    CreateNative("PrepDecal",				Native_PrepareDecal);
+    CreateNative("PrepSound",				Native_PrepareSound);
 
     RegPluginLibrary("ResourceManager");
     return APLRes_Success;
@@ -512,38 +512,38 @@ public Native_PrepareDecal(Handle:plugin,numParams)
 }
 
 /**
- * Adds all the files in a directory tothe Download Table
+ * Adds all the files in a directory to the Download Table
  *
- * @param Directory		Name of the directory.
+ * @param directory		Name of the directory.
  * @param recursive		If true, descends child directories to recursively add all files therein.
  * @noreturn
  *
- * native AddFolderToDownloadTable(const String:Directory[], bool:recursive=false);
+ * native AddDirToDownloadTable(const String:directory[], bool:recursive=false);
  */
-public Native_AddFolderToDownloadTable(Handle:plugin,numParams)
+public Native_AddDirectoryToDownloadTable(Handle:plugin,numParams)
 {
     decl String:Directory[PLATFORM_MAX_PATH+1];
-    GetNativeString(1, Directory, sizeof(Directory));
-    AddFolderToDownloadTable(Directory, bool:GetNativeCell(2));
+    GetNativeString(1, directory, sizeof(directory));
+    AddDirToDownloadTable(directory, bool:GetNativeCell(2));
 }
 
-AddFolderToDownloadTable(const String:Directory[], bool:recursive=false)
+AddDirToDownloadTable(const String:directory[], bool:recursive=false)
 {
-    decl String:Path[PLATFORM_MAX_PATH+1];
-    decl String:FileName[PLATFORM_MAX_PATH+1];
+    decl String:path[PLATFORM_MAX_PATH+1];
+    decl String:fileName[PLATFORM_MAX_PATH+1];
 
-    new Handle:Dir = OpenDirectory(Directory), FileType:Type;
-    while(ReadDirEntry(Dir, FileName, sizeof(FileName), Type))     
+    new Handle:Dir = OpenDirectory(directory), FileType:type;
+    while(ReadDirEntry(Dir, fileName, sizeof(fileName), type))     
     {
         if (Type == FileType_Directory && recursive)         
         {           
-            FormatEx(Path, sizeof(Path), "%s/%s", Directory, FileName);
-            AddFolderToDownloadTable(FileName);
+            FormatEx(path, sizeof(path), "%s/%s", directory, fileName);
+            AddDirToDownloadTable(FileName);
         }                 
         else if (Type == FileType_File)
         {
-            FormatEx(Path, sizeof(Path), "%s/%s", Directory, FileName);
-            AddFileToDownloadsTable(Path);
+            FormatEx(path, sizeof(path), "%s/%s", directory, fileName);
+            AddFileToDownloadsTable(path);
         }
     }
 }

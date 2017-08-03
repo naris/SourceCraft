@@ -12,68 +12,24 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include "tf2_player"
-#include "tf2_meter"
 #include "dod"
-
 #include "damage"
 #include "gametype"
 #include "entlimit"
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
+#include "tf2_player"
+#include "tf2_meter"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#tryinclude "libdod/dod_ignite"
-#if !defined _dod_ignite_included
-    #tryinclude "dod_ignite"
-#endif
-#define REQUIRE_PLUGIN
-
-/**
- * Description: Manage resources.
- */
-#tryinclude "lib/ResourceManager"
-#if !defined _ResourceManager_included
-    #tryinclude "ResourceManager"
-    #if !defined _ResourceManager_included
-        #define AUTO_DOWNLOAD   -1
-        #define DONT_DOWNLOAD    0
-        #define DOWNLOAD         1
-        #define ALWAYS_DOWNLOAD  2
-
-        #define PrepareModel(%1)
-        #define PrepareSound(%1)
-        #define PrepareAndEmitSound(%1)         EmitSound(%1)
-        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
-        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
-        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-        
-        stock SetupModel(const String:model[], &index=0, bool:download=false,
-                         bool:precache=true, bool:preload=true)
-        {
-            if (download && FileExists(model))
-                AddFileToDownloadsTable(model);
-
-            index = PrecacheModel(model,preload);
-        }
-        
-        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-                         bool:precache=true, bool:preload=true)
-        {
-            if (download != DONT_DOWNLOAD && FileExists(sound))
-                AddFileToDownloadsTable(sound);
-
-            index = PrecacheSound(sound,preload);
-        }
-    #endif
-#endif
+#include "lib/ResourceManager"
+#include "libdod/dod_ignite"
 
 /**
  * Description: Use the SourceCraft API, if available.
  */
-#undef REQUIRE_PLUGIN
 #tryinclude "sc/SourceCraft"
 #define REQUIRE_PLUGIN
 

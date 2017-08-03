@@ -14,54 +14,20 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
 
 #include "tf2_player"
 #include "tf2_flag"
+
+#undef REQUIRE_PLUGIN
+#include "lib/ResourceManager"
+#define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
 #tryinclude "lib/trace"
 #if !defined _trace_included
     #include "trace"
-#endif
-
-/**
- * Description: Manage resources.
- */
-#tryinclude "lib/ResourceManager"
-#if !defined _ResourceManager_included
-    #tryinclude "ResourceManager"
-	#if !defined _ResourceManager_included
-		#define AUTO_DOWNLOAD   -1
-		#define DONT_DOWNLOAD    0
-		#define DOWNLOAD         1
-		#define ALWAYS_DOWNLOAD  2
-
-		#define PrepareModel(%1)
-		#define PrepareSound(%1)
-		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
-		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
-		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
-		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-		
-		stock SetupModel(const String:model[], &index=0, bool:download=false,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download && FileExists(model))
-				AddFileToDownloadsTable(model);
-
-			index = PrecacheModel(model,preload);
-		}
-		
-		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download != DONT_DOWNLOAD && FileExists(sound))
-				AddFileToDownloadsTable(sound);
-
-			index = PrecacheSound(sound,preload);
-		}
-	#endif
 #endif
 
 //Use SourceCraft sounds if it is present
@@ -98,26 +64,26 @@
 enum Collision_Group_t
 {
     COLLISION_GROUP_NONE  = 0,
-    COLLISION_GROUP_DEBRIS,            // Collides with nothing but world and static stuff
-    COLLISION_GROUP_DEBRIS_TRIGGER, // Same as debris, but hits triggers
-    COLLISION_GROUP_INTERACTIVE_DEB, // RIS, // Collides with everything except other interactive debris or debris
-    COLLISION_GROUP_INTERACTIVE,    // Collides with everything except interactive debris or debris
+    COLLISION_GROUP_DEBRIS,				// Collides with nothing but world and static stuff
+    COLLISION_GROUP_DEBRIS_TRIGGER,		// Same as debris, but hits triggers
+    COLLISION_GROUP_INTERACTIVE_DEB,	// RIS, // Collides with everything except other interactive debris or debris
+    COLLISION_GROUP_INTERACTIVE,    	// Collides with everything except interactive debris or debris
     COLLISION_GROUP_PLAYER,
     COLLISION_GROUP_BREAKABLE_GLASS,
     COLLISION_GROUP_VEHICLE,
-    COLLISION_GROUP_PLAYER_MOVEMENT,  // For HL2, same as Collision_Group_Player
+    COLLISION_GROUP_PLAYER_MOVEMENT,  	// For HL2, same as Collision_Group_Player
                                         
-    COLLISION_GROUP_NPC,            // Generic NPC group
-    COLLISION_GROUP_IN_VEHICLE,        // for any entity inside a vehicle
-    COLLISION_GROUP_WEAPON,            // for any weapons that need collision detection
-    COLLISION_GROUP_VEHICLE_CLIP,    // vehicle clip brush to restrict vehicle movement
-    COLLISION_GROUP_PROJECTILE,        // Projectiles!
-    COLLISION_GROUP_DOOR_BLOCKER,    // Blocks entities not permitted to get near moving doors
-    COLLISION_GROUP_PASSABLE_DOOR,    // Doors that the player shouldn't collide with
-    COLLISION_GROUP_DISSOLVING,        // Things that are dissolving are in this group
-    COLLISION_GROUP_PUSHAWAY,        // Nonsolid on client and server, pushaway in player code
+    COLLISION_GROUP_NPC,            	// Generic NPC group
+    COLLISION_GROUP_IN_VEHICLE,        	// for any entity inside a vehicle
+    COLLISION_GROUP_WEAPON,            	// for any weapons that need collision detection
+    COLLISION_GROUP_VEHICLE_CLIP,    	// vehicle clip brush to restrict vehicle movement
+    COLLISION_GROUP_PROJECTILE,        	// Projectiles!
+    COLLISION_GROUP_DOOR_BLOCKER,    	// Blocks entities not permitted to get near moving doors
+    COLLISION_GROUP_PASSABLE_DOOR,    	// Doors that the player shouldn't collide with
+    COLLISION_GROUP_DISSOLVING,        	// Things that are dissolving are in this group
+    COLLISION_GROUP_PUSHAWAY,        	// Nonsolid on client and server, pushaway in player code
 
-    COLLISION_GROUP_NPC_ACTOR,        // Used so NPCs in scripts ignore the player.
+    COLLISION_GROUP_NPC_ACTOR,        	// Used so NPCs in scripts ignore the player.
 
     LAST_SHARED_COLLISION_GROUP
 };
