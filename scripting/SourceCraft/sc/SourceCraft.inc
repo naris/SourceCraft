@@ -13,12 +13,12 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
-#include <tf2_objects>
+#include "tf2_player"
+#include "tf2_objects"
 #define REQUIRE_EXTENSIONS
 
-#include <gametype>
-#include <dmgbits>
+#include "dmgbits"
+#include "gametype"
 
 #include "sc/defines"
 #include "sc/version"

@@ -12,7 +12,7 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
+#include "tf2_player"
 #define REQUIRE_EXTENSIONS
 
 #include "sc/client"

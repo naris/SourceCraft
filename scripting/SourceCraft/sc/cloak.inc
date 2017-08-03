@@ -11,7 +11,7 @@
 #define _cloak_included
 
 #undef REQUIRE_PLUGIN
-#include <libtf2/sidewinder>
+#include "libtf2/sidewinder"
 #define REQUIRE_PLUGIN
 
 #include "sc/plugins"

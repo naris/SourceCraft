@@ -10,12 +10,12 @@
 #endif
 #define _respawn_included
 
-#include <lib/trace>
-#include <gametype>
-
 #undef REQUIRE_EXTENSIONS
-#include <tf2_player>
+#include "tf2_player"
 #define REQUIRE_EXTENSIONS
+
+#include "gametype"
+#include "lib/trace"
 
 #include "sc/invuln"
 

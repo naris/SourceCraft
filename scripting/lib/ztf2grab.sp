@@ -19,52 +19,55 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
-#include <tf2_player>
-#include <gametype>
+#include "tf2_player"
+#include "gametype"
 
 /**
  * Description: Define the grabber permissions
  */
 #define _zgrabber_plugin
-#include "ztf2grab"
+#tryinclude "lib/ztf2grab"
+#if !defined _ztf2grab_included
+    #include "ztf2grab"
+#endif
 
 /**
  * Description: Manage resources.
  */
-#tryinclude <lib/ResourceManager>
+#tryinclude "lib/ResourceManager"
 #if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-	#if !defined _ResourceManager_included
-		#define AUTO_DOWNLOAD   -1
-		#define DONT_DOWNLOAD    0
-		#define DOWNLOAD         1
-		#define ALWAYS_DOWNLOAD  2
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
 
-		#define PrepareModel(%1)
-		#define PrepareSound(%1)
-		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
-		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
-		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
-		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-		
-		stock SetupModel(const String:model[], &index=0, bool:download=false,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download && FileExists(model))
-				AddFileToDownloadsTable(model);
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
 
-			index = PrecacheModel(model,preload);
-		}
-		
-		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download != DONT_DOWNLOAD && FileExists(sound))
-				AddFileToDownloadsTable(sound);
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
 
-			index = PrecacheSound(sound,preload);
-		}
-	#endif
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
 #endif
 
 //Define the enabled bits
@@ -156,9 +159,9 @@ new Handle:cvEnableBits = INVALID_HANDLE;
 new g_EnableBits = 0; 
 
 public Plugin:myinfo = {
-	name = "Grab:TF2",
+    name = "Grab:TF2",
     author = "L. Duke,-=|JFH|=-Naris,Dragonshadow",
-	description = "Grab engineer buildings and/or props, move them about and throw them (AKA Gravgun)",
+    description = "Grab engineer buildings and/or props, move them about and throw them (AKA Gravgun)",
     version = PLUGIN_VERSION,
     url = "http://www.lduke.com/"
 };
@@ -253,14 +256,6 @@ public OnConfigsExecuted()
     g_EnableBits = cvEnableBits ? GetConVarInt(cvEnableBits) : 0;
 
     // setup sounds
-
-    #if !defined _ResourceManager_included
-        // Setup trie to keep track of precached sounds
-        if (g_soundTrie == INVALID_HANDLE)
-            g_soundTrie = CreateTrie();
-        else
-            ClearTrie(g_soundTrie);
-    #endif
 
     GetConVarString(cvMissSound, gMissSound, sizeof(gMissSound));
     GetConVarString(cvInvalidSound, gInvalidSound, sizeof(gInvalidSound));
@@ -488,7 +483,7 @@ public Action:PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Action:Command_Rotate(client, args)
 {
-	// check if EngiButtonDown is true
+    // check if EngiButtonDown is true
     if (g_ReloadButtonDown[client] == true)
         return Plugin_Handled;
 
@@ -505,7 +500,7 @@ public Action:Command_Rotate(client, args)
 
 public Action:Command_Grab(client, args)
 {
-	// check if EngiButtonDown is true
+    // check if EngiButtonDown is true
     if (g_EngiButtonDown[client] == true)
         return Plugin_Handled;
 

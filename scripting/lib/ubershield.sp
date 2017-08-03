@@ -14,6 +14,50 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
+#include "tf2_uber"
+#include "gametype"
+#include "entlimit"
+#include "raytrace"
+
+/**
+ * Description: Manage resources.
+ */
+#tryinclude "lib/ResourceManager"
+#if !defined _ResourceManager_included
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
+
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
+
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
+
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
+#endif
+
 #define START_TIME              "2.0"
 #define STOP_TIME               "2.0"
 
@@ -58,20 +102,20 @@ enum ShieldFlags (<<= 1)
     Shield_None = 0,            // No shield allowed
     Shield_Normal = 1,          // Shield stops bullets but not players
     Shield_Immobilize,          // Shield immobilizes everything
-	Shield_Team_Specific,	    // Shield is team specific
+    Shield_Team_Specific,       // Shield is team specific
     Shield_Mobile,              // Shield is mobile (parented to target)
     Shield_Target_Self,         // Sheild can target self
-	Shield_Target_Team,	        // Shield can target teammates
+    Shield_Target_Team,         // Shield can target teammates
     Shield_Target_Enemy,        // Shield can target enemies
     Shield_Target_Location,     // Shield can target locations (position)
     Shield_With_Medigun,        // Shield can be invoked with Medigun
     Shield_With_Kritzkrieg,     // Shield can be invoked with Kritzkrieg
     Shield_Reload_Normal,       // Reload Shield stops bullets but not players
     Shield_Reload_Immobilize,   // Reload Shield immobilizes everything
-	Shield_Reload_Team_Specific,// Reload Shield is team specific
+    Shield_Reload_Team_Specific,// Reload Shield is team specific
     Shield_Reload_Mobile,       // Reload Shield is mobile (parented to target)
     Shield_Reload_Self,         // Reload Sheild can target self
-	Shield_Reload_Team,	        // Reload Shield can target teammates
+    Shield_Reload_Team,         // Reload Shield can target teammates
     Shield_Reload_Enemy,        // Reload Shield can target enemies
     Shield_Reload_Location,     // Reload Shield can target locations (position)
     Shield_UseAlternateSounds,  // Use the Alternate Shield Sounds
@@ -141,393 +185,6 @@ public Plugin:myinfo =
     version = "1.2",
     url = "http://www.jigglysfunhouse.net/"
 };
-
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false))
-                GameType=tf2;
-            else if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false))
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false))
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false))
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false))
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false))
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false))
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= warn)
-        {
-            if (count <= critical)
-            {
-                PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-                LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            else
-            {
-                PrintToServer("Caution: Entity count is getting high!");
-                LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            return count;
-        }
-        else
-            return 0;
-    }
-#endif
-
-/**
- * Description: Stocks to return information about TF2 UberCharge.
- */
-#tryinclude <tf2_uber>
-#if !defined _tf2_uber_included
-    stock TF2_IsUberCharge(client)
-    {
-        new index = GetPlayerWeaponSlot(client, 1);
-        if (index > 0)
-            return GetEntProp(index, Prop_Send, "m_bChargeRelease", 1);
-        else
-            return 0;
-    }
-
-    stock Float:TF2_GetUberLevel(client)
-    {
-        new index = GetPlayerWeaponSlot(client, 1);
-        if (index > 0)
-            return GetEntPropFloat(index, Prop_Send, "m_flChargeLevel");
-        else
-            return 0.0;
-    }
-
-    stock TF2_SetUberLevel(client, Float:uberlevel)
-    {
-        new index = GetPlayerWeaponSlot(client, 1);
-        if (index > 0)
-            SetEntPropFloat(index, Prop_Send, "m_flChargeLevel", uberlevel);
-    }
-#endif
-
-/**
- * Description: Ray Trace functions and variables
- */
-#tryinclude <raytrace>
-#if !defined _raytrace_included
-    stock bool:TraceAimPosition(client, Float:destLoc[3], bool:hitPlayers)
-    {
-        new Float:clientloc[3],Float:clientang[3];
-        GetClientEyePosition(client,clientloc);
-        GetClientEyeAngles(client,clientang);
-
-        if (hitPlayers)
-        {
-            TR_TraceRayFilter(clientloc, clientang, MASK_SOLID,
-                              RayType_Infinite, TraceRayDontHitSelf,
-                              client);
-        }
-        else
-        {
-            TR_TraceRayFilter(clientloc, clientang, MASK_SOLID,
-                              RayType_Infinite, TraceRayDontHitPlayers,
-                              client);
-        }
-
-        TR_GetEndPosition(destLoc);
-        return TR_DidHit();
-    }
-
-    /***************
-     *Trace Filters*
-    ****************/
-
-    public bool:TraceRayDontHitPlayers(entity,mask)
-    {
-      // Check if the beam hit a player and tell it to keep tracing if it did
-      return (entity <= 0 || entity > MaxClients);
-    }
-
-    public bool:TraceRayDontHitSelf(entity, mask, any:data)
-    {
-        return (entity != data); // Check if the TraceRay hit the owning entity.
-    }
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-    stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-                     bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (download && value < Download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            value  = Precached;
-            update = true;
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-	/**
-	 * Prepares and Emits a sound to a list of clients.
-	 *
-	 * @param clients		Array of client indexes.
-	 * @param numClients	Number of clients in the array.
-	 * @param sample		Sound file name relative to the "sounds" folder.
-	 * @param entity		Entity to emit from.
-	 * @param channel		Channel to emit with.
-	 * @param level			Sound level.
-	 * @param flags			Sound flags.
-	 * @param volume		Sound volume.
-	 * @param pitch			Sound pitch.
-	 * @param speakerentity	Unknown.
-	 * @param origin		Sound origin.
-	 * @param dir			Sound direction.
-	 * @param updatePos		Unknown (updates positions?)
-	 * @param soundtime		Alternate time to play sound for.
-	 * @noreturn
-	 * @error				Invalid client index.
-	 */
-	stock PrepareAndEmitSound(const clients[],
-					 numClients,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSound(clients, numClients, sample, entity, channel,
-			  level, flags, volume, pitch, speakerentity,
-			  origin, dir, updatePos, soundtime);
-	    }
-	}
-
-	stock PrepareAndEmitSoundToClient(client,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSoundToClient(client, sample, entity, channel,
-				  level, flags, volume, pitch, speakerentity,
-				  origin, dir, updatePos, soundtime);
-	    }
-	}
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-
-    stock SetupModel(const String:model[], &index, bool:download=false,
-                     bool:precache=false, bool:preload=false,
-                     Handle:files=INVALID_HANDLE)
-    {
-        if (download && FileExists(model))
-        {
-            AddFileToDownloadsTable(model);
-
-            if (files != INVALID_HANDLE)
-            {
-                decl String:file[PLATFORM_MAX_PATH+1];
-                while (PopStackString(files, file, sizeof(file)))
-                    AddFileToDownloadsTable(file);
-
-                CloseHandle(files);
-            }
-        }
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -617,14 +274,6 @@ public OnConfigsExecuted()
 
     gStartTime = GetConVarFloat(cvStartTime);
     gStopTime = GetConVarFloat(cvStopTime);
-
-    #if !defined _ResourceManager_included
-        // Setup trie to keep track of precached sounds
-        if (g_soundTrie == INVALID_HANDLE)
-                g_soundTrie = CreateTrie();
-        else
-                ClearTrie(g_soundTrie);
-    #endif
 
     SetupSound(SND_ERROR, true, DONT_DOWNLOAD);
 

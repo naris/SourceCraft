@@ -10,8 +10,8 @@
 #endif
 #define _damage_included
 
-#include <entlimit>
-#include <dmgbits>
+#include "entlimit"
+#include "dmgbits"
 
 stock g_damagePointRef = INVALID_ENT_REFERENCE;
 

@@ -11,13 +11,15 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-#include <colors>
-
-#define PLUGIN_VERSION "2.4"
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
 #include <tf2_stocks>
+
+#include "tf2_flag"
+#include "colors"
+
+#define PLUGIN_VERSION "2.4"
 
 // Define the PiggyMethod bits
 enum PiggyMethod (<<= 1)
@@ -512,24 +514,3 @@ public Native_Piggyback(Handle:plugin,numParams)
     else
         TraceTarget(client);
 }
-
-/**
- * Determine if client has the flag
- */
-#tryinclude <tf2_flag>
-#if !defined _tf2_flag_included
-    stock TF2_GetFlagCarrier(team)
-    {
-        new ent = -1;
-        while ((ent = FindEntityByClassname(ent, "item_teamflag")) != -1)
-        {
-            new owner = GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
-            if (owner > 0)
-            {
-                if (GetClientTeam(owner) == team)
-                    return owner;
-            }
-        }
-        return 0;
-    }
-#endif

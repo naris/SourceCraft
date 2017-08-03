@@ -26,81 +26,90 @@
 #include <sdktools>
 #include <clientprefs>
 
-#undef REQUIRE_EXTENSIONS
-#include <tf2_stocks>
-#define REQUIRE_EXTENSIONS
-
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 #define REQUIRE_PLUGIN
 
+#undef REQUIRE_EXTENSIONS
+#include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
+
 /**
  * Description: Use the SourceCraft API, if available.
  */
-#undef REQUIRE_PLUGIN
-#tryinclude <damage>
-#tryinclude "ztf2grab"
-#tryinclude <sc/SourceCraft>
-#define REQUIRE_PLUGIN
+//#undef REQUIRE_PLUGIN
+#tryinclude "lib/ztf2grab"
+#if !defined _ztf2grab_included
+    #include "ztf2grab"
+#endif
 
-#include <tf2_player>
-#include <gametype>
-#include <dod>
-#include <topmessage>
-#include <entlimit>
+#include "tf2_player"
+#include "topmessage"
+#include "entlimit"
 #include "particle"
+#include "gametype"
+#include "damage"
+#include "dod"
 
 /**
  * Description: Manage resources.
  */
-#tryinclude <lib/ResourceManager>
+#tryinclude "lib/ResourceManager"
 #if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-	#if !defined _ResourceManager_included
-		#define AUTO_DOWNLOAD   -1
-		#define DONT_DOWNLOAD    0
-		#define DOWNLOAD         1
-		#define ALWAYS_DOWNLOAD  2
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
 
-		#define PrepareModel(%1)
-		#define PrepareSound(%1)
-		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
-		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
-		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
-		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-		
-		stock SetupModel(const String:model[], &index=0, bool:download=false,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download && FileExists(model))
-				AddFileToDownloadsTable(model);
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
 
-			index = PrecacheModel(model,preload);
-		}
-		
-		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download != DONT_DOWNLOAD && FileExists(sound))
-				AddFileToDownloadsTable(sound);
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
 
-			index = PrecacheSound(sound,preload);
-		}
-	#endif
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
 #endif
 
-#define PLUGIN_VERSION          "3.1"
+/**
+ * Description: Use the SourceCraft API, if available.
+ */
+//#undef REQUIRE_PLUGIN
+#tryinclude "sc/SourceCraft"
 
-#define MOVECOLLIDE_DEFAULT	    0
-#define MOVECOLLIDE_FLY_BOUNCE	1
+//Use SourceCraft sounds if it is present
+#if defined SOURCECRAFT
+    #define EMPTY_SOUND         "sc/outofgas.wav"
+    #define EMPTY_SOUND_TF2     "sc/outofgas.wav"
 
-#define COLOR_DEFAULT           0x01
-#define COLOR_GREEN             0x04
+    #define REFUEL_SOUND        "sc/transmission.wav"
+    #define REFUEL_SOUND_TF2    "sc/transmission.wav"
+#else
+    #define EMPTY_SOUND         "common/bugreporter_failed.wav"
+    #define EMPTY_SOUND_TF2     "weapons/syringegun_reload_air2.wav"
 
-#define MIN_JUMP_TIME           0.1
-
-//#define ADMFLAG_JETPACK       ADMFLAG_GENERIC
-#define ADMFLAG_JETPACK         ADMFLAG_CUSTOM2
+    #define REFUEL_SOUND        "hl1/fvox/activated.wav"
+    #define REFUEL_SOUND_TF2    "hl1/fvox/activated.wav"
+#endif
 
 #define START_SOUND             ""
 #define START_SOUND_TF2         "weapons/flame_thrower_airblast.wav"
@@ -115,21 +124,6 @@
 #define CRIT_SOUND              "weapons/flame_thrower_dg_loop_crit.wav"
 #define SOUND_EXPLODE           "ambient/explosions/explode_8.wav"
 
-//Use SourceCraft sounds if it is present
-#if defined SOURCECRAFT
-	#define EMPTY_SOUND  	    "sc/outofgas.wav"
-	#define EMPTY_SOUND_TF2     "sc/outofgas.wav"
-
-	#define REFUEL_SOUND        "sc/transmission.wav"
-	#define REFUEL_SOUND_TF2    "sc/transmission.wav"
-#else
-	#define EMPTY_SOUND         "common/bugreporter_failed.wav"
-	#define EMPTY_SOUND_TF2     "weapons/syringegun_reload_air2.wav"
-
-	#define REFUEL_SOUND        "hl1/fvox/activated.wav"
-	#define REFUEL_SOUND_TF2    "hl1/fvox/activated.wav"
-#endif
-
 #define EFFECT_BURNER_RED       "flamethrower"
 #define EFFECT_BURNER_RED_CRIT  "flamethrower_crit_red"
 #define EFFECT_BURNER_BLU       "flamethrower_blue"
@@ -142,6 +136,19 @@
 #define EFFECT_TRAIL            "rockettrail_!"
 
 #define EXPLOSION_MODEL         "sprites/sprite_fire01.vmt"
+
+#define PLUGIN_VERSION          "3.1"
+
+#define MOVECOLLIDE_DEFAULT     0
+#define MOVECOLLIDE_FLY_BOUNCE  1
+
+#define COLOR_DEFAULT           0x01
+#define COLOR_GREEN             0x04
+
+#define MIN_JUMP_TIME           0.1
+
+//#define ADMFLAG_JETPACK       ADMFLAG_GENERIC
+#define ADMFLAG_JETPACK         ADMFLAG_CUSTOM2
 
 // TF2 Classes
 
@@ -166,27 +173,27 @@
 #define ROCKETMAN               5
 
 // ConVars
-new Handle:sm_jetpack		        = INVALID_HANDLE;
-new Handle:sm_jetpack_start_sound	= INVALID_HANDLE;
-new Handle:sm_jetpack_stop_sound	= INVALID_HANDLE;
-new Handle:sm_jetpack_loop_sound	= INVALID_HANDLE;
-new Handle:sm_jetpack_crit_sound	= INVALID_HANDLE;
-new Handle:sm_jetpack_empty_sound	= INVALID_HANDLE;
-new Handle:sm_jetpack_refuel_sound	= INVALID_HANDLE;
-new Handle:sm_jetpack_speed	        = INVALID_HANDLE;
+new Handle:sm_jetpack               = INVALID_HANDLE;
+new Handle:sm_jetpack_start_sound   = INVALID_HANDLE;
+new Handle:sm_jetpack_stop_sound    = INVALID_HANDLE;
+new Handle:sm_jetpack_loop_sound    = INVALID_HANDLE;
+new Handle:sm_jetpack_crit_sound    = INVALID_HANDLE;
+new Handle:sm_jetpack_empty_sound   = INVALID_HANDLE;
+new Handle:sm_jetpack_refuel_sound  = INVALID_HANDLE;
+new Handle:sm_jetpack_speed         = INVALID_HANDLE;
 new Handle:sm_jetpack_volume        = INVALID_HANDLE;
-new Handle:sm_jetpack_fuel	        = INVALID_HANDLE;
+new Handle:sm_jetpack_fuel          = INVALID_HANDLE;
 new Handle:sm_jetpack_team          = INVALID_HANDLE;
-new Handle:sm_jetpack_onspawn	    = INVALID_HANDLE;
-new Handle:sm_jetpack_announce	    = INVALID_HANDLE;
-new Handle:sm_jetpack_adminonly	    = INVALID_HANDLE;
+new Handle:sm_jetpack_onspawn       = INVALID_HANDLE;
+new Handle:sm_jetpack_announce      = INVALID_HANDLE;
+new Handle:sm_jetpack_adminonly     = INVALID_HANDLE;
 new Handle:sm_jetpack_refueling_time= INVALID_HANDLE;
 new Handle:sm_jetpack_max_refuels   = INVALID_HANDLE;
 new Handle:sm_jetpack_noflag        = INVALID_HANDLE;
 new Handle:sm_jetpack_gravity       = INVALID_HANDLE;
-new Handle:sm_jetpack_burn       	= INVALID_HANDLE;
-new Handle:sm_jetpack_burn_range 	= INVALID_HANDLE;
-new Handle:sm_jetpack_burn_damage	= INVALID_HANDLE;
+new Handle:sm_jetpack_burn          = INVALID_HANDLE;
+new Handle:sm_jetpack_burn_range    = INVALID_HANDLE;
+new Handle:sm_jetpack_burn_damage   = INVALID_HANDLE;
 new Handle:sm_jetpack_explode       = INVALID_HANDLE;
 new Handle:sm_jetpack_explode_fuel  = INVALID_HANDLE;
 new Handle:sm_jetpack_explode_range = INVALID_HANDLE;
@@ -194,7 +201,7 @@ new Handle:sm_jetpack_explode_damage= INVALID_HANDLE;
 new Handle:sm_jetpack_allow[CLS_MAX]= { INVALID_HANDLE, ...};
 new Handle:sm_jetpack_rate[CLS_MAX] = { INVALID_HANDLE, ...};
 new Handle:tf_weapon_criticals      = INVALID_HANDLE;
-new Handle:mp_friendlyfire       	= INVALID_HANDLE;
+new Handle:mp_friendlyfire          = INVALID_HANDLE;
 
 new Handle:hCookie                  = INVALID_HANDLE;
 new Handle:hAdminMenu               = INVALID_HANDLE;
@@ -240,8 +247,8 @@ new g_iExplodeDamage[MAXPLAYERS + 1];
 new g_iExplodeFuel[MAXPLAYERS + 1];
 
 // Timer For GameFrame
-new Float:g_fTimer	= 0.0;
-new Float:g_fCheck	= 0.0;
+new Float:g_fTimer  = 0.0;
+new Float:g_fCheck  = 0.0;
 
 // Native interface settings
 new g_iNativeRate[MAXPLAYERS + 1];
@@ -684,7 +691,7 @@ public Action:PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadca
         CreateTimer(0.1, HookRagdoll, userid);
 
     return Plugin_Continue;
-}	
+}   
 
 public Action:HookRagdoll(Handle:hTimer, any:userid)
 {
@@ -802,7 +809,7 @@ public Action:Explode(Handle:hTimer, Handle:hData)
             }
         }
     }
-}	
+}   
 
 public OnGameFrame()
 {
@@ -1266,7 +1273,7 @@ BurnEnemies(client)
 
             decl Float:victimAng[3];
             SubtractVectors(clientPos, victimPos, victimAng);
-            GetVectorAngles(victimAng, victimAng);	
+            GetVectorAngles(victimAng, victimAng);  
 
             new Float:diffYaw = FloatAbs((victimAng[1] - 180.0) - clientAng[1]);
             if (diffYaw >= 135.0 && diffYaw < 225.0)
@@ -1382,7 +1389,7 @@ stock bool:CanTarget(origin, const Float:pos[3], target, const Float:targetPos[3
 
 public bool:TraceFilter(ent, contentMask)
 {
-	return (ent == g_FilteredEntity) ? false : true;
+    return (ent == g_FilteredEntity) ? false : true;
 }
 
 bool:CreateFlameAttack(any:victim, any:attacker, damage, bool:bExplosion=false,
@@ -1426,37 +1433,37 @@ bool:CreateFlameAttack(any:victim, any:attacker, damage, bool:bExplosion=false,
 
 EmptyEffect(client)
 {
-	if (GameType == tf2 && !IsEntLimitReached(.client=client,.message="unable to create empty particle"))
-	{
-		static const Float:ang[3] = { -25.0, 90.0, 0.0 };
-		static const Float:pos[3] = {   0.0, 10.0, 1.0 };
-		CreateParticle(EFFECT_BURNER_EMPTY, 0.15, client, Attach, "flag", pos, ang);
-		CreateParticle(EFFECT_BURNER_WARP2, 0.15, client, Attach, "flag", pos, ang);
-		CreateParticle(EFFECT_BURNER_WARP, 0.15, client, Attach, "flag", pos, ang);
-	}
-	else
-	{
-		decl Float:vecPos[3],Float:vecDir[3];
-		GetClientAbsOrigin(client, vecPos);
-		GetClientEyePosition(client,vecDir);
+    if (GameType == tf2 && !IsEntLimitReached(.client=client,.message="unable to create empty particle"))
+    {
+        static const Float:ang[3] = { -25.0, 90.0, 0.0 };
+        static const Float:pos[3] = {   0.0, 10.0, 1.0 };
+        CreateParticle(EFFECT_BURNER_EMPTY, 0.15, client, Attach, "flag", pos, ang);
+        CreateParticle(EFFECT_BURNER_WARP2, 0.15, client, Attach, "flag", pos, ang);
+        CreateParticle(EFFECT_BURNER_WARP, 0.15, client, Attach, "flag", pos, ang);
+    }
+    else
+    {
+        decl Float:vecPos[3],Float:vecDir[3];
+        GetClientAbsOrigin(client, vecPos);
+        GetClientEyePosition(client,vecDir);
 
-		vecDir[0] = 80.0;
-		if(vecDir[1]==0.0)
-			vecDir[1] = 179.8;
-		else if(vecDir[1]==90.0||vecDir[1]==-90.0)
-			vecDir[1] = (vecDir[1]*-1.0);
-		else if(vecDir[1]>90.0)
-			vecDir[1] = ((vecDir[1]-90.0)*-1.0);
-		else if(vecDir[1]<-90.0)
-			vecDir[1] = ((vecDir[1]+90.0)*-1.0);
-		else if(vecDir[1]<90.0&&vecDir[1]>0.0)
-			vecDir[1] = ((vecDir[1]+90.0)*-1.0);
-		else if(vecDir[1]<0.0&&vecDir[1]>-90.0)
-			vecDir[1] = ((vecDir[1]-90.0)*-1.0);
+        vecDir[0] = 80.0;
+        if(vecDir[1]==0.0)
+            vecDir[1] = 179.8;
+        else if(vecDir[1]==90.0||vecDir[1]==-90.0)
+            vecDir[1] = (vecDir[1]*-1.0);
+        else if(vecDir[1]>90.0)
+            vecDir[1] = ((vecDir[1]-90.0)*-1.0);
+        else if(vecDir[1]<-90.0)
+            vecDir[1] = ((vecDir[1]+90.0)*-1.0);
+        else if(vecDir[1]<90.0&&vecDir[1]>0.0)
+            vecDir[1] = ((vecDir[1]+90.0)*-1.0);
+        else if(vecDir[1]<0.0&&vecDir[1]>-90.0)
+            vecDir[1] = ((vecDir[1]-90.0)*-1.0);
 
-		TE_SetupDust(vecPos,vecDir,15.0,100.0);
-		TE_SendToAll();
-	}
+        TE_SetupDust(vecPos,vecDir,15.0,100.0);
+        TE_SendToAll();
+    }
 }
 
 CreateLightEntity(client)
@@ -1963,7 +1970,7 @@ public PrefsMenu(client, CookieMenuAction:action, any:info, String:buffer[], max
 
 public MenuHandler_Prefs(Handle:menu, MenuAction:action, client, selection)
 {
-    if (action == MenuAction_Select)	
+    if (action == MenuAction_Select)    
     {
         decl String:SelectionInfo[5];
         GetMenuItem(menu, selection, SelectionInfo, sizeof(SelectionInfo));

@@ -11,7 +11,7 @@
 #define _tf2_player_included
 
 #include <tf2_stocks>
-#include <weapons>
+#include "weapons"
 
 stock const String:TF2_TeamName[TFTeam][] = { "Unassigned", "Spectator", "Red", "Blue" };
 #define TF2_GetTeamName(%1) TF2_TeamName[%1]

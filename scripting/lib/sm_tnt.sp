@@ -22,6 +22,50 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
+#include "tf2_player"
+#include "tf2_objects"
+#include "gametype"
+#include "entlimit"
+
+/**
+ * Description: Manage resources.
+ */
+#tryinclude "lib/ResourceManager"
+#if !defined _ResourceManager_included
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
+
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
+
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
+
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
+#endif
+
 #define PLUGIN_VERSION "2.5.1"
 
 #define ADMIN_LEVEL ADMFLAG_SLAY
@@ -78,220 +122,6 @@ public Plugin:myinfo =
     version = PLUGIN_VERSION,
     url = "http://www.theville.org"
 }
-
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, csgo, dod, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false))
-                GameType=tf2;
-            else if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false))
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false))
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false))
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false))
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false))
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false))
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
-#endif
-
-/**
- * Description: Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-    #define TF2_IsPlayerDisguised(%1)    TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)      TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-    #define TF2_IsPlayerUbercharged(%1)  TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerDeadRingered(%1) TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-    #define TF2_IsPlayerBonked(%1)       TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-#endif
-
-/**
- * Description: Functions to return infomation about TF2 objects.
- */
-#tryinclude <tf2_objects>
-#if !defined _tf2_objects_included
-    enum TFExtObjectType
-    {
-        TFExtObject_Unknown = -1,
-        TFExtObject_CartDispenser = 0,
-        TFExtObject_Dispenser = 0,
-        TFExtObject_Teleporter = 1,
-        TFExtObject_Sentry = 2,
-        TFExtObject_Sapper = 3,
-        TFExtObject_TeleporterEntry,
-        TFExtObject_TeleporterExit,
-        TFExtObject_MiniSentry,
-        TFExtObject_Amplifier,
-        TFExtObject_RepairNode
-    };
-
-    stock TFExtObjectType:TF2_GetExtObjectType(entity, bool:specific=false)
-    {
-        decl String:class[5];
-        if (GetEdictClassname(entity, class, sizeof(class)) &&
-            strncmp(class, "obj_", 4) == 0)
-        {
-            new TFExtObjectType:type = TFExtObjectType:GetEntProp(entity, Prop_Send, "m_iObjectType");
-            if (specific)
-            {
-                if (type == TFExtObject_Teleporter)
-                {
-                    type = (TF2_GetObjectMode(entity) == TFObjectMode_Exit)
-                    ? TFExtObject_TeleporterExit
-                    : TFExtObject_TeleporterEntry;
-                }
-                else if (type == TFExtObject_Sentry)
-                {
-                    if (GetEntProp(entity, Prop_Send, "m_bMiniBuilding"))
-                    type = TFExtObject_MiniSentry;
-                }
-            }
-            return type;
-        }
-        else
-            return TFExtObject_Unknown;
-    }
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= warn)
-        {
-            if (count <= critical)
-            {
-                PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-                LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            else
-            {
-                PrintToServer("Caution: Entity count is getting high!");
-                LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            return count;
-        }
-        else
-            return 0;
-    }
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-
-    stock SetupModel(const String:model[], &index, bool:download=false,
-                     bool:precache=false, bool:preload=false)
-    {
-        if (download && FileExists(model))
-            AddFileToDownloadsTable(model);
-
-        if (precache)
-            index = PrecacheModel(model,preload);
-        else
-            index = 0;
-    }
-
-    stock PrepareModel(const String:model[], &index=0, bool:preload=true)
-    {
-        if (index <= 0)
-            index = PrecacheModel(model,preload);
-
-        return index;
-    }
-#endif
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {

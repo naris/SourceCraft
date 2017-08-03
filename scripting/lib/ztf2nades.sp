@@ -12,69 +12,69 @@
 #include <sourcemod>
 #include <sdktools>
 
-#include <damage>
-#include <gametype>
-#include <entlimit>
+#include "tf2_player"
+#include "tf2_meter"
+#include "dod"
 
-#include <tf2_player>
-#include <tf2_meter>
-#include <dod>
+#include "damage"
+#include "gametype"
+#include "entlimit"
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#tryinclude <libdod/dod_ignite>
+#tryinclude "libdod/dod_ignite"
 #if !defined _dod_ignite_included
-    #tryinclude <dod_ignite>
+    #tryinclude "dod_ignite"
 #endif
 #define REQUIRE_PLUGIN
 
 /**
  * Description: Manage resources.
  */
-#tryinclude <lib/ResourceManager>
+#tryinclude "lib/ResourceManager"
 #if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-	#if !defined _ResourceManager_included
-		#define AUTO_DOWNLOAD   -1
-		#define DONT_DOWNLOAD    0
-		#define DOWNLOAD         1
-		#define ALWAYS_DOWNLOAD  2
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
 
-		#define PrepareModel(%1)
-		#define PrepareSound(%1)
-		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
-		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
-		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
-		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-		
-		stock SetupModel(const String:model[], &index=0, bool:download=false,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download && FileExists(model))
-				AddFileToDownloadsTable(model);
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
 
-			index = PrecacheModel(model,preload);
-		}
-		
-		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download != DONT_DOWNLOAD && FileExists(sound))
-				AddFileToDownloadsTable(sound);
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
 
-			index = PrecacheSound(sound,preload);
-		}
-	#endif
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
 #endif
 
 /**
  * Description: Use the SourceCraft API, if available.
  */
 #undef REQUIRE_PLUGIN
-#tryinclude <sc/SourceCraft>
+#tryinclude "sc/SourceCraft"
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "3.3"
@@ -221,22 +221,22 @@ new bool:gWaitOver = false;
 new Float:gMapStart;
 new Float:gHoldingArea[3] = {-10000.0, -10000.0, -10000.0}; // point to store unused objects
 new gNade[MAX_PLAYERS+1] = { INVALID_ENT_REFERENCE, ... };  // pointer to the player's nade
-new gKilledBy[MAX_PLAYERS+1];                       		// player that killed
-new gTargeted[MAX_PLAYERS+1];                       		// flag is player is targetted and by whom.
-new gCountdown[MAX_PLAYERS+1];                      		// countdown before the nade explodes
-new gRemaining1[MAX_PLAYERS+1];                     		// how many nades player has this spawn
-new gRemaining2[MAX_PLAYERS+1];                     		// how many nades player has this spawn
-new HoldType:gHolding[MAX_PLAYERS+1];               		// what kind of nade player is holding
-new Handle:gNadeTimer[MAX_PLAYERS+1];               		// pointer to nade timer
-new Handle:gNadeTimer2[MAX_PLAYERS+1];              		// pointer to 2nd nade timer
-new bool:gTriggerTimer[MAX_PLAYERS+1];              		// flags that timer was triggered
-new Float:PlayersInRange[MAX_PLAYERS+1];            		// players are in radius ?
-new String:gKillWeapon[MAX_PLAYERS+1][STRLENGTH];   		// weapon that killed
-new Float:gKillTime[MAX_PLAYERS+1];                 		// time plugin requested kill
-new gStopInfoPanel[MAX_PLAYERS+1];                  		// flag to disable help
-new gRingModel;                                     		// model for beams
-new gNapalmSprite;                                  		// sprite index
-new gBeamSprite;                                    		// sprite index
+new gKilledBy[MAX_PLAYERS+1];                               // player that killed
+new gTargeted[MAX_PLAYERS+1];                               // flag is player is targetted and by whom.
+new gCountdown[MAX_PLAYERS+1];                              // countdown before the nade explodes
+new gRemaining1[MAX_PLAYERS+1];                             // how many nades player has this spawn
+new gRemaining2[MAX_PLAYERS+1];                             // how many nades player has this spawn
+new HoldType:gHolding[MAX_PLAYERS+1];                       // what kind of nade player is holding
+new Handle:gNadeTimer[MAX_PLAYERS+1];                       // pointer to nade timer
+new Handle:gNadeTimer2[MAX_PLAYERS+1];                      // pointer to 2nd nade timer
+new bool:gTriggerTimer[MAX_PLAYERS+1];                      // flags that timer was triggered
+new Float:PlayersInRange[MAX_PLAYERS+1];                    // players are in radius ?
+new String:gKillWeapon[MAX_PLAYERS+1][STRLENGTH];           // weapon that killed
+new Float:gKillTime[MAX_PLAYERS+1];                         // time plugin requested kill
+new gStopInfoPanel[MAX_PLAYERS+1];                          // flag to disable help
+new gRingModel;                                             // model for beams
+new gNapalmSprite;                                          // sprite index
+new gBeamSprite;                                            // sprite index
 new gEmpSprite;
 new gSmokeSprite;
 new gExplosionSprite;
@@ -520,14 +520,6 @@ public OnMapStart()
     // initialize model for nades (until class is chosen)
     gnSpeed = 100.0;
     gnDelay = 2.0;
-
-    #if !defined _ResourceManager_included
-        // Setup trie to keep track of precached sounds
-        if (g_soundTrie == INVALID_HANDLE)
-            g_soundTrie = CreateTrie();
-        else
-            ClearTrie(g_soundTrie);
-    #endif
 
     // precache models
     SetupModel(MDL_RING_MODEL, gRingModel);

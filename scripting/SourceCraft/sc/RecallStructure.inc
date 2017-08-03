@@ -10,13 +10,13 @@
 #endif
 #define _RecallStructure_included
 
-#include <gametype>
-#include <tf2_flag>
-
 #undef REQUIRE_PLUGIN
-#include <lib/ztf2grab>
-#include <libtf2/remote>
+#include "lib/ztf2grab"
+#include "libtf2/remote"
 #define REQUIRE_PLUGIN
+
+#include "tf2_flag"
+#include "gametype"
 
 #include "sc/RecallSounds"
 #include "sc/ShopItems"

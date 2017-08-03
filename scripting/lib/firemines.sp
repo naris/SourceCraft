@@ -25,8 +25,51 @@
 
 #include <sourcemod>
 #include <sdktools>
-
 #include <tf2_stocks>
+
+#include "tf2_player"
+#include "tf2_ammo"
+#include "entlimit"
+#include "weapons"
+
+/**
+ * Description: Manage resources.
+ */
+#tryinclude "lib/ResourceManager"
+#if !defined _ResourceManager_included
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
+
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
+
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
+
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
+#endif
 
 #define MAXENTITIES 2048
 
@@ -48,24 +91,24 @@
 #define MINE_MODEL "models/props_2fort/groundlight001.mdl"
 
 // Phys prop spawnflags
-#define SF_PHYSPROP_START_ASLEEP				0x000001
-#define SF_PHYSPROP_DONT_TAKE_PHYSICS_DAMAGE	0x000002		// this prop can't be damaged by physics collisions
-#define SF_PHYSPROP_DEBRIS						0x000004
-#define SF_PHYSPROP_MOTIONDISABLED				0x000008		// motion disabled at startup (flag only valid in spawn - motion can be enabled via input)
-#define	SF_PHYSPROP_TOUCH						0x000010		// can be 'crashed through' by running player (plate glass)
-#define SF_PHYSPROP_PRESSURE					0x000020		// can be broken by a player standing on it
-#define SF_PHYSPROP_ENABLE_ON_PHYSCANNON		0x000040		// enable motion only if the player grabs it with the physcannon
-#define SF_PHYSPROP_NO_ROTORWASH_PUSH			0x000080		// The rotorwash doesn't push these
-#define SF_PHYSPROP_ENABLE_PICKUP_OUTPUT		0x000100		// If set, allow the player to +USE this for the purposes of generating an output
-#define SF_PHYSPROP_PREVENT_PICKUP				0x000200		// If set, prevent +USE/Physcannon pickup of this prop
-#define SF_PHYSPROP_PREVENT_PLAYER_TOUCH_ENABLE	0x000400		// If set, the player will not cause the object to enable its motion when bumped into
-#define SF_PHYSPROP_HAS_ATTACHED_RAGDOLLS		0x000800		// Need to remove attached ragdolls on enable motion/etc
-#define SF_PHYSPROP_FORCE_TOUCH_TRIGGERS		0x001000		// Override normal debris behavior and respond to triggers anyway
-#define SF_PHYSPROP_FORCE_SERVER_SIDE			0x002000		// Force multiplayer physics object to be serverside
-#define SF_PHYSPROP_RADIUS_PICKUP				0x004000		// For Xbox, makes small objects easier to pick up by allowing them to be found 
-#define SF_PHYSPROP_ALWAYS_PICK_UP				0x100000		// Physcannon can always pick this up, no matter what mass or constraints may apply.
-#define SF_PHYSPROP_NO_COLLISIONS				0x200000		// Don't enable collisions on spawn
-#define SF_PHYSPROP_IS_GIB						0x400000		// Limit # of active gibs
+#define SF_PHYSPROP_START_ASLEEP                0x000001
+#define SF_PHYSPROP_DONT_TAKE_PHYSICS_DAMAGE    0x000002        // this prop can't be damaged by physics collisions
+#define SF_PHYSPROP_DEBRIS                      0x000004
+#define SF_PHYSPROP_MOTIONDISABLED              0x000008        // motion disabled at startup (flag only valid in spawn - motion can be enabled via input)
+#define SF_PHYSPROP_TOUCH                       0x000010        // can be 'crashed through' by running player (plate glass)
+#define SF_PHYSPROP_PRESSURE                    0x000020        // can be broken by a player standing on it
+#define SF_PHYSPROP_ENABLE_ON_PHYSCANNON        0x000040        // enable motion only if the player grabs it with the physcannon
+#define SF_PHYSPROP_NO_ROTORWASH_PUSH           0x000080        // The rotorwash doesn't push these
+#define SF_PHYSPROP_ENABLE_PICKUP_OUTPUT        0x000100        // If set, allow the player to +USE this for the purposes of generating an output
+#define SF_PHYSPROP_PREVENT_PICKUP              0x000200        // If set, prevent +USE/Physcannon pickup of this prop
+#define SF_PHYSPROP_PREVENT_PLAYER_TOUCH_ENABLE 0x000400        // If set, the player will not cause the object to enable its motion when bumped into
+#define SF_PHYSPROP_HAS_ATTACHED_RAGDOLLS       0x000800        // Need to remove attached ragdolls on enable motion/etc
+#define SF_PHYSPROP_FORCE_TOUCH_TRIGGERS        0x001000        // Override normal debris behavior and respond to triggers anyway
+#define SF_PHYSPROP_FORCE_SERVER_SIDE           0x002000        // Force multiplayer physics object to be serverside
+#define SF_PHYSPROP_RADIUS_PICKUP               0x004000        // For Xbox, makes small objects easier to pick up by allowing them to be found 
+#define SF_PHYSPROP_ALWAYS_PICK_UP              0x100000        // Physcannon can always pick this up, no matter what mass or constraints may apply.
+#define SF_PHYSPROP_NO_COLLISIONS               0x200000        // Don't enable collisions on spawn
+#define SF_PHYSPROP_IS_GIB                      0x400000        // Limit # of active gibs
 
 enum DropType   { OnDeath, WithFlameThrower, OnCommand };
 
@@ -110,155 +153,6 @@ new bool:g_ChangingClass[MAXPLAYERS+1];
 
 // forwards
 new Handle:fwdOnSetMine;
-
-/**
- * Description: Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-    #define TF2_IsPlayerDisguised(%1)           TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)             TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-    #define TF2_IsPlayerUbercharged(%1)         TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerDeadRingered(%1)        TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-    #define TF2_IsPlayerBonked(%1)              TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-#endif
-
-/**
- * Description: Functions to return information about TF2 ammo.
- */
-#tryinclude <tf2_ammo>
-#if !defined _tf2_ammo_included
-    enum TFAmmoTypes
-    {
-        Primary=1,
-        Secondary=2,
-        Metal=3
-    }
-
-    stock TF2_GetAmmoAmount(client,TFAmmoTypes:type=Primary, weapon=0)
-    {
-        new ammoType = _:type;
-        if (weapon > 0 && IsValidEntity(weapon))
-        {
-            switch (type)
-            {
-                case Primary:   iAmmoType = GetEntProp(iWeapon, Prop_Send, "m_iPrimaryAmmoType");
-                case Secondary: iAmmoType = GetEntProp(iWeapon, Prop_Send, "m_iSecondaryAmmoType");
-            }
-        }
-        return GetEntProp(client, "m_iAmmo", .element=ammoType);
-    }
-
-    stock TF2_SetAmmoAmount(client, ammo = 999,TFAmmoTypes:type=Primary, weapon=0)
-    {
-        new ammoType = _:type;
-        if (weapon > 0 && IsValidEntity(weapon))
-        {
-            switch (type)
-            {
-                case Primary:   iAmmoType = GetEntProp(iWeapon, Prop_Send, "m_iPrimaryAmmoType");
-                case Secondary: iAmmoType = GetEntProp(iWeapon, Prop_Send, "m_iSecondaryAmmoType");
-            }
-        }
-        SetEntProp(client, "m_iAmmo", .element=ammoType);
-    }
-#endif
-
-/**
- * Description: Stocks to return information about weapons.
- */
-#tryinclude <weapons>
-#if !defined _weapons_included
-    stock GetCurrentWeaponClass(client, String:name[], maxlength)
-    {
-        new index = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-        if (index > 0 && IsValidEntity(index))
-            GetEntityNetClass(index, name, maxlength);
-        else
-            name[0] = '\0';
-    }
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= warn)
-        {
-            if (count <= critical)
-            {
-                PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-                LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            else
-            {
-                PrintToServer("Caution: Entity count is getting high!");
-                LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            return count;
-        }
-        else
-            return 0;
-    }
-#endif
-
-/**
- * Description: Manage resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-	#if !defined _ResourceManager_included
-		#define AUTO_DOWNLOAD   -1
-		#define DONT_DOWNLOAD    0
-		#define DOWNLOAD         1
-		#define ALWAYS_DOWNLOAD  2
-
-		#define PrepareModel(%1)
-		#define PrepareSound(%1)
-		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
-		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
-		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
-		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-		
-		stock SetupModel(const String:model[], &index=0, bool:download=false,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download && FileExists(model))
-				AddFileToDownloadsTable(model);
-
-			index = PrecacheModel(model,preload);
-		}
-		
-		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download != DONT_DOWNLOAD && FileExists(sound))
-				AddFileToDownloadsTable(sound);
-
-			index = PrecacheSound(sound,preload);
-		}
-	#endif
-#endif
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -326,14 +220,6 @@ public OnPluginStart()
 
 public OnMapStart()
 {
-    #if !defined _ResourceManager_included
-        // Setup trie to keep track of precached sounds
-        if (g_soundTrie == INVALID_HANDLE)
-            g_soundTrie = CreateTrie();
-        else
-            ClearTrie(g_soundTrie);
-    #endif
-
     SetupSound(SOUND_A, true, DONT_DOWNLOAD);
     SetupSound(SOUND_E, true, DONT_DOWNLOAD);
 
@@ -606,7 +492,7 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 
     if (!g_NativeControl)
     {
-        new TFClassType:class = TF2_GetPlayerClass(client);	
+        new TFClassType:class = TF2_GetPlayerClass(client); 
         if (class != TFClass_Pyro)
             return;
     }

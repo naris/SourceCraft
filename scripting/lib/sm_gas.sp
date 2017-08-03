@@ -13,11 +13,56 @@
 // originally created using EventScripts
 
 #pragma semicolon 1
+
 #include <sourcemod>
 #include <sdktools>
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
+
+#include "tf2_player"
+#include "gametype"
+#include "entlimit"
+#include "damage"
+
+/**
+ * Description: Manage resources.
+ */
+#tryinclude "lib/ResourceManager"
+#if !defined _ResourceManager_included
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
+
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
+
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
+
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
+#endif
 
 #define PLUGIN_VERSION "1.1.107"
 
@@ -77,333 +122,6 @@ public Plugin:myinfo =
     version = PLUGIN_VERSION,
     url = "http://www.theville.org"
 }
-
-/**
- * Description: Stocks to return information about TF2 player condition, etc.
- */
-#tryinclude <tf2_player>
-#if !defined _tf2_player_included
-    #define TF2_IsPlayerDisguised(%1)    TF2_IsPlayerInCondition(%1,TFCond_Disguised)
-    #define TF2_IsPlayerCloaked(%1)      TF2_IsPlayerInCondition(%1,TFCond_Cloaked)
-    #define TF2_IsPlayerUbercharged(%1)  TF2_IsPlayerInCondition(%1,TFCond_Ubercharged)
-    #define TF2_IsPlayerDeadRingered(%1) TF2_IsPlayerInCondition(%1,TFCond_DeadRingered)
-    #define TF2_IsPlayerBonked(%1)       TF2_IsPlayerInCondition(%1,TFCond_Bonked)
-#endif
-
-/**
- * Description: Function to determine game/mod type
- */
-#tryinclude <gametype>
-#if !defined _gametype_included
-    enum Game { undetected, tf2, cstrike, dod, csgo, hl2mp, insurgency, zps, l4d, l4d2, other_game };
-    stock Game:GameType = undetected;
-
-    stock Game:GetGameType()
-    {
-        if (GameType == undetected)
-        {
-            new String:modname[30];
-            GetGameFolderName(modname, sizeof(modname));
-            if (StrEqual(modname,"tf",false))
-                GameType=tf2;
-            else if (StrEqual(modname,"cstrike",false))
-                GameType=cstrike;
-            else if (StrEqual(modname,"csgo",false))
-                GameType=csgo;
-            else if (StrEqual(modname,"dod",false))
-                GameType=dod;
-            else if (StrEqual(modname,"hl2mp",false))
-                GameType=hl2mp;
-            else if (StrEqual(modname,"Insurgency",false))
-                GameType=insurgency;
-            else if (StrEqual(modname,"left4dead", false))
-                GameType=l4d;
-            else if (StrEqual(modname,"left4dead2", false))
-                GameType=l4d2;
-            else if (StrEqual(modname,"zps",false))
-                GameType=zps;
-            else
-                GameType=other_game;
-        }
-        return GameType;
-    }
-#endif
-
-/**
- * Description: Function to check the entity limit.
- *              Use before spawning an entity.
- */
-#tryinclude <entlimit>
-#if !defined _entlimit_included
-    stock IsEntLimitReached(warn=20,critical=16,client=0,const String:message[]="")
-    {
-        new max = GetMaxEntities();
-        new count = GetEntityCount();
-        new remaining = max - count;
-        if (remaining <= warn)
-        {
-            if (count <= critical)
-            {
-                PrintToServer("Warning: Entity limit is nearly reached! Please switch or reload the map!");
-                LogError("Entity limit is nearly reached: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity limit is nearly reached: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            else
-            {
-                PrintToServer("Caution: Entity count is getting high!");
-                LogMessage("Entity count is getting high: %d/%d (%d):%s", count, max, remaining, message);
-
-                if (client > 0)
-                {
-                    PrintToConsole(client, "Entity count is getting high: %d/%d (%d):%s",
-                                   count, max, remaining, message);
-                }
-            }
-            return count;
-        }
-        else
-            return 0;
-    }
-#endif
-
-/**
- * Description: Stocks to damage a player or an entity using a point_hurt entity.
- */
-#tryinclude <damage>
-#if !defined _damage_included
-    #define DMG_GENERIC                 0
-    #define DMG_NERVEGAS                (1 << 16)
-
-    stock g_damagePointRef = INVALID_ENT_REFERENCE;
-
-    stock DamagePlayer(victim,damage,attacker=0,dmg_type=DMG_GENERIC,const String:weapon[]="")
-    {
-        if (damage > 0 && victim > 0 && IsClientInGame(victim) && IsPlayerAlive(victim))
-        {
-            decl String:dmg_str[16];
-            IntToString(damage,dmg_str,sizeof(dmg_str));
-
-            decl String:dmg_type_str[32];
-            IntToString(dmg_type,dmg_type_str,sizeof(dmg_type_str));
-
-            new pointHurt = EntRefToEntIndex(g_damagePointRef);
-            if (pointHurt < 1)
-            {
-                if (!IsEntLimitReached(.message="Unable to create point_hurt in DamagePlayer()"))
-                {
-                    pointHurt = CreateEntityByName("point_hurt");
-                    if (pointHurt > 0 && IsValidEntity(pointHurt))
-                    {
-                        //DispatchSpawn(pointHurt);
-                        g_damagePointRef = EntIndexToEntRef(pointHurt);
-                    }
-                    else
-                    {
-                        LogError("Unable to create point_hurt in DamagePlayer()");
-                        return;
-                    }
-                }
-            }
-
-            if (pointHurt > 0 && IsValidEdict(pointHurt))
-            {
-                decl String:targetname[16];
-                Format(targetname,sizeof(targetname), "target%d", victim);
-
-                DispatchKeyValue(victim,"targetname",targetname);
-                DispatchKeyValue(pointHurt,"DamageTarget",targetname);
-                DispatchKeyValue(pointHurt,"Damage",dmg_str);
-                DispatchKeyValue(pointHurt,"DamageType",dmg_type_str);
-
-                if (weapon[0] != '\0')
-                    DispatchKeyValue(pointHurt,"classname",weapon);
-
-                DispatchSpawn(pointHurt);
-
-                AcceptEntityInput(pointHurt,"Hurt",(attacker>0)?attacker:-1);
-                DispatchKeyValue(pointHurt,"classname","point_hurt");
-
-                IntToString(victim,targetname,sizeof(targetname));
-                DispatchKeyValue(victim,"targetname",targetname);
-            }
-            else
-                LogError("Unable to spawn point_hurt in DamagePlayer()");
-        }
-    }
-
-    stock CleanupDamageEntity()
-    {
-        if (g_damagePointRef != INVALID_ENT_REFERENCE)
-        {
-            new pointHurt = EntRefToEntIndex(g_damagePointRef);
-            if (pointHurt > 0)
-                AcceptEntityInput(pointHurt, "kill");
-
-            g_damagePointRef = INVALID_ENT_REFERENCE;
-        }
-    }
-#endif
-
-/**
- * Description: Manage precaching resources.
- */
-#tryinclude <lib/ResourceManager>
-#if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-#endif
-#if !defined _ResourceManager_included
-    #define AUTO_DOWNLOAD   -1
-	#define DONT_DOWNLOAD    0
-	#define DOWNLOAD         1
-	#define ALWAYS_DOWNLOAD  2
-
-	enum State { Unknown=0, Defined, Download, Force, Precached };
-
-	// Trie to hold precache status of sounds
-	new Handle:g_soundTrie = INVALID_HANDLE;
-
-	stock bool:PrepareSound(const String:sound[], bool:force=false, bool:preload=false)
-	{
-        #pragma unused force
-        new State:value = Unknown;
-        if (!GetTrieValue(g_soundTrie, sound, value) || value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            SetTrieValue(g_soundTrie, sound, Precached);
-        }
-        return true;
-    }
-
-	stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-	                 bool:precache=false, bool:preload=false)
-	{
-        new State:value = Unknown;
-        new bool:update = !GetTrieValue(g_soundTrie, sound, value);
-        if (update || value < Defined)
-        {
-            value  = Defined;
-            update = true;
-        }
-
-        if (download && value < Download)
-        {
-            decl String:file[PLATFORM_MAX_PATH+1];
-            Format(file, sizeof(file), "sound/%s", sound);
-
-            if (FileExists(file))
-            {
-                if (download < 0)
-                {
-                    if (!strncmp(file, "ambient", 7) ||
-                        !strncmp(file, "beams", 5) ||
-                        !strncmp(file, "buttons", 7) ||
-                        !strncmp(file, "coach", 5) ||
-                        !strncmp(file, "combined", 8) ||
-                        !strncmp(file, "commentary", 10) ||
-                        !strncmp(file, "common", 6) ||
-                        !strncmp(file, "doors", 5) ||
-                        !strncmp(file, "friends", 7) ||
-                        !strncmp(file, "hl1", 3) ||
-                        !strncmp(file, "items", 5) ||
-                        !strncmp(file, "midi", 4) ||
-                        !strncmp(file, "misc", 4) ||
-                        !strncmp(file, "music", 5) ||
-                        !strncmp(file, "npc", 3) ||
-                        !strncmp(file, "physics", 7) ||
-                        !strncmp(file, "pl_hoodoo", 9) ||
-                        !strncmp(file, "plats", 5) ||
-                        !strncmp(file, "player", 6) ||
-                        !strncmp(file, "resource", 8) ||
-                        !strncmp(file, "replay", 6) ||
-                        !strncmp(file, "test", 4) ||
-                        !strncmp(file, "ui", 2) ||
-                        !strncmp(file, "vehicles", 8) ||
-                        !strncmp(file, "vo", 2) ||
-                        !strncmp(file, "weapons", 7))
-                    {
-                        // If the sound starts with one of those directories
-                        // assume it came with the game and doesn't need to
-                        // be downloaded.
-                        download = 0;
-                    }
-                    else
-                        download = 1;
-                }
-
-                if (download > 0)
-                {
-                    AddFileToDownloadsTable(file);
-
-                    update = true;
-                    value  = Download;
-                }
-            }
-        }
-
-        if (precache && value < Precached)
-        {
-            PrecacheSound(sound, preload);
-            value  = Precached;
-            update = true;
-        }
-        else if (force && value < Force)
-        {
-            value  = Force;
-            update = true;
-        }
-
-        if (update)
-            SetTrieValue(g_soundTrie, sound, value);
-    }
-
-	stock PrepareAndEmitSoundToClient(client,
-					 const String:sample[],
-					 entity = SOUND_FROM_PLAYER,
-					 channel = SNDCHAN_AUTO,
-					 level = SNDLEVEL_NORMAL,
-					 flags = SND_NOFLAGS,
-					 Float:volume = SNDVOL_NORMAL,
-					 pitch = SNDPITCH_NORMAL,
-					 speakerentity = -1,
-					 const Float:origin[3] = NULL_VECTOR,
-					 const Float:dir[3] = NULL_VECTOR,
-					 bool:updatePos = true,
-					 Float:soundtime = 0.0)
-	{
-	    if (PrepareSound(sample))
-	    {
-		    EmitSoundToClient(client, sample, entity, channel,
-				              level, flags, volume, pitch, speakerentity,
-				              origin, dir, updatePos, soundtime);
-	    }
-	}
-
-    stock PrepareAndEmitSoundToAll(const String:sample[],
-                     entity = SOUND_FROM_PLAYER,
-                     channel = SNDCHAN_AUTO,
-                     level = SNDLEVEL_NORMAL,
-                     flags = SND_NOFLAGS,
-                     Float:volume = SNDVOL_NORMAL,
-                     pitch = SNDPITCH_NORMAL,
-                     speakerentity = -1,
-                     const Float:origin[3] = NULL_VECTOR,
-                     const Float:dir[3] = NULL_VECTOR,
-                     bool:updatePos = true,
-                     Float:soundtime = 0.0)
-    {
-        if (PrepareSound(sample))
-        {
-            EmitSoundToAll(sample, entity, channel,
-                           level, flags, volume, pitch, speakerentity,
-                           origin, dir, updatePos, soundtime);
-        }
-    }
-#endif
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {

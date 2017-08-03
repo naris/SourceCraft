@@ -10,12 +10,12 @@
 #endif
 #define darkswarm_included
 
-#include <lib/ResourceManager>
-#include <entlimit>
+#include "entlimit"
+#include "lib/ResourceManager"
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
+#include "tf2_player"
 #define REQUIRE_EXTENSIONS
 
 #include "sc/client"

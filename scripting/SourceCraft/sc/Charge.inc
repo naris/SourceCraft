@@ -12,9 +12,9 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
-#include <tf2_meter>
-#include <TeleportPlayer>
+#include "tf2_meter"
+#include "tf2_player"
+#include "TeleportPlayer"
 #define REQUIRE_EXTENSIONS
 
 #include "sc/sounds"

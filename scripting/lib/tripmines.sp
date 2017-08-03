@@ -14,47 +14,47 @@
 #include <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 
-#include <tf2_player>
-#include <gametype>
-#include <entlimit>
+#include "tf2_player"
+#include "gametype"
+#include "entlimit"
 
 /**
  * Description: Manage resources.
  */
-#tryinclude <lib/ResourceManager>
+#tryinclude "lib/ResourceManager"
 #if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
-	#if !defined _ResourceManager_included
-		#define AUTO_DOWNLOAD   -1
-		#define DONT_DOWNLOAD    0
-		#define DOWNLOAD         1
-		#define ALWAYS_DOWNLOAD  2
+    #tryinclude "ResourceManager"
+    #if !defined _ResourceManager_included
+        #define AUTO_DOWNLOAD   -1
+        #define DONT_DOWNLOAD    0
+        #define DOWNLOAD         1
+        #define ALWAYS_DOWNLOAD  2
 
-		#define PrepareModel(%1)
-		#define PrepareSound(%1)
-		#define PrepareAndEmitSound(%1) 		EmitSound(%1)
-		#define PrepareAndEmitSoundToAll(%1) 	EmitSoundToAll(%1)
-		#define PrepareAndEmitAmbientSound(%1)	EmitAmbientSound(%1)
-		#define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
-		
-		stock SetupModel(const String:model[], &index=0, bool:download=false,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download && FileExists(model))
-				AddFileToDownloadsTable(model);
+        #define PrepareModel(%1)
+        #define PrepareSound(%1)
+        #define PrepareAndEmitSound(%1)         EmitSound(%1)
+        #define PrepareAndEmitSoundToAll(%1)    EmitSoundToAll(%1)
+        #define PrepareAndEmitAmbientSound(%1)  EmitAmbientSound(%1)
+        #define PrepareAndEmitSoundToClient(%1) EmitSoundToClient(%1)
+        
+        stock SetupModel(const String:model[], &index=0, bool:download=false,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download && FileExists(model))
+                AddFileToDownloadsTable(model);
 
-			index = PrecacheModel(model,preload);
-		}
-		
-		stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
-						 bool:precache=true, bool:preload=true)
-		{
-			if (download != DONT_DOWNLOAD && FileExists(sound))
-				AddFileToDownloadsTable(sound);
+            index = PrecacheModel(model,preload);
+        }
+        
+        stock SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWNLOAD,
+                         bool:precache=true, bool:preload=true)
+        {
+            if (download != DONT_DOWNLOAD && FileExists(sound))
+                AddFileToDownloadsTable(sound);
 
-			index = PrecacheSound(sound,preload);
-		}
-	#endif
+            index = PrecacheSound(sound,preload);
+        }
+    #endif
 #endif
 
 #define PLUGIN_VERSION  "5.0"
@@ -339,7 +339,7 @@ public OnConfigsExecuted()
     SetupModel(mdlMine, gTripmineModelIndex);
     SetupModel(LASER_SPRITE, gLaserModelIndex);
 
-	// setup sounds
+    // setup sounds
     SetupSound(gSndError, true, DONT_DOWNLOAD);
     SetupSound(gSndPlaced, true, AUTO_DOWNLOAD);
     SetupSound(gSndActivated, true, AUTO_DOWNLOAD);
@@ -1108,7 +1108,6 @@ public beamBreak(const String:output[], caller, activator, Float:delay)
         new ref = g_SavedEntityRef[caller];
         if (ref != INVALID_ENT_REFERENCE && EntRefToEntIndex(ref) == caller)
         {
-            LogError("Orphan beam %d encountered in beamBreak()!", caller);
             RemoveBeamEntity(caller);
         }
     }
@@ -1129,7 +1128,9 @@ public mineTouched(const String:output[], caller, activator, Float:delay)
             AcceptEntityInput(caller, "Break");
         }
         else // Re-Hook the output.
+        {
             HookSingleEntityOutput(caller, output, mineTouched, true);
+        }
     }
 }
 
@@ -1144,9 +1145,9 @@ public mineBreak(const String:output[], caller, activator, Float:delay)
 
 mineExplode(mine_ent)
 {
-    RemoveBeamEntity(GetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity"));
-    RemoveMineEntity(mine_ent);
-
+    new beam_ent = GetEntPropEnt(mine_ent, Prop_Send, "m_hEffectEntity");
+    RemoveBeamEntity(beam_ent);
+    
     if (GetConVarBool(cvType))
     {
         // Set everyone in range on fire
@@ -1188,6 +1189,8 @@ mineExplode(mine_ent)
             }
         }
     }
+
+    RemoveMineEntity(mine_ent);
 }
 
 public bool:FilterAll(entity, contentsMask)

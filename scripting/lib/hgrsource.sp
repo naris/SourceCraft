@@ -14,15 +14,23 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
-#include <tf2_player>
-#include <tf2_flag>
+
+#include "tf2_player"
+#include "tf2_flag"
+
+// Define _TRACE to enable trace logging for debugging
+//#define _TRACE
+#tryinclude "lib/trace"
+#if !defined _trace_included
+    #include "trace"
+#endif
 
 /**
  * Description: Manage resources.
  */
-#tryinclude <lib/ResourceManager>
+#tryinclude "lib/ResourceManager"
 #if !defined _ResourceManager_included
-    #tryinclude <ResourceManager>
+    #tryinclude "ResourceManager"
 	#if !defined _ResourceManager_included
 		#define AUTO_DOWNLOAD   -1
 		#define DONT_DOWNLOAD    0
@@ -55,10 +63,6 @@
 		}
 	#endif
 #endif
-
-// Define _TRACE to enable trace logging for debugging
-#define _TRACE
-#include <lib/trace>
 
 //Use SourceCraft sounds if it is present
 #tryinclude "../SourceCraft/sc/version"

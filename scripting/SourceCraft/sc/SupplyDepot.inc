@@ -13,12 +13,12 @@
 #include <weapons>
 
 #undef REQUIRE_EXTENSIONS
-#include <tf2_ammo>
-#include <dod>
+#include "dod"
+#include "tf2_ammo"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <libtf2/AdvancedInfiniteAmmo>
+#include "libtf2/AdvancedInfiniteAmmo"
 #define REQUIRE_PLUGIN
 
 #include "sc/plugins"
