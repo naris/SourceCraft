@@ -5939,15 +5939,19 @@ public Native_CanProcessUpgrade(Handle:plugin,numParams)
     new bool:chargeCosts = bool:GetNativeCell(4);
     new bool:notify = bool:GetNativeCell(5);
 
+    TraceInto("Natives", "Native_CanProcessUpgrade", "client=%d:%N, race=%d, upgrade=%d, chargeCosts=%d, notify=%d", \
+              client, ValidClientIndex(client), race, upgrade, chargeCosts, notify);
+
     if (race <= 0)
         race = GetRace(client);
 
     new Handle:raceHandle = GetRaceHandle(race);
     new Faction:faction = (race >= 0) ? GetRaceFactionId(raceHandle) : Generic;
 
-    new Float:energy;
+    new Float:energy = GetEnergy(client);
     new Float:energy_cost = GetUpgradeRecurringEnergy(raceHandle,upgrade);
-    if (energy_cost > 0)
+    Trace("race=%d, raceHandle=0x%08x, energy_cost=%f, energy=%f", race, raceHandle, energy_cost, energy);
+    if (energy_cost > 0.0)
     {
         if (energy < energy_cost)
         {
@@ -5958,19 +5962,24 @@ public Native_CanProcessUpgrade(Handle:plugin,numParams)
                 DisplayMessage(client, Display_Ultimate, "%t", "InsufficientEnergyFor", upgradeName, energy_cost);
                 EmitEnergySoundToClient(client,faction);
             }
+            TraceReturn("CanProcessUpgrade=false; Insufficient Energy! %f < %f", energy, energy_cost);
             return false;
         }
     }
 
     if (!HasCooldownExpired(client, race, upgrade, notify))
+    {
+        TraceReturn("CanProcessUpgrade=false; Cooldown Expired!");
         return false;
+    }
     else
     {
         if (chargeCosts)
         {
-            if (energy_cost > 0)
+            if (energy_cost > 0.0)
                 SetEnergy(client, energy-energy_cost);
         }
+        TraceReturn("CanProcessUpgrade=true");
         return true;
     }
 }

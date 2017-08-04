@@ -406,14 +406,14 @@ public Action:OnGrabPlayer(client, target)
     else if (!IsValidClientAlive(target))
     {
         PrepareAndEmitSoundToClient(client,deniedWav);
-        //Trace("ZergOmegalisk:OnGrabPlayer; IsValidClientAlive() failed");
+        LogMessage("ZergOmegalisk:OnGrabPlayer; IsValidClientAlive() failed");
         return Plugin_Stop;
     }
     else if (GetClientTeam(client) == GetClientTeam(target))
     {
         PrepareAndEmitSoundToClient(client,errorWav);
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsTeammate");
-        //Trace("ZergOmegalisk:OnGrabPlayer; GetClientTeam() failed;");
+        LogMessage("ZergOmegalisk:OnGrabPlayer; GetClientTeam() failed, target is same team as client;");
         return Plugin_Stop;
     }
     else if (GetRestriction(client,Restriction_NoUltimates) ||
@@ -423,21 +423,21 @@ public Action:OnGrabPlayer(client, target)
         GetUpgradeName(raceID, tentacleID, upgradeName, sizeof(upgradeName), client);
         DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
         PrepareAndEmitSoundToClient(client,deniedWav);
-        //Trace("ZergOmegalisk:OnGrabPlayer; GetRestriction() failed;");
+        LogMessage("ZergOmegalisk:OnGrabPlayer; GetRestriction() failed;");
         return Plugin_Stop;
     }
     else if (GetImmunity(target,Immunity_Ultimates))
     {
         PrepareAndEmitSoundToClient(client,errorWav);
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsImmune");
-        //Trace("ZergOmegalisk:OnGrabPlayer; GetImmunity() failed;");
+        LogMessage("ZergOmegalisk:OnGrabPlayer; GetImmunity() failed;");
         return Plugin_Stop;
     }
     else if (IsBurrowed(target))
     {
         PrepareAndEmitSoundToClient(client,errorWav);
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsBurrowed");
-        //Trace("ZergOmegalisk:OnGrabPlayer; IsBurrowed() failed;");
+        LogMessage("ZergOmegalisk:OnGrabPlayer; IsBurrowed() failed;");
         return Plugin_Stop;
     }
     else
@@ -451,21 +451,21 @@ public Action:OnGrabPlayer(client, target)
                 GetUpgradeName(raceID, tentacleID, upgradeName, sizeof(upgradeName), client);
                 DisplayMessage(client, Display_Ultimate, "%t", "CantUseOnFlagCarrier", upgradeName);
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ZergOmegalisk:OnGrabPlayer; TF2_HasTheFlag() failed;");
+                LogMessage("ZergOmegalisk:OnGrabPlayer; TF2_HasTheFlag() failed;");
                 return Plugin_Stop;
             }
             else if (TF2_IsPlayerTaunting(client) ||
                      TF2_IsPlayerDazed(client))
             {
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ZergOmegalisk:OnGrabPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
+                LogMessage("ZergOmegalisk:OnGrabPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
                 return Plugin_Stop;
             }
             //case TFClass_Scout:
             else if (TF2_IsPlayerBonked(client))
             {
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ZergOmegalisk:OnGrabPlayer; TF2_IsPlayerBonked() failed;");
+                LogMessage("ZergOmegalisk:OnGrabPlayer; TF2_IsPlayerBonked() failed;");
                 return Plugin_Stop;
             }
             //case TFClass_Spy:
@@ -473,7 +473,7 @@ public Action:OnGrabPlayer(client, target)
                      TF2_IsPlayerDeadRingered(client))
             {
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ZergOmegalisk:OnGrabPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
+                LogMessage("ZergOmegalisk:OnGrabPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
                 return Plugin_Stop;
             }
             else if (TF2_IsPlayerDisguised(client))
@@ -487,7 +487,7 @@ public Action:OnGrabPlayer(client, target)
         }
         else
         {
-            //Trace("ZergOmegalisk:OnGrabPlayer; CanInvokeUpgrade() failed;");
+            LogMessage("ZergOmegalisk:OnGrabPlayer; CanInvokeUpgrade() failed;");
             return Plugin_Stop;
         }
     }
@@ -505,7 +505,7 @@ public Action:OnDragPlayer(client, target)
             GetUpgradeName(raceID, tentacleID, upgradeName, sizeof(upgradeName), client);
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
             PrepareAndEmitSoundToClient(client,deniedWav);
-            //Trace("ZergOmegalisk:OnDragPlayer; GetRestriction() failed;");
+            LogMessage("ZergOmegalisk:OnDragPlayer; GetRestriction() failed;");
             return Plugin_Stop;
         }
         else
@@ -516,14 +516,14 @@ public Action:OnDragPlayer(client, target)
                     TF2_IsPlayerDazed(client))
                 {
                     PrepareAndEmitSoundToClient(client,deniedWav);
-                    //Trace("ZergOmegalisk:OnDragPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
+                    LogMessage("ZergOmegalisk:OnDragPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
                     return Plugin_Stop;
                 }
                 //case TFClass_Scout:
                 else if (TF2_IsPlayerBonked(client))
                 {
                     PrepareAndEmitSoundToClient(client,deniedWav);
-                    //Trace("ZergOmegalisk:OnDragPlayer; TF2_IsPlayerBonked() failed;");
+                    LogMessage("ZergOmegalisk:OnDragPlayer; TF2_IsPlayerBonked() failed;");
                     return Plugin_Stop;
                 }
                 //case TFClass_Spy:
@@ -531,7 +531,7 @@ public Action:OnDragPlayer(client, target)
                         TF2_IsPlayerDeadRingered(client))
                 {
                     PrepareAndEmitSoundToClient(client,deniedWav);
-                    //Trace("ZergOmegalisk:OnDragPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
+                    LogMessage("ZergOmegalisk:OnDragPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
                     return Plugin_Stop;
                 }
                 else if (TF2_IsPlayerDisguised(client))
@@ -547,13 +547,16 @@ public Action:OnDragPlayer(client, target)
             }
             else
             {
-                //Trace("ZergOmegalisk:OnGrabPlayer=Plugin_Stop; CanProcessUpgrade() failed");
+                LogMessage("ZergOmegalisk:OnGrabPlayer=Plugin_Stop; CanProcessUpgrade() failed");
                 return Plugin_Stop;
             }
         }
     }
     else
+    {
+        LogMessage("ZergOmegalisk:OnGrabPlayer=Plugin_Continue;");
         return Plugin_Continue;
+    }
 }
 
 public Action:OnDropPlayer(client, target)

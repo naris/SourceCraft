@@ -63,6 +63,9 @@ CooldownType:GetCooldownType(client, race, upgrade)
 
 bool:HasCooldownExpired(client, race, upgrade, bool:notify=true)
 {
+    TraceInto("Cooldown", "HasCooldownExpired", "client=%d:%N, race=%d, upgrade=%d, notify=%d", \
+              client, ValidClientIndex(client), race, upgrade, notify);
+
     new Handle:pack = INVALID_HANDLE;
     new Float:currentTime = GetGameTime();
     new Float:cooldownExpires = GetCooldownExpireTime(client, race, upgrade, pack);
@@ -105,6 +108,8 @@ bool:HasCooldownExpired(client, race, upgrade, bool:notify=true)
                     DisplayMessage(client, Display_Ultimate, "%t", "WontBeReadyForMinutes",
                                    name, RoundToFloor(minutes), seconds);
                 }
+                TraceCat("Cooldown", "HasCooldownExpired: Cooldown has not expired! %f < %f, %f minutes (%f seconds) remaining", \
+                         currentTime, cooldownExpires, minutes, seconds);
             }
             else
             {
@@ -118,12 +123,23 @@ bool:HasCooldownExpired(client, race, upgrade, bool:notify=true)
                     DisplayMessage(client, Display_Ultimate, "%t", "WontBeReadyForSeconds",
                                    name, remaining);
                 }
+                TraceCat("Cooldown", "HasCooldownExpired: Cooldown has not expired! %f < %f, %f seconds remaining", \
+                         currentTime, cooldownExpires, remaining);
             }
         }
+        else
+        {
+            TraceCat("Cooldown", "HasCooldownExpired: Cooldown has not expired! %f < %f, %f seconds remaining", \
+                     currentTime, cooldownExpires, cooldownExpires - currentTime);
+        }
+        TraceReturn("expired=false");
         return false;
     }
     else
+    {
+        TraceReturn("expired=true");
         return true;
+    }
 }
 
 CreateCooldown(client, race, upgrade, Float:cooldown, const String:name[],

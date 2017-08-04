@@ -434,14 +434,14 @@ public Action:OnGrabPlayer(client, target)
     else if (!IsValidClientAlive(target))
     {
         PrepareAndEmitSoundToClient(client,deniedWav);
-        //Trace("ProtossPhoenix:OnGrabPlayer; IsValidClientAlive() failed");
+        LogMessage("ProtossPhoenix:OnGrabPlayer; IsValidClientAlive() failed");
         return Plugin_Stop;
     }
     else if (GetClientTeam(client) == GetClientTeam(target))
     {
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsTeammate");
         PrepareAndEmitSoundToClient(client,errorWav);
-        //Trace("ProtossPhoenix:OnGrabPlayer; GetClientTeam() failed;");
+        LogMessage("ProtossPhoenix:OnGrabPlayer; GetClientTeam() failed;");
         return Plugin_Stop;
     }
     else if (GetRestriction(client,Restriction_NoUltimates) ||
@@ -451,21 +451,21 @@ public Action:OnGrabPlayer(client, target)
         GetUpgradeName(raceID, beamID, upgradeName, sizeof(upgradeName), client);
         DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
         PrepareAndEmitSoundToClient(client,deniedWav);
-        //Trace("ProtossPhoenix:OnGrabPlayer; GetRestriction() failed;");
+        LogMessage("ProtossPhoenix:OnGrabPlayer; GetRestriction() failed;");
         return Plugin_Stop;
     }
     else if (GetImmunity(target,Immunity_Ultimates))
     {
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsImmune");
         PrepareAndEmitSoundToClient(client,errorWav);
-        //Trace("ProtossPhoenix:OnGrabPlayer; GetImmunity() failed;");
+        LogMessage("ProtossPhoenix:OnGrabPlayer; GetImmunity() failed;");
         return Plugin_Stop;
     }
     else if (IsBurrowed(target))
     {
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsBurrowed");
         PrepareAndEmitSoundToClient(client,errorWav);
-        //Trace("ProtossPhoenix:OnGrabPlayer; IsBurrowed() failed;");
+        LogMessage("ProtossPhoenix:OnGrabPlayer; IsBurrowed() failed;");
         return Plugin_Stop;
     }
     else if (CanInvokeUpgrade(client, raceID, beamID))
@@ -479,21 +479,21 @@ public Action:OnGrabPlayer(client, target)
                 GetUpgradeName(raceID, beamID, upgradeName, sizeof(upgradeName), client);
                 DisplayMessage(client, Display_Ultimate, "%t", "CantUseOnFlagCarrier", upgradeName);
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ProtossPhoenix:OnGrabPlayer; TF2_HasTheFlag() failed;");
+                LogMessage("ProtossPhoenix:OnGrabPlayer; TF2_HasTheFlag() failed;");
                 return Plugin_Stop;
             }
             else if (TF2_IsPlayerTaunting(client) ||
                      TF2_IsPlayerDazed(client))
             {
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ProtossPhoenix:OnGrabPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
+                LogMessage("ProtossPhoenix:OnGrabPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
                 return Plugin_Stop;
             }
             //case TFClass_Scout:
             else if (TF2_IsPlayerBonked(client))
             {
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ProtossPhoenix:OnGrabPlayer; TF2_IsPlayerBonked() failed;");
+                LogMessage("ProtossPhoenix:OnGrabPlayer; TF2_IsPlayerBonked() failed;");
                 return Plugin_Stop;
             }
             //case TFClass_Spy:
@@ -501,7 +501,7 @@ public Action:OnGrabPlayer(client, target)
                      TF2_IsPlayerDeadRingered(client))
             {
                 PrepareAndEmitSoundToClient(client,deniedWav);
-                //Trace("ProtossPhoenix:OnGrabPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
+                LogMessage("ProtossPhoenix:OnGrabPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
                 return Plugin_Stop;
             }
             else if (TF2_IsPlayerDisguised(client))
@@ -520,11 +520,11 @@ public Action:OnGrabPlayer(client, target)
         }
         else
         {
-            //Trace("ProtossPhoenix:OnGrabPlayer; CanInvokeUpgrade() failed;");
+            LogMessage("ProtossPhoenix:OnGrabPlayer; CanInvokeUpgrade() failed;");
             return Plugin_Stop;
         }
     }
-    //Trace("ProtossPhoenix:OnGrabPlayer; Plugin_Stop");
+    LogMessage("ProtossPhoenix:OnGrabPlayer; Plugin_Stop");
     return Plugin_Stop;
 }
 
@@ -540,7 +540,7 @@ public Action:OnDragPlayer(client, target)
             GetUpgradeName(raceID, beamID, upgradeName, sizeof(upgradeName), client);
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
             PrepareAndEmitSoundToClient(client,deniedWav);
-            //Trace("ProtossPhoenix:OnDragPlayer; GetRestriction() failed;");
+            LogMessage("ProtossPhoenix:OnDragPlayer; GetRestriction() failed;");
             return Plugin_Stop;
         }
         else
@@ -551,14 +551,14 @@ public Action:OnDragPlayer(client, target)
                     TF2_IsPlayerDazed(client))
                 {
                     PrepareAndEmitSoundToClient(client,deniedWav);
-                    //Trace("ProtossPhoenix:OnDragPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
+                    LogMessage("ProtossPhoenix:OnDragPlayer; TF2_IsPlayerTaunting() || TF2_IsPlayerDazed() failed;");
                     return Plugin_Stop;
                 }
                 //case TFClass_Scout:
                 else if (TF2_IsPlayerBonked(client))
                 {
                     PrepareAndEmitSoundToClient(client,deniedWav);
-                    //Trace("ProtossPhoenix:OnDragPlayer; TF2_IsPlayerBonked() failed;");
+                    LogMessage("ProtossPhoenix:OnDragPlayer; TF2_IsPlayerBonked() failed;");
                     return Plugin_Stop;
                 }
                 //case TFClass_Spy:
@@ -566,7 +566,7 @@ public Action:OnDragPlayer(client, target)
                          TF2_IsPlayerDeadRingered(client))
                 {
                     PrepareAndEmitSoundToClient(client,deniedWav);
-                    //Trace("ProtossPhoenix:OnDragPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
+                    LogMessage("ProtossPhoenix:OnDragPlayer; TF2_IsPlayerCloaked() || TF2_IsPlayerDeadRingered() failed;");
                     return Plugin_Stop;
                 }
                 else if (TF2_IsPlayerDisguised(client))
@@ -584,7 +584,7 @@ public Action:OnDragPlayer(client, target)
             }
             else
             {
-                //Trace("ProtossPhoenix:OnGrabPlayer=Plugin_Stop; CanProcessUpgrade() failed");
+                LogMessage("ProtossPhoenix:OnGrabPlayer=Plugin_Stop; CanProcessUpgrade() failed");
                 return Plugin_Stop;
             }
         }
