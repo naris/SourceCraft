@@ -164,10 +164,10 @@ stock bool:SetupSound(const String:sound[], bool:force=false, download=AUTO_DOWN
                        bool:precache=false, bool:preload=false)
  {
 #if defined REQUIRE_PLUGIN
-    return PreSetupSound(sound, force=false, download, false, preload);
+    return PreSetupSound(sound, force, download, precache, preload);
 #else
     if (IsResourceManagerAvailable())
-        return PreSetupSound(sound, force=false, download, false, preload);
+        return PreSetupSound(sound, force, download, precache, preload);
     else
     {
         if (download != DONT_DOWNLOAD && FileExists(sound))
@@ -286,9 +286,9 @@ stock PrepareAndEmitSound(const clients[],
     else
     {
 #if defined REQUIRE_PLUGIN
-        if (PrepareSound(name))
+        if (PrepareSound(sample))
 #else
-        if (!IsResourceManagerAvailable() || PrepareSound(name))
+        if (!IsResourceManagerAvailable() || PrepareSound(sample))
 #endif
         {
             EmitSound(clients, numClients, sample, entity, channel,
