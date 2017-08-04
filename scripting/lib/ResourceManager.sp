@@ -56,13 +56,13 @@ public Plugin:myinfo = {
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
     // Register Natives
-    CreateNative("AddDirToDownloadTable",	Native_AddDirToDownloadTable);
-    CreateNative("PreSetupModel",			Native_SetupModel);
-    CreateNative("PreSetupDecal",			Native_SetupDecal);
-    CreateNative("PreSetupSound",			Native_SetupSound);
-    CreateNative("PrepModel",				Native_PrepareModel);
-    CreateNative("PrepDecal",				Native_PrepareDecal);
-    CreateNative("PrepSound",				Native_PrepareSound);
+    CreateNative("AddDirToDownloadTable",   Native_AddDirToDownloadTable);
+    CreateNative("PreSetupModel",           Native_SetupModel);
+    CreateNative("PreSetupDecal",           Native_SetupDecal);
+    CreateNative("PreSetupSound",           Native_SetupSound);
+    CreateNative("PrepModel",               Native_PrepareModel);
+    CreateNative("PrepDecal",               Native_PrepareDecal);
+    CreateNative("PrepSound",               Native_PrepareSound);
 
     RegPluginLibrary("ResourceManager");
     return APLRes_Success;
@@ -175,13 +175,13 @@ public OnMapEnd()
 /**
  * Sets up a given sound.
  *
- * @param sound			Name of the sound to precache.
- * @param force		    If force is true the sound limit will be ignored for this sound.
- * @param download		If download is 2 the file will be added to the downloadables table,
+ * @param sound         Name of the sound to precache.
+ * @param force         If force is true the sound limit will be ignored for this sound.
+ * @param download      If download is 2 the file will be added to the downloadables table,
  *                      If download is 1 the file be added if it's within the allotted number of files.
- * @param precache		If precache is true the file will be precached.
- * @param preload		If preload is true the file will be precached before level startup.
- * @return				Returns true if successfully precached.
+ * @param precache      If precache is true the file will be precached.
+ * @param preload       If preload is true the file will be precached before level startup.
+ * @return              Returns true if successfully precached.
  *
  * native bool:SetupSound(const String:sound[], download=DOWNLOAD, bool:force=false,
  *                        bool:precache=false, bool:preload=false);
@@ -301,10 +301,10 @@ public Native_SetupSound(Handle:plugin,numParams)
 /**
  * Prepares a given sound for use.
  *
- * @param decal			Name of the sound to prepare.
- * @param force		    If force is true the sound limit will be ignored for this sound.
- * @param preload		If preload is true the file will be precached immdiately (if required).
- * @return				Returns false if the sound limit has been reached.
+ * @param decal         Name of the sound to prepare.
+ * @param force         If force is true the sound limit will be ignored for this sound.
+ * @param preload       If preload is true the file will be precached immdiately (if required).
+ * @return              Returns false if the sound limit has been reached.
  *
  * native PrepareSound(const String:sound[], bool:force=false, bool:preload=false);
  */
@@ -340,12 +340,12 @@ public Native_PrepareSound(Handle:plugin,numParams)
 /**
  * Sets up a given model.
  *
- * @param model			Name of the model to precache.
- * @param index			Returns the model index (if precached).
- * @param download		If download is true the file will be added to the downloadables table.
- * @param precache		If precache is true the file will be precached.
- * @param preload		If preload is true the file will be precached before level startup.
- * @return				Returns a model index (if precached).
+ * @param model         Name of the model to precache.
+ * @param index         Returns the model index (if precached).
+ * @param download      If download is true the file will be added to the downloadables table.
+ * @param precache      If precache is true the file will be precached.
+ * @param preload       If preload is true the file will be precached before level startup.
+ * @return              Returns a model index (if precached).
  * 
  * native SetupModel(const String:model[], &index=0, bool:download=true,
  *                   bool:precache=false, bool:preload=false);
@@ -402,10 +402,10 @@ public Native_SetupModel(Handle:plugin,numParams)
 /**
  * Prepares a given model for use.
  *
- * @param decal			Name of the model to prepare.
- * @param index			Returns the model index.
- * @param preload		If preload is true the file will be precached before level startup (if required).
- * @return				Returns a model index.
+ * @param decal         Name of the model to prepare.
+ * @param index         Returns the model index.
+ * @param preload       If preload is true the file will be precached before level startup (if required).
+ * @return              Returns a model index.
  * 
  * native PrepareModel(const String:model[], &index=0, bool:preload=true);
  */
@@ -434,12 +434,12 @@ public Native_PrepareModel(Handle:plugin,numParams)
 /**
  * Sets up a given decal.
  *
- * @param decal			Name of the decal to precache.
- * @param index			Returns the decal index (if precached).
- * @param download		If download is true the file will be added to the downloadables table.
- * @param precache		If precache is true the file will be precached.
- * @param preload		If preload is true the file will be precached before level startup.
- * @return				Returns a decal index (if precached).
+ * @param decal         Name of the decal to precache.
+ * @param index         Returns the decal index (if precached).
+ * @param download      If download is true the file will be added to the downloadables table.
+ * @param precache      If precache is true the file will be precached.
+ * @param preload       If preload is true the file will be precached before level startup.
+ * @return              Returns a decal index (if precached).
  *
  * native SetupDecal(const String:decal[], &index=0, bool:download=true,
  *                   bool:precache=false, bool:preload=false);
@@ -482,10 +482,10 @@ public Native_SetupDecal(Handle:plugin,numParams)
 /**
  * Prepares a given decal for use.
  *
- * @param decal			Name of the decal to prepare.
- * @param index			Returns the decal index.
- * @param preload		If preload is true the file will be precached before level startup (if required).
- * @return				Returns a decal index.
+ * @param decal         Name of the decal to prepare.
+ * @param index         Returns the decal index.
+ * @param preload       If preload is true the file will be precached before level startup (if required).
+ * @return              Returns a decal index.
  *
  * native PrepareDecal(const String:model[], &index=0, bool:preload=false);
  */
@@ -514,15 +514,15 @@ public Native_PrepareDecal(Handle:plugin,numParams)
 /**
  * Adds all the files in a directory to the Download Table
  *
- * @param directory		Name of the directory.
- * @param recursive		If true, descends child directories to recursively add all files therein.
+ * @param directory     Name of the directory.
+ * @param recursive     If true, descends child directories to recursively add all files therein.
  * @noreturn
  *
  * native AddDirToDownloadTable(const String:directory[], bool:recursive=false);
  */
-public Native_AddDirectoryToDownloadTable(Handle:plugin,numParams)
+public Native_AddDirToDownloadTable(Handle:plugin,numParams)
 {
-    decl String:Directory[PLATFORM_MAX_PATH+1];
+    decl String:directory[PLATFORM_MAX_PATH+1];
     GetNativeString(1, directory, sizeof(directory));
     AddDirToDownloadTable(directory, bool:GetNativeCell(2));
 }
@@ -535,12 +535,12 @@ AddDirToDownloadTable(const String:directory[], bool:recursive=false)
     new Handle:Dir = OpenDirectory(directory), FileType:type;
     while(ReadDirEntry(Dir, fileName, sizeof(fileName), type))     
     {
-        if (Type == FileType_Directory && recursive)         
+        if (type == FileType_Directory && recursive)         
         {           
             FormatEx(path, sizeof(path), "%s/%s", directory, fileName);
-            AddDirToDownloadTable(FileName);
+            AddDirToDownloadTable(fileName);
         }                 
-        else if (Type == FileType_File)
+        else if (type == FileType_File)
         {
             FormatEx(path, sizeof(path), "%s/%s", directory, fileName);
             AddFileToDownloadsTable(path);

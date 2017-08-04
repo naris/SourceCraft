@@ -6,8 +6,8 @@
  */
 
 //Osaka: This plugin IS CPU INTENSIVE.
-//	I will note the various optimizations, great and small, used to bring the intensiveness down as far as possible.
-//	One optimization not used, but that is implimentable, is to cache ConVar's directly into variables.
+//  I will note the various optimizations, great and small, used to bring the intensiveness down as far as possible.
+//  One optimization not used, but that is implimentable, is to cache ConVar's directly into variables.
 
 #pragma semicolon 1
 
@@ -28,7 +28,7 @@ enum InfectionFlags (<<= 1)
 {
     Infection_Normal = 0,       // Normal infection
     Infection_Friendly = 1,     // Infected by friendly forces
-	Infection_Contagious,	    // Infection can spread
+    Infection_Contagious,       // Infection can spread
     Infection_Irradiation,      // Infection is Irradiation
 };
 
@@ -121,7 +121,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
     OnInfectedHandle=CreateForward(ET_Hook,Param_Cell,Param_Cell,Param_Cell,Param_Cell,Param_Array);
     OnInfectionHurtHandle=CreateForward(ET_Hook,Param_Cell,Param_Cell,Param_CellByRef);
     RegPluginLibrary("MedicInfect");
-	return APLRes_Success;
+    return APLRes_Success;
 }
 
 public OnPluginStart()
@@ -165,7 +165,7 @@ public OnPluginStart()
     Cvar_InfectOpposingTeam = CreateConVar("sv_medic_infect_enemy", "1", "Allow medics to infect enemies", FCVAR_NONE);
 
     Cvar_SpreadEnable = CreateConVar("sv_medic_infect_allow_spread", "1", "Can the infection spread?", FCVAR_NONE);
-    Cvar_SpreadDistance = CreateConVar("sv_medic_infect_spread_distance", "2000.0", "Distance infection can spread", FCVAR_NONE, true, 0.0);	
+    Cvar_SpreadDistance = CreateConVar("sv_medic_infect_spread_distance", "2000.0", "Distance infection can spread", FCVAR_NONE, true, 0.0);    
     Cvar_SpreadCheckTime = CreateConVar("sv_medic_infect_spread_check_time", "2.0", "Amount of time between checks, 0.0 for gameframe", FCVAR_NONE, true, 0.0);
 
     Cvar_SpreadAll = CreateConVar("sv_medic_infect_spread_all", "0", "Allow medical infections to run rampant",FCVAR_NONE);
@@ -230,7 +230,7 @@ public OnConfigsExecuted()
 }
 
 // Osaka: catching CVAR's is cheap; reallocating a timer is slower.
-//	So catch the ConVar changes and change the timer only in those situations
+//  So catch the ConVar changes and change the timer only in those situations
 public HandleInfectionChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
     if (InfectionTimer != INVALID_HANDLE)
@@ -249,7 +249,7 @@ public Action:HandleInfection(Handle:timer)
     for(new client = 1; client <= MaxClients; client++)
     {
         // Osaka: Don't check to see if they are in game. Infected people must be in game.
-        //	Doing this reduces the CPU usage significantly for high change rates, but requires testing.
+        //  Doing this reduces the CPU usage significantly for high change rates, but requires testing.
         if (ClientInfected[client] == 0)
             continue;
 
@@ -314,7 +314,7 @@ public Action:HandleInfection(Handle:timer)
             LogToGame("%L was damaged %d by %s", client, amt, agent);
             PrintToConsole(client, "%L was damaged %d by %s", client, amt, agent);
         }
-    }	
+    }   
 }
 
 // Osaka: Redundant, but allows us to skip checks
@@ -428,8 +428,8 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 }
 
 // Osaka: These checks are worth it if the variables are usually false
-//	Spreading the infection need not be in game frame, but some people might want it to be.
-//	If that is the case, uncomment the GameFrame() function.
+//  Spreading the infection need not be in game frame, but some people might want it to be.
+//  If that is the case, uncomment the GameFrame() function.
 /*
 public OnGameFrame()
 {
@@ -516,17 +516,17 @@ public MedicInfect(to, from, bool:friendlyInfect, bool:irradiate)
     else if(!friendlyInfect && (same || !GetConVarInt(Cvar_InfectOpposingTeam) ) )
         return;
     else if(friendlyInfect && (!same || !GetConVarInt(Cvar_InfectSameTeam) ) )
-        return;	
+        return; 
     else
     {
         if (NativeControl)
         {
             if (!NativeMedicArmed[from])
-                return;	
+                return; 
         }
 
         if (MedicInfectDelay[from] > GetGameTime()) 
-            return;	
+            return; 
         if (Cvar_InfectMedics && !GetConVarInt(Cvar_InfectMedics) &&
             TF2_GetPlayerClass(to) == TFClass_Medic)
         {
@@ -552,17 +552,17 @@ public MedicInfect(to, from, bool:friendlyInfect, bool:irradiate)
 }
 
 // Osaka: Spread algorithm
-//	The naive algorithm would check each player against every other player, resulting in n^2 behavior (32 * 32)
-//	However, note that infected players need only check against uninfected players, and uninfected players need not check at all
-//	This reduces the complexity to (n * m), where n = infected and m = uninfected. (16 * 16)
+//  The naive algorithm would check each player against every other player, resulting in n^2 behavior (32 * 32)
+//  However, note that infected players need only check against uninfected players, and uninfected players need not check at all
+//  This reduces the complexity to (n * m), where n = infected and m = uninfected. (16 * 16)
 
-//	How does this improve anything? 
-//	The worst case is actually significantly better. 
-//	32 * 32 checks is enormous, and done for every single iteration.
-//	The worst case for n * m is when n = m, at which case it reduces to n^2.
-//	HOWEVER, note that in this case, n = all/2, not n = all such as in the first example.
-//	This leads me to believe the n * m algorithm to perform, on average, logarithmically.
-//	I cannot prove it, however, for our bounded example of 32 players, it is obvious that 16 * 16 for a worst case is better than 32 * 32.
+//  How does this improve anything? 
+//  The worst case is actually significantly better. 
+//  32 * 32 checks is enormous, and done for every single iteration.
+//  The worst case for n * m is when n = m, at which case it reduces to n^2.
+//  HOWEVER, note that in this case, n = all/2, not n = all such as in the first example.
+//  This leads me to believe the n * m algorithm to perform, on average, logarithmically.
+//  I cannot prove it, however, for our bounded example of 32 players, it is obvious that 16 * 16 for a worst case is better than 32 * 32.
 
 public HandleSpreadChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
@@ -622,10 +622,10 @@ public Action:SpreadInfection(Handle:timer)
         for(check = 0; check < NotInfectedCount; check++)
         {
             // Osaka: We could gain speed by disabling those who are newly infected
-            //	However, the common case is that players will NOT be infected via this method
-            //	The reason for this is that there is a VERY LARGE amount of space where there ISN'T infected players
-            //	Therefore, we reasonably optimize for the common case, and do not encumber the process
-            //	This causes the worst case to be easier to predict, and makes certain we don't prematurely optimize
+            //  However, the common case is that players will NOT be infected via this method
+            //  The reason for this is that there is a VERY LARGE amount of space where there ISN'T infected players
+            //  Therefore, we reasonably optimize for the common case, and do not encumber the process
+            //  This causes the worst case to be easier to predict, and makes certain we don't prematurely optimize
 
             if(GetVectorDistance(InfectedVec[client], NotInfectedVec[check], true) < distance )
             {
@@ -854,7 +854,7 @@ stock GetInfectColors(client, &r=0, &b=0, &g=0, &a=0)
         b = GetConVarInt(Cvar_BothTeamsBlue);
         g = GetConVarInt(Cvar_BothTeamsGreen);
         a = GetConVarInt(Cvar_BothTeamsAlpha);
-    }		
+    }       
     else if( team == TFTeam_Red)
     {
         r = GetConVarInt(Cvar_RTeamRed);

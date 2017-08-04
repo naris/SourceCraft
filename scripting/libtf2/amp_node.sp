@@ -24,9 +24,10 @@
 
 #undef REQUIRE_PLUGIN
 #include "lib/ResourceManager"
-#include "libtf2/ztf2grab"
+#include "lib/ztf2grab"
 #define REQUIRE_PLUGIN
 
+#if !defined SolidType_t
 enum SolidType_t
 {
     SOLID_NONE          = 0,    // no solid model
@@ -38,6 +39,7 @@ enum SolidType_t
     SOLID_VPHYSICS      = 6,    // solid vphysics object, get vcollide from the model and collide with that
     SOLID_LAST,
 };
+#endif
 
 #define MAXENTITIES         2048
 
