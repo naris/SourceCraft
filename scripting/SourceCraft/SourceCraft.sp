@@ -82,6 +82,9 @@ new bool:g_bChargeForUpgrades     = false;
 new bool:g_bSaveUpgrades          = true;
 new bool:g_bSaveXP                = true;
 
+new bool:g_bShowDisabledRaces     = false;
+new g_iRaceMenuThreshold          = 16;
+
 new g_iMaxCrystals                = 100;
 new g_iMaxVespene                 = 5000;
 new g_iMinPlayers                 = 4;

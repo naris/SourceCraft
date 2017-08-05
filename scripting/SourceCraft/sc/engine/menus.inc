@@ -157,6 +157,7 @@ RaceMenu(client,MenuMode:mode)
         if (indexCount > 1)
         {
             new lastIndex = indexCount - 1;
+            new level = GetOverallLevel(client);
             new bool:change   = bool:(mode & ChangeRaceMode);
             new Handle:crMenu = CreateMenu(Faction_Selected);
 
@@ -169,46 +170,66 @@ RaceMenu(client,MenuMode:mode)
             if (mode & EnableMenuExitBack)
                 SetMenuExitBackButton(crMenu,true);
 
-            new level = GetOverallLevel(client);
+            new raceCount = 0;
+            if (g_bShowDisabledRaces)
+            {
+                raceCount = indexCount;
+            }
+            else
+            {
+                for (new index=1; index < indexCount; index++)
+                {
+                    new Handle:raceHandle = GetRaceIndexHandle(index);
+                    new reqLevel = GetRaceRequiredLevel(raceHandle);
+                    if (level >= reqLevel && reqLevel >= 0)
+                    {
+                        raceCount++;
+                    }
+                }
+            }
+            
             new Faction:lastFaction = Unassigned;
-            for(new index=1; index < indexCount; index++)
+            for (new index=1; index < indexCount; index++)
             {
                 new Handle:raceHandle = GetRaceIndexHandle(index);
                 new Faction:faction   = GetRaceFaction(raceHandle);
                 if (faction != lastFaction)
                 {
-                    lastFaction = faction;
-                    if (index < indexCount)
+                    new reqLevel = GetRaceRequiredLevel(raceHandle);
+                    new bool:disable = (level < reqLevel || reqLevel < 0);
+                    if (g_bShowDisabledRaces || !disable)
                     {
-                        new Faction:nextFaction = (index < lastIndex) ? GetRaceFaction(GetRaceIndexHandle(index+1)) : faction;
-                        if (nextFaction != faction || indexCount < 16) /* TODO: Change this to a parameter */
+                        lastFaction = faction;
+                        if (index < indexCount)
                         {
-                            decl String:item[ITEM_STRING_LENGTH];
-                            new reqLevel = GetRaceRequiredLevel(raceHandle);
-                            new bool:disable = (level < reqLevel || reqLevel < 0);
-                            GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
-                            if (item[0] != 0)
+                            new Faction:nextFaction = (index < lastIndex) ? GetRaceFaction(GetRaceIndexHandle(index+1)) : faction;
+                            if (nextFaction != faction || raceCount < g_iRaceMenuThreshold)
                             {
-                                decl String:rbuf[SMALL_STRING_LENGTH];
-                                Format(rbuf,sizeof(rbuf),"%d",GetRaceId(raceHandle));
-                                new style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                                AddMenuItem(crMenu,rbuf,item,style);
-                                continue;
+                                decl String:item[ITEM_STRING_LENGTH];
+                                GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
+                                if (item[0] != 0)
+                                {
+                                    decl String:rbuf[SMALL_STRING_LENGTH];
+                                    Format(rbuf,sizeof(rbuf),"%d",GetRaceId(raceHandle));
+                                    new style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                                    AddMenuItem(crMenu,rbuf,item,style);
+                                    continue;
+                                }
                             }
                         }
+
+                        decl String:name[NAME_STRING_LENGTH];
+                        GetFactionName(faction,name,sizeof(name), client);
+                        if (name[0] == '\0')
+                            Format(name, sizeof(name), "%T", "Miscellaneous", client);
+
+                        decl String:item[ITEM_STRING_LENGTH];
+                        Format(item, sizeof(item), "%T", "FactionItem", client, name);
+
+                        decl String:rbuf[SMALL_STRING_LENGTH];
+                        Format(rbuf,sizeof(rbuf),"%d",-index);
+                        AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DEFAULT);
                     }
-
-                    decl String:name[NAME_STRING_LENGTH];
-                    GetFactionName(faction,name,sizeof(name), client);
-                    if (name[0] == '\0')
-                        Format(name, sizeof(name), "%T", "Miscellaneous", client);
-
-                    decl String:item[ITEM_STRING_LENGTH];
-                    Format(item, sizeof(item), "%T", "FactionItem", client, name);
-
-                    decl String:rbuf[SMALL_STRING_LENGTH];
-                    Format(rbuf,sizeof(rbuf),"%d",-index);
-                    AddMenuItem(crMenu,rbuf,item,ITEMDRAW_DEFAULT);
                 }
             }
             gRaceMenuMode[client]=mode;
@@ -284,13 +305,16 @@ FactionMenu(client, start=-1)
                 decl String:item[ITEM_STRING_LENGTH];
                 new reqLevel = GetRaceRequiredLevel(raceHandle);
                 new bool:disable = (level < reqLevel || reqLevel < 0);
-                GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
-                if (item[0] != 0)
+                if (g_bShowDisabledRaces || !disable)
                 {
-                    decl String:rbuf[SMALL_STRING_LENGTH];
-                    Format(rbuf,sizeof(rbuf),"%d",GetRaceId(raceHandle));
-                    new style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
-                    AddMenuItem(crMenu,rbuf,item,style);
+                    GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
+                    if (item[0] != 0)
+                    {
+                        decl String:rbuf[SMALL_STRING_LENGTH];
+                        Format(rbuf,sizeof(rbuf),"%d",GetRaceId(raceHandle));
+                        new style = (change && disable) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+                        AddMenuItem(crMenu,rbuf,item,style);
+                    }
                 }
             }
         }

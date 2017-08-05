@@ -1267,6 +1267,9 @@ bool:ParseSettings()
         KvSetNum(g_SourceCraftConfigHandle, "charge_for_upgrades", g_bChargeForUpgrades);
         KvSetNum(g_SourceCraftConfigHandle, "save_upgrades", g_bSaveUpgrades);
 
+        KvSetNum(g_SourceCraftConfigHandle, "show_disabled_races", g_bShowDisabledRaces);
+        KvSetNum(g_SourceCraftConfigHandle, "race_menu_threshold", g_iRaceMenuThreshold);
+
         KvSetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
         KvSetNum(g_SourceCraftConfigHandle, "min_ultimate", g_iMinUltimate);
         KvSetNum(g_SourceCraftConfigHandle, "max_crystals", g_iMaxCrystals);
@@ -1314,6 +1317,9 @@ bool:ParseSettings()
         g_bChargeForUpgrades=bool:KvGetNum(g_SourceCraftConfigHandle, "charge_for_upgrades", g_bChargeForUpgrades);
         g_bSaveUpgrades=bool:KvGetNum(g_SourceCraftConfigHandle, "save_upgrades", g_bSaveUpgrades);
 
+        g_bShowDisabledRaces=bool:KvGetNum(g_SourceCraftConfigHandle, "show_disabled_races", g_bShowDisabledRaces);
+        g_iRaceMenuThreshold=KvGetNum(g_SourceCraftConfigHandle, "race_menu_threshold", g_iRaceMenuThreshold);
+
         g_iMinPlayers=KvGetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
         g_iMinUltimate=KvGetNum(g_SourceCraftConfigHandle, "min_ultimate", g_iMinUltimate);
         g_iMaxCrystals=KvGetNum(g_SourceCraftConfigHandle, "max_crystals", g_iMaxCrystals);
@@ -1325,8 +1331,8 @@ bool:ParseSettings()
         g_fMvMEnergyRate=KvGetFloat(g_SourceCraftConfigHandle, "mvm_energy_rate", g_fMvMEnergyRate);
         g_fMvMEnergyFactor=KvGetFloat(g_SourceCraftConfigHandle, "mvm_energy_factor", g_fMvMEnergyFactor);
 
-        g_iUpgradeCrystalsCost = KvGetNum(g_SourceCraftConfigHandle, "upgrade_crystals_cost", g_iUpgradeCrystalsCost);
-        g_iUpgradeVespeneCost = KvGetNum(g_SourceCraftConfigHandle, "upgrade_vespene_cost", g_iUpgradeVespeneCost);
+        g_iUpgradeCrystalsCost=KvGetNum(g_SourceCraftConfigHandle, "upgrade_crystals_cost", g_iUpgradeCrystalsCost);
+        g_iUpgradeVespeneCost=KvGetNum(g_SourceCraftConfigHandle, "upgrade_vespene_cost", g_iUpgradeVespeneCost);
 
         // Package options
         g_fPackageDuration=KvGetFloat(g_SourceCraftConfigHandle, "package_duration", g_fPackageDuration);
