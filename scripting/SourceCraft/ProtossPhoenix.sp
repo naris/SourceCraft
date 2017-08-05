@@ -447,13 +447,13 @@ public Action:OnGrabPlayer(client, target)
         TraceReturn("IsValidClientAlive() failed");
         return Plugin_Stop;
     }
-    else if (GetClientTeam(client) == GetClientTeam(target))
+    /*else if (GetClientTeam(client) == GetClientTeam(target))
     {
         DisplayMessage(client, Display_Ultimate, "%t", "TargetIsTeammate");
         PrepareAndEmitSoundToClient(client,errorWav);
         TraceReturn("GetClientTeam() failed;");
         return Plugin_Stop;
-    }
+    }*/
     else if (GetRestriction(client,Restriction_NoUltimates) ||
              GetRestriction(client,Restriction_Stunned))
     {
@@ -478,9 +478,9 @@ public Action:OnGrabPlayer(client, target)
         TraceReturn(" IsBurrowed() failed;");
         return Plugin_Stop;
     }
-    else if (CanInvokeUpgrade(client, raceID, beamID))
+    else
     {
-        if (GameType == tf2)
+        /*if (GameType == tf2)
         {
             // Don't let flag carrier get grabbed to prevent crashes.
             if (GameType == tf2 && TF2_HasTheFlag(target))
@@ -516,7 +516,7 @@ public Action:OnGrabPlayer(client, target)
             }
             else if (TF2_IsPlayerDisguised(client))
                 TF2_RemovePlayerDisguise(client);
-        }
+        }*/
 
         if (CanInvokeUpgrade(client, raceID, beamID))
         {
@@ -536,8 +536,6 @@ public Action:OnGrabPlayer(client, target)
             return Plugin_Stop;
         }
     }
-    TraceReturn("Plugin_Stop");
-    return Plugin_Stop;
 }
 
 public Action:OnDragPlayer(client, target)
@@ -560,7 +558,7 @@ public Action:OnDragPlayer(client, target)
         }
         else
         {
-            if (GameType == tf2)
+            /*if (GameType == tf2)
             {
                 if (TF2_IsPlayerTaunting(client) ||
                     TF2_IsPlayerDazed(client))
@@ -586,7 +584,7 @@ public Action:OnDragPlayer(client, target)
                 }
                 else if (TF2_IsPlayerDisguised(client))
                     TF2_RemovePlayerDisguise(client);
-            }
+            }*/
 
             if (CanProcessUpgrade(client, raceID, beamID))
             {

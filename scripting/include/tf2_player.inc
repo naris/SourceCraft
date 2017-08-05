@@ -335,3 +335,102 @@ stock TF2_GetPlayerConditionHighBits(client)
 {
 	return GetEntProp(client, Prop_Send, "m_nPlayerCondEx");
 }
+
+/**
+ * Gets a string representing the player's condition bits
+ * Mostly used to debug and/or log them in a, more or less, readable fashion
+ *
+ * @param client		Player's index.
+ * @return				String representing the Player's condition bits
+ */
+stock TF2_GetPlayerConditionString(client, String:condStr[], condStrLen, &pcond=0, &pcond2)
+{
+    pcond = TF2_GetPlayerConditionLowBits(client);
+    pcond2 = TF2_GetPlayerConditionHighBits(client);
+    
+    //                        00000000001111111111222222222233333333334
+    //                        01234567890123456789012345678901234567890
+    new String:condFlags[] = "                                        ";
+    if (TF2_IsPlayerSlowed(client))
+        condFlags[0]  = 'S';
+    if (TF2_IsPlayerZoomed(client))
+        condFlags[1]  = 'Z';
+    if (TF2_IsPlayerDisguising(client))
+        condFlags[2]  = 'd';
+    if (TF2_IsPlayerDisguised(client))
+        condFlags[3]  = 'D';
+    if (TF2_IsPlayerCloaked(client))
+        condFlags[4]  = 'C';
+    if (TF2_IsPlayerUbercharged(client))
+        condFlags[5]  = 'U';
+    if (TF2_IsPlayerTeleportedGlow(client))
+        condFlags[6]  = 'g';
+    if (TF2_IsPlayerTaunting(client))
+        condFlags[7]  = 'T';
+    if (TF2_IsPlayerUberchargeFading(client))
+        condFlags[8]  = 'f';
+    if (TF2_IsPlayerCloakFlicker(client))
+        condFlags[9]  = 'c';
+    if (TF2_IsPlayerTeleporting(client))
+        condFlags[10] = 'p';
+    if (TF2_IsPlayerKritzkrieged(client))
+        condFlags[11] = 'K';
+    if (TF2_IsPlayerTmpDamageBonus(client))
+        condFlags[12] = '2';
+    if (TF2_IsPlayerDeadRingered(client))
+        condFlags[13] = 'R';
+    if (TF2_IsPlayerBonked(client))
+        condFlags[14] = 'b';
+    if (TF2_IsPlayerDazed(client))
+        condFlags[15] = 'A';
+    if (TF2_IsPlayerBuffed(client))
+        condFlags[16] = 'B';
+    if (TF2_IsPlayerCharging(client))
+        condFlags[17] = '-';
+    if (TF2_IsPlayerDemoBuff(client))
+        condFlags[18] = '>';
+    if (TF2_IsPlayerCritCola(client))
+        condFlags[19] = 'r';
+    if (TF2_IsPlayerInHealRadius(client))
+        condFlags[20] = '+';
+    if (TF2_IsPlayerHealing(client))
+        condFlags[21] = 'H';
+    if (TF2_IsPlayerOnFire(client))
+        condFlags[22] = 'F';
+    if (TF2_IsPlayerOverhealed(client))
+        condFlags[23] = 'O';
+    if (TF2_IsPlayerJarated(client))
+        condFlags[24] = 'J';
+    if (TF2_IsPlayerBleeding(client))
+        condFlags[25] = 'L';
+    if (TF2_IsPlayerDefenseBuffed(client))
+        condFlags[26] = 'E';
+    if (TF2_IsPlayerMilked(client))
+        condFlags[27] = 'M';
+    if (TF2_IsPlayerMegaHealed(client))
+        condFlags[28] = '!';
+    if (TF2_IsPlayerRegenBuffed(client))
+        condFlags[29] = 'G';
+    if (TF2_IsPlayerMarkedForDeath(client))
+        condFlags[30] = 'e';
+    if (TF2_IsPlayerNoHealingDamageBuff(client))
+        condFlags[31] = '3';
+    if (TF2_IsPlayerSpeedBuffAlly(client))
+        condFlags[32] = 'a';
+    if (TF2_IsPlayerHalloweenCritCandy(client))
+        condFlags[33] = 'y';
+    if (TF2_IsPlayerCritHype(client))
+        condFlags[34] = 'h';
+    if (TF2_IsPlayerCritOnFirstBlood(client))
+        condFlags[35] = '1';
+    if (TF2_IsPlayerCritOnWin(client))
+        condFlags[36] = 'W';
+    if (TF2_IsPlayerCritOnFlagCapture(client))
+        condFlags[37] = '#';
+    if (TF2_IsPlayerCritOnKill(client))
+        condFlags[38] = '*';
+    if (TF2_IsPlayerRestrictToMelee(client))
+        condFlags[39] = 'M';
+
+    return strcopy(condStr, condStrLen, condFlags);
+}

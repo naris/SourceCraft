@@ -34,7 +34,7 @@
 #tryinclude "../SourceCraft/sc/version"
 #if defined SOURCECRAFT_VERSION
     #define SEEKING_SOUND       "sc/ropeshoot2.wav"
-    #define GRABHIT_SOUND  	    "sc/zluhit00.mp3"
+    #define GRABHIT_SOUND       "sc/zluhit00.mp3"
     #define PULLER_SOUND        "sc/intonydus.mp3"
     #define DENIED_SOUND        "sc/buzz.wav"
     #define ERROR_SOUND         "sc/perror.mp3"
@@ -64,26 +64,26 @@
 enum Collision_Group_t
 {
     COLLISION_GROUP_NONE  = 0,
-    COLLISION_GROUP_DEBRIS,				// Collides with nothing but world and static stuff
-    COLLISION_GROUP_DEBRIS_TRIGGER,		// Same as debris, but hits triggers
-    COLLISION_GROUP_INTERACTIVE_DEB,	// RIS, // Collides with everything except other interactive debris or debris
-    COLLISION_GROUP_INTERACTIVE,    	// Collides with everything except interactive debris or debris
+    COLLISION_GROUP_DEBRIS,             // Collides with nothing but world and static stuff
+    COLLISION_GROUP_DEBRIS_TRIGGER,     // Same as debris, but hits triggers
+    COLLISION_GROUP_INTERACTIVE_DEB,    // RIS, // Collides with everything except other interactive debris or debris
+    COLLISION_GROUP_INTERACTIVE,        // Collides with everything except interactive debris or debris
     COLLISION_GROUP_PLAYER,
     COLLISION_GROUP_BREAKABLE_GLASS,
     COLLISION_GROUP_VEHICLE,
-    COLLISION_GROUP_PLAYER_MOVEMENT,  	// For HL2, same as Collision_Group_Player
+    COLLISION_GROUP_PLAYER_MOVEMENT,    // For HL2, same as Collision_Group_Player
                                         
-    COLLISION_GROUP_NPC,            	// Generic NPC group
-    COLLISION_GROUP_IN_VEHICLE,        	// for any entity inside a vehicle
-    COLLISION_GROUP_WEAPON,            	// for any weapons that need collision detection
-    COLLISION_GROUP_VEHICLE_CLIP,    	// vehicle clip brush to restrict vehicle movement
-    COLLISION_GROUP_PROJECTILE,        	// Projectiles!
-    COLLISION_GROUP_DOOR_BLOCKER,    	// Blocks entities not permitted to get near moving doors
-    COLLISION_GROUP_PASSABLE_DOOR,    	// Doors that the player shouldn't collide with
-    COLLISION_GROUP_DISSOLVING,        	// Things that are dissolving are in this group
-    COLLISION_GROUP_PUSHAWAY,        	// Nonsolid on client and server, pushaway in player code
+    COLLISION_GROUP_NPC,                // Generic NPC group
+    COLLISION_GROUP_IN_VEHICLE,         // for any entity inside a vehicle
+    COLLISION_GROUP_WEAPON,             // for any weapons that need collision detection
+    COLLISION_GROUP_VEHICLE_CLIP,       // vehicle clip brush to restrict vehicle movement
+    COLLISION_GROUP_PROJECTILE,         // Projectiles!
+    COLLISION_GROUP_DOOR_BLOCKER,       // Blocks entities not permitted to get near moving doors
+    COLLISION_GROUP_PASSABLE_DOOR,      // Doors that the player shouldn't collide with
+    COLLISION_GROUP_DISSOLVING,         // Things that are dissolving are in this group
+    COLLISION_GROUP_PUSHAWAY,           // Nonsolid on client and server, pushaway in player code
 
-    COLLISION_GROUP_NPC_ACTOR,        	// Used so NPCs in scripts ignore the player.
+    COLLISION_GROUP_NPC_ACTOR,          // Used so NPCs in scripts ignore the player.
 
     LAST_SHARED_COLLISION_GROUP
 };
@@ -137,6 +137,9 @@ new Handle:cvarGrabBeamColor;
 new Handle:cvarGrabRed;
 new Handle:cvarGrabGreen;
 new Handle:cvarGrabBlue;
+new Handle:cvarGrabTeam;
+new Handle:cvarGrabSpys;
+new Handle:cvarGrabDecloak;
 // Rope handles
 new Handle:cvarRopeEnable;
 new Handle:cvarRopeAdminOnly;
@@ -296,6 +299,7 @@ public OnPluginStart()
     cvarGrabRed=CreateConVar("hgrsource_grab_red","0","The red component of the beam (Only if you are using a custom color)");
     cvarGrabGreen=CreateConVar("hgrsource_grab_green","0","The green component of the beam (Only if you are using a custom color)");
     cvarGrabBlue=CreateConVar("hgrsource_grab_blue","255","The blue component of the beam (Only if you are using a custom color)");
+    cvarGrabTeam=CreateConVar("hgrsource_grab_team","0","If 1, can grab teammates, 0 can grab only other team");
 
     // Rope cvars
     cvarRopeEnable=CreateConVar("hgrsource_rope_enable","0","This will enable the rope feature of this plugin");
@@ -315,6 +319,8 @@ public OnPluginStart()
     {
         cvarHookNoFlag = CreateConVar("hgrsource_hook_noflag", "1", "When enabled, prevents TF2 flag carrier from using the hook");
         cvarRopeNoFlag = CreateConVar("hgrsource_rope_noflag", "1", "When enabled, prevents TF2 flag carrier from using the rope");
+        cvarGrabDecloak=CreateConVar("hgrsource_grab_decloak","1","If 1, grabbing cloaked spys decloaks them");
+        cvarGrabSpys=CreateConVar("hgrsource_grab_spys","1","If 0, can not grab cloaked and/or disguised spys");
     }
 
     // Auto-generate config
@@ -1241,7 +1247,7 @@ Action_Grab(client)
 
     if (g_bNativeOverride || GetConVarBool(cvarGrabEnable))
     {
-        if (client>0)
+        if (client > 0)
         {
             if (!gGrabbed[client] &&
                 !gStatus[client][ACTION_GRAB] &&
@@ -1352,111 +1358,83 @@ public Action:GrabSearch(Handle:timer,any:userid)
                                    StrContains(name, "Player") >= 0);
                 if (bValid)
                 {
-                    // Found a player
-                    if (g_bIsTF2)
+                    if (GetClientTeam(index) == GetClientTeam(target) && !GetConVarBool(cvarGrabTeam))
                     {
-                        #if defined _TRACE
-                            //                        00000000001111111111222222222233333333334
-                            //                        01234567890123456789012345678901234567890
-                            new String:condFlags[] = "                                        ";
-                            new pcond = TF2_GetPlayerConditionLowBits(target);
-                            new pcond2 = TF2_GetPlayerConditionHighBits(target);
-                            if (TF2_IsPlayerSlowed(target))
-                                condFlags[0]  = 'S';
-                            if (TF2_IsPlayerZoomed(target))
-                                condFlags[1]  = 'Z';
-                            if (TF2_IsPlayerDisguising(target))
-                                condFlags[2]  = 'd';
-                            if (TF2_IsPlayerDisguised(target))
-                                condFlags[3]  = 'D';
-                            if (TF2_IsPlayerCloaked(target))
-                                condFlags[4]  = 'C';
-                            if (TF2_IsPlayerUbercharged(target))
-                                condFlags[5]  = 'U';
-                            if (TF2_IsPlayerTeleportedGlow(target))
-                                condFlags[6]  = 'g';
-                            if (TF2_IsPlayerTaunting(target))
-                                condFlags[7]  = 'T';
-                            if (TF2_IsPlayerUberchargeFading(target))
-                                condFlags[8]  = 'f';
-                            if (TF2_IsPlayerCloakFlicker(target))
-                                condFlags[9]  = 'c';
-                            if (TF2_IsPlayerTeleporting(target))
-                                condFlags[10] = 'p';
-                            if (TF2_IsPlayerKritzkrieged(target))
-                                condFlags[11] = 'K';
-                            if (TF2_IsPlayerTmpDamageBonus(target))
-                                condFlags[12] = '2';
-                            if (TF2_IsPlayerDeadRingered(target))
-                                condFlags[13] = 'R';
-                            if (TF2_IsPlayerBonked(target))
-                                condFlags[14] = 'b';
-                            if (TF2_IsPlayerDazed(target))
-                                condFlags[15] = 'A';
-                            if (TF2_IsPlayerBuffed(target))
-                                condFlags[16] = 'B';
-                            if (TF2_IsPlayerCharging(target))
-                                condFlags[17] = '-';
-                            if (TF2_IsPlayerDemoBuff(target))
-                                condFlags[18] = '>';
-                            if (TF2_IsPlayerCritCola(target))
-                                condFlags[19] = 'r';
-                            if (TF2_IsPlayerInHealRadius(target))
-                                condFlags[20] = '+';
-                            if (TF2_IsPlayerHealing(target))
-                                condFlags[21] = 'H';
-                            if (TF2_IsPlayerOnFire(target))
-                                condFlags[22] = 'F';
-                            if (TF2_IsPlayerOverhealed(target))
-                                condFlags[23] = 'O';
-                            if (TF2_IsPlayerJarated(target))
-                                condFlags[24] = 'J';
-                            if (TF2_IsPlayerBleeding(target))
-                                condFlags[25] = 'L';
-                            if (TF2_IsPlayerDefenseBuffed(target))
-                                condFlags[26] = 'E';
-                            if (TF2_IsPlayerMilked(target))
-                                condFlags[27] = 'M';
-                            if (TF2_IsPlayerMegaHealed(target))
-                                condFlags[28] = '!';
-                            if (TF2_IsPlayerRegenBuffed(target))
-                                condFlags[29] = 'G';
-                            if (TF2_IsPlayerMarkedForDeath(target))
-                                condFlags[30] = 'e';
-                            if (TF2_IsPlayerNoHealingDamageBuff(target))
-                                condFlags[31] = '3';
-                            if (TF2_IsPlayerSpeedBuffAlly(target))
-                                condFlags[32] = 'a';
-                            if (TF2_IsPlayerHalloweenCritCandy(target))
-                                condFlags[33] = 'y';
-                            if (TF2_IsPlayerCritHype(target))
-                                condFlags[34] = 'h';
-                            if (TF2_IsPlayerCritOnFirstBlood(target))
-                                condFlags[35] = '1';
-                            if (TF2_IsPlayerCritOnWin(target))
-                                condFlags[36] = 'W';
-                            if (TF2_IsPlayerCritOnFlagCapture(target))
-                                condFlags[37] = '#';
-                            if (TF2_IsPlayerCritOnKill(target))
-                                condFlags[38] = '*';
-                            if (TF2_IsPlayerRestrictToMelee(target))
-                                condFlags[39] = 'M';
-                        #endif
+                        bValid = false;
+                        PrintCenterText(index,"Target is a teammate!");
+                        PrintToChat(index,"%c[HGR:Source] %cYou can not %cgrab%c teammates!",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+                    }
 
-                        new stunFlags = GetEntProp(target, Prop_Send, "m_iStunFlags");
-                        if (stunFlags != 0 || TF2_IsPlayerDazed(target) || TF2_IsPlayerBonked(target) ||
-                            TF2_IsPlayerCritCola(target) || TF2_IsPlayerTaunting(target) ||
-                            TF2_IsPlayerCharging(target) || TF2_HasTheFlag(target))
+                    // Found a player
+                    if (bValid && g_bIsTF2)
+                    {
+                        if (GetEntProp(index, Prop_Send, "m_iStunFlags") != 0 ||
+                            TF2_IsPlayerDazed(index) || TF2_IsPlayerBonked(index))
                         {
                             bValid = false;
-                            Trace("%d:%N found invalid target %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%08x", \
-                                  index, index, target, target, condFlags, pcond, pcond2, \
-                                  GetEntProp(target, Prop_Send, "m_iStunFlags"));
+                            #if defined _TRACE
+                                new pcond, pcond2;
+                                decl String:condFlags[64];
+                                TF2_GetPlayerConditionString(client, condFlags, sizeof(condFlags), pcond, pcond2);
+                                Trace("%d:%N was incapacitated; pcond=[%s]-(0x%08x:%08x), stun=0x%08x", \
+                                      index, index, condFlags, pcond, pcond2, \
+                                      GetEntProp(index, Prop_Send, "m_iStunFlags"));
+                            #endif
+                        }
+                        else if (GetEntProp(target, Prop_Send, "m_iStunFlags") != 0 ||
+                                 TF2_IsPlayerDazed(target) || TF2_IsPlayerBonked(target) ||
+                                 TF2_IsPlayerCritCola(target) || TF2_IsPlayerTaunting(target) ||
+                                 TF2_IsPlayerCharging(target) || TF2_IsPlayerDeadRingered(target))
+                        {
+                            bValid = false;
+                            #if defined _TRACE
+                                new pcond, pcond2;
+                                decl String:condFlags[64];
+                                TF2_GetPlayerConditionString(target, condFlags, sizeof(condFlags), pcond, pcond2);
+                                Trace("%d:%N found invalid target %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%08x", \
+                                      index, index, target, target, condFlags, pcond, pcond2, \
+                                      GetEntProp(target, Prop_Send, "m_iStunFlags"));
+                            #endif
+                        }
+                        else if (TF2_IsPlayerCloaked(target) && !GetConVarBool(cvarGrabSpys))
+                        {
+                            bValid = false;
+                            Trace("%d:%N found cloaked target %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%d", \
+                                  index, index, target, target, condFlags, pcond, pcond2, stunFlags);
+                        }
+                        else if (TF2_HasTheFlag(target))
+                        {
+                            bValid = false;
+                            PrintCenterText(index,"Target has the flag!");
+                            PrintToChat(index,"%c[HGR:Source] %cYou can not %cgrab%c the flag carrier!",
+                                    COLOR_GREEN,COLOR_DEFAULT,COLOR_GREEN,COLOR_DEFAULT);
+
+                            Trace("%d:%N found invalid target %d:%N with the flag", \
+                                  index, index, target, target);
                         }
                         else
                         {
-                            Trace("%d:%N found %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%d", \
-                                  index, index, target, target, condFlags, pcond, pcond2, stunFlags);
+                            if (TF2_IsPlayerDisguised(target))
+                            {
+                                if (!GetConVarBool(cvarGrabSpys))
+                                {
+                                    bValid = false;
+                                    Trace("%d:%N found disguised target %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%d", \
+                                          index, index, target, target, condFlags, pcond, pcond2, stunFlags);
+                                }
+                                else if (GetConVarBool(cvarGrabDecloak))
+                                    TF2_RemovePlayerDisguise(target);
+                            }
+
+                            #if defined _TRACE
+                                new pcond, pcond2;
+                                decl String:condFlags[64];
+                                TF2_GetPlayerConditionString(target, condFlags, sizeof(condFlags), pcond, pcond2);
+                                Trace("%d:%N found target %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%08x", \
+                                      index, index, target, target, condFlags, pcond, pcond2, \
+                                      GetEntProp(target, Prop_Send, "m_iStunFlags"));
+                            #endif
                         }
                     }
                     else
@@ -1464,7 +1442,7 @@ public Action:GrabSearch(Handle:timer,any:userid)
                         Trace("%d:%N found %d:%N", index, index, target, target);
                     }
 
-                    if (GetEntityMoveType(target) == MOVETYPE_NONE ||
+                    if (bValid && GetEntityMoveType(target) == MOVETYPE_NONE ||
                         IsPlayerStuck(target))
                     {
                         bValid = false;
@@ -1632,20 +1610,73 @@ public Action:Grabbing(Handle:timer,any:userid)
                 if (g_bIsTF2)
                 {
                     if (GetEntProp(index, Prop_Send, "m_iStunFlags") != 0 ||
-                        TF2_IsPlayerDazed(index)    || TF2_IsPlayerBonked(index) ||
-                        TF2_IsPlayerCritCola(index) || TF2_IsPlayerTaunting(index) ||
-                        TF2_IsPlayerCharging(index) || TF2_HasTheFlag(index))
+                        TF2_IsPlayerDazed(index) || TF2_IsPlayerBonked(index))
                     {
-                        Action_Drop(index);
-                        TraceReturn("%d:%N dropped %d:%N due to TF2 condition", \
-                                    index, index, target, target);
+                        #if defined _TRACE
+                            new pcond, pcond2;
+                            decl String:condFlags[64];
+                            TF2_GetPlayerConditionString(client, condFlags, sizeof(condFlags), pcond, pcond2);
+                            Trace("%d:%N dropped %d:%N due to incapacitation; pcond=[%s]-(0x%08x:%08x), stun=0x%08x", \
+                                  index, index, target, target, condFlags, pcond, pcond2, \
+                                  GetEntProp(index, Prop_Send, "m_iStunFlags"));
+                        #endif
 
+                        Action_Drop(index);
                         return Plugin_Stop;
+                    }
+                    else if (GetEntProp(target, Prop_Send, "m_iStunFlags") != 0 ||
+                             TF2_IsPlayerDazed(target) || TF2_IsPlayerBonked(target) ||
+                             TF2_IsPlayerCritCola(target) || TF2_IsPlayerTaunting(target) ||
+                             TF2_IsPlayerCharging(target) || TF2_IsPlayerDeadRingered(target) ||
+                             TF2_HasTheFlag(target))
+                    {
+                        #if defined _TRACE
+                            new pcond, pcond2;
+                            decl String:condFlags[64];
+                            TF2_GetPlayerConditionString(target, condFlags, sizeof(condFlags), pcond, pcond2);
+                            TraceReturn("%d:%N dropped invalid target %d:%N with pcond=[%s]-(0x%08x:%08x), stun=0x%08x", \
+                                        index, index, target, target, condFlags, pcond, pcond2, \
+                                        GetEntProp(target, Prop_Send, "m_iStunFlags"));
+                        #endif
+
+                        Action_Drop(index);
+                        return Plugin_Stop;
+                    }
+                    else if (TF2_IsPlayerCloaked(target) && !GetConVarBool(cvarGrabSpys))
+                    {
+                        #if defined _TRACE
+                            new pcond, pcond2;
+                            decl String:condFlags[64];
+                            TF2_GetPlayerConditionString(target, condFlags, sizeof(condFlags), pcond, pcond2);
+                            TraceReturn("%d:%N dropped cloaked target %d:%N with pcond=[%s]-(0x%08x:%08x)", \
+                                        index, index, target, target, condFlags, pcond, pcond2);
+                        #endif
+
+                        Action_Drop(index);
+                        return Plugin_Stop;
+                    }
+                    else if (TF2_IsPlayerDisguised(target))
+                    {
+                        if (!GetConVarBool(cvarGrabSpys))
+                        {
+                            #if defined _TRACE
+                                new pcond, pcond2;
+                                decl String:condFlags[64];
+                                TF2_GetPlayerConditionString(target, condFlags, sizeof(condFlags), pcond, pcond2);
+                                TraceReturn("%d:%N dropped disguised target %d:%N with pcond=[%s]-(0x%08x:%08x)", \
+                                            index, index, target, target, condFlags, pcond, pcond2);
+                            #endif
+
+                            Action_Drop(index);
+                            return Plugin_Stop;
+                        }
+                        else if (GetConVarBool(cvarGrabDecloak))
+                            TF2_RemovePlayerDisguise(target);
                     }
                 }
 
-                if (GetEntityMoveType(index) == MOVETYPE_NONE ||
-                    IsPlayerStuck(index))
+                if (GetEntityMoveType(target) == MOVETYPE_NONE ||
+                    IsPlayerStuck(target))
                 {
                     Action_Drop(index);
                     TraceReturn("%d:%N dropped %d:%N, who became stuck", \
