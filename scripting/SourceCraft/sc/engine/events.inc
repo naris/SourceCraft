@@ -490,15 +490,7 @@ ProcessEntityHurt(Handle:event, victim_index, attacker_index, damage)
     new Action:result = Plugin_Continue;
     new attacker_race = GetRace(attacker_index);
 
-    Call_StartForward(g_OnEntityHurtEventHandle);
-    Call_PushCell(event);
-    Call_PushCell(victim_index);
-    Call_PushCell(attacker_index);
-    Call_PushCell(attacker_race);
-    Call_PushCell(damage);
-    Call_Finish(result);
-
-    if (result == Plugin_Continue)
+    if (IsValidClient(victim_index))
     {
         Call_StartForward(g_OnPlayerHurtEventHandle);
         Call_PushCell(event);
@@ -511,6 +503,16 @@ ProcessEntityHurt(Handle:event, victim_index, attacker_index, damage)
         Call_PushCell(false);
         Call_Finish(result);
     }
+    else
+    {
+        Call_StartForward(g_OnEntityHurtEventHandle);
+        Call_PushCell(event);
+        Call_PushCell(victim_index);
+        Call_PushCell(attacker_index);
+        Call_PushCell(attacker_race);
+        Call_PushCell(damage);
+        Call_Finish(result);
+    }
 
     if (result < Plugin_Handled)
     {
@@ -519,15 +521,7 @@ ProcessEntityHurt(Handle:event, victim_index, attacker_index, damage)
             assister_index > 0)
         {
             new Action:rcassist = Plugin_Continue;
-            Call_StartForward(g_OnEntityAssistEventHandle);
-            Call_PushCell(event);
-            Call_PushCell(victim_index);
-            Call_PushCell(assister_index);
-            Call_PushCell(assister_race);
-            Call_PushCell(damage);
-            Call_Finish(rcassist);
-
-            if (rcassist == Plugin_Continue)
+            if (IsValidClient(victim_index))
             {
                 Call_StartForward(g_OnPlayerAssistEventHandle);
                 Call_PushCell(event);
@@ -537,6 +531,16 @@ ProcessEntityHurt(Handle:event, victim_index, attacker_index, damage)
                 Call_PushCell(assister_race);
                 Call_PushCell(damage);
                 Call_PushCell(0);
+                Call_Finish(rcassist);
+            }
+            else
+            {
+                Call_StartForward(g_OnEntityAssistEventHandle);
+                Call_PushCell(event);
+                Call_PushCell(victim_index);
+                Call_PushCell(assister_index);
+                Call_PushCell(assister_race);
+                Call_PushCell(damage);
                 Call_Finish(rcassist);
             }
 
