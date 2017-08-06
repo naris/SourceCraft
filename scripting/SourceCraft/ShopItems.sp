@@ -1456,7 +1456,7 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
                                       attacker_index, ValidClientIndex(attacker_index), \
                                       victim_index, ValidClientIndex(victim_index));
 
-                                if (GameType == tf2)
+                                if (GameType == tf2 && IsValidClient(attacker_index))
                                     TF2_IgnitePlayer(victim_index, attacker_index);
                                 else if (GameType == dod)
                                     DOD_IgniteEntity(victim_index, 10.0);

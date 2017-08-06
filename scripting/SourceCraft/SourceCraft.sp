@@ -74,51 +74,52 @@ new String:g_UpdateURL[LONG_STRING_LENGTH]   = "https://bitbucket.org/sourcecraf
 new String:g_WikiURL[LONG_STRING_LENGTH]     = "https://bitbucket.org/sourcecraft/sourcecraft/wiki/Home";
 new String:g_BugURL[LONG_STRING_LENGTH]      = "https://bitbucket.org/sourcecraft/sourcecraft/issues";
 
-new bool:g_bSourceCraftLoaded     = false;
-new bool:g_bDatabaseConnected     = false;
-new bool:g_bUseMoney              = false;
-new bool:g_bUpdate                = false;
-new bool:g_bCreate                = false;
-new bool:g_bChargeForUpgrades     = false;
-new bool:g_bSaveUpgrades          = true;
-new bool:g_bSaveXP                = true;
+new bool:g_bSourceCraftLoaded           = false;
+new bool:g_bDatabaseConnected           = false;
+new bool:g_bUseMoney                    = false;
+new bool:g_bUpdate                      = false;
+new bool:g_bCreate                      = false;
+new bool:g_bChargeForUpgrades           = false;
+new bool:g_bSaveUpgrades                = true;
+new bool:g_bSaveXP                      = true;
 
-new bool:g_bShowDisabledRaces     = false;
-new bool:g_bShowUpgradeInfo       = true;
-new Float:g_fMinEnergyForPackage  = 40.0;
-new Float:g_fMinEnergyInPackage   = 20.0;
-new g_iRaceMenuThreshold          = 16;
+new bool:g_bShowDisabledRaces           = false;
+new bool:g_bShowUpgradeInfo             = true;
+new Float:g_fMaxPackageEnergy           = 100.0;
+new Float:g_fMinPackageEnergy           = 20.0;
+new Float:g_fReqPackageEnergy           = 40.0;
+new g_iRaceMenuThreshold                = 16;
 
-new g_iMaxCrystals                = 100;
-new g_iMaxVespene                 = 5000;
-new g_iMinPlayers                 = 4;
-new g_iMinUltimate                = 8;
+new g_iMaxCrystals                      = 100;
+new g_iMaxVespene                       = 5000;
+new g_iMinPlayers                       = 4;
+new g_iMinUltimate                      = 8;
 
-new g_iUpgradeCrystalsCost        = 25;
-new g_iUpgradeVespeneCost         = 0;
+new g_iUpgradeCrystalsCost              = 25;
+new g_iUpgradeVespeneCost               = 0;
 
-new Float:g_fEnergyFactor         = 0.1;
-new Float:g_fEnergyRate           = 1.0;
+new Float:g_fEnergyFactor               = 0.1;
+new Float:g_fEnergyRate                 = 1.0;
 
-new Float:g_fMvMEnergyFactor      = 0.1;
-new Float:g_fMvMEnergyRate        = 1.0;
+new Float:g_fMvMEnergyFactor            = 0.1;
+new Float:g_fMvMEnergyRate              = 1.0;
 
-new Float:g_fCrystalSellRate      = 5.0;
-new Float:g_fCrystalBuyRate       = 1.0;
+new Float:g_fCrystalSellRate            = 5.0;
+new Float:g_fCrystalBuyRate             = 1.0;
 
-new g_iMaxDropXP                  = 500;
-new g_iDropXPBias                 = -50;
-new g_iMaxDropMoney               = 500;
-new g_iDropMoneyBias              = -50;
-new g_iMaxDropCrystals            = 50;
-new g_iDropCrystalBias            = -5;
-new g_iMaxDropPCrystals           = 500;
-new g_iDropPCrystalsBias          = -10;
-new g_iMaxPackages                = 50;
-new Float:g_fPackageDuration      = 30.0;
+new g_iMaxDropXP                        = 500;
+new g_iDropXPBias                       = -50;
+new g_iMaxDropMoney                     = 500;
+new g_iDropMoneyBias                    = -50;
+new g_iMaxDropCrystals                  = 50;
+new g_iDropCrystalBias                  = -5;
+new g_iMaxDropPCrystals                 = 500;
+new g_iDropPCrystalsBias                = -10;
+new g_iMaxPackages                      = 50;
+new Float:g_fPackageDuration            = 30.0;
 
-new bool:g_IsInSpawn[MAXPLAYERS+1]     = { false, ... };
-new bool:g_FirstSpawn[MAXPLAYERS + 1]  = { true,  ... };
+new bool:g_IsInSpawn[MAXPLAYERS+1]      = { false, ... };
+new bool:g_FirstSpawn[MAXPLAYERS + 1]   = { true,  ... };
 
 // SourceCraft Includes
 #include "sc/menuitemt"

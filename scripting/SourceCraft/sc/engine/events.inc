@@ -956,38 +956,32 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             }
 
             new Float:energy = GetEnergy(victim_index);
-            new Float:drop_energy = (energy >= g_fMinEnergyInPackage) ? energy : 0.0;
+            new Float:drop_energy = (energy >= g_fMinPackageEnergy)
+                                  ? ((energy <= g_fMaxPackageEnergy && g_fMaxPackageEnergy > 0.0) ? energy : g_fMaxPackageEnergy)
+                                  : 0.0;
 
             Trace("%d:%N died with %d drop_XP, %d+%d drop_crystals(s), %d drop_money and %f drop_energy", \
-                       victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
+                  victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
 
-            if (drop_xp > 0 || drop_crystals > 0 || drop_money > 0 || drop_energy > g_fMinEnergyForPackage)
+            if (drop_xp > 0 || drop_crystals > 0 || drop_money > 0 || drop_energy > g_fReqPackageEnergy)
             {
                 new pkg = CreateEntityByName("prop_physics_override");
                 if (pkg > 0 && IsValidEntity(pkg))
                 {
-                    new n;
-                    if (GetGameMode() == MvM)
-                        n = 3;
+                    new drop_model;
+                    new drop_amount = drop_money + drop_crystals + drop_xp;
+                    if (drop_amount == 0 || (drop_energy > float(drop_amount) && drop_energy > 50.0))
+                        drop_model = 0;
+                    else if (drop_amount > 100 || GetGameMode() == MvM)
+                        drop_model = 4; // Don't use cash models in MvM
+                    else if (drop_amount > 50)
+                        drop_model = (drop_energy > 50.0) ? 4 : 3;
+                    else if (drop_amount > 25)
+                        drop_model = (drop_energy > 50.0) ? 3 : 2;
                     else
-                    {
-                        new drop = drop_money + drop_crystals + drop_xp;
-                        if (drop > 100)
-                            n = 4;
-                        else if (drop > 50)
-                            n = 3;
-                        else if (drop > 25)
-                            n = 2;
-                        else if (drop > 0)
-                            n = 1;
-                        else
-                            n = 0;
+                        drop_model = (drop_energy > 50.0) ? 2 : 1;
 
-                        if (n < 3 && drop_energy > 75)
-                            n++;
-                    }
-
-                    SetEntityModel(pkg, mdlPackage[n]);
+                    SetEntityModel(pkg, mdlPackage[drop_model]);
                     DispatchSpawn(pkg);
 
                     new Float:origin[3];
@@ -1048,11 +1042,11 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         {
                             if (drop_money > 0)
                             {
-                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
+                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystalsMoney", drop_crystals, drop_pcrystals, drop_money);
                             }
                             else
                             {
-                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystals", drop_xp, drop_crystals, drop_pcrystals);
+                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystals", drop_crystals, drop_pcrystals);
                             }
                         }
                         else if (drop_money > 0)
