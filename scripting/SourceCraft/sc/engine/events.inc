@@ -785,6 +785,13 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 {
     new victim = GetEventInt(event,"userid");
     new victim_index = GetClientOfUserId(victim);
+
+    TraceInto("Events", "PlayerDeathEvent", "victim_index=%d:%L", \
+              victim_index, ValidClientIndex(victim_index));
+
+    LogMessage("PlayerDeathEvent: victim_index=%d:%L", \
+              victim_index, ValidClientIndex(victim_index));
+
     if (victim_index > 0 && !g_Dead[victim_index])
     {
         new customkill;
@@ -886,6 +893,12 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         Call_PushCell(melee);
         Call_Finish(result);
 
+        Trace("attacker_index=%d:%L, damage=%d, melee=%d", \
+              attacker_index, ValidClientIndex(attacker_index), damage, melee);
+
+        LogMessage("attacker_index=%d:%L, damage=%d, melee=%d", \
+                   attacker_index, ValidClientIndex(attacker_index), damage, melee);
+
         if (GetGameType() == tf2 &&
             g_PackageCount < g_iMaxPackages &&
             !IsEntLimitReached(.client=victim_index,
@@ -894,7 +907,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             // Determine if player earned resources this life and if he should drop any
             new money;
             new drop_money = 0;
-            if (GetGameMode() != MvM)
+            if (g_bUseMoney && GetGameMode() != MvM)
             {
                 // Don't drop money in MvM
                 money = GetMoney(victim_index);
@@ -907,6 +920,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         drop_money = g_iMaxDropMoney;
                 }
             }
+            LogMessage("Prepare package, calc money=%d of %d", drop_money, money);
 
             new crystals = GetCrystals(victim_index);
             new drop_crystals = 0;
@@ -918,6 +932,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 else if (drop_crystals > g_iMaxDropCrystals)
                     drop_crystals = g_iMaxDropCrystals;
             }
+            LogMessage("Prepare package, calc crystals=%d of %d", drop_crystals, crystals);
 
             new pcrystals = GetPCrystals(victim_index);
             new drop_pcrystals = 0;
@@ -929,6 +944,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 else if (drop_pcrystals > g_iMaxDropPCrystals)
                     drop_pcrystals = g_iMaxDropPCrystals;
             }
+            LogMessage("Prepare package, calc pcrystals=%d of %d", drop_pcrystals, pcrystals);
 
             new xp;
             new drop_xp = 0;
@@ -947,9 +963,17 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         drop_xp = g_iMaxDropXP;
                 }
             }
+            LogMessage("Prepare package, calc xp=%d of %d", drop_xp, xp);
 
-            if (drop_money > 0 || drop_crystals > 0 || drop_xp > 0)
+            new Float:energy = GetEnergy(victim_index);
+            new Float:drop_energy = (energy >= g_fMinEnergyInPackage) ? energy : 0.0;
+            LogMessage("Prepare package, calc energy=%f", drop_energy);
+            LogMessage("%d:%N died with %d drop_XP, %d+%d drop_crystals(s), %d drop_money and %f drop_energy",
+                       victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
+
+            if (drop_xp > 0 || drop_crystals > 0 || drop_money > 0 || drop_energy > g_fMinEnergyForPackage)
             {
+                LogMessage("Create package");
                 new pkg = CreateEntityByName("prop_physics_override");
                 if (pkg > 0 && IsValidEntity(pkg))
                 {
@@ -960,13 +984,18 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     {
                         new drop = drop_money + drop_crystals + drop_xp;
                         if (drop > 100)
-                            n = 3;
+                            n = 4;
                         else if (drop > 50)
-                            n = 2;
+                            n = 3;
                         else if (drop > 25)
+                            n = 2;
+                        else if (drop > 0)
                             n = 1;
                         else
                             n = 0;
+
+                        if (n < 3 && drop_energy > 75)
+                            n++;
                     }
 
                     SetEntityModel(pkg, mdlPackage[n]);
@@ -985,9 +1014,9 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     TeleportEntity(pkg, origin, angles, velocity);
 
-                    m_PackageMoney[pkg] = drop_money;
-                    if (drop_money > 0)
-                        SetMoney(victim_index, money - drop_money);
+                    m_PackageXP[pkg] = drop_xp;
+                    if (drop_xp > 0)
+                        SetXP(victim_index, race, xp - drop_xp);
 
                     m_PackageCrystals[pkg] = drop_crystals;
                     if (drop_crystals > 0)
@@ -997,20 +1026,72 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                     if (drop_pcrystals > 0)
                         SetPCrystals(victim_index, crystals - drop_pcrystals);
 
-                    m_PackageEnergy[pkg] = GetEnergy(victim_index);
+                    m_PackageMoney[pkg] = drop_money;
+                    if (drop_money > 0)
+                        SetMoney(victim_index, money - drop_money);
 
-                    m_PackageXP[pkg] = drop_xp;
+                    m_PackageEnergy[pkg] = drop_energy;
+
+                    LogMessage("%d:%N dropped a package with %d XP, %d+%d crystals(s), %d money and %f energy",
+                               victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
+                    LogToGame("%d:%N dropped a package with %d XP, %d+%d crystals(s), %d money and %f energy",
+                              victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
+
                     if (drop_xp > 0)
-                        SetXP(victim_index, race, xp - drop_xp);
+                    {
+                        if (drop_crystals > 0 || drop_pcrystals > 0)
+                        {
+                            if (drop_money > 0)
+                            {
+                                LogMessage("%t", "DroppedPackageXPCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
+                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageXPCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
+                            }
+                            else
+                            {
+                                LogMessage("%t", "DroppedPackageXPCrystals", drop_xp, drop_crystals, drop_pcrystals);
+                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageXPCrystals", drop_xp, drop_crystals, drop_pcrystals);
+                            }
+                        }
+                        else
+                        {
+                            LogMessage("%t", "DroppedPackageXP", drop_xp);
+                            DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageXP", drop_xp);
+                        }
+                    }
+                    else
+                    {
+                        if (drop_crystals > 0 || drop_pcrystals > 0)
+                        {
+                            if (drop_money > 0)
+                            {
+                                LogMessage("%t", "DroppedPackageCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
+                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
+                            }
+                            else
+                            {
+                                LogMessage("%t", "DroppedPackageCrystals", drop_xp, drop_crystals, drop_pcrystals);
+                                DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystals", drop_xp, drop_crystals, drop_pcrystals);
+                            }
+                        }
+                        else if (drop_money > 0)
+                        {
+                            LogMessage("%t", "DroppedPackageMoney", drop_money);
+                            DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageMoney", drop_money);
+                        }
+                    }
 
                     g_PackageCount++;
                     m_PackageVictim[pkg] = victim; // userid
                     m_PackageRefs[pkg] = EntIndexToEntRef(pkg);
                     SDKHook(pkg, SDKHook_Touch, OnPackageTouched);
                     m_PackageTimer[pkg] = CreateTimer(g_fPackageDuration, RemoveDroppedPackage,
-                                                          pkg, TIMER_FLAG_NO_MAPCHANGE);
+                                                      pkg, TIMER_FLAG_NO_MAPCHANGE);
                 }
             }
+        }
+        else
+        {
+            LogMessage("No package for you!");
         }
 
         if (attacker_index != victim_index)
@@ -1114,6 +1195,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     }
 
     g_bDamageFromPlayerHurt = false;
+    TraceReturn();
 }
 
 public Action:OnPackageTouched(pkg, client)
@@ -1133,7 +1215,7 @@ public Action:OnPackageTouched(pkg, client)
             CloseHandle(m_PackageTimer[pkg]);
             m_PackageTimer[pkg] = INVALID_HANDLE;
 
-            new origin = m_PackageVictim[pkg];
+            new origin = GetClientOfUserId(m_PackageVictim[pkg]);
 
             new money = m_PackageMoney[pkg];
             if (money > 0)
@@ -1160,9 +1242,9 @@ public Action:OnPackageTouched(pkg, client)
             }
             else
             {
-                if (crystals > 0 ||pcrystals > 0)
+                if (crystals > 0 || pcrystals > 0)
                 {
-                    GiveCrystals(client, crystals +pcrystals, "Package");
+                    GiveCrystals(client, crystals + pcrystals, "Package");
                     m_PackageCrystals[pkg] = 0;
                     m_PackagePCrystals[pkg] = 0;
                 }

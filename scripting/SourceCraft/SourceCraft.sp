@@ -59,19 +59,20 @@
 #define DEFAULT_MAX_LEVELS          16
 
 // Models
-new const String:mdlPackage[][] = { "models/items/currencypack_small.mdl",  "models/items/currencypack_medium.mdl",
-                                    "models/items/currencypack_large.mdl",  "models/items/tf_gift.mdl" };
+new const String:mdlPackage[][] = { "models/items/crystal_ball_pickup.mdl", "models/items/currencypack_small.mdl",
+                                    "models/items/currencypack_medium.mdl", "models/items/currencypack_large.mdl",
+                                    "models/items/tf_gift.mdl" };
 
 // Sound Files
 new const String:sndPickup[]  = "items/gift_pickup.wav";
 new const String:sndPain[][]  = { "player/pl_pain5.wav", "player/pl_pain6.wav",
                                   "player/pl_pain7.wav", "player/pain.wav" };
 
-new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://jigglysfunhouse.net/sc/sc/player/show/steamid/%s";
-new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://jigglysfunhouse.net/sc/sc/";
-new String:g_UpdateURL[LONG_STRING_LENGTH]   = "http://www.jigglysfunhouse.net/Wiki/index.php/Updates";
-new String:g_WikiURL[LONG_STRING_LENGTH]     = "http://www.jigglysfunhouse.net/Wiki/index.php/SourceCraft";
-new String:g_BugURL[LONG_STRING_LENGTH]      = "http://www.jigglysfunhouse.net/thebuggenie";
+new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://http://sc.clanservers.com/sc/player/show/steamid/%s";
+new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://http://sc.clanservers.com/sc/";
+new String:g_UpdateURL[LONG_STRING_LENGTH]   = "https://bitbucket.org/sourcecraft/sourcecraft/commits/all";
+new String:g_WikiURL[LONG_STRING_LENGTH]     = "https://bitbucket.org/sourcecraft/sourcecraft/wiki/Home";
+new String:g_BugURL[LONG_STRING_LENGTH]      = "https://bitbucket.org/sourcecraft/sourcecraft/issues";
 
 new bool:g_bSourceCraftLoaded     = false;
 new bool:g_bDatabaseConnected     = false;
@@ -83,6 +84,9 @@ new bool:g_bSaveUpgrades          = true;
 new bool:g_bSaveXP                = true;
 
 new bool:g_bShowDisabledRaces     = false;
+new bool:g_bShowUpgradeInfo       = true;
+new g_fMinEnergyForPackage        = 50.0;
+new g_fMinEnergyInPackage         = 25.0;
 new g_iRaceMenuThreshold          = 16;
 
 new g_iMaxCrystals                = 100;

@@ -41,6 +41,7 @@ enum Display (<<= 1)
     Display_Crystals,
     Display_Vespene,
     Display_Energy,
+    Display_Package,
     Display_Details,
     Display_All_Hints
 };

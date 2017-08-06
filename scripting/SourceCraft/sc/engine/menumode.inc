@@ -25,7 +25,8 @@ enum MenuMode (<<= 1)
     FromRaceMenu,
     FromFactionMenu,
     FromPlayerInfoMenu,
-    FromPlayerInfo
+    FromPlayerInfo,
+    FromUpgradeMenu
 };
 
 #define EnableMenuExitBack (FromAdminMenu|FromMainMenu|FromShopMenu|FromRaceMenu|FromFactionMenu|FromPlayerInfoMenu|FromPlayerInfo)

@@ -38,6 +38,7 @@ enum Display_Cookies
     Display_Crystals_Cookie,
     Display_Vespene_Cookie,
     Display_Energy_Cookie,
+    Display_Package_Cookie,
     Display_Details_Cookie,
     Display_All_Hints_Cookie,
 };
@@ -90,6 +91,7 @@ stock const String:g_strDisplayCookieName[Display_Cookies][] =
     "sc_display_crystals",
     "sc_display_vespene",
     "sc_display_energy",
+    "sc_display_package",
     "sc_display_details",
     "sc_display_all_hints"
 };
@@ -142,6 +144,7 @@ stock const String:g_strDisplayCookiePrompt[Display_Cookies][] =
     "DisplayCrystals",
     "DisplayVespene",
     "DisplayEnergy",
+    "DisplayPackage",
     "DisplayDetails",
     "DisplayAllHints"
 };
@@ -194,6 +197,7 @@ stock const bool:g_bDisplayCookieFlip[Display_Cookies] =
     false,  // Display_Crystals
     false,  // Display_Vespene
     false,  // Display_Energy
+    false,  // Display_Package
     false,  // Display_Details
     true,   // Display_All_Hints
 };

@@ -126,7 +126,9 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
             {
                 new race=GetRace(client);
                 if (GetUpgradeLevelCount(client,race)<GetLevel(client,race))
+                {
                     UpgradeMenu(client, UpgradeMode|FromMainMenu, true);
+                }
                 else
                 {
                     CPrintToChat(client, "{green}[SC]{default} %t", "NoPoints");
@@ -632,132 +634,13 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 PrepareAndEmitSoundToClient(client,buttonWav);
 
                 // Okay, they selected a valid upgrade
-                new level = GetLevel(client,race);
-                new vespene = GetVespene(client);
-
-                new cost = 0;
-                new vespene_cost = 0;
-                if (g_bChargeForUpgrades)
+                if (g_bShowUpgradeInfo)
                 {
-                    cost = GetUpgradeCostCrystals(raceHandle,upgrade);
-                    if (cost < 0)
-                        cost = g_iUpgradeCrystalsCost;
-
-                    vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
-                    if (vespene_cost < 0)
-                        vespene_cost = g_iUpgradeVespeneCost;
-                }
-
-                new funds, pcrystals;
-                if (g_bUseMoney)
-                {
-                    cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
-                    funds = GetMoney(client);
-                    pcrystals = 0;
+                    UpgradesInfo_Upgrade(client, race, raceHandle, upgrade, UpgradeMode|FromUpgradeMenu);
                 }
                 else
                 {
-                    funds = GetCrystals(client);
-                    pcrystals = GetPCrystals(client);
-                }
-
-                if (GetUpgradeLevelCount(client,race)>=level)
-                {
-                    CPrintToChat(client, "{green}[SC]{default} %t", "NeedMoreLevels");
-                }
-                else if (cost > 0 && funds + pcrystals < cost)
-                {
-                    EmitCrystalSoundToClient(client, GetRaceFactionId(raceHandle));
-                    if (g_bUseMoney)
-                        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientMoney", cost);
-                    else
-                        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientCrystals", cost);
-                }
-                else if (vespene_cost > 0 && vespene < vespene_cost)
-                {
-                    EmitVespeneSoundToClient(client, GetRaceFactionId(raceHandle));
-                    CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientVespene", vespene_cost);
-                }
-                else
-                {
-                    new minLevel = GetUpgradeRequiredLevel(raceHandle,upgrade);
-                    if (level < minLevel)
-                    {
-                        decl String:upgradeName[NAME_STRING_LENGTH];
-                        GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
-                        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientLevels",
-                                    minLevel, upgradeName);
-                    }
-                    else
-                    {
-                        new upgradeCategory = GetUpgradeCategory(raceHandle, upgrade);
-                        new activeUltimate = GetActiveUltimate(client,race,upgradeCategory);
-                        if (activeUltimate >= 0 && activeUltimate != upgrade)
-                        {
-                            decl String:activename[NAME_STRING_LENGTH];
-                            GetUpgradeName(raceHandle, activeUltimate, activename, sizeof(activename), client);
-                            CPrintToChat(client, "{green}[SC]{default} %t", "UltimateTaken", activename, upgradeCategory);
-                        }
-                        else
-                        {
-                            new maxLevel = GetUpgradeMaxLevel(raceHandle,upgrade);
-                            if (!IncrementUpgradeLevel(client,race,upgrade,upgradeCategory,maxLevel))
-                            {
-                                decl String:upgradeName[NAME_STRING_LENGTH];
-                                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
-                                CPrintToChat(client, "{green}[SC]{default} %t", "UpgradeMaxed", upgradeName, maxLevel);
-                            }
-                            else
-                            {
-                                if (cost > 0)
-                                {
-                                    if (g_bUseMoney)
-                                        SetMoney(client,funds-cost);
-                                    else
-                                    {
-                                        pcrystals -= cost;
-                                        if (pcrystals < 0)
-                                        {
-                                            cost = pcrystals * -1;
-                                            pcrystals = 0;
-                                        }
-                                        else
-                                            cost = 0;
-
-                                        SetPCrystals(client, pcrystals);
-
-                                        if (cost > 0)
-                                            SetCrystals(client,funds-cost);
-                                    }
-                                }
-
-                                if (vespene_cost > 0)
-                                    SetVespene(client,vespene-vespene_cost);
-
-                                decl String:upgradeName[NAME_STRING_LENGTH];
-                                GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
-                                CPrintToChat(client, "{green}[SC]{default} %s is now level %d.",
-                                             upgradeName, GetUpgradeLevel(client,race,upgrade));
-                            }
-                        }
-                    }
-
-                    if (GetUpgradeLevelCount(client,race)<GetLevel(client,race))
-                        UpgradeMenu(client, gUpgradeMenuMode[client], false);
-                    else if (g_bSaveXP && !GetDatabaseSaved(client) &&
-                             GetPlayerStatus(client) != PlayerDisabled &&
-                             GetDatabaseLoaded(client) >= DataOK &&
-                             GetRaceLoaded(client, race) >= DataOK)
-                    {
-                        Trace("Saving Player Data, g_bDatabaseConnected=%d",g_bDatabaseConnected);
-                        if (g_bDatabaseConnected)
-                            SavePlayerData(client);
-                        else
-                        {
-                            LogError("Database not available to save %N's levels", client);
-                            PrintHintText(client, "%t", "NoDatabaseForSave");
-                        }
-                    }
+                    SelectUpgrade(client, race, upgrade, raceHandle);
                 }
             }
         }
@@ -774,6 +657,137 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 
     TraceReturn();
+}
+
+SelectUpgrade(client, race, upgrade, Handle:raceHandle)
+{
+    new level = GetLevel(client,race);
+    new vespene = GetVespene(client);
+
+    new cost = 0;
+    new vespene_cost = 0;
+    if (g_bChargeForUpgrades)
+    {
+        cost = GetUpgradeCostCrystals(raceHandle,upgrade);
+        if (cost < 0)
+            cost = g_iUpgradeCrystalsCost;
+
+        vespene_cost = GetUpgradeCostVespene(raceHandle,upgrade);
+        if (vespene_cost < 0)
+            vespene_cost = g_iUpgradeVespeneCost;
+    }
+
+    new funds, pcrystals;
+    if (g_bUseMoney)
+    {
+        cost = RoundToNearest(float(cost) * g_fCrystalSellRate);
+        funds = GetMoney(client);
+        pcrystals = 0;
+    }
+    else
+    {
+        funds = GetCrystals(client);
+        pcrystals = GetPCrystals(client);
+    }
+
+    if (GetUpgradeLevelCount(client,race)>=level)
+    {
+        CPrintToChat(client, "{green}[SC]{default} %t", "NeedMoreLevels");
+    }
+    else if (cost > 0 && funds + pcrystals < cost)
+    {
+        EmitCrystalSoundToClient(client, GetRaceFactionId(raceHandle));
+        if (g_bUseMoney)
+            CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientMoney", cost);
+        else
+            CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientCrystals", cost);
+    }
+    else if (vespene_cost > 0 && vespene < vespene_cost)
+    {
+        EmitVespeneSoundToClient(client, GetRaceFactionId(raceHandle));
+        CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientVespene", vespene_cost);
+    }
+    else
+    {
+        new minLevel = GetUpgradeRequiredLevel(raceHandle,upgrade);
+        if (level < minLevel)
+        {
+            decl String:upgradeName[NAME_STRING_LENGTH];
+            GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+            CPrintToChat(client, "{green}[SC]{default} %t", "InsufficientLevels",
+                        minLevel, upgradeName);
+        }
+        else
+        {
+            new upgradeCategory = GetUpgradeCategory(raceHandle, upgrade);
+            new activeUltimate = GetActiveUltimate(client,race,upgradeCategory);
+            if (activeUltimate >= 0 && activeUltimate != upgrade)
+            {
+                decl String:activename[NAME_STRING_LENGTH];
+                GetUpgradeName(raceHandle, activeUltimate, activename, sizeof(activename), client);
+                CPrintToChat(client, "{green}[SC]{default} %t", "UltimateTaken", activename, upgradeCategory);
+            }
+            else
+            {
+                new maxLevel = GetUpgradeMaxLevel(raceHandle,upgrade);
+                if (!IncrementUpgradeLevel(client,race,upgrade,upgradeCategory,maxLevel))
+                {
+                    decl String:upgradeName[NAME_STRING_LENGTH];
+                    GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                    CPrintToChat(client, "{green}[SC]{default} %t", "UpgradeMaxed", upgradeName, maxLevel);
+                }
+                else
+                {
+                    if (cost > 0)
+                    {
+                        if (g_bUseMoney)
+                            SetMoney(client,funds-cost);
+                        else
+                        {
+                            pcrystals -= cost;
+                            if (pcrystals < 0)
+                            {
+                                cost = pcrystals * -1;
+                                pcrystals = 0;
+                            }
+                            else
+                                cost = 0;
+
+                            SetPCrystals(client, pcrystals);
+
+                            if (cost > 0)
+                                SetCrystals(client,funds-cost);
+                        }
+                    }
+
+                    if (vespene_cost > 0)
+                        SetVespene(client,vespene-vespene_cost);
+
+                    decl String:upgradeName[NAME_STRING_LENGTH];
+                    GetUpgradeName(raceHandle, upgrade, upgradeName, sizeof(upgradeName), client);
+                    CPrintToChat(client, "{green}[SC]{default} %s is now level %d.",
+                                 upgradeName, GetUpgradeLevel(client,race,upgrade));
+                }
+            }
+        }
+
+        if (GetUpgradeLevelCount(client,race)<GetLevel(client,race))
+            UpgradeMenu(client, gUpgradeMenuMode[client], false);
+        else if (g_bSaveXP && !GetDatabaseSaved(client) &&
+                 GetPlayerStatus(client) != PlayerDisabled &&
+                 GetDatabaseLoaded(client) >= DataOK &&
+                 GetRaceLoaded(client, race) >= DataOK)
+        {
+            Trace("Saving Player Data, g_bDatabaseConnected=%d",g_bDatabaseConnected);
+            if (g_bDatabaseConnected)
+                SavePlayerData(client);
+            else
+            {
+                LogError("Database not available to save %N's levels", client);
+                PrintHintText(client, "%t", "NoDatabaseForSave");
+            }
+        }
+    }
 }
 
 ShopMenu(client, target, MenuMode:mode)

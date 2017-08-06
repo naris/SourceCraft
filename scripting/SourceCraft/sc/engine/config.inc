@@ -1267,8 +1267,11 @@ bool:ParseSettings()
         KvSetNum(g_SourceCraftConfigHandle, "charge_for_upgrades", g_bChargeForUpgrades);
         KvSetNum(g_SourceCraftConfigHandle, "save_upgrades", g_bSaveUpgrades);
 
+        KvSetNum(g_SourceCraftConfigHandle, "show_upgrade_info", g_bShowUpgradeInfo);
         KvSetNum(g_SourceCraftConfigHandle, "show_disabled_races", g_bShowDisabledRaces);
         KvSetNum(g_SourceCraftConfigHandle, "race_menu_threshold", g_iRaceMenuThreshold);
+        KvSetFloat(g_SourceCraftConfigHandle, "min_energy_for_package", g_fMinEnergyForPackage);
+        KvSetFloat(g_SourceCraftConfigHandle, "min_energy_in_package", g_fMinEnergyInPackage);
 
         KvSetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
         KvSetNum(g_SourceCraftConfigHandle, "min_ultimate", g_iMinUltimate);
@@ -1317,8 +1320,11 @@ bool:ParseSettings()
         g_bChargeForUpgrades=bool:KvGetNum(g_SourceCraftConfigHandle, "charge_for_upgrades", g_bChargeForUpgrades);
         g_bSaveUpgrades=bool:KvGetNum(g_SourceCraftConfigHandle, "save_upgrades", g_bSaveUpgrades);
 
+        g_bShowUpgradeInfo=bool:KvGetNum(g_SourceCraftConfigHandle, "show_upgrade_info", g_bShowUpgradeInfo);
         g_bShowDisabledRaces=bool:KvGetNum(g_SourceCraftConfigHandle, "show_disabled_races", g_bShowDisabledRaces);
         g_iRaceMenuThreshold=KvGetNum(g_SourceCraftConfigHandle, "race_menu_threshold", g_iRaceMenuThreshold);
+        g_fMinEnergyForPackage=KvGetFloat(g_SourceCraftConfigHandle, "min_energy_for_package", g_fMinEnergyForPackage);
+        g_fMinEnergyInPackage=KvGetFloat(g_SourceCraftConfigHandle, "min_energy_in_package", g_fMinEnergyInPackage);
 
         g_iMinPlayers=KvGetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
         g_iMinUltimate=KvGetNum(g_SourceCraftConfigHandle, "min_ultimate", g_iMinUltimate);

@@ -600,6 +600,10 @@
 	{
 		"en"		"Change to this Race"
 	}
+	"SelectUpgrade"
+	{
+		"en"		"Select this Upgrade"
+	}
 	"ViewUpgradeLevels"
 	{
 		"en"		"View upgrade levels"
@@ -703,7 +707,7 @@
 	}
 	"BackToUpgrades"
 	{
-		"en"		"Back to the upgrades"
+		"en"		"Back to upgrades"
 	}
 	"AdministerMenu"
 	{
@@ -1346,6 +1350,10 @@
 	{
 		"en"		"Display energy notices"
 	}
+	"DisplayPackage"
+	{
+		"en"		"Display package notices"
+	}
 	"DisplayDetails"
 	{
 		"en"		"Display details"
@@ -1811,5 +1819,35 @@
 	{
 		"#format"	"{1:1.0f},{2:s}"
 		"en"		"You have lost {blue}{1} accumulated energy{default} for {2}."
+	}
+	"DroppedPackageXP"
+	{
+		"#format"	"{1:d}"
+		"en"		"You have dropped a {blue}package{default} with {custom}{1} experience{default}."
+	}
+	"DroppedPackageXPCrystals"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"You have dropped a {blue}package{default} with {custom}{1} experience{default} and {green}{2}+{3} crystals{default}."
+	}
+	"DroppedPackageXPCrystalsMoney"
+	{
+		"#format"	"{1:d},{2:d},{3:d},{4:d}"
+		"en"		"You have dropped a {blue}package{default} with {custom}{1} experience{default}, {green}{2}+{3} crystals{default} and {green}{4} dollars{default}."
+	}
+	"DroppedPackageCrystals"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"You have dropped a {blue}package{default} with {green}{1}+{2} crystals{default}."
+	}
+	"DroppedPackageCrystalsMoney"
+	{
+		"#format"	"{1:d},{2:d},{3:d}"
+		"en"		"You have dropped a {blue}package{default} with {green}{1}+{2} crystals{default} and {green}{3} dollars{default}."
+	}
+	"DroppedPackageMoney"
+	{
+		"#format"	"{1:d}"
+		"en"		"You have dropped a {blue}package{default} with {green}{1} dollars{default}."
 	}
 }

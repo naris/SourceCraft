@@ -375,7 +375,7 @@ UpgradesInfo(client,target,race,MenuMode:mode)
 
 public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    if (action==MenuAction_Select)
     {
         PrepareAndEmitSoundToClient(client,buttonWav);
         new target = gUpgradesInfoTarget[client];
@@ -396,7 +396,9 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                         MainMenu(client);
                 }
                 else
-                    UpgradesInfo_Upgrade(client,raceHandle,upgrade);
+                {
+                    UpgradesInfo_Upgrade(client,race,raceHandle,upgrade,gUpgradesMenuMode[client]);
+                }
             }
         }
         else if (target != client)
@@ -425,17 +427,19 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
+UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
 {
     decl String:name[NAME_STRING_LENGTH];
     decl String:desc[LONG_STRING_LENGTH];
     decl String:item[LONG_STRING_LENGTH];
+    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), client);
+
+    TraceInto("Info", "UpgradesInfo_Upgrade", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
+              client, client, raceHandle, upgrade, mode);
 
     new Handle:menu=CreateMenu(UpgradesInfo_Back);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,true);
-
-    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), client);
 
     SetMenuTitle(menu,"[SC] %T", "UpgradeInfo", client, name);
     AddMenuItem(menu,"",desc,ITEMDRAW_DISABLED);
@@ -511,30 +515,78 @@ UpgradesInfo_Upgrade(client,Handle:raceHandle,upgrade)
         }
     }
 
+    if (mode & UpgradeMode)
+    {
+        decl String:sbuf[SMALL_STRING_LENGTH];
+        Format(sbuf,sizeof(sbuf),"%d",upgrade);
+
+        AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
+        AddMenuItemT(menu, sbuf, "SelectUpgrade", client);
+    }
+
     AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
-    AddMenuItemT(menu, "", "BackToUpgrades", client);
+    AddMenuItemT(menu, "-1", "BackToUpgrades", client);
+    
+    gRaceForUpgrades[client] = race;
+    gUpgradesMenuMode[client] = mode;
+    gUpgradesInfoTarget[client]=client;
     DisplayMenu(menu,client,MENU_TIME_FOREVER);
+    TraceReturn();
 }
 
 public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
 {
-    if(action==MenuAction_Select)
+    TraceInto("Menus", "UpgradesInfo_Back", "client=%d, menu=%d, action=%d, selection=%d", \
+              client, menu, action, selection);
+
+    LogMessage("UpgradesInfo_Back: client=%d, menu=%d, action=%d, selection=%d", client, menu, action, selection);
+
+    if (action == MenuAction_Select)
     {
         PrepareAndEmitSoundToClient(client,buttonWav);
-        UpgradesInfo(client,gUpgradesInfoTarget[client],
-                     gRaceForUpgrades[client],
-                     gUpgradesMenuMode[client]);
+        if (IsValidClient(client))
+        {
+            //if (gUpgradesMenuMode[client] & FromUpgradeMenu)
+            decl String:SelectionInfo[SMALL_STRING_LENGTH];
+            GetMenuItem(menu,selection,SelectionInfo,sizeof(SelectionInfo));
+            new upgrade=StringToInt(SelectionInfo);
+            
+            new race = gRaceForUpgrades[client];
+            new Handle:raceHandle=GetRaceHandle(race);
+            new upgradeCount=GetUpgradeCount(raceHandle);
+            if (upgrade >= 0 && upgrade < upgradeCount)
+            {
+                SelectUpgrade(client, race, upgrade, raceHandle);
+            }
+            else
+            {
+                UpgradesInfo(client,gUpgradesInfoTarget[client],
+                             gRaceForUpgrades[client],
+                             gUpgradesMenuMode[client]);
+            }
+        }
     }
     else if (action == MenuAction_Cancel)
     {
         if (selection == MenuCancel_ExitBack)
         {
             PrepareAndEmitSoundToClient(client,buttonWav);
-            UpgradesInfo(client,gUpgradesInfoTarget[client],
-                         gRaceForUpgrades[client],
-                         gUpgradesMenuMode[client]);
+            if (gUpgradesMenuMode[client] & FromUpgradeMenu)
+            {
+                UpgradeMenu(client, gUpgradesMenuMode[client], true);
+            }
+            else
+            {
+                UpgradesInfo(client,gUpgradesInfoTarget[client],
+                             gRaceForUpgrades[client],
+                             gUpgradesMenuMode[client]);
+            }
         }
     }
     else if (action == MenuAction_End)
+    {
         CloseHandle(menu);
+    }
+
+    TraceReturn();
 }
