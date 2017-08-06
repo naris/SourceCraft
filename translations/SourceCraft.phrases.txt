@@ -247,8 +247,8 @@
 	}
 	"ChooseRace"
 	{
-		"#format"	"{1:s}"
-		"en"		"Select a {1} race."
+		"#format"	"{1:s},{2:d}"
+		"en"		"Select a {1} race, you have {2} levels."
 	}
 	"ViewRace"
 	{

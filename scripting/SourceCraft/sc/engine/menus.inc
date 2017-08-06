@@ -162,7 +162,7 @@ RaceMenu(client,MenuMode:mode)
             new Handle:crMenu = CreateMenu(Faction_Selected);
 
             if (change)
-                SetMenuTitle(crMenu, "[SC] %T", "ChooseRace", client, "");
+                SetMenuTitle(crMenu, "[SC] %T", "ChooseRace", client, "", level);
             else
                 SetMenuTitle(crMenu, "[SC] %T", "ViewRace", client, "");
 
@@ -279,6 +279,7 @@ FactionMenu(client, start=-1)
     new indexCount = GetRaceIndexCount();
     if (start > 0 && start < indexCount)
     {
+        new level              = GetOverallLevel(client);
         new bool:change        = bool:(gRaceMenuMode[client] & ChangeRaceMode);
         new Handle:crMenu      = CreateMenu(RaceMenu_Selected);
         new Faction:theFaction = GetRaceFaction(GetRaceIndexHandle(start));
@@ -287,14 +288,13 @@ FactionMenu(client, start=-1)
         GetFactionName(theFaction,factionName,sizeof(factionName), client);
 
         if (change)
-            SetMenuTitle(crMenu, "[SC] %T", "ChooseRace", client, factionName);
+            SetMenuTitle(crMenu, "[SC] %T", "ChooseRace", client, factionName, level);
         else
             SetMenuTitle(crMenu, "[SC] %T", "ViewRace", client, factionName);
 
         SetMenuExitButton(crMenu,true);
         SetMenuExitBackButton(crMenu,true);
 
-        new level = GetOverallLevel(client);
         for(new index = start; index < indexCount; index++)
         {
             new Handle:raceHandle=GetRaceIndexHandle(index);
