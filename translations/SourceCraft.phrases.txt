@@ -871,7 +871,7 @@
 		"#format"	"{1:d},{2:s}"
 		"en"		"The player already owns the maximum allowed {1} {blue}{2}{default}s."
 	}
-	"AlreadyOwn"
+	"PlayerOwnsItem"
 	{
 		"#format"	"{1:s}"
 		"en"		"The player  already owns the {blue}{1}{default}."

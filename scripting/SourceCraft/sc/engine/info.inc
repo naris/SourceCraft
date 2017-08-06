@@ -539,8 +539,6 @@ public UpgradesInfo_Back(Handle:menu,MenuAction:action,client,selection)
     TraceInto("Menus", "UpgradesInfo_Back", "client=%d, menu=%d, action=%d, selection=%d", \
               client, menu, action, selection);
 
-    LogMessage("UpgradesInfo_Back: client=%d, menu=%d, action=%d, selection=%d", client, menu, action, selection);
-
     if (action == MenuAction_Select)
     {
         PrepareAndEmitSoundToClient(client,buttonWav);

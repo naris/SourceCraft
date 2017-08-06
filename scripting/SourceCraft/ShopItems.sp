@@ -1334,6 +1334,11 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
     new bool:handled     = false;
     new bool:itemInvoked = false;
 
+    TraceInto("ShopItems", "OnPlayerHurtEvent", "victim=%d:%N, victim_race=%d, attacker=%d:%N, attacker_race=%d, damage=%d, absorbed=%d, from_sc=%d", \
+              victim_index, ValidClientIndex(victim_index), victim_race, \
+              attacker_index, ValidClientIndex(attacker_index), attacker_race, \
+              damage, absorbed, from_sc);
+
     if (victim_index > 0 && victim_index != attacker_index)
     {
         damage += absorbed;
@@ -1350,6 +1355,8 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
         {
             new reflection = GetOwnsItem(victim_index,shopItem[ITEM_MOLE_REFLECTION]);
             new protection = GetOwnsItem(victim_index,shopItem[ITEM_MOLE_PROTECTION]);
+            Trace("Attacker is a Mole; reflection=%d, protection=%d", reflection, protection);
+
             if (reflection || protection)
             {
                 new victim_health = GetClientHealth(victim_index);
@@ -1416,144 +1423,177 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
                     DisplayMessage(victim_index, Display_Item, "%t", "UsedMoleRetention");
                 }
             }
+        }
 
-            if (!from_sc && !GetImmunity(victim_index,Immunity_ShopItems) &&
-                !GetRestriction(attacker_index, Restriction_NoShopItems) &&
-                !GetRestriction(attacker_index, Restriction_Stunned))
+        if (!from_sc && !GetImmunity(victim_index,Immunity_ShopItems) &&
+            !GetRestriction(attacker_index, Restriction_NoShopItems) &&
+            !GetRestriction(attacker_index, Restriction_Stunned))
+        {
+            Trace("No restrictions or immunity yet");
+            if (!IsInvulnerable(victim_index))
             {
-                if (!IsInvulnerable(victim_index))
+                Trace("Victim %d:%N's is not invulnerable", \
+                      victim_index, ValidClientIndex(victim_index));
+                if (!GetImmunity(victim_index,Immunity_HealthTaking))
                 {
-                    if (!GetImmunity(victim_index,Immunity_HealthTaking))
+                    Trace("Victim %d:%N's is vulnerable to healthtaking", \
+                          victim_index, ValidClientIndex(victim_index));
+                    if (IsClient(victim_index) &&
+                        !GetImmunity(victim_index,Immunity_Burning))
                     {
-                        if (IsClient(victim_index) &&
-                            !GetImmunity(victim_index,Immunity_Burning))
+                        Trace("Victim %d:%N's is vulnerable to fire", \
+                              victim_index, ValidClientIndex(victim_index));
+                                   
+                        if (GetOwnsItem(attacker_index,shopItem[ITEM_ORB_FIRE]))
                         {
-                            if (GetOwnsItem(attacker_index,shopItem[ITEM_ORB_FIRE]))
+                            Trace("Attacker %d:%N's has an Orb of Fire", \
+                                  attacker_index, ValidClientIndex(attacker_index));
+
+                            new Float:lastTime =  m_FireTime[attacker_index][victim_index];
+                            if (lastTime == 0.0 || GetGameTime() - lastTime > 10.0)
                             {
-                                new Float:lastTime =  m_FireTime[attacker_index][victim_index];
-                                if (lastTime == 0.0 || GetGameTime() - lastTime > 10.0)
-                                {
-                                    if (GameType == tf2)
-                                        TF2_IgnitePlayer(victim_index, attacker_index);
-                                    else if (GameType == dod)
-                                        DOD_IgniteEntity(victim_index, 10.0);
-                                    else
-                                        IgniteEntity(victim_index, 10.0);
+                                Trace("%d:%N's Orb of Fire ignited %d:%N", \
+                                      attacker_index, ValidClientIndex(attacker_index), \
+                                      victim_index, ValidClientIndex(victim_index));
 
-                                    itemInvoked = true;
-                                    m_FireTime[attacker_index][victim_index] = GetGameTime();
-                                    DisplayMessage(victim_index, Display_Enemy_Item,
-                                                   "%t", "SetOnFireWithOrb", attacker_index);
-                                }
-                            }
-                        }
+                                if (GameType == tf2)
+                                    TF2_IgnitePlayer(victim_index, attacker_index);
+                                else if (GameType == dod)
+                                    DOD_IgniteEntity(victim_index, 10.0);
+                                else
+                                    IgniteEntity(victim_index, 10.0);
 
-                        if (!itemInvoked && GetOwnsItem(attacker_index,shopItem[ITEM_CLAWS]))
-                        {
-                            new Float:lastTime = m_ClawTime[attacker_index];
-                            if (lastTime == 0.0 || GetGameTime() - lastTime > 0.25)
-                            {
-                                new amount=RoundToCeil(float(damage)*0.25);
-                                if (amount < 1)
-                                    amount = 1;
-                                else if (amount > 8)
-                                    amount = 8;
-
-                                if (GameType != tf2 || GetMode() != MvM)
-                                {
-                                    new entities = EntitiesAvailable(200, .message="Reducing Effects");
-                                    if (entities > 50)
-                                        CreateParticle("blood_impact_red_01_chunk", 0.1, victim_index, Attach, "head");
-                                }
-
-                                handled=true;
                                 itemInvoked = true;
-                                m_ClawTime[attacker_index] = GetGameTime();
-
-                                FlashScreen(victim_index,RGBA_COLOR_RED);
-                                HurtPlayer(victim_index, amount, attacker_index,
-                                           "sc_item_claws", .type=DMG_SLASH,
-                                           .in_hurt_event=true);
+                                m_FireTime[attacker_index][victim_index] = GetGameTime();
+                                DisplayMessage(victim_index, Display_Enemy_Item,
+                                               "%t", "SetOnFireWithOrb", attacker_index);
                             }
                         }
                     }
-
-                    if (!itemInvoked && IsClient(victim_index) &&
-                        !GetImmunity(victim_index,Immunity_MotionTaking) &&
-                        !GetImmunity(victim_index,Immunity_Freezing) &&
-                        !GetImmunity(victim_index,Immunity_Restore))
+                    else
                     {
-                        if (GetOwnsItem(attacker_index,shopItem[ITEM_ORB_FROST]))
-                        {
-                            itemInvoked = true;
-                            SetOverrideSpeed(victim_index, 0.5);
-                            FlashScreen(victim_index,RGBA_COLOR_BLUE);
-                            SetVisibility(victim_index, BasicVisibility,
-                                          .visibility=192, 
-                                          .mode=RENDER_TRANSCOLOR,
-                                          .r=((GetClientTeam(victim_index) == _:TFTeam_Red) ? 255 : 0),
-                                          .g=128, .b=255, .apply=true);
+                        Trace("Victim is immune to burning");
+                    }
 
-                            CreateTimer(5.0,RestoreSpeed, GetClientUserId(victim_index),TIMER_FLAG_NO_MAPCHANGE);
-                            DisplayMessage(victim_index, Display_Enemy_Item, "%t",
-                                           "FrozenWithOrb", attacker_index);
+                    if (!itemInvoked && GetOwnsItem(attacker_index,shopItem[ITEM_CLAWS]))
+                    {
+                        new Float:lastTime = m_ClawTime[attacker_index];
+                        if (lastTime == 0.0 || GetGameTime() - lastTime > 0.25)
+                        {
+                            new amount=RoundToCeil(float(damage)*0.25);
+                            if (amount < 1)
+                                amount = 1;
+                            else if (amount > 8)
+                                amount = 8;
+
+                            if (GameType != tf2 || GetMode() != MvM)
+                            {
+                                new entities = EntitiesAvailable(200, .message="Reducing Effects");
+                                if (entities > 50)
+                                    CreateParticle("blood_impact_red_01_chunk", 0.1, victim_index, Attach, "head");
+                            }
+
+                            handled=true;
+                            itemInvoked = true;
+                            m_ClawTime[attacker_index] = GetGameTime();
+
+                            FlashScreen(victim_index,RGBA_COLOR_RED);
+                            HurtPlayer(victim_index, amount, attacker_index,
+                                       "sc_item_claws", .type=DMG_SLASH,
+                                       .in_hurt_event=true);
                         }
                     }
                 }
-
-                if (GetOwnsItem(attacker_index,shopItem[ITEM_MASK]))
+                else
                 {
-                    if (!itemInvoked && IsValidClientAlive(attacker_index))
+                    Trace("Victim is immune to healthtaking");
+                }
+
+                if (!itemInvoked && IsClient(victim_index) &&
+                    !GetImmunity(victim_index,Immunity_MotionTaking) &&
+                    !GetImmunity(victim_index,Immunity_Freezing) &&
+                    !GetImmunity(victim_index,Immunity_Restore))
+                {
+                    if (GetOwnsItem(attacker_index,shopItem[ITEM_ORB_FROST]))
                     {
-                        new health = GetClientHealth(attacker_index);
-                        new max_health = (GameType == tf2) ? TF2_GetPlayerResourceData(attacker_index, TFResource_MaxHealth) : 100;
-                        if (health > 0 && health <= max_health-2)
+                        itemInvoked = true;
+                        SetOverrideSpeed(victim_index, 0.5);
+                        FlashScreen(victim_index,RGBA_COLOR_BLUE);
+                        SetVisibility(victim_index, BasicVisibility,
+                                      .visibility=192, 
+                                      .mode=RENDER_TRANSCOLOR,
+                                      .r=((GetClientTeam(victim_index) == _:TFTeam_Red) ? 255 : 0),
+                                      .g=128, .b=255, .apply=true);
+
+                        CreateTimer(5.0,RestoreSpeed, GetClientUserId(victim_index),TIMER_FLAG_NO_MAPCHANGE);
+                        DisplayMessage(victim_index, Display_Enemy_Item, "%t",
+                                       "FrozenWithOrb", attacker_index);
+                    }
+                }
+            }
+            else
+            {
+                Trace("Victim is invulnerable");
+            }
+
+            if (GetOwnsItem(attacker_index,shopItem[ITEM_MASK]))
+            {
+                if (!itemInvoked && IsValidClientAlive(attacker_index))
+                {
+                    new health = GetClientHealth(attacker_index);
+                    new max_health = (GameType == tf2) ? TF2_GetPlayerResourceData(attacker_index, TFResource_MaxHealth) : 100;
+                    if (health > 0 && health <= max_health-2)
+                    {
+                        handled=true;
+                        itemInvoked = true;
+                        ShowHealthParticle(attacker_index);
+                        SetEntityHealth(attacker_index,health+2);
+                        FlashScreen(attacker_index,RGBA_COLOR_GREEN);
+
+                        decl String:itemName[64];
+                        GetItemName(shopItem[ITEM_MASK], itemName, sizeof(itemName), attacker_index);
+                        if (IsClient(victim_index))
                         {
-                            handled=true;
-                            itemInvoked = true;
-                            ShowHealthParticle(attacker_index);
-                            SetEntityHealth(attacker_index,health+2);
-                            FlashScreen(attacker_index,RGBA_COLOR_GREEN);
+                            DisplayMessage(attacker_index, Display_Item | Display_Defense,
+                                           "%t", "ReceivedHPFrom", 2, victim_index,
+                                           itemName);
+                        }
+                        else
+                        {
+                            DisplayMessage(attacker_index, Display_Item | Display_Defense,
+                                           "%t", "ReceivedHP", 2, itemName);
+                        }
 
-                            decl String:itemName[64];
-                            GetItemName(shopItem[ITEM_MASK], itemName, sizeof(itemName), attacker_index);
-                            if (IsClient(victim_index))
-                            {
-                                DisplayMessage(attacker_index, Display_Item | Display_Defense,
-                                               "%t", "ReceivedHPFrom", 2, victim_index,
-                                               itemName);
-                            }
-                            else
-                            {
-                                DisplayMessage(attacker_index, Display_Item | Display_Defense,
-                                               "%t", "ReceivedHP", 2, itemName);
-                            }
+                        new Float:lastTime = m_MaskTime[attacker_index];
+                        if (lastTime == 0.0 || GetGameTime() - lastTime > 0.25)
+                        {
+                            PrepareAndEmitSoundToAll(maskSnd,attacker_index);
+                            m_MaskTime[attacker_index] = GetGameTime();
+                        }
 
-                            new Float:lastTime = m_MaskTime[attacker_index];
+                        if (IsClient(victim_index))
+                        {
+                            lastTime = m_MaskTime[victim_index];
                             if (lastTime == 0.0 || GetGameTime() - lastTime > 0.25)
                             {
                                 PrepareAndEmitSoundToAll(maskSnd,attacker_index);
-                                m_MaskTime[attacker_index] = GetGameTime();
-                            }
-
-                            if (IsClient(victim_index))
-                            {
-                                lastTime = m_MaskTime[victim_index];
-                                if (lastTime == 0.0 || GetGameTime() - lastTime > 0.25)
-                                {
-                                    PrepareAndEmitSoundToAll(maskSnd,attacker_index);
-                                    m_MaskTime[victim_index] = GetGameTime();
-                                }
+                                m_MaskTime[victim_index] = GetGameTime();
                             }
                         }
                     }
                 }
             }
         }
+        else
+        {
+            Trace("Attack is from_sc or Attacker is restricted or Victim is immune");
+        }
     }
 
     if (IsClient(victim_index) && m_IsMole[victim_index])
         m_MoleHealth[victim_index] = GetClientHealth(victim_index);
+
+    TraceReturn("handled=%d",handled);
 
     return handled ? Plugin_Handled : Plugin_Continue;
 }
