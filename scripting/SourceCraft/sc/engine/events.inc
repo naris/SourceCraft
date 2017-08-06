@@ -789,9 +789,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
     TraceInto("Events", "PlayerDeathEvent", "victim_index=%d:%L", \
               victim_index, ValidClientIndex(victim_index));
 
-    LogMessage("PlayerDeathEvent: victim_index=%d:%L", \
-              victim_index, ValidClientIndex(victim_index));
-
     if (victim_index > 0 && !g_Dead[victim_index])
     {
         new customkill;
@@ -896,9 +893,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
         Trace("attacker_index=%d:%L, damage=%d, melee=%d", \
               attacker_index, ValidClientIndex(attacker_index), damage, melee);
 
-        LogMessage("attacker_index=%d:%L, damage=%d, melee=%d", \
-                   attacker_index, ValidClientIndex(attacker_index), damage, melee);
-
         if (GetGameType() == tf2 &&
             g_PackageCount < g_iMaxPackages &&
             !IsEntLimitReached(.client=victim_index,
@@ -920,7 +914,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         drop_money = g_iMaxDropMoney;
                 }
             }
-            LogMessage("Prepare package, calc money=%d of %d", drop_money, money);
 
             new crystals = GetCrystals(victim_index);
             new drop_crystals = 0;
@@ -932,7 +925,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 else if (drop_crystals > g_iMaxDropCrystals)
                     drop_crystals = g_iMaxDropCrystals;
             }
-            LogMessage("Prepare package, calc crystals=%d of %d", drop_crystals, crystals);
 
             new pcrystals = GetPCrystals(victim_index);
             new drop_pcrystals = 0;
@@ -944,7 +936,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 else if (drop_pcrystals > g_iMaxDropPCrystals)
                     drop_pcrystals = g_iMaxDropPCrystals;
             }
-            LogMessage("Prepare package, calc pcrystals=%d of %d", drop_pcrystals, pcrystals);
 
             new xp;
             new drop_xp = 0;
@@ -963,17 +954,15 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         drop_xp = g_iMaxDropXP;
                 }
             }
-            LogMessage("Prepare package, calc xp=%d of %d", drop_xp, xp);
 
             new Float:energy = GetEnergy(victim_index);
             new Float:drop_energy = (energy >= g_fMinEnergyInPackage) ? energy : 0.0;
-            LogMessage("Prepare package, calc energy=%f", drop_energy);
-            LogMessage("%d:%N died with %d drop_XP, %d+%d drop_crystals(s), %d drop_money and %f drop_energy",
+
+            Trace("%d:%N died with %d drop_XP, %d+%d drop_crystals(s), %d drop_money and %f drop_energy", \
                        victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
 
             if (drop_xp > 0 || drop_crystals > 0 || drop_money > 0 || drop_energy > g_fMinEnergyForPackage)
             {
-                LogMessage("Create package");
                 new pkg = CreateEntityByName("prop_physics_override");
                 if (pkg > 0 && IsValidEntity(pkg))
                 {
@@ -1032,8 +1021,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
 
                     m_PackageEnergy[pkg] = drop_energy;
 
-                    LogMessage("%d:%N dropped a package with %d XP, %d+%d crystals(s), %d money and %f energy",
-                               victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
                     LogToGame("%d:%N dropped a package with %d XP, %d+%d crystals(s), %d money and %f energy",
                               victim_index, ValidClientIndex(victim_index), drop_xp, drop_crystals, drop_pcrystals, drop_money, drop_energy);
 
@@ -1043,18 +1030,15 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         {
                             if (drop_money > 0)
                             {
-                                LogMessage("%t", "DroppedPackageXPCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
                                 DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageXPCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
                             }
                             else
                             {
-                                LogMessage("%t", "DroppedPackageXPCrystals", drop_xp, drop_crystals, drop_pcrystals);
                                 DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageXPCrystals", drop_xp, drop_crystals, drop_pcrystals);
                             }
                         }
                         else
                         {
-                            LogMessage("%t", "DroppedPackageXP", drop_xp);
                             DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageXP", drop_xp);
                         }
                     }
@@ -1064,18 +1048,15 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                         {
                             if (drop_money > 0)
                             {
-                                LogMessage("%t", "DroppedPackageCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
                                 DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystalsMoney", drop_xp, drop_crystals, drop_pcrystals, drop_money);
                             }
                             else
                             {
-                                LogMessage("%t", "DroppedPackageCrystals", drop_xp, drop_crystals, drop_pcrystals);
                                 DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageCrystals", drop_xp, drop_crystals, drop_pcrystals);
                             }
                         }
                         else if (drop_money > 0)
                         {
-                            LogMessage("%t", "DroppedPackageMoney", drop_money);
                             DisplayMessage(victim_index, Display_Package, "%t", "DroppedPackageMoney", drop_money);
                         }
                     }
@@ -1088,10 +1069,6 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                                                       pkg, TIMER_FLAG_NO_MAPCHANGE);
                 }
             }
-        }
-        else
-        {
-            LogMessage("No package for you!");
         }
 
         if (attacker_index != victim_index)

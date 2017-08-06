@@ -85,8 +85,8 @@ new bool:g_bSaveXP                = true;
 
 new bool:g_bShowDisabledRaces     = false;
 new bool:g_bShowUpgradeInfo       = true;
-new g_fMinEnergyForPackage        = 50.0;
-new g_fMinEnergyInPackage         = 25.0;
+new Float:g_fMinEnergyForPackage  = 40.0;
+new Float:g_fMinEnergyInPackage   = 20.0;
 new g_iRaceMenuThreshold          = 16;
 
 new g_iMaxCrystals                = 100;
