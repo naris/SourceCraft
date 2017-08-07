@@ -66,16 +66,16 @@ public Action:SayCommand(client, const String:command[], argc)
         if (StrContains("!/\\",firstChar) >= 0)
             strcopy(arg[0], sizeof(arg[]), arg[0]{1});
 
-        if (StrEqual(arg[0],"menu") ||
-            StrEqual(arg[0],"scmenu") ||
-            StrEqual(arg[0],"wcsmenu"))
+        if (StrEqual(arg[0],"menu", false) ||
+            StrEqual(arg[0],"scmenu", false) ||
+            StrEqual(arg[0],"wcsmenu", false))
         {
             MainMenu(client);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"shopmenu") ||
-                 StrEqual(arg[0],"scbuy") ||
-                 StrEqual(arg[0],"buy"))
+        else if (StrEqual(arg[0],"shopmenu", false) ||
+                 StrEqual(arg[0],"scbuy", false) ||
+                 StrEqual(arg[0],"buy", false))
         {
             if (argCount > 1 && strlen(arg[1]) > 0)
             {
@@ -89,8 +89,8 @@ public Action:SayCommand(client, const String:command[], argc)
                 ShopMenu(client,client,PurchaseItemMode);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"changeunit") ||
-                 StrEqual(arg[0],"changerace"))
+        else if (StrEqual(arg[0],"changeunit", false) ||
+                 StrEqual(arg[0],"changerace", false))
         {
             if (argCount > 1 && strlen(arg[1]) > 0)
             {
@@ -111,23 +111,23 @@ public Action:SayCommand(client, const String:command[], argc)
 
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"unitinfo") ||
-                 StrEqual(arg[0],"raceinfo"))
+        else if (StrEqual(arg[0],"unitinfo", false) ||
+                 StrEqual(arg[0],"raceinfo", false))
         {
             RaceMenu(client,InfoMode);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"reset") ||
-                 StrEqual(arg[0],"resetupgrades") ||
-                 StrEqual(arg[0],"resetskills"))
+        else if (StrEqual(arg[0],"reset", false) ||
+                 StrEqual(arg[0],"resetupgrades", false) ||
+                 StrEqual(arg[0],"resetskills", false))
         {
             ResetUpgrades(client);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"upgrade") ||
-                 StrEqual(arg[0],"spendup") ||
-                 StrEqual(arg[0],"spendupgrades") ||
-                 StrEqual(arg[0],"spendskills"))
+        else if (StrEqual(arg[0],"upgrade", false) ||
+                 StrEqual(arg[0],"spendup", false) ||
+                 StrEqual(arg[0],"spendupgrades", false) ||
+                 StrEqual(arg[0],"spendskills", false))
         {
             new race=GetRace(client);
             if (GetUpgradeLevelCount(client, race) < GetLevel(client, race))
@@ -138,25 +138,26 @@ public Action:SayCommand(client, const String:command[], argc)
             }
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"schelp") ||
-                 StrEqual(arg[0],"help"))
+        else if (StrEqual(arg[0],"schelp", false) ||
+                 StrEqual(arg[0],"help", false))
         {
             Help(client);
             return Plugin_Handled;
         }
-        else if(StrEqual(arg[0],"scsettings"))
+        else if (StrEqual(arg[0],"scsettings", false) ||
+                 StrEqual(arg[0],"settings", false))
         {
             ChangeSettings(client, false);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"info") ||
-                 StrEqual(arg[0],"show"))
+        else if (StrEqual(arg[0],"info", false) ||
+                 StrEqual(arg[0],"show", false))
         {
             PlayerInfo(client,client,InfoMode|QueryMode);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"playerinfo") ||
-                 StrEqual(arg[0],"showplayer"))
+        else if (StrEqual(arg[0],"playerinfo", false) ||
+                 StrEqual(arg[0],"showplayer", false))
         {
             PlayerInfoMenu(client,InfoMode);
             return Plugin_Handled;
@@ -171,72 +172,72 @@ public Action:SayCommand(client, const String:command[], argc)
             UpgradesInfo(client,client,GetRace(client),InfoMode);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"showitems") ||
-                 StrEqual(arg[0],"inventory") ||
-                 StrEqual(arg[0],"inv"))
+        else if (StrEqual(arg[0],"showitems", false) ||
+                 StrEqual(arg[0],"inventory", false) ||
+                 StrEqual(arg[0],"inv", false))
         {
             ShopMenu(client,client,InfoMode);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"xp") ||
-                 StrEqual(arg[0],"showxp") ||
-                 StrEqual(arg[0],"showexp") ||
-                 StrEqual(arg[0],"showexperience"))
+        else if (StrEqual(arg[0],"xp", false) ||
+                 StrEqual(arg[0],"showxp", false) ||
+                 StrEqual(arg[0],"showexp", false) ||
+                 StrEqual(arg[0],"showexperience", false))
         {
             ShowXP(client,Display_Generic);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"crystals") || 
-                 StrEqual(arg[0],"showcrystals") ||
-                 StrEqual(arg[0],"showc"))
+        else if (StrEqual(arg[0],"crystals", false) || 
+                 StrEqual(arg[0],"showcrystals", false) ||
+                 StrEqual(arg[0],"showc", false))
         {
             ShowCrystals(client,Display_Generic);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"vespene") || 
-                 StrEqual(arg[0],"showvespene") ||
-                 StrEqual(arg[0],"showv"))
+        else if (StrEqual(arg[0],"vespene", false) || 
+                 StrEqual(arg[0],"showvespene", false) ||
+                 StrEqual(arg[0],"showv", false))
         {
             ShowVespene(client,Display_Generic);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"energy") || 
-                 StrEqual(arg[0],"showenergy") ||
-                 StrEqual(arg[0],"showe"))
+        else if (StrEqual(arg[0],"energy", false) || 
+                 StrEqual(arg[0],"showenergy", false) ||
+                 StrEqual(arg[0],"showe", false))
         {
             ShowEnergy(client,Display_Generic);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"scinfo") || 
-                 StrEqual(arg[0],"details") || 
-                 StrEqual(arg[0],"lookup"))
+        else if (StrEqual(arg[0],"scinfo", false) || 
+                 StrEqual(arg[0],"details", false) || 
+                 StrEqual(arg[0],"lookup", false))
         {
             ShowInfo(client);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"scwiki") || 
-                 StrEqual(arg[0],"wiki"))
+        else if (StrEqual(arg[0],"scwiki", false) || 
+                 StrEqual(arg[0],"wiki", false))
         {
             ShowWiki(client);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"scinfo") || 
-                 StrEqual(arg[0],"updates"))
+        else if (StrEqual(arg[0],"scinfo", false) || 
+                 StrEqual(arg[0],"updates", false))
         {
             ShowUpdates(client);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"scbug") || 
-                 StrEqual(arg[0],"bug"))
+        else if (StrEqual(arg[0],"scbug", false) || 
+                 StrEqual(arg[0],"bug", false))
         {
             ReportBugs(client);
             return Plugin_Handled;
         }
-        else if (StrEqual(arg[0],"killme"))
+        else if (StrEqual(arg[0],"killme", false))
         {
             KillPlayer(client, client, "sc_suicide", "Suicide");
         }
-        else if (StrEqual(arg[0],"entities"))
+        else if (StrEqual(arg[0],"entities", false))
         {
             new max = GetMaxEntities();
             new count = GetEntityCount();
