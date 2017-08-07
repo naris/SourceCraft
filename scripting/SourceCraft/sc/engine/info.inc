@@ -429,8 +429,11 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 
 UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
 {
+    new MenuMode:isUpgradeMode = (mode & UpgradeMode);
+    new String:attrib[DESCRIPTION_LENGTH] = "";
+    
     decl String:name[NAME_STRING_LENGTH];
-    decl String:desc[LONG_STRING_LENGTH];
+    decl String:desc[DESCRIPTION_LENGTH];
     decl String:item[LONG_STRING_LENGTH];
     GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), client);
 
@@ -441,20 +444,55 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,true);
 
-    SetMenuTitle(menu,"[SC] %T", "UpgradeInfo", client, name);
-    AddMenuItem(menu,"",desc,ITEMDRAW_DISABLED);
+    SetMenuTitle(menu, "[SC] %T", "UpgradeInfo", client, name);
+    AddMenuItem(menu, "", desc, ITEMDRAW_DISABLED);
 
     new category = GetUpgradeCategory(raceHandle, upgrade);
     if (category == 1)
-        AddMenuItemT(menu, "", "InvokedWithUltimate", client, ITEMDRAW_DISABLED);
+    {
+        Format(item,sizeof(item), "%T", "InvokedWithUltimate", client);
+        if (isUpgradeMode)
+        {
+            StrCat(attrib,sizeof(item),item);
+        }
+        else
+        {
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
+    }
     else if (category > 1)
     {
         Format(item,sizeof(item), "%T", "InvokedWithUltimateN", client, category);
-        AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        if (isUpgradeMode)
+        {
+            if (attrib[0] != 0)
+            {
+                StrCat(attrib,sizeof(item)," ");
+            }
+            StrCat(attrib,sizeof(item),item);
+        }
+        else
+        {
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
     }
 
     if (GetUpgradeRequiredLevel(raceHandle,upgrade) == 0)
-        AddMenuItemT(menu, "", "AlwaysAvailable", client, ITEMDRAW_DISABLED);
+    {
+        Format(item,sizeof(item), "%T", "AlwaysAvailable", client);
+        if (isUpgradeMode)
+        {
+            if (attrib[0] != 0)
+            {
+                StrCat(attrib,sizeof(item)," ");
+            }
+            StrCat(attrib,sizeof(item),item);
+        }
+        else
+        {
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
+    }
 
     new Float:energy = GetUpgradeEnergy(raceHandle, upgrade);
     new Float:recurring_energy = GetUpgradeRecurringEnergy(raceHandle, upgrade);
@@ -463,68 +501,162 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
         if (energy > 0.0)
         {
             Format(item, sizeof(item), "%T", "UsesEnergyToInvoke", client, energy);
-            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+            if (isUpgradeMode)
+            {
+                if (attrib[0] != 0)
+                {
+                    StrCat(attrib,sizeof(item)," ");
+                }
+                StrCat(attrib,sizeof(item),item);
+            }
+            else
+            {
+                AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+            }
 
             Format(item, sizeof(item), "%T", "AndEnergyPerUse", client, recurring_energy);
-            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+            if (isUpgradeMode)
+            {
+                if (attrib[0] != 0)
+                {
+                    StrCat(attrib,sizeof(item)," ");
+                }
+                StrCat(attrib,sizeof(item),item);
+            }
+            else
+            {
+                AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+            }
         }
         else
         {
             Format(item,sizeof(item), "%T", "EnergyPerUse", client, recurring_energy);
-            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+            if (isUpgradeMode)
+            {
+                if (attrib[0] != 0)
+                {
+                    StrCat(attrib,sizeof(item)," ");
+                }
+                StrCat(attrib,sizeof(item),item);
+            }
+            else
+            {
+                AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+            }
         }
     }
     else if (energy > 0.0)
     {
         Format(item,sizeof(item), "%T", "UsesEnergy", client, energy);
-        AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        if (isUpgradeMode)
+        {
+            if (attrib[0] != 0)
+            {
+                StrCat(attrib,sizeof(item)," ");
+            }
+            StrCat(attrib,sizeof(item),item);
+        }
+        else
+        {
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
     }
 
     new crystals = GetUpgradeCrystals(raceHandle, upgrade);
     if (crystals > 0)
     {
         Format(item,sizeof(item), "%T", "CostsCrystalsPerUse", client, crystals);
-        AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        if (isUpgradeMode)
+        {
+            if (attrib[0] != 0)
+            {
+                StrCat(attrib,sizeof(item)," ");
+            }
+            StrCat(attrib,sizeof(item),item);
+        }
+        else
+        {
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
     }
 
     new vespene = GetUpgradeVespene(raceHandle, upgrade);
     if (vespene > 0)
     {
         Format(item, sizeof(item), "%T", "CostsVespenePerUse", client, vespene);
-        AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+        if (isUpgradeMode)
+        {
+            if (attrib[0] != 0)
+            {
+                StrCat(attrib,sizeof(item)," ");
+            }
+            StrCat(attrib,sizeof(item),item);
+        }
+        else
+        {
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
     }
 
     if (g_bChargeForUpgrades)
     {
         new crystal_cost = GetUpgradeCostCrystals(raceHandle, upgrade);
         if (crystal_cost < 0)
+        {
             crystal_cost = g_iUpgradeCrystalsCost;
+        }
+        
         if (crystal_cost > 0)
         {
             Format(item,sizeof(item), "%T", "CostsCrystalsToUpgrade", client, crystal_cost);
-            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+            if (isUpgradeMode)
+            {
+                if (attrib[0] != 0)
+                {
+                    StrCat(attrib,sizeof(item)," ");
+                }
+                StrCat(attrib,sizeof(item),item);
+            }
+            else
+            {
+                AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+            }
         }
 
         new vespene_cost = GetUpgradeCostVespene(raceHandle, upgrade);
         if (vespene_cost < 0)
+        {
             vespene_cost = g_iUpgradeVespeneCost;
+        }
+        
         if (vespene_cost > 0)
         {
             Format(item, sizeof(item), "%T", "CostsVespeneToUpgrade", client, vespene_cost);
-            AddMenuItem(menu,"",item,ITEMDRAW_DISABLED);
+            if (isUpgradeMode)
+            {
+                if (attrib[0] != 0)
+                {
+                    StrCat(attrib,sizeof(item)," ");
+                }
+                StrCat(attrib,sizeof(item),item);
+            }
+            else
+            {
+                AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+            }
         }
     }
 
-    if (mode & UpgradeMode)
+    if (isUpgradeMode)
     {
+        AddMenuItem(menu, "", attrib, (attrib[0] != 0) ? ITEMDRAW_SPACER : ITEMDRAW_DISABLED);
+        AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
+
         decl String:sbuf[SMALL_STRING_LENGTH];
         Format(sbuf,sizeof(sbuf),"%d",upgrade);
-
-        AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
         AddMenuItemT(menu, sbuf, "SelectUpgrade", client);
     }
 
-    AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
     AddMenuItemT(menu, "-1", "BackToUpgrades", client);
     
     gRaceForUpgrades[client] = race;
