@@ -59,6 +59,8 @@ enum Settings (<<= 1)
     Enable_Alternate_HUD,
     Disable_HUD,
     Disable_Hints,
+    Show_Upgrade_Info,
+    Show_All_Races,
     Debug_Condition,
     Debug_Speed,
     Debug_Meters,

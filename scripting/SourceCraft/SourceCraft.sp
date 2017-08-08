@@ -83,8 +83,8 @@ new bool:g_bChargeForUpgrades           = false;
 new bool:g_bSaveUpgrades                = true;
 new bool:g_bSaveXP                      = true;
 
-new bool:g_bShowDisabledRaces           = false;
 new bool:g_bShowUpgradeInfo             = true;
+new bool:g_bShowDisabledRaces           = false;
 new Float:g_fMaxPackageEnergy           = 100.0;
 new Float:g_fMinPackageEnergy           = 20.0;
 new Float:g_fReqPackageEnergy           = 40.0;

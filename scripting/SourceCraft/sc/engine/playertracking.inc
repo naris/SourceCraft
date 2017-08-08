@@ -1028,9 +1028,18 @@ ResetPlayer(client, bool:clear)
     TraceInto("PlayerTracking", "ResetPlayer", "client=%d:%N", \
               client, ValidClientIndex(client));
 
-    SetChangingClass(client, false);
+    new Settings:defaultSettings = Default_Settings;
+    
+    if (!g_bShowUpgradeInfo)
+        defaultSettings |= Show_Upgrade_Info;
+
+    if (g_bShowDisabledRaces)
+        defaultSettings |= Show_All_Races;
+
+    SetSettingsBits(client, defaultSettings);
     SetDisplayBits(client, Display_Generic);
-    SetSettingsBits(client, Default_Settings);
+
+    SetChangingClass(client, false);
 
     SetArmor(client, 0);
     SetArmorFlags(client, Armor_Default);

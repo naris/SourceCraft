@@ -55,6 +55,8 @@ enum Settings_Cookies
     Enable_Alternate_HUD_Cookie,
     Disable_HUD_Cookie,
     Disable_Hints_Cookie,
+    Show_Upgrade_Info_Cookie,
+    Show_All_Races_Cookie,
     Debug_Condition_Cookie,
     Debug_Speed_Cookie,
     Debug_Meters_Cookie,
@@ -108,6 +110,8 @@ stock const String:g_strCookieName[Settings_Cookies][] =
     "sc_enable_alternate_hud",
     "sc_disable_hud",
     "sc_disable_hints",
+    "sc_show_upgrade_info",
+    "sc_show_all_races",
     "sc_debug_condition",
     "sc_debug_speed",
     "sc_debug_meters",
@@ -161,6 +165,8 @@ stock const String:g_strCookiePrompt[Settings_Cookies][] =
     "EnableAltHUD",
     "DisableHUD",
     "DisableHints",
+    "ShowUpgradeInfo",
+    "ShowAllRaces",
     "DebugCondition",
     "DebugSpeed",
     "DebugMeters",
@@ -214,6 +220,8 @@ stock const bool:g_bCookieFlip[Settings_Cookies] =
     false,  // Enable_Alternate_HUD
     true,   // Disable_HUD
     true,   // Disable_Hints
+    false,  // Show_Upgrade_Info
+    true,   // Show_All_Races
     true,   // Debug_Condition
     true,   // Debug_Speed
     true,   // Debug_Meters

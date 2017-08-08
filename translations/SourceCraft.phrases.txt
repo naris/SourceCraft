@@ -1402,6 +1402,14 @@
 	{
 		"en"		"Disable Hints"
 	}
+	"ShowUpgradeInfo"
+	{
+		"en"		"Show upgrade info in spend upgrade menu"
+	}
+	"ShowAllRaces"
+	{
+		"en"		"Show all races in changerace menu"
+	}
 	"DebugCondition"
 	{
 		"en"		"Debug Condition"

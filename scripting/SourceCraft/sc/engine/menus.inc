@@ -173,7 +173,7 @@ RaceMenu(client,MenuMode:mode)
                 SetMenuExitBackButton(crMenu,true);
 
             new raceCount = 0;
-            if (g_bShowDisabledRaces)
+            if (GetSetting(client, Show_All_Races))
             {
                 raceCount = indexCount;
             }
@@ -199,7 +199,7 @@ RaceMenu(client,MenuMode:mode)
                 {
                     new reqLevel = GetRaceRequiredLevel(raceHandle);
                     new bool:disable = (level < reqLevel || reqLevel < 0);
-                    if (g_bShowDisabledRaces || !disable)
+                    if (!disable || (GetSetting(client, Show_All_Races)))
                     {
                         lastFaction = faction;
                         if (index < indexCount)
@@ -307,7 +307,7 @@ FactionMenu(client, start=-1)
                 decl String:item[ITEM_STRING_LENGTH];
                 new reqLevel = GetRaceRequiredLevel(raceHandle);
                 new bool:disable = (level < reqLevel || reqLevel < 0);
-                if (g_bShowDisabledRaces || !disable)
+                if (!disable || GetSetting(client, Show_All_Races))
                 {
                     GetRaceMenuItem(item, sizeof(item), client, raceHandle, reqLevel, disable);
                     if (item[0] != 0)
@@ -634,13 +634,13 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 PrepareAndEmitSoundToClient(client,buttonWav);
 
                 // Okay, they selected a valid upgrade
-                if (g_bShowUpgradeInfo)
+                if (GetSetting(client, Show_Upgrade_Info))
                 {
-                    UpgradesInfo_Upgrade(client, race, raceHandle, upgrade, UpgradeMode|FromUpgradeMenu);
+                    SelectUpgrade(client, race, upgrade, raceHandle);
                 }
                 else
                 {
-                    SelectUpgrade(client, race, upgrade, raceHandle);
+                    UpgradesInfo_Upgrade(client, race, raceHandle, upgrade, UpgradeMode|FromUpgradeMenu);
                 }
             }
         }
