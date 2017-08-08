@@ -21,5 +21,6 @@
 #define SC_DISPLAY_ENEMY_ULTIMATE (1 << 8)    // 256
 #define SC_DISPLAY_ENEMY_MESSAGE  (1 << 9)    // 512
 #define SC_DISPLAY_XP             (1 << 10)   // 1024
-#define SC_DISPLAY_CREDITS        (1 << 11)   // 2048
-#define SC_DISPLAY_DETAILS        (1 << 12)   // 4096
+#define SC_DISPLAY_PACKAGE        (1 << 11)   // 2048
+#define SC_DISPLAY_CREDITS        (1 << 12)   // 4096
+#define SC_DISPLAY_DETAILS        (1 << 13)   // 8192

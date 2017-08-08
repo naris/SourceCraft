@@ -28,7 +28,8 @@ ChangeSettings(client, bool:fromMain)
     AddSetting(SettingsMenu,"9","Display enemies misc. messages", (flags & SC_DISPLAY_ENEMY_MESSAGE) == 0);
     AddSetting(SettingsMenu,"10","Display experience gained", (flags & SC_DISPLAY_XP) == 0);
     AddSetting(SettingsMenu,"11","Display credits earned", (flags & SC_DISPLAY_CREDITS) == 0);
-    AddSetting(SettingsMenu,"12","Display details", (flags & SC_DISPLAY_DETAILS) == 0);
+    AddSetting(SettingsMenu,"12","Display package messages", (flags & SC_DISPLAY_PACKAGE) == 0);
+    AddSetting(SettingsMenu,"13","Display details", (flags & SC_DISPLAY_DETAILS) == 0);
     DisplayMenu(SettingsMenu,client,MENU_TIME_FOREVER);
 }
 
@@ -51,7 +52,8 @@ public Settings_Select(Handle:menu,MenuAction:action,client,selection)
             case 9: g_DisplayFlags[client] ^= SC_DISPLAY_ENEMY_MESSAGE; // enemies misc. messages
             case 10: g_DisplayFlags[client] ^= SC_DISPLAY_XP; // experience gained messages
             case 11: g_DisplayFlags[client] ^= SC_DISPLAY_CREDITS; // credits earned messages
-            case 12: g_DisplayFlags[client] ^= SC_DISPLAY_DETAILS; // details
+            case 12: g_DisplayFlags[client] ^= SC_DISPLAY_PACKAGE; // package
+            case 13: g_DisplayFlags[client] ^= SC_DISPLAY_DETAILS; // details
         }
         ChangeSettings(client,false);
     }
