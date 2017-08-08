@@ -435,6 +435,60 @@ ChangeSettings(client, bool:fromMain)
     DisplayMenu(SettingsMenu,client,MENU_TIME_FOREVER);
 }
 
+ChangeDisplaySettings(client, bool:fromMain)
+{
+    new Handle:SettingsMenu=CreateMenu(Settings_Select);
+    SetMenuTitle(SettingsMenu,"[SC] %T", "ChooseSetting", client);
+    SetMenuExitButton(SettingsMenu,true);
+    if (fromMain)
+        SetMenuExitBackButton(SettingsMenu,true);
+
+    new AdminId:aid = GetUserAdmin(client);
+    new bool:isAdmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+
+    decl String:buf[12];
+    new Display:displayFlags = g_ClientDisplayBits[client];
+    //LogMessage("%d:%N's Client Bits=%08x", client, ValidClientIndex(client), flags);
+    for (new any:i = 0; i < Display_Cookies; i++)
+    {
+        IntToString(i, buf, sizeof(buf));
+        new bool:value = FlipBit_IsSet(displayFlags & Display:(1 << i));
+        //LogMessage("Setting #%d [Flip:%d] %s=%d",i,g_bCookieFlip[i],g_strCookiePrompt[i],value);
+        AddSetting(client, SettingsMenu, buf, g_strDisplayCookiePrompt[i], g_bDisplayCookieFlip[i] ? !value : value);
+    }
+
+    DisplayMenu(SettingsMenu,client,MENU_TIME_FOREVER);
+}
+
+ChangeGameSettings(client, bool:fromMain)
+{
+    new Handle:SettingsMenu=CreateMenu(Settings_Select);
+    SetMenuTitle(SettingsMenu,"[SC] %T", "ChooseSetting", client);
+    SetMenuExitButton(SettingsMenu,true);
+    if (fromMain)
+        SetMenuExitBackButton(SettingsMenu,true);
+
+    new AdminId:aid = GetUserAdmin(client);
+    new bool:isAdmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
+
+    decl String:buf[12];
+    new Settings:flags = g_ClientSettingsBits[client];
+    //LogMessage("%d:%N's Client Bits=%08x", client, ValidClientIndex(client), flags);
+    for (new any:i = 0; i < Settings_Cookies; i++)
+    {
+        // Only allow Admins to enable Debug modes
+        if (isAdmin || strncmp(g_strCookiePrompt[i], "Debug", 5, false) != 0)
+        {
+            IntToString(i+_:Display_Cookies, buf, sizeof(buf));
+            new bool:value = FlipBit_IsSet(flags & Settings:(1 << i));
+            //LogMessage("Setting #%d [Flip:%d] %s=%d",i,g_bCookieFlip[i],g_strCookiePrompt[i],value);
+            AddSetting(client, SettingsMenu, buf, g_strCookiePrompt[i], g_bCookieFlip[i] ? !value : value);
+        }
+    }
+
+    DisplayMenu(SettingsMenu,client,MENU_TIME_FOREVER);
+}
+
 public Settings_Select(Handle:menu,MenuAction:action,client,selection)
 {
     if (action == MenuAction_Select)

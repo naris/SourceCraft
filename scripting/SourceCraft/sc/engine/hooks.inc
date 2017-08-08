@@ -20,6 +20,8 @@ InitHooks()
     RegConsoleCmd("changeunit",ChangeRaceCommand,"SourceCraft command to change unit.");
     RegConsoleCmd("changerace",ChangeRaceCommand,"SourceCraft command to change race.");
     RegConsoleCmd("sc_settings",ChangeSettingsCommand,"SourceCraft command to change settings.");
+    RegConsoleCmd("sc_ds",ChangeDisplaySettingsCommand,"SourceCraft command to change display settings.");
+    RegConsoleCmd("sc_gs",ChangeGameSettingsCommand,"SourceCraft command to change game settings.");
     RegConsoleCmd("sc_info",InfoCommand,"View SourceCraft Information and lookup players");
     RegConsoleCmd("sm_info",InfoCommand,"View SourceCraft Information and lookup players");
     RegConsoleCmd("sc_updates",UpdatesCommand,"View SourceCraft Updates");
@@ -148,6 +150,20 @@ public Action:SayCommand(client, const String:command[], argc)
                  StrEqual(arg[0],"settings", false))
         {
             ChangeSettings(client, false);
+            return Plugin_Handled;
+        }
+        else if (StrEqual(arg[0],"ds", false) ||
+                 StrEqual(arg[0],"scds", false) ||
+                 StrEqual(arg[0],"displaysettings", false))
+        {
+            ChangeDisplaySettings(client, false);
+            return Plugin_Handled;
+        }
+        else if (StrEqual(arg[0],"gs", false) ||
+                 StrEqual(arg[0],"scgs", false) ||
+                 StrEqual(arg[0],"gamesettings", false))
+        {
+            ChangeGameSettings(client, false);
             return Plugin_Handled;
         }
         else if (StrEqual(arg[0],"info", false) ||
@@ -394,6 +410,18 @@ public Action:ChangeRaceCommand(client,args)
 public Action:ChangeSettingsCommand(client,args)
 {
     ChangeSettings(client, false);
+    return Plugin_Handled;
+}
+
+public Action:ChangeDisplaySettingsCommand(client,args)
+{
+    ChangeDisplaySettings(client, false);
+    return Plugin_Handled;
+}
+
+public Action:ChangeGameSettingsCommand(client,args)
+{
+    ChangeGameSettings(client, false);
     return Plugin_Handled;
 }
 

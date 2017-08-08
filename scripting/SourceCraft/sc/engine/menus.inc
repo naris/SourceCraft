@@ -84,18 +84,19 @@ MainMenu(client)
             AddMenuItemT(mainMenu,"5","ViewUpgrades",client);
         }
 
-        AddMenuItemT(mainMenu,"6","ChangeSettings",client);
-
         if (shopAvailable)
         {
-            AddMenuItemT(mainMenu,"7","ShowItems",client);
+            AddMenuItemT(mainMenu,"6","ShowItems",client);
         }
 
-        AddMenuItemT(mainMenu,"8","ViewCommands",client);
-        AddMenuItemT(mainMenu,"9","ViewOtherPlayer",client);
-        AddMenuItemT(mainMenu,"10","ViewSCInfo",client);
-        AddMenuItemT(mainMenu,"11","ViewWiki",client);
-        AddMenuItemT(mainMenu,"12","ViewUpdates",client);
+        AddMenuItemT(mainMenu,"7","ChangeDisplaySettings",client);
+        AddMenuItemT(mainMenu,"8","ChangeGameSettings",client);
+
+        AddMenuItemT(mainMenu,"9","ViewCommands",client);
+        AddMenuItemT(mainMenu,"10","ViewOtherPlayer",client);
+        AddMenuItemT(mainMenu,"11","ViewSCInfo",client);
+        AddMenuItemT(mainMenu,"12","ViewWiki",client);
+        AddMenuItemT(mainMenu,"13","ViewUpdates",client);
 
         DisplayMenu(mainMenu,client,MENU_TIME_FOREVER);
     }
@@ -136,13 +137,14 @@ public Menu_Select(Handle:menu,MenuAction:action,client,selection)
                 }
             }
             case 5: UpgradesInfo(client,client,GetRace(client),FromMainMenu); // upgradeinfo
-            case 6: ChangeSettings(client,true);
-            case 7: ShopMenu(client,client,InfoMode|FromMainMenu);
-            case 8: Help(client);
-            case 9: PlayerInfoMenu(client,FromMainMenu);
-            case 10: ShowInfo(client);
-            case 11: ShowWiki(client);
-            case 12: ShowUpdates(client);
+            case 6: ShopMenu(client,client,InfoMode|FromMainMenu);
+            case 7: ChangeGameSettings(client,true);
+            case 8: ChangeDisplaySettings(client,true);
+            case 9: Help(client);
+            case 10: PlayerInfoMenu(client,FromMainMenu);
+            case 11: ShowInfo(client);
+            case 12: ShowWiki(client);
+            case 13: ShowUpdates(client);
         }
     }
     else if (action == MenuAction_End)
