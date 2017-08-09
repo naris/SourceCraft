@@ -185,6 +185,14 @@
 	{
 		"en"		"Change Settings"
 	}
+	"ChangeGameSettings"
+	{
+		"en"		"Change Game Settings"
+	}
+	"ChangeDisplaySettings"
+	{
+		"en"		"Change Display Settings"
+	}
 	"ViewOtherPlayer"
 	{
 		"en"		"View another Player's information"
@@ -195,7 +203,7 @@
 	}
 	"ViewWiki"
 	{
-		"en"		"View the SourceCraft [Gu]Wiki"
+		"en"		"View the SourceCraft Wiki"
 	}
 	"ShopMenu"
 	{

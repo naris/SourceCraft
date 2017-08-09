@@ -443,9 +443,6 @@ ChangeDisplaySettings(client, bool:fromMain)
     if (fromMain)
         SetMenuExitBackButton(SettingsMenu,true);
 
-    new AdminId:aid = GetUserAdmin(client);
-    new bool:isAdmin = (aid != INVALID_ADMIN_ID) && GetAdminFlag(aid, Admin_Generic, Access_Effective);
-
     decl String:buf[12];
     new Display:displayFlags = g_ClientDisplayBits[client];
     //LogMessage("%d:%N's Client Bits=%08x", client, ValidClientIndex(client), flags);
