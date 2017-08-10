@@ -9,4 +9,4 @@
  #endinput
 #endif
 
-#define SOURCECRAFT_VERSION         "37" 
+#define SOURCECRAFT_VERSION         "38" 

@@ -105,7 +105,7 @@ public OnSourceCraftReady()
     if (!IsHGRSourceAvailable())
     {
         SetUpgradeDisabled(raceID, tentacleID, true);
-        LogMessage("Disabling Zerg Omegalisk:Swarm Infestation due to hgrsource is not available");
+        LogMessage("Disabling Zerg Omegalisk:Tentacle due to hgrsource is not available");
     }
 
     // Ultimate 2

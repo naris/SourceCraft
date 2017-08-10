@@ -76,6 +76,7 @@ public Action:SayCommand(client, const String:command[], argc)
             return Plugin_Handled;
         }
         else if (StrEqual(arg[0],"shopmenu", false) ||
+                 StrEqual(arg[0],"shop", false) ||
                  StrEqual(arg[0],"scbuy", false) ||
                  StrEqual(arg[0],"buy", false))
         {
