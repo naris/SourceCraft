@@ -6,6 +6,10 @@
  * @version $Id: html_header.phtml,v 1.4 2007-12-12 13:56:49 roy Exp $
  */
 
+<?php
+	require_once 'steamauth/steamauth.php';
+?>
+
 $ingame = (strpos($_SERVER['HTTP_USER_AGENT'], "Valve Source Client") !== false);
 
 echo '<?xml version="1.0" encoding="UTF-8" ?>';
@@ -206,26 +210,41 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>';
 		<td><a href="/sc/player/show/user/<?= $this->session->username?>">Show  <?= $this->session->username ?></a></td>
 		<td><a href="/sc/user/logout">Logout</a></td>
 <?php else : ?>
-		<!-- td><div class="<?= $dojo_class ?>" dojoType="dijit.form.DropDownButton">
+		<td><div class="<?= $dojo_class ?>" dojoType="dijit.form.DropDownButton">
 			<span style="display:none">Login</span>
 			<div style="display:none" dojoType="dijit.TooltipDialog" id="loginDlg" title="Enter Login information">
 			<form action="/sc/user/login" method="post" validate="true" id="loginFrm"><table>
-				<tr>
+				<!--tr>
        					<td><label for="user">User:</label></td>
        					<td><input dojoType=dijit.form.TextBox type="text" name="user" id="user"></td>
-				</tr>
-				<tr>
+				</tr-->
+				<!--tr>
        					<td><label for="pwd">Password:</label></td>
        					<td><input dojoType=dijit.form.TextBox type="password" name="password" id="pwd"></td>
-				</tr>
-				<tr>
+				</tr-->
+				<!--tr>
        					<td colspan="2" align="center">
        						<button dojoType=dijit.form.Button type="submit" name="submit">Login</button>
+       					</td>
+				</tr-->
+				<tr>
+       					<td colspan="2" align="center">
+						<?php
+							if(!isset($_SESSION['steamid']))
+							{
+								loginbutton(); //login button
+							}
+							else
+							{
+								include ('steamauth/userInfo.php'); //To access the $steamprofile array Protected content
+								logoutbutton(); //Logout Button
+							}     
+						?>
        					</td>
 				</tr>
 			</table></form>
 			</div>
-		</div></td -->
+		</div></td>
 <?php endif; ?>
 
 	</tr></table>

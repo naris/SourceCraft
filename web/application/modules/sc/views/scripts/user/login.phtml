@@ -6,6 +6,8 @@
  * @version $Id: login.phtml,v 1.2 2007-12-04 12:19:45 seva Exp $
  */
 
+require_once 'steamauth/steamauth.php';
+
 // Render common HTML header
 echo $this->render('partials/html_header.phtml');
 
@@ -27,16 +29,27 @@ echo $this->render('partials/html_header.phtml');
 <div style="display:none" class="tundra" dojoType="dijit.Dialog" id="signinDlg" title="Please Sign In">
 	
 	<form method="post">
-		<label for="user">User name:</label>
+		<!--label for="user">User name:</label>
 		<input dojoType=dijit.form.TextBox type="text" name="user" id="suser" value="<?= 
-			isset($this->user) ? $this->escape($this->user) : '' ?>" /><br />
+			isset($this->user) ? $this->escape($this->user) : '' ?>" /><br /-->
 		
-		<label for="password">Password:</label>
-		<input dojoType=dijit.form.TextBox type="password" name="password" id="spassword" value="" /><br />
+		<!--label for="password">Password:</label>
+		<input dojoType=dijit.form.TextBox type="password" name="password" id="spassword" value="" /><br /-->
 		
-		<div class="button_container">
+		<!--div class="button_container">
 			<button dojoType=dijit.form.Button type="submit">Sign In</button>
-		</div>
+		</div-->
+		<?php
+			if(!isset($_SESSION['steamid']))
+			{
+				loginbutton(); //login button
+			}
+			else
+			{
+				include ('steamauth/userInfo.php'); //To access the $steamprofile array Protected content
+				logoutbutton(); //Logout Button
+			}     
+		?>
 	</form>
 </div>
 
