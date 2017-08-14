@@ -239,11 +239,9 @@ public OnPluginStart()
     HookEvent("player_carryobject", Event_Carry);
     HookEvent("player_dropobject", Event_Drop);
 
-    //#if !defined _sdkhooks_included
     HookEvent("object_destroyed", Event_Remove);
     HookEvent("object_detonated", Event_Remove);
     HookEvent("object_removed", Event_Remove);
-    //#endif
 
     CreateTimer(1.0, BuildingTimer, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
     //HookEvent("teamplay_round_start", event_RoundStart);
@@ -747,7 +745,7 @@ public Action:BuildingTimer(Handle:hTimer)
     new TFTeam:team;
     new i,client;
     new maxEntities = GetMaxEntities();
-    for(client=1;client<=MaxClients;client++)
+    for (client=1; client<=MaxClients; client++)
     {
         if (IsClientInGame(client)) 
         {
@@ -758,7 +756,7 @@ public Action:BuildingTimer(Handle:hTimer)
                 clientTeam=TFTeam:GetClientTeam(client);
 
                 //Check all Entities/Buildings
-                for(i=MaxClients+1;i<maxEntities;i++)
+                for (i=MaxClients+1; i<maxEntities; i++)
                 {
                     //If Building Exists, is Active and is not Sapped
                     new ent = EntRefToEntIndex(BuildingRef[i]);
@@ -1037,7 +1035,7 @@ public Action:BuildingTimer(Handle:hTimer)
     }
 
     //Check all Entities
-    for(i=MaxClients+1;i<maxEntities;i++)
+    for (i=MaxClients+1; i<maxEntities; i++)
     {
         new ref = BuildingRef[i];
         if (ref != INVALID_ENT_REFERENCE)
@@ -1151,7 +1149,7 @@ public Action:BuildingTimer(Handle:hTimer)
                 if (BuildingType[i] == TFExtObject_Amplifier)
                 {
                     // Remove any lingering amplifier conditions
-                    for(client=1;client<=MaxClients;client++)
+                    for (client=1; client<=MaxClients; client++)
                     {
                         if (ConditionApplied[i][client])
                         {
@@ -1164,7 +1162,7 @@ public Action:BuildingTimer(Handle:hTimer)
                 else if (BuildingType[i] == TFExtObject_RepairNode)
                 {
                     // Remove any healing beams
-                    for(new obj=MaxClients+1;obj<maxEntities;obj++)
+                    for (new obj=MaxClients+1; obj<maxEntities; obj++)
                     {
                         if (EntRefToEntIndex(RepairNodeTarget[obj]) == i)
                             RemoveRepairParticles(obj);
@@ -1484,7 +1482,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
     if (NearAmplifier[Attacker] || NearAmplifier[Victim])
     {
         new maxEntities = GetMaxEntities();
-        for(new i=MaxClients+1;i<maxEntities;i++)
+        for (new i=MaxClients+1; i<maxEntities; i++)
         {
             new ent = EntRefToEntIndex(BuildingRef[i]);
             if (ent > 0 && BuildingOn[ent] && Attacker != i &&
@@ -1527,7 +1525,6 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
     return Plugin_Continue;
 }
 
-
 //Detect destruction or removal of buildings
 public OnEntityDestroyed(ent)
 {
@@ -1538,12 +1535,10 @@ public OnEntityDestroyed(ent)
         if (GetEntityClassname(ent, classname, sizeof(classname))
             && strncmp(classname, "obj_", 4) == 0)
         {
-            Trace("OnEntityDestroyed: ent=0x%08x, class=%s, type=%d", \
-                  ent, classname, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+            Trace("OnEntityDestroyed: ent=0x%08x, class=%s, type=%d", ent, classname, \
+                  (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
-            RemoveObject(ent);
-            BuildingType[ent] = TFExtObject_Unknown;
-            BuildingRef[ent] = INVALID_ENT_REFERENCE;
+            BuildingRemoved(ent);
         }
     }
     TraceReturn();
@@ -1555,28 +1550,39 @@ public Action:Event_Remove(Handle:event, const String:name[], bool:dontBroadcast
     TraceInto("amp_node", "Event_Remove", "ent=0x%08x", ent);
     if (ent > 0)
     {
-        decl String:classname[64];
-        GetEntityClassname(ent, classname, sizeof(classname));
-        Trace("Event_Remove: ent=0x%08x, class=%s, type=%d", \
-              ent, classname, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+		#if defined _TRACE
+			decl String:classname[64];
+			GetEntityClassname(ent, classname, sizeof(classname));
+			Trace("Event_Remove: ent=0x%08x, class=%s, type=%d", ent, classname, \
+				  (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+		#endif
 
-        RemoveObject(ent);
-        BuildingType[ent] = TFExtObject_Unknown;
-        BuildingRef[ent] = INVALID_ENT_REFERENCE;
+        BuildingRemoved(ent);
     }
     TraceReturn();
     return Plugin_Continue;
 }
 
-RemoveObject(ent)
+BuildingRemoved(ent)
 {
+    TraceInto("amp_node", "BuildingRemoved", "ent=0x%08x", ent);
+	DisableBuilding(ent);
+	BuildingType[ent] = TFExtObject_Unknown;
+	BuildingRef[ent] = INVALID_ENT_REFERENCE;
+    TraceReturn();
+}
+
+DisableBuilding(ent)
+{
+    TraceInto("amp_node", "DisableBuilding", "ent=0x%08x", ent);
+
     BuildingOn[ent] = false;
     RemoveRepairParticles(ent);
 
     if (BuildingType[ent] == TFExtObject_Amplifier)
     {
         // Remove any lingering amplifier conditions
-        for(new client=1;client<=MaxClients;client++)
+        for (new client=1; client<=MaxClients; client++)
         {
             if (ConditionApplied[ent][client])
             {
@@ -1590,40 +1596,35 @@ RemoveObject(ent)
     {
         // Remove any healing beams
         new maxEntities = GetMaxEntities();
-        for(new obj=MaxClients+1;obj<maxEntities;obj++)
+        for (new obj=MaxClients+1; obj<maxEntities; obj++)
         {
             if (EntRefToEntIndex(RepairNodeTarget[obj]) == ent)
                 RemoveRepairParticles(obj);
         }
+    }
 
-        // Then kill the dispenser prop
-        new prop = EntRefToEntIndex(BuildingProp[ent]);
-        if (prop > 0 && IsValidEntity(prop))
-        {
-            AcceptEntityInput(prop, "kill");
-        }
-        BuildingProp[ent] = INVALID_ENT_REFERENCE;
-    }
-    else if (BuildingType[ent] == TFExtObject_UpgradeStation)
-    {
-        // Then kill the func_upgradestation
-        new func = EntRefToEntIndex(BuildingProp[ent]);
-        if (func > 0 && IsValidEntity(func))
-        {
-            AcceptEntityInput(func, "kill");
-        }
-        BuildingProp[ent] = INVALID_ENT_REFERENCE;
-    }
+	// If there is a prod, or a func, for the entity, kill it
+	if (BuildingProp[ent] != INVALID_ENT_REFERENCE)
+	{
+		new prop = EntRefToEntIndex(BuildingProp[ent]);
+		if (prop > 0 && IsValidEntity(prop))
+		{
+			AcceptEntityInput(prop, "kill");
+		}
+		BuildingProp[ent] = INVALID_ENT_REFERENCE;
+	}
+
+    TraceReturn();
 }
 
 //Detect upgrading of buildings
 public Action:Event_Upgrade(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new ent = GetEventInt(event, "index");
-    TraceInto("amp_node", "Event_Upgrade", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
-    LogMessage("Event_Upgrade: ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "Event_Upgrade", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    LogMessage("Event_Upgrade: ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
@@ -1650,8 +1651,8 @@ public Action:Event_Upgrade(Handle:event, const String:name[], bool:dontBroadcas
 public Action:Event_Carry(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new ent = GetEventInt(event, "index");
-    TraceInto("amp_node", "Event_Carry", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "Event_Carry", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
@@ -1660,10 +1661,10 @@ public Action:Event_Carry(Handle:event, const String:name[], bool:dontBroadcast)
             BuildingType[ent] == TFExtObject_UpgradeStation)
         {
             LogMessage("Event_Carry: ent=0x%08x, type=%d", ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
-            RemoveObject(ent);
+            DisableBuilding(ent);
 
-            // Set the model back to the dispenser model
             /*
+            // Set the model back to the dispenser model
             new level = GetEntProp(ent, Prop_Send, "m_iUpgradeLevel");
             if (level <= 1)
                 SetEntityModel(ent,DispenserModel);
@@ -1684,8 +1685,8 @@ public Action:Event_Carry(Handle:event, const String:name[], bool:dontBroadcast)
 public Action:Event_Drop(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new ent = GetEventInt(event, "index");
-    TraceInto("amp_node", "Event_Drop", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "Event_Drop", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
@@ -1708,8 +1709,8 @@ public Action:Event_Drop(Handle:event, const String:name[], bool:dontBroadcast)
 public Action:Event_Sapped(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new ent = GetEventInt(event, "object");
-    TraceInto("amp_node", "Event_Sapped", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "Event_Sapped", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
@@ -1742,8 +1743,8 @@ public Action:Event_Sapped(Handle:event, const String:name[], bool:dontBroadcast
 public Action:CheckSapper(Handle:hTimer,any:ref)
 {
     new ent = EntRefToEntIndex(ref);
-    TraceInto("amp_node", "CheckSapper", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "CheckSapper", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
@@ -1764,8 +1765,8 @@ public Action:CheckSapper(Handle:hTimer,any:ref)
 public Action:OldActivate(Handle:hTimer,any:ref)
 {
     new ent = EntRefToEntIndex(ref);
-    TraceInto("amp_node", "OldActivate", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "OldActivate", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
@@ -1792,10 +1793,10 @@ public Action:OldActivate(Handle:hTimer,any:ref)
 public Action:Event_Build(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new ent = GetEventInt(event, "index");
-    TraceInto("amp_node", "Event_Build", "ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
-    LogMessage("Event_Build: ent=0x%08x, type=%d", \
-              ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    TraceInto("amp_node", "Event_Build", "ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
+    LogMessage("Event_Build: ent=0x%08x, type=%d", ent, \
+              (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     CheckDisp(ent, GetClientOfUserId(GetEventInt(event, "userid")));
 
@@ -2463,7 +2464,7 @@ public Native_CountConvertedBuildings(Handle:plugin,numParams)
     new client = GetNativeCell(1);
     new TFExtObjectType:type = GetNativeCell(2);
     new maxEntities = GetMaxEntities();
-    for (new i=MaxClients+1;i<maxEntities;i++)
+    for (new i=MaxClients+1; i<maxEntities; i++)
     {
         if (BuildingType[i] == type)
         {
