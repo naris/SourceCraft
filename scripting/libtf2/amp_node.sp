@@ -1638,8 +1638,8 @@ public Action:Event_Upgrade(Handle:event, const String:name[], bool:dontBroadcas
             else
                 AttachParticle(ent,"teleported_blue",particle); //Create Effect of TP
 
-            CreateTimer(1.5, WaitStage, EntIndexToEntRef(ent),
-                        TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+            CreateTimer(1.5, DelayedActivate, EntIndexToEntRef(ent));
+            //          TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         }
     }
 
@@ -1694,8 +1694,9 @@ public Action:Event_Drop(Handle:event, const String:name[], bool:dontBroadcast)
             BuildingType[ent] == TFExtObject_UpgradeStation)
         {
             LogMessage("Event_Drop: ent=0x%08x, type=%d", ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
-            CreateTimer(0.1, WaitStage, EntIndexToEntRef(ent),
-                        TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+            CreateTimer(1.5, DelayedActivate, EntIndexToEntRef(ent));
+            //          TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+            //CreateTimer(0.1, Activate, EntIndexToEntRef(ent), TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         }
     }
 
@@ -1750,7 +1751,7 @@ public Action:CheckSapper(Handle:hTimer,any:ref)
             return Plugin_Continue;
         else
         {
-            CreateTimer(0.1, StageComplete, EntIndexToEntRef(ent),
+            CreateTimer(0.1, Activate, EntIndexToEntRef(ent),
                         TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         }
     }
@@ -1759,15 +1760,16 @@ public Action:CheckSapper(Handle:hTimer,any:ref)
     return Plugin_Stop;
 }
 
-public Action:Activate(Handle:hTimer,any:ref)
+/*
+public Action:OldActivate(Handle:hTimer,any:ref)
 {
     new ent = EntRefToEntIndex(ref);
-    TraceInto("amp_node", "Activate", "ent=0x%08x, type=%d", \
+    TraceInto("amp_node", "OldActivate", "ent=0x%08x, type=%d", \
               ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
     if (ent > 0 && IsValidEntity(ent))
     {
-        LogMessage("Activate: ent=0x%08x, type=%d", \
+        LogMessage("OldActivate: ent=0x%08x, type=%d", \
                   ent, (ent >= 0 && ent < sizeof(BuildingType)) ? BuildingType[ent] : TFExtObjectType:-2);
 
         new particle;
@@ -1777,13 +1779,14 @@ public Action:Activate(Handle:hTimer,any:ref)
             AttachParticle(ent,"teleported_blue",particle); //Create Effect of TP
 
         BuildingOn[ent] = true;
-        //CreateTimer(0.1, StageComplete, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+        //CreateTimer(0.1, Activate, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         SetModelStage(hTimer, ref);
     }
 
     TraceReturn();
     return Plugin_Stop;
 }
+*/
 
 //Detect building of, err, buildings
 public Action:Event_Build(Handle:event, const String:name[], bool:dontBroadcast)
@@ -1804,15 +1807,20 @@ public Action:Event_Build(Handle:event, const String:name[], bool:dontBroadcast)
 CheckDisp(ent, client)
 {
     new TFExtObjectType:type = BuildingType[ent];
+    TraceInto("amp_node", "CheckDisp", "client=%d:%N, ent=0x%08x, type=%d", \
+              client, ValidClientIndex(client), ent, type);
+    LogMessage("CheckDisp: client=%d:%N, ent=0x%08x, type=%d", \
+               client, ValidClientIndex(client), ent, type);
+
     if (type == TFExtObject_Amplifier  ||
         type == TFExtObject_RepairNode ||
         type == TFExtObject_UpgradeStation)
     {
         new ref = EntIndexToEntRef(ent);
-        //CreateTimer(0.1, StageComplete, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
-
         new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
-        CreateTimer((level > 2) ? 11.4 : 10.4, Activate, ref);
+        CreateTimer((level > 2) ? 11.4 : 10.4, DelayedActivate, ref);
+        //CreateTimer((level > 2) ? 11.4 : 10.4, OldActivate, ref);
+        //CreateTimer(0.1, Activate, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
     }
     else if (type == TFExtObject_Amplifier)
     {
@@ -1820,19 +1828,18 @@ CheckDisp(ent, client)
         {
             ConvertToAmplifier(ent, NativeAmplifierPercent[client],
                                NativeAmplifierRange[client],
-                               NativeCondition[client],
-                               4.0, WaitStage);
+                               NativeCondition[client]);
+                               //4.0, DelayedActivate);
         }
         else
         {
             ConvertToAmplifier(ent, AmplifierPercent,
                                DefaultAmplifierRange,
-                               DefaultCondition, 4.0,
-                               WaitStage);
+                               DefaultCondition);
+							   //4.0, DelayedActivate);
         }
-
-        new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
-        CreateTimer((level > 2) ? 11.4 : 10.4, Activate, EntIndexToEntRef(ent));
+        //new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+        //CreateTimer((level > 2) ? 11.4 : 10.4, OldActivate, EntIndexToEntRef(ent));
     }
     else if (type == TFExtObject_RepairNode)
     {
@@ -1840,25 +1847,27 @@ CheckDisp(ent, client)
         {
             ConvertToRepairNode(ent, NativeRepairNodePercent[client], NativeRepairNodeRange[client],
                                 NativeRegen[client], NativeShells[client], NativeRockets[client],
-                                RepairNodeTeam[client], RepairNodeMini[client],
-                                4.0, WaitStage);
+                                RepairNodeTeam[client], RepairNodeMini[client]);
+                                //(level > 2) ? 11.4 : 10.4, DelayedActivate);
+                                //4.0, DelayedActivate);
         }
         else
         {
-            ConvertToRepairNode(ent, RepairNodePercent, DefaultRepairNodeRange,
-                                DefaultRegen, DefaultShells, DefaultRockets,
-                                DefaultTeam, DefaultMini, 4.0, WaitStage);
+            ConvertToRepairNode(ent, RepairNodePercent, DefaultRepairNodeRange, DefaultRegen,
+                                DefaultShells, DefaultRockets, DefaultTeam, DefaultMini);
+								//(level > 2) ? 11.4 : 10.4, DelayedActivate);
+								//4.0, DelayedActivate);
         }
-
-        new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
-        CreateTimer((level > 2) ? 11.4 : 10.4, Activate, EntIndexToEntRef(ent));
+        //new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+        //CreateTimer((level > 2) ? 11.4 : 10.4, OldActivate, EntIndexToEntRef(ent));
     }
     else if (type == TFExtObject_UpgradeStation)
     {
-        ConvertToUpgradeStation(ent, 4.0, WaitStage);
+        ConvertToUpgradeStation(ent); //, 4.0, DelayedActivate);
 
-        new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
-        CreateTimer((level > 2) ? 11.4 : 10.4, Activate, EntIndexToEntRef(ent));
+        //new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+        //CreateTimer((level > 2) ? 11.4 : 10.4, OldActivate, EntIndexToEntRef(ent));
+        //CreateTimer((level > 2) ? 11.4 : 10.4, DelayedActivate, EntIndexToEntRef(ent));
     }
     else if (client > 0 && BuildingType[client] != TFExtObject_Dispenser)
     {
@@ -1889,42 +1898,50 @@ CheckDisp(ent, client)
             if (type == TFExtObject_Amplifier &&
                 (NativeControl || (ampEnabled && DontAsk[client])))
             {
+				//new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
                 if (NativeControl)
                 {
                     ConvertToAmplifier(ent, NativeAmplifierPercent[client],
                                        NativeAmplifierRange[client],
-                                       NativeCondition[client],
-                                       4.0, WaitStage);
+                                       NativeCondition[client]);
+                                       //(level > 2) ? 11.4 : 10.4, DelayedActivate);
+                                       //4.0, DelayedActivate);
                 }
                 else
                 {
                     ConvertToAmplifier(ent, AmplifierPercent,
                                        DefaultAmplifierRange,
-                                       DefaultCondition, 4.0,
-                                       WaitStage);
+                                       DefaultCondition);
+                                       //(level > 2) ? 11.4 : 10.4, DelayedActivate);
+									   //4.0, DelayedActivate);
                 }
             }
             else if (type == TFExtObject_RepairNode &&
                      (NativeControl || (rnEnabled && DontAsk[client])))
             {
+				//new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
                 if (NativeControl)
                 {
                     ConvertToRepairNode(ent, NativeRepairNodePercent[client], NativeRepairNodeRange[client],
                                         NativeRegen[client], NativeShells[client], NativeRockets[client],
-                                        RepairNodeTeam[client], RepairNodeMini[client],
-                                        4.0, WaitStage);
+                                        RepairNodeTeam[client], RepairNodeMini[client]);
+                                        //(level > 2) ? 11.4 : 10.4, DelayedActivate);
+                                        //4.0, DelayedActivate);
                 }
                 else
                 {
-                    ConvertToRepairNode(ent, RepairNodePercent, DefaultRepairNodeRange,
-                                        DefaultRegen, DefaultShells, DefaultRockets,
-                                        DefaultTeam, DefaultMini, 4.0, WaitStage);
+                    ConvertToRepairNode(ent, RepairNodePercent, DefaultRepairNodeRange, DefaultRegen,
+                                        DefaultShells, DefaultRockets, DefaultTeam, DefaultMini);
+										//(level > 2) ? 11.4 : 10.4, DelayedActivate);
+										//4.0, DelayedActivate);
                 }
             }
-            else if (type == TFExtObject_UpgradeStation &&
+            else if (type == TFExtObject_UpgradeStation && UpgradeStationEnabled &&
                      (NativeControl || (usEnabled && DontAsk[client])))
             {
-                ConvertToUpgradeStation(ent, 4.0, WaitStage);
+				//new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+                ConvertToUpgradeStation(ent); //, (level > 2) ? 11.4 : 10.4, DelayedActivate);
+                //ConvertToUpgradeStation(ent, 4.0, DelayedActivate);
             }
             else if (ampEnabled || rnEnabled || usEnabled)
             {
@@ -1946,18 +1963,22 @@ CheckDisp(ent, client)
                 Format(str,sizeof(str),"%t","RepairNode"); 
                 AddMenuItem(menu, info, str, rnEnabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
 
-                Format(info,sizeof(info),"%d,4", ref);
-                Format(str,sizeof(str),"%t","UpgradeStation"); 
-                AddMenuItem(menu, info, str, usEnabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+				if (usEnabled || UpgradeStationEnabled)
+				{
+					Format(info,sizeof(info),"%d,4", ref);
+					Format(str,sizeof(str),"%t","UpgradeStation"); 
+					AddMenuItem(menu, info, str, usEnabled ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+				}
 
                 DisplayMenu(menu, client, 10);
             }
         }
     }
+    TraceReturn();
 }
 
-ConvertToAmplifier(ent, percent, const Float:range[4], TFCond:condition,
-                   Float:delay, Timer:stageFunc, flags=0)
+ConvertToAmplifier(ent, percent, const Float:range[4], TFCond:condition)
+//                 Float:delay, Timer:stageFunc, flags=0)
 {
     new ref = BuildingRef[ent] = EntIndexToEntRef(ent);
     TraceInto("amp_node", "ConvertToAmplifier", "ref=0x%08x, ent=0x%08x", ref, ent);
@@ -1979,13 +2000,24 @@ ConvertToAmplifier(ent, percent, const Float:range[4], TFCond:condition,
     SetEntProp(ent, Prop_Send, "m_bDisabled", 1);
 
     Trace("ConvertToAmplifier: ref=0x%08x, ent=0x%08x, model=%s", ref, ent, modelname);
-    CreateTimer(delay, stageFunc, ref, flags);
+    //CreateTimer(delay, stageFunc, ref, flags);
+
+	if (GetEntPropFloat(ent, Prop_Send, "m_flPercentageConstructed") < 1.0)
+	{
+		new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+		CreateTimer((level > 2) ? 11.4 : 10.4, DelayedActivate, ref);
+	}
+	else
+	{
+		CreateTimer(0.1, Activate, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	}
+	
     TraceReturn();
 }
 
 ConvertToRepairNode(ent, percent, const Float:range[4], const regen[4],
-                    const shells[4], rockets, team, mini,
-                    Float:delay, Timer:stageFunc, flags=0)
+                    const shells[4], rockets, team, mini)
+//                  Float:delay, Timer:stageFunc, flags=0)
 {
     new ref = BuildingRef[ent] = EntIndexToEntRef(ent);
     TraceInto("amp_node", "ConvertToRepairNode", "ref=0x%08x, ent=0x%08x", ref, ent);
@@ -2028,11 +2060,22 @@ ConvertToRepairNode(ent, percent, const Float:range[4], const regen[4],
     }
 
     Trace("ConvertToRepairNode: ref=0x%08x, ent=0x%08x, model=%s", ref, ent, modelname);
-    CreateTimer(delay, stageFunc, ref, flags);
+
+    //CreateTimer(delay, stageFunc, ref, flags);
+	if (GetEntPropFloat(ent, Prop_Send, "m_flPercentageConstructed") < 1.0)
+	{
+		new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+		CreateTimer((level > 2) ? 11.4 : 10.4, DelayedActivate, ref);
+	}
+	else
+	{
+		CreateTimer(0.1, Activate, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+	}
+	
     TraceReturn();
 }
 
-ConvertToUpgradeStation(ent, Float:delay, Timer:stageFunc, flags=0)
+ConvertToUpgradeStation(ent) // Float:delay, Timer:stageFunc, flags=0)
 {
     new ref = BuildingRef[ent] = EntIndexToEntRef(ent);
     TraceInto("amp_node", "ConvertToUpgradeStation", "ref=0x%08x, ent=0x%08x", ref, ent);
@@ -2074,7 +2117,17 @@ ConvertToUpgradeStation(ent, Float:delay, Timer:stageFunc, flags=0)
         }
 
         Trace("ConvertToUpgradeStation: ref=0x%08x, ent=0x%08x, model=%s", ref, ent, UpgradeStationModel);
-        CreateTimer(delay, stageFunc, ref, flags);
+
+        //CreateTimer(delay, stageFunc, ref, flags);
+		if (GetEntPropFloat(ent, Prop_Send, "m_flPercentageConstructed") < 1.0)
+		{
+			new level = GetEntProp(ent, Prop_Send, "m_iHighestUpgradeLevel");
+			CreateTimer((level > 2) ? 11.4 : 10.4, DelayedActivate, ref);
+		}
+		else
+		{
+			CreateTimer(0.1, Activate, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		}
     }
     TraceReturn();
 }
@@ -2102,15 +2155,13 @@ public BuildMenu(Handle:menu,MenuAction:action,client,selection)
                     {
                         if (NativeControl)
                         {
-                            ConvertToAmplifier(ent, NativeAmplifierPercent[client], NativeAmplifierRange[client],
-                                               NativeCondition[client], 0.1, StageComplete,
-                                               TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+                            ConvertToAmplifier(ent, NativeAmplifierPercent[client], NativeAmplifierRange[client], NativeCondition[client]);
+							//				   , 0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
                         }
                         else
                         {
-                            ConvertToAmplifier(ent, AmplifierPercent, DefaultAmplifierRange,
-                                               DefaultCondition, 0.1, StageComplete,
-                                               TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+                            ConvertToAmplifier(ent, AmplifierPercent, DefaultAmplifierRange, DefaultCondition);
+							//				   0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
                         }
                     }
                     else
@@ -2128,15 +2179,14 @@ public BuildMenu(Handle:menu,MenuAction:action,client,selection)
                             ConvertToRepairNode(ent, NativeRepairNodePercent[client],
                                                 NativeRepairNodeRange[client], NativeRegen[client],
                                                 NativeShells[client], NativeRockets[client],
-                                                RepairNodeTeam[client], RepairNodeMini[client],
-                                                0.1, StageComplete, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+                                                RepairNodeTeam[client], RepairNodeMini[client]);
+                            //                  0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
                         }
                         else
                         {
-                            ConvertToRepairNode(ent, RepairNodePercent, DefaultRepairNodeRange,
-                                                DefaultRegen, DefaultShells, DefaultRockets,
-                                                DefaultTeam, DefaultMini, 0.1, StageComplete,
-                                                TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+                            ConvertToRepairNode(ent, RepairNodePercent, DefaultRepairNodeRange, DefaultRegen,
+                                                DefaultShells, DefaultRockets, DefaultTeam, DefaultMini);
+                            //                  0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
                         }
                     }
                     else
@@ -2149,8 +2199,7 @@ public BuildMenu(Handle:menu,MenuAction:action,client,selection)
                     Trace("Build a Upgrade Station (%s)", SelectionInfo);
                     if (NativeControl ? NativeUpgradeStation[client] : UpgradeStationEnabled)
                     {
-                        ConvertToUpgradeStation(ent, 0.1, StageComplete,
-                                                TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+                        ConvertToUpgradeStation(ent); //, 0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
                     }
                     else
                     {
@@ -2173,15 +2222,14 @@ public BuildMenu(Handle:menu,MenuAction:action,client,selection)
 
 
 // Wait over stage, Transition to the complete stage
-public Action:WaitStage(Handle:hTimer,any:ref)
+public Action:DelayedActivate(Handle:hTimer,any:ref)
 {
     new ent = EntRefToEntIndex(ref);
-    TraceInto("amp_node", "WaitStage", "ref=0x%08x, ent=0x%08x", ref, ent);
+    TraceInto("amp_node", "DelayedActivate", "ref=0x%08x, ent=0x%08x", ref, ent);
     if (ent > 0)
     {
-        LogMessage("WaitStage: ref=0x%08x, ent=0x%08x", ref, ent);
-        CreateTimer(0.1, StageComplete, ref,
-                    TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+        LogMessage("DelayedActivate: ref=0x%08x, ent=0x%08x", ref, ent);
+        CreateTimer(0.1, Activate, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
     }
 
     TraceReturn();
@@ -2189,21 +2237,21 @@ public Action:WaitStage(Handle:hTimer,any:ref)
 }
 
 // Complete stage, change the model and show a particle fountain
-public Action:StageComplete(Handle:hTimer,any:ref)
+public Action:Activate(Handle:hTimer, any:ref)
 {
     new ent = EntRefToEntIndex(ref);
-    TraceInto("amp_node", "StageComplete", "ref=0x%08x, ent=0x%08x", ref, ent);
-    if (ent > 0)
+    TraceInto("amp_node", "Activate", "hTimer=0x%08x, ref=0x%08x, ent=0x%08x", hTimer, ref, ent);
+
+    if (ent > 0 && IsValidEntity(ent))
     {
         if (GetEntPropFloat(ent, Prop_Send, "m_flPercentageConstructed") < 1.0)
         {
-            Trace("Not finished yet, Continue timer");
+            TraceReturn("Not finished yet, Continue timer");
             return Plugin_Continue;
         }
         else
         {
-            LogMessage("StageComplete: ref=0x%08x, ent=0x%08x", ref, ent);
-            BuildingOn[ent]=true;
+            LogMessage("Activate: ref=0x%08x, ent=0x%08x", ref, ent);
             if (SetModelStage(hTimer,ref) == Plugin_Continue)
             {
                 new particle;
@@ -2212,11 +2260,13 @@ public Action:StageComplete(Handle:hTimer,any:ref)
                 else
                     AttachParticle(ent,"teleported_blue",particle); //Create Effect of TP
 
+				BuildingOn[ent] = true;
                 CreateTimer(2.0, RemoveEntityTimer, EntIndexToEntRef(particle));
                 //CreateTimer(0.1, SetModelStage, ref, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
             }
         }
     }
+
     TraceReturn();
     return Plugin_Stop;
 }
@@ -2452,8 +2502,8 @@ public Native_ConvertToAmplifier(Handle:plugin,numParams)
             if (range[0] < 0.0)
                 range = NativeAmplifierRange[client];
 
-            ConvertToAmplifier(ent, percent, range, condition,
-                               0.1, StageComplete, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+            ConvertToAmplifier(ent, percent, range, condition);
+            //                 0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         }
         else
         {
@@ -2513,9 +2563,8 @@ public Native_ConvertToRepairNode(Handle:plugin,numParams)
             if (rockets < 0)
                 rockets = NativeRockets[client];
 
-            ConvertToRepairNode(ent, percent, range, regen, shells,
-                                rockets, team, mini, 0.1, StageComplete,
-                                TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+            ConvertToRepairNode(ent, percent, range, regen, shells, rockets, team, mini);
+			//					0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         }
         else
         {
@@ -2550,8 +2599,7 @@ public Native_ConvertToUpgradeStation(Handle:plugin,numParams)
     {
         if (BuildingType[ent] != TFExtObject_UpgradeStation)
         {
-            ConvertToUpgradeStation(ent, 0.1, StageComplete,
-                                    TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+            ConvertToUpgradeStation(ent); //, 0.1, Activate, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
         }
     }
 }
