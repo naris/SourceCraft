@@ -25,10 +25,7 @@
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#tryinclude "lib/trace"
-#if !defined _trace_included
-    #include "trace"
-#endif
+#include "lib/trace"
 
 //Use SourceCraft sounds if it is present
 #tryinclude "../SourceCraft/sc/version"

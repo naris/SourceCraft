@@ -6,7 +6,7 @@
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#tryinclude <trace>
+#tryinclude "lib/trace"
 
 enum War3_LogLevel
 {
