@@ -721,6 +721,10 @@
 	{
 		"en"		"Administer SourceCraft"
 	}
+	"AdministerPlayer"
+	{
+		"en"		"Administer Player"
+	}
 	"SelectPlayer"
 	{
 		"en"		"Select a player to administer"

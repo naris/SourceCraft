@@ -6,6 +6,7 @@
  */
 
 new Handle:hTopAdminMenu = INVALID_HANDLE;
+new TopMenuObject:hAdminMenu = INVALID_HANDLE;
 
 InitAdminMenu()
 {
@@ -36,21 +37,34 @@ public OnAdminMenuReady(Handle:topmenu)
         /* Save the Handle */
         hTopAdminMenu = topmenu;
 
-        /* Find the "Server Commands" category */
-        new TopMenuObject:server_commands = FindTopMenuCategory(hTopAdminMenu, ADMINMENU_SERVERCOMMANDS);
-        if (server_commands != INVALID_TOPMENUOBJECT)
-        {
-            AddToTopMenu(hTopAdminMenu, "sc_admin", TopMenuObject_Item, AdminTopMenu,
-                         server_commands, "sc_admin", ADMFLAG_SOURCECRAFT);
-        }
+		/* Add the SourceCraft category */
+		hAdminMenu = AddToTopMenu(hTopAdminMenu, "sc_admin", TopMenuObject_Category,
+								  AdminCategoryHandler, INVALID_TOPMENUOBJECT);
+
+		if (hAdminMenu != INVALID_TOPMENUOBJECT)
+		{
+			AddToTopMenu(hTopAdminMenu, "sc_admin_player", TopMenuObject_Item, AdminPlayerMenu,
+						 hAdminMenu, "umc_changemap", ADMFLAG_SOURCECRAFT);
+		}
     }
 }
 
-public AdminTopMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
+// Handles the SourceCraft category in the admin menu.
+public AdminCategoryHandler(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param,
+                            String:buffer[], maxlength)
+{
+    if (action == TopMenuAction_DisplayTitle || action == TopMenuAction_DisplayOption)
+    {
+        Format(buffer, maxlength, "%T", "AdministerMenu", param);
+    }
+}
+
+// Handles the Admin Player item in the SourceCraft menu
+public AdminPlayerMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:object_id, param, String:buffer[], maxlength)
 {
     if (action == TopMenuAction_DisplayOption)
     {
-        Format(buffer, maxlength, "%T", "AdministerMenu", param);
+        Format(buffer, maxlength, "%T", "AdministerPlayer", param);
     }
     else if (action == TopMenuAction_SelectOption)
     {
