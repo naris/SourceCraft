@@ -6,12 +6,7 @@
  * @version $Id: html_header.phtml,v 1.4 2007-12-12 13:56:49 roy Exp $
  */
 
-	require_once 'steamauth/steamauth.php';
-
-$ingame = (strpos($_SERVER['HTTP_USER_AGENT'], "Valve Source Client") !== false);
-
 echo '<?xml version="1.0" encoding="UTF-8" ?>';
-
 ?>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
@@ -43,8 +38,9 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>';
 		dojo.require("dojo.parser");	// scan page for widgets and instantiate them	
 	</script>
 
-
 <?php
+	//require_once 'steamauth/steamauth.php';
+	$ingame = (strpos($_SERVER['HTTP_USER_AGENT'], "Valve Source Client") !== false);
 	$session = new Zend_Session_Namespace();
 
 	$style = Zend_Controller_Front::getInstance()->getRequest()->getParam('style');
@@ -211,7 +207,7 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>';
 		<td><div class="<?= $dojo_class ?>" dojoType="dijit.form.DropDownButton">
 			<span style="display:none">Login</span>
 			<div style="display:none" dojoType="dijit.TooltipDialog" id="loginDlg" title="Enter Login information">
-			<form action="/sc/user/login" method="post" validate="true" id="loginFrm"><table>
+			<form action="/sc/user/login" method="get" id="loginFrm"><table>
 				<!--tr>
        					<td><label for="user">User:</label></td>
        					<td><input dojoType=dijit.form.TextBox type="text" name="user" id="user"></td>
@@ -226,19 +222,9 @@ echo '<?xml version="1.0" encoding="UTF-8" ?>';
        					</td>
 				</tr-->
 				<tr>
-       					<td colspan="2" align="center">
-						<?php
-							if(!isset($_SESSION['steamid']))
-							{
-								loginbutton(); //login button
-							}
-							else
-							{
-								include ('steamauth/userInfo.php'); //To access the $steamprofile array Protected content
-								logoutbutton(); //Logout Button
-							}     
-						?>
-       					</td>
+					<td colspan="2" align="center">
+						<a href='/sc/user/login'><img src='http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_01.png'></a>
+					</td>
 				</tr>
 			</table></form>
 			</div>

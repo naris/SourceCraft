@@ -16,9 +16,9 @@ class Player extends App_Db_Table_Abstract
 		'crystals'   	=> 'crystals',
 		'vespene'   	=> 'vespene',
 		'overall_level' => 'overall_level',
-		'settings' 	=> 'settings',
+		'settings' 		=> 'settings',
 		'last_update' 	=> 'last_update',
-		'username'	=> 'username'
+		'username'		=> 'username'
 	);
 
 	public function getPlayerList($fetch=false)

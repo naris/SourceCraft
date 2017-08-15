@@ -39,7 +39,7 @@ if (strlen($base_url) > 0) {
 $router = $frontController->getRouter();
 $router->addRoute('RequestVars', new App_Controller_Router_Route_RequestVars());
 
-// Change to 'production' parameter under production environemtn
+// Change parameter to 'production' in production environments
 $frontController->registerPlugin(new Initializer('test'));    
 
 // Dispatch the request using the front controller. 
