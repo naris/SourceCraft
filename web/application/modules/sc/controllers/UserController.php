@@ -42,7 +42,7 @@ class Sc_UserController extends Zend_Controller_Action
         $view = parent::initView();
         if (isset($this->session))
         {
-        	$view->session = $this->session;        
+            $view->session = $this->session;        
         }
         return $view;
     }
@@ -62,201 +62,120 @@ class Sc_UserController extends Zend_Controller_Action
 
     /**
      * Log in - show the login form or handle a login request
-     * 		then logs in through the Forums
+     *      then logs in through the Forums
      */
     public function loginAction()
     {
-		try
-		{
-			require_once 'SteamConfig.php';
-			$openid = new LightOpenID($steamauth['domainname']);
-			
-			if (!$openid->mode)
-			{
-				$openid->identity = 'http://steamcommunity.com/openid';
-				//header('Location: ' . $openid->authUrl());
-				$this->_forward($openid->authUrl());
-			}
-			elseif ($openid->mode == 'cancel')
-			{
-				//echo 'User has canceled authentication!';
-				$view = $this->initView();
-				$view->error = 'Authentication cancelled!';
-				$this->render();
-			}
-			else
-			{
-				if ($openid->validate())
-				{ 
-					$id = $openid->identity;
-					$ptn = "/^http:\/\/steamcommunity\.com\/openid\/id\/(7[0-9]{15,25}+)$/";
-					preg_match($ptn, $id, $matches);
+        try
+        {
+            require_once 'steamauth/SteamConfig.php';
+            $openid = new LightOpenID($steamauth['domainname']);
+            
+            /*
+            if (!$openid->mode)
+            {
+                $openid->identity = 'http://steamcommunity.com/openid';
+                //header('Location: ' . $openid->authUrl());
+                $this->_forward($openid->authUrl());
+            }
+            elseif ($openid->mode == 'cancel')
+            {
+                //echo 'User has canceled authentication!';
+                $view = $this->initView();
+                $view->error = 'Authentication cancelled!';
+                $this->render();
+            }
+            else
+            */
+            {
+                if ($openid->validate())
+                { 
+                    $id = $openid->identity;
+                    $ptn = "/^http:\/\/steamcommunity\.com\/openid\/id\/(7[0-9]{15,25}+)$/";
+                    preg_match($ptn, $id, $matches);
 
-					$this->session->logged_in = true;
-					try
-					{
-						$s = new SteamID($matches[1]);
-						$this->session->steamid = $s->RenderSteam2();
-						$this->session->steamid3 = $s->RenderSteam3();
-						$this->session->steamid64 = $s->ConvertToUInt64();
-						//$this->session->username = $this->session->steamid;
-						
-						if (!empty($steamauth['apikey']))
-						{
-							$url = file_get_contents("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=".$steamauth['apikey']."&steamids=".$matches[1]); 
-							$content = json_decode($url, true);
-							
-							//$this->session->steamid = $content['response']['players'][0]['steamid'];
-							$this->session->communityvisibilitystate = $content['response']['players'][0]['communityvisibilitystate'];
-							$this->session->profilestate = $content['response']['players'][0]['profilestate'];
-							$this->session->personaname = $content['response']['players'][0]['personaname'];
-							$this->session->lastlogoff = $content['response']['players'][0]['lastlogoff'];
-							$this->session->profileurl = $content['response']['players'][0]['profileurl'];
-							$this->session->avatar = $content['response']['players'][0]['avatar'];
-							$this->session->avatarmedium = $content['response']['players'][0]['avatarmedium'];
-							$this->session->avatarfull = $content['response']['players'][0]['avatarfull'];
-							$this->session->personastate = $content['response']['players'][0]['personastate'];
-							$this->session->primaryclanid = $content['response']['players'][0]['primaryclanid'];
-							$this->session->timecreated = $content['response']['players'][0]['timecreated'];
-							$this->session->uptodate = time();
-							
-							if (isset($content['response']['players'][0]['realname']))
-							{ 
-								$this->session->realname = $content['response']['players'][0]['realname'];
-								//$this->session->username = $this->session->realname;
-							}
-							else
-							{
-								$this->session->realname = "Real name not given";
-								//$this->session->username = $this->session->personaname;
-							}
-						}
-						
-						$player_table = new Player();
-						$player = $player_table->getPlayerForSteamid($this->session->steamid);
-						if ($player)
-						{
-							$where = $player_table->getAdapter()->quoteInto('steamid = ?', $this->session->steamid);
-							$this->session->username = $player->username;
-							$this->session->name = $player->name;
-						}
+                    $this->session->logged_in = true;
+                    try
+                    {
+                        $s = new SteamID($matches[1]);
+                        $this->session->steamid = $s->RenderSteam2();
+                        $this->session->steamid3 = $s->RenderSteam3();
+                        $this->session->steamid64 = $s->ConvertToUInt64();
+                        //$this->session->username = $this->session->steamid;
+                        
+                        if (!empty($steamauth['apikey']))
+                        {
+                            $url = file_get_contents("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=".$steamauth['apikey']."&steamids=".$matches[1]); 
+                            $content = json_decode($url, true);
+                            
+                            //$this->session->steamid = $content['response']['players'][0]['steamid'];
+                            $this->session->communityvisibilitystate = $content['response']['players'][0]['communityvisibilitystate'];
+                            $this->session->profilestate = $content['response']['players'][0]['profilestate'];
+                            $this->session->personaname = $content['response']['players'][0]['personaname'];
+                            $this->session->lastlogoff = $content['response']['players'][0]['lastlogoff'];
+                            $this->session->profileurl = $content['response']['players'][0]['profileurl'];
+                            $this->session->avatar = $content['response']['players'][0]['avatar'];
+                            $this->session->avatarmedium = $content['response']['players'][0]['avatarmedium'];
+                            $this->session->avatarfull = $content['response']['players'][0]['avatarfull'];
+                            $this->session->personastate = $content['response']['players'][0]['personastate'];
+                            $this->session->primaryclanid = $content['response']['players'][0]['primaryclanid'];
+                            $this->session->timecreated = $content['response']['players'][0]['timecreated'];
+                            $this->session->uptodate = time();
+                            
+                            if (isset($content['response']['players'][0]['realname']))
+                            {
+                                $this->session->realname = $content['response']['players'][0]['realname'];
+                                //$this->session->username = $this->session->realname;
+                            }
+                            else
+                            {
+                                $this->session->realname = "Real name not given";
+                                //$this->session->username = $this->session->personaname;
+                            }
+                        }
+                        
+                        $player_table = new Player();
+                        $player = $player_table->getPlayerForSteamid($this->session->steamid);
+                        if ($player)
+                        {
+                            $where = $player_table->getAdapter()->quoteInto('steamid = ?', $this->session->steamid);
+                            $this->session->username = $player->username;
+                            $this->session->name = $player->name;
+                        }
 
-						//$this->_forward('profile');
-						$this->_redirect('/sc/player/show/user/' . $username);
-					}
-					catch( InvalidArgumentException $e )
-					{
-						$view = $this->initView();
-						$view->error = 'SteamID could not be parsed.';
-						$this->render();
-					}
-				}
-				else
-				{
-					//echo "User is not logged in.\n";
-					$view = $this->initView();
-					$view->error = 'Login failed, please try again';
-					$this->render();
-				}
-			}
-		}
-		catch (ErrorException $e)
-		{
-			//echo $e->getMessage();
-			$view = $this->initView();
-			$view->error = $e->getMessage();
-			$this->render();
-		}
-
-		/*
-	    if ($this->getRequest()->getMethod() == 'POST')
-	    {
-		    // Handle log-in form
-		    $username = $this->getRequest()->getParam('user');
-		    if ($username)
-			    $password = $this->getRequest()->getParam('password');
-		    else
-		    {
-			    $username = $this->getRequest()->getParam('suser');
-			    $password = $this->getRequest()->getParam('spassword');
-		    }
-
-		    if (empty($username) && empty($password))
-		    {
-			    $this->_redirect('/sc/index');
-		    }
-		    else*/
-		    {
-				/*
-			    // setup Zend_Auth adapter for a database table
-			    $dbAdapters = Zend_Registry::get('dbAdapters');
-			    $authAdapter = new Zend_Auth_Adapter_DbTable($dbAdapters['user'],
-				    					'nuke_users',
-				    					'username',
-				    					'user_password',
-				    					'MD5(?)');
-
-			    // Set the input credential values to authenticate against
-			    $authAdapter->setIdentity($username);
-			    $authAdapter->setCredential($password);
-
-			    // do the authentication
-			    $auth = Zend_Auth::getInstance();
-			    $result = $auth->authenticate($authAdapter);
-			    if ($result->isValid())
-			    {
-				    // success: store database row to auth's storage
-				    // system. (Not the password though!)
-				    $data = $authAdapter->getResultRowObject(null, 'password');
-				    $auth->getStorage()->write($data);
-
-				    Zend_Session::regenerateId();
-				    $this->session->logged_in = true;
-				    $this->session->username = $username;
-
-				    $player_table = new Player();
-				    $player = $player_table->getPlayerForUsername($username);
-				    if ($player)
-				    {
-					    $this->session->steamid = $player->steamid;
-				    }
-				    else
-				    {
-					    $member_table = new Members();
-					    $member = $member_table->getMember($username);
-					    if ($member)
-					    {
-						    $this->session->steamid = 'STEAM_' . $member->steamid;
-
-						    // Update player record's username
-						    $player = $player_table->getPlayerForSteamid($this->session->steamid);
-						    if ($player)
-						    {
-							    $where = $player_table->getAdapter()->quoteInto('steamid = ?', $this->session->steamid);
-							    $player_table->update( array( 'username' => $username), $where);
-						    }
-					    }
-				    }
-
-				    //$this->_forward('profile');
-				    $this->_redirect('/sc/player/show/user/' . $username);
-			    }
-			    else // Wrong user name / password
-			    {
-				    $view = $this->initView();
-				    $view->user = $username;
-				    $view->error = 'Wrong user name or password, please try again';                
-				    $this->render();
-			    }
-		    }
-	    }
-	    else
-	    {
-		    // Not a POST request, show log-in form
-		    $view = $this->initView();
-		    $this->render();
-	    }
-		*/
+                        //$this->_forward('profile');
+                        $this->_redirect('/sc/player/show/user/' . $username);
+                    }
+                    catch( InvalidArgumentException $e )
+                    {
+                        $view = $this->initView();
+                        $view->error = 'SteamID could not be parsed.';
+                        $this->render();
+                    }
+                }
+                else
+                {
+                    //echo "User is not logged in.\n";
+                    $view = $this->initView();
+                    $view->error = 'Login failed, please try again';
+                    $this->render();
+                }
+            }
+        }
+        catch (ErrorException $e)
+        {
+            //echo $e->getMessage();
+            $view = $this->initView();
+            $view->error = $e->getMessage();
+            $this->render();
+        }
+        catch (Exception $e)
+        {
+            //echo $e->getMessage();
+            $view = $this->initView();
+            $view->error = $e->getMessage();
+            $this->render();
+        }
     }
 
     /**
@@ -265,14 +184,14 @@ class Sc_UserController extends Zend_Controller_Action
      */
     public function logoutAction()
     {
-		Zend_Auth::getInstance()->clearIdentity();
+        Zend_Auth::getInstance()->clearIdentity();
         $this->session->name = "";
         $this->session->admin = false;        
         $this->session->steamid = "";
         $this->session->steamid3 = "";
         $this->session->steamid64 = false;
         $this->session->username = "";
-    	$this->session->logged_in = false;
+        $this->session->logged_in = false;
         $this->_redirect('/sc/user/login');
     }
 
@@ -287,11 +206,11 @@ class Sc_UserController extends Zend_Controller_Action
         if ($user)
         {
             $this->_redirect('/sc/player/show/user/' . $user);
-        	//$this->_forward('show', 'player', 'sc', array('user' => $user));
+            //$this->_forward('show', 'player', 'sc', array('user' => $user));
         }
         else
         {
-        	$this->_forward('index','index', 'sc');
+            $this->_forward('index','index', 'sc');
         }
     }
 }

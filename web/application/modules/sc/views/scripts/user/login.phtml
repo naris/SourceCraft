@@ -6,57 +6,35 @@
  * @version $Id: login.phtml,v 1.2 2007-12-04 12:19:45 seva Exp $
  */
 
-require_once 'steamauth/steamauth.php';
-
 // Render common HTML header
 echo $this->render('partials/html_header.phtml');
 
 ?>
 
 <script>
-	dojo.addOnLoad(showDialog);
+    dojo.addOnLoad(showDialog);
     function showDialog() {
         dijit.byId('signinDlg').show();
     }
 </script>
     
 <?php if (isset($this->error)): ?>
-	<div class="error">
-		<?= $this->escape($this->error); ?>
-	</div>
+    <div class="error">
+        <?= $this->escape($this->error); ?>
+    </div>
 <?php endif; ?>
 
 <div style="display:none" class="tundra" dojoType="dijit.Dialog" id="signinDlg" title="Please Sign In">
-	
-	<form method="post">
-		<!--label for="user">User name:</label>
-		<input dojoType=dijit.form.TextBox type="text" name="user" id="suser" value="<?= 
-			isset($this->user) ? $this->escape($this->user) : '' ?>" /><br /-->
-		
-		<!--label for="password">Password:</label>
-		<input dojoType=dijit.form.TextBox type="password" name="password" id="spassword" value="" /><br /-->
-		
-		<!--div class="button_container">
-			<button dojoType=dijit.form.Button type="submit">Sign In</button>
-		</div-->
-		<?php
-			if(!isset($_SESSION['steamid']))
-			{
-				loginbutton(); //login button
-			}
-			else
-			{
-				include ('steamauth/userInfo.php'); //To access the $steamprofile array Protected content
-				logoutbutton(); //Logout Button
-			}     
-		?>
-	</form>
+    
+    <form action="/sc/user/login" method="get" id="loginFrm">
+        <a href='/sc/user/login'><img src='http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_02.png'></a>
+    </form>
 </div>
 
 <?php if (isset($this->steamid)): ?>
-	<div class="steamid">
-		Steamid: <?= $this->escape($this->steamid); ?>
-	</div>
+    <div class="steamid">
+        Steamid: <?= $this->escape($this->steamid); ?>
+    </div>
 <?php endif; ?>
 
 <?= $this->render('partials/html_footer.phtml'); ?>

@@ -10,7 +10,7 @@ a:hover { color:#98ffff }
 #header { height:162px; background:url(/sc/images/scheader_2.jpg) right no-repeat; padding:0 395px; }
 #header h1 { padding-top:50px; margin:0; color:white; }
 
-#navigation a { background:url(/sc/images/buttons2.gif) no-repeat; width:170px; height:25px; display:block; padding-left:25px; margin:5px 0; font-size:13px; color:white; text-decoration:none; line-height:25px;}
+#navigation a { background:url(/sc/images/buttons2.gif) no-repeat; width:135px; height:25px; display:block; padding-left:25px; margin:5px 0; font-size:13px; color:white; text-decoration:none; line-height:25px;}
 #navigation a:hover { background-position:0 bottom;  }
 
 #footer { clear:both; padding:20px }
@@ -23,7 +23,7 @@ a:hover { color:#98ffff }
 	
 	#left_column { width:195px; float:left; }
 	.horizontal #left_column { width:auto; float:none; }
-		#navigation a { background:url(/sc/images/buttons2.gif) no-repeat; width:170px; height:25px; display:block; padding-left:25px; margin:5px 0;
+		#navigation a { background:url(/sc/images/buttons2.gif) no-repeat; width:135px; height:25px; display:block; padding-left:25px; margin:5px 0;
 						font-size:13px; color:white; text-decoration:none; line-height:25px;}
 		#navigation a:hover { background-position:0 bottom;  }
 		.horizontal #navigation a { float:left; } 
@@ -194,7 +194,7 @@ FORM LABEL {
 	display: block;
 	clear: left;
 	float: left;
-	width: 150px;
+	width: 135px;
 }
 
 FORM INPUT[type=text], FORM INPUT[type=password] {
@@ -243,7 +243,7 @@ FORM INPUT[type=text], FORM INPUT[type=password] {
 
 .scsoria .dijitButtonNode  {
 	background:url(/sc/images/buttons2.gif) no-repeat;
-	width:170px;
+	width:135px;
 	height:25px;
 	display:block;
 	padding-left:25px;
@@ -259,7 +259,7 @@ FORM INPUT[type=text], FORM INPUT[type=password] {
 .scsoria .dijitDropDownButtonHover .dijitButtonNode {
 	background:url(/sc/images/buttons2.gif) no-repeat;
 	background-position:0 bottom;
-	width:170px;
+	width:135px;
 	height:25px;
 	display:block;
 	padding-left:25px;
@@ -275,7 +275,7 @@ FORM INPUT[type=text], FORM INPUT[type=password] {
 .scsoria .dijitDropDownButtonActive .dijitButtonNode {
 	background:url(/sc/images/buttons2.gif) no-repeat;
 	background-position:0 bottom;
-	width:170px;
+	width:135px;
 	height:25px;
 	display:block;
 	padding-left:25px;
