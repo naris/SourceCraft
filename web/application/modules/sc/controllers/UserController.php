@@ -10,13 +10,18 @@ require_once 'Zend/Controller/Action.php';
 require_once 'Zend/Auth/Adapter/DbTable.php';
 require_once 'Zend/Registry.php';
 require_once 'Zend/Session.php';
-
-//require_once "Zend/Auth/Adapter/OpenId.php";
-require_once 'steamauth/openid.php';
 require_once 'xPaw/SteamID.php';
-
 require_once 'Members.php';
 require_once 'Player.php';
+
+//require_once "Zend/Auth/Adapter/OpenId.php";
+//require_once 'steamauth/openid.php';
+
+//Include Hybridauth's basic autoloader
+include 'hybridauth/src/autoload.php';
+
+//Import Hybridauth's namespace
+use Hybridauth\Hybridauth;
 
 class Sc_UserController extends Zend_Controller_Action
 {
@@ -26,6 +31,17 @@ class Sc_UserController extends Zend_Controller_Action
      * @var Zend_Session_Namespace
      */
     protected $session = null;
+
+	// Build configuration array
+	protected $config = [
+		//Location where to redirect users once they authenticate with Steam
+		'callback' => '/sc/player/show/user/',
+
+		// Steam api credentials
+		'keys' => [
+			'key' => '', // Required: your Steam api key
+		]
+	];
 
     /**
      * Overriding the init method to also load the session from the registry
@@ -62,21 +78,65 @@ class Sc_UserController extends Zend_Controller_Action
 
     /**
      * Log in - show the login form or handle a login request
-     *      then logs in through the Forums
+     *          then logs in through steam using openid
      */
     public function loginAction()
     {
         try
         {
-            require_once 'steamauth/SteamConfig.php';
+			// Instantiate Steam's adapter directly
+			$adapter = new Hybridauth\Provider\Steam($config);
+
+			// Attempt to authenticate the user with Steam
+			$adapter->authenticate();
+
+			// Returns a boolean of whether the user is connected with Steam
+			$isConnected = $adapter->isConnected();
+
+			// Retrieve the user's profile
+			$userProfile = $adapter->getUserProfile();
+
+			// Inspect profile's public attributes
+			// var_dump($userProfile);
+			
+			$s = new SteamID($userProfile->identifier);
+			$this->session->steamid = $s->RenderSteam2();
+			$this->session->steamid3 = $s->RenderSteam3();
+			$this->session->steamid64 = $s->ConvertToUInt64();
+			
+			$this->session->username = $userProfile->displayName;
+			$this->session->firstName = $userProfile->firstName;
+			$this->session->photoURL = $userProfile->photoURL;
+			$this->session->profileURL = $userProfile->profileURL;
+			$this->session->description = $userProfile->description;
+			$this->session->country = $userProfile->country;
+			$this->session->region = $userProfile->region;
+
+			/*
+			$this->session->firstName = $userProfile->lastName;
+			$this->session->webSiteURL = $userProfile->webSiteURL;
+			$this->session->gender = $userProfile->gender;
+			$this->session->language = $userProfile->language;
+			$this->session->age = $userProfile->age;
+			$this->session->birthDay = $userProfile->birthDay;
+			$this->session->birthMonth = $userProfile->birthMonth;
+			$this->session->birthYear = $userProfile->birthYear;
+			$this->session->email = $userProfile->email;
+			$this->session->emailVerified = $userProfile->emailVerified;
+			$this->session->phone = $userProfile->phone;
+			$this->session->address = $userProfile->address;
+			$this->session->city = $userProfile->city;
+			$this->session->zip = $userProfile->zip;
+			*/
+
+			/*
+			require_once 'steamauth/SteamConfig.php';
             $openid = new LightOpenID($steamauth['domainname']);
             
-            /*
             if (!$openid->mode)
             {
                 $openid->identity = 'http://steamcommunity.com/openid';
-                //header('Location: ' . $openid->authUrl());
-                $this->_forward($openid->authUrl());
+                header('Location: ' . $openid->authUrl());
             }
             elseif ($openid->mode == 'cancel')
             {
@@ -86,7 +146,6 @@ class Sc_UserController extends Zend_Controller_Action
                 $this->render();
             }
             else
-            */
             {
                 if ($openid->validate())
                 { 
@@ -160,6 +219,7 @@ class Sc_UserController extends Zend_Controller_Action
                     $view->error = 'Login failed, please try again';
                     $this->render();
                 }
+				*/
             }
         }
         catch (ErrorException $e)
@@ -184,7 +244,12 @@ class Sc_UserController extends Zend_Controller_Action
      */
     public function logoutAction()
     {
-        Zend_Auth::getInstance()->clearIdentity();
+		// Instantiate Steam's adapter directly
+		$adapter = new Hybridauth\Provider\Steam($config);
+
+		//Disconnect the adapter 
+		$adapter->disconnect();
+
         $this->session->name = "";
         $this->session->admin = false;        
         $this->session->steamid = "";
@@ -192,6 +257,7 @@ class Sc_UserController extends Zend_Controller_Action
         $this->session->steamid64 = false;
         $this->session->username = "";
         $this->session->logged_in = false;
+        Zend_Auth::getInstance()->clearIdentity();
         $this->_redirect('/sc/user/login');
     }
 
