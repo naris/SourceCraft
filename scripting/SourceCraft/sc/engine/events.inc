@@ -970,16 +970,16 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
                 {
                     new drop_model;
                     new drop_amount = drop_money + drop_crystals + drop_xp;
-                    if (drop_amount == 0 || (drop_energy > float(drop_amount) && drop_energy > 50.0))
+                    if (drop_amount == 0 || (drop_energy > g_fEnergyPackageAmt && drop_energy > (float(drop_amount) * 2.0)))
                         drop_model = 0;
                     else if (drop_amount > 100 || GetGameMode() == MvM)
                         drop_model = 4; // Don't use cash models in MvM
                     else if (drop_amount > 50)
-                        drop_model = (drop_energy > 50.0) ? 4 : 3;
+                        drop_model = (drop_energy > g_fEnergyPackageAmt) ? 4 : 3;
                     else if (drop_amount > 25)
-                        drop_model = (drop_energy > 50.0) ? 3 : 2;
+                        drop_model = (drop_energy > g_fEnergyPackageAmt) ? 3 : 2;
                     else
-                        drop_model = (drop_energy > 50.0) ? 2 : 1;
+                        drop_model = (drop_energy > g_fEnergyPackageAmt) ? 2 : 1;
 
                     SetEntityModel(pkg, mdlPackage[drop_model]);
                     DispatchSpawn(pkg);

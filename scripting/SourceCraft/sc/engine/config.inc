@@ -1273,6 +1273,7 @@ bool:ParseSettings()
         KvSetFloat(g_SourceCraftConfigHandle, "max_package_energy", g_fMaxPackageEnergy);
         KvSetFloat(g_SourceCraftConfigHandle, "req_package_energy", g_fReqPackageEnergy);
         KvSetFloat(g_SourceCraftConfigHandle, "min_package_energy", g_fMinPackageEnergy);
+        KvSetFloat(g_SourceCraftConfigHandle, "energy_package_amt", g_fEnergyPackageAmt);
 
         KvSetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
         KvSetNum(g_SourceCraftConfigHandle, "min_ultimate", g_iMinUltimate);
@@ -1327,6 +1328,7 @@ bool:ParseSettings()
         g_fMaxPackageEnergy=KvGetFloat(g_SourceCraftConfigHandle, "max_package_energy", g_fMaxPackageEnergy);
         g_fMinPackageEnergy=KvGetFloat(g_SourceCraftConfigHandle, "min_package_energy", g_fMinPackageEnergy);
         g_fReqPackageEnergy=KvGetFloat(g_SourceCraftConfigHandle, "req_package_energy", g_fReqPackageEnergy);
+        g_fEnergyPackageAmt=KvGetFloat(g_SourceCraftConfigHandle, "energy_package_amt", g_fEnergyPackageAmt);
 
         g_iMinPlayers=KvGetNum(g_SourceCraftConfigHandle, "min_players", g_iMinPlayers);
         g_iMinUltimate=KvGetNum(g_SourceCraftConfigHandle, "min_ultimate", g_iMinUltimate);

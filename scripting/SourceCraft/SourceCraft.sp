@@ -88,6 +88,7 @@ new bool:g_bShowDisabledRaces           = false;
 new Float:g_fMaxPackageEnergy           = 100.0;
 new Float:g_fMinPackageEnergy           = 20.0;
 new Float:g_fReqPackageEnergy           = 40.0;
+new Float:g_fEnergyPackageAmt           = 60.0;
 new g_iRaceMenuThreshold                = 16;
 
 new g_iMaxCrystals                      = 100;
