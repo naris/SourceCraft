@@ -6,7 +6,7 @@
  */
 
 new Handle:hTopAdminMenu = INVALID_HANDLE;
-new TopMenuObject:hAdminMenu = INVALID_HANDLE;
+new TopMenuObject:hAdminMenu = INVALID_TOPMENUOBJECT;
 
 InitAdminMenu()
 {
@@ -37,15 +37,15 @@ public OnAdminMenuReady(Handle:topmenu)
         /* Save the Handle */
         hTopAdminMenu = topmenu;
 
-		/* Add the SourceCraft category */
-		hAdminMenu = AddToTopMenu(hTopAdminMenu, "sc_admin", TopMenuObject_Category,
-								  AdminCategoryHandler, INVALID_TOPMENUOBJECT);
+        /* Add the SourceCraft category */
+        hAdminMenu = AddToTopMenu(hTopAdminMenu, "sc_admin", TopMenuObject_Category,
+                                  AdminCategoryHandler, INVALID_TOPMENUOBJECT);
 
-		if (hAdminMenu != INVALID_TOPMENUOBJECT)
-		{
-			AddToTopMenu(hTopAdminMenu, "sc_admin_player", TopMenuObject_Item, AdminPlayerMenu,
-						 hAdminMenu, "umc_changemap", ADMFLAG_SOURCECRAFT);
-		}
+        if (hAdminMenu != INVALID_TOPMENUOBJECT)
+        {
+            AddToTopMenu(hTopAdminMenu, "sc_admin_player", TopMenuObject_Item, AdminPlayerMenu,
+                         hAdminMenu, "umc_changemap", ADMFLAG_SOURCECRAFT);
+        }
     }
 }
 
@@ -64,7 +64,7 @@ public AdminPlayerMenu(Handle:topmenu, TopMenuAction:action, TopMenuObject:objec
 {
     if (action == TopMenuAction_DisplayOption)
     {
-        Format(buffer, maxlength, "%T", "AdministerPlayer", param);
+        Format(buffer, maxlength, "%T", "AdministerPlayers", param);
     }
     else if (action == TopMenuAction_SelectOption)
     {
@@ -107,7 +107,7 @@ Admin_Player(client,target)
     new Handle:adminMenu_Player=CreateMenu(Admin_Player_Select);
     SetMenuExitButton(adminMenu_Player,true);
     SetMenuExitBackButton(adminMenu_Player,true);
-    SetMenuTitle(adminMenu_Player,"[SC] %T", "AdministerPlayer", client, target);
+    SetMenuTitle(adminMenu_Player,"[SC] %T", "AdministerAPlayer", client, target);
 
     decl String:buf[SMALL_STRING_LENGTH];
     Format(buf,sizeof(buf),"%d",target);
