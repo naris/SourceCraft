@@ -47,7 +47,7 @@ native Float:GetROF(client, &Float:energy=0.0);
 native DisarmPlayer(client,bool:disarmed=true);
 
 /**
- * Gets called when a player fires thier weapon
+ * Gets called when a player fires their weapon
  * @param index 	Client index
  * @noreturn
  */

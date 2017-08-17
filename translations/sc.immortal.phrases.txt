@@ -83,7 +83,7 @@
 	}
 	"immortal_hard_shields_desc"
 	{
-		"en"		"The Hardened Shields absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Hardened Shields are invoked at your location, at level 2 they can be placed at teammates locations and at level 4 the Hardened Shields become mobile and travel with thier target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
+		"en"		"The Hardened Shields absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using their Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Hardened Shields are invoked at your location, at level 2 they can be placed at teammates locations and at level 4 the Hardened Shields become mobile and travel with their target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
 	}
 	"immortal_hard_shields_image"
 	{

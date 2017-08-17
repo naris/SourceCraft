@@ -165,6 +165,33 @@ public OnPluginStart()
     RegConsoleCmd("+item",ItemCommand,"use SourceCraft item (keydown)",FCVAR_GAMEDLL);
     RegConsoleCmd("-item",ItemCommand,"use SourceCraft item (keyup)",FCVAR_GAMEDLL);
 
+    RegConsoleCmd("+item1",ItemCommand,"use SourceCraft item 1 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item1",ItemCommand,"use SourceCraft item 1 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item2",ItemCommand,"use SourceCraft item 2 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item2",ItemCommand,"use SourceCraft item 2 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item3",ItemCommand,"use SourceCraft item 3 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item3",ItemCommand,"use SourceCraft item 3 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item4",ItemCommand,"use SourceCraft item 4 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item4",ItemCommand,"use SourceCraft item 4 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item5",ItemCommand,"use SourceCraft item 5 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item5",ItemCommand,"use SourceCraft item 5 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item6",ItemCommand,"use SourceCraft item 6 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item6",ItemCommand,"use SourceCraft item 6 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item7",ItemCommand,"use SourceCraft item 7 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item7",ItemCommand,"use SourceCraft item 7 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item8",ItemCommand,"use SourceCraft item 8 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item8",ItemCommand,"use SourceCraft item 8 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+item9",ItemCommand,"use SourceCraft item 9 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-item9",ItemCommand,"use SourceCraft item 9 (keyup)",FCVAR_GAMEDLL);
+
     RegAdminCmd("sc_test",CMD_Test,ADMFLAG_GENERIC,"Test stuff. (for Admins)");
 
     if (GetGameType() == tf2)
@@ -597,7 +624,7 @@ public OnItemPurchase(client,item)
             // Make sure player knows how to use tripmines
             if (HasTripmines(client, true) > 0)
             {
-                PrintToChat(client, "[SC] Bind a key to \"+item 4\" or \"sm_tripmine\" to plant the tripmine.");
+                PrintToChat(client, "[SC] Bind a key to sm_tripmine or +item4 to plant the tripmine.");
             }
         }
         else
@@ -609,7 +636,7 @@ public OnItemPurchase(client,item)
         if (m_FireminesAvailable)
         {
             // Make sure player knows how to use mines
-            PrintToChat(client, "[SC] Bind a key to \"+item 3\" or \"sm_mine\" to plant the mine.");
+            PrintToChat(client, "[SC] Bind a key to sm_mine or +item3 to plant the mine.");
 
             if (HasMines(client, true) > 0)
                 AddMines(client, 1);
@@ -631,8 +658,8 @@ public OnItemPurchase(client,item)
                           _:DamageFrom_ShopItems);
 
                 // Make sure player knows how to use nades
-                PrintToChat(client, "[SC] Bind a key to \"+item 1\" or \"+nade1\" to throw a frag nade");
-                PrintToChat(client, "[SC] Bind a key to \"+item 2\" or \"+nade2\" to throw a special nade");
+                PrintToChat(client, "[SC] Bind a key to +nade1 or +item1 to throw a frag nade");
+                PrintToChat(client, "[SC] Bind a key to +nade2 or +item2 to throw a special nade");
                 PrintToChat(client, "[SC] Type !nade for more information");
             }
             else
@@ -866,8 +893,8 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
                                 _:DamageFrom_ShopItems);
 
                         // Make sure player knows how to use nades
-                        PrintToChat(client, "[SC] Bind a key to \"+item 1\" or \"+nade1\" to throw a frag nade");
-                        PrintToChat(client, "[SC] Bind a key to \"+item 2\" or \"+nade2\" to throw a special nade");
+                        PrintToChat(client, "[SC] Bind a key to +nade1 or +item1 to throw a frag nade");
+                        PrintToChat(client, "[SC] Bind a key to +nade2 or +item2 to throw a special nade");
                         PrintToChat(client, "[SC] Type !nade for more information");
                     }
                     else
@@ -883,7 +910,7 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
                 if (m_TripminesAvailable)
                 {
                     // Make sure player knows how to use tripmines
-                    PrintToChat(client, "[SC] Bind a key to \"+item 4\" or \"sm_tripmine\" to plant the tripmine.");
+                    PrintToChat(client, "[SC] Bind a key to sm_tripmine or +item4 to plant the tripmine.");
 
                     if (HasTripmines(client, true) > 0)
                         AddTripmines(client, 1);
@@ -897,7 +924,7 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
                 if (m_FireminesAvailable)
                 {
                     // Make sure player knows how to use mines
-                    PrintToChat(client, "[SC] Bind a key to \"+item 3\" or \"sm_mine\" to plant the mine.");
+                    PrintToChat(client, "[SC] Bind a key to sm_mine or +item3 to plant the mine.");
 
                     if (HasMines(client, true) > 0)
                         AddMines(client, 1);
@@ -1765,11 +1792,18 @@ public Action:ItemCommand(client,args)
         {
             decl String:command[32];
             GetCmdArg(0,command,sizeof(command));
-            new bool:pressed=(!strcmp(command,"+item"));
+			new bool:pressed=(command[0] == '+');
 
             new arg;
             decl String:argString[16];
-            if (GetCmdArgs() >= 2)
+            if (IsCharNumeric(command[5]))
+			{
+				arg = command[5]-'0';
+
+				Trace("%N issuing %s: +item%d, pressed=%d, args=%d, CmdArgs=%d", \
+					  client, command, arg, pressed, args, GetCmdArgs());
+			}
+			else if (GetCmdArgs() >= 2)
             {
                 GetCmdArg(1,argString,sizeof(argString));
                 arg = StringToInt(argString);

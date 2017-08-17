@@ -164,7 +164,7 @@ public OnSourceCraftReady()
     }
     else
     {
-        ammopackID  = AddUpgrade(raceID, "ammopack", 0, 0, .energy=30.0,
+        ammopackID  = AddUpgrade(raceID, "ammopack", 5, 0, .energy=30.0,
                                  .cooldown=10.0, .cost_crystals=0);
 
         if (GetGameType() != tf2 || !IsAmmopacksAvailable())
@@ -605,15 +605,52 @@ public OnUpgradeLevelChanged(client,race,upgrade,new_level)
 
 public OnUltimateCommand(client,race,bool:pressed,arg)
 {
-    if (race==raceID && IsValidClientAlive(client))
+    if (race == raceID && IsValidClientAlive(client))
     {
         switch (arg)
         {
+            case 6:
+            {
+				new nade_level = GetUpgradeLevel(client,race,nadeID);
+				if (nade_level > 0)
+				{
+					if (m_NadesAvailable)
+					{
+						if (GetRestriction(client, Restriction_NoUltimates) ||
+							GetRestriction(client, Restriction_Stunned))
+						{
+							PrepareAndEmitSoundToClient(client,deniedWav);
+							DisplayMessage(client, Display_Ultimate, "%t",
+										   "PreventedFromThrowingGrenade");
+						}
+						else
+							ThrowFragNade(client, pressed);
+					}
+					else if (pressed)
+					{
+						decl String:upgradeName[64];
+						GetUpgradeName(raceID, nadeID, upgradeName, sizeof(upgradeName), client);
+						PrintHintText(client,"%t", "IsNotAvailable", upgradeName);
+					}
+				}
+            }
+            case 5:
+            {
+                if (!pressed)
+                {
+                    if (m_AmmopacksAvailable)
+                    {
+                        new ammopack_level = GetUpgradeLevel(client,race,ammopackID);
+                        if (ammopack_level > 0)
+                            DropPack(client, ammopack_level);
+                    }
+                }
+            }
             case 4:
             {
                 if (!pressed)
                 {
-                    new battlecruiser_level=GetUpgradeLevel(client,race,battlecruiserID);
+                    new battlecruiser_level = GetUpgradeLevel(client,race,battlecruiserID);
                     if (battlecruiser_level > 0)
                         BuildBattlecruiser(client);
                     else if (m_AmmopacksAvailable)
@@ -626,7 +663,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
             }
             case 3:
             {
-                new nade_level=GetUpgradeLevel(client,race,nadeID);
+                new nade_level = GetUpgradeLevel(client,race,nadeID);
                 if (nade_level > 0)
                 {
                     if (m_NadesAvailable)
@@ -710,7 +747,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                     }
                     else
                     {
-                        new nade_level=GetUpgradeLevel(client,race,nadeID);
+                        new nade_level = GetUpgradeLevel(client,race,nadeID);
                         if (nade_level > 0)
                         {
                             if (m_NadesAvailable)
@@ -784,7 +821,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                 }
                 else
                 {
-                    new tripmine_level=GetUpgradeLevel(client,race,tripmineID);
+                    new tripmine_level = GetUpgradeLevel(client,race,tripmineID);
                     if (tripmine_level > 0)
                     {
                         if (!pressed)
@@ -818,7 +855,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                     }
                     else
                     {
-                        new nade_level=GetUpgradeLevel(client,race,nadeID);
+                        new nade_level = GetUpgradeLevel(client,race,nadeID);
                         if (nade_level > 0)
                         {
                             if (m_NadesAvailable)

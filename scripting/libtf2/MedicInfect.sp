@@ -918,16 +918,16 @@ public Action:RoundStartEvent(Handle:event, const String:name[], bool:dontBroadc
         if(GetConVarBool(Cvar_InfectOpposingTeam) )
         {
             if(GetConVarBool(Cvar_InfectMedi) )
-                PrintToChatAll("%c[SM] %cMedics can infect enemy players using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+                PrintToChatAll("%c[SM] %cMedics can infect enemy players using their medigun", COLOR_GREEN,COLOR_DEFAULT);
 
             if(GetConVarBool(Cvar_InfectSyringe) )
-                PrintToChatAll("%c[SM] %cMedics can infect enemy players using thier syringe gun", COLOR_GREEN,COLOR_DEFAULT);
+                PrintToChatAll("%c[SM] %cMedics can infect enemy players using their syringe gun", COLOR_GREEN,COLOR_DEFAULT);
         }
 
         if(GetConVarBool(Cvar_InfectSameTeam) )
-            PrintToChatAll("%c[SM] %cMedics can infect teammates by reloading thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+            PrintToChatAll("%c[SM] %cMedics can infect teammates by reloading their medigun", COLOR_GREEN,COLOR_DEFAULT);
 
-        PrintToChatAll("%c[SM] %cMedics can heal infected teammates using thier medigun", COLOR_GREEN,COLOR_DEFAULT);
+        PrintToChatAll("%c[SM] %cMedics can heal infected teammates using their medigun", COLOR_GREEN,COLOR_DEFAULT);
 
         new bool:spreadAll = GetConVarBool(Cvar_SpreadAll);
 

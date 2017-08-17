@@ -288,7 +288,7 @@ S7)Nydus Worm 		: Decreases the recharge rate of teleporters on your team.
 U1)Flyer		: Allows you to fly until you run out of fuel.
 U2)Corrupting Slime	: temporarily disables enemy buildings in range. Perhaps also drains energy. Perhaps also intereferes with capping points?
 U3)Acid Spore Cloud	: Similar to Dark Swarm, covers an area, blocking line of sight for a period of time, also increases damage taken by enemy units.
-U4)Spawn Changeling	: Converts an enemy to a Changling, which is simlar to a Broodling, but has thier m_iTeam switch so they can only attack thier own team.
+U4)Spawn Changeling	: Converts an enemy to a Changling, which is simlar to a Broodling, but has their m_iTeam switch so they can only attack their own team.
 -------------------------------
 Zerg Overlord
 

@@ -126,7 +126,7 @@
 	}
 	"collosus_null_flux_desc"
 	{
-		"en"		"The Null Flux Generator absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Null Flux Shields are invoked at your location, at level 2 they can be placed at teammates locations and at level 4 the Null Flux Shields become mobile and travel with thier target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
+		"en"		"The Null Flux Generator absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using their Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Null Flux Shields are invoked at your location, at level 2 they can be placed at teammates locations and at level 4 the Null Flux Shields become mobile and travel with their target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
 	}
 	"collosus_null_flux_image"
 	{

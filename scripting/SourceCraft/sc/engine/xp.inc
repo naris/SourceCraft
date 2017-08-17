@@ -354,7 +354,7 @@ GiveHostageRescuedXP(client)
 
 GiveChargeDeployedXP(client)
 {
-    // Called when a player deploys thier charge (medic goes uber)
+    // Called when a player deploys their charge (medic goes uber)
     GiveXP(client,CHARGE_XP, "DeployUber");
 }
 
@@ -374,7 +374,7 @@ GiveObjectUpgradedXP(client,TFObjectType:obj, bool:isBuilder)
 
 TakeObjectBuiltXP(client,TFObjectType:obj)
 {
-    // Called when a player destroys thier own object
+    // Called when a player destroys their own object
     TakeXP(client,BUILD_XP, "DestroyingOwn",
            .obj=obj);
 }

@@ -81,26 +81,13 @@
 		"en"		"Vehicle Weapons"
 	}
 
-	"vulture_bunker"
-	{
-		"en"		"Enter Bunker"
-	}
-	"vulture_bunker_desc"
-	{
-		"en"		"Enter the Bunker, which provides additional armor (20-160%) that takes 100%% damage at the cost of becoming immoble while in the bunker."
-	}
-	"vulture_bunker_image"
-	{
-		"en"		"Upgrade/Bunker.jpg"
-	}
-
 	"vulture_spider_mine"
 	{
 		"en"		"Spider Mine"
 	}
 	"vulture_spider_mine_desc"
 	{
-		"en"		"Drops a spider mine, which is equipped with motion sensors. Once a target enters a certain range the mine digs itself out of the ground and scurries over that distance to detonate on the target.\nYou will be given 3 spider mines to plant for every level."
+		"en"		"Drops a spider mine, which is equipped with motion sensors. Once a target enters a certain range the mine digs itself out of the ground and scurries over that distance to detonate on the target.\nYou will be given 3 spider mines to plant for every level.\nBind a key to sm_mine or +ultimate to plant the mine.\nTo bind to m, type bind m sm_mine in console."
 	}
 	"vulture_spider_mine_image"
 	{
@@ -113,7 +100,7 @@
 	}
 	"vulture_tripmine_desc"
 	{
-		"en"		"You will be given a tripmine to plant for every level."
+		"en"		"You will be given a tripmine to plant for every level.\nBind a key to sm_tripmine or +ultimate2 to plant the tripmine.\nTo bind to t, type bind t sm_tripmine in console."
 	}
 	"vulture_tripmine_image"
 	{
@@ -126,7 +113,7 @@
 	}
 	"vulture_nade_desc"
 	{
-		"en"		"You will be given 2 frag grenades and 2 special grenades to use for every level.\nThrow a special nade with +ultimate 3 and a frag nade with +ultimate 4 (or 2)\nType !nade for more information."
+		"en"		"You will be given 2 frag grenades and 2 special grenades to use for every level.\nThrow a frag nade with +nade1 or +ultimate3 and a special nade with +nade2 or +ultimate4\nTo bind to g & h, type bind g +nade1 then bind h +nade2 in console.\nType !nade for more information."
 	}
 	"vulture_nade_image"
 	{

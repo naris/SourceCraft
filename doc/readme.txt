@@ -16,7 +16,7 @@ Most ultimate upgrades consume energy while only some passive ones do. Those upg
 
 When a player dies, any energy they have will be added to a special category of "accumulated energy". Only a few upgrades can use "accumulated energy". Typically upgrades that require a large amount of energy, such as most race summons that require 100-300 or more energy.
 
-Players will also earn crystals and/or vespene from kills and objectives that allow them to purchase items in the shopmenu to add to thier arsenal of abilities. Most are passive, but there are some items, such as jetpack, nades & mines, that are invoked, usually by using a key bound to an +item command. Most items are lost when a player dies unless they own the Ankh of Reincarnation, which will be lost instead (which can then be be re-purchased, if desired).
+Players will also earn crystals and/or vespene from kills and objectives that allow them to purchase items in the shopmenu to add to their arsenal of abilities. Most are passive, but there are some items, such as jetpack, nades & mines, that are invoked, usually by using a key bound to an +item command. Most items are lost when a player dies unless they own the Ankh of Reincarnation, which will be lost instead (which can then be be re-purchased, if desired).
 
 Several race's upgrades also consume Vespene, such as Zerg Drone's Mutate, and won't function without a sufficient vespene supply.
 
