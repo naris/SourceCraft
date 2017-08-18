@@ -471,15 +471,16 @@ public Native_SetRaceEnergyFlags(Handle:plugin,numParams)
  * @param disabled:         Set to true to disable te upgrade (deafults to false)
  * @param name:             The name of the upgrade. (max 64, defaults to translation)
  * @param desc:             The description of the upgrade. (max 256, defaults to translation)
+ * @param bind:             Instructions on keys to bind to use the upgrade (if any). (max 2048, defaults to translation)
  * @param image:            The image for the upgrade. (max 256, defaults to translation)
  * @return The return value will be the upgrade index or -1 if there was a problem.
  *
  * native AddUpgrade(race, const String:short[], upgrade_category=0, required_level=-1, max_level=4, Float:energy=0.0,
  *                   Float:recurring_energy=0.0, bool:accumulated=false, crystals=0, vespene=0, cost_crystals=-1,
  *                   cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None, bool:disabled=false,
- *                   const String:name[]="", const String:desc[]="", const String:image[]="", const String:p1[]="",
- *                   const String:p2[]="", const String:p3[]="", const String:p4[]="", const String:p5[]="",
- *                   const String:p6[]="", const String:p7[]="", const String:p8[]="");
+ *                   const String:name[]="", const String:desc[]="", const String:bind[]="", const String:image[]="",
+ *                   const String:p1[]="", const String:p2[]="", const String:p3[]="", const String:p4[]="",
+ *                   const String:p5[]="", const String:p6[]="", const String:p7[]="", const String:p8[]="");
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
 {
@@ -510,32 +511,35 @@ public Native_AddUpgrade(Handle:plugin,numParams)
         decl String:desc[LONG_STRING_LENGTH];
         GetNativeString(17,desc,sizeof(desc));
 
+        decl String:bind[LONG_STRING_LENGTH];
+        GetNativeString(18,bind,sizeof(bind));
+
         decl String:image[LONG_STRING_LENGTH];
-        GetNativeString(18,image,sizeof(image));
+        GetNativeString(19,image,sizeof(image));
 
         decl String:p1[NAME_STRING_LENGTH];
-        GetNativeString(19,p1,sizeof(p1));
+        GetNativeString(20,p1,sizeof(p1));
 
         decl String:p2[NAME_STRING_LENGTH];
-        GetNativeString(20,p2,sizeof(p2));
+        GetNativeString(21,p2,sizeof(p2));
 
         decl String:p3[NAME_STRING_LENGTH];
-        GetNativeString(21,p3,sizeof(p3));
+        GetNativeString(22,p3,sizeof(p3));
 
         decl String:p4[NAME_STRING_LENGTH];
-        GetNativeString(22,p4,sizeof(p4));
+        GetNativeString(23,p4,sizeof(p4));
 
         decl String:p5[NAME_STRING_LENGTH];
-        GetNativeString(23,p5,sizeof(p5));
+        GetNativeString(24,p5,sizeof(p5));
 
         decl String:p6[NAME_STRING_LENGTH];
-        GetNativeString(24,p6,sizeof(p6));
+        GetNativeString(25,p6,sizeof(p6));
 
         decl String:p7[NAME_STRING_LENGTH];
-        GetNativeString(25,p7,sizeof(p7));
+        GetNativeString(26,p7,sizeof(p7));
 
         decl String:p8[NAME_STRING_LENGTH];
-        GetNativeString(26,p8,sizeof(p8));
+        GetNativeString(27,p8,sizeof(p8));
 
         // If the short name wasn't provided
         if (short[0] == '\0' && name[0] != '\0')
@@ -548,7 +552,7 @@ public Native_AddUpgrade(Handle:plugin,numParams)
 
         return AddUpgrade(race, raceHandle, short, upgrade_category, required_level, max_level,
                           energy, recurring_energy, accumulated, crystals, vespene, cost_crystals,
-                          cost_vespene, cooldown, cooldown_type, disabled, name, desc, image,
+                          cost_vespene, cooldown, cooldown_type, disabled, name, desc, bind, image,
                           p1, p2, p3, p4, p5, p6, p7, p8);
     }
     else

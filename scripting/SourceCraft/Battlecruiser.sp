@@ -14,13 +14,13 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_objects>
-#include <tf2_player>
+#include "tf2_objects"
+#include "tf2_player"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/jetpack>
-#include <lib/ztf2grab>
+#include "lib/jetpack"
+#include "lib/ztf2grab"
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

@@ -909,12 +909,13 @@ UpdateRace(race_ident, const String:shortName[], const String:raceName[], requir
 }
 
 bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
-                   const String:name[], const String:desc[], const String:image[],
-                   cost_crystals, cost_vespene, required_level, max_level, Float:energy,
-                   bool:accumulated, Float:recurring_energy, crystals, vespene, Float:cooldown)
+                   const String:name[], const String:desc[], const String:bind[],
+                   const String:image[], cost_crystals, cost_vespene, required_level,
+                   max_level, Float:energy, bool:accumulated, Float:recurring_energy,
+				   crystals, vespene, Float:cooldown)
 {
-    TraceInto("DB", "InsertUpgrade", "race_ident=%d, upgrade=%d, category=%d, short=%s, name=%s, image=%s", \
-              race_ident, upgrade, upgrade_category, short, name, image);
+    TraceInto("DB", "InsertUpgrade", "race_ident=%d, upgrade=%d, category=%d, short=%s, name=%s, bind=%s, image=%s", \
+              race_ident, upgrade, upgrade_category, short, name, bind, image);
 
     TraceDebug("desc=(length=%d,string=%s)", strlen(desc), desc);
 
@@ -2949,9 +2950,10 @@ public Action:Retry_SavePlayerUpgradeData(Handle:timer,Handle:data)
 
         decl String:name[NAME_STRING_LENGTH];
         decl String:desc[LONG_STRING_LENGTH];
-        GetUpgradeNameAndDesc(raceHandle,upgrade,name,sizeof(name),desc,sizeof(desc));
+        decl String:bind[LONG_STRING_LENGTH];
+        GetUpgradeNameAndDesc(raceHandle,upgrade,name,sizeof(name),desc,sizeof(desc),bind,sizeof(bind));
 
-        InsertUpgrade(race_ident, upgrade, GetUpgradeCategory(raceHandle,upgrade), short, name, desc, image,
+        InsertUpgrade(race_ident, upgrade, GetUpgradeCategory(raceHandle,upgrade), short, name, desc, bind, image,
                       GetUpgradeCostCrystals(raceHandle,upgrade), GetUpgradeCostVespene(raceHandle,upgrade),
                       GetUpgradeRequiredLevel(raceHandle,upgrade), GetUpgradeMaxLevel(raceHandle,upgrade),
                       GetUpgradeEnergy(raceHandle,upgrade), GetUpgradeCanUseAccumulated(raceHandle,upgrade),

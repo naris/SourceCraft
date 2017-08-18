@@ -14,17 +14,17 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
-#include <tf2_objects>
+#include "tf2_player"
+#include "tf2_objects"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/jetpack>
-#include <lib/ztf2grab>
-#include <libtf2/remote>
-#include <libtf2/amp_node>
-#include <libtf2/tf2teleporter>
-#include <libtf2/AdvancedInfiniteAmmo>
+#include "lib/jetpack"
+#include "lib/ztf2grab"
+#include "libtf2/remote"
+#include "libtf2/amp_node"
+#include "libtf2/tf2teleporter"
+#include "libtf2/AdvancedInfiniteAmmo"
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

@@ -445,16 +445,17 @@ stock AddUpgradeInfo(Handle:menu, String:item[], client, category, MenuMode:isUp
 
 UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
 {
+    TraceInto("Info", "UpgradesInfo_Upgrade", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
+              client, client, raceHandle, upgrade, mode);
+
     new MenuMode:isUpgradeMode = (mode & UpgradeMode);
     new String:info[DESCRIPTION_LENGTH] = "";
     
     decl String:name[NAME_STRING_LENGTH];
-    decl String:desc[DESCRIPTION_LENGTH];
     decl String:item[LONG_STRING_LENGTH];
-    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), client);
-
-    TraceInto("Info", "UpgradesInfo_Upgrade", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
-              client, client, raceHandle, upgrade, mode);
+    decl String:desc[DESCRIPTION_LENGTH];
+    decl String:bind[DESCRIPTION_LENGTH];
+    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), bind, sizeof(bind), client);
 
     new Handle:menu = CreateMenu(UpgradesInfo_Back);
     SetMenuExitButton(menu,true);
@@ -488,7 +489,7 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
         
         if (!StrContains(desc, "console"))
         {
-            new String:bindKey[][] = { "", "f", "x", "y", "z", "p" };
+            new String:bindKey[][] = { "", "f", "b", "n", "p", "x" };
             Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
                     (category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
 

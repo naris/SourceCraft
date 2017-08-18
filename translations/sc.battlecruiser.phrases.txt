@@ -74,7 +74,7 @@
 	}
 	"battlecruiser_jetpack_desc"
 	{
-		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling.\nBind a key to +jetpack or +ultimate2 to use the jetpack.\nTo bind to [, type bind [ +jetpack in console."
 	}
 	"battlecruiser_jetpack_image"
 	{
@@ -91,31 +91,31 @@
 	}
 	"battlecruiser_gravgun_desc"
 	{
-		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be repaired at level 1 (while being held) and thrown at Level 2.\nAt Level 3 the objects remain enabled when held and at Level 4 they remain enabled when thrown.\nAverages 1 energy per second while in use."
+		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be repaired at level 1 (while being held) and thrown at Level 2.\nAt Level 3 the objects remain enabled when held and at Level 4 they remain enabled when thrown.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"battlecruiser_gravgun_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be repaired at Level 1 (while being held) and thrown at Level 2.\nAt Level 3 the objects are not disabled when held and at Level 4 they aren't disabled when thrown.\nAverages 1 energy per second while in use."
+		"en"		"Allows Engineers to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be repaired at Level 1 (while being held) and thrown at Level 2.\nAt Level 3 the objects are not disabled when held and at Level 4 they aren't disabled when thrown.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"battlecruiser_gravgun_norepair_desc"
 	{
-		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. At Level 3 the objects remain enabled when held and at Level 4 they remain enabled when thrown.\nAverages 1 energy per second while in use."
+		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. At Level 3 the objects remain enabled when held and at Level 4 they remain enabled when thrown.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"battlecruiser_gravgun_norepair_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. At Level 3 the objects are not disabled when held and at Level 4 they aren't disabled when thrown.\nAverages 1 energy per second while in use."
+		"en"		"Allows Engineers to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. At Level 3 the objects are not disabled when held and at Level 4 they aren't disabled when thrown.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"battlecruiser_gravgun_noenable_desc"
 	{
-		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. Averages 1 energy per second while in use."
+		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. Averages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"battlecruiser_gravgun_noenable_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. Averages 1 energy per second while in use."
+		"en"		"Allows Engineers to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nThey can be thrown at Level 2. Averages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"battlecruiser_gravgun_notf2_desc"
 	{
-		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nAverages 1 energy per second while in use."
+		"en"		"Allows you to pick up objects, move them around and use them for flying platforms (by jumping while holding them from above).\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 
 	"battlecruiser_yamato"

@@ -420,7 +420,8 @@ native GetUpgradeCount(race);
  * @param cooldown_type:    What type of cooldown to use, if any (default is Cooldown_None)
  * @param disabled:         Set to true to disable the upgrade (deafults to false)
  * @param name:             The name of the upgrade. (max 64, defaults to translation)
- * @param desc:             The description of the upgrade. (max 256, defaults to translation)
+ * @param desc:             The description of the upgrade. (max 2048, defaults to translation)
+ * @param bind:             Instructions on keys to bind to use the upgrade (if any). (max 2048, defaults to translation)
  * @param image:            The image for the upgrade. (max 256, defaults to translation)
  *                          If the description starts with a %, the portion after the % will be used as a translation phrase.
  * @param p1-p8:            Optional parameters to use when translating the description, string parameters {1:s} must be defined
@@ -431,9 +432,9 @@ native GetUpgradeCount(race);
 native AddUpgrade(race, const String:short[], upgrade_category=0, required_level=-1, max_level=4, Float:energy=0.0,
                   Float:recurring_energy=0.0, bool:accumulated=false, crystals=0, vespene=0, cost_crystals=-1,
                   cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None, bool:disabled=false,
-                  const String:name[]="", const String:desc[]="", const String:image[]="", const String:p1[]="",
-                  const String:p2[]="", const String:p3[]="", const String:p4[]="", const String:p5[]="",
-                  const String:p6[]="", const String:p7[]="", const String:p8[]="");
+                  const String:name[]="", const String:desc[]="", const String:bind[]="", const String:image[]="",
+                  const String:p1[]="", const String:p2[]="", const String:p3[]="", const String:p4[]="",
+                  const String:p5[]="", const String:p6[]="", const String:p7[]="", const String:p8[]="");
 
 #define AddUltimate AddUpgrade
 #define AddAbility  AddUpgrade

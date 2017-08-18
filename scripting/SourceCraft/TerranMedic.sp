@@ -13,17 +13,17 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
+#include "tf2_player"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/jetpack>
-#include <lib/Hallucinate>
-#include <libtf2/medipacks>
-#include <libtf2/ubercharger>
-#include <libtf2/MedicInfect>
-#include <libdod/sm_dod_medic_class>
-#include <libdod/dod_drophealthkit_source>
+#include "lib/jetpack"
+#include "lib/Hallucinate"
+#include "libtf2/medipacks"
+#include "libtf2/ubercharger"
+#include "libtf2/MedicInfect"
+#include "libdod/sm_dod_medic_class"
+#include "libdod/dod_drophealthkit_source"
 
 #include "sc/PlagueInfect"
 #define REQUIRE_PLUGIN

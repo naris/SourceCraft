@@ -9,17 +9,17 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <raytrace>
-#include <range>
+#include "raytrace"
+#include "range"
 
 #undef REQUIRE_EXTENSIONS
-#include <tf2_meter>
-#include <tf2_player>
+#include "tf2_meter"
+#include "tf2_player"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/jetpack>
-#include <libtf2/sidewinder>
+#include "lib/jetpack"
+#include "libtf2/sidewinder"
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

@@ -12,13 +12,13 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
-#include <tf2_flag>
+#include "tf2_player"
+#include "tf2_flag"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/jetpack>
-#include <libtf2/remote>
+#include "lib/jetpack"
+#include "libtf2/remote"
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"

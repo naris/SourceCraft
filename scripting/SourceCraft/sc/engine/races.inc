@@ -71,6 +71,7 @@ enum UpgradeStrings
     UpgradeString_Name,
     UpgradeString_ShortName,
     UpgradeString_Desc,
+    UpgradeString_Bind,
     UpgradeString_Parm
 };
 
@@ -241,6 +242,9 @@ enum ConfigLoadedStatus
 #define GetUpgradeDescriptionString(%1,%2,%3,%4) GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Desc,%3,%4)
 #define SetUpgradeDescription(%1,%2,%3)          SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Desc,%3)
 
+#define GetUpgradeBindString(%1,%2,%3,%4)       GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Bind,%3,%4)
+#define SetUpgradeBind(%1,%2,%3)                SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Bind,%3)
+
 #define GetUpgradeParameter(%1,%2,%3,%4,%5)      GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Parm+%3,%4,%5)
 #define SetUpgradeParameter(%1,%2,%3,%4)         SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Parm+%3,%4)
 
@@ -367,7 +371,7 @@ CreateRace(const String:short[], required_level=0, tech_level=0, max_level=16,
     new Handle:raceHandle;
     new ConfigLoadedStatus:raceLoaded;
 
-    TraceInto("Race", "CreateRace", "short=%s, required_level=%d, tech_level=%d, max_level=%d, initial_energy=%f, energy_limit=%f, energy_rate=%f, faction=%d, type=%d, parent=%s, translation=%d, file=%s, name=%s, switch_message=%s, pending_message=%s, image=%s, desc=%s", short, required_level, tech_level, max_level, initial_energy, energy_limit, energy_rate, faction, type, parent, translation, translation_file, name, switch_message, pending_message, image, desc);
+    TraceInto("Race", "CreateRace", "short=%s, required_level=%d, tech_level=%d, max_level=%d, initial_energy=%f, energy_limit=%f, energy_rate=%f, faction=%d, type=%d, parent=%s, translation=%d, file=%s, name=%s, switch_message=%s, pending_message=%s, desc=%s, image=%s", short, required_level, tech_level, max_level, initial_energy, energy_limit, energy_rate, faction, type, parent, translation, translation_file, name, switch_message, pending_message, desc, image);
 
     // Load translation_file, if any
     decl String:translation_path[PLATFORM_MAX_PATH];
@@ -758,6 +762,9 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
 
                         decl String:upgradeDesc[DESCRIPTION_LENGTH];
                         GetUpgradeDescription(raceHandle, upgrade, upgradeDesc, sizeof(upgradeDesc));
+                        
+                        decl String:upgradeBind[NAME_STRING_LENGTH];
+                        GetUpgradeBind(raceHandle, upgrade, upgradeBind, sizeof(upgradeBind), image);
 
                         decl String:upgradeImage[NAME_STRING_LENGTH];
                         GetUpgradeImage(raceHandle, upgrade, upgradeImage, sizeof(upgradeImage), image);
@@ -776,11 +783,10 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
 
                         // Update database
                         if (InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
-                                          upgradeShortName, upgradeName, upgradeDesc, upgradeImage,
-                                          cost_crystals, cost_vespene, req_level,
-                                          max_level, energy, accumulated,
-                                          recurring_energy, crystals,
-                                          vespene, cooldown))
+                                          upgradeShortName, upgradeName, upgradeDesc, upgradeBind,
+                                          upgradeImage, cost_crystals, cost_vespene, req_level,
+                                          max_level, energy, accumulated, recurring_energy,
+                                          crystals, vespene, cooldown))
                         {
                             SetArrayCell(upgradeHandle, _:UpgradeData_Completed, true);
                         }
@@ -794,12 +800,13 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
 AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, required_level=-1, max_level=4,
            Float:energy=0.0, Float:recurring_energy=0.0, bool:accumulated=false, crystals=0, vespene=0,
            cost_crystals=-1, cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None,
-           bool:disabled=false, const String:name[]="", const String:desc[]="", const String:image[]="",
-           const String:p1[]="", const String:p2[]="", const String:p3[]="", const String:p4[]="",
-           const String:p5[]="", const String:p6[]="", const String:p7[]="", const String:p8[]="")
+           bool:disabled=false, const String:name[]="", const String:desc[]="", const String:bind[]="",
+           const String:image[]="", const String:p1[]="", const String:p2[]="", const String:p3[]="",
+           const String:p4[]="", const String:p5[]="", const String:p6[]="", const String:p7[]="",
+		   const String:p8[]="")
 {
     #if defined _TRACE
-        TraceInto("Race", "AddUpgrade", "race=%d, raceHandle=0x%08x, short=%s, upgrade_category=%d, required_level=%d, max_level=%d, energy=%f, recurring_energy=%f, accumulated=%d, crystals=%d, vespene=%d, cost_crystals=%d, cost_vespene=%d, cooldown=%f, cooldown_type=%d, disabled=%d, name=%s, desc=%s, image=%s, p1=%s, p2=%s, p3=%s, p4=%s, p5=%s, p6=%s, p7=%s, p8=%s", race, raceHandle, short, upgrade_category, required_level, max_level, energy, recurring_energy, accumulated, crystals, vespene, cost_crystals, cost_vespene, cooldown, cooldown_type, disabled, name, desc, image, p1, p2, p3, p4, p5, p6, p7, p8);
+        TraceInto("Race", "AddUpgrade", "race=%d, raceHandle=0x%08x, short=%s, upgrade_category=%d, required_level=%d, max_level=%d, energy=%f, recurring_energy=%f, accumulated=%d, crystals=%d, vespene=%d, cost_crystals=%d, cost_vespene=%d, cooldown=%f, cooldown_type=%d, disabled=%d, name=%s, desc=%s, bind=%s, image=%s, p1=%s, p2=%s, p3=%s, p4=%s, p5=%s, p6=%s, p7=%s, p8=%s", race, raceHandle, short, upgrade_category, required_level, max_level, energy, recurring_energy, accumulated, crystals, vespene, cost_crystals, cost_vespene, cooldown, cooldown_type, disabled, name, desc, bind, image, p1, p2, p3, p4, p5, p6, p7, p8);
     #else
         #pragma unused race
     #endif
@@ -906,6 +913,7 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         SetArrayString(upgradeStringHandle,_:UpgradeString_Name,      name);
         SetArrayString(upgradeStringHandle,_:UpgradeString_ShortName, short);
         SetArrayString(upgradeStringHandle,_:UpgradeString_Desc,      desc);
+        SetArrayString(upgradeStringHandle,_:UpgradeString_Bind,      bind);
 
         // Remove any leftover parameter strings.
         ResizeArray(upgradeStringHandle, _:UpgradeString_Parm);
@@ -916,6 +924,7 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         PushArrayString(upgradeStringHandle,name);
         PushArrayString(upgradeStringHandle,short);
         PushArrayString(upgradeStringHandle,desc);
+        PushArrayString(upgradeStringHandle,bind);
 
         upgradeHandle=CreateArray();
         PushArrayCell(upgradeHandle,upgradeStringHandle);
@@ -1013,15 +1022,17 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         decl String:upgradeDesc[DESCRIPTION_LENGTH];
         GetUpgradeDescription(raceHandle, upgrade, upgradeDesc, sizeof(upgradeDesc));
 
+        decl String:upgradeBind[NAME_STRING_LENGTH];
+        GetUpgradeBind(raceHandle, upgrade, upgradeBind, sizeof(upgradeBind), bind);
+
         decl String:upgradeImage[NAME_STRING_LENGTH];
         GetUpgradeImage(raceHandle, upgrade, upgradeImage, sizeof(upgradeImage), image);
 
         // Update database with upgrade description
         if (InsertUpgrade(GetRaceIdent(raceHandle), upgrade, upgrade_category,
-                          upgradeShortName, upgradeName, upgradeDesc, upgradeImage,
-                          cost_crystals, cost_vespene, required_level,
-                          max_level, energy, accumulated,
-                          recurring_energy, crystals,
+                          upgradeShortName, upgradeName, upgradeDesc, upgradeBind,
+                          upgradeImage, cost_crystals, cost_vespene, required_level,
+                          max_level, energy, accumulated, recurring_energy, crystals,
                           vespene, cooldown))
         {
             SetArrayCell(upgradeHandle, _:UpgradeData_Completed, true);
@@ -1369,6 +1380,60 @@ GetUpgradeImage(Handle:raceHandle, upgrade, String:image[], maxlength,
     TraceReturn("image=%s", image);
 }
 
+GetUpgradeBind(Handle:raceHandle, upgrade, String:bind[], maxlength,
+                const String:bindString[]="", lang=LANG_SERVER,
+                bool:query=false)
+{
+    TraceInto("Race", "GetUpgradeBind", "raceHandle=0x%08x", raceHandle);
+
+    if (bindString[0] == '%')
+        Format(image,maxlength,"%T",bindString[1],lang);
+    else
+    {
+        new Translation:translation = GetRaceTranslation(raceHandle);
+        if (translation > Translation_Auto)
+        {
+            decl String:file[LONG_STRING_LENGTH];
+            GetRaceTranslationFile(raceHandle, file, sizeof(file));
+            if (file[0])
+            {
+                decl String:race[NAME_STRING_LENGTH];
+                GetRaceShortName(raceHandle, race,sizeof(race));
+
+                decl String:short[NAME_STRING_LENGTH];
+                GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+
+                decl String:key[ITEM_STRING_LENGTH];
+                if (translation != Translation_W3S)
+                {
+                    // Use the War3Source key
+                    Format(key,sizeof(key),"%s_skill_%s_bind",race,short);
+                }
+                else
+                {
+                    // Translate the race_name + short name + _bind to get the bind instructions
+                    Format(key,sizeof(key),"%s_%s_bind",race,short);
+                }
+
+                if (FileContains(file, key))
+                    Format(bind,maxlength,"%T",key,lang);
+
+            }
+            else if (!bind[0])
+            {
+                if (bindString[0])
+                    strcopy(image,maxlength,bindString);
+                else if (query)
+                    QueryUpgradeImage(GetRaceIdent(raceHandle), upgrade, bind, maxlength);
+            }
+        }
+        else
+            strcopy(bind,maxlength,bindString);
+    }
+
+    TraceReturn("bind=%s", bind);
+}
+
 GetUpgradeDescription(Handle:raceHandle, upgrade, String:desc[], maxlength, lang=LANG_SERVER)
 {
     new category = 0;
@@ -1414,16 +1479,17 @@ GetUpgradeDescription(Handle:raceHandle, upgrade, String:desc[], maxlength, lang
 }
 
 GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
-                      String:desc[], maxDesc, lang=LANG_SERVER)
+                      String:desc[], maxDesc, String:bind[], maxBind,
+                      lang=LANG_SERVER)
 {
-    new category = 0;
-
     TraceInto("Race", "GetUpgradeNameAndDesc", "raceHandle=0x%08x, upgrade=%d", raceHandle, upgrade);
 
     new Handle:upgradeStringHandle=GetUpgradeStringHandle(raceHandle,upgrade);
     GetArrayString(upgradeStringHandle, _:UpgradeString_Name, name, maxName);
     GetArrayString(upgradeStringHandle, _:UpgradeString_Desc, desc, maxDesc);
+    GetArrayString(upgradeStringHandle, _:UpgradeString_Bind, bind, maxBind);
 
+    new category = 0;
     new Translation:translation = GetRaceTranslation(raceHandle);
     if (translation > Translation_Auto)
     {
@@ -1454,6 +1520,13 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
             category = FormatUpgradeDescription(raceHandle, upgrade, translation,
                                                 key, desc, maxDesc, lang);
         }
+
+        if (bind[0] != '%')
+        {
+            StrCat(key,sizeof(key),"_bind");
+            category = FormatUpgradeDescription(raceHandle, upgrade, translation,
+                                                key, bind, maxBind, lang);
+        }
     }
 
     if (name[0] == '%')
@@ -1462,7 +1535,10 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
     if (desc[0] == '%')
         Format(desc,maxDesc,"%T",desc[1],lang);
 
-    TraceReturn("name=%s, desc=%s, category=%d", name, desc, category);
+    if (bind[0] == '%')
+        Format(bind,maxDesc,"%T",bind[1],lang);
+
+    TraceReturn("name=%s, desc=%s, bind=%s, category=%d", name, desc, bind, category);
     return category;
 }
 

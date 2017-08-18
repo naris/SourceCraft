@@ -164,7 +164,7 @@ public OnSourceCraftReady()
     }
     else
     {
-        ammopackID  = AddUpgrade(raceID, "ammopack", 5, 0, .energy=30.0,
+        ammopackID  = AddUpgrade(raceID, "ammopack", 0, 0, .energy=30.0,
                                  .cooldown=10.0, .cost_crystals=0);
 
         if (GetGameType() != tf2 || !IsAmmopacksAvailable())

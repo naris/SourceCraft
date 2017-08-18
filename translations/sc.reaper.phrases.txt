@@ -83,7 +83,7 @@
 	}
 	"reaper_jetpack_desc"
 	{
-		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling.\nBind a key to +jetpack or +ultimate to use the jetpack.\nTo bind to [, type bind [ +jetpack in console."
 	}
 	"reaper_jetpack_image"
 	{

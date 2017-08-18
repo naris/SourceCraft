@@ -12,18 +12,18 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <tf2_player>
-#include <tf2_flag>
+#include "tf2_player"
+#include "tf2_flag"
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
-#include <lib/jetpack>
-#include <lib/hgrsource>
+#include "lib/jetpack"
+#include "lib/hgrsource"
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
 //#define _TRACE
-#include <lib/trace>
+#include "lib/trace"
 
 #include "sc/SourceCraft"
 #include "sc/SpeedBoost"
