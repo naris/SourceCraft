@@ -72,7 +72,6 @@ public OnPluginStart()
     LoadTranslations("sc.grenade.phrases.txt");
     LoadTranslations("sc.vulture.phrases.txt");
     LoadTranslations("sc.common.phrases.txt");
-    LoadTranslations("sc.bunker.phrases.txt");
     LoadTranslations("sc.supply.phrases.txt");
     LoadTranslations("sc.mine.phrases.txt");
 
@@ -340,7 +339,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                                            "PreventedFromThrowingGrenade");
                         }
                         else
-                            ThrowFragNade(client, pressed);
+                            ThrowSpecialNade(client, pressed);
                     }
                     else if (pressed)
                     {
@@ -365,7 +364,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                                            "PreventedFromThrowingGrenade");
                         }
                         else
-                            ThrowSpecialNade(client, pressed);
+                            ThrowFragNade(client, pressed);
                     }
                     else if (pressed)
                     {
@@ -424,7 +423,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                                                "PreventedFromThrowingGrenade");
                             }
                             else
-                                ThrowFragNade(client, pressed);
+								ThrowSpecialNade(client, pressed);
                         }
                         else if (pressed)
                         {

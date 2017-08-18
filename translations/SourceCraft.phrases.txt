@@ -43,7 +43,7 @@
 	}
 	"HelpBind"
 	{
-		"en"		"You should bind at least the following commands:\n\"+ultimate 1\", \"+ultimate 2\", \"+ultimate 3\", \"+ultimate 4\", \"+item 1\", \"+item 2\", \"+item 3\", \"+item 4\"\nTo bind \"+ultimate 1\" to x, type bind x \"+ultimate 1\" in console\nTo bind \"+item 2\" to z, type bind z \"+item 2\" in console"
+		"en"		"You should bind at least the following commands:\n+ultimate1, +ultimate2, +ultimate3, +ultimate4, +item1, +item2, +item3, +item4\nTo bind \"+ultimate1\" to x, type bind x +ultimate1 in console\nTo bind +item2 to z, type bind z +item2 in console"
 	}
 	"HelpInv"
 	{
@@ -107,19 +107,19 @@
 	}
 	"HelpUltimate1"
 	{
-		"en"		"Use the ultimate 1, that requires a bind.\nTo bind to x, type bind x \"+ultimate 1\" in console"
+		"en"		"Use ultimate 1, that requires a bind.\nTo bind to x, type bind x +ultimate in console"
 	}
 	"HelpUltimate2"
 	{
-		"en"		"Use the ultimate 2, that requires a bind.\nTo bind to x, type bind x \"+ultimate 2\" in console"
+		"en"		"Use ultimate 2, that requires a bind.\nTo bind to x, type bind x +ultimate2 in console"
 	}
 	"HelpUltimate3"
 	{
-		"en"		"Use the ultimate 3, that requires a bind.\nTo bind to x, type bind x \"+ultimate 3\" in console"
+		"en"		"Use ultimate 3, that requires a bind.\nTo bind to x, type bind x +ultimate3 in console"
 	}
 	"HelpUltimate4"
 	{
-		"en"		"Use the ultimate 4, that requires a bind.\nTo bind to x, type bind x \"+ultimate 4\" in console"
+		"en"		"Use ultimate 4, that requires a bind.\nTo bind to x, type bind x +ultimate4 in console"
 	}
 	"HelpItem0"
 	{
@@ -127,19 +127,19 @@
 	}
 	"HelpItem1"
 	{
-		"en"		"Use the item 1, that requires a bind.\nTo bind to c, type bind c \"+item 1\" in console"
+		"en"		"Use item 1, that requires a bind.\nTo bind to c, type bind c +item1 in console"
 	}
 	"HelpItem2"
 	{
-		"en"		"Use the item 2, that requires a bind.\nTo bind to c, type bind c \"+item 2\" in console"
+		"en"		"Use item 2, that requires a bind.\nTo bind to c, type bind c +item2 in console"
 	}
 	"HelpItem3"
 	{
-		"en"		"Use the item 3, that requires a bind.\nTo bind to c, type bind c \"+item 3\" in console"
+		"en"		"Use item 3, that requires a bind.\nTo bind to c, type bind c +item3 in console"
 	}
 	"HelpItem4"
 	{
-		"en"		"Use the item 4, that requires a bind.\nTo bind to c, type bind c \"+item 4\" in console"
+		"en"		"Use item 4, that requires a bind.\nTo bind to c, type bind c +item4 in console"
 	}
 	"HelpAdmin"
 	{
@@ -593,6 +593,16 @@
 	{
 		"#format"	"{1:d}"
 		"en"		"Invoked with +Ultimate{1}"
+	}
+	"BindUltimate"
+	{
+		"#format"	"{1:s}"
+		"en"		"To bind to {1}, type bind {1} +ultimate in console"
+	}
+	"BindUltimateN"
+	{
+		"#format"	"{1:d},{2:s}"
+		"en"		"To bind to {2}, type bind {2} +ultimate{1} in console"
 	}
 	"HasLevels"
 	{

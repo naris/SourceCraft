@@ -152,7 +152,7 @@ public OnPluginStart()
     g_Cvar_MedicMessages   = CreateConVar("sm_dod_medic_messages", "1", "Message the Medic/Patient on events", FCVAR_NONE);
     g_Cvar_MedicRestrict   = CreateConVar("sm_dod_medic_restrict", "0", "Class to restrict Medic to (see forum thread)", FCVAR_NONE);
     g_Cvar_MedicPickup     = CreateConVar("sm_dod_medic_useweapons", "0", "Allow Medics to pickup and use dropped weapons", FCVAR_NONE);
-    g_Cvar_MedicKeepWeapon = CreateConVar("sm_dod_medic_keepweapons", "0", "Allow Medics to keep thier original classes' weapons", FCVAR_NONE);
+    g_Cvar_MedicKeepWeapon = CreateConVar("sm_dod_medic_keepweapons", "0", "Allow Medics to keep their original classes' weapons", FCVAR_NONE);
     g_Cvar_MedicMinPlayers = CreateConVar("sm_dod_medic_minplayers", "0", "Minimum number of players before Medic class available", FCVAR_NONE);
     g_Cvar_MedicSelf       = CreateConVar("sm_dod_medic_minhealth", "20", "Minimum hp before a player can self heal", FCVAR_NONE);
     g_Cvar_MedicEnable     = CreateConVar("sm_dod_medic_enable", "1", "Enables/Disables Medic Class", FCVAR_NONE);

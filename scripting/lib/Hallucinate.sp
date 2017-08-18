@@ -30,7 +30,7 @@
 * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 * or <http://www.sourcemod.net/license.php>.
 *
-* Version: $Id: drug.sp 1833 2007-12-28 16:46:42Z ferret $
+* Version: $Id: Hallucinate.sp 1833 2007-12-28 16:46:42Z ferret $
 */
 
 #pragma semicolon 1

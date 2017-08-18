@@ -96,7 +96,7 @@
 	}
 	"raven_matrix_desc"
 	{
-		"en"		"The Defensive Matrix absorbs some damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds."
+		"en"		"The Defensive Matrix absorbs some damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using their Medigun's Reload or Alternate Attack for up to 10 seconds."
 	}
 	"raven_matrix_image"
 	{

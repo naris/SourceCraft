@@ -96,7 +96,7 @@
 	}
 	"vessel_matrix_desc"
 	{
-		"en"		"The Defensive Matrix absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using thier Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Defensive Matrix is invoked at your location, at level 2 it can be placed at teammates locations and at level 4 the Defensive Matrix become mobile and travels with it's target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
+		"en"		"The Defensive Matrix absorbs damage. The shield is not perfect; some damage will 'leak' and reduce the unit's HP. The effect wears away after 3 seconds/level, it will also consume all ubercharge.\nMedics can also deploy using their Medigun's Reload or Alternate Attack for up to 10 seconds\nAt level 1, the Defensive Matrix is invoked at your location, at level 2 it can be placed at teammates locations and at level 4 the Defensive Matrix become mobile and travels with it's target.\nAt level 3, an impenetrable shield can be placed at any location using the medigun's reload key."
 	}
 	"vessel_matrix_image"
 	{

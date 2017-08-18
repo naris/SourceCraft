@@ -31,23 +31,35 @@ InitHooks()
     RegConsoleCmd("sc_bug",BugCommand,"Report Bugs");
     RegConsoleCmd("sm_bug",BugCommand,"Report Bugs");
 
-    RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate",UltimateCommand,"use SourceCraft ultimate (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate",UltimateCommand,"use SourceCraft ultimate (keyup)",FCVAR_GAMEDLL);
 
-    RegConsoleCmd("+ultimate1",UltimateCommand,"use SourceCraft ultimate 1 ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate1",UltimateCommand,"use SourceCraft ultimate 1 ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate1",UltimateCommand,"use SourceCraft ultimate/ability 1 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate1",UltimateCommand,"use SourceCraft ultimate/ability 1 (keyup)",FCVAR_GAMEDLL);
 
-    RegConsoleCmd("+ultimate2",UltimateCommand,"use SourceCraft ultimate 2 ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate2",UltimateCommand,"use SourceCraft ultimate 2 ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate2",UltimateCommand,"use SourceCraft ultimate/ability 2 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate2",UltimateCommand,"use SourceCraft ultimate/ability 2 (keyup)",FCVAR_GAMEDLL);
 
-    RegConsoleCmd("+ultimate3",UltimateCommand,"use SourceCraft ultimate 3 ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate3",UltimateCommand,"use SourceCraft ultimate 3 ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate3",UltimateCommand,"use SourceCraft ultimate/ability 3 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate3",UltimateCommand,"use SourceCraft ultimate/ability 3 (keyup)",FCVAR_GAMEDLL);
 
-    RegConsoleCmd("+ultimate4",UltimateCommand,"use SourceCraft ultimate 4 ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate4",UltimateCommand,"use SourceCraft ultimate 4 ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate4",UltimateCommand,"use SourceCraft ultimate/ability 4 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate4",UltimateCommand,"use SourceCraft ultimate/ability 4 (keyup)",FCVAR_GAMEDLL);
 
-    RegConsoleCmd("+ultimate5",UltimateCommand,"use SourceCraft ultimate 5 ability (keydown)",FCVAR_GAMEDLL);
-    RegConsoleCmd("-ultimate5",UltimateCommand,"use SourceCraft ultimate 5 ability (keyup)",FCVAR_GAMEDLL);
+    RegConsoleCmd("+ultimate5",UltimateCommand,"use SourceCraft ultimate/ability 5 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate5",UltimateCommand,"use SourceCraft ultimate/ability 5 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+ultimate6",UltimateCommand,"use SourceCraft ultimate/ability 6 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate6",UltimateCommand,"use SourceCraft ultimate/ability 6 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+ultimate7",UltimateCommand,"use SourceCraft ultimate/ability 7 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate7",UltimateCommand,"use SourceCraft ultimate/ability 7 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+ultimate8",UltimateCommand,"use SourceCraft ultimate/ability 8 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate8",UltimateCommand,"use SourceCraft ultimate/ability 8 (keyup)",FCVAR_GAMEDLL);
+
+    RegConsoleCmd("+ultimate9",UltimateCommand,"use SourceCraft ultimate/ability 9 (keydown)",FCVAR_GAMEDLL);
+    RegConsoleCmd("-ultimate9",UltimateCommand,"use SourceCraft ultimate/ability 9 (keyup)",FCVAR_GAMEDLL);
 }
 
 public Action:SayCommand(client, const String:command[], argc)

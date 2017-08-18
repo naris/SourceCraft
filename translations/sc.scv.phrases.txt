@@ -57,7 +57,7 @@
 	}
 	"scv_ammopack_desc"
 	{
-		"en"		"Drop Ammopacks on death. At level 2 and above, Ammopacks can be dropped with alt fire of the wrench (or +ultimate 4, if battlecruiser has not been researched).\nEngineers use metal instead of energy to drop Ammopacks."
+		"en"		"Drop Ammopacks on death. At level 2 and above, Ammopacks can be dropped with alt fire of the wrench or +ultimate5.\nEngineers use metal instead of energy to drop Ammopacks."
 	}
 	"scv_ammopack_dod_desc"
 	{
@@ -117,7 +117,7 @@
 	}
 	"scv_gravgun_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up and move thier objects around..\nLevel 2 allows Engineers to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4.\nAverages 1 energy per second while in use."
+		"en"		"Allows Engineers to pick up and move their objects around..\nLevel 2 allows Engineers to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4.\nAverages 1 energy per second while in use."
 	}
 	"scv_gravgun_norepair_desc"
 	{
@@ -125,7 +125,7 @@
 	}
 	"scv_gravgun_norepair_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up and move thier objects around..\nLevel 2 allows Engineers to pickup other players objects, which can be thrown at Level 4.\nAverages 1 energy per second while in use."
+		"en"		"Allows Engineers to pick up and move their objects around..\nLevel 2 allows Engineers to pickup other players objects, which can be thrown at Level 4.\nAverages 1 energy per second while in use."
 	}
 	"scv_gravgun_notf2_desc"
 	{
@@ -142,7 +142,7 @@
 	}
 	"scv_bunker_desc"
 	{
-		"en"		"Enter the Bunker, which provides additional armor (20-160%) that takes 100%% damage at the cost of becoming immoble while in the bunker."
+		"en"		"Enter the Bunker, which provides additional armor (20-160%) that takes 100%% damage at the cost of becoming immobile while in the bunker."
 	}
 	"scv_bunker_image"
 	{
@@ -155,7 +155,7 @@
 	}
 	"scv_tripmine_desc"
 	{
-		"en"		"You will be given a tripmine to plant for every level."
+		"en"		"You will be given a tripmine to plant for every level.\nBind a key to sm_tripmine or +ultimate2 to plant the tripmine.\nTo bind to t, type bind t sm_tripmine in console."
 	}
 	"scv_tripmine_image"
 	{
@@ -168,7 +168,7 @@
 	}
 	"scv_nade_desc"
 	{
-		"en"		"You will be given a frag grenade and a special grenade to use for every level.\nThrow a frag nade with +ultimate 2 and a special nade with +ultimate 3\nType !nade for more information."
+		"en"		"You will be given a frag grenade and a special grenade to use for every level.\nThrow a frag nade with +nade1 or +ultimate5 and a special nade with +nade2 or +ultimate3\nTo bind to g & h, type bind g +nade1 then bind h +nade2 in console.\nType !nade for more information."
 	}
 	"scv_nade_image"
 	{

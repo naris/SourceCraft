@@ -586,7 +586,7 @@
 	}
 	"gloves_desc"
 	{
-		"en"		"You will be given a grenade every 20 seconds.\nBind a key to \"+item 1\" or \"+nade1\" (to throw a frag grenade\nBind another key to \"+item 2\" or \"+nade2\" to throw a special grenade\nType !nade for more information."
+		"en"		"You will be given a grenade every 20 seconds.\nBind a key to +nade1 or +item1 (to throw a frag grenade)\nBind another key to +nade2 or +item2 to throw a special grenade)\nTo bind to g & h, type bind g +nade1 then bind h +nade2 in console.\nType !nade for more information."
 	}
 	"gloves_category"
 	{
@@ -602,7 +602,7 @@
 	}
 	"tripmine_desc"
 	{
-		"en"		"You will be given 1 tripmine to plant.\nBind a key to \"+item 4\" or \"sm_tripmine\" to plant the tripmine."
+		"en"		"You will be given 1 tripmine to plant.\nBind a key to sm_tripmine or +item4 to plant the tripmine.\nTo bind to t, type bind t sm_tripmine in console."
 	}
 	"tripmine_category"
 	{
@@ -618,7 +618,7 @@
 	}
 	"mine_desc"
 	{
-		"en"		"You will be given 1 mine to plant.\nBind a key to \"+item 3\" or \"sm_mine\" to plant the mine."
+		"en"		"You will be given 1 mine to plant.\nBind a key to sm_mine or +item3 to plant the mine.\nTo bind to m, type bind m sm_mine in console."
 	}
 	"mine_category"
 	{
