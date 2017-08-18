@@ -427,20 +427,20 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-stock AddUpgradeInfo(String:item[], client, category, MenuMode:isUpgradeMode, String:info[], infoSize)
+stock AddUpgradeInfo(Handle:menu, String:item[], client, category, MenuMode:isUpgradeMode, String:info[], infoSize)
 {
-	if (isUpgradeMode)
-	{
-		if (info[0] != 0)
-		{
-			StrCat(info,infoSize," ");
-		}
-		StrCat(info,infoSize,item);
-	}
-	else
-	{
-		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
-	}
+    if (isUpgradeMode)
+    {
+        if (info[0] != 0)
+        {
+            StrCat(info,infoSize," ");
+        }
+        StrCat(info,infoSize,item);
+    }
+    else
+    {
+        AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+    }
 }
 
 UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
@@ -456,7 +456,7 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     TraceInto("Info", "UpgradesInfo_Upgrade", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
               client, client, raceHandle, upgrade, mode);
 
-    new Handle:menu=CreateMenu(UpgradesInfo_Back);
+    new Handle:menu = CreateMenu(UpgradesInfo_Back);
     SetMenuExitButton(menu,true);
     SetMenuExitBackButton(menu,true);
 
@@ -466,40 +466,40 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     new category = GetUpgradeCategory(raceHandle, upgrade);
     if (category == 1)
     {
-		if (!StrContains(desc, "+ultimate"))
-		{
-			Format(item, sizeof(item), "%T", "InvokedWithUltimate", client, category);
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
-		}
+        if (!StrContains(desc, "+ultimate"))
+        {
+            Format(item, sizeof(item), "%T", "InvokedWithUltimate", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
+        }
 
-		if (!StrContains(desc, "console"))
-		{
-			Format(item, sizeof(item), "%T", "BindUltimate", client, category, "f");
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
-		}
+        if (!StrContains(desc, "console"))
+        {
+            Format(item, sizeof(item), "%T", "BindUltimate", client, category, "f");
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
+        }
     }
     else if (category > 1)
     {
-		if (!StrContains(desc, "+ultimate"))
-		{
-			Format(item, sizeof(item), "%T", "InvokedWithUltimateN", client, category);
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
-		}
-		
-		if (!StrContains(desc, "console"))
-		{
-			new String:bindKey[] = {"", "f", "x", "y", "z", "p"};
-			Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
-					(category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
+        if (!StrContains(desc, "+ultimate"))
+        {
+            Format(item, sizeof(item), "%T", "InvokedWithUltimateN", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
+        }
+        
+        if (!StrContains(desc, "console"))
+        {
+            new String:bindKey[][] = { "", "f", "x", "y", "z", "p" };
+            Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
+                    (category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
 
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
-		}
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
+        }
     }
 
     if (GetUpgradeRequiredLevel(raceHandle,upgrade) == 0)
     {
-		Format(item, sizeof(item), "%T", "AlwaysAvailable", client, category);
-		AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
+        Format(item, sizeof(item), "%T", "AlwaysAvailable", client, category);
+        AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
     }
 
     new Float:energy = GetUpgradeEnergy(raceHandle, upgrade);
@@ -508,36 +508,36 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     {
         if (energy > 0.0)
         {
-			Format(item, sizeof(item), "%T", "UsesEnergyToInvoke", client, category);
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
-			
-			Format(item, sizeof(item), "%T", "AndEnergyPerUse", client, category);
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
+            Format(item, sizeof(item), "%T", "UsesEnergyToInvoke", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
+            
+            Format(item, sizeof(item), "%T", "AndEnergyPerUse", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
         }
         else
         {
-			Format(item, sizeof(item), "%T", "EnergyPerUse", client, category);
-			AddUpgradeInfo(item, client, category, , isUpgradeMode, info, sizeof(info));
+            Format(item, sizeof(item), "%T", "EnergyPerUse", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
         }
     }
     else if (energy > 0.0)
     {
-		Format(item, sizeof(item), "%T", "UsesEnergy", client, category);
-		AddUpgradeInfo(item, client, category, , isUpgradeMode, info, sizeof(info));
+        Format(item, sizeof(item), "%T", "UsesEnergy", client, category);
+        AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
     }
 
     new crystals = GetUpgradeCrystals(raceHandle, upgrade);
     if (crystals > 0)
     {
-		Format(item, sizeof(item), "%T", "CostsCrystalsPerUse", client, category);
-		AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
+        Format(item, sizeof(item), "%T", "CostsCrystalsPerUse", client, category);
+        AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
     }
 
     new vespene = GetUpgradeVespene(raceHandle, upgrade);
     if (vespene > 0)
     {
-		Format(item, sizeof(item), "%T", "CostsVespenePerUse", client, category);
-		AddUpgradeInfoitem, client, category, isUpgradeMode, info, sizeof(info));
+        Format(item, sizeof(item), "%T", "CostsVespenePerUse", client, category);
+        AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
     }
 
     if (g_bChargeForUpgrades)
@@ -550,8 +550,8 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
         
         if (crystal_cost > 0)
         {
-			Format(item, sizeof(item), "%T", "CostsCrystalsToUpgrade", client, category);
-			AddUpgradeInfo(item, client, category, isUpgradeMode, info, sizeof(info));
+            Format(item, sizeof(item), "%T", "CostsCrystalsToUpgrade", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
         }
 
         new vespene_cost = GetUpgradeCostVespene(raceHandle, upgrade);
@@ -562,8 +562,8 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
         
         if (vespene_cost > 0)
         {
-			Format(item, sizeof(item), "%T", "CostsVespeneToUpgrade", client, category);
-			AddUpgradeInfo(item, client, category, , isUpgradeMode, info, sizeof(info));
+            Format(item, sizeof(item), "%T", "CostsVespeneToUpgrade", client, category);
+            AddUpgradeInfo(menu, item, client, category, isUpgradeMode, info, sizeof(info));
         }
     }
 
