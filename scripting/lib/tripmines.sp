@@ -638,10 +638,6 @@ bool:SetMine(client)
     {
         LogError("Active count off for client %d, active=%d != count=%d!", client, gActive[client], count);
     }
-    else
-    {
-        LogMessage("Active count for client %d is correct, active=%d == count=%d!", client, gActive[client], count);
-    }
     
     if (CheckMineCount(client, gMaximum[client], GetConVarInt(cvMaxMines)))
     {
@@ -1029,15 +1025,15 @@ bool:CheckMineCount(client, clientMax, globalMax)
             {
                 if (client < 0 || GetEntPropEnt(c, Prop_Send, "m_hOwnerEntity") == client)
                 {
-                    if (++clientCount >  clientMax)
-                        return false;
+                    if (++clientCount >  clientMax && clientMax > 0)
+                        return true;
                 }
-                if (++globalCount >  globalMax)
-                    return false;
+                if (++globalCount >  globalMax && globalMax > 0)
+                    return true;
             }
         }
     }
-    return true;
+    return false;
 }
 
 public beamTouched(const String:output[], caller, activator, Float:delay)
