@@ -57,7 +57,11 @@
 	}
 	"scv_ammopack_desc"
 	{
-		"en"		"Drop Ammopacks on death. At level 2 and above, Ammopacks can be also dropped with alt fire of the wrench, sm_ammopack or +ultimate5.\nEngineers use metal instead of energy to drop Ammopacks.\nBind a key to sm_ammopack or +ultimate5 to drop ammopacks on demand.\nTo bind to x, type bind x +ultimate5 in console."
+		"en"		"Drop Ammopacks on death. At level 2 and above, Ammopacks can be also dropped with alt fire of the wrench, sm_ammopack or +ultimate5. Engineers use metal instead of energy to drop Ammopacks."
+	}
+	"scv_ammopack_bind"
+	{
+		"en"		"Bind a key to sm_ammopack or +ultimate5 to drop ammopacks on demand.\nTo bind to x, type bind x +ultimate5 in console."
 	}
 	"scv_ammopack_dod_desc"
 	{
@@ -113,23 +117,31 @@
 	}
 	"scv_gravgun_desc"
 	{
-		"en"		"Allows you pick to up and move your objects around.\nLevel 2 allows you to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
+		"en"		"Allows you pick to up and move your objects around. Level 2 allows you to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4."
 	}
 	"scv_gravgun_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up and move their objects around..\nLevel 2 allows Engineers to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
+		"en"		"Allows Engineers to pick up and move their objects around. Level 2 allows Engineers to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4."
 	}
 	"scv_gravgun_norepair_desc"
 	{
-		"en"		"Allows you pick to up and move your objects around.\nLevel 2 allows you to pickup other players objects, which can be thrown at Level 4.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
+		"en"		"Allows you pick to up and move your objects around. Level 2 allows you to pickup other players objects, which can be thrown at Level 4."
 	}
 	"scv_gravgun_norepair_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up and move their objects around..\nLevel 2 allows Engineers to pickup other players objects, which can be thrown at Level 4.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
+		"en"		"Allows Engineers to pick up and move their objects around. Level 2 allows Engineers to pickup other players objects, which can be thrown at Level 4."
 	}
 	"scv_gravgun_notf2_desc"
 	{
-		"en"		"Allows you to pick up objects and move them around.\nAverages 1 energy per second while in use.\nGrab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
+		"en"		"Allows you to pick up objects and move them around."
+	}
+	"scv_gravgun_bind"
+	{
+		"en"		"Grab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3."
+	}
+	"scv_gravgun_bind-verbose"
+	{
+		"en"		"Grab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
 	}
 	"scv_gravgun_image"
 	{
@@ -155,7 +167,11 @@
 	}
 	"scv_tripmine_desc"
 	{
-		"en"		"You will be given a tripmine to plant for every level.\nBind a key to sm_tripmine or +ultimate2 to plant the tripmine.\nTo bind to t, type bind t sm_tripmine in console."
+		"en"		"You will be given a tripmine to plant for every level."
+	}
+	"scv_tripmine_bind"
+	{
+		"en"		"Bind a key to sm_tripmine or +ultimate2 to plant the tripmine.\nTo bind to t, type bind t sm_tripmine in console."
 	}
 	"scv_tripmine_image"
 	{
@@ -168,7 +184,11 @@
 	}
 	"scv_nade_desc"
 	{
-		"en"		"You will be given a frag grenade and a special grenade to use for every level.\nThrow a frag nade with +nade1 or +ultimate5 and a special nade with +nade2 or +ultimate3\nTo bind to g & h, type bind g +nade1 then bind h +nade2 in console.\nType !nade for more information."
+		"en"		"You will be given a frag grenade and a special grenade to use for every level."
+	}
+	"scv_nade_bind"
+	{
+		"en"		"Throw a frag nade with +nade1 or +ultimate5 and a special nade with +nade2 or +ultimate3\nTo bind to g & h, type bind g +nade1 then bind h +nade2 in console.\nType !nade for more information."
 	}
 	"scv_nade_image"
 	{

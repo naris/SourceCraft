@@ -147,19 +147,22 @@ public OnWar3EventDeath(client, attacker, deathrace)
 
 public OnWar3EventPostHurt(victim, attacker, Float:damage, const String:weapon[32], bool:isWarcraft)
 {
-    LastDamageTime[victim] = GetEngineTime();
-    if(speedendtimer[victim] != INVALID_HANDLE)
+    if(victim > 0 && victim < sizeof(LastDamageTime))
     {
-        TriggerTimer(speedendtimer[victim]);
-    }
-    else if(War3_GetRace(victim)==thisRaceID)
-    {
+        LastDamageTime[victim] = GetEngineTime();
+        if(speedendtimer[victim] != INVALID_HANDLE)
+        {
+            TriggerTimer(speedendtimer[victim]);
+        }
+        else if(War3_GetRace(victim)==thisRaceID)
+        {
 #if defined SOURCECRAFT
-        new Float:cooldown= GetUpgradeCooldown(thisRaceID,SKILL_SPEED) / 2.0;
-        War3_CooldownMGR(victim,cooldown,thisRaceID,SKILL_SPEED);
+            new Float:cooldown= GetUpgradeCooldown(thisRaceID,SKILL_SPEED) / 2.0;
+            War3_CooldownMGR(victim,cooldown,thisRaceID,SKILL_SPEED);
 #else
-        War3_CooldownMGR(victim, 10.0, thisRaceID, SKILL_SPEED, _, _);
+            War3_CooldownMGR(victim, 10.0, thisRaceID, SKILL_SPEED, _, _);
 #endif
+        }
     }
 }
 

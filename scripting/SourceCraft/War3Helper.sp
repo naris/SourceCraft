@@ -936,14 +936,18 @@ public OnTakeDamagePostHook(victim, attacker, inflictor, Float:damage, damagetyp
 
     TraceInfo("OnTakeDamagePostHook called with weapon \"%s\"", weaponName);
 
-    new dummyresult;
-    Call_StartForward(g_OnWar3EventPostHurtFH);
-    Call_PushCell(victim);
-    Call_PushCell(attacker);
-    Call_PushFloat(damage);
-    Call_PushString(weaponName);
-    Call_PushCell(g_CurDamageIsWarcraft);
-    Call_Finish(dummyresult);
+    if (victim > 0 && victim <= MaxClients &&
+        attacker > 0 && attacker <= MaxClients)
+    {
+        new dummyresult;
+        Call_StartForward(g_OnWar3EventPostHurtFH);
+        Call_PushCell(victim);
+        Call_PushCell(attacker);
+        Call_PushFloat(damage);
+        Call_PushString(weaponName);
+        Call_PushCell(g_CurDamageIsWarcraft);
+        Call_Finish(dummyresult);
+    }
     
     g_CanDealDamage=old_CanDealDamage;
     

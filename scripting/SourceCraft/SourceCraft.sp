@@ -36,7 +36,7 @@
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
-//#define _TRACE
+#define _TRACE
 #include <lib/trace>
 
 // Define TRACK_DAMAGE to enable damage tracking

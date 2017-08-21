@@ -31,6 +31,7 @@ new gVerbosity = 10;
 new gCallLevel = 9;
 new bool:gEnable = false;
 new bool:gIndent = true;
+new bool:gConfigLoaded = false;
 
 new gCurrentDepth = 0;
 
@@ -47,7 +48,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
     RegPluginLibrary("trace");
 
-    LoadConfigFile();
+    gConfigLoaded = LoadConfigFile();
 
     return APLRes_Success;
 }
@@ -70,7 +71,6 @@ public OnPluginStart()
     IntToString(gCallLevel, buf, sizeof(buf));
     gTraceCallLevelVar  = CreateConVar("sm_trace_call_level", buf, "Verbosity level to use for TraceInto/TraceReturn");
 
-
     gTraceCatVar        = CreateConVar("sm_trace_cat", gTraceCat, "List of categories to trace (null string, the default, traces all categories)");
     gTraceCatExVar      = CreateConVar("sm_trace_cat_exclude", gExcludeCat, "List of categories to exclude (null string, the default, excludes no categories)");
     gTraceClassVar      = CreateConVar("sm_trace_class", gTraceClass, "List of classes to trace (null string, the default, traces all classes)");
@@ -84,44 +84,54 @@ public OnPluginStart()
     HookConVarChange(gTraceCatExVar, CvarChange);
     HookConVarChange(gTraceClassVar, CvarChange);
     HookConVarChange(gTraceClassExVar, CvarChange);
+
+    if (!gConfigLoaded) // !LoadConfigFile())
+    {
+        AutoExecConfig( true, "trace");
+    }
 }
 
 public bool:LoadConfigFile()
 {
+    new bool:loaded = false;
     decl String:path[PLATFORM_MAX_PATH];
     BuildPath(Path_SM,path,sizeof(path),"configs/trace.cfg");
 
-    new Handle:keyValue=CreateKeyValues("trace");
-    if (FileToKeyValues(keyValue,path))
+    new Handle:traceConfigHandle = CreateKeyValues("trace");
+    if (FileToKeyValues(traceConfigHandle,path))
     {
         // Load values
-        gMaxDepth=KvGetNum(keyValue, "depth");
-        gVerbosity=KvGetNum(keyValue, "verbosity");
-        gCallLevel=KvGetNum(keyValue, "call_level");
-        gIndent=bool:KvGetNum(keyValue, "indent");
-        gEnable=bool:KvGetNum(keyValue, "enable");
+        gMaxDepth=KvGetNum(traceConfigHandle, "depth");
+        gVerbosity=KvGetNum(traceConfigHandle, "verbosity");
+        gCallLevel=KvGetNum(traceConfigHandle, "call_level");
+        gIndent=bool:KvGetNum(traceConfigHandle, "indent");
+        gEnable=bool:KvGetNum(traceConfigHandle, "enable");
 
         // Load category configuration
-        KvRewind(keyValue);
-        if (KvJumpToKey(keyValue,"category"))
+        KvRewind(traceConfigHandle);
+        if (KvJumpToKey(traceConfigHandle,"category", false))
         {
-            KvGetString(keyValue,"include",gTraceCat, sizeof(gTraceCat));
-            KvGetString(keyValue,"exclude",gExcludeCat, sizeof(gExcludeCat));
+            KvGetString(traceConfigHandle,"include",gTraceCat, sizeof(gTraceCat));
+            KvGetString(traceConfigHandle,"exclude",gExcludeCat, sizeof(gExcludeCat));
         }
 
         // Load class configuration
-        KvRewind(keyValue);
-        if (KvJumpToKey(keyValue,"class"))
+        KvRewind(traceConfigHandle);
+        if (KvJumpToKey(traceConfigHandle,"class", false))
         {
-            KvGetString(keyValue,"include",gTraceClass, sizeof(gTraceClass));
-            KvGetString(keyValue,"exclude",gExcludeClass, sizeof(gExcludeClass));
+            KvGetString(traceConfigHandle,"include",gTraceClass, sizeof(gTraceClass));
+            KvGetString(traceConfigHandle,"exclude",gExcludeClass, sizeof(gExcludeClass));
         }
 
-        LogMessage("Trace categories: %s", gTraceCat);
-        LogMessage("Exclude categories: %s", gExcludeCat);
-        LogMessage("Trace classes: %s", gTraceClass);
-        LogMessage("Exclude classes: %s", gExcludeClass);
+        LogMessage("Loaded Trace categories: %s", gTraceCat);
+        LogMessage("Loaded Exclude categories: %s", gExcludeCat);
+        LogMessage("Loaded Trace classes: %s", gTraceClass);
+        LogMessage("Loaded Exclude classes: %s", gExcludeClass);
+        loaded = true;
     }
+    
+    CloseHandle(traceConfigHandle);
+    return loaded;
 }
 
 public OnConfigsExecuted()
@@ -138,12 +148,12 @@ public OnConfigsExecuted()
     GetConVarString(gTraceClassVar, gTraceClass, sizeof(gTraceClass));
     GetConVarString(gTraceClassExVar, gExcludeClass, sizeof(gExcludeClass));
 
-    /*
-    LogMessage("Trace categories: %s", gTraceCat);
-    LogMessage("Exclude categories: %s", gExcludeCat);
-    LogMessage("Trace classes: %s", gTraceClass);
-    LogMessage("Exclude classes: %s", gExcludeClass);
-    */
+    /**/
+    LogMessage("Config Trace categories: %s", gTraceCat);
+    LogMessage("Config Exclude categories: %s", gExcludeCat);
+    LogMessage("Config Trace classes: %s", gTraceClass);
+    LogMessage("Config Exclude classes: %s", gExcludeClass);
+    /**/
 } 
 
 public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -180,37 +190,75 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
     }
 }
 
-bool:CheckCategory()
+CheckCategory()
 {
+    //LogMessage("CheckCategory, category=%s, exclude=%s, trace=%s", gCategory, gExcludeCat, gTraceCat);
     if (gExcludeCat[0] == '\0' && gTraceCat[0] == '\0')
-        return true;
+    {
+        return 0;
+    }
     else if (StrContains(gCategory, ",") < 0)
     {
-        return StrContains(gExcludeCat, gCategory, false) < 0 &&
-               (gTraceCat[0] == '\0' || StrContains(gTraceCat, gCategory, false) >= 0);
+        //LogMessage("CheckCategory, cont-excl=%d, cont-trace=%d", StrContains(gExcludeCat, gCategory, false), StrContains(gTraceCat, gCategory, false));
+        if (gExcludeClass[0] == '\0' || StrContains(gExcludeCat, gCategory, false) < 0)
+        {
+            return -1;
+        }
+        else if (gTraceCat[0] == '\0' || StrContains(gTraceCat, gCategory, false) >= 0)
+        {
+            return 1;
+        }
+        else
+        {
+            return (gTraceCat[0] == '\0') ? 0 : -1;
+        }
     }
     else
     {
         new idx, pos=0;
+        new ok = (gTraceCat[0] == '\0') ? 0 : -1;
         decl String:aCategory[64];
         while ((idx = SplitString(gCategory[pos], ",", aCategory, sizeof(aCategory))) != -1)
         {
             pos += idx;
-            if (StrContains(gExcludeCat, aCategory, false) < 0)
-                return false;
-            else if (gTraceCat[0] == '\0' || StrContains(gTraceCat, aCategory, false) >= 0)
-                return true;
-            else if (gCategory[pos] == '\0')
+            //LogMessage("CheckCategory, cat=%s, cont-excl=%d, cont-trace=%d", aCategory, StrContains(gExcludeCat, aCategory, false), StrContains(gTraceCat, aCategory, false));
+            if (gExcludeClass[0] != '\0' && StrContains(gExcludeCat, aCategory, false) < 0)
+            {
+                ok = -1;
                 break;
+            }
+            else if (gTraceCat[0] != '\0' && StrContains(gTraceCat, aCategory, false) >= 0)
+            {
+                ok = 1;
+            }
+            else if (gCategory[pos] == '\0')
+            {
+                break;
+            }
         }
-        return false;
+        //LogMessage("CheckCategory=%d",ok);
+        return ok;
     }
 }
 
-bool:CheckClass(const String:class[], bool:categoryOK)
+CheckClass(const String:class[])
 {
-    return StrContains(gExcludeClass, class, false) < 0 &&
-           (categoryOK || StrContains(gTraceClass, class, false) >= 0);
+    if (gExcludeClass[0] != '\0' && StrContains(gExcludeClass, class, false) < 0)
+    {
+        //LogMessage("CheckClass, class=%s, exclude=%s, trace=%s, cont-excl=%d, cont-trace=%d, return=-1",
+        //            class, gExcludeClass, gTraceClass, StrContains(gExcludeClass, class, false), StrContains(gTraceClass, class, false));
+        return -1;
+    }
+    else if (gTraceClass[0] != '\0' && StrContains(gTraceClass, class, false) >= 0)
+    {
+        //LogMessage("CheckClass, class=%s, exclude=%s, trace=%s, cont-excl=%d, cont-trace=%d, return=1",
+        //            class, gExcludeClass, gTraceClass, StrContains(gExcludeClass, class, false), StrContains(gTraceClass, class, false));
+        return 1;
+    }
+    else
+    {
+        return (gTraceClass[0] == '\0') ? 0 : -1;
+    }
 }
 
 ExtractName(const String:prefix[], String:name[], maxlength)
@@ -222,10 +270,13 @@ ExtractName(const String:prefix[], String:name[], maxlength)
     }
 }
 
-bool:CheckPrefix(const String:prefix[], bool:categoryOK)
+CheckPrefix(const String:prefix[])
 {
     if (gTraceClass[0] == '\0' && gExcludeClass[0] == '\0')
-        return categoryOK;
+    {
+        //LogMessage("CheckPrefix=0");
+        return 0;
+    }
     else
     {
         decl String:name[64];
@@ -233,9 +284,15 @@ bool:CheckPrefix(const String:prefix[], bool:categoryOK)
 
         decl String:class[64];
         if (SplitString(name, "::", class, sizeof(class)) >= 0)
-            return CheckClass(class, categoryOK);
+        {
+            //LogMessage("CheckPrefix=checkClass=%d",CheckClass(class));
+            return CheckClass(class);
+        }
         else
-            return categoryOK;
+        {
+            //LogMessage("CheckPrefix=%d",(gTraceClass[0] == '\0') ? 0 : -1);
+            return (gTraceClass[0] == '\0') ? 0 : -1;
+        }
     }
 }
 
@@ -287,7 +344,8 @@ public Native_TraceInto(Handle:plugin,numParams)
         else
             PushArrayString(gCallStack, prefix);
 
-        if (CheckClass(class, CheckCategory()))
+        new checkOK = CheckCategory();
+        if (checkOK > 0 || (checkOK == 0 && CheckClass(class) >= 0))
         {
             if (gCallLevel <= gVerbosity)
             {
@@ -347,7 +405,8 @@ public Native_TraceReturn(Handle:plugin,numParams)
                 prefix[0] = '\0';
         }
 
-        if (CheckPrefix(prefix, CheckCategory()))
+        new checkOK = CheckCategory();
+        if (checkOK > 0 || (checkOK == 0 && CheckPrefix(prefix) >= 0))
         {
             if (gCallLevel <= gVerbosity)
             {
@@ -412,7 +471,8 @@ public Native_TraceMessage(Handle:plugin,numParams)
                     prefix[0] = '\0';
             }
 
-            if (CheckPrefix(prefix, CheckCategory()))
+            new checkOK = CheckCategory();
+            if (checkOK > 0 || (checkOK == 0 && CheckPrefix(prefix) >= 0))
             {
                 decl String:buffer[1024], written;
                 if (numParams >= 1)
@@ -467,7 +527,8 @@ public Native_TraceDump(Handle:plugin,numParams)
             }
         }
 
-        if (CheckPrefix(prefix, CheckCategory()))
+        new checkOK = CheckCategory();
+        if (checkOK > 0 || (checkOK == 0 && CheckPrefix(prefix) >= 0))
         {
             decl String:buffer[1024], written;
             if (numParams >= 1)

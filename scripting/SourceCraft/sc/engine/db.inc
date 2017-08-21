@@ -359,6 +359,8 @@ SQL_CreateRaceTables(Handle:dbHandle)
                 " upgrade_name VARCHAR(32),",
                 " long_name VARCHAR(64),",
                 " description TEXT,",
+                " invoke TEXT,",
+                " bind TEXT,",
                 " image varchar(64),",
                 " required_level int NOT NULL default '0',",
                 " max_level int NOT NULL default '0',",
@@ -934,11 +936,18 @@ bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
                 strcopy(escDesc, sizeof(escDesc), desc);
             }
 
-            decl String:SQLString[sizeof(escDesc)+QUERY_STRING_LENGTH];
+            decl String:escBind[DESCRIPTION_LENGTH*2+1];
+            if (!SQL_EscapeString(g_DbHandle[DB_MAIN], bind, escBind, sizeof(escBind)))
+            {
+                LogError("Unable to escape %s!", bind);
+                strcopy(escBind, sizeof(escBind), bind);
+            }
+
+            decl String:SQLString[QUERY_STRING_LENGTH+sizeof(escDesc)+sizeof(escBind)];
             Format(SQLString,sizeof(SQLString),
-                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,crystals=%d,vespene=%d,cooldown=%f",
-                   race_ident, upgrade, upgrade_category, short, name, escDesc, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown,
-                   upgrade_category, short, name, escDesc, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown);
+                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,bind,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',bind='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,crystals=%d,vespene=%d,cooldown=%f",
+                   race_ident, upgrade, upgrade_category, short, name, escDesc, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown,
+                   upgrade_category, short, name, escDesc, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown);
 
             TraceDebug("query=%s", SQLString);
 
@@ -981,13 +990,23 @@ QueryRaceDescription(race_ident, String:description[], maxlength)
             {
                 SQL_FetchString(query, 0, description, maxlength);
             }
+            else
+            {
+                description[0] = '\0';
+            }
+
             CloseHandle(query);
+        }
+        else
+        {
+            description[0] = '\0';
         }
 
         SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
     }
     else
     {
+        description[0] = '\0';
         LogError("Unable to connect to DB to load race %d's description.", race_ident);
     }
 
@@ -1012,13 +1031,23 @@ QueryRaceImage(race_ident, String:image[], maxlength)
             {
                 SQL_FetchString(query, 0, image, maxlength);
             }
+            else
+            {
+                image[0] = '\0';
+            }
+
             CloseHandle(query);
+        }
+        else
+        {
+            image[0] = '\0';
         }
 
         SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
     }
     else
     {
+        image[0] = '\0';
         LogError("Unable to connect to DB to load race %d's image.", race_ident);
     }
 
@@ -1045,13 +1074,23 @@ QueryUpgradeImage(race_ident, upgrade, String:image[], maxlength)
             {
                 SQL_FetchString(query, 0, image, maxlength);
             }
+            else
+            {
+                image[0] = '\0';
+            }
+
             CloseHandle(query);
+        }
+        else
+        {
+            image[0] = '\0';
         }
 
         SQL_UnlockDatabase(g_DbHandle[DB_MAIN]);
     }
     else
     {
+        image[0] = '\0';
         LogError("Unable to connect to DB to load race %d, upgrade %d's image.", race_ident, upgrade);
     }
 

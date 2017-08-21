@@ -555,12 +555,12 @@
 		"#format"	"{1:1.0f}"
 		"en"		"Uses {1} energy to invoke"
 	}
-	"AndEnergyPerUse"
+	"UsesEnergyPerSecond"
 	{
-		"#format"	"{1:1.0f}"
-		"en"		"and {1} energy per use"
+		"#format"	"{1:1.0f},{2:1.0f}"
+		"en"		"Uses {1} energy to invoke and {2} energy per second"
 	}
-	"EnergyPerUse"
+	"UsesEnergyPerUse"
 	{
 		"#format"	"{1:1.0f}"
 		"en"		"Uses {1} energy per use"

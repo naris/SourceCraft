@@ -16,12 +16,7 @@ require_once 'Player.php';
 
 //require_once "Zend/Auth/Adapter/OpenId.php";
 //require_once 'steamauth/openid.php';
-
-//Include Hybridauth's basic autoloader
-include 'hybridauth/src/autoload.php';
-
-//Import Hybridauth's namespace
-use Hybridauth\Hybridauth;
+require_once 'hybridauth/Hybrid/Auth.php';
 
 class Sc_UserController extends Zend_Controller_Action
 {
@@ -32,16 +27,22 @@ class Sc_UserController extends Zend_Controller_Action
      */
     protected $session = null;
 
-	// Build configuration array
-	protected $config = [
-		//Location where to redirect users once they authenticate with Steam
-		'callback' => '/sc/player/show/user/',
+    // Build configuration array
+    protected $config = [
+        // "base_url" the url that point to HybridAuth Endpoint (where index.php and config.php are found)
+        "base_url" => "/sc/user/auth",        //Location where to redirect users once they authenticate with Steam
+        'callback' => '/sc/player/show/user/',
 
-		// Steam api credentials
-		'keys' => [
-			'key' => '', // Required: your Steam api key
-		]
-	];
+        "providers" => [
+            "Steam" => [
+               "enabled" => true,
+                // Steam api credentials
+                'keys' => [
+                    'key' => '', // Required: your Steam api key
+                ]
+            ],
+        ]
+    ];
 
     /**
      * Overriding the init method to also load the session from the registry
@@ -84,143 +85,33 @@ class Sc_UserController extends Zend_Controller_Action
     {
         try
         {
-			// Instantiate Steam's adapter directly
-			$adapter = new Hybridauth\Provider\Steam($config);
+            // Instantiate Steam's adapter directly
+            $adapter = new Hybrid_Auth($this->config);
 
-			// Attempt to authenticate the user with Steam
-			$adapter->authenticate();
+            // Attempt to authenticate the user with Steam
+            $adapter->authenticate("Steam");
 
-			// Returns a boolean of whether the user is connected with Steam
-			$isConnected = $adapter->isConnected();
+            // Returns a boolean of whether the user is connected with Steam
+            $isConnected = $adapter->isConnected();
 
-			// Retrieve the user's profile
-			$userProfile = $adapter->getUserProfile();
+            // Retrieve the user's profile
+            $userProfile = $adapter->getUserProfile();
 
-			// Inspect profile's public attributes
-			// var_dump($userProfile);
-			
-			$s = new SteamID($userProfile->identifier);
-			$this->session->steamid = $s->RenderSteam2();
-			$this->session->steamid3 = $s->RenderSteam3();
-			$this->session->steamid64 = $s->ConvertToUInt64();
-			
-			$this->session->username = $userProfile->displayName;
-			$this->session->firstName = $userProfile->firstName;
-			$this->session->photoURL = $userProfile->photoURL;
-			$this->session->profileURL = $userProfile->profileURL;
-			$this->session->description = $userProfile->description;
-			$this->session->country = $userProfile->country;
-			$this->session->region = $userProfile->region;
-
-			/*
-			$this->session->firstName = $userProfile->lastName;
-			$this->session->webSiteURL = $userProfile->webSiteURL;
-			$this->session->gender = $userProfile->gender;
-			$this->session->language = $userProfile->language;
-			$this->session->age = $userProfile->age;
-			$this->session->birthDay = $userProfile->birthDay;
-			$this->session->birthMonth = $userProfile->birthMonth;
-			$this->session->birthYear = $userProfile->birthYear;
-			$this->session->email = $userProfile->email;
-			$this->session->emailVerified = $userProfile->emailVerified;
-			$this->session->phone = $userProfile->phone;
-			$this->session->address = $userProfile->address;
-			$this->session->city = $userProfile->city;
-			$this->session->zip = $userProfile->zip;
-			*/
-
-			/*
-			require_once 'steamauth/SteamConfig.php';
-            $openid = new LightOpenID($steamauth['domainname']);
+            // Inspect profile's public attributes
+            // var_dump($userProfile);
             
-            if (!$openid->mode)
-            {
-                $openid->identity = 'http://steamcommunity.com/openid';
-                header('Location: ' . $openid->authUrl());
-            }
-            elseif ($openid->mode == 'cancel')
-            {
-                //echo 'User has canceled authentication!';
-                $view = $this->initView();
-                $view->error = 'Authentication cancelled!';
-                $this->render();
-            }
-            else
-            {
-                if ($openid->validate())
-                { 
-                    $id = $openid->identity;
-                    $ptn = "/^http:\/\/steamcommunity\.com\/openid\/id\/(7[0-9]{15,25}+)$/";
-                    preg_match($ptn, $id, $matches);
-
-                    $this->session->logged_in = true;
-                    try
-                    {
-                        $s = new SteamID($matches[1]);
-                        $this->session->steamid = $s->RenderSteam2();
-                        $this->session->steamid3 = $s->RenderSteam3();
-                        $this->session->steamid64 = $s->ConvertToUInt64();
-                        //$this->session->username = $this->session->steamid;
-                        
-                        if (!empty($steamauth['apikey']))
-                        {
-                            $url = file_get_contents("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=".$steamauth['apikey']."&steamids=".$matches[1]); 
-                            $content = json_decode($url, true);
-                            
-                            //$this->session->steamid = $content['response']['players'][0]['steamid'];
-                            $this->session->communityvisibilitystate = $content['response']['players'][0]['communityvisibilitystate'];
-                            $this->session->profilestate = $content['response']['players'][0]['profilestate'];
-                            $this->session->personaname = $content['response']['players'][0]['personaname'];
-                            $this->session->lastlogoff = $content['response']['players'][0]['lastlogoff'];
-                            $this->session->profileurl = $content['response']['players'][0]['profileurl'];
-                            $this->session->avatar = $content['response']['players'][0]['avatar'];
-                            $this->session->avatarmedium = $content['response']['players'][0]['avatarmedium'];
-                            $this->session->avatarfull = $content['response']['players'][0]['avatarfull'];
-                            $this->session->personastate = $content['response']['players'][0]['personastate'];
-                            $this->session->primaryclanid = $content['response']['players'][0]['primaryclanid'];
-                            $this->session->timecreated = $content['response']['players'][0]['timecreated'];
-                            $this->session->uptodate = time();
-                            
-                            if (isset($content['response']['players'][0]['realname']))
-                            {
-                                $this->session->realname = $content['response']['players'][0]['realname'];
-                                //$this->session->username = $this->session->realname;
-                            }
-                            else
-                            {
-                                $this->session->realname = "Real name not given";
-                                //$this->session->username = $this->session->personaname;
-                            }
-                        }
-                        
-                        $player_table = new Player();
-                        $player = $player_table->getPlayerForSteamid($this->session->steamid);
-                        if ($player)
-                        {
-                            $where = $player_table->getAdapter()->quoteInto('steamid = ?', $this->session->steamid);
-                            $this->session->username = $player->username;
-                            $this->session->name = $player->name;
-                        }
-
-                        //$this->_forward('profile');
-                        $this->_redirect('/sc/player/show/user/' . $username);
-                    }
-                    catch( InvalidArgumentException $e )
-                    {
-                        $view = $this->initView();
-                        $view->error = 'SteamID could not be parsed.';
-                        $this->render();
-                    }
-                }
-                else
-                {
-                    //echo "User is not logged in.\n";
-                    $view = $this->initView();
-                    $view->error = 'Login failed, please try again';
-                    $this->render();
-                }
-				*/
-            }
+            $s = new SteamID($userProfile->identifier);
+            $this->session->steamid = $s->RenderSteam2();
+            $this->session->steamid3 = $s->RenderSteam3();
+            $this->session->steamid64 = $s->ConvertToUInt64();
+            
+            $this->session->username = $userProfile->displayName;
+            $this->session->firstName = $userProfile->firstName;
+            $this->session->photoURL = $userProfile->photoURL;
+            $this->session->profileURL = $userProfile->profileURL;
+            $this->session->description = $userProfile->description;
+            $this->session->country = $userProfile->country;
+            $this->session->region = $userProfile->region;
         }
         catch (ErrorException $e)
         {
@@ -244,11 +135,11 @@ class Sc_UserController extends Zend_Controller_Action
      */
     public function logoutAction()
     {
-		// Instantiate Steam's adapter directly
-		$adapter = new Hybridauth\Provider\Steam($config);
+        // Instantiate Steam's adapter directly
+        $adapter = new Hybridauth\Provider\Steam($config);
 
-		//Disconnect the adapter 
-		$adapter->disconnect();
+        //Disconnect the adapter 
+        $adapter->disconnect();
 
         $this->session->name = "";
         $this->session->admin = false;        

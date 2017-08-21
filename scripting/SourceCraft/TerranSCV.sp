@@ -1089,6 +1089,14 @@ public Action:OnCarryObject(client,ent,Float:time)
                 m_GravTime[client] = now;
                 return Plugin_Continue;
             }
+            else
+            {
+                decl String:upgradeName[64];
+                GetUpgradeName(raceID, gravgunID, upgradeName, sizeof(upgradeName), client);
+                DisplayMessage(client, Display_Energy, "%t", "OutOfEnergy", upgradeName);
+                EmitEnergySoundToClient(client,Terran);
+                return Plugin_Stop;
+            }
         }
     }
     return Plugin_Continue;

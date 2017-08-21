@@ -763,11 +763,11 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
                         decl String:upgradeDesc[DESCRIPTION_LENGTH];
                         GetUpgradeDescription(raceHandle, upgrade, upgradeDesc, sizeof(upgradeDesc));
                         
-                        decl String:upgradeBind[NAME_STRING_LENGTH];
-                        GetUpgradeBind(raceHandle, upgrade, upgradeBind, sizeof(upgradeBind), image);
+                        decl String:upgradeBind[DESCRIPTION_LENGTH];
+                        GetUpgradeBind(raceHandle, upgrade, upgradeBind, sizeof(upgradeBind));
 
                         decl String:upgradeImage[NAME_STRING_LENGTH];
-                        GetUpgradeImage(raceHandle, upgrade, upgradeImage, sizeof(upgradeImage), image);
+                        GetUpgradeImage(raceHandle, upgrade, upgradeImage, sizeof(upgradeImage));
 
                         new upgrade_category        = GetArrayCell(upgradeHandle, _:UpgradeData_Category);
                         new req_level               = GetArrayCell(upgradeHandle, _:UpgradeData_RequiredLevel);
@@ -1022,7 +1022,7 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         decl String:upgradeDesc[DESCRIPTION_LENGTH];
         GetUpgradeDescription(raceHandle, upgrade, upgradeDesc, sizeof(upgradeDesc));
 
-        decl String:upgradeBind[NAME_STRING_LENGTH];
+        decl String:upgradeBind[DESCRIPTION_LENGTH];
         GetUpgradeBind(raceHandle, upgrade, upgradeBind, sizeof(upgradeBind), bind);
 
         decl String:upgradeImage[NAME_STRING_LENGTH];
@@ -1108,8 +1108,9 @@ GetRaceParentId(Handle:raceHandle)
         return parent;
     }
     else
+    {
         return 0;
-
+    }
 }
 
 GetRaceName(Handle:raceHandle, String:name[], maxlength, lang=LANG_SERVER)
@@ -1166,14 +1167,22 @@ GetRaceDescription(Handle:raceHandle, String:desc[], maxlength,
             decl String:key[ITEM_STRING_LENGTH];
             Format(key,sizeof(key),"%s_Desc",short);
             if (file[0] && FileContains(file, key))
+            {
                 Format(desc,maxlength,"%T",key,lang);
+            }
             else if (query)
+            {
                 QueryRaceDescription(GetRaceIdent(raceHandle), desc, maxlength);
+            }
             else
+            {
                 strcopy(desc,maxlength,descString);
+            }
         }
         else
+        {
             strcopy(desc,maxlength,descString);
+        }
     }
 }
 
@@ -1216,7 +1225,9 @@ GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength, lang)
 {
     GetRaceSwitchString(raceHandle, message, maxlength);
     if (message[0] == '%')
+    {
         Format(message,maxlength,"%T",message[1],lang);
+    }
     else
     {
         // Translate the short name to get the switch message
@@ -1239,7 +1250,9 @@ GetRaceSwitchMessage(Handle:raceHandle, String:message[], maxlength, lang)
                 decl String:key[ITEM_STRING_LENGTH];
                 Format(key,sizeof(key),"%s_Switch",short);
                 if (FileContains(file, key))
+                {
                     Format(message,maxlength,"%T",key,lang);
+                }
             }
         }
     }
@@ -1256,7 +1269,9 @@ GetRaceSwitchMessageDead(Handle:raceHandle, String:message[], maxlength, lang)
 {
     GetRaceSwitchStringDead(raceHandle, message, maxlength);
     if (message[0] == '%')
+    {
         Format(message,maxlength,"%T",message[1],lang);
+    }
     else
     {
         // Translate the short name to get the pending message
@@ -1296,7 +1311,9 @@ GetUpgradeName(Handle:raceHandle, upgrade, String:name[], maxlength, lang=LANG_S
 {
     GetUpgradeNameString(raceHandle,upgrade,name,maxlength);
     if (name[0] == '%')
+    {
         Format(name,maxlength,"%T",name[1],lang);
+    }
     else
     {
         new Translation:translation = GetRaceTranslation(raceHandle);
@@ -1324,114 +1341,6 @@ GetUpgradeName(Handle:raceHandle, upgrade, String:name[], maxlength, lang=LANG_S
             Format(name,maxlength,"%T",key,lang);
         }
     }
-}
-
-GetUpgradeImage(Handle:raceHandle, upgrade, String:image[], maxlength,
-                const String:imageString[]="", lang=LANG_SERVER,
-                bool:query=false)
-{
-    TraceInto("Race", "GetUpgradeImage", "raceHandle=0x%08x", raceHandle);
-
-    if (imageString[0] == '%')
-        Format(image,maxlength,"%T",imageString[1],lang);
-    else
-    {
-        new Translation:translation = GetRaceTranslation(raceHandle);
-        if (translation > Translation_Auto)
-        {
-            decl String:file[LONG_STRING_LENGTH];
-            GetRaceTranslationFile(raceHandle, file, sizeof(file));
-            if (file[0])
-            {
-                decl String:race[NAME_STRING_LENGTH];
-                GetRaceShortName(raceHandle, race,sizeof(race));
-
-                decl String:short[NAME_STRING_LENGTH];
-                GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
-
-                decl String:key[ITEM_STRING_LENGTH];
-                if (translation == Translation_W3S)
-                {
-                    // Use the War3Source key
-                    Format(key,sizeof(key),"%s_skill_%s_image",race,short);
-                }
-                else
-                {
-                    // Translate the race_name + short name + _image to get the image
-                    Format(key,sizeof(key),"%s_%s_image",race,short);
-                }
-
-                if (FileContains(file, key))
-                    Format(image,maxlength,"%T",key,lang);
-
-            }
-            else if (!image[0])
-            {
-                if (imageString[0])
-                    strcopy(image,maxlength,imageString);
-                else if (query)
-                    QueryUpgradeImage(GetRaceIdent(raceHandle), upgrade, image, maxlength);
-            }
-        }
-        else
-            strcopy(image,maxlength,imageString);
-    }
-
-    TraceReturn("image=%s", image);
-}
-
-GetUpgradeBind(Handle:raceHandle, upgrade, String:bind[], maxlength,
-                const String:bindString[]="", lang=LANG_SERVER,
-                bool:query=false)
-{
-    TraceInto("Race", "GetUpgradeBind", "raceHandle=0x%08x", raceHandle);
-
-    if (bindString[0] == '%')
-        Format(image,maxlength,"%T",bindString[1],lang);
-    else
-    {
-        new Translation:translation = GetRaceTranslation(raceHandle);
-        if (translation > Translation_Auto)
-        {
-            decl String:file[LONG_STRING_LENGTH];
-            GetRaceTranslationFile(raceHandle, file, sizeof(file));
-            if (file[0])
-            {
-                decl String:race[NAME_STRING_LENGTH];
-                GetRaceShortName(raceHandle, race,sizeof(race));
-
-                decl String:short[NAME_STRING_LENGTH];
-                GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
-
-                decl String:key[ITEM_STRING_LENGTH];
-                if (translation != Translation_W3S)
-                {
-                    // Use the War3Source key
-                    Format(key,sizeof(key),"%s_skill_%s_bind",race,short);
-                }
-                else
-                {
-                    // Translate the race_name + short name + _bind to get the bind instructions
-                    Format(key,sizeof(key),"%s_%s_bind",race,short);
-                }
-
-                if (FileContains(file, key))
-                    Format(bind,maxlength,"%T",key,lang);
-
-            }
-            else if (!bind[0])
-            {
-                if (bindString[0])
-                    strcopy(image,maxlength,bindString);
-                else if (query)
-                    QueryUpgradeImage(GetRaceIdent(raceHandle), upgrade, bind, maxlength);
-            }
-        }
-        else
-            strcopy(bind,maxlength,bindString);
-    }
-
-    TraceReturn("bind=%s", bind);
 }
 
 GetUpgradeDescription(Handle:raceHandle, upgrade, String:desc[], maxlength, lang=LANG_SERVER)
@@ -1478,6 +1387,138 @@ GetUpgradeDescription(Handle:raceHandle, upgrade, String:desc[], maxlength, lang
     return category;
 }
 
+GetUpgradeImage(Handle:raceHandle, upgrade, String:image[], maxlength,
+                const String:imageString[]="", lang=LANG_SERVER,
+                bool:query=false)
+{
+    TraceInto("Race", "GetUpgradeImage", "raceHandle=0x%08x", raceHandle);
+
+    if (imageString[0] == '%')
+    {
+        Format(image,maxlength,"%T",imageString[1],lang);
+    }
+    else
+    {
+        new Translation:translation = GetRaceTranslation(raceHandle);
+        if (translation > Translation_Auto)
+        {
+            decl String:file[LONG_STRING_LENGTH];
+            GetRaceTranslationFile(raceHandle, file, sizeof(file));
+            if (file[0])
+            {
+                decl String:race[NAME_STRING_LENGTH];
+                GetRaceShortName(raceHandle, race,sizeof(race));
+
+                decl String:short[NAME_STRING_LENGTH];
+                GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+
+                decl String:key[ITEM_STRING_LENGTH];
+                if (translation == Translation_W3S)
+                {
+                    // Use the War3Source key
+                    Format(key,sizeof(key),"%s_skill_%s_image",race,short);
+                }
+                else
+                {
+                    // Translate the race_name + short name + _image to get the image
+                    Format(key,sizeof(key),"%s_%s_image",race,short);
+                }
+
+                if (FileContains(file, key))
+                {
+                    Format(image,maxlength,"%T",key,lang);
+                }
+                else
+                {
+                    strcopy(image,maxlength,imageString);
+                }
+            }
+            else if (imageString[0])
+            {
+                strcopy(image,maxlength,imageString);
+            }
+            else if (query)
+            {
+                QueryUpgradeImage(GetRaceIdent(raceHandle), upgrade, image, maxlength);
+            }
+            else
+            {
+                strcopy(image,maxlength,imageString);
+            }
+        }
+        else
+        {
+            strcopy(image,maxlength,imageString);
+        }
+    }
+
+    TraceReturn("image=%s", image);
+}
+
+GetUpgradeBind(Handle:raceHandle, upgrade, String:bind[], maxlength,
+                const String:bindString[]="", lang=LANG_SERVER)
+{
+    TraceInto("Race", "GetUpgradeBind", "raceHandle=0x%08x", raceHandle);
+
+    if (bindString[0] == '%')
+    {
+        Format(bind, maxlength, "%T", bindString[1], lang);
+        Trace("Format %s=%s",bindString[1],bind);
+    }
+    else
+    {
+        new Translation:translation = GetRaceTranslation(raceHandle);
+        if (translation > Translation_Auto)
+        {
+            decl String:file[LONG_STRING_LENGTH];
+            GetRaceTranslationFile(raceHandle, file, sizeof(file));
+            if (file[0])
+            {
+                decl String:race[NAME_STRING_LENGTH];
+                GetRaceShortName(raceHandle, race,sizeof(race));
+
+                decl String:short[NAME_STRING_LENGTH];
+                GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+
+                decl String:key[ITEM_STRING_LENGTH];
+                if (translation == Translation_W3S)
+                {
+                    // Use the War3Source key
+                    Format(key,sizeof(key),"%s_skill_%s_bind",race,short);
+                }
+                else
+                {
+                    // Translate the race_name + short name + _bind to get the bind instructions
+                    Format(key,sizeof(key),"%s_%s_bind",race,short);
+                }
+
+                if (FileContains(file, key))
+                {
+                    Format(bind,maxlength,"%T",key,lang);
+                    Trace("Format %s=%s",key,bind);
+                }
+                else
+                {
+                    strcopy(bind,maxlength,bindString);
+                    Trace("%s has no bind for %s, Copy bindString=%s", file, key, bindString);
+                }
+            }
+            else
+            {
+                strcopy(bind,maxlength,bindString);
+                Trace("No Translation File, Copy bindString=%s", bindString);
+            }
+        }
+        else
+        {
+            strcopy(bind,maxlength,bindString);
+            Trace("No Translation, Copy bindString=%s",bindString);
+        }
+    }
+
+    TraceReturn("bind=%s", bind);
+}
+
 GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
                       String:desc[], maxDesc, String:bind[], maxBind,
                       lang=LANG_SERVER)
@@ -1488,8 +1529,9 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
     GetArrayString(upgradeStringHandle, _:UpgradeString_Name, name, maxName);
     GetArrayString(upgradeStringHandle, _:UpgradeString_Desc, desc, maxDesc);
     GetArrayString(upgradeStringHandle, _:UpgradeString_Bind, bind, maxBind);
+    Trace("name=%s, desc=%s, bind=%s", name, desc, bind);
 
-    new category = 0;
+    new category = GetUpgradeCategory(raceHandle,upgrade);
     new Translation:translation = GetRaceTranslation(raceHandle);
     if (translation > Translation_Auto)
     {
@@ -1511,32 +1553,66 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
             Format(key,sizeof(key),"%s_%s",race,short);
         }
 
-        if (name[0] != '%')
-            Format(name,maxName,"%T",key,lang);
-
-        if (desc[0] != '%')
+        if (name[0] == '%')
         {
-            StrCat(key,sizeof(key),"_desc");
-            category = FormatUpgradeDescription(raceHandle, upgrade, translation,
-                                                key, desc, maxDesc, lang);
+            Format(name,maxName,"%T",name[1],lang);
+        }
+        else if (name[0] == '\0')
+        {
+            Format(name,maxName,"%T",key,lang);
         }
 
-        if (bind[0] != '%')
+        if (desc[0] == '%')
         {
-            StrCat(key,sizeof(key),"_bind");
+            Format(desc,maxDesc,"%T",desc[1],lang);
+        }
+        else if (desc[0] == '\0')
+        {
+            decl String:descKey[ITEM_STRING_LENGTH];
+            if (translation == Translation_W3S)
+            {
+                // Use the War3Source key
+                Format(descKey,sizeof(descKey),"%s_skill_%s_desc",race,short);
+            }
+            else
+            {
+                // Translate the race_name + short name + _desc to get the description
+                Format(descKey,sizeof(descKey),"%s_%s_desc",race,short);
+            }
+
             category = FormatUpgradeDescription(raceHandle, upgrade, translation,
-                                                key, bind, maxBind, lang);
+                                                descKey, desc, maxDesc, lang);
+        }
+
+        if (bind[0] == '%')
+        {
+            Format(bind,maxDesc,"%T",bind[1],lang);
+            Trace("Format bind=%s",bind);
+        }
+        else if (bind[0] == '\0')
+        {
+            decl String:file[LONG_STRING_LENGTH];
+            GetRaceTranslationFile(raceHandle, file, sizeof(file));
+            if (file[0])
+            {
+                decl String:bindKey[ITEM_STRING_LENGTH];
+                Format(bindKey,sizeof(bindKey),"%s_bind",key);
+                if (FileContains(file, bindKey))
+                {
+                    Format(bind, maxBind, "%T", bindKey, lang);
+                    Trace("Format %s=%s",bindKey,bind);
+                }
+                else
+                {
+                    Trace("%s has no bind for %s", file, bindKey);
+                }
+            }
+            else
+            {
+                Trace("No Translation File, bind=%s", bind);
+            }
         }
     }
-
-    if (name[0] == '%')
-        Format(name,maxName,"%T",name[1],lang);
-
-    if (desc[0] == '%')
-        Format(desc,maxDesc,"%T",desc[1],lang);
-
-    if (bind[0] == '%')
-        Format(bind,maxDesc,"%T",bind[1],lang);
 
     TraceReturn("name=%s, desc=%s, bind=%s, category=%d", name, desc, bind, category);
     return category;
@@ -1545,10 +1621,9 @@ GetUpgradeNameAndDesc(Handle:raceHandle, upgrade, String:name[], maxName,
 FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
                          const String:key[], String:desc[], maxlength, lang=LANG_SERVER)
 {
-    new category = 0;
-
     TraceInto("Race", "FormatUpgradeDescription", "raceHandle=0x%08x, key=%s", raceHandle, key);
 
+    new category = 0;
     if (translation == Translation_W3S)
     {
         Trace("Translate W3S key %s", key);
@@ -1574,25 +1649,39 @@ FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
 
         //Change any references to +ability to +ultimate
         if (ReplaceString(desc, maxlength, "+ability2", "+ultimate4", false) > 0)
+        {
             category = 4;
+        }
 
         if (ReplaceString(desc, maxlength, "ability2",  "+ultimate4", false) > 0)
+        {
             category = 4;
+        }
 
         if (ReplaceString(desc, maxlength, "+ability1", "+ultimate3", false) > 0)
+        {
             category = 3;
+        }
 
         if (ReplaceString(desc, maxlength, "ability1",  "+ultimate3", false) > 0)
+        {
             category = 3;
+        }
 
         if (ReplaceString(desc, maxlength, "+ability0", "+ultimate2", false) > 0)
+        {
             category = 2;
+        }
 
         if (ReplaceString(desc, maxlength, "+ability",  "+ultimate2", false) > 0)
+        {
             category = 2;
+        }
 
         if (ReplaceString(desc, maxlength, "(ability)", "(+ultimate2)", false) > 0)
+        {
             category = 2;
+        }
 
         if (category == 0)
         {
@@ -1717,10 +1806,7 @@ FormatUpgradeDescription(Handle:raceHandle, upgrade, Translation:translation,
 GetUpgradeCount(Handle:raceHandle)
 {
     new Handle:upgradeListHandle=GetArrayCell(raceHandle,_:RaceData_Upgrades);
-    if (upgradeListHandle != INVALID_HANDLE)
-        return GetArraySize(upgradeListHandle);
-    else
-        return 0;
+    return (upgradeListHandle != INVALID_HANDLE) ? GetArraySize(upgradeListHandle) : 0;
 }
 
 FindUpgrade(Handle:raceHandle, const String:short[])

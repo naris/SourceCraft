@@ -232,7 +232,7 @@ public OnSourceCraftReady()
     }
     else
     {
-        shopItem[ITEM_CLOAK]        = CreateShopItem("cloak",       10,	    .desc="%cloak_noinvis_desc");
+        shopItem[ITEM_CLOAK]        = CreateShopItem("cloak",       10,     .desc="%cloak_noinvis_desc");
     }
     
     shopItem[ITEM_DARKNESS]         = CreateShopItem("darkness",    15);
@@ -302,7 +302,7 @@ public OnSourceCraftReady()
 
     if (IsJetpackAvailable())
     {
-        shopItem[ITEM_FUEL]         = CreateShopItem("fuel",        25, 50,	.use_pcrystals=true);	// Can use +crystals
+        shopItem[ITEM_FUEL]         = CreateShopItem("fuel",        25, 50, .use_pcrystals=true);   // Can use +crystals
     }
     else
     {
@@ -315,7 +315,7 @@ public OnSourceCraftReady()
     new bool:defEnergyItem = (cfgEnergyRate < 1.0 || cfgEnergyFactor < 1.0);
     if (GetConfigNum("energy_item", defEnergyItem, SHOPITEM))
     {
-        shopItem[ITEM_ENERGY]       = CreateShopItem("energy",       -1,    .use_pcrystals=true);	// Can use +crystals
+        shopItem[ITEM_ENERGY]       = CreateShopItem("energy",       -1,    .use_pcrystals=true);   // Can use +crystals
         shopItem[ITEM_ENERGY10]     = CreateShopItem("energy10",     10,    .use_pcrystals=true);
         shopItem[ITEM_ENERGY50]     = CreateShopItem("energy50",     50,    .use_pcrystals=true);
         shopItem[ITEM_ENERGY100]    = CreateShopItem("energy100",    100,   .use_pcrystals=true);
@@ -425,7 +425,7 @@ public OnMapEnd()
 
 public OnClientPutInServer(client)
 {
-	SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
+    SDKHook(client, SDKHook_TraceAttack, OnTraceAttack);
 }
 
 public OnPlayerAuthed(client)
@@ -1792,18 +1792,18 @@ public Action:ItemCommand(client,args)
         {
             decl String:command[32];
             GetCmdArg(0,command,sizeof(command));
-			new bool:pressed=(command[0] == '+');
+            new bool:pressed=(command[0] == '+');
 
             new arg;
             decl String:argString[16];
             if (IsCharNumeric(command[5]))
-			{
-				arg = command[5]-'0';
+            {
+                arg = command[5]-'0';
 
-				Trace("%N issuing %s: +item%d, pressed=%d, args=%d, CmdArgs=%d", \
-					  client, command, arg, pressed, args, GetCmdArgs());
-			}
-			else if (GetCmdArgs() >= 2)
+                Trace("%N issuing %s: +item%d, pressed=%d, args=%d, CmdArgs=%d", \
+                      client, command, arg, pressed, args, GetCmdArgs());
+            }
+            else if (GetCmdArgs() >= 2)
             {
                 GetCmdArg(1,argString,sizeof(argString));
                 arg = StringToInt(argString);
@@ -1985,7 +1985,7 @@ public Action:NadeTimer(Handle:time, any:userid)
             }
             else
             {
-                g_NadeTimers[client] = INVALID_HANDLE;	
+                g_NadeTimers[client] = INVALID_HANDLE;  
                 return Plugin_Stop;
             }
         }
@@ -2252,7 +2252,7 @@ stock KillRegenerationTimer(client)
     if (g_RegenerationTimers[client] != INVALID_HANDLE)
     {
         KillTimer(g_RegenerationTimers[client]);
-        g_RegenerationTimers[client] = INVALID_HANDLE;	
+        g_RegenerationTimers[client] = INVALID_HANDLE;  
     }
 }
 
@@ -2267,7 +2267,7 @@ stock KillNadeTimer(client)
     if (g_NadeTimers[client] != INVALID_HANDLE)
     {
         KillTimer(g_NadeTimers[client]);
-        g_NadeTimers[client] = INVALID_HANDLE;	
+        g_NadeTimers[client] = INVALID_HANDLE;  
     }
 }
 
@@ -2285,7 +2285,7 @@ stock KillBootTimer(client)
     if (g_BootTimers[client] != INVALID_HANDLE)
     {
         KillTimer(g_BootTimers[client]);
-        g_BootTimers[client] = INVALID_HANDLE;	
+        g_BootTimers[client] = INVALID_HANDLE;  
     }
 }
 
@@ -2300,7 +2300,7 @@ stock KillAmmoPackTimer(client)
     if (g_AmmoPackTimers[client] != INVALID_HANDLE)
     {
         KillTimer(g_AmmoPackTimers[client]);
-        g_AmmoPackTimers[client] = INVALID_HANDLE;	
+        g_AmmoPackTimers[client] = INVALID_HANDLE;  
     }
 }
 
@@ -2315,7 +2315,7 @@ stock KillTrackWeaponsTimer(client)
     if (g_TrackWeaponsTimers[client] != INVALID_HANDLE)
     {
         KillTimer(g_TrackWeaponsTimers[client]);
-        g_TrackWeaponsTimers[client] = INVALID_HANDLE;	
+        g_TrackWeaponsTimers[client] = INVALID_HANDLE;  
     }
 }
 
