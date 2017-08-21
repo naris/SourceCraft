@@ -557,33 +557,43 @@
 	}
 	"UsesEnergyPerSecond"
 	{
-		"#format"	"{1:1.0f},{2:1.0f}"
-		"en"		"Uses {1} energy to invoke and {2} energy per second"
+		"#format"	"{1:1.0f},{2:1.0f},{3:1.0f},{4:s}"
+		"en"		"Uses {1} energy to invoke and {2} energy per {3} second{4}"
 	}
 	"UsesEnergyPerUse"
 	{
 		"#format"	"{1:1.0f}"
 		"en"		"Uses {1} energy per use"
 	}
-	"CostsVespenePerUse"
+	"CostsCrystalsAndVespenePerUse"
 	{
-		"#format"	"{1:d}"
-		"en"		"Costs {1} vespene per use"
-	}
-	"CostsVespeneToUpgrade"
-	{
-		"#format"	"{1:d}"
-		"en"		"Costs {1} vespene to upgrade"
+		"#format"	"{1:d},{2:d}"
+		"en"		"Costs {1} crystals and {2} vespene per use"
 	}
 	"CostsCrystalsPerUse"
 	{
 		"#format"	"{1:d}"
 		"en"		"Costs {1} crystals per use"
 	}
+	"CostsVespenePerUse"
+	{
+		"#format"	"{1:d}"
+		"en"		"Costs {1} vespene per use"
+	}
+	"CostsCrystalsAndVespeneToUpgrade"
+	{
+		"#format"	"{1:d},{2:d}"
+		"en"		"Costs {1} crystals and {2} vespene to upgrade"
+	}
 	"CostsCrystalsToUpgrade"
 	{
 		"#format"	"{1:d}"
 		"en"		"Costs {1} crystals to upgrade"
+	}
+	"CostsVespeneToUpgrade"
+	{
+		"#format"	"{1:d}"
+		"en"		"Costs {1} vespene to upgrade"
 	}
 	"InvokedWithUltimate"
 	{

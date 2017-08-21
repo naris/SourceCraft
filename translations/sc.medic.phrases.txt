@@ -83,7 +83,11 @@
 	}
 	"medic_medipack_desc"
 	{
-		"en"		"Provides some ubercharge on spawn and drops Medipacks on death.\nAt level 2 and above, Medipacks can be dropped and with alt fire of medigun or +ultimate 4\nMedics use ubercharge instead of energy to drop Medipacks."
+		"en"		"Provides some ubercharge on spawn and drops Medipacks on death. At level 2 and above Medipacks can be dropped on demand.\nMedics use ubercharge to drop Medipacks, all other classes use energy."
+	}
+	"medic_medipack_invoke"
+	{
+		"en"		"Medipacks can be dropped on demand with alt fire of the medigun or the +ultimate4 command."
 	}
 	"medic_medipack_image"
 	{
@@ -96,7 +100,7 @@
 	}
 	"medic_healthkit_desc"
 	{
-		"en"		"Drop a Healthkit on death or with dropammo command (usually h)."
+		"en"		"Drop a Healthkit on death or with the dropammo command (usually h)."
 	}
 	"medic_healthkit_image"
 	{
@@ -135,7 +139,11 @@
 	}
 	"medic_restore_desc"
 	{
-		"en"		"Restores (removes effects of orb,bash,lockdown, etc.) continously for the teammates around you and for yourself when +ultimate 3 is hit."
+		"en"		"Restores (removes effects of orb,bash,lockdown, etc.) continuously for the teammates around you."
+	}
+	"medic_restore_invoke"
+	{
+		"en"		"Restore yourself with the +ultimate3 command."
 	}
 	"medic_restore_image"
 	{
@@ -161,7 +169,15 @@
 	}
 	"medic_jetpack_desc"
 	{
-		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling.\nBind a key to +jetpack or +ultimate to use the jetpack.\nTo bind to [, type bind [ +jetpack in console."
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+	}
+	"medic_jetpack_invoke"
+	{
+		"en"		"Use the +jetpack or +ultimate command to use the jetpack to fly."
+	}
+	"medic_jetpack_bind"
+	{
+		"en"		"To bind to \"[\", type bind [ +jetpack in console."
 	}
 	"medic_jetpack_image"
 	{

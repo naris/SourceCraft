@@ -401,40 +401,43 @@ native GetUpgradeCount(race);
 
 /**
  * Adds an upgrade to a race
- * @param race:             The race ID returned from CreateRace()
- * @param short:            The short name of the upgrade. (max 16, defaults to truncated & lowercased name) 
- * @param upgrade_category: Set to 0 for a "Normal" Upgrade or a category number for an ultimate. (default is 0)
- * @param required_level:   The race level required before this upgrade becomes available, set to 0 for upgrades
- *                          that are always available. The default value of -1 uses the value of sc_minultimate
- *                          (usually 8) for ultimates and 1 for other upgrades.
- * @param max_level:        The maximum level the upgrade can attain. (default is 4)
- * @param energy:           Amount of energy required to invoke upgrade. (default is 0)
- * @param recurring_energy: Recurring amount of energy required the while upgrade is active,
- *                          such as energy per shot. (default is 0)
- * @param accumulated:      If true, accumulated energy can be used to invoke. (default is false)
- * @param crystals:         Amount of crystals required to invoke upgrade. (default is 0)
- * @param vespene:          Amount of vespene required to invoke upgrade. (default is 0)
- * @param cost_crystals:    Amount of crystals required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
- * @param cost_vespene:     Amount of vespene required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
- * @param cooldown:         Duration of the cooldown, if any (default is 0.0)
- * @param cooldown_type:    What type of cooldown to use, if any (default is Cooldown_None)
- * @param disabled:         Set to true to disable the upgrade (deafults to false)
- * @param name:             The name of the upgrade. (max 64, defaults to translation)
- * @param desc:             The description of the upgrade. (max 2048, defaults to translation)
- * @param bind:             Instructions on keys to bind to use the upgrade (if any). (max 2048, defaults to translation)
- * @param image:            The image for the upgrade. (max 256, defaults to translation)
- *                          If the description starts with a %, the portion after the % will be used as a translation phrase.
- * @param p1-p8:            Optional parameters to use when translating the description, string parameters {1:s} must be defined
- *                          in the translation file as specified here: http://wiki.alliedmods.net/Translations_(SourceMod_Scripting).
- *                          (unless the race's translation format is Translation_W3S, which uses the W3S format)
- * @return                  The return value will be the upgrade index or -1 if there was a problem.
+ * @param race:               The race ID returned from CreateRace()
+ * @param short:              The short name of the upgrade. (max 16, defaults to truncated & lowercased name) 
+ * @param upgrade_category:   Set to 0 for a "Normal" Upgrade or a category number for an ultimate. (default is 0)
+ * @param required_level:     The race level required before this upgrade becomes available, set to 0 for upgrades
+ *                            that are always available. The default value of -1 uses the value of sc_minultimate
+ *                            (usually 8) for ultimates and 1 for other upgrades.
+ * @param max_level:          The maximum level the upgrade can attain. (default is 4)
+ * @param energy:             Amount of energy required to invoke upgrade. (default is 0)
+ * @param recurring_energy:   Recurring amount of energy required the while upgrade is active,
+ *                            such as energy per shot. (default is 0)
+ * @param recurring_interval: Interval the recurring amount of energy is used (in seconds).
+ * @param accumulated:        If true, accumulated energy can be used to invoke. (default is false)
+ * @param crystals:           Amount of crystals required to invoke upgrade. (default is 0)
+ * @param vespene:            Amount of vespene required to invoke upgrade. (default is 0)
+ * @param cost_crystals:      Amount of crystals required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
+ * @param cost_vespene:       Amount of vespene required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
+ * @param cooldown:           Duration of the cooldown, if any (default is 0.0)
+ * @param cooldown_type:      What type of cooldown to use, if any (default is Cooldown_None)
+ * @param disabled:           Set to true to disable the upgrade (deafults to false)
+ * @param name:               The name of the upgrade. (max 64, defaults to translation)
+ * @param desc:               The description of the upgrade. (max 2048, defaults to translation)
+ * @param invoke:             Instructions on how to invoke/use the upgrade (if any). (max 2048, defaults to translation)
+ * @param bind:               Instructions on keys to bind to invoke/use the upgrade (if any). (max 2048, defaults to translation)
+ * @param image:              The image for the upgrade. (max 256, defaults to translation)
+ *                            If the description starts with a %, the portion after the % will be used as a translation phrase.
+ * @param p1-p8:              Optional parameters to use when translating the description, string parameters {1:s} must be defined
+ *                            in the translation file as specified here: http://wiki.alliedmods.net/Translations_(SourceMod_Scripting).
+ *                            (unless the race's translation format is Translation_W3S, which uses the W3S format)
+ * @return                    The return value will be the upgrade index or -1 if there was a problem.
  */
 native AddUpgrade(race, const String:short[], upgrade_category=0, required_level=-1, max_level=4, Float:energy=0.0,
-                  Float:recurring_energy=0.0, bool:accumulated=false, crystals=0, vespene=0, cost_crystals=-1,
-                  cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None, bool:disabled=false,
-                  const String:name[]="", const String:desc[]="", const String:bind[]="", const String:image[]="",
-                  const String:p1[]="", const String:p2[]="", const String:p3[]="", const String:p4[]="",
-                  const String:p5[]="", const String:p6[]="", const String:p7[]="", const String:p8[]="");
+                  Float:recurring_energy=0.0, Float:recurring_interval=0.0, bool:accumulated=false, crystals=0,
+                  vespene=0, cost_crystals=-1, cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None,
+                  bool:disabled=false, const String:name[]="", const String:desc[]="", const String:invoke[]="",
+                  const String:bind[]="", const String:image[]="", const String:p1[]="", const String:p2[]="",
+                  const String:p3[]="", const String:p4[]="", const String:p5[]="", const String:p6[]="",
+				  const String:p7[]="", const String:p8[]="");
 
 #define AddUltimate AddUpgrade
 #define AddAbility  AddUpgrade

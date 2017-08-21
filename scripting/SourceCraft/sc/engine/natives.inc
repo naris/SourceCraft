@@ -451,36 +451,39 @@ public Native_SetRaceEnergyFlags(Handle:plugin,numParams)
 
 /**
  * Adds an upgrade to a race
- * @param race:             The race ID returned from CreateRace()
- * @param short:            The short name of the upgrade. (max 16, defaults to truncated & lowercased name) 
- * @param upgrade_category: Set to 0 for a "Normal" Upgrade or a category number for an ultimate. (default is 0)
- * @param required_level:   The race level required before this upgrade becomes available, set to 0 for upgrades
- *                          that are always available. The default value of -1 uses the value of sc_minultimate
- *                          (usually 8) for ultimates and 1 for other upgrades.
- * @param max_level:        The maximum level the upgrade can attain. (default is 4)
- * @param energy:           Amount of energy required to invoke upgrade. (default is 0)
- * @param recurring_energy: Recurring amount of energy required the while upgrade is active,
- *                          such as energy per shot. (default is 0)
- * @param accumulated:      If true, accumulated energy can be used to invoke. (default is false)
- * @param crystals:         Amount of crystals required to purchase or invoke upgrade. (default is 0)
- * @param vespene:          Amount of vespene required to purchase or invoke upgrade. (default is 0)
- * @param cost_crystals:    Amount of crystals required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
- * @param cost_vespene:     Amount of vespene required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
- * @param cooldown:         Duration of the cooldown, if any (default is 0.0)
- * @param cooldown_type:    What type of cooldown to use, if any (default is Cooldown_None)
- * @param disabled:         Set to true to disable te upgrade (deafults to false)
- * @param name:             The name of the upgrade. (max 64, defaults to translation)
- * @param desc:             The description of the upgrade. (max 256, defaults to translation)
- * @param bind:             Instructions on keys to bind to use the upgrade (if any). (max 2048, defaults to translation)
- * @param image:            The image for the upgrade. (max 256, defaults to translation)
+ * @param race:               The race ID returned from CreateRace()
+ * @param short:              The short name of the upgrade. (max 16, defaults to truncated & lowercased name) 
+ * @param upgrade_category:   Set to 0 for a "Normal" Upgrade or a category number for an ultimate. (default is 0)
+ * @param required_level:     The race level required before this upgrade becomes available, set to 0 for upgrades
+ *                            that are always available. The default value of -1 uses the value of sc_minultimate
+ *                            (usually 8) for ultimates and 1 for other upgrades.
+ * @param max_level:          The maximum level the upgrade can attain. (default is 4)
+ * @param energy:             Amount of energy required to invoke upgrade. (default is 0)
+ * @param recurring_energy:   Recurring amount of energy required the while upgrade is active,
+ *                            such as energy per shot. (default is 0)
+ * @param recurring_interval: Interval the recurring amount of energy is used (in seconds).
+ * @param accumulated:        If true, accumulated energy can be used to invoke. (default is false)
+ * @param crystals:           Amount of crystals required to purchase or invoke upgrade. (default is 0)
+ * @param vespene:            Amount of vespene required to purchase or invoke upgrade. (default is 0)
+ * @param cost_crystals:      Amount of crystals required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
+ * @param cost_vespene:       Amount of vespene required to purchase upgrade for 1 map, -1 to use global default. (default is -1)
+ * @param cooldown:           Duration of the cooldown, if any (default is 0.0)
+ * @param cooldown_type:      What type of cooldown to use, if any (default is Cooldown_None)
+ * @param disabled:           Set to true to disable te upgrade (deafults to false)
+ * @param name:               The name of the upgrade. (max 64, defaults to translation)
+ * @param desc:               The description of the upgrade. (max 256, defaults to translation)
+ * @param invoke:             Instructions on how to invoke/use the upgrade (if any). (max 2048, defaults to translation)
+ * @param bind:               Instructions on keys to bind to invoke/use the upgrade (if any). (max 2048, defaults to translation)
+ * @param image:              The image for the upgrade. (max 256, defaults to translation)
  * @return The return value will be the upgrade index or -1 if there was a problem.
  *
  * native AddUpgrade(race, const String:short[], upgrade_category=0, required_level=-1, max_level=4, Float:energy=0.0,
- *                   Float:recurring_energy=0.0, bool:accumulated=false, crystals=0, vespene=0, cost_crystals=-1,
- *                   cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None, bool:disabled=false,
- *                   const String:name[]="", const String:desc[]="", const String:bind[]="", const String:image[]="",
- *                   const String:p1[]="", const String:p2[]="", const String:p3[]="", const String:p4[]="",
- *                   const String:p5[]="", const String:p6[]="", const String:p7[]="", const String:p8[]="");
+ *                   Float:recurring_energy=0.0, Float:recurring_interval=0.0, bool:accumulated=false, crystals=0,
+ *                   vespene=0, cost_crystals=-1, cost_vespene=-1, Float:cooldown=0.0, CooldownType:cooldown_type=Cooldown_None,
+ *                   bool:disabled=false, const String:name[]="", const String:desc[]="", const String:invoke[]="",
+ *                   const String:bind[]="", const String:image[]="", const String:p1[]="", const String:p2[]="",
+ *                   const String:p3[]="", const String:p4[]="", const String:p5[]="", const String:p6[]="",
+ *                   const String:p7[]="", const String:p8[]="");
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
 {
@@ -496,50 +499,54 @@ public Native_AddUpgrade(Handle:plugin,numParams)
         new max_level                  = GetNativeCell(5);
         new Float:energy               = Float:GetNativeCell(6);
         new Float:recurring_energy     = Float:GetNativeCell(7);
-        new bool:accumulated           = bool:GetNativeCell(8);
-        new vespene                    = GetNativeCell(9);
-        new crystals                   = GetNativeCell(10);
-        new cost_crystals              = GetNativeCell(11);
-        new cost_vespene               = GetNativeCell(12);
-        new Float:cooldown             = Float:GetNativeCell(13);
-        new CooldownType:cooldown_type = CooldownType:GetNativeCell(14);
-        new bool:disabled              = bool:GetNativeCell(15);
+        new Float:recurring_interval   = Float:GetNativeCell(8);
+        new bool:accumulated           = bool:GetNativeCell(9);
+        new vespene                    = GetNativeCell(10);
+        new crystals                   = GetNativeCell(11);
+        new cost_crystals              = GetNativeCell(12);
+        new cost_vespene               = GetNativeCell(13);
+        new Float:cooldown             = Float:GetNativeCell(14);
+        new CooldownType:cooldown_type = CooldownType:GetNativeCell(15);
+        new bool:disabled              = bool:GetNativeCell(16);
 
         decl String:name[LONG_STRING_LENGTH];
-        GetNativeString(16,name,sizeof(name));
+        GetNativeString(17,name,sizeof(name));
 
         decl String:desc[LONG_STRING_LENGTH];
-        GetNativeString(17,desc,sizeof(desc));
+        GetNativeString(18,desc,sizeof(desc));
+
+        decl String:invoke[LONG_STRING_LENGTH];
+        GetNativeString(19,invoke,sizeof(invoke));
 
         decl String:bind[LONG_STRING_LENGTH];
-        GetNativeString(18,bind,sizeof(bind));
+        GetNativeString(20,bind,sizeof(bind));
 
         decl String:image[LONG_STRING_LENGTH];
-        GetNativeString(19,image,sizeof(image));
+        GetNativeString(21,image,sizeof(image));
 
         decl String:p1[NAME_STRING_LENGTH];
-        GetNativeString(20,p1,sizeof(p1));
+        GetNativeString(22,p1,sizeof(p1));
 
         decl String:p2[NAME_STRING_LENGTH];
-        GetNativeString(21,p2,sizeof(p2));
+        GetNativeString(23,p2,sizeof(p2));
 
         decl String:p3[NAME_STRING_LENGTH];
-        GetNativeString(22,p3,sizeof(p3));
+        GetNativeString(24,p3,sizeof(p3));
 
         decl String:p4[NAME_STRING_LENGTH];
-        GetNativeString(23,p4,sizeof(p4));
+        GetNativeString(25,p4,sizeof(p4));
 
         decl String:p5[NAME_STRING_LENGTH];
-        GetNativeString(24,p5,sizeof(p5));
+        GetNativeString(26,p5,sizeof(p5));
 
         decl String:p6[NAME_STRING_LENGTH];
-        GetNativeString(25,p6,sizeof(p6));
+        GetNativeString(27,p6,sizeof(p6));
 
         decl String:p7[NAME_STRING_LENGTH];
-        GetNativeString(26,p7,sizeof(p7));
+        GetNativeString(28,p7,sizeof(p7));
 
         decl String:p8[NAME_STRING_LENGTH];
-        GetNativeString(27,p8,sizeof(p8));
+        GetNativeString(29,p8,sizeof(p8));
 
         // If the short name wasn't provided
         if (short[0] == '\0' && name[0] != '\0')
@@ -551,9 +558,9 @@ public Native_AddUpgrade(Handle:plugin,numParams)
         }
 
         return AddUpgrade(race, raceHandle, short, upgrade_category, required_level, max_level,
-                          energy, recurring_energy, accumulated, crystals, vespene, cost_crystals,
-                          cost_vespene, cooldown, cooldown_type, disabled, name, desc, bind, image,
-                          p1, p2, p3, p4, p5, p6, p7, p8);
+                          energy, recurring_energy, recurring_interval, accumulated, crystals,
+                          vespene, cost_crystals, cost_vespene, cooldown, cooldown_type, disabled,
+                          name, desc, invoke, bind, image, p1, p2, p3, p4, p5, p6, p7, p8);
     }
     else
         return -1;

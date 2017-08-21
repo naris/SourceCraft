@@ -121,7 +121,15 @@
 	}
 	"prism_jetpack_desc"
 	{
-		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling.\nBind a key to +jetpack or +ultimate to use the jetpack.\nTo bind to [, type bind [ +jetpack in console."
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+	}
+	"reaper_jetpack_invoke"
+	{
+		"en"		"Use the +jetpack or +ultimate command to use the jetpack to fly."
+	}
+	"reaper_jetpack_bind"
+	{
+		"en"		"To bind to \"[\", type bind [ +jetpack in console."
 	}
 	"prism_jetpack_image"
 	{

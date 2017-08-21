@@ -642,7 +642,7 @@ public UpgradeMenu_Selected(Handle:menu,MenuAction:action,client,selection)
                 }
                 else
                 {
-                    UpgradesInfo_Upgrade(client, race, raceHandle, upgrade, UpgradeMode|FromUpgradeMenu);
+                    ShowUpgradeInfo(client, race, raceHandle, upgrade, UpgradeMode|FromUpgradeMenu);
                 }
             }
         }

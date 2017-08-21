@@ -397,7 +397,7 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
                 }
                 else
                 {
-                    UpgradesInfo_Upgrade(client,race,raceHandle,upgrade,gUpgradesMenuMode[client]);
+                    ShowUpgradeInfo(client,race,raceHandle,upgrade,gUpgradesMenuMode[client]);
                 }
             }
         }
@@ -427,20 +427,21 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
-UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
+ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
 {
-    TraceInto("Info", "UpgradesInfo_Upgrade", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
+    TraceInto("Info", "ShowUpgradeInfo", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
               client, client, raceHandle, upgrade, mode);
 
     new category = GetUpgradeCategory(raceHandle, upgrade);
     new MenuMode:isUpgradeMode = (mode & UpgradeMode);
 
+    decl String:item[DESCRIPTION_LENGTH];
     decl String:name[NAME_STRING_LENGTH];
     decl String:desc[DESCRIPTION_LENGTH];
     decl String:bind[DESCRIPTION_LENGTH];
-    decl String:item[DESCRIPTION_LENGTH];
-    GetUpgradeNameAndDesc(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), bind, sizeof(bind), client);
-    Trace("GetUpgradeNameAndDesc:name=%s,desc=%s,bind=%s",name,desc,bind);
+    decl String:invoke[DESCRIPTION_LENGTH];
+    GetUpgradeStrings(raceHandle, upgrade, name, sizeof(name), desc, sizeof(desc), invoke, sizeof(invoke), bind, sizeof(bind), client);
+    Trace("GetUpgradeStrings:name=%s,desc=%s,invoke=%s,bind=%s",name,desc,invoke,bind);
 
     new Handle:menu = CreateMenu(UpgradesInfo_Back);
     SetMenuExitButton(menu,true);
@@ -469,8 +470,11 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     {
         if (energy > 0.0)
         {
-            // TODO: Make configurable (add recurring energy time factor attribute to upgrade)
-            Format(item, sizeof(item), "%T", "UsesEnergyPerSecond", client, energy, 1.0); // recurring_energy);
+			new Float:recurring_interval = GetUpgradeRecurringInterval(raceHandle, upgrade);
+			new Float:interval = (recurring_interval == 0.0) ? recurring_energy : recurring_interval;
+            Format(item, sizeof(item), "%T", "UsesEnergyPerSecond", client, energy, recurring_energy,
+				   interval, (interval > 1.0) ? "s" : ""));
+
             AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
         }
         else
@@ -486,14 +490,18 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     }
 
     new crystals = GetUpgradeCrystals(raceHandle, upgrade);
-    if (crystals > 0)
+    new vespene = GetUpgradeVespene(raceHandle, upgrade);
+    if (crystals > 0 && vespene > 0)
+    {
+        Format(item, sizeof(item), "%T", "CostsCrystalsAndVespenePerUse", client, crystals, vespene);
+        AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+    }
+    else if (crystals > 0)
     {
         Format(item, sizeof(item), "%T", "CostsCrystalsPerUse", client, crystals);
         AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
-
-    new vespene = GetUpgradeVespene(raceHandle, upgrade);
-    if (vespene > 0)
+    else if (vespene > 0)
     {
         Format(item, sizeof(item), "%T", "CostsVespenePerUse", client, vespene);
         AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
@@ -507,60 +515,60 @@ UpgradesInfo_Upgrade(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
             crystal_cost = g_iUpgradeCrystalsCost;
         }
         
-        if (crystal_cost > 0)
-        {
-            Format(item, sizeof(item), "%T", "CostsCrystalsToUpgrade", client, crystal_cost);
-            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
-        }
-
         new vespene_cost = GetUpgradeCostVespene(raceHandle, upgrade);
         if (vespene_cost < 0)
         {
             vespene_cost = g_iUpgradeVespeneCost;
         }
         
-        if (vespene_cost > 0)
+        if (crystal_cost > 0 && vespene_cost > 0)
+        {
+            Format(item, sizeof(item), "%T", "CostsCrystalsAndVespeneToUpgrade", client, crystal_cost, vespene_cost);
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
+        else if (crystal_cost > 0)
+        {
+            Format(item, sizeof(item), "%T", "CostsCrystalsToUpgrade", client, crystal_cost);
+            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        }
+        else if (vespene_cost > 0)
         {
             Format(item, sizeof(item), "%T", "CostsVespeneToUpgrade", client, vespene_cost);
             AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
         }
     }
 
+    if (invoke[0] != '\0')
+    {
+        AddMenuItem(menu, "", invoke, ITEMDRAW_DISABLED);
+    }
+    else if (category == 1)
+    {
+		Format(item, sizeof(item), "%T", "InvokedWithUltimate", client, category);
+		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+    }
+    else if (category > 1)
+    {
+		Format(item, sizeof(item), "%T", "InvokedWithUltimateN", client, category);
+		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+    }
+	
     if (bind[0] != '\0')
     {
         AddMenuItem(menu, "", bind, ITEMDRAW_DISABLED);
     }
-
-    if (category == 1)
+    else if (category == 1)
     {
-        if (!StrContains(bind, "+ultimate") && !StrContains(desc, "+ultimate"))
-        {
-            Format(item, sizeof(item), "%T", "InvokedWithUltimate", client, category);
-            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
-        }
-
-        if (!StrContains(bind, "console") && !StrContains(desc, "console"))
-        {
-            Format(item, sizeof(item), "%T", "BindUltimate", client, category, "f");
-            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
-        }
+		Format(item, sizeof(item), "%T", "BindUltimate", client, category, "f");
+		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
     else if (category > 1)
     {
-        if (!StrContains(bind, "+ultimate") && !StrContains(desc, "+ultimate"))
-        {
-            Format(item, sizeof(item), "%T", "InvokedWithUltimateN", client, category);
-            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
-        }
-        
-        if (!StrContains(bind, "console") && !StrContains(desc, "console"))
-        {
-            new String:bindKey[][] = { "", "f", "b", "n", "p", "x" };
-            Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
-                    (category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
+		new String:bindKey[][] = { "", "f", "b", "n", "p", "x" };
+		Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
+				(category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
 
-            AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
-        }
+		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
 
     AddMenuItem(menu, "", "", ITEMDRAW_SPACER);

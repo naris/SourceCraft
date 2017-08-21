@@ -135,13 +135,13 @@
 	{
 		"en"		"Allows you to pick up objects and move them around."
 	}
+	"scv_gravgun_invoke"
+	{
+		"en"		"Grab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3 commands.\nIf you have not grabbed an object, +throw will grab the object you are looking at."
+	}
 	"scv_gravgun_bind"
 	{
-		"en"		"Grab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3."
-	}
-	"scv_gravgun_bind-verbose"
-	{
-		"en"		"Grab an object with +grab, throw an object with +throw or +ultimate and rotate an object with +rotate or +ultimate3\nTo bind to [, ] & \, type bind [ +grab then bind ] +throw then bind \ +rotate in console.\nIf you have not grabbed an object, +throw will grab the  object you are looking at so you can get by without binding +grab (and +rotate)."
+		"en"		"To bind to \"[\", \"]\" & \"\\", type bind [ +grab then bind ] +throw then bind \ +rotate in console."
 	}
 	"scv_gravgun_image"
 	{
@@ -169,9 +169,13 @@
 	{
 		"en"		"You will be given a tripmine to plant for every level."
 	}
+	"scv_tripmine_invoke"
+	{
+		"en"		"Plant a tripmine with +ultimate2 or sm_tripmine commands."
+	}
 	"scv_tripmine_bind"
 	{
-		"en"		"Bind a key to sm_tripmine or +ultimate2 to plant the tripmine.\nTo bind to t, type bind t sm_tripmine in console."
+		"en"		"To bind to t, type bind t sm_tripmine in console."
 	}
 	"scv_tripmine_image"
 	{
@@ -186,9 +190,13 @@
 	{
 		"en"		"You will be given a frag grenade and a special grenade to use for every level."
 	}
+	"scv_nade_invoke"
+	{
+		"en"		"Throw a frag nade with +nade1 or +ultimate5 and a special nade with +nade2 or +ultimate3 commands.\nType !nade for more information."
+	}
 	"scv_nade_bind"
 	{
-		"en"		"Throw a frag nade with +nade1 or +ultimate5 and a special nade with +nade2 or +ultimate3\nTo bind to g & h, type bind g +nade1 then bind h +nade2 in console.\nType !nade for more information."
+		"en"		"To bind to g & h, type bind g +nade1 then bind h +nade2 in console."
 	}
 	"scv_nade_image"
 	{

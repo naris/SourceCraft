@@ -109,7 +109,15 @@
 	}
 	"overseer_flyer_desc"
 	{
-		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling.\nBind a key to +jetpack or +ultimate to use the jetpack.\nTo bind to [, type bind [ +jetpack in console."
+		"en"		"Allows you to fly until you run out of fuel. Additional levels increases fuel capacity and reduces the time before refueling."
+	}
+	"overseer_flyer_invoke"
+	{
+		"en"		"Use the +jetpack or +ultimate command to use the jetpack to fly."
+	}
+	"overseer_flyer_bind"
+	{
+		"en"		"To bind to \"[\", type bind [ +jetpack in console."
 	}
 	"overseer_flyer_image"
 	{

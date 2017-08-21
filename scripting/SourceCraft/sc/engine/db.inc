@@ -911,13 +911,14 @@ UpdateRace(race_ident, const String:shortName[], const String:raceName[], requir
 }
 
 bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
-                   const String:name[], const String:desc[], const String:bind[],
-                   const String:image[], cost_crystals, cost_vespene, required_level,
-                   max_level, Float:energy, bool:accumulated, Float:recurring_energy,
-				   crystals, vespene, Float:cooldown)
+                   const String:name[], const String:desc[], const String:invoke[],
+                   const String:bind[], const String:image[], cost_crystals,
+                   cost_vespene, required_level, max_level, Float:energy,
+				   bool:accumulated, Float:recurring_energy, crystals,
+				   vespene, Float:cooldown)
 {
-    TraceInto("DB", "InsertUpgrade", "race_ident=%d, upgrade=%d, category=%d, short=%s, name=%s, bind=%s, image=%s", \
-              race_ident, upgrade, upgrade_category, short, name, bind, image);
+    TraceInto("DB", "InsertUpgrade", "race_ident=%d, upgrade=%d, category=%d, short=%s, name=%s, invoke=%s, bind=%s, image=%s", \
+              race_ident, upgrade, upgrade_category, short, name, invoke, bind, image);
 
     TraceDebug("desc=(length=%d,string=%s)", strlen(desc), desc);
 
@@ -936,6 +937,13 @@ bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
                 strcopy(escDesc, sizeof(escDesc), desc);
             }
 
+            decl String:escInvoke[DESCRIPTION_LENGTH*2+1];
+            if (!SQL_EscapeString(g_DbHandle[DB_MAIN], invoke, escInvoke, sizeof(escInvoke)))
+            {
+                LogError("Unable to escape %s!", bind);
+                strcopy(escInvoke, sizeof(escInvoke), invoke);
+            }
+
             decl String:escBind[DESCRIPTION_LENGTH*2+1];
             if (!SQL_EscapeString(g_DbHandle[DB_MAIN], bind, escBind, sizeof(escBind)))
             {
@@ -945,9 +953,9 @@ bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
 
             decl String:SQLString[QUERY_STRING_LENGTH+sizeof(escDesc)+sizeof(escBind)];
             Format(SQLString,sizeof(SQLString),
-                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,bind,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',bind='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,crystals=%d,vespene=%d,cooldown=%f",
-                   race_ident, upgrade, upgrade_category, short, name, escDesc, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown,
-                   upgrade_category, short, name, escDesc, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown);
+                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,invoke,bind,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',invoke='%s',bind='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,crystals=%d,vespene=%d,cooldown=%f",
+                   race_ident, upgrade, upgrade_category, short, name, escDesc, escInvoke, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown,
+                   upgrade_category, short, name, escDesc, escInvoke, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown);
 
             TraceDebug("query=%s", SQLString);
 
@@ -2988,11 +2996,12 @@ public Action:Retry_SavePlayerUpgradeData(Handle:timer,Handle:data)
         GetUpgradeImage(raceHandle,upgrade,image,sizeof(image));
 
         decl String:name[NAME_STRING_LENGTH];
-        decl String:desc[LONG_STRING_LENGTH];
-        decl String:bind[LONG_STRING_LENGTH];
-        GetUpgradeNameAndDesc(raceHandle,upgrade,name,sizeof(name),desc,sizeof(desc),bind,sizeof(bind));
+        decl String:desc[DESCRIPTION_LENGTH];
+        decl String:bind[DESCRIPTION_LENGTH];
+        decl String:invoke[DESCRIPTION_LENGTH];
+        GetUpgradeStrings(raceHandle,upgrade,name,sizeof(name),desc,sizeof(desc),invoke,sizeof(invoke),bind,sizeof(bind));
 
-        InsertUpgrade(race_ident, upgrade, GetUpgradeCategory(raceHandle,upgrade), short, name, desc, bind, image,
+        InsertUpgrade(race_ident, upgrade, GetUpgradeCategory(raceHandle,upgrade), short, name, desc, invoke, bind, image,
                       GetUpgradeCostCrystals(raceHandle,upgrade), GetUpgradeCostVespene(raceHandle,upgrade),
                       GetUpgradeRequiredLevel(raceHandle,upgrade), GetUpgradeMaxLevel(raceHandle,upgrade),
                       GetUpgradeEnergy(raceHandle,upgrade), GetUpgradeCanUseAccumulated(raceHandle,upgrade),
