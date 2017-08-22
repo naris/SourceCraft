@@ -116,7 +116,7 @@ echo $this->render('partials/html_header.phtml');
 			<td><center><?= ($upgrade['crystals'] > 0) ? $upgrade['crystals']: "" ?></center></td>
 			<td><center><?= ($upgrade['vespene'] > 0) ? $upgrade['vespene'] : "" ?></center></td>
 			<td><center><?= ($upgrade['recurring_energy'] > 0) ? : "" ?></center></td>
-			<td><?= $upgrade['description'] ?></td>
+			<td><?= $upgrade['description'].'&nbsp'.$upgrade['invoke'].'&nbsp'.$upgrade['bind'] ?></td>
 		</tr>
 
 <?php endforeach; ?>
