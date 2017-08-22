@@ -262,12 +262,16 @@ public Action:OnJetpack(client)
 
 public Action:OnWeaponSwitch(client, weapon)
 {
-    #if defined _TRACE
-        decl String:sWeapon[32];
-        GetEdictClassname(weapon, sWeapon, sizeof(sWeapon));
+        TraceInto("Events", "OnWeaponSwitch", "client=%d:%L, weapon=%d", \
+                  client, ValidClientIndex(client), weapon);
 
-        TraceInto("Events", "OnWeaponSwitch", "client=%d:%L, weapon=%d:%s", \
-                  client, ValidClientIndex(client), weapon, sWeapon);
+    #if defined _TRACE
+		if (weapon > 0)
+		{
+			decl String:sWeapon[32];
+			GetEdictClassname(weapon, sWeapon, sizeof(sWeapon));
+			Trace("weapon class=%s", sWeapon);
+		}
 
         new Float:speed = m_BaseSpeed[client] = GetEntPropFloat(client, Prop_Send, "m_flMaxspeed");
         TraceCat("Speed", "%d:%N's speed=%1.0f", client, ValidClientIndex(client), speed);
