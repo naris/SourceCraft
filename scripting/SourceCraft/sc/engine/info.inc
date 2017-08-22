@@ -470,10 +470,10 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     {
         if (energy > 0.0)
         {
-			new Float:recurring_interval = GetUpgradeRecurringInterval(raceHandle, upgrade);
-			new Float:interval = (recurring_interval == 0.0) ? recurring_energy : recurring_interval;
+            new Float:recurring_interval = GetUpgradeRecurringInterval(raceHandle, upgrade);
+            new Float:interval = (recurring_interval == 0.0) ? recurring_energy : recurring_interval;
             Format(item, sizeof(item), "%T", "UsesEnergyPerSecond", client, energy, recurring_energy,
-				   interval, (interval > 1.0) ? "s" : ""));
+                   interval, (interval > 1.0) ? "s" : "");
 
             AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
         }
@@ -544,31 +544,31 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     }
     else if (category == 1)
     {
-		Format(item, sizeof(item), "%T", "InvokedWithUltimate", client, category);
-		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        Format(item, sizeof(item), "%T", "InvokedWithUltimate", client, category);
+        AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
     else if (category > 1)
     {
-		Format(item, sizeof(item), "%T", "InvokedWithUltimateN", client, category);
-		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        Format(item, sizeof(item), "%T", "InvokedWithUltimateN", client, category);
+        AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
-	
+    
     if (bind[0] != '\0')
     {
         AddMenuItem(menu, "", bind, ITEMDRAW_DISABLED);
     }
     else if (category == 1)
     {
-		Format(item, sizeof(item), "%T", "BindUltimate", client, category, "f");
-		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        Format(item, sizeof(item), "%T", "BindUltimate", client, category, "f");
+        AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
     else if (category > 1)
     {
-		new String:bindKey[][] = { "", "f", "b", "n", "p", "x" };
-		Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
-				(category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
+        new String:bindKey[][] = { "", "f", "b", "n", "p", "x" };
+        Format(item, sizeof(item), "%T", "BindUltimateN", client, category,
+                (category >= 1 && category < sizeof(bindKey)) ? bindKey[category] : "x");
 
-		AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
+        AddMenuItem(menu, "", item, ITEMDRAW_DISABLED);
     }
 
     AddMenuItem(menu, "", "", ITEMDRAW_SPACER);

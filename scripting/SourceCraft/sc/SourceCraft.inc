@@ -426,7 +426,7 @@ native GetUpgradeCount(race);
  * @param bind:               Instructions on keys to bind to invoke/use the upgrade (if any). (max 2048, defaults to translation)
  * @param image:              The image for the upgrade. (max 256, defaults to translation)
  *                            If the description starts with a %, the portion after the % will be used as a translation phrase.
- * @param p1-p8:              Optional parameters to use when translating the description, string parameters {1:s} must be defined
+ * @param p1-p7:              Optional parameters to use when translating the description, string parameters {1:s} must be defined
  *                            in the translation file as specified here: http://wiki.alliedmods.net/Translations_(SourceMod_Scripting).
  *                            (unless the race's translation format is Translation_W3S, which uses the W3S format)
  * @return                    The return value will be the upgrade index or -1 if there was a problem.
@@ -437,7 +437,7 @@ native AddUpgrade(race, const String:short[], upgrade_category=0, required_level
                   bool:disabled=false, const String:name[]="", const String:desc[]="", const String:invoke[]="",
                   const String:bind[]="", const String:image[]="", const String:p1[]="", const String:p2[]="",
                   const String:p3[]="", const String:p4[]="", const String:p5[]="", const String:p6[]="",
-				  const String:p7[]="", const String:p8[]="");
+				  const String:p7[]="");
 
 #define AddUltimate AddUpgrade
 #define AddAbility  AddUpgrade

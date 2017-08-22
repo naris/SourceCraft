@@ -1666,7 +1666,7 @@ public NWar3_AddRaceSkillT(Handle:plugin,numParams)
     new bool:isult=bool:GetNativeCell(3);
     new maxskilllevel=GetNativeCell(4);
 
-    decl String:parm[8][64];
+    decl String:parm[7][64];
     for (new i=0; i<sizeof(parm); i++)
         parm[i][0] = '\0';
 
@@ -1678,7 +1678,7 @@ public NWar3_AddRaceSkillT(Handle:plugin,numParams)
 
     new newskillnum = AddUpgrade(raceid,skillname,_:isult,.max_level=maxskilllevel,
                                  .p1=parm[0], .p2=parm[1], .p3=parm[2], .p4=parm[3],
-                                 .p5=parm[4], .p6=parm[5], .p7=parm[6], .p8=parm[7]);
+                                 .p5=parm[4], .p6=parm[5], .p7=parm[6]);
 
     decl String:description[2048];
     new category = GetUpgradeDescription(raceid, newskillnum, description, sizeof(description));

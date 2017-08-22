@@ -369,6 +369,7 @@ SQL_CreateRaceTables(Handle:dbHandle)
                 " energy int NOT NULL default '0',",
                 " accumulated tinyint NOT NULL default '0',",
                 " recurring_energy int NOT NULL default '0',",
+                " recurring_interval int NOT NULL default '0',",
                 " crystals int NOT NULL default '0',",
                 " vespene int NOT NULL default '0',",
                 " cooldown int NOT NULL default '0',",
@@ -914,8 +915,9 @@ bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
                    const String:name[], const String:desc[], const String:invoke[],
                    const String:bind[], const String:image[], cost_crystals,
                    cost_vespene, required_level, max_level, Float:energy,
-				   bool:accumulated, Float:recurring_energy, crystals,
-				   vespene, Float:cooldown)
+                   bool:accumulated, Float:recurring_energy,
+                   Float:recurring_interval, crystals, vespene,
+                   Float:cooldown)
 {
     TraceInto("DB", "InsertUpgrade", "race_ident=%d, upgrade=%d, category=%d, short=%s, name=%s, invoke=%s, bind=%s, image=%s", \
               race_ident, upgrade, upgrade_category, short, name, invoke, bind, image);
@@ -953,9 +955,9 @@ bool:InsertUpgrade(race_ident, upgrade, upgrade_category, const String:short[],
 
             decl String:SQLString[QUERY_STRING_LENGTH+sizeof(escDesc)+sizeof(escBind)];
             Format(SQLString,sizeof(SQLString),
-                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,invoke,bind,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',invoke='%s',bind='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,crystals=%d,vespene=%d,cooldown=%f",
-                   race_ident, upgrade, upgrade_category, short, name, escDesc, escInvoke, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown,
-                   upgrade_category, short, name, escDesc, escInvoke, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, crystals, vespene, cooldown);
+                   "INSERT INTO sc_upgrades (race_ident,upgrade,category,upgrade_name,long_name,description,invoke,bind,image,cost_crystals,cost_vespene,required_level,max_level,energy,accumulated,recurring_energy,recurring_interval,crystals,vespene,cooldown) VALUES (%d,%d,%d,'%s','%s','%s','%s','%s','%s',%d,%d,%d,%d,%f,%d,%f,%f,%d,%d,%f) ON DUPLICATE KEY UPDATE category=%d,upgrade_name='%s',long_name='%s',description='%s',invoke='%s',bind='%s',image='%s',cost_crystals=%d,cost_vespene=%d,required_level=%d,max_level=%d,energy=%f,accumulated=%d,recurring_energy=%f,recurring_interval=%f,crystals=%d,vespene=%d,cooldown=%f",
+                   race_ident, upgrade, upgrade_category, short, name, escDesc, escInvoke, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, recurring_interval, crystals, vespene, cooldown,
+                   upgrade_category, short, name, escDesc, escInvoke, escBind, image, cost_crystals, cost_vespene, required_level, max_level, energy, accumulated, recurring_energy, recurring_interval, crystals, vespene, cooldown);
 
             TraceDebug("query=%s", SQLString);
 
@@ -3005,8 +3007,9 @@ public Action:Retry_SavePlayerUpgradeData(Handle:timer,Handle:data)
                       GetUpgradeCostCrystals(raceHandle,upgrade), GetUpgradeCostVespene(raceHandle,upgrade),
                       GetUpgradeRequiredLevel(raceHandle,upgrade), GetUpgradeMaxLevel(raceHandle,upgrade),
                       GetUpgradeEnergy(raceHandle,upgrade), GetUpgradeCanUseAccumulated(raceHandle,upgrade),
-                      GetUpgradeRecurringEnergy(raceHandle,upgrade), GetUpgradeCrystals(raceHandle,upgrade),
-                      GetUpgradeVespene(raceHandle,upgrade), GetUpgradeCooldownDuration(raceHandle,upgrade));
+                      GetUpgradeRecurringEnergy(raceHandle,upgrade), GetUpgradeRecurringInterval(raceHandle,upgrade),
+                      GetUpgradeCrystals(raceHandle,upgrade), GetUpgradeVespene(raceHandle,upgrade),
+                      GetUpgradeCooldownDuration(raceHandle,upgrade));
 
         // Retry to save the player's race (including upgrade) data
         if (client > 0)

@@ -475,6 +475,10 @@ public Native_SetRaceEnergyFlags(Handle:plugin,numParams)
  * @param invoke:             Instructions on how to invoke/use the upgrade (if any). (max 2048, defaults to translation)
  * @param bind:               Instructions on keys to bind to invoke/use the upgrade (if any). (max 2048, defaults to translation)
  * @param image:              The image for the upgrade. (max 256, defaults to translation)
+ *                            If the description starts with a %, the portion after the % will be used as a translation phrase.
+ * @param p1-p7:              Optional parameters to use when translating the description, string parameters {1:s} must be defined
+ *                            in the translation file as specified here: http://wiki.alliedmods.net/Translations_(SourceMod_Scripting).
+ *                            (unless the race's translation format is Translation_W3S, which uses the W3S format)
  * @return The return value will be the upgrade index or -1 if there was a problem.
  *
  * native AddUpgrade(race, const String:short[], upgrade_category=0, required_level=-1, max_level=4, Float:energy=0.0,
@@ -483,7 +487,7 @@ public Native_SetRaceEnergyFlags(Handle:plugin,numParams)
  *                   bool:disabled=false, const String:name[]="", const String:desc[]="", const String:invoke[]="",
  *                   const String:bind[]="", const String:image[]="", const String:p1[]="", const String:p2[]="",
  *                   const String:p3[]="", const String:p4[]="", const String:p5[]="", const String:p6[]="",
- *                   const String:p7[]="", const String:p8[]="");
+ *                   const String:p7[]="");
  */         
 public Native_AddUpgrade(Handle:plugin,numParams)
 {
@@ -545,9 +549,6 @@ public Native_AddUpgrade(Handle:plugin,numParams)
         decl String:p7[NAME_STRING_LENGTH];
         GetNativeString(28,p7,sizeof(p7));
 
-        decl String:p8[NAME_STRING_LENGTH];
-        GetNativeString(29,p8,sizeof(p8));
-
         // If the short name wasn't provided
         if (short[0] == '\0' && name[0] != '\0')
         {
@@ -560,7 +561,7 @@ public Native_AddUpgrade(Handle:plugin,numParams)
         return AddUpgrade(race, raceHandle, short, upgrade_category, required_level, max_level,
                           energy, recurring_energy, recurring_interval, accumulated, crystals,
                           vespene, cost_crystals, cost_vespene, cooldown, cooldown_type, disabled,
-                          name, desc, invoke, bind, image, p1, p2, p3, p4, p5, p6, p7, p8);
+                          name, desc, invoke, bind, image, p1, p2, p3, p4, p5, p6, p7);
     }
     else
         return -1;

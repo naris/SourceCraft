@@ -251,7 +251,7 @@ enum ConfigLoadedStatus
 #define GetUpgradeInvokeString(%1,%2,%3,%4)      GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Invoke,%3,%4)
 #define SetUpgradeInvoke(%1,%2,%3)               SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Invoke,%3)
 
-#define GetUpgradeBindString(%1,%2,%3,%4)		 GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Bind,%3,%4)
+#define GetUpgradeBindString(%1,%2,%3,%4)        GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Bind,%3,%4)
 #define SetUpgradeBind(%1,%2,%3)                 SetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Bind,%3)
 
 #define GetUpgradeImageString(%1,%2,%3,%4)       GetArrayString(GetUpgradeStringHandle(%1,%2),_:UpgradeString_Image,%3,%4)
@@ -802,7 +802,8 @@ RaceComplete(race, const String:desc[]="", const String:image[]="")
                                           upgradeShortName, upgradeName, upgradeDesc, upgradeBind,
                                           upgradeBind, upgradeImage, cost_crystals, cost_vespene,
                                           req_level, max_level, energy, accumulated,
-                                          recurring_energy, crystals, vespene, cooldown))
+                                          recurring_energy, recurring_interval,
+                                          crystals, vespene, cooldown))
                         {
                             SetArrayCell(upgradeHandle, _:UpgradeData_Completed, true);
                         }
@@ -819,10 +820,10 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
            CooldownType:cooldown_type=Cooldown_None, bool:disabled=false, const String:name[]="",
            const String:desc[]="", const String:invoke[]="", const String:bind[]="", const String:image[]="",
            const String:p1[]="", const String:p2[]="", const String:p3[]="", const String:p4[]="",
-		   const String:p5[]="", const String:p6[]="", const String:p7[]="", const String:p8[]="")
+           const String:p5[]="", const String:p6[]="", const String:p7[]="")
 {
     #if defined _TRACE
-        TraceInto("Race", "AddUpgrade", "race=%d, raceHandle=0x%08x, short=%s, upgrade_category=%d, required_level=%d, max_level=%d, energy=%f, recurring_energy=%f, recurring_interval=%f, accumulated=%d, crystals=%d, vespene=%d, cost_crystals=%d, cost_vespene=%d, cooldown=%f, cooldown_type=%d, disabled=%d, name=%s, desc=%s, invoke=%s, bind=%s, image=%s, p1=%s, p2=%s, p3=%s, p4=%s, p5=%s, p6=%s, p7=%s, p8=%s", race, raceHandle, short, upgrade_category, required_level, max_level, energy, recurring_energy, recurring_interval, accumulated, crystals, vespene, cost_crystals, cost_vespene, cooldown, cooldown_type, disabled, name, desc, invoke, bind, image, p1, p2, p3, p4, p5, p6, p7, p8);
+        TraceInto("Race", "AddUpgrade", "race=%d, raceHandle=0x%08x, short=%s, upgrade_category=%d, required_level=%d, max_level=%d, energy=%f, recurring_energy=%f, recurring_interval=%f, accumulated=%d, crystals=%d, vespene=%d, cost_crystals=%d, cost_vespene=%d, cooldown=%f, cooldown_type=%d, disabled=%d, name=%s, desc=%s, invoke=%s, bind=%s, image=%s, p1=%s, p2=%s, p3=%s, p4=%s, p5=%s, p6=%s, p7=%s", race, raceHandle, short, upgrade_category, required_level, max_level, energy, recurring_energy, recurring_interval, accumulated, crystals, vespene, cost_crystals, cost_vespene, cooldown, cooldown_type, disabled, name, desc, invoke, bind, image, p1, p2, p3, p4, p5, p6, p7);
     #else
         #pragma unused race
     #endif
@@ -914,8 +915,8 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
         new Handle:upgradeListHandle=GetUpgradeListHandle(raceHandle);
 
         upgradeHandle=GetArrayCell(upgradeListHandle, upgrade);
-        SetArrayCell(upgradeHandle, _:UpgradeData_Energy,          	 energy);
-        SetArrayCell(upgradeHandle, _:UpgradeData_RecurringEnergy, 	 recurring_energy);
+        SetArrayCell(upgradeHandle, _:UpgradeData_Energy,            energy);
+        SetArrayCell(upgradeHandle, _:UpgradeData_RecurringEnergy,   recurring_energy);
         SetArrayCell(upgradeHandle, _:UpgradeData_RecurringInterval, recurring_interval);
         SetArrayCell(upgradeHandle, _:UpgradeData_Accumulated,       accumulated);
         SetArrayCell(upgradeHandle, _:UpgradeData_Crystals,          crystals);
@@ -1006,11 +1007,6 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
                             {
                                 PushArrayString(upgradeStringHandle,p7);
                                 Trace("Parameter7=%s", p7);
-                                if (p8[0] != '\0')
-                                {
-                                    PushArrayString(upgradeStringHandle,p8);
-                                    Trace("Parameter8=%s", p8);
-                                }
                             }
                         }
                     }
@@ -1062,7 +1058,8 @@ AddUpgrade(race, Handle:raceHandle, const String:short[], upgrade_category=0, re
                           upgradeShortName, upgradeName, upgradeDesc, upgradeInvoke,
                           upgradeBind, upgradeImage, cost_crystals, cost_vespene,
                           required_level, max_level, energy, accumulated,
-                          recurring_energy, crystals, vespene, cooldown))
+                          recurring_energy, recurring_interval,
+                          crystals, vespene, cooldown))
         {
             SetArrayCell(upgradeHandle, _:UpgradeData_Completed, true);
         }
@@ -1428,67 +1425,67 @@ GetUpgradeImage(Handle:raceHandle, upgrade, String:image[], maxlength,
     }
     else
     {
-		GetUpgradeImageString(raceHandle,upgrade,image,maxlength);
-		if (image[0] == '%')
-		{
-			Trace("Translate %s", image[1]);
-			Format(image,maxlength,"%T",image[1],lang);
-		}
-		else if (image[0] == '\0')
-		{
-			new Translation:translation = GetRaceTranslation(raceHandle);
-			if (translation > Translation_Auto)
-			{
-				decl String:file[LONG_STRING_LENGTH];
-				GetRaceTranslationFile(raceHandle, file, sizeof(file));
-				if (file[0])
-				{
-					decl String:race[NAME_STRING_LENGTH];
-					GetRaceShortName(raceHandle, race,sizeof(race));
+        GetUpgradeImageString(raceHandle,upgrade,image,maxlength);
+        if (image[0] == '%')
+        {
+            Trace("Translate %s", image[1]);
+            Format(image,maxlength,"%T",image[1],lang);
+        }
+        else if (image[0] == '\0')
+        {
+            new Translation:translation = GetRaceTranslation(raceHandle);
+            if (translation > Translation_Auto)
+            {
+                decl String:file[LONG_STRING_LENGTH];
+                GetRaceTranslationFile(raceHandle, file, sizeof(file));
+                if (file[0])
+                {
+                    decl String:race[NAME_STRING_LENGTH];
+                    GetRaceShortName(raceHandle, race,sizeof(race));
 
-					decl String:short[NAME_STRING_LENGTH];
-					GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+                    decl String:short[NAME_STRING_LENGTH];
+                    GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-					decl String:key[ITEM_STRING_LENGTH];
-					if (translation == Translation_W3S)
-					{
-						// Use the War3Source key
-						Format(key,sizeof(key),"%s_skill_%s_image",race,short);
-					}
-					else
-					{
-						// Translate the race_name + short name + _image to get the image
-						Format(key,sizeof(key),"%s_%s_image",race,short);
-					}
+                    decl String:key[ITEM_STRING_LENGTH];
+                    if (translation == Translation_W3S)
+                    {
+                        // Use the War3Source key
+                        Format(key,sizeof(key),"%s_skill_%s_image",race,short);
+                    }
+                    else
+                    {
+                        // Translate the race_name + short name + _image to get the image
+                        Format(key,sizeof(key),"%s_%s_image",race,short);
+                    }
 
-					if (FileContains(file, key))
-					{
-						Format(image,maxlength,"%T",key,lang);
-					}
-					else
-					{
-						strcopy(image,maxlength,imageString);
-					}
-				}
-				else if (imageString[0])
-				{
-					strcopy(image,maxlength,imageString);
-				}
-				else if (query)
-				{
-					QueryUpgradeImage(GetRaceIdent(raceHandle), upgrade, image, maxlength);
-				}
-				else
-				{
-					strcopy(image,maxlength,imageString);
-				}
-			}
-			else
-			{
-				strcopy(image,maxlength,imageString);
-			}
-		}
-	}
+                    if (FileContains(file, key))
+                    {
+                        Format(image,maxlength,"%T",key,lang);
+                    }
+                    else
+                    {
+                        strcopy(image,maxlength,imageString);
+                    }
+                }
+                else if (imageString[0])
+                {
+                    strcopy(image,maxlength,imageString);
+                }
+                else if (query)
+                {
+                    QueryUpgradeImage(GetRaceIdent(raceHandle), upgrade, image, maxlength);
+                }
+                else
+                {
+                    strcopy(image,maxlength,imageString);
+                }
+            }
+            else
+            {
+                strcopy(image,maxlength,imageString);
+            }
+        }
+    }
 
     TraceReturn("image=%s", image);
 }
@@ -1505,62 +1502,62 @@ GetUpgradeInvoke(Handle:raceHandle, upgrade, String:invoke[], maxlength,
     }
     else
     {
-		GetUpgradeInvokeString(raceHandle,upgrade,invoke,maxlength);
-		if (invoke[0] == '%')
-		{
-			Trace("Translate %s", invoke[1]);
-			Format(invoke,maxlength,"%T",invoke[1],lang);
-		}
-		else if (invoke[0] == '\0')
-		{
-			new Translation:translation = GetRaceTranslation(raceHandle);
-			if (translation > Translation_Auto)
-			{
-				decl String:file[LONG_STRING_LENGTH];
-				GetRaceTranslationFile(raceHandle, file, sizeof(file));
-				if (file[0])
-				{
-					decl String:race[NAME_STRING_LENGTH];
-					GetRaceShortName(raceHandle, race,sizeof(race));
+        GetUpgradeInvokeString(raceHandle,upgrade,invoke,maxlength);
+        if (invoke[0] == '%')
+        {
+            Trace("Translate %s", invoke[1]);
+            Format(invoke,maxlength,"%T",invoke[1],lang);
+        }
+        else if (invoke[0] == '\0')
+        {
+            new Translation:translation = GetRaceTranslation(raceHandle);
+            if (translation > Translation_Auto)
+            {
+                decl String:file[LONG_STRING_LENGTH];
+                GetRaceTranslationFile(raceHandle, file, sizeof(file));
+                if (file[0])
+                {
+                    decl String:race[NAME_STRING_LENGTH];
+                    GetRaceShortName(raceHandle, race,sizeof(race));
 
-					decl String:short[NAME_STRING_LENGTH];
-					GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+                    decl String:short[NAME_STRING_LENGTH];
+                    GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-					decl String:key[ITEM_STRING_LENGTH];
-					if (translation == Translation_W3S)
-					{
-						// Use the War3Source key
-						Format(key,sizeof(key),"%s_skill_%s_invoke",race,short);
-					}
-					else
-					{
-						// Translate the race_name + short name + invoke to get the invoke instructions
-						Format(key,sizeof(key),"%s_%s_invoke",race,short);
-					}
+                    decl String:key[ITEM_STRING_LENGTH];
+                    if (translation == Translation_W3S)
+                    {
+                        // Use the War3Source key
+                        Format(key,sizeof(key),"%s_skill_%s_invoke",race,short);
+                    }
+                    else
+                    {
+                        // Translate the race_name + short name + invoke to get the invoke instructions
+                        Format(key,sizeof(key),"%s_%s_invoke",race,short);
+                    }
 
-					if (FileContains(file, key))
-					{
-						Format(invoke,maxlength,"%T",key,lang);
-						Trace("Format %s=%s",key,invoke);
-					}
-					else
-					{
-						strcopy(invoke,maxlength,invokeString);
-						Trace("%s has no bind for %s, Copy invokeString=%s", file, key, invokeString);
-					}
-				}
-				else
-				{
-					strcopy(invoke,maxlength,invokeString);
-					Trace("No Translation File, Copy invokeString=%s", invokeString);
-				}
-			}
-			else
-			{
-				strcopy(invoke,maxlength,invokeString);
-				Trace("No Translation, Copy invokeString=%s",invokeString);
-			}
-		}
+                    if (FileContains(file, key))
+                    {
+                        Format(invoke,maxlength,"%T",key,lang);
+                        Trace("Format %s=%s",key,invoke);
+                    }
+                    else
+                    {
+                        strcopy(invoke,maxlength,invokeString);
+                        Trace("%s has no bind for %s, Copy invokeString=%s", file, key, invokeString);
+                    }
+                }
+                else
+                {
+                    strcopy(invoke,maxlength,invokeString);
+                    Trace("No Translation File, Copy invokeString=%s", invokeString);
+                }
+            }
+            else
+            {
+                strcopy(invoke,maxlength,invokeString);
+                Trace("No Translation, Copy invokeString=%s",invokeString);
+            }
+        }
     }
 
     TraceReturn("invoke=%s", invoke);
@@ -1578,62 +1575,62 @@ GetUpgradeBind(Handle:raceHandle, upgrade, String:bind[], maxlength,
     }
     else
     {
-		GetUpgradeBindString(raceHandle,upgrade,bind,maxlength);
-		if (bind[0] == '%')
-		{
-			Trace("Translate %s", bind[1]);
-			Format(bind,maxlength,"%T",bind[1],lang);
-		}
-		else if (bind[0] == '\0')
-		{
-			new Translation:translation = GetRaceTranslation(raceHandle);
-			if (translation > Translation_Auto)
-			{
-				decl String:file[LONG_STRING_LENGTH];
-				GetRaceTranslationFile(raceHandle, file, sizeof(file));
-				if (file[0])
-				{
-					decl String:race[NAME_STRING_LENGTH];
-					GetRaceShortName(raceHandle, race,sizeof(race));
+        GetUpgradeBindString(raceHandle,upgrade,bind,maxlength);
+        if (bind[0] == '%')
+        {
+            Trace("Translate %s", bind[1]);
+            Format(bind,maxlength,"%T",bind[1],lang);
+        }
+        else if (bind[0] == '\0')
+        {
+            new Translation:translation = GetRaceTranslation(raceHandle);
+            if (translation > Translation_Auto)
+            {
+                decl String:file[LONG_STRING_LENGTH];
+                GetRaceTranslationFile(raceHandle, file, sizeof(file));
+                if (file[0])
+                {
+                    decl String:race[NAME_STRING_LENGTH];
+                    GetRaceShortName(raceHandle, race,sizeof(race));
 
-					decl String:short[NAME_STRING_LENGTH];
-					GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
+                    decl String:short[NAME_STRING_LENGTH];
+                    GetUpgradeShortName(raceHandle,upgrade,short,sizeof(short));
 
-					decl String:key[ITEM_STRING_LENGTH];
-					if (translation == Translation_W3S)
-					{
-						// Use the War3Source key
-						Format(key,sizeof(key),"%s_skill_%s_bind",race,short);
-					}
-					else
-					{
-						// Translate the race_name + short name + _bind to get the bind instructions
-						Format(key,sizeof(key),"%s_%s_bind",race,short);
-					}
+                    decl String:key[ITEM_STRING_LENGTH];
+                    if (translation == Translation_W3S)
+                    {
+                        // Use the War3Source key
+                        Format(key,sizeof(key),"%s_skill_%s_bind",race,short);
+                    }
+                    else
+                    {
+                        // Translate the race_name + short name + _bind to get the bind instructions
+                        Format(key,sizeof(key),"%s_%s_bind",race,short);
+                    }
 
-					if (FileContains(file, key))
-					{
-						Format(bind,maxlength,"%T",key,lang);
-						Trace("Format %s=%s",key,bind);
-					}
-					else
-					{
-						strcopy(bind,maxlength,bindString);
-						Trace("%s has no bind for %s, Copy bindString=%s", file, key, bindString);
-					}
-				}
-				else
-				{
-					strcopy(bind,maxlength,bindString);
-					Trace("No Translation File, Copy bindString=%s", bindString);
-				}
-			}
-			else
-			{
-				strcopy(bind,maxlength,bindString);
-				Trace("No Translation, Copy bindString=%s",bindString);
-			}
-		}
+                    if (FileContains(file, key))
+                    {
+                        Format(bind,maxlength,"%T",key,lang);
+                        Trace("Format %s=%s",key,bind);
+                    }
+                    else
+                    {
+                        strcopy(bind,maxlength,bindString);
+                        Trace("%s has no bind for %s, Copy bindString=%s", file, key, bindString);
+                    }
+                }
+                else
+                {
+                    strcopy(bind,maxlength,bindString);
+                    Trace("No Translation File, Copy bindString=%s", bindString);
+                }
+            }
+            else
+            {
+                strcopy(bind,maxlength,bindString);
+                Trace("No Translation, Copy bindString=%s",bindString);
+            }
+        }
     }
 
     TraceReturn("bind=%s", bind);
@@ -1712,36 +1709,36 @@ GetUpgradeStrings(Handle:raceHandle, upgrade, String:name[], maxName,
         }
         else if (invoke[0] == '\0')
         {
-			GetUpgradeInvokeString(raceHandle,upgrade,invoke,maxInvoke);
-			if (invoke[0] == '%')
-			{
-				Trace("Translate %s", invoke[1]);
-				Format(invoke,maxInvoke,"%T",invoke[1],lang);
-			}
-			else if (invoke[0] == '\0')
-			{
-				decl String:file[LONG_STRING_LENGTH];
-				GetRaceTranslationFile(raceHandle, file, sizeof(file));
-				if (file[0])
-				{
-					decl String:invokeKey[ITEM_STRING_LENGTH];
-					Format(invokeKey,sizeof(invokeKey),"%s_invoke",key);
-					if (FileContains(file, invokeKey))
-					{
-						Format(invoke, maxInvoke, "%T", invokeKey, lang);
-						Trace("Format %s=%s",invokeKey,bind);
-					}
-					else
-					{
-						Trace("%s has no invoke for %s", file, invokeKey);
-					}
-				}
-				else
-				{
-					Trace("No Translation File, invoke=%s", invoke);
-				}
-			}
-		}
+            GetUpgradeInvokeString(raceHandle,upgrade,invoke,maxInvoke);
+            if (invoke[0] == '%')
+            {
+                Trace("Translate %s", invoke[1]);
+                Format(invoke,maxInvoke,"%T",invoke[1],lang);
+            }
+            else if (invoke[0] == '\0')
+            {
+                decl String:file[LONG_STRING_LENGTH];
+                GetRaceTranslationFile(raceHandle, file, sizeof(file));
+                if (file[0])
+                {
+                    decl String:invokeKey[ITEM_STRING_LENGTH];
+                    Format(invokeKey,sizeof(invokeKey),"%s_invoke",key);
+                    if (FileContains(file, invokeKey))
+                    {
+                        Format(invoke, maxInvoke, "%T", invokeKey, lang);
+                        Trace("Format %s=%s",invokeKey,bind);
+                    }
+                    else
+                    {
+                        Trace("%s has no invoke for %s", file, invokeKey);
+                    }
+                }
+                else
+                {
+                    Trace("No Translation File, invoke=%s", invoke);
+                }
+            }
+        }
 
         if (bind[0] == '%')
         {
@@ -1750,36 +1747,36 @@ GetUpgradeStrings(Handle:raceHandle, upgrade, String:name[], maxName,
         }
         else if (bind[0] == '\0')
         {
-			GetUpgradeBindString(raceHandle,upgrade,bind,maxBind);
-			if (bind[0] == '%')
-			{
-				Trace("Translate %s", bind[1]);
-				Format(bind,maxBind,"%T",bind[1],lang);
-			}
-			else if (bind[0] == '\0')
-			{
-				decl String:file[LONG_STRING_LENGTH];
-				GetRaceTranslationFile(raceHandle, file, sizeof(file));
-				if (file[0])
-				{
-					decl String:bindKey[ITEM_STRING_LENGTH];
-					Format(bindKey,sizeof(bindKey),"%s_bind",key);
-					if (FileContains(file, bindKey))
-					{
-						Format(bind, maxBind, "%T", bindKey, lang);
-						Trace("Format %s=%s",bindKey,bind);
-					}
-					else
-					{
-						Trace("%s has no bind for %s", file, bindKey);
-					}
-				}
-				else
-				{
-					Trace("No Translation File, bind=%s", bind);
-				}
-			}
-		}
+            GetUpgradeBindString(raceHandle,upgrade,bind,maxBind);
+            if (bind[0] == '%')
+            {
+                Trace("Translate %s", bind[1]);
+                Format(bind,maxBind,"%T",bind[1],lang);
+            }
+            else if (bind[0] == '\0')
+            {
+                decl String:file[LONG_STRING_LENGTH];
+                GetRaceTranslationFile(raceHandle, file, sizeof(file));
+                if (file[0])
+                {
+                    decl String:bindKey[ITEM_STRING_LENGTH];
+                    Format(bindKey,sizeof(bindKey),"%s_bind",key);
+                    if (FileContains(file, bindKey))
+                    {
+                        Format(bind, maxBind, "%T", bindKey, lang);
+                        Trace("Format %s=%s",bindKey,bind);
+                    }
+                    else
+                    {
+                        Trace("%s has no bind for %s", file, bindKey);
+                    }
+                }
+                else
+                {
+                    Trace("No Translation File, bind=%s", bind);
+                }
+            }
+        }
     }
 
     TraceReturn("name=%s, desc=%s, bind=%s, category=%d", name, desc, bind, category);
