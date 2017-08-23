@@ -117,19 +117,19 @@
 	}
 	"scv_gravgun_desc"
 	{
-		"en"		"Allows you pick to up and move your objects around. Level 2 allows you to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4."
+		"en"		"Allows you pick to up and move your objects around.\nLevel 2 allows you to pickup other players objects,\nwhich can be repaired at Level 3 (while being held) and thrown at Level 4."
 	}
 	"scv_gravgun_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up and move their objects around. Level 2 allows Engineers to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4."
+		"en"		"Allows Engineers to pick up and move their objects around.\nLevel 2 allows Engineers to pickup other players objects, which can be repaired at Level 3 (while being held) and thrown at Level 4."
 	}
 	"scv_gravgun_norepair_desc"
 	{
-		"en"		"Allows you pick to up and move your objects around. Level 2 allows you to pickup other players objects, which can be thrown at Level 4."
+		"en"		"Allows you pick to up and move your objects around.\nLevel 2 allows you to pickup other players objects, which can be thrown at Level 4."
 	}
 	"scv_gravgun_norepair_engyonly_desc"
 	{
-		"en"		"Allows Engineers to pick up and move their objects around. Level 2 allows Engineers to pickup other players objects, which can be thrown at Level 4."
+		"en"		"Allows Engineers to pick up and move their objects around.\nLevel 2 allows Engineers to pickup other players objects, which can be thrown at Level 4."
 	}
 	"scv_gravgun_notf2_desc"
 	{

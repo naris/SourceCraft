@@ -86,7 +86,7 @@ echo $this->render('partials/html_header.phtml');
 <?php if ($upgrade['race_ident'] == $race['race_ident']): ?>
 		<tr class='race_upgrades' width='100%'>
 			<td width="200px"><li><?= $this->escape($upgrade['long_name']) ?></td>
-			<td width="100%"><?= $upgrade['description'] ?></td>
+			<td width="100%"><?= $upgrade['description'].'&nbsp'.$upgrade['invoke'].'&nbsp'.$upgrade['bind'] ?></td>
 		</tr>
 <?php endif; ?>
 <?php endforeach; ?>

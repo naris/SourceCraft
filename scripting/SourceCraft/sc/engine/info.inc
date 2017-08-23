@@ -427,6 +427,22 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
         CloseHandle(menu);
 }
 
+stock AddMenuLines(Handle:menu, String:item[])
+{
+	int pos = 0;
+    decl String:line[DESCRIPTION_LENGTH];
+	for (int idx; (idx = SplitString(item[pos], "\n", line, sizeof(line))) != -1; )
+	{
+        AddMenuItem(menu, "", line, ITEMDRAW_DISABLED);
+		pos += idx;
+	}
+	
+    if (pos < strlen(item) && item[pos] != '\0')
+    {
+        AddMenuItem(menu, "", item[pos], ITEMDRAW_DISABLED);
+    }
+}
+
 ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
 {
     TraceInto("Info", "ShowUpgradeInfo", "client=%d:%N, raceHandle=0x%08x, upgrade=%d, mode=%d", \
@@ -448,7 +464,6 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     SetMenuExitBackButton(menu,true);
 
     SetMenuTitle(menu, "[SC] %T", "UpgradeInfo", client, name);
-    AddMenuItem(menu, "", desc, ITEMDRAW_DISABLED);
 
     if (isUpgradeMode)
     {
@@ -457,6 +472,8 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
         AddMenuItemT(menu, sbuf, "SelectUpgrade", client);
         AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
     }
+	
+    AddMenuLines(menu, desc);
 
     if (GetUpgradeRequiredLevel(raceHandle,upgrade) == 0)
     {
@@ -540,7 +557,7 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
 
     if (invoke[0] != '\0')
     {
-        AddMenuItem(menu, "", invoke, ITEMDRAW_DISABLED);
+        AddMenuLines(menu, invoke);
     }
     else if (category == 1)
     {
@@ -555,7 +572,7 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
     
     if (bind[0] != '\0')
     {
-        AddMenuItem(menu, "", bind, ITEMDRAW_DISABLED);
+        AddMenuLines(menu, bind);
     }
     else if (category == 1)
     {
