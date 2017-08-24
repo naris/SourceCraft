@@ -36,7 +36,7 @@
 #define REQUIRE_PLUGIN
 
 // Define _TRACE to enable trace logging for debugging
-//#define _TRACE
+#define _TRACE
 #include <lib/trace>
 
 #include "sc/SourceCraft"
@@ -1934,8 +1934,7 @@ public Action:BootTimer(Handle:time, any:userid)
                 new flags = GetEntityFlags(client);
                 if (m_BootCount[client] == 5 && !(flags & FL_INWATER))
                 {
-                    CreateParticle("rocketjump_flame", 1.0, client, Attach, "foot_L");
-                    CreateParticle("rocketjump_flame", 1.0, client, Attach, "foot_R");
+                    CreateBootParticles(client);
                 }
                 else if (m_BootCount[client] > 5)
                 {
@@ -2271,10 +2270,30 @@ stock KillNadeTimer(client)
     }
 }
 
+stock CreateBootParticles(client)
+{
+    decl String:model[128];
+    GetClientModel(client, model, sizeof(model));
+
+    SetTraceCategory("Boots");
+    TraceInto("ShopItems", "CreateBootParticles", "client=%d:%N, model=%s", \
+              client, ValidClientIndex(client), model);
+
+    // Only add the particles if the client has a regular player model
+    // as the bot models do not have the foot_L or R attachment points
+    if (StrContains(model, "player") != 0)
+    {
+        CreateParticle("rocketjump_flame", 1.0, client, Attach, "foot_L");
+        CreateParticle("rocketjump_flame", 1.0, client, Attach, "foot_R");
+    }
+
+    ResetTraceCategory();
+    TraceReturn();
+}
+
 stock CreateBootTimer(client)
 {
-    CreateParticle("rocketjump_flame", 1.0, client, Attach, "foot_L");
-    CreateParticle("rocketjump_flame", 1.0, client, Attach, "foot_R");
+    CreateBootParticles(client);
 
     if (g_BootTimers[client] == INVALID_HANDLE)
         g_BootTimers[client] = CreateTimer(0.2,BootTimer,GetClientUserId(client),TIMER_REPEAT);
