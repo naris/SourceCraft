@@ -266,12 +266,12 @@ public Action:OnWeaponSwitch(client, weapon)
                   client, ValidClientIndex(client), weapon);
 
     #if defined _TRACE
-		if (weapon > 0)
-		{
-			decl String:sWeapon[32];
-			GetEdictClassname(weapon, sWeapon, sizeof(sWeapon));
-			Trace("weapon class=%s", sWeapon);
-		}
+        if (weapon > 0)
+        {
+            decl String:sWeapon[32];
+            GetEdictClassname(weapon, sWeapon, sizeof(sWeapon));
+            Trace("weapon class=%s", sWeapon);
+        }
 
         new Float:speed = m_BaseSpeed[client] = GetEntPropFloat(client, Prop_Send, "m_flMaxspeed");
         TraceCat("Speed", "%d:%N's speed=%1.0f", client, ValidClientIndex(client), speed);
@@ -824,7 +824,7 @@ public PlayerDeathEvent(Handle:event,const String:name[],bool:dontBroadcast)
             {
                 g_Dead[victim_index] = false;
                 g_Killed[victim_index] = false;
-                return;			//skip dead ringer / FakeDeath
+                return;         //skip dead ringer / FakeDeath
             }
             else
             {
@@ -1389,7 +1389,7 @@ public RoundStart(Handle:event,const String:name[],bool:dontBroadcast)
 
 public Action:EndFreezeTime(Handle:timer,any:roundNumber)
 {
-	if (roundNumber==g_iRoundNumber)
+    if (roundNumber==g_iRoundNumber)
         g_RoundState = RoundActive;
 }
 

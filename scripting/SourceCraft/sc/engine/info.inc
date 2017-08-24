@@ -429,14 +429,14 @@ public UpgradesInfo_Selected(Handle:menu,MenuAction:action,client,selection)
 
 stock AddMenuLines(Handle:menu, String:item[])
 {
-	int pos = 0;
+    int pos = 0;
     decl String:line[DESCRIPTION_LENGTH];
-	for (int idx; (idx = SplitString(item[pos], "\n", line, sizeof(line))) != -1; )
-	{
+    for (int idx; (idx = SplitString(item[pos], "\n", line, sizeof(line))) != -1; )
+    {
         AddMenuItem(menu, "", line, ITEMDRAW_DISABLED);
-		pos += idx;
-	}
-	
+        pos += idx;
+    }
+    
     if (pos < strlen(item) && item[pos] != '\0')
     {
         AddMenuItem(menu, "", item[pos], ITEMDRAW_DISABLED);
@@ -470,9 +470,8 @@ ShowUpgradeInfo(client, race, Handle:raceHandle, upgrade, MenuMode:mode)
         decl String:sbuf[SMALL_STRING_LENGTH];
         Format(sbuf,sizeof(sbuf),"%d",upgrade);
         AddMenuItemT(menu, sbuf, "SelectUpgrade", client);
-        AddMenuItem(menu, "", "", ITEMDRAW_SPACER);
     }
-	
+    
     AddMenuLines(menu, desc);
 
     if (GetUpgradeRequiredLevel(raceHandle,upgrade) == 0)
