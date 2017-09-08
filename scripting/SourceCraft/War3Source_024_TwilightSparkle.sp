@@ -44,7 +44,7 @@ public OnPluginStart()
     
     ultCooldownCvar=CreateConVar("war3_twilight_teleport_cd","5.0","Cooldown between teleports");
     
-//  LoadTranslations("w3s.race.human.phrases");
+    LoadTranslations("w3s.race.human.phrases");
     War3_AddSoundFolder(teleportSound, sizeof(teleportSound), "blinkarrival.mp3");
 }
 
