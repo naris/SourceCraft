@@ -483,8 +483,8 @@ public Action:UpdateTeleportBar(Handle:timer, any:userid)
             {
                 if (pos < 1)
                     pos = 1;
-                gauge{pos} = ']';
-                gauge{pos+1} = 0;
+                gauge[pos] = ']';
+                gauge[pos+1] = 0;
             }
         }
         PrintHintText(client, gauge);

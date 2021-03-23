@@ -1433,8 +1433,8 @@ ShowBar(client, Float:curTime, Float:totTime)
         new pos = RoundFloat(percent * 20.0) + 1;
         if (pos < 21)
         {
-            gauge{pos} = ']';
-            gauge{pos+1} = 0;
+            gauge[pos] = ']';
+            gauge[pos+1] = 0;
         }
     }
     PrintHintText(client, gauge);

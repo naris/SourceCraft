@@ -981,8 +981,8 @@ CleanMessage(String:buffer[], maxlen)
     // Convert control characters (color codes) to spaces
     for (new i = strlen(buffer)-1; i >= 0; i--)
     {
-        if (buffer{i} < ' ')
-            buffer{i} = ' ';
+        if (buffer[i] < ' ')
+            buffer[i] = ' ';
     }
 }
 

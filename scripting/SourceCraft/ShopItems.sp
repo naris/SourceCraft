@@ -2059,7 +2059,7 @@ public Action:Ankh(Handle:timer,Handle:pack)
                 if(!StrEqual(wepName,"weapon_c4"))
                 {
                     DropWeapon(client,ent);
-                    RemoveEntity(ent);
+                    RemoveSDKEntity(ent);
                 }
             }
             iter+=4;
@@ -2340,7 +2340,7 @@ stock KillTrackWeaponsTimer(client)
 
 // Non-specific stuff
 
-stock RemoveEntity(entity)
+stock RemoveSDKEntity(entity)
 {
     SDKCall(hUTILRemove,entity);
 }

@@ -407,8 +407,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
     BuildPath(Path_SM, file, sizeof(file), "plugins/hookgrabrope.smx");
     if(!FileExists(file))
     {
-        SetFailState("ERROR: Cannot find required plugin hookgrabrope.smx");
-        return APLRes_Failure;
+		BuildPath(Path_SM, file, sizeof(file), "plugins/lib/hookgrabrope.smx");
+		if(!FileExists(file))
+		{
+			SetFailState("ERROR: Cannot find required plugin hookgrabrope.smx");
+			return APLRes_Failure;
+		}
     }
     RegPluginLibrary("hookgrabrope");
     

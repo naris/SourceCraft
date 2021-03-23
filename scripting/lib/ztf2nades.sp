@@ -3224,7 +3224,7 @@ bool:CommandCheck(const String:compare[], const String:command[])
     else
     {
         new String:firstChar[] = " ";
-        firstChar{0} = compare{0};
+        firstChar[0] = compare[0];
         if (StrContains("!/\\",firstChar) >= 0)
             return !strcmp(compare[1],command,false);
         else

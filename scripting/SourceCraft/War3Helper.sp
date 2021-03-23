@@ -1640,7 +1640,7 @@ public NW3GetRaceSkillString(Handle:plugin,numParams)
     decl String:longbuf[1000];
     switch (SkillString:GetNativeCell(3))
     {
-        case (SkillString:SkillName):
+        case (SkillString:W3SkillName):
         {
             GetUpgradeName(race, skill, longbuf, sizeof(longbuf));
         }            

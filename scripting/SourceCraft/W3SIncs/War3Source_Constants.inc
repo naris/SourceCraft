@@ -637,7 +637,7 @@ enum ENUM_RaceObject{ //CELLS ONLY, NO STRINGS
 
 enum SkillString
 {
-  SkillName,
+  W3SkillName,
   SkillStory,
   SkillDescription,
   SkillTechnical,

@@ -80,7 +80,8 @@ native bool:IsInfected(target);
  * @param color: Array for color player was turned (r,b,g,a).
  * @return		false to prevent infection, true to allow infection.
  */
-functag OnInfectedFunc Action:public(victim,infector,source,bool:infected,const color[4]);
+//functag OnInfectedFunc Action:public(victim,infector,source,bool:infected,const color[4]);
+typedef OnInfectedFunc = function Action (int victim,int infector,int source,bool infected,const int color[4]);
 
 /**
  * Gets called when a player takes damage from infection
@@ -90,7 +91,8 @@ functag OnInfectedFunc Action:public(victim,infector,source,bool:infected,const 
  * @param amount: Reference for the amount of damage to do, can be altered.
  * @return		false to prevent infection, true to allow infection.
  */
-functag OnInfectionHurtFunc Action:public(victim,infector,&amount);
+//functag OnInfectionHurtFunc Action:public(victim,infector,&amount);
+typedef OnInfectionHurtFunc = function Action (int victim,int infector,int &amount);
 
 /**
  * Hook Infections and Heals

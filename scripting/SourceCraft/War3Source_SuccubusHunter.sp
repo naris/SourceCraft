@@ -706,9 +706,9 @@ public Action:SayCommand(client, const String:command[], argc)
         ExplodeString(text, " ", arg, 2, 64);
 
         new String:firstChar[] = " ";
-        firstChar{0} = arg[0]{0};
+        firstChar[0] = arg[0][0];
         if (StrContains("!/\\",firstChar) >= 0)
-            strcopy(arg[0], sizeof(arg[]), arg[0]{1});
+            strcopy(arg[0], sizeof(arg[]), arg[0][1]);
 
         if (StrEqual(arg[0],"skulls"))
         {

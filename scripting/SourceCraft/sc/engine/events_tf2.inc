@@ -745,7 +745,7 @@ public EventPointCapture(Handle:event,const String:name[],bool:dontBroadcast)
         new len = strlen(cappers);
         for(new i=0;i<len;i++)
         {
-            new index = cappers{i};
+            new index = cappers[i];
             if (IsValidClient(index))
             {
                 if (startcap)
