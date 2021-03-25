@@ -187,7 +187,7 @@ public OnUltimateCommand(client,race,bool:pressed)
 
                     new hpmissing=War3_GetMaxHP(target)-GetClientHealth(target);
                     
-                    new dmg=RoundFloat(FloatMul(float(hpmissing),ultiDamageMulti[skill]));
+                    new dmg=RoundFloat((float(hpmissing) * ultiDamageMulti[skill]));
                     
                     if(War3_DealDamage(target,dmg,client,_,"demonicexecution"))
                     {

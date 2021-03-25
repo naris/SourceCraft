@@ -76,7 +76,7 @@ enum DODWeapon
 	DODWeapon_GermanRifleGrenade
 };
 
-stock const String:DOD_WeaponEntity[DODWeapon][] = {
+stock const String:DOD_WeaponEntity[/*DODWeapon*/][] = {
     "",
 	"weapon_amerknife",
 	"weapon_spade",
@@ -104,7 +104,7 @@ stock const String:DOD_WeaponEntity[DODWeapon][] = {
 	"weapon_riflegren_ger"
 };
  
-stock const DOD_AmmoOffset[DODWeapon] = {
+stock const DOD_AmmoOffset[/*DODWeapon*/] = {
     0,  // none
 	0,	// weapon_amerknife
 	0,	// weapon_spade

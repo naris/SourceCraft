@@ -152,7 +152,7 @@ stock Spawn(client, level, raceId, upgradeId, maxObjects, bool:multAmps, bool:al
 
         new max_count         = (level > maxObjects) ? maxObjects : level;
 
-        new counts[TFExtObjectType];
+        new counts[TFOBJECT_COUNT];
         new sum = CountBuildings(client, counts);
 
         AddMenuItemT(menu,"6","MiniSentry", client, (ok && counts[TFObject_Sentry] < max_count) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);

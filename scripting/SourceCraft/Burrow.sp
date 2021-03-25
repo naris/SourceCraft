@@ -1257,7 +1257,7 @@ public Native_BurrowStructure(Handle:plugin,numParams)
             new Handle:menu=CreateMenu(BurrowStructure_Selected);
             SetMenuTitle(menu,"[SC] %T", "BurrowWhich", client);
 
-            new counts[TFExtObjectType];
+            new counts[TFOBJECT_COUNT];
             new objectCount = AddBuildingsToMenu(menu, client, false, counts, target);
 
             if (objectCount > 1 && energy >= amount * float(objectCount))

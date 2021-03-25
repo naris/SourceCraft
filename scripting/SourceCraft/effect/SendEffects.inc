@@ -18,7 +18,7 @@
 stock SetupBeaconLists(list[], alt_list[], &count, &alt_count)
 {
     count = alt_count = 0;
-    new maxClients = GetMaxClients();
+    new maxClients = MaxClients;
     for (new i=1; i<=maxClients; i++)
     {
         if (IsClientInGame(i) && !IsFakeClient(i))
@@ -41,7 +41,7 @@ stock SetupBeaconLists(list[], alt_list[], &count, &alt_count)
 stock SetupOBeaconLists(list[], alt_list[], &count, &alt_count, client=0)
 {
     count = alt_count = 0;
-    new maxClients = GetMaxClients();
+    new maxClients = MaxClients;
     for (new i=1; i<=maxClients; i++)
     {
         if (IsClientInGame(i) && !IsFakeClient(i))
@@ -80,7 +80,7 @@ stock SetupOBeaconLists(list[], alt_list[], &count, &alt_count, client=0)
  */
 stock void TE_SendBeaconToAll(Float:delay=0.0)
 {
-	new maxClients = GetMaxClients();
+	new maxClients = MaxClients;
 	new total = 0;
 	new clients[maxClients];
 	for (new i=1; i<=maxClients; i++)
@@ -104,7 +104,7 @@ stock void TE_SendBeaconToAll(Float:delay=0.0)
  */
 stock void TE_SendOBeaconToAll(client=0, Float:delay=0.0)
 {
-    new maxClients = GetMaxClients();
+    new maxClients = MaxClients;
     new total = 0;
     new clients[maxClients];
     for (new i=1; i<=maxClients; i++)
@@ -135,7 +135,7 @@ stock void TE_SendOBeaconToAll(client=0, Float:delay=0.0)
  */
 stock void TE_SendQEffectToAll(client=0, victim=0, Float:delay=0.0)
 {
-    new maxClients = GetMaxClients();
+    new maxClients = MaxClients;
     new total = 0;
     new clients[maxClients];
     for (new i=1; i<=maxClients; i++)
@@ -164,7 +164,7 @@ stock void TE_SendQEffectToAll(client=0, victim=0, Float:delay=0.0)
  */
 stock void TE_SendDEffectToAll(Float:delay=0.0)
 {
-    new maxClients = GetMaxClients();
+    new maxClients = MaxClients;
     new total = 0;
     new clients[maxClients];
     for (new i=1; i<=maxClients; i++)
@@ -189,7 +189,7 @@ stock void TE_SendDEffectToAll(Float:delay=0.0)
  */
 stock void TE_SendEffectToAll(Float:delay=0.0)
 {
-	new maxClients = GetMaxClients();
+	new maxClients = MaxClients;
 	new total = 0;
 	new clients[maxClients];
 	for (new i=1; i<=maxClients; i++)
@@ -213,7 +213,7 @@ stock void TE_SendEffectToAll(Float:delay=0.0)
  */
 stock void TE_SendEffectToOthers(client=0, victim=0, Float:delay=0.0)
 {
-    new maxClients = GetMaxClients();
+    new maxClients = MaxClients;
     new total = 0;
     new clients[maxClients];
     for (new i=1; i<=maxClients; i++)

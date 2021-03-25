@@ -606,7 +606,7 @@ AutoTurret(client, spawn_level)
         }
         else
         {
-            new counts[TFExtObjectType];
+            new counts[TFOBJECT_COUNT];
             if (cfgMaxObjects > 0)
                 CountBuildings(client, counts);
 

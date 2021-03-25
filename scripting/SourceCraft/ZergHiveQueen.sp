@@ -914,7 +914,7 @@ DeepTunnel(client)
             new Handle:menu=CreateMenu(DeepTunnel_Selected);
             SetMenuTitle(menu,"[SC] %T", "TunnelStructureTitle", client);
 
-            new counts[TFExtObjectType];
+            new counts[TFOBJECT_COUNT];
             new sum = AddBuildingsToMenu(menu, client, true, counts, target);
             if (sum == 1)
             {

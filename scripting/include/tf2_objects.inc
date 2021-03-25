@@ -28,6 +28,8 @@ enum TFExtObjectType
     TFExtObject_UpgradeStation
 };
 
+#define TFOBJECT_COUNT 11
+
 #define TFObject_Unknown            (TFObjectType:TFExtObject_Unknown)
 #define TFObject_TeleporterEntry    (TFObjectType:TFExtObject_TeleporterEntry)
 #define TFObject_TeleporterExit     (TFObjectType:TFExtObject_TeleporterExit)
@@ -36,7 +38,7 @@ enum TFExtObjectType
 #define TFObject_RepairNode         (TFObjectType:TFExtObject_RepairNode)
 #define TFObject_UpgradeStation     (TFObjectType:TFExtObject_UpgradeStation)
 
-stock const String:TF2_ObjectClassNames[TFExtObjectType][] =
+stock const String:TF2_ObjectClassNames[/*TFExtObjectType*/][] =
 {
     "obj_dispenser",
     "obj_teleporter",
@@ -50,7 +52,7 @@ stock const String:TF2_ObjectClassNames[TFExtObjectType][] =
     "obj_dispenser"   // upgrade_station
 };
 
-stock const String:TF2_ObjectNames[TFExtObjectType][] =
+stock const String:TF2_ObjectNames[/*TFExtObjectType*/][] =
 {
     "Dispenser",
     "Teleporter",
@@ -64,7 +66,7 @@ stock const String:TF2_ObjectNames[TFExtObjectType][] =
     "Upgrade Station"
 };
 
-stock TF2_ObjectModes[TFExtObjectType] =
+stock TF2_ObjectModes[/*TFExtObjectType*/] =
 {
     -1, // dispenser
     -1, // teleporter (either)

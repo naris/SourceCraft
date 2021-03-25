@@ -193,7 +193,7 @@ native BuildObject(client, TFExtObjectType:type, iLevel=1, bool:bMini=false,
  * @param counts            Array to hold the counts of all buildings by type.
  * @return			        count of all buildings.
  */
-native CountBuildings(client, counts[TFExtObjectType]={0});
+native CountBuildings(client, counts[TFOBJECT_COUNT]={0});
 
 /**
  * Counts objects of the given class owned by client
@@ -217,7 +217,7 @@ native CountObjects(client, const String:class[], mode=-1);
  * @return			        count of buildings added
  */
 native AddBuildingsToMenu(Handle:menu, client, bool:all=false,
-                          counts[TFExtObjectType]={0}, &target=0);
+                          counts[TFOBJECT_COUNT]={0}, &target=0);
 
 /**
  * Destroys buildings

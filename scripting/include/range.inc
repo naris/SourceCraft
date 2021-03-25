@@ -46,7 +46,7 @@ stock PowerOfRange(Float:location[3],Float:radius,Float:check_location[3],amount
             return 0;
         else
         {
-            new Float:percent=1-FloatDiv(distance,radius)+factor;
+            new Float:percent = 1 - (distance / radius) + factor;
             return (percent > 0.0) ? RoundFloat(float(amount)*percent) : 0;
         }
     }

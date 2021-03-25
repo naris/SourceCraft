@@ -496,7 +496,7 @@ public Action:OnBuildObject(client, TFExtObjectType:type)
             ChargeForUpgrade(client, raceID, interceptorID);
             DisplayMessage(client,Display_Ultimate, "%t", "LaunchedInterceptor");
 
-            new counts[TFExtObjectType];
+            new counts[TFOBJECT_COUNT];
             CountBuildings(client, counts);
 
             new count = counts[type];

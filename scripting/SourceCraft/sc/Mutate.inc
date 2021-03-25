@@ -169,7 +169,7 @@ stock Mutate(client, level, raceId, upgradeId, maxUpgradeID=-1,
 
         new bool:ok           = (energy >= energy_cost && vespene >= vespene_cost);
 
-        new counts[TFExtObjectType];
+        new counts[TFOBJECT_COUNT];
         new sum = CountBuildings(client, counts);
 
         AddMenuItemT(menu,"6","MiniSentry", client, (ok && counts[TFObject_Sentry] < maxCount) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);

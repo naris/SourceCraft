@@ -207,7 +207,7 @@ public OnWar3EventDeath(victim, attacker, deathrace){
                     #endif
                 }
                 
-                new addHealth = RoundFloat(FloatMul(float(War3_GetMaxHP(victim)),HPPercentHealPerKill[iSkillLevel]));
+                new addHealth = RoundFloat((float(War3_GetMaxHP(victim)) * HPPercentHealPerKill[iSkillLevel]));
                 
                 War3HealToHP(attacker,addHealth,War3_GetMaxHP(attacker)+HPIncrease[War3_GetSkillLevel(attacker,thisRaceID,SKILL_BLOODBATH)]);
                 //Effects?

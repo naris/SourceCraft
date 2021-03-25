@@ -169,7 +169,7 @@ bool:MindControl(client, Float:range, percent, &builder, &TFExtObjectType:type, 
         if (IsPointInRange(clientLoc,targetLoc,range))
         {
             new Float:distance=GetVectorDistance(clientLoc,targetLoc);
-            if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - FloatDiv(distance,range)+0.20))
+            if (GetRandomFloat(1.0,100.0) <= float(percent) * (1.0 - (distance / range) + 0.20))
             {
                 return replace ? ReplaceObject(client, target, builder, type)
                                : ControlObject(client, target, builder, type);

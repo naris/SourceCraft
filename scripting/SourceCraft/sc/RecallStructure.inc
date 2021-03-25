@@ -101,7 +101,7 @@ stock RecallStructure(client, raceId, upgradeId, bool:disable, bool:engineersOnl
             new Handle:menu=CreateMenu(RecallStructure_Selected);
             SetMenuTitle(menu, "[SC] %T", "RecallStructureTitle", client);
 
-            new counts[TFExtObjectType];
+            new counts[TFOBJECT_COUNT];
             new sum = AddBuildingsToMenu(menu, client, false, counts, target);
             if (sum == 1)
                 RecallIt(client, raceId, upgradeId, target, disable);

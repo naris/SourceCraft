@@ -244,7 +244,7 @@ public OnWar3EventPostHurt(victim, attacker, Float:damage, const String:weapon[3
                         
                         
                     }
-                    new returndmg=RoundFloat(FloatMul(SpikeReturnDmgArr[skill_level],damage));
+                    new returndmg=RoundFloat((SpikeReturnDmgArr[skill_level] * damage));
                     returndmg=returndmg<40?returndmg:40;
                     if(GAMETF)  // Team Fortress 2 is stable with code below:
                     {
