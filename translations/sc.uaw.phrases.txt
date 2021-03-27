@@ -133,63 +133,63 @@
 	"Buyout"
 	{
 		"#format"	"{1:d}"
-		"en"		"Due to {blue}Seniority{default}, you have recieved {green}{1} crystals{default} from a {blue}Buyout Offer{default}!"
+		"en"		"Due to {blue}Seniority{default}, you have received {green}{1} crystals{default} from a {blue}Buyout Offer{default}!"
 	}
 
 	"Grievance"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have filed a {blue}Grievance{default} and recieved {custom}{2} experience{default}!"
+		"en"		"You have filed a {blue}Grievance{default} and received {custom}{1} experience{default}!"
 	}
 	"ShopSteward"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have been made a {blue}Shop Steward{default} and recieved {custom}{2} experience{default}!"
+		"en"		"You have been made a {blue}Shop Steward{default} and received {custom}{1} experience{default}!"
 	}
 	"Arbitration"
 	{
 		"#format"	"{1:d}"
-		"en"		"Due to {blue}Arbitration{default}, you have recieved {custom}{2} experience{default}!"
+		"en"		"Due to {blue}Arbitration{default}, you have received {custom}{1} experience{default}!"
 	}
 	"Bargaining"
 	{
 		"#format"	"{1:d}"
-		"en"		"Due to {blue}Collective Bargaining{default}, you have recieved {custom}{2} experience{default}!"
+		"en"		"Due to {blue}Collective Bargaining{default}, you have received {custom}{1} experience{default}!"
 	}
 	"Benefits"
 	{
 		"#format"	"{1:d}"
-		"en"		"You are entitled to {blue}Fringe Benefits{default} of {custom}{2} experience{default}!"
+		"en"		"You are entitled to {blue}Fringe Benefits{default} of {custom}{1} experience{default}!"
 	}
 	"Overtime"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have recieved {green}{1} crystals{default} from {blue}Overtime{default}!"
+		"en"		"You have received {green}{1} crystals{default} from {blue}Overtime{default}!"
 	}
 	"PremiumPay"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have recieved {green}{1} crystals{default} from {blue}Premium Pay{default}!"
+		"en"		"You have received {green}{1} crystals{default} from {blue}Premium Pay{default}!"
 	}
 	"ShiftDifferentialPay"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have recieved {green}{1} crystals{default} from {blue}Shift Differential Pay{default}!"
+		"en"		"You have received {green}{1} crystals{default} from {blue}Shift Differential Pay{default}!"
 	}
 	"COLA"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have recieved {green}{1} crystals{default} from {blue}COLA{default}!"
+		"en"		"You have received {green}{1} crystals{default} from {blue}COLA{default}!"
 	}
 	"ProfitSharing"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have recieved {green}{1} crystals{default} from {blue}Profit Sharing{default}!"
+		"en"		"You have received {green}{1} crystals{default} from {blue}Profit Sharing{default}!"
 	}
 	"Bonus"
 	{
 		"#format"	"{1:d}"
-		"en"		"You have recieved {green}{1} crystals{default} from a {blue}Bonus{default}!"
+		"en"		"You have received {green}{1} crystals{default} from a {blue}Bonus{default}!"
 	}
 	"UnionDues"
 	{
@@ -220,7 +220,7 @@
 
 	"Reduction"
 	{
-		"en"		"You have been layed off due to a {blue}Workforce Reduction{default}!"
+		"en"		"You have been laid off due to a {blue}Workforce Reduction{default}!"
 	}
 	"sc_reduction"
 	{
@@ -229,11 +229,12 @@
 
 	"BuyoutReduction"
 	{
-		"en"		"You have been forced to accept a {blue}Buyout{default} for {green}%d crystals{default} and have been {custom}reduced by %d levels{default}!"
+		"#format"	"{1:d},{2:d}"
+		"en"		"You have been forced to accept a {blue}Buyout{default} for {green}{1} crystals{default} and have been {custom}reduced by {2} levels{default}!"
 	}
 	"Buyout"
 	{
-		"en"		"You have been forced to accept a {blue}Buyout{default} for {green}%d crystals{default}!"
+		"en"		"You have been forced to accept a {blue}Buyout{default} for {green}{1:d} crystals{default}!"
 	}
 	"sc_buyout"
 	{
@@ -242,7 +243,8 @@
 
 	"BankruptcyReduction"
 	{
-		"en"		"Your employer has gone into {blue}Bankruptcy{default}, you have been {custom}reduced by %d levels{default}!"
+		"#format"	"{1:d}"
+		"en"		"Your employer has gone into {blue}Bankruptcy{default}, you have been {custom}reduced by {1} levels{default}!"
 	}
 	"Bankruptcy"
 	{
