@@ -116,8 +116,8 @@ public void OnPluginStart()
 	g_hAllInfiniteAmmo = CreateConVar("sm_aia_all", "0", "Advanced Infinite Ammo for everyone");
 	g_hAdminOnly = CreateConVar("sm_aia_adminonly", "0", "Advanced Infinite Ammo will work for admins only, 1 = Completely Admin Only, 2 = Admin Only but the commands will work on non-admins");
 	g_hBots = CreateConVar("sm_aia_bots", "1", "Advanced Infinite Ammo will work for bots");
-	g_hRoundWin = CreateConVar("sm_aia_roundwin", "1", "Advanced Infinite Ammo for everyone on round win");
-	g_hWaitingForPlayers = CreateConVar("sm_aia_waitingforplayers", "1", "Advanced Infinite Ammo for everyone during waiting for players phase");
+	g_hRoundWin = CreateConVar("sm_aia_roundwin", "0", "Advanced Infinite Ammo for everyone on round win");
+	g_hWaitingForPlayers = CreateConVar("sm_aia_waitingforplayers", "0", "Advanced Infinite Ammo for everyone during waiting for players phase");
 	g_hChat = CreateConVar("sm_aia_chat", "1", "Show Advanced Infinite Ammo changes in chat");
 	g_hLog = CreateConVar("sm_aia_log", "1", "Log Advanced Infinite Ammo commands");
 	g_hDisabledWeapons = CreateConVar("sm_aia_disabledweapons", "", "Weapons indexes to not give infinite ammo, separated by semicolons");
