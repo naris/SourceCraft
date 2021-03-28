@@ -726,7 +726,7 @@ public OnItemPurchase(client,item)
     {
         returnCode = Plugin_Handled;
         if (m_InfiniteAmmoAvailable)
-            SetInfiniteAmmo(client, true, 20.0);
+            AIA_SetAIA(client, true, 20.0);
     }
     else if ((item==shopItem[ITEM_RING] ||                               // Rings of Regeneration
                 item==shopItem[ITEM_RING3] ||
@@ -874,10 +874,10 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
             if (GetOwnsItem(client,shopItem[ITEM_PACK]))                            // Ammo Pack
                 CreateAmmoPackTimer(client);
 
-            if (GetOwnsItem(client,shopItem[ITEM_PACK]))                            // Infinite Ammo
+            if (GetOwnsItem(client,shopItem[ITEM_AMMO]))                            // Infinite Ammo
             {
                 if (m_InfiniteAmmoAvailable)
-                    SetInfiniteAmmo(client, true, 20.0);
+                    AIA_SetAIA(client, true, 20.0);
                 else                
                     CreateAmmoPackTimer(client);
             }
@@ -1051,7 +1051,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
         {
             SetOwnsItem(victim_index,shopItem[ITEM_AMMO],false);
             if (m_InfiniteAmmoAvailable)
-                SetInfiniteAmmo(victim_index, false);
+                AIA_SetAIA(victim_index, false);
         }
 
         if (GetOwnsItem(victim_index,shopItem[ITEM_HELM]))

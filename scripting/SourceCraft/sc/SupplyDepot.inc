@@ -36,7 +36,7 @@ stock SupplyAmmo(client, amount, const String:source[],
         {
             if (full && m_InfiniteAmmoAvailable)
             {
-                ammoSupplied = FillAmmo(client) ? 4 : 0;
+                ammoSupplied = AIA_FillAmmo(client) ? 4 : 0;
             }
 
             if (ammoSupplied == 0)

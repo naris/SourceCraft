@@ -225,7 +225,7 @@ stock bool:IsInfiniteAmmoAvailable(bool:force=false)
     if (!m_InfiniteAmmoAvailable && GetGameType() == tf2 && 
         (force || LibraryExists("aia")))
     {
-        ControlInfiniteAmmo(true);
+        AIA_Control(true);
         m_InfiniteAmmoAvailable = true;
     }
     return m_InfiniteAmmoAvailable;
