@@ -138,7 +138,7 @@ public OnPluginStart()
 
 public OnSourceCraftReady()
 {
-    raceID          = CreateRace("scv", 48, 0, 37, .faction=Terran,
+    raceID          = CreateRace("scv", 48, 0, 49, .faction=Terran,
                                  .type=BioMechanical);
 
     supplyID        = AddUpgrade(raceID, "supply_depot", .cost_crystals=15);
