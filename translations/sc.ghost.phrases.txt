@@ -117,7 +117,7 @@
 	}
 	"ghost_bunker_desc"
 	{
-		"en"		"Enter the Bunker, which provides additional armor (20-160%) that takes 100%% damage at the cost of becoming immoble while in the bunker."
+		"en"		"Enter the Bunker, which provides additional armor (20-160%) that takes 100%% damage at the cost of becoming immobile while in the bunker."
 	}
 	"ghost_bunker_image"
 	{
@@ -169,13 +169,13 @@
 	"NukeLaunched"
 	{
 		"#format"	"{1:3.1f}"
-		"en"		"You have {blue}Launched{default} a {blue}Nuclear{default} Missile, you must now wait {1} seconds for the missle to lock on!"
+		"en"		"You have {blue}Launched{default} a {blue}Nuclear{default} Missile, you must now wait {1} seconds for the missile to lock on!"
 	}
 
 	"NukeLockedOn"
 	{
 		"#format"	"{1:3.1f}"
-		"en"		"The {blue}Nuclear{default} Missile has {blue}Locked On{default}, you have %3.1f seconds to evacuate!"
+		"en"		"The {blue}Nuclear{default} Missile has {blue}Locked On{default}, you have {1} seconds to evacuate!"
 	}
 
 	"NukeExploded"
