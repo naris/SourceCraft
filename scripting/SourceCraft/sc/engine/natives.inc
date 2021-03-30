@@ -2909,6 +2909,15 @@ public Native_DisplayMessage(Handle:plugin,numParams)
 
     LogToGame(buffer);
     PrintToServer(buffer);
+
+    // Debug
+    if (StrContains(buffer, "{") >= 0 || StrContains(buffer, "%") >= 0)
+    {
+        decl String:fmt[128];
+        GetNativeString(3,fmt,sizeof(fmt));
+        LogError("Malformed %s Message displayed to %N:%s",
+                 fmt, ValidClientIndex(client), buffer);
+    }
 }
 
 /**

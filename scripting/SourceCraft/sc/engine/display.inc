@@ -799,8 +799,8 @@ DisplayMessage(client, Display:flags, const String:fmt[], any:...)
     // Debug
     if (StrContains(buffer, "%") >= 0)
     {
-        LogError("Attempt to Display bad Message to %N %s",
-                 ValidClientIndex(client), buffer);
+        LogError("Attempt to Display bad %s Message to %N:%s",
+                 fmt, ValidClientIndex(client), buffer);
         return;
     }
 
@@ -893,6 +893,13 @@ DisplayMessage(client, Display:flags, const String:fmt[], any:...)
 
     LogToGame(buffer);
     PrintToServer(buffer);
+
+    // Debug
+    if (StrContains(buffer, "{") >= 0)
+    {
+        LogError("Malformed %s Message displayed to %N %s",
+                 fmt, ValidClientIndex(client), buffer);
+    }
 }
 
 DisplayHint(client, HintSlot:slot=HintSlot_Generic, bool:exclusive=false,
