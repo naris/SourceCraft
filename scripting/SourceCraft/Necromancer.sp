@@ -47,7 +47,7 @@
 new g_CrippleChance[]               = { 0, 20, 24, 28, 32, 36, 40, 44, 48 };
 new Float:g_SpeedLevels[]           = { -1.0, 1.05,  1.10,   1.16, 1.23  };
 new Float:g_VampiricAuraPercent[]   = { 0.0,  0.12,  0.18,   0.24, 0.30  };
-new g_HorsemannHealth[]             = { 0, 350, 500, 650, 800 };
+new g_HorsemannHealth[]             = { 0, 400, 600, 800, 1000 };
 
 new String:raiseWav[]="vo/trainyard/ba_backup.wav";
 
@@ -153,10 +153,10 @@ public OnSourceCraftReady()
                                .energy=300.0, .vespene=100,
                                .cooldown=200.0, .cost_crystals=75);
 
-    scareID       = AddUpgrade(raceID, "scare", 4, 16, 4,
+    scareID       = AddUpgrade(raceID, "scare", 5, 16, 4,
                                .energy=30.0, .vespene=10,
                                .recurring_energy=5.0,
-                               .cooldown=30.0, .cost_crystals=15);
+                               .cooldown=2.0, .cost_crystals=15);
 
     if (GameType != tf2 || !IsBeHorsemannAvailable())
     {
@@ -322,12 +322,14 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
     if (pressed && race==raceID && IsValidClientAlive(client))
     {
         if (m_BeHorsemannAvailable && IsHorsemann(client))
+        {
             HorsemannScare(client);
+        }
         else
         {
             switch (arg)
             {
-                case 4: // Summon Horsemann
+                case 4, 5: // Summon Horsemann and Horsemann Scare
                 {
                     new horse_level = GetUpgradeLevel(client,race,summonHorseID);
                     if (m_BeHorsemannAvailable && horse_level > 0)
@@ -879,7 +881,7 @@ public Action:ResetCollisionGroup(Handle:timer,any:userid)
 
 public Action:OnHorsemannScare(client, target)
 {
-    if (IsValidClient(client) && GetRace(client) == raceID)
+    if (target <= 0 && IsValidClient(client) && GetRace(client) == raceID)
     {
         if (GetRestriction(client,Restriction_NoUltimates) ||
             GetRestriction(client,Restriction_Stunned))
@@ -891,7 +893,7 @@ public Action:OnHorsemannScare(client, target)
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
             return Plugin_Stop;
         }
-        else if (IsValidClientAlive(target))
+        else if (IsValidClientAlive(client))
         {
             if (CanInvokeUpgrade(client, raceID, scareID))
             {
@@ -899,10 +901,14 @@ public Action:OnHorsemannScare(client, target)
                 return Plugin_Continue;
             }
             else
+            {
                 return Plugin_Stop;
+            }
         }
         else
+        {
             return Plugin_Stop;
+        }
     }
     else
         return Plugin_Continue;

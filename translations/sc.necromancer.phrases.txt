@@ -148,7 +148,7 @@
 	}
 	"necromancer_scare_desc"
 	{
-		"en"		"You Scare everyone around you! You must be the Horsemann to use this."
+		"en"		"You Scare everyone around you! Invoke by calling medic or any +ultimate when you are the Horsemann."
 	}
 	"necromancer_scare_image"
 	{
