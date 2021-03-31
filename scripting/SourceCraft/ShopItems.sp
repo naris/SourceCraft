@@ -258,7 +258,7 @@ public OnSourceCraftReady()
     shopItem[ITEM_PACK]             = CreateShopItem("pack",        35);
 
     if (IsInfiniteAmmoAvailable())
-        shopItem[ITEM_AMMO]         = CreateShopItem("ammo",        40);
+        shopItem[ITEM_AMMO]         = CreateShopItem("ammo",        80);
 
     shopItem[ITEM_SACK]             = CreateShopItem("sack",        65);
     shopItem[ITEM_LOCKBOX]          = CreateShopItem("lockbox",     10);

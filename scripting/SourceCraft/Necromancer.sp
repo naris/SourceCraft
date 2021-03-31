@@ -47,7 +47,7 @@
 new g_CrippleChance[]               = { 0, 20, 24, 28, 32, 36, 40, 44, 48 };
 new Float:g_SpeedLevels[]           = { -1.0, 1.05,  1.10,   1.16, 1.23  };
 new Float:g_VampiricAuraPercent[]   = { 0.0,  0.12,  0.18,   0.24, 0.30  };
-new g_HorsemannHealth[]             = { 0, 400, 600, 800, 1000 };
+new g_HorsemannHealth[]             = { 0, 350, 500, 650, 800, 1000 };
 
 new String:raiseWav[]="vo/trainyard/ba_backup.wav";
 
@@ -101,7 +101,7 @@ public OnPluginStart()
 
 public OnSourceCraftReady()
 {
-    raceID       = CreateRace("necromancer", -1, -1, 32, .faction=UndeadScourge,
+    raceID       = CreateRace("necromancer", -1, -1, 33, .faction=UndeadScourge,
                               .type=Undead, .parent="undead");
 
     vampiricID   = AddUpgrade(raceID, "vampiric_aura", .energy=2.0, .cost_crystals=10);
@@ -149,7 +149,7 @@ public OnSourceCraftReady()
         LogMessage("Disabling Necromancer:Raise Horsemann due to horsemann is not available (or gametype != tf2)");
     }
 
-    summonHorseID = AddUpgrade(raceID, "summon_horse", 4, 16, 4,
+    summonHorseID = AddUpgrade(raceID, "summon_horse", 4, 16, 5,
                                .energy=300.0, .vespene=100,
                                .cooldown=200.0, .cost_crystals=75);
 
