@@ -35,7 +35,7 @@
 #include "effect/SendEffects"
 
 new const String:spawnWav[]         = "sc/pzerdy00.wav";
-new const String:deathWav[]         = "sc/pzedth00.wav";
+new const String:deathWav[]         = "sc/pzedth00.mp3";
 
 new const String:g_PsiBladesSound[] = "sc/uzefir00.wav";
 

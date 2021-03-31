@@ -881,6 +881,8 @@ public Action:ResetCollisionGroup(Handle:timer,any:userid)
 
 public Action:OnHorsemannScare(client, target)
 {
+    LogMessage("OnHorsemannScare(%N, %d)", client, target);
+
     if (target <= 0 && IsValidClient(client) && GetRace(client) == raceID)
     {
         if (GetRestriction(client,Restriction_NoUltimates) ||
@@ -891,6 +893,7 @@ public Action:OnHorsemannScare(client, target)
             decl String:upgradeName[NAME_STRING_LENGTH];
             GetUpgradeName(raceID, scareID, upgradeName, sizeof(upgradeName), client);
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
+            LogMessage("OnHorsemannScare(%N, %d) Denied due to restriction!", client, target);
             return Plugin_Stop;
         }
         else if (IsValidClientAlive(client))
@@ -898,18 +901,24 @@ public Action:OnHorsemannScare(client, target)
             if (CanInvokeUpgrade(client, raceID, scareID))
             {
                 CreateCooldown(client, raceID, scareID);
+                LogMessage("OnHorsemannScare(%N, %d) Invoked!", client, target);
                 return Plugin_Continue;
             }
             else
             {
+                LogMessage("OnHorsemannScare(%N, %d) Denied due to cooldown!", client, target);
                 return Plugin_Stop;
             }
         }
         else
         {
+            LogMessage("OnHorsemannScare(%N, %d) Denied due to invalid client!", client, target);
             return Plugin_Stop;
         }
     }
     else
+    {
+        LogMessage("OnHorsemannScare(%N, %d) Continued!", client, target);
         return Plugin_Continue;
+    }
 }

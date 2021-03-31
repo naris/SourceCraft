@@ -88,13 +88,13 @@ public Plugin:myinfo =
 
 new g_FilteredEntity = -1;
 new g_FiremineModelIndex;
-new g_PyroAmmo[MAXPLAYERS+1];
+new g_PlayerAmmo[MAXPLAYERS+1];
 new g_FireminesRef[MAXENTITIES] = { INVALID_ENT_REFERENCE, ... };
 new g_FireminesTime[MAXENTITIES];
 new g_FireminesOwner[MAXENTITIES];
 new bool:g_FiremineSeeking[MAXENTITIES];
-new bool:g_PyroButtonDown[MAXPLAYERS+1];
-new Float:g_PyroPosition[MAXPLAYERS+1][3];
+new bool:g_PlayerButtonDown[MAXPLAYERS+1];
+new Float:g_PlayerPosition[MAXPLAYERS+1][3];
 new Handle:g_IsFireminesOn = INVALID_HANDLE;
 new Handle:g_FireminesAmmo = INVALID_HANDLE;
 new Handle:g_FireminesType = INVALID_HANDLE;
@@ -205,9 +205,9 @@ public OnClientDisconnect(client)
 {
     //g_Pyros[client] = false;
     g_ChangingClass[client] = false;
-    g_PyroButtonDown[client] = false;
-    g_PyroAmmo[client] = 0;
-    g_PyroPosition[client] = NULL_VECTOR;
+    g_PlayerButtonDown[client] = false;
+    g_PlayerAmmo[client] = 0;
+    g_PlayerPosition[client] = NULL_VECTOR;
     g_Remaining[client] = g_Limit[client] = g_Maximum[client] = 0;
 }
 
@@ -241,13 +241,13 @@ public OnGameFrame()
 
     for (new i = 1; i <= MaxClients; i++)
     {
-        //if (g_Pyros[i] && !g_PyroButtonDown[i] && IsClientInGame(i))
-        if (g_Remaining[i] && !g_PyroButtonDown[i] && IsClientInGame(i) &&
+        //if (g_Pyros[i] && !g_PlayerButtonDown[i] && IsClientInGame(i))
+        if (g_Remaining[i] && !g_PlayerButtonDown[i] && IsClientInGame(i) &&
             TF2_GetPlayerClass(i) == TFClass_Pyro)
         {
             if (GetClientButtons(i) & IN_RELOAD)
             {
-                g_PyroButtonDown[i] = true;
+                g_PlayerButtonDown[i] = true;
                 CreateTimer(0.5, Timer_ButtonUp, i);
                 new String:classname[64];
                 GetCurrentWeaponClass(i, classname, 64);
@@ -327,8 +327,8 @@ public Action:Timer_Caching(Handle:timer)
         if (IsClientInGame(i) && IsPlayerAlive(i) &&
             (g_NativeControl ? g_Limit[i] != 0 : TF2_GetPlayerClass(i) == TFClass_Pyro))
         {
-            g_PyroAmmo[i] = TF2_GetAmmoAmount(i);
-            GetClientAbsOrigin(i, g_PyroPosition[i]);
+            g_PlayerAmmo[i] = TF2_GetAmmoAmount(i);
+            GetClientAbsOrigin(i, g_PlayerPosition[i]);
         }
     }
 
@@ -365,7 +365,7 @@ public Action:Timer_Caching(Handle:timer)
 
 public Action:Timer_ButtonUp(Handle:timer, any:client)
 {
-    g_PyroButtonDown[client] = false;
+    g_PlayerButtonDown[client] = false;
 }
 
 public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroadcast)
@@ -509,9 +509,9 @@ public Action:Event_PlayerTeam(Handle:event, const String:name[], bool:dontBroad
         if (team < 2 && IsClientInGame(client))
         {
             //g_Pyros[client] = false;
-            g_PyroButtonDown[client] = false;
-            g_PyroAmmo[client] = 0;
-            g_PyroPosition[client] = NULL_VECTOR;
+            g_PlayerButtonDown[client] = false;
+            g_PlayerAmmo[client] = 0;
+            g_PlayerPosition[client] = NULL_VECTOR;
         }
     }
 }
@@ -532,12 +532,12 @@ public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadca
 
 public Entity_OnHealthChanged(const String:output[], caller, activator, Float:delay)
 {
-    if (caller > 0 && activator > 0 && activator <= MaxClients &&
-        g_FireminesTime[caller] > 0 && IsClientInGame(activator))
+    if (caller > 0 && activator > 0 && activator <= MaxClients && g_FireminesTime[caller] > 0 &&
+        caller == EntRefToEntIndex(g_FireminesRef[caller]) && IsClientInGame(activator))
     {
         // Make sure it's a Firemine and the owner is still in the game
-        new owner=g_FireminesOwner[caller];
-        if (caller == EntRefToEntIndex(g_FireminesRef[caller]) && IsClientInGame(owner))
+        new owner=GetEntPropEnt(caller, Prop_Send, "m_hOwnerEntity");
+        if (owner == g_FireminesOwner[caller] && IsClientInGame(owner))
         {
             new team = 0;
             if (!GetConVarBool(g_FriendlyFire))
@@ -577,18 +577,17 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
                                 }
                             }
 
-                            //if (g_Pyros[i])
                             if (g_Remaining[i])
                             {
-                                g_PyroAmmo[i] = TF2_GetAmmoAmount(i);
-                                g_PyroPosition[i] = PlayerPosition;
+                                g_PlayerAmmo[i] = TF2_GetAmmoAmount(i);
+                                g_PlayerPosition[i] = PlayerPosition;
                             }
                         }
                     }
                 }
 
                 AcceptEntityInput(caller, "Break", owner, owner);
-                CreateTimer(0.1, RemoveMine, EntIndexToEntRef(caller));
+                CreateTimer(0.2, RemoveMine, EntIndexToEntRef(caller));
 
                 g_FireminesOwner[caller] = 0;
                 g_FireminesTime[caller] = 0;
@@ -609,7 +608,7 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
     if (cmd != OnDeath)
         GetClientAbsOrigin(client, PlayerPosition);
     else
-        PlayerPosition = g_PyroPosition[client];
+        PlayerPosition = g_PlayerPosition[client];
 
     if (PlayerPosition[0] != 0.0 && PlayerPosition[1] != 0.0 &&
         PlayerPosition[2] != 0.0 && !IsEntLimitReached(100, .message="unable to create mine"))
@@ -720,7 +719,7 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
         }
     }
 
-    new ammo = (cmd == OnDeath) ? g_PyroAmmo[client] : TF2_GetAmmoAmount(client);
+    new ammo = (cmd == OnDeath) ? g_PlayerAmmo[client] : TF2_GetAmmoAmount(client);
     new FireminesAmmo = GetConVarInt(g_FireminesAmmo);
     new TFClassType:class = TF2_GetPlayerClass(client);
     switch (class)
@@ -769,7 +768,7 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
             }
 
             ammo -= FireminesAmmo;
-            g_PyroAmmo[client] = ammo;
+            g_PlayerAmmo[client] = ammo;
             TF2_SetAmmoAmount(client, ammo);
 
             // update client's inventory
