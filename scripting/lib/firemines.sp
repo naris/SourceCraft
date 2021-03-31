@@ -933,8 +933,15 @@ public Action:MineSeek(Handle:timer, any:mineRef)
             vecBelow[0] = minePos[0];
             vecBelow[1] = minePos[1];
             vecBelow[2] = minePos[2] - 2000.0;
-            TR_TraceRayFilter(minePos, vecBelow, MASK_PLAYERSOLID, RayType_EndPoint,
-                    TraceRayDontHitSelf, mine);
+
+            new Float:vecMins[3];
+            GetEntPropVector(mine, Prop_Send, "m_vecMins", vecMins);
+
+            new Float:vecMaxs[3];
+            GetEntPropVector(mine, Prop_Send, "m_vecMaxs", vecMaxs);
+
+            //TR_TraceRayFilter(minePos, vecBelow, MASK_PLAYERSOLID, RayType_EndPoint, TraceRayDontHitSelf, mine);
+            TR_TraceHullFilter(minePos, vecBelow, vecMins, vecMaxs, MASK_PLAYERSOLID, TraceRayDontHitSelf, mine);
             if (TR_DidHit(INVALID_HANDLE))
             {
                 // Move mine down to ground.
