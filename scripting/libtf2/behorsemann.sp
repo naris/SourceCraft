@@ -404,7 +404,7 @@ void MakeHorsemann(int client, int health, bool thirdPerson)
     {
         EmitGameSoundToAll(SND_SPAWN);
         EmitGameSoundToAll(SND_SPAWNRUMBLE);
-        //EmitSoundToAll(SND_SPAWNVO);
+        EmitSoundToAll(SND_SPAWNVO);
     }
 
     int ragdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
@@ -542,7 +542,6 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
                 }
             }
         }
-        LogMessage("Play %s", sample);
         EmitSoundToAll(sample, entity);
 
         float clientPos[3];
@@ -563,7 +562,6 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
                 ScreenShake(i, FloatAbs((500.0 - flDistance) / (500.0 - 0.0) * 15.0), 5.0, 1.0);
             }
         }    
-        LogMessage("Sound was changed to %s", sample);
         return Plugin_Changed;
     }
     
@@ -596,10 +594,8 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
             case 3: Format(sample, sizeof(sample), SND_ATTACK03);
             case 4: Format(sample, sizeof(sample), SND_ATTACK04);
         }
-        LogMessage("Play %s", sample);
         EmitSoundToAll(sample, entity, SNDCHAN_VOICE, 95, 0, 1.0, 100);
         TE_ParticleToAll("ghost_pumpkin", _, _, _, entity);
-        LogMessage("Sound was changed to %s", sample);
         return Plugin_Changed;
     }
     else if(StrContains(sample, "vo/", false) != -1)
@@ -607,11 +603,9 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
         if(StrContains(sample, "_medic0", false) != -1)
         {
             int boo = GetConVarInt(hCvarBoo);
-            LogMessage("Horsemann %N called medic, boo=%d!", entity, boo);
             if (boo && StrContains(sample, "_medic0", false) != -1)
             {
                 Format(sample, sizeof(sample), SND_KNIGHT_ALERT);
-                LogMessage("Sound was changed to %s", sample);
                 if (boo > 1)
                     DoHorsemannScare(entity);
             }
@@ -626,7 +620,6 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
                 case 2: Format(sample, sizeof(sample), SND_PAIN02);
                 case 3: Format(sample, sizeof(sample), SND_PAIN03);
             }
-            LogMessage("Sound was changed to %s", sample);
             return Plugin_Changed;
         }
         else
@@ -638,7 +631,6 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
                 case 3: Format(sample, sizeof(sample), SND_LAUGH03);
                 case 4: Format(sample, sizeof(sample), SND_LAUGH04);
             }
-            LogMessage("Sound was changed to %s", sample);
             return Plugin_Changed;
         }
     }
@@ -647,7 +639,6 @@ public Action HorsemannSH(int clients[64], int &numClients, char sample[PLATFORM
 
 int DoHorsemannScare(int client)
 {
-    LogMessage("Horsemann %N Invoked Scare!", client);
     Action res = Plugin_Continue;
     Call_StartForward(fwdOnScare);
     Call_PushCell(client);
@@ -655,10 +646,10 @@ int DoHorsemannScare(int client)
     Call_Finish(res);
 
     if (res != Plugin_Continue)
-    {
-        LogMessage("Horsemann %N was denied Scare!", client);
         return 0;
-    }
+
+    EmitSoundToAll(SND_BOO);
+    TF2_StunPlayer(client, 1.3, 1.0, TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_NOSOUNDOREFFECT);
 
     float pos[3];
     float HorsemannPosition[3];
@@ -666,9 +657,6 @@ int DoHorsemannScare(int client)
 
     int count = 0;
     int HorsemannTeam = GetClientTeam(client);
-
-    TF2_StunPlayer(client, 1.3, 1.0, TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_NOSOUNDOREFFECT);
-
     for (int i = 1; i <= MaxClients; i++)
     {
         if (!IsValidClient(i) || !IsPlayerAlive(i) || HorsemannTeam == GetClientTeam(i))
@@ -680,10 +668,7 @@ int DoHorsemannScare(int client)
         Call_Finish(res);
 
         if (res != Plugin_Continue)
-        {
-            LogMessage("Horsemann %N was denied Scare of %d!", client, i);
             continue;
-        }
 
         GetClientAbsOrigin(i, pos);
         if (GetVectorDistance(HorsemannPosition, pos) <= 500 && !FindHHHSaxton(i) && !g_bIsHHH[i])
@@ -872,10 +857,6 @@ public int Native_MakeHorsemann(Handle plugin, int numParams)
 
         MakeHorsemann(client, health, thirdPerson);
 
-        EmitSoundToAll(SND_SPAWN);
-        EmitSoundToAll(SND_SPAWNRUMBLE);
-        EmitSoundToAll(SND_SPAWNVO);
-
         return view_as<int>(g_bIsHHH[client]);
     }
     else
@@ -896,7 +877,6 @@ public int Native_HorsemannScare(Handle plugin, int numParams)
     int client = GetNativeCell(1);
     if (IsValidClient(client))
     {
-        EmitSoundToAll(SND_BOO);
         return DoHorsemannScare(client);
     }
     else

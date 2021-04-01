@@ -14,9 +14,11 @@
 
 #include <sourcemod>
 #include <sdktools>
+
+#include <smlib/teams>
+#include <entity_flags>
 #include <raytrace>
 #include <range>
-#include <entity_flags>
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
@@ -30,6 +32,8 @@
 #include <libtf2/behorsemann>
 #include "sc/RateOfFire"
 #define REQUIRE_PLUGIN
+
+//#include "smlib/teams"
 
 #include "sc/SourceCraft"
 #include "sc/HealthParticle"
@@ -55,7 +59,8 @@ new const String:necroWav[][]   = { "sc/NecromancerReady1.mp3" ,
 new g_CrippleChance[]               = { 0, 20, 24, 28, 32, 36, 40, 44, 48 };
 new Float:g_SpeedLevels[]           = { -1.0, 1.05,  1.10,   1.16, 1.23  };
 new Float:g_VampiricAuraPercent[]   = { 0.0,  0.12,  0.18,   0.24, 0.30  };
-new g_HorsemannHealth[]             = { 0, 350, 500, 650, 800, 1000 };
+new g_HorsemannHealthFactor[]       = { 0,  25,  50, 100, 200,  250 };
+new g_HorsemannMaxHealth[]          = { 0, 400, 550, 700, 850, 1200 };
 
 new String:raiseWav[]="vo/trainyard/ba_backup.wav";
 
@@ -187,8 +192,11 @@ public OnSourceCraftReady()
     GetConfigFloatArray("damage_percent", g_VampiricAuraPercent, sizeof(g_VampiricAuraPercent),
                         g_VampiricAuraPercent, raceID, vampiricID);
 
-    GetConfigArray("hhh_health", g_HorsemannHealth, sizeof(g_HorsemannHealth),
-                   g_HorsemannHealth, raceID, summonHorseID);
+    GetConfigArray("hhh_health", g_HorsemannHealthFactor, sizeof(g_HorsemannHealthFactor),
+                   g_HorsemannHealthFactor, raceID, summonHorseID);
+
+    GetConfigArray("hhh_maxhealth", g_HorsemannMaxHealth, sizeof(g_HorsemannMaxHealth),
+                   g_HorsemannMaxHealth, raceID, summonHorseID);
 }
 
 public OnLibraryAdded(const String:name[])
@@ -372,8 +380,12 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                         }
                         else if (CanInvokeUpgrade(client, raceID, summonHorseID, false))
                         {
-                            if (MakeHorsemann(client, g_HorsemannHealth[horse_level],
-                                              (TF2_GetPlayerClass(client) != TFClass_DemoMan)) == 0)
+                            int count = Team_GetClientCount(GetClientTeam(client) == 2 ? 3 : 2);
+                            int health = 200 + (g_HorsemannHealthFactor[horse_level] * count);
+                            if (health > g_HorsemannMaxHealth[horse_level])
+                                health = g_HorsemannMaxHealth[horse_level];
+
+                            if (MakeHorsemann(client, health, (TF2_GetPlayerClass(client) != TFClass_DemoMan)) == 0)
                             {
                                 SetInitialEnergy(client, -1.0);
                                 SetSpeed(client,-1.0, true);
@@ -915,8 +927,6 @@ public Action:ResetCollisionGroup(Handle:timer,any:userid)
 
 public Action:OnHorsemannScare(client, target)
 {
-    LogMessage("OnHorsemannScare(%N, %d)", client, target);
-
     if (target <= 0 && IsValidClient(client) && GetRace(client) == raceID)
     {
         if (GetRestriction(client,Restriction_NoUltimates) ||
@@ -927,7 +937,6 @@ public Action:OnHorsemannScare(client, target)
             decl String:upgradeName[NAME_STRING_LENGTH];
             GetUpgradeName(raceID, scareID, upgradeName, sizeof(upgradeName), client);
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
-            LogMessage("OnHorsemannScare(%N, %d) Denied due to restriction!", client, target);
             return Plugin_Stop;
         }
         else if (IsValidClientAlive(client))
@@ -935,24 +944,14 @@ public Action:OnHorsemannScare(client, target)
             if (CanInvokeUpgrade(client, raceID, scareID))
             {
                 CreateCooldown(client, raceID, scareID);
-                LogMessage("OnHorsemannScare(%N, %d) Invoked!", client, target);
                 return Plugin_Continue;
             }
             else
-            {
-                LogMessage("OnHorsemannScare(%N, %d) Denied due to cooldown!", client, target);
                 return Plugin_Stop;
-            }
         }
         else
-        {
-            LogMessage("OnHorsemannScare(%N, %d) Denied due to invalid client!", client, target);
             return Plugin_Stop;
-        }
     }
     else
-    {
-        LogMessage("OnHorsemannScare(%N, %d) Continued!", client, target);
         return Plugin_Continue;
-    }
 }

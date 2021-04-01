@@ -1,26 +1,23 @@
 /**************************************************
- * 
+ *
  *            SMLIB Testing Suite
- * 
+ *
  * ************************************************
- * 
+ *
  * Warning: This plugin is only for testing if all
  * function stocks are compile-able without any
  * errors/warnings, do not load this on a production
  * server or it will likely crash it.
- * 
+ *
  */
 
 // enforce semicolons after each code statement
 #pragma semicolon 1
 
-//Define _INLINE to use inline macros
-#define _INLINE
-
 #include <sourcemod>
 #include <smlib>
 
-#define PLUGIN_VERSION "0.1"
+#define PLUGIN_VERSION "1.0"
 
 
 
@@ -64,14 +61,13 @@ public Plugin:myinfo = {
 
 *****************************************************************/
 
-public OnPluginStart()
-{
-	new bool:b;
- 	#pragma unused b
+public OnPluginStart() {
 
-	new arr[1], String:arr_str[1][1];
+	new arr[1], String:arr_str[1][1], arr_4[4];
 	decl Float:vec[3];
-	decl String:buf[1], String:twoDimStrArr[1][1];
+	decl String:buf[1], String:buf_10[10], String:twoDimStrArr[1][1];
+	new variable;
+	new Handle:handle;
 
 	// File: arrays.inc
 	Array_FindValue(arr, sizeof(arr), 1);
@@ -79,8 +75,9 @@ public OnPluginStart()
 	Array_FindLowestValue(arr, sizeof(arr));
 	Array_FindHighestValue(arr, sizeof(arr));
 	Array_Fill(arr, sizeof(arr), 0);
+	Array_Copy(arr, arr, 1);
 
-	// File: 0s.inc
+	// File: clients.inc
 	Client_SetHideHud(0, 0);
 	Client_IsValid(0);
 	Client_IsIngame(0);
@@ -154,15 +151,23 @@ public OnPluginStart()
 	Client_IsReloading(0);
 	Client_SetWeaponClipAmmo(0, "");
 	Client_GetWeaponPlayerAmmo(0, "");
+	Client_GetWeaponPlayerAmmoEx(0, 0);
 	Client_SetWeaponPlayerAmmo(0, "");
 	Client_SetWeaponPlayerAmmoEx(0, 0);
 	Client_SetWeaponAmmo(0, "");
+	Client_GetNextWeapon(0, variable);
 	Client_PrintHintText(0, "");
 	Client_PrintHintTextToAll("");
 	Client_PrintKeyHintText(0, "");
 	Client_PrintKeyHintTextToAll("");
+	Client_PrintToChatRaw(0, "");
+	Client_PrintToChat(0, false, "");
+	Client_PrintToChatAll(false, "");
+	Client_PrintToChatEx({ 0 }, 0, false, "");
 	Client_Shake(0);
 	Client_IsAdmin(0);
+	Client_HasAdminFlags(0);
+	Client_IsInAdminGroup(0, "");
 	Client_IsLookingAtWall(0);
 	Client_GetClass(0);
 	Client_SetClass(0, 0);
@@ -173,6 +178,62 @@ public OnPluginStart()
 	Client_ClearButtons(0);
 	Client_HasButtons(0, 0);
 	Client_GetChangedButtons(0);
+	Client_SetMaxSpeed(0, 0.0);
+	Client_SetScreenOverlay(0, "");
+	Client_SetScreenOverlayForAll("");
+	Client_Mute(0);
+	Client_UnMute(0);
+	Client_IsMuted(0);
+	Client_PrintToConsole(0, "");
+	Client_Print(0, ClientHudPrint:0, "");
+	Client_PrintToChatExclude(0);
+	Client_Reply(0, "");
+	Client_MatchesFilter(0, 0);
+	Client_Get({ 0 }, 0);
+	Client_GetRandom(0);
+	Client_GetNext(0);
+	Client_GetMapTime(0);
+	Client_GetMoney(0);
+	Client_SetMoney(0, 0);
+	Client_GetObservers(0, { 0 });
+	Client_GetPlayersInRadius(0, arr, 0.0);
+	Client_GetNextObserver(0);
+	Client_GetPlayerManager();
+	Client_SetPing(0, 0);
+	Client_PrintToTopExclude(0);
+	Client_PrintToTopRaw(0,0,0,0,0,0.0,"");
+	Client_PrintToTop(0,0,0,0,0,0.0,"");
+	Client_PrintToTopAll(0,0,0,0,0.0,"");
+	Client_PrintToTopEx({ 0 },1,0,0,0,0,0.0,"");
+	Client_ShowScoreboard(0);
+
+	// File: colors.inc
+	Color_ChatSetSubject(0);
+	Color_ChatGetSubject();
+	Color_ChatClearSubject();
+	Color_ParseChatText("", "", 0);
+	Color_TagToCode("", variable, buf_10);
+	Color_StripFromChatText("", "", 0);
+
+	// File: convars.inc
+	ConCommand_HasFlags("", 0);
+	ConCommand_AddFlags("", 0);
+	ConCommand_RemoveFlags("", 0);
+
+	// File: convars.inc
+	Convar_HasFlags(INVALID_HANDLE, 0);
+	Convar_AddFlags(INVALID_HANDLE, 0);
+	Convar_RemoveFlags(INVALID_HANDLE, 0);
+	Convar_IsValidName("");
+
+	// File: crypt.inc
+	Crypt_Base64Encode("", buf, sizeof(buf));
+	Crypt_Base64Decode("", buf, sizeof(buf));
+	Crypt_Base64MimeToUrl("", buf, sizeof(buf));
+	Crypt_Base64UrlToMime("", buf, sizeof(buf));
+	Crypt_MD5("", buf, sizeof(buf));
+	Crypt_RC4Encode("", "", buf, sizeof(buf));
+	Crypt_RC4EncodeBinary("", 0, "", buf, sizeof(buf));
 
 	// File: debug.inc
 	Debug_FloatArray(vec);
@@ -180,7 +241,7 @@ public OnPluginStart()
 	// File: dynarrays.inc
 	DynArray_GetBool(INVALID_HANDLE, 0);
 
-	// File: 0s.inc
+	// File: edicts.inc
 	Edict_FindByName("");
 	Edict_FindByHammerId(0);
 	Edict_GetClosest(vec);
@@ -192,6 +253,16 @@ public OnPluginStart()
 	Effect_Fade(0);
 	Effect_FadeIn(0);
 	Effect_FadeOut(0);
+	Effect_DrawBeamBox(arr, 1, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawBeamBoxToAll(NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawBeamBoxToClient(0, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawBeamBoxRotatableToClient(0, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawBeamBoxRotatableToAll(NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawBeamBoxRotatable(arr, 1, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawAxisOfRotationToClient(0, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawAxisOfRotationToAll(NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_DrawAxisOfRotation(arr, 1, NULL_VECTOR, NULL_VECTOR, NULL_VECTOR, 0, 0);
+	Effect_EnvSprite(NULL_VECTOR,0);
 
 	// File: entities.inc
 	Entity_IsValid(0);
@@ -249,7 +320,7 @@ public OnPluginStart()
 	Entity_SetModel(0, "");
 	Entity_GetModelIndex(0);
 	Entity_SetModelIndex(0, 0);
-	Client_SetMaxSpeed(0, 0.0);
+	Entity_SetMaxSpeed(0, 0.0);
 	Entity_GetCollisionGroup(0);
 	Entity_SetCollisionGroup(0, Collision_Group_t:0);
 	Entity_GetAbsOrigin(0, vec);
@@ -270,6 +341,8 @@ public OnPluginStart()
 	Entity_GetMaxHealth(0);
 	Entity_SetMaxHealth(0, 0);
 	Entity_AddHealth(0, 0);
+	Entity_GetDistance(0, 0);
+	Entity_GetDistanceOrigin(0, vec);
 	Entity_InRange(0, 0, 0.0);
 	Entity_EnableMotion(0);
 	Entity_DisableMotion(0);
@@ -277,7 +350,7 @@ public OnPluginStart()
 	Entity_UnFreeze(0);
 	Entity_PointAtTarget(0, 0);
 	Entity_PointHurtAtTarget(0, 0);
-	b = Entity_IsPlayer(0);
+	Entity_IsPlayer(0);
 	Entity_Create("");
 	Entity_Kill(0);
 	Entity_KillAllByClassName("");
@@ -288,6 +361,27 @@ public OnPluginStart()
 	Entity_GetParent(0);
 	Entity_ClearParent(0);
 	Entity_SetParent(0, 0);
+	Entity_ChangeOverTime(0, 0.1, INVALID_FUNCTION);
+	Entity_GetNextChild(0);
+	Entity_GetMoveDirection(0,NULL_VECTOR);
+	Entity_SetMoveDirection(0,NULL_VECTOR);
+	Entity_GetForceClose(0);
+	Entity_SetForceClose(0,true);
+	Entity_GetSpeed(0);
+	Entity_SetSpeed(0,0.0);
+	Entity_GetBlockDamage(0);
+	Entity_SetBlockDamage(0,0.0);
+	Entity_IsDisabled(0);
+	Entity_Disable(0);
+	Entity_Enable(0);
+	Entity_SetTakeDamage(0,0);
+	Entity_GetTakeDamage(0);
+	Entity_SetMinHealthDamage(0,0);
+	Entity_GetMinHealthDamage(0);
+	Entity_GetRenderColor(0, arr_4);
+	Entity_SetRenderColor(0, 0, 0, 0, 0);
+	Entity_AddOutput(0, "");
+	Entity_TakeHealth(0, 0);
 
 	// File: files.inc
 	File_GetBaseName("", buf, sizeof(buf));
@@ -297,9 +391,14 @@ public OnPluginStart()
 	File_AddToDownloadsTable("");
 	File_ReadDownloadList("");
 	File_LoadTranslations("");
+	File_ToString("", "", 0);
+	File_StringToFile("", "");
+	File_Copy("", "");
+	File_CopyRecursive("", "");
 
 	// File: game.inc
 	Game_End();
+	Game_EndRound();
 
 	// File: general.inc
 	PrecacheMaterial("");
@@ -308,6 +407,10 @@ public OnPluginStart()
 	IsParticleSystemPrecached("");
 	FindStringIndexByTableName("", "");
 	FindStringIndex2(0, "");
+	LongToIP(0, buf, sizeof(buf));
+	IPToLong("");
+	IsIPLocal(0);
+	ClearHandle(handle);
 
 	// File: math.inc
 	Math_Abs(0);
@@ -321,6 +424,18 @@ public OnPluginStart()
 	Math_GetPercentage(0, 0);
 	Math_GetPercentageFloat(0.0, 0.0);
 	Math_MoveVector(vec, vec, 0.0, vec);
+	Math_UnitsToMeters(0.0);
+	Math_UnitsToFeet(0.0);
+	Math_UnitsToCentimeters(0.0);
+	Math_UnitsToKilometers(0.0);
+	Math_UnitsToMiles(0.0);
+	Math_RotateVector(vec, vec, vec);
+	Math_MakeVector(0.0, 0.0, 0.0, vec);
+	Math_Overflow(0, 0, 0);
+
+	// File: menus.inc
+	Menu_AddIntItem(INVALID_HANDLE, 0, "");
+	Menu_GetIntItem(INVALID_HANDLE, 0);
 
 	// File: server.inc
 	Server_GetIP();
@@ -329,7 +444,7 @@ public OnPluginStart()
 	Server_GetHostName(buf, sizeof(buf));
 
 	// File: sql.inc
-	SQL_TQueryF(INVALID_HANDLE, SQLTCallback:0, 0, DBPrio_Normal, "");
+	SQL_TQueryF(INVALID_HANDLE, INVALID_FUNCTION, 0, DBPrio_Normal, "");
 	SQL_FetchIntByName(INVALID_HANDLE, "");
 	SQL_FetchBoolByName(INVALID_HANDLE, "");
 	SQL_FetchFloatByName(INVALID_HANDLE, "");
@@ -341,11 +456,14 @@ public OnPluginStart()
 	String_RemoveList(buf, twoDimStrArr, sizeof(twoDimStrArr));
 	String_ToLower(buf, buf, sizeof(buf));
 	String_ToUpper(buf, buf, sizeof(buf));
-	Color_StripFromChatText(buf, buf, sizeof(buf));
+	String_GetRandom(buf, sizeof(buf));
+	String_StartsWith("", "");
+	String_EndsWith("", "");
 
 	// File: teams.inc
 	Team_HaveAllPlayers();
 	Team_GetClientCount(0);
+	Team_GetClientCounts(variable, variable);
 	Team_GetName(0, buf, sizeof(buf));
 	Team_SetName(0, "");
 	Team_GetScore(0);
@@ -354,6 +472,7 @@ public OnPluginStart()
 	Team_IsValid(0);
 	Team_EdictIsValid(0);
 	Team_GetEdict(0);
+	Team_GetAnyClient(0);
 
 	// File: 0s.inc
 	Vehicle_GetDriver(0);
@@ -382,6 +501,8 @@ public OnPluginStart()
 	Weapon_SetFiresUnderWaterAlt(0);
 	Weapon_GetPrimaryAmmoType(0);
 	Weapon_GetSecondaryAmmoType(0);
+	Weapon_SetSecondaryAmmoType(0,0);
+	Weapon_SetPrimaryAmmoType(0,0);
 	Weapon_GetPrimaryClip(0);
 	Weapon_SetPrimaryClip(0, 0);
 	Weapon_GetSecondaryClip(0);
@@ -420,4 +541,3 @@ public OnPluginStart()
 
 
 *****************************************************************/
-
