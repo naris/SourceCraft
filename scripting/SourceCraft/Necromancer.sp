@@ -44,6 +44,14 @@
 #include "effect/SendEffects"
 #include "effect/FlashScreen"
 
+new const String:deathWav[]      = "sc/Necromancer_Boss_WoundCritical_01.mp3";
+new const String:summonWav[]     = "sc/Necromancer2_Greetings_02.mp3";
+new const String:frenzyWav[]     = "sc/FX_Spirit_Channel05.mp3";
+
+new const String:necroWav[][]   = { "sc/NecromancerReady1.mp3" ,
+                                    "sc/NecromancerWarcry1.mp3" ,
+                                    "sc/NecromancerWhat1.mp3" };
+
 new g_CrippleChance[]               = { 0, 20, 24, 28, 32, 36, 40, 44, 48 };
 new Float:g_SpeedLevels[]           = { -1.0, 1.05,  1.10,   1.16, 1.23  };
 new Float:g_VampiricAuraPercent[]   = { 0.0,  0.12,  0.18,   0.24, 0.30  };
@@ -219,7 +227,14 @@ public OnMapStart()
 
     SetupErrorSound();
     SetupDeniedSound();
+    
     SetupSound(raiseWav);
+    SetupSound(deathWav);
+    SetupSound(summonWav);
+    SetupSound(frenzyWav);
+
+    for (new i = 0; i < sizeof(necroWav); i++)
+        SetupSound(necroWav[i]);
 }
 
 public OnMapEnd()
@@ -270,6 +285,11 @@ public Action:OnRaceSelected(client,oldrace,newrace)
         SetInitialEnergy(client, training_energy);
         if (GetEnergy(client, true) >= initial_energy)
             SetEnergy(client, training_energy, true);
+
+        if (IsValidClientAlive(client))
+        {
+            PrepareAndEmitSoundToAll(summonWav, client);
+        }
 
         return Plugin_Handled;
     }
@@ -504,6 +524,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                                 }
                                 else if (CanInvokeUpgrade(client, raceID, frenzyID))
                                 {
+                                    PrepareAndEmitSoundToAll(frenzyWav, victim_index);
                                     SetEntityHealth(client, health - hurt);
 
                                     SetROF(client, 2.0/float(frenzy_level),
@@ -559,12 +580,25 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
 
     if (victim_race == raceID)
     {
+        PrepareAndEmitSoundToAll(deathWav, victim_index);
+
         SetSpeed(victim_index,-1.0);
 
         if (m_FrenzyActive[victim_index])
             EndFrenzy(INVALID_HANDLE, GetClientUserId(victim_index));
         else if (m_ROFAvailable)
             SetROF(victim_index, 0.0, 0.0);
+    }
+    else if (attacker_race == raceId)
+    {
+        if (IsValidClientAlive(attacker_index))
+        {
+            new Float:vec[3];
+            GetClientEyePosition(client, vec);
+            
+            new num = GetRandomInt(0,sizeof(necroWav)-1);
+            PrepareAndEmitAmbientSound(necroWav[num], vec, client);
+        }
     }
 }
 
