@@ -3,7 +3,7 @@
 #endif
 #define _smlib_client_included
 
-// Defined here beacause needed in teams.inc
+// Defined here because needed in teams.inc
 #define CLIENTFILTER_ALL				0		// No filtering
 #define CLIENTFILTER_BOTS			( 1	<< 1  )	// Fake clients
 #define CLIENTFILTER_NOBOTS			( 1	<< 2  )	// No fake clients
@@ -23,6 +23,15 @@
 #define CLIENTFILTER_NOOBSERVERS	( 1 << 15 )	// No Observers
 #define CLIENTFILTER_TEAMONE		( 1 << 16 )	// First Team (Terrorists, ...)
 #define CLIENTFILTER_TEAMTWO		( 1 << 17 )	// Second Team (Counter-Terrorists, ...)
+
+// Team Defines
+#define	TEAM_INVALID	-1
+#define TEAM_UNASSIGNED	0
+#define TEAM_SPECTATOR	1
+#define TEAM_ONE		2
+#define TEAM_TWO		3
+#define TEAM_THREE		4
+#define TEAM_FOUR		5
 
 #include <sourcemod>
 #include <entity_prop_stocks>
@@ -1351,7 +1360,7 @@ stock Client_RemoveAllWeapons(client, const String:exclude[]="", bool:clearAmmo=
  * @param className		Weapon Classname.
  * @return				True if client has the weapon, otherwise false.
  */
-stock Client_HasWeapon(client, const String:className[])
+stock bool:Client_HasWeapon(client, const String:className[])
 {
 	new weapon = Client_GetWeapon(client, className);
 

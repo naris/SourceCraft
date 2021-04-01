@@ -4,6 +4,8 @@
 #define _smlib_entities_included
 
 #include <sourcemod>
+//#include <sdktools>
+#include <sdktools_variant_t>
 #include <sdktools_entinput>
 #include <sdktools_functions>
 
@@ -1770,7 +1772,8 @@ stock Entity_SetParent(entity, parent)
  * @param currentCall	The current call number (0 is the 1st call at 0.0 seconds, 1 the 2nd call at tick*1 seconds, ...).
  * @return				When true this callback will be called again at the next defined tick, otherwise it won't.
  */
-functag Entity_ChangeOverTimeCallback bool:public(&entity, &Float:interval, &currentCall);
+//functag Entity_ChangeOverTimeCallback bool:public(&entity, &Float:interval, &currentCall);
+typedef Entity_ChangeOverTimeCallback = function bool (int &entity, float &interval, int &currentCall);
 
 /*
  * Creates a timer and provides a callback to change various things about an entity over time.
