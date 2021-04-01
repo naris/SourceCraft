@@ -11,13 +11,15 @@
 #define MAX_TEAM_NAME_LENGTH	32	// Max length of a team's name
 
 // Team Defines
-#define	TEAM_INVALID	-1
-#define TEAM_UNASSIGNED	0
-#define TEAM_SPECTATOR	1
-#define TEAM_ONE		2
-#define TEAM_TWO		3
-#define TEAM_THREE		4
-#define TEAM_FOUR		5
+#if ! defined TEAM_INVALID
+	#define	TEAM_INVALID	-1
+	#define TEAM_UNASSIGNED	0
+	#define TEAM_SPECTATOR	1
+	#define TEAM_ONE		2
+	#define TEAM_TWO		3
+	#define TEAM_THREE		4
+	#define TEAM_FOUR		5
+#endif
 
 /*
  * If one team is empty its assumed single team mode is enabled and the game won't start.

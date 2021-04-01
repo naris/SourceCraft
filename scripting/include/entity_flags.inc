@@ -5,6 +5,10 @@
  * Author(s): Naris
  */
 
+#if defined _smlib_entities_included
+	#endinput
+#endif
+
 #if defined _entity_flags_included
  #endinput
 #endif
