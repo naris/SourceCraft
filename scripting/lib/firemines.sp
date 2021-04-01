@@ -2,7 +2,7 @@
  *  vim: set ai et ts=4 sw=4 :
  *
  *  TF2 Firemines - SourceMod Plugin
- *  Copyright (C) 2008  Marc Hörsken
+ *  Copyright (C) 2008  Marc HÃ¶rsken
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -347,15 +347,17 @@ public Action:Timer_Caching(Handle:timer)
                     new ent = EntRefToEntIndex(ref);
                     if (ent == c && g_FireminesTime[c] < time)
                     {
+                        LogMessage("Timer_Caching: Killing Mine %d!", c);
                         PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
                         AcceptEntityInput(c, "kill");
                         ent = -1;
                     }
                     if (ent != c)
                     {
+                        LogMessage("Timer_Caching: Cleaning up mine %d", c);
+                        g_FireminesRef[c] = INVALID_ENT_REFERENCE;
                         g_FireminesOwner[c] = 0;
                         g_FireminesTime[c] = 0;
-                        g_FireminesRef[c] = INVALID_ENT_REFERENCE;
                     }
                 }
             }
@@ -390,14 +392,16 @@ public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroa
                 new ent = EntRefToEntIndex(g_FireminesRef[c]);
                 if (ent != c || FireminesStay < 1 || g_FireminesTime[c] < time)
                 {
-                    g_FireminesOwner[c] = 0;
-                    g_FireminesTime[c] = 0;
-                    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
                     if (c == ent && IsValidEntity(c))
                     {
+                        LogMessage("Event_PlayerClass: Killing Mine %d!", c);
                         PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
                         AcceptEntityInput(c, "kill");
                     }
+                    LogMessage("Event_PlayerClass: Cleaning up mine %d", c);
+                    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
+                    g_FireminesOwner[c] = 0;
+                    g_FireminesTime[c] = 0;
                 }
             }
         }
@@ -477,14 +481,16 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
                 new ent = EntRefToEntIndex(g_FireminesRef[c]);
                 if (ent != c || FireminesStay < 1 || g_FireminesTime[c] < time)
                 {
-                    g_FireminesOwner[c] = 0;
-                    g_FireminesTime[c] = 0;
-                    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
                     if (c == ent && IsValidEntity(c))
                     {
+                        LogMessage("Event_PlayerDeath: Killing Mine %d!", c);
                         PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
                         AcceptEntityInput(c, "kill");
                     }
+                    LogMessage("Event_PlayerDeath: Cleaning up mine %d", c);
+                    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
+                    g_FireminesOwner[c] = 0;
+                    g_FireminesTime[c] = 0;
                 }
             }
         }
@@ -522,11 +528,15 @@ public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadca
     for (new c = MaxClients; c < maxents; c++)
     {
         new ent = EntRefToEntIndex(g_FireminesRef[c]);
+        if (c == ent && IsValidEntity(c))
+        {
+            LogMessage("Event_RoundEnd: Killing Mine %d!", c);
+            AcceptEntityInput(c, "kill");
+        }
+        LogMessage("Event_RoundEnd: Cleaning up mine %d", c);
+        g_FireminesRef[c] = INVALID_ENT_REFERENCE;
         g_FireminesOwner[c] = 0;
         g_FireminesTime[c] = 0;
-        g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-        if (c == ent && IsValidEntity(c))
-            AcceptEntityInput(c, "kill");
     }
 }
 
@@ -535,6 +545,8 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
     if (caller > 0 && activator > 0 && activator <= MaxClients && g_FireminesTime[caller] > 0 &&
         caller == EntRefToEntIndex(g_FireminesRef[caller]) && IsClientInGame(activator))
     {
+        LogMessage("Entity_OnHealthChanged(%s,%d,%d,%f)",output, caller, activator, delay);
+
         // Make sure it's a Firemine and the owner is still in the game
         new owner=GetEntPropEnt(caller, Prop_Send, "m_hOwnerEntity");
         if (owner == g_FireminesOwner[caller] && IsClientInGame(owner))
@@ -564,11 +576,15 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
                             if (distance <= maxdistance)
                             {
                                 if (i == owner)
+                                {
+                                    LogMessage("Entity_OnHealthChanged: ignite owner %d distance=%f", i, distance);
                                     IgniteEntity(i, 2.5);
+                                }
                                 else if (team != GetClientTeam(i))
                                 {
                                     if (!TF2_IsPlayerUbercharged(i))
                                     {
+                                        LogMessage("Entity_OnHealthChanged: ignite player %d, team=%d, mine_team=%d, distance=%f", i, GetClientTeam(i), team, distance);
                                         if (owner > 0 && IsClientInGame(owner))
                                             TF2_IgnitePlayer(i, owner);
                                         else
@@ -579,6 +595,7 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
 
                             if (g_Remaining[i])
                             {
+                                LogMessage("Entity_OnHealthChanged: Get Player %d's ammo", i);
                                 g_PlayerAmmo[i] = TF2_GetAmmoAmount(i);
                                 g_PlayerPosition[i] = PlayerPosition;
                             }
@@ -586,12 +603,11 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
                     }
                 }
 
+                LogMessage("Entity_OnHealthChanged: Break mine %d, owner=%d", caller, owner);
                 AcceptEntityInput(caller, "Break", owner, owner);
-                CreateTimer(0.2, RemoveMine, EntIndexToEntRef(caller));
 
-                g_FireminesOwner[caller] = 0;
-                g_FireminesTime[caller] = 0;
-                g_FireminesRef[caller] = INVALID_ENT_REFERENCE;
+                LogMessage("Entity_OnHealthChanged: Start Remove Timer for mine %d", caller);
+                CreateTimer(0.2, RemoveMine, EntIndexToEntRef(caller));
             }
         }
     }
@@ -808,9 +824,10 @@ CountMines(client)
                     count++;
                 else
                 {
+                    LogMessage("CountMines: Cleaning up mine %d", c);
                     g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-                    g_FireminesTime[c] = 0;
                     g_FireminesOwner[c] = 0;
+                    g_FireminesTime[c] = 0;
                 }
             }
         }
@@ -822,13 +839,15 @@ public Action:RemoveMine(Handle:timer, any:mineRef)
 {
     // Remove the mine, if it's still there
     new mine = EntRefToEntIndex(mineRef);
+    LogMessage("RemoveMine: mineRef=%d, mine=%d", mineRef, mine);
     if (mine > 0 && IsValidEntity(mine))
     {
-        LogError("Removing Mine %d!", mine);
+        LogMessage("RemoveMine: Killing Mine %d!", mine);
         AcceptEntityInput(mine, "kill");
+        LogMessage("RemoveMine: Cleaning up Mine %d", mine);
+        g_FireminesRef[mine] = INVALID_ENT_REFERENCE;
         g_FireminesOwner[mine] = 0;
         g_FireminesTime[mine] = 0;
-        g_FireminesRef[mine] = INVALID_ENT_REFERENCE;
     }
     return Plugin_Stop;
 }
@@ -849,6 +868,8 @@ public Action:MineSeek(Handle:timer, any:mineRef)
     new mine = EntRefToEntIndex(mineRef);
     if (mine > 0 && IsValidEntity(mine))
     {
+        LogMessage("MineSeek: mineRef=%d, mine=%d", mineRef, mine);
+
         decl Float:minePos[3], Float:PlayerPosition[3];
         GetEntPropVector(mine, Prop_Send, "m_vecOrigin", minePos);
 
@@ -877,6 +898,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
                         if (TR_GetEntityIndex() == i)
                         {
                             // Explode when within proximity range!
+                            LogMessage("MineSeek: Explode mine=%d, client=%d, distance=%f, proximity=%f", mine, i, distance, proximity);
                             Entity_OnHealthChanged("OnProximity", mine, i, 0.0);
                             return Plugin_Stop;
                         }
@@ -886,6 +908,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
                                       TraceRayDontHitSelf, mine);
                     if (TR_GetEntityIndex() == i)
                     {
+                        LogMessage("MineSeek: found target mine=%d, client=%d, distance=%f, proximity=%f", mine, i, distance, proximity);
                         target = i;
                         detect = distance;
                     }
@@ -901,7 +924,10 @@ public Action:MineSeek(Handle:timer, any:mineRef)
             MakeVectorFromPoints(minePos, PlayerPosition, vector);
             NormalizeVector(vector, vector);
 
+            LogMessage("MineSeek: has target, mine=%d, target=%d, vector=%f,%f,%f", mine, target, vector[0], vector[1], vector[2]);
+
             GetVectorAngles(vector, angles);
+            LogMessage("MineSeek: teleport mine=%d, angles=%f,%f,%f", mine, angles[0], angles[1], angles[2]);
             TeleportEntity(mine, NULL_VECTOR, angles, NULL_VECTOR);
 
             SetEntityRenderMode(mine, RENDER_GLOW);
@@ -911,6 +937,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
             {
                 minePos[2] += 20.0;
 
+                LogMessage("MineSeek: teleport mine=%d, pos=%f,%f,%f", mine, minePos[0], minePos[1], minePos[2]);
                 TeleportEntity(mine, minePos, NULL_VECTOR, NULL_VECTOR);
                 g_FiremineSeeking[mine] =  true;
             }
@@ -920,6 +947,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
             velocity[1] = vector[1] * 80.0;
             velocity[2] = 10.0;
 
+            LogMessage("MineSeek: teleport mine=%d, velocity=%f,%f,%f", mine, velocity[0], velocity[1], velocity[2]);
             TeleportEntity(mine, NULL_VECTOR, NULL_VECTOR, velocity);
 
             PrepareAndEmitSoundToAll(SOUND_C, mine);
@@ -927,6 +955,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
         else if (g_FiremineSeeking[mine])
         {
             new Float:angles[3] = {0.0,0.0,0.0};
+            LogMessage("MineSeek: teleport mine=%d, angles=%f,%f,%f", mine, angles[0], angles[1], angles[2]);
             TeleportEntity(mine, NULL_VECTOR, angles, NULL_VECTOR);
 
             new Float:vecBelow[3];
@@ -945,6 +974,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
             if (TR_DidHit(INVALID_HANDLE))
             {
                 // Move mine down to ground.
+                LogMessage("MineSeek: teleport to ground mine=%d, pos=%f,%f,%f", mine,  minePos[0], minePos[1], minePos[2]);
                 TR_GetEndPosition(minePos, INVALID_HANDLE);
                 TeleportEntity(mine, minePos, NULL_VECTOR, NULL_VECTOR);
             }
