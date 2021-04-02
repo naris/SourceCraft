@@ -541,7 +541,10 @@ public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadca
             LogMessage("Event_RoundEnd: Killing Mine %d!", c);
             AcceptEntityInput(c, "kill");
         }
-        LogMessage("Event_RoundEnd: Cleaning up mine %d", c);
+
+        if (g_FireminesRef[c] != INVALID_ENT_REFERENCE)
+            LogMessage("Event_RoundEnd: Cleaning up mine %d", c);
+
         g_FireminesRef[c] = INVALID_ENT_REFERENCE;
         g_FireminesOwner[c] = 0;
         g_FireminesTime[c] = 0;
@@ -699,7 +702,7 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
 
             TeleportEntity(Firemine, MinePos, NULL_VECTOR, NULL_VECTOR);
 
-            DispatchKeyValue(Firemine, "OnBreak", "!self,Kill,,0,-1");
+            //DispatchKeyValue(Firemine, "OnBreak", "!self,Kill,,0,-1");
             //HookEntityOutput("prop_physics_override", "OnBreak", RemoveMine);
             DispatchKeyValueFloat(Firemine, "ExplodeDamage", GetConVarFloat(g_FireminesDamage));
             DispatchKeyValueFloat(Firemine, "ExplodeRadius", GetConVarFloat(g_FireminesRadius));
