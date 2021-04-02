@@ -37,6 +37,8 @@
 #include "lib/ResourceManager"
 #define REQUIRE_PLUGIN
 
+#pragma newdecls required
+
 #define MAXENTITIES 2048
 
 #define PL_VERSION "3.3"
@@ -78,7 +80,7 @@
 
 enum DropType   { OnDeath, WithFlameThrower, OnCommand };
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
     name = "TF2 Firemines",
     author = "Hunter",
@@ -87,40 +89,40 @@ public Plugin:myinfo =
     url = "https://forums.alliedmods.net/showthread.php?t=71404"
 }
 
-new g_FilteredEntity = -1;
-new g_FiremineModelIndex;
-new g_PlayerAmmo[MAXPLAYERS+1];
-new g_FireminesRef[MAXENTITIES] = { INVALID_ENT_REFERENCE, ... };
-new g_FireminesTime[MAXENTITIES];
-new g_FireminesOwner[MAXENTITIES];
-new bool:g_FiremineSeeking[MAXENTITIES];
-new bool:g_PlayerButtonDown[MAXPLAYERS+1];
-new Float:g_PlayerPosition[MAXPLAYERS+1][3];
-new Handle:g_IsFireminesOn = INVALID_HANDLE;
-new Handle:g_FireminesAmmo = INVALID_HANDLE;
-new Handle:g_FireminesType = INVALID_HANDLE;
-new Handle:g_FireminesMobile = INVALID_HANDLE;
-new Handle:g_FireminesDamage = INVALID_HANDLE;
-new Handle:g_FireminesRadius = INVALID_HANDLE;
-new Handle:g_FireminesDetect = INVALID_HANDLE;
-new Handle:g_FireminesProximity = INVALID_HANDLE;
-new Handle:g_FireminesKeep = INVALID_HANDLE;
-new Handle:g_FireminesStay = INVALID_HANDLE;
-new Handle:g_FriendlyFire = INVALID_HANDLE;
-new Handle:g_FireminesActTime = INVALID_HANDLE;
-new Handle:g_FireminesLimit = INVALID_HANDLE;
-new Handle:g_FireminesMax = INVALID_HANDLE;
+int g_FilteredEntity = -1;
+int g_FiremineModelIndex;
+int g_PlayerAmmo[MAXPLAYERS+1];
+int g_FireminesRef[MAXENTITIES] = { INVALID_ENT_REFERENCE, ... };
+int g_FireminesTime[MAXENTITIES];
+int g_FireminesOwner[MAXENTITIES];
+bool g_FiremineSeeking[MAXENTITIES];
+bool g_PlayerButtonDown[MAXPLAYERS+1];
+float g_PlayerPosition[MAXPLAYERS+1][3];
+Handle g_IsFireminesOn = INVALID_HANDLE;
+Handle g_FireminesAmmo = INVALID_HANDLE;
+Handle g_FireminesType = INVALID_HANDLE;
+Handle g_FireminesMobile = INVALID_HANDLE;
+Handle g_FireminesDamage = INVALID_HANDLE;
+Handle g_FireminesRadius = INVALID_HANDLE;
+Handle g_FireminesDetect = INVALID_HANDLE;
+Handle g_FireminesProximity = INVALID_HANDLE;
+Handle g_FireminesKeep = INVALID_HANDLE;
+Handle g_FireminesStay = INVALID_HANDLE;
+Handle g_FriendlyFire = INVALID_HANDLE;
+Handle g_FireminesActTime = INVALID_HANDLE;
+Handle g_FireminesLimit = INVALID_HANDLE;
+Handle g_FireminesMax = INVALID_HANDLE;
 
-new bool:g_NativeControl = false;
-new g_Limit[MAXPLAYERS+1];      // how many mines player allowed
-new g_Maximum[MAXPLAYERS+1];    // how many mines player can have active at once
-new g_Remaining[MAXPLAYERS+1];  // how many mines player has this spawn
-new bool:g_ChangingClass[MAXPLAYERS+1];
+bool g_NativeControl = false;
+int g_Limit[MAXPLAYERS+1];      // how many mines player allowed
+int g_Maximum[MAXPLAYERS+1];    // how many mines player can have active at once
+int g_Remaining[MAXPLAYERS+1];  // how many mines player has this spawn
+bool g_ChangingClass[MAXPLAYERS+1];
 
 // forwards
-new Handle:fwdOnSetMine;
+Handle fwdOnSetMine;
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     // Register Natives
     CreateNative("ControlMines",Native_ControlMines);
@@ -138,7 +140,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
     return APLRes_Success;
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
     LoadTranslations("common.phrases");
     LoadTranslations("firemines.phrases");
@@ -156,7 +158,7 @@ public OnPluginStart()
     g_FireminesStay = CreateConVar("sm_firemines_stay","1","Firemines stay if the owner dies. (0 = no | 1 = yes)", _, true, 0.0, true, 1.0);
     g_FriendlyFire = FindConVar("mp_friendlyfire");
 
-    g_FireminesActTime = CreateConVar("sm_firemines_activate_time", "2.0", "If the owner dies before activation time, mine is removed. (0 = off)", _, true, 0.0, true, 600.0);
+    g_FireminesActTime = CreateConVar("sm_firemines_activate_time", "2", "If the owner dies before activation time, mine is removed. (0 = off)", _, true, 0.0, true, 600.0);
     g_FireminesLimit = CreateConVar("sm_firemines_limit", "-1", "Number of firemines allowed per life (-1 = unlimited)", _, true, -1.0, true, 99.0);
     g_FireminesMax = CreateConVar("sm_firemines_max", "3", "Maximum Number of firemines allowed to be active per client (-1 = unlimited)", _, true, -1.0, true, 99.0);
 
@@ -175,8 +177,8 @@ public OnPluginStart()
 
     if (GetConVarBool(g_FireminesType) || !GetConVarBool(g_FriendlyFire))
     {
-        HookEntityOutput("prop_physics", "OnHealthChanged", EntityOutput:Entity_OnHealthChanged);
-        HookEntityOutput("prop_physics_override", "OnHealthChanged", EntityOutput:Entity_OnHealthChanged);
+        HookEntityOutput("prop_physics", "OnHealthChanged", Entity_OnHealthChanged);
+        HookEntityOutput("prop_physics_override", "OnHealthChanged", Entity_OnHealthChanged);
     }
 
     CreateTimer(1.0, Timer_Caching, _, TIMER_REPEAT);
@@ -184,7 +186,7 @@ public OnPluginStart()
     AutoExecConfig(true);
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
     SetupSound(SOUND_A, true, DONT_DOWNLOAD);
     SetupSound(SOUND_E, true, DONT_DOWNLOAD);
@@ -202,9 +204,10 @@ public OnMapStart()
     //AutoExecConfig(true);
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
-    //g_Pyros[client] = false;
+    RemoveMines(client);
+
     g_ChangingClass[client] = false;
     g_PlayerButtonDown[client] = false;
     g_PlayerAmmo[client] = 0;
@@ -213,7 +216,7 @@ public OnClientDisconnect(client)
 }
 
 // When a new client is put in the server we reset their mines count
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
     if (client && !IsFakeClient(client))
     {
@@ -234,15 +237,13 @@ public OnClientPutInServer(client)
         CreateTimer(45.0, Timer_Advert, client);
 }
 
-public OnGameFrame()
+public void OnGameFrame()
 {
-    new FireminesOn = GetConVarInt(g_IsFireminesOn);
-    if (FireminesOn < 2 && !g_NativeControl)
+    if (!g_NativeControl && GetConVarInt(g_IsFireminesOn) < 2)
         return;
 
-    for (new i = 1; i <= MaxClients; i++)
+    for (int i = 1; i <= MaxClients; i++)
     {
-        //if (g_Pyros[i] && !g_PlayerButtonDown[i] && IsClientInGame(i))
         if (g_Remaining[i] && !g_PlayerButtonDown[i] && IsClientInGame(i) &&
             TF2_GetPlayerClass(i) == TFClass_Pyro)
         {
@@ -250,7 +251,8 @@ public OnGameFrame()
             {
                 g_PlayerButtonDown[i] = true;
                 CreateTimer(0.5, Timer_ButtonUp, i);
-                new String:classname[64];
+
+                char classname[64];
                 GetCurrentWeaponClass(i, classname, 64);
                 if (StrEqual(classname, "CTFFlameThrower"))
                 {
@@ -262,14 +264,7 @@ public OnGameFrame()
     }
 }
 
-void OnEntityDestroyed(int entity)
-{
-    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-    g_FireminesOwner[c] = 0;
-    g_FireminesTime[c] = 0;
-}
-
-public ConVarChange_IsFireminesOn(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ConVarChange_IsFireminesOn(Handle convar, const char[] oldValue, const char[] newValue)
 {
     if (StringToInt(newValue) > 0)
         PrintToChatAll("[SM] %t", "Enabled Firemines");
@@ -277,22 +272,21 @@ public ConVarChange_IsFireminesOn(Handle:convar, const String:oldValue[], const 
         PrintToChatAll("[SM] %t", "Disabled Firemines");
 }
 
-public Action:Command_Firemine(client, args)
+public Action Command_Firemine(int client, int args)
 {
-    new FireminesOn = GetConVarInt(g_IsFireminesOn);
-    if (FireminesOn < 2 && !g_NativeControl)
+    if (!g_NativeControl && GetConVarInt(g_IsFireminesOn) < 2)
         return Plugin_Handled;
 
-    new DropType:cmd;
+    DropType cmd;
     if (g_NativeControl)
         cmd = OnCommand;
     else
     {
-        new TFClassType:class = TF2_GetPlayerClass(client);
+        TFClassType class = TF2_GetPlayerClass(client);
         if (class != TFClass_Pyro)
             return Plugin_Handled;
 
-        new String:classname[64];
+        char classname[64];
         GetCurrentWeaponClass(client, classname, 64);
         if(!StrEqual(classname, "CTFFlameThrower"))
             return Plugin_Handled;
@@ -300,22 +294,21 @@ public Action:Command_Firemine(client, args)
         cmd = WithFlameThrower;
     }
 
-    new bool:seeking = false;
-    decl String:arg[16];
+    char arg[16];
+    bool seeking = false;
     if (args >= 1 && GetCmdArg(1,arg,sizeof(arg)))
-        seeking = bool:StringToInt(arg);
+        seeking = view_as<bool>(StringToInt(arg));
 
     TF_DropFiremine(client, cmd, seeking);
 
     return Plugin_Handled;
 }
 
-public Action:Timer_Advert(Handle:timer, any:client)
+public Action Timer_Advert(Handle timer, any client)
 {
     if (IsClientConnected(client) && IsClientInGame(client))
     {
-        new FireminesOn = GetConVarInt(g_IsFireminesOn);
-        switch (FireminesOn)
+        switch (GetConVarInt(g_IsFireminesOn))
         {
             case 1:
                 PrintToChat(client, "\x01\x04[SM]\x01 %t", "OnDeath Firemines");
@@ -327,11 +320,10 @@ public Action:Timer_Advert(Handle:timer, any:client)
     }
 }
 
-public Action:Timer_Caching(Handle:timer)
+public Action Timer_Caching(Handle timer)
 {
-    for (new i = 1; i <= MaxClients; i++)
+    for (int i = 1; i <= MaxClients; i++)
     {
-        //if (g_Pyros[i] && IsClientInGame(i))
         if (IsClientInGame(i) && IsPlayerAlive(i) &&
             (g_NativeControl ? g_Limit[i] != 0 : TF2_GetPlayerClass(i) == TFClass_Pyro))
         {
@@ -340,95 +332,44 @@ public Action:Timer_Caching(Handle:timer)
         }
     }
 
-    new FireminesKeep = GetConVarInt(g_FireminesKeep);
-    if (FireminesKeep > 0)
+    int keep = GetConVarInt(g_FireminesKeep);
+    if (keep > 0)
     {
-        new time = GetTime() - FireminesKeep;
-        new maxents = GetMaxEntities();
-        for (new c = MaxClients; c < maxents; c++)
-        {
-            if (g_FireminesTime[c] != 0 && g_FireminesTime[c] < time)
-            {
-                new ref = g_FireminesRef[c];
-                if (ref != INVALID_ENT_REFERENCE)
-                {
-                    new ent = EntRefToEntIndex(ref);
-                    if (ent == c && g_FireminesTime[c] < time)
-                    {
-                        LogMessage("Timer_Caching: Killing Mine %d!", c);
-                        PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
-                        AcceptEntityInput(c, "kill");
-                        ent = -1;
-                    }
-                    if (ent != c)
-                    {
-                        LogMessage("Timer_Caching: Cleaning up mine %d", c);
-                        g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-                        g_FireminesOwner[c] = 0;
-                        g_FireminesTime[c] = 0;
-                    }
-                }
-            }
-        }
+        RemoveMines(0, GetTime() - keep);
     }
 }
 
-public Action:Timer_ButtonUp(Handle:timer, any:client)
+public Action Timer_ButtonUp(Handle timer, any client)
 {
     g_PlayerButtonDown[client] = false;
 }
 
-public Action:Event_PlayerClass(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerClass(Handle event, const char[] name, bool dontBroadcast)
 {
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsClientInGame(client))
         return;
 
     g_ChangingClass[client] = true;
 
-    new FireminesStay = GetConVarInt(g_FireminesStay);
-    new Float:ActTime = GetConVarFloat(g_FireminesActTime);
-    if (FireminesStay < 1 || ActTime > 0.0)
+    int stay = GetConVarInt(g_FireminesStay);
+    int time = GetConVarInt(g_FireminesActTime);
+    if (stay < 1 || time > 0.0)
     {
-        new Float:time = GetTime() - ActTime;
-        new maxents = GetMaxEntities();
-        for (new c = MaxClients; c < maxents; c++)
-        {
-            if (g_FireminesOwner[c] == client)
-            {
-                new ent = EntRefToEntIndex(g_FireminesRef[c]);
-                if (ent != c || FireminesStay < 1 || g_FireminesTime[c] < time)
-                {
-                    if (c == ent && IsValidEntity(c))
-                    {
-                        LogMessage("Event_PlayerClass: Killing Mine %d!", c);
-                        PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
-                        AcceptEntityInput(c, "kill");
-                    }
-                    LogMessage("Event_PlayerClass: Cleaning up mine %d", c);
-                    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-                    g_FireminesOwner[c] = 0;
-                    g_FireminesTime[c] = 0;
-                }
-            }
-        }
+        RemoveMines(client, GetTime() - time, stay);
     }
 
-    new any:class = GetEventInt(event, "class");
+    any class = GetEventInt(event, "class");
     if (class != TFClass_Pyro)
     {
-        //g_Pyros[client] = false;
         if (!g_NativeControl)
             return;
     }
-    //g_Pyros[client] = true;
 }
 
-public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 {
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (g_ChangingClass[client])
         g_ChangingClass[client]=false;
     else
@@ -445,10 +386,10 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
     return Plugin_Continue;
 }
 
-public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
-    new FireminesOn = GetConVarInt(g_IsFireminesOn);
-    if (FireminesOn < 1 && !g_NativeControl)
+    int fireminesOn = GetConVarInt(g_IsFireminesOn);
+    if (!g_NativeControl && fireminesOn < 1)
         return;
 
     // Skip feigned deaths.
@@ -462,46 +403,24 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
         return;
     }
 
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
-    //if (!g_Pyros[client] || !IsClientInGame(client))
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsClientInGame(client))
         return;
 
     if (!g_NativeControl)
     {
-        new TFClassType:class = TF2_GetPlayerClass(client); 
+        TFClassType class = TF2_GetPlayerClass(client); 
         if (class != TFClass_Pyro)
             return;
     }
 
     g_ChangingClass[client] = false;
 
-    new FireminesStay = GetConVarInt(g_FireminesStay);
-    new Float:ActTime = GetConVarFloat(g_FireminesActTime);
-    if (FireminesStay < 1 || ActTime > 0.0)
+    int stay = GetConVarInt(g_FireminesStay);
+    int time = GetConVarInt(g_FireminesActTime);
+    if (stay < 1 || time > 0.0)
     {
-        new Float:time = GetTime() - ActTime;
-        new maxents = GetMaxEntities();
-        for (new c = MaxClients; c < maxents; c++)
-        {
-            if (g_FireminesOwner[c] == client)
-            {
-                new ent = EntRefToEntIndex(g_FireminesRef[c]);
-                if (ent != c || FireminesStay < 1 || g_FireminesTime[c] < time)
-                {
-                    if (c == ent && IsValidEntity(c))
-                    {
-                        LogMessage("Event_PlayerDeath: Killing Mine %d!", c);
-                        PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
-                        AcceptEntityInput(c, "kill");
-                    }
-                    LogMessage("Event_PlayerDeath: Cleaning up mine %d", c);
-                    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-                    g_FireminesOwner[c] = 0;
-                    g_FireminesTime[c] = 0;
-                }
-            }
-        }
+        RemoveMines(client, GetTime() - time, stay);
     }
 
     if (g_NativeControl)
@@ -510,16 +429,16 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
             return;
     }
 
-    if (FireminesOn != 2 || g_NativeControl)
+    if (fireminesOn != 2 || g_NativeControl)
         TF_DropFiremine(client, OnDeath, false);
 }
 
-public Action:Event_PlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerTeam(Handle event, const char[] name, bool dontBroadcast)
 {
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (client != 0)
     {
-        new team = GetEventInt(event, "team");
+        int team = GetEventInt(event, "team");
         if (team < 2 && IsClientInGame(client))
         {
             //g_Pyros[client] = false;
@@ -530,39 +449,23 @@ public Action:Event_PlayerTeam(Handle:event, const String:name[], bool:dontBroad
     }
 }
 
-public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
-    new maxents = GetMaxEntities();
-    for (new c = MaxClients; c < maxents; c++)
-    {
-        new ent = EntRefToEntIndex(g_FireminesRef[c]);
-        if (c == ent && IsValidEntity(c))
-        {
-            LogMessage("Event_RoundEnd: Killing Mine %d!", c);
-            AcceptEntityInput(c, "kill");
-        }
-
-        if (g_FireminesRef[c] != INVALID_ENT_REFERENCE)
-            LogMessage("Event_RoundEnd: Cleaning up mine %d", c);
-
-        g_FireminesRef[c] = INVALID_ENT_REFERENCE;
-        g_FireminesOwner[c] = 0;
-        g_FireminesTime[c] = 0;
-    }
+    RemoveMines();
 }
 
-public Entity_OnHealthChanged(const String:output[], caller, activator, Float:delay)
+public void OnMineTouched(int caller, int activator)
 {
     if (caller > 0 && activator > 0 && activator <= MaxClients && g_FireminesTime[caller] > 0 &&
         caller == EntRefToEntIndex(g_FireminesRef[caller]) && IsClientInGame(activator))
     {
-        LogMessage("Entity_OnHealthChanged(%s,%d,%d,%f)",output, caller, activator, delay);
+        LogMessage("OnMineTouched(%d,%d)", caller, activator);
 
         // Make sure it's a Firemine and the owner is still in the game
-        new owner=GetEntPropEnt(caller, Prop_Send, "m_hOwnerEntity");
+        int owner=GetEntPropEnt(caller, Prop_Send, "m_hOwnerEntity");
         if (owner == g_FireminesOwner[caller] && IsClientInGame(owner))
         {
-            new team = 0;
+            int team = 0;
             if (!GetConVarBool(g_FriendlyFire))
                 team = GetEntProp(caller, Prop_Send, "m_iTeamNum");
 
@@ -570,17 +473,17 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
             {
                 if (GetConVarBool(g_FireminesType))
                 {
-                    decl Float:vecPos[3];
+                    float vecPos[3];
                     GetEntPropVector(caller, Prop_Send, "m_vecOrigin", vecPos);
 
-                    decl Float:PlayerPosition[3];
-                    new Float:maxdistance = GetConVarFloat(g_FireminesRadius);
-                    for (new i = 1; i <= MaxClients; i++)
+                    float PlayerPosition[3];
+                    float maxdistance = GetConVarFloat(g_FireminesRadius);
+                    for (int i = 1; i <= MaxClients; i++)
                     {
                         if (IsClientInGame(i))
                         {
                             GetClientAbsOrigin(i, PlayerPosition);
-                            new Float:distance = GetVectorDistance(PlayerPosition, vecPos);
+                            float distance = GetVectorDistance(PlayerPosition, vecPos);
                             if (distance < 0.0)
                                 distance *= -1.0;
 
@@ -588,14 +491,14 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
                             {
                                 if (i == owner)
                                 {
-                                    LogMessage("Entity_OnHealthChanged: ignite owner %d distance=%f", i, distance);
+                                    LogMessage("OnMineTouched: ignite owner %d distance=%f", i, distance);
                                     IgniteEntity(i, 2.5);
                                 }
                                 else if (team != GetClientTeam(i))
                                 {
                                     if (!TF2_IsPlayerUbercharged(i))
                                     {
-                                        LogMessage("Entity_OnHealthChanged: ignite player %d, team=%d, mine_team=%d, distance=%f", i, GetClientTeam(i), team, distance);
+                                        LogMessage("OnMineTouched: ignite player %d, team=%d, mine_team=%d, distance=%f", i, GetClientTeam(i), team, distance);
                                         if (owner > 0 && IsClientInGame(owner))
                                             TF2_IgnitePlayer(i, owner);
                                         else
@@ -603,35 +506,39 @@ public Entity_OnHealthChanged(const String:output[], caller, activator, Float:de
                                     }
                                 }
                             }
-
-                            if (g_Remaining[i])
-                            {
-                                LogMessage("Entity_OnHealthChanged: Get Player %d's ammo", i);
-                                g_PlayerAmmo[i] = TF2_GetAmmoAmount(i);
-                                g_PlayerPosition[i] = PlayerPosition;
-                            }
                         }
                     }
                 }
 
-                LogMessage("Entity_OnHealthChanged: Break mine %d, owner=%d", caller, owner);
+                LogMessage("OnMineTouched: Break mine %d, owner=%d", caller, owner);
                 AcceptEntityInput(caller, "Break", owner, owner);
 
-                LogMessage("Entity_OnHealthChanged: Start Remove Timer for mine %d", caller);
+                LogMessage("OnMineTouched: Start Remove Timer for mine %d", caller);
                 CreateTimer(0.2, RemoveMine, EntIndexToEntRef(caller));
             }
         }
     }
 }
 
-public bool:FiremineTraceFilter(ent, contentMask)
+public void Entity_OnHealthChanged(const char[] output, int caller, int activator, float delay)
+{
+    if (caller > 0 && activator > 0 && activator <= MaxClients && g_FireminesTime[caller] > 0 &&
+        caller == EntRefToEntIndex(g_FireminesRef[caller]) && IsClientInGame(activator))
+    {
+        LogMessage("Entity_OnHealthChanged(%s,%d,%d,%f)",output, caller, activator, delay);
+    }
+
+    OnMineTouched(caller, activator);
+}
+
+public bool FiremineTraceFilter(int ent, int contentMask)
 {
     return (ent != g_FilteredEntity);
 }
 
-TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
+int TF_SpawnFiremine(int client, DropType cmd, bool seeking)
 {
-    new Float:PlayerPosition[3];
+    float PlayerPosition[3];
     if (cmd != OnDeath)
         GetClientAbsOrigin(client, PlayerPosition);
     else
@@ -644,33 +551,37 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
         g_FilteredEntity = client;
         if (cmd != OnDeath)
         {
-            new Float:PlayerPosEx[3], Float:PlayerAngle[3], Float:PlayerPosAway[3];
+            float PlayerAngle[3];
             GetClientEyeAngles(client, PlayerAngle);
+
+            float PlayerPosEx[3];
             PlayerPosEx[0] = Cosine((PlayerAngle[1]/180)*FLOAT_PI);
             PlayerPosEx[1] = Sine((PlayerAngle[1]/180)*FLOAT_PI);
             PlayerPosEx[2] = 0.0;
             ScaleVector(PlayerPosEx, 75.0);
+
+            float PlayerPosAway[3];
             AddVectors(PlayerPosition, PlayerPosEx, PlayerPosAway);
 
-            new Handle:TraceEx = TR_TraceRayFilterEx(PlayerPosition, PlayerPosAway, MASK_SOLID,
-                                                     RayType_EndPoint, FiremineTraceFilter);
+            Handle TraceEx = TR_TraceRayFilterEx(PlayerPosition, PlayerPosAway, MASK_SOLID,
+                                                 RayType_EndPoint, FiremineTraceFilter);
             TR_GetEndPosition(PlayerPosition, TraceEx);
             CloseHandle(TraceEx);
         }
 
-        new Float:Direction[3];
+        float Direction[3];
         Direction[0] = PlayerPosition[0];
         Direction[1] = PlayerPosition[1];
         Direction[2] = PlayerPosition[2]-1024;
-        new Handle:Trace = TR_TraceRayFilterEx(PlayerPosition, Direction, MASK_SOLID,
-                                               RayType_EndPoint, FiremineTraceFilter);
+        Handle Trace = TR_TraceRayFilterEx(PlayerPosition, Direction, MASK_SOLID,
+                                           RayType_EndPoint, FiremineTraceFilter);
 
-        new Float:MinePos[3];
+        float MinePos[3];
         TR_GetEndPosition(MinePos, Trace);
         CloseHandle(Trace);
         MinePos[2] += 1;
 
-        new Firemine = CreateEntityByName("prop_physics_override");
+        int Firemine = CreateEntityByName("prop_physics_override");
         if (Firemine > 0 && IsValidEntity(Firemine))
         {
             if (seeking)
@@ -685,11 +596,11 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
             PrepareModel(MINE_MODEL, g_FiremineModelIndex, true);
             SetEntityModel(Firemine, MINE_MODEL);
 
-            new String:targetname[32];
+            char targetname[32];
             Format(targetname, sizeof(targetname), "firemine_%d", Firemine);
             DispatchKeyValue(Firemine, "targetname", targetname);
 
-            new team = GetConVarBool(g_FriendlyFire) ? 0 : GetClientTeam(client);
+            int team = GetConVarBool(g_FriendlyFire) ? 0 : GetClientTeam(client);
             SetEntProp(Firemine, Prop_Send, "m_iTeamNum", team, 4);
             SetEntProp(Firemine, Prop_Send, "m_nSolidType", 6);
             SetEntProp(Firemine, Prop_Data, "m_takedamage", 3);
@@ -706,6 +617,8 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
             //HookEntityOutput("prop_physics_override", "OnBreak", RemoveMine);
             DispatchKeyValueFloat(Firemine, "ExplodeDamage", GetConVarFloat(g_FireminesDamage));
             DispatchKeyValueFloat(Firemine, "ExplodeRadius", GetConVarFloat(g_FireminesRadius));
+
+            SDKHook(Firemine, SDKHook_Touch, OnMineTouched);
 
             // we might handle this ourself now...
             /*
@@ -728,7 +641,7 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
     return 0;
 }
 
-bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
+bool TF_DropFiremine(int client, DropType cmd, bool seeking)
 {
     if (g_Remaining[client] <= 0 && g_Limit[client] >= 0)
     {
@@ -740,10 +653,10 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
         return false;
     }
 
-    new max = g_Maximum[client];
+    int max = g_Maximum[client];
     if (max > 0)
     {
-        new count = CountMines(client);
+        int count = CountMines(client);
         if (count > max)
         {
             PrepareAndEmitSoundToClient(client, SOUND_A, _, _, _, _, 0.75);
@@ -752,9 +665,9 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
         }
     }
 
-    new ammo = (cmd == OnDeath) ? g_PlayerAmmo[client] : TF2_GetAmmoAmount(client);
-    new FireminesAmmo = GetConVarInt(g_FireminesAmmo);
-    new TFClassType:class = TF2_GetPlayerClass(client);
+    int ammo = (cmd == OnDeath) ? g_PlayerAmmo[client] : TF2_GetAmmoAmount(client);
+    int FireminesAmmo = GetConVarInt(g_FireminesAmmo);
+    TFClassType class = TF2_GetPlayerClass(client);
     switch (class)
     {
         case TFClass_Medic:     FireminesAmmo = RoundToNearest(float(FireminesAmmo) / 1.33);
@@ -768,7 +681,7 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
 
     if (ammo >= FireminesAmmo)
     {
-        new Action:res = Plugin_Continue;
+        Action res = Plugin_Continue;
         Call_StartForward(fwdOnSetMine);
         Call_PushCell(client);
         Call_Finish(res);
@@ -809,11 +722,11 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
                 g_Remaining[client]--;
         }
 
-        new mine = TF_SpawnFiremine(client, cmd, bool:seeking);
+        int mine = TF_SpawnFiremine(client, cmd, seeking);
 
         if (seeking)
         {
-            new Float:ActTime = GetConVarFloat(g_FireminesActTime);
+            float ActTime = GetConVarFloat(g_FireminesActTime);
             CreateTimer(ActTime, MineActivate, EntIndexToEntRef(mine));
         }
 
@@ -826,15 +739,15 @@ bool:TF_DropFiremine(client, DropType:cmd, bool:seeking)
     return false;
 }
 
-CountMines(client)
+int CountMines(int client)
 {
-    new count = 0;
-    new maxents = GetMaxEntities();
-    for (new c = MaxClients; c < maxents; c++)
+    int count = 0;
+    int maxents = GetMaxEntities();
+    for (int c = MaxClients; c < maxents; c++)
     {
         if (g_FireminesOwner[c] == client)
         {
-            new ref = g_FireminesRef[c];
+            int ref = g_FireminesRef[c];
             if (ref != INVALID_ENT_REFERENCE)
             {
                 if (EntRefToEntIndex(ref) == c)
@@ -852,10 +765,43 @@ CountMines(client)
     return count;
 }
 
-public Action:RemoveMine(Handle:timer, any:mineRef)
+void RemoveMines(int client=0, int time=-1, int stay=0)
+{
+    int maxents = GetMaxEntities();
+    for (int c = MaxClients; c < maxents; c++)
+    {
+        if (client == 0 || g_FireminesOwner[c] == client)
+        {
+            int ref = g_FireminesRef[c];
+            if (ref != INVALID_ENT_REFERENCE)
+            {
+                int ent = EntRefToEntIndex(ref);
+                if (ent != c || stay < 1 || (time >= 0.0 && g_FireminesTime[c] < time))
+                {
+                    if (c == ent && IsValidEntity(c))
+                    {
+                        LogMessage("RemoveMines: Killing Mine %d, ent=%d, ref=%d!", c, ent, ref);
+                        PrepareAndEmitSoundToAll(SOUND_C, c, _, _, _, 0.75);
+                        AcceptEntityInput(c, "kill");
+                    }
+                    else
+                        LogMessage("RemoveMines: Cleaning up invalid mine %d, ent=%d, ref=%d", c, ent, ref);
+                }
+                else if (ent != c)
+                    LogMessage("RemoveMines: Cleaning up mine %d, ent=%d, ref=%d", c, ent, ref);
+
+                g_FireminesRef[c] = INVALID_ENT_REFERENCE;
+                g_FireminesOwner[c] = 0;
+                g_FireminesTime[c] = 0;
+            }
+        }
+    }
+}
+
+public Action RemoveMine(Handle timer, any mineRef)
 {
     // Remove the mine, if it's still there
-    new mine = EntRefToEntIndex(mineRef);
+    int mine = EntRefToEntIndex(mineRef);
     LogMessage("RemoveMine: mineRef=%d, mine=%d", mineRef, mine);
     if (mine > 0 && IsValidEntity(mine))
     {
@@ -869,40 +815,41 @@ public Action:RemoveMine(Handle:timer, any:mineRef)
     return Plugin_Stop;
 }
 
-public Action:MineActivate(Handle:timer, any:mineRef)
+public Action MineActivate(Handle timer, any mineRef)
 {
     // Ensure the entity is still a mine
-    new mine = EntRefToEntIndex(mineRef);
+    int mine = EntRefToEntIndex(mineRef);
     if (mine > 0 && IsValidEntity(mine))
         CreateTimer(0.2, MineSeek, mineRef, TIMER_REPEAT);
 
     return Plugin_Stop;
 }
 
-public Action:MineSeek(Handle:timer, any:mineRef)
+public Action MineSeek(Handle timer, any mineRef)
 {
     // Ensure the entity is still a mine
-    new mine = EntRefToEntIndex(mineRef);
+    int mine = EntRefToEntIndex(mineRef);
     if (mine > 0 && IsValidEntity(mine))
     {
         LogMessage("MineSeek: mineRef=%d, mine=%d", mineRef, mine);
 
-        decl Float:minePos[3], Float:PlayerPosition[3];
+        float minePos[3];
         GetEntPropVector(mine, Prop_Send, "m_vecOrigin", minePos);
 
-        new target = 0;
-        new team = GetEntProp(mine, Prop_Send, "m_iTeamNum");
-        new Float:detect = GetConVarFloat(g_FireminesDetect);
-        new Float:proximity = GetConVarFloat(g_FireminesProximity);
+        int target = 0;
+        int team = GetEntProp(mine, Prop_Send, "m_iTeamNum");
+        float detect = GetConVarFloat(g_FireminesDetect);
+        float proximity = GetConVarFloat(g_FireminesProximity);
 
         // Find closest enemy within range
-        for (new i = 1; i <= MaxClients; i++)
+        float PlayerPosition[3];
+        for (int i = 1; i <= MaxClients; i++)
         {
             if (IsClientInGame(i) && IsPlayerAlive(i) &&
                 GetClientTeam(i) != team)
             {
                 GetClientAbsOrigin(i, PlayerPosition);
-                new Float:distance = GetVectorDistance(minePos, PlayerPosition);
+                float distance = GetVectorDistance(minePos, PlayerPosition);
                 if (distance < 0.0)
                     distance *= -1.0;
 
@@ -936,13 +883,14 @@ public Action:MineSeek(Handle:timer, any:mineRef)
         // Did we find a target?
         if (target > 0)
         {
-            decl Float:vector[3], Float:angles[3];
+            float vector[3];
             GetClientEyePosition(target, PlayerPosition);
             MakeVectorFromPoints(minePos, PlayerPosition, vector);
             NormalizeVector(vector, vector);
 
             LogMessage("MineSeek: has target, mine=%d, target=%d, vector=%f,%f,%f", mine, target, vector[0], vector[1], vector[2]);
 
+            float angles[3];
             GetVectorAngles(vector, angles);
             LogMessage("MineSeek: teleport mine=%d, angles=%f,%f,%f", mine, angles[0], angles[1], angles[2]);
             TeleportEntity(mine, NULL_VECTOR, angles, NULL_VECTOR);
@@ -959,7 +907,7 @@ public Action:MineSeek(Handle:timer, any:mineRef)
                 g_FiremineSeeking[mine] =  true;
             }
 
-            decl Float:velocity[3];
+            float velocity[3];
             velocity[0] = vector[0] * 80.0;
             velocity[1] = vector[1] * 80.0;
             velocity[2] = 10.0;
@@ -971,19 +919,19 @@ public Action:MineSeek(Handle:timer, any:mineRef)
         }
         else if (g_FiremineSeeking[mine])
         {
-            new Float:angles[3] = {0.0,0.0,0.0};
+            float angles[3] = {0.0,0.0,0.0};
             LogMessage("MineSeek: teleport mine=%d, angles=%f,%f,%f", mine, angles[0], angles[1], angles[2]);
             TeleportEntity(mine, NULL_VECTOR, angles, NULL_VECTOR);
 
-            new Float:vecBelow[3];
+            float vecBelow[3];
             vecBelow[0] = minePos[0];
             vecBelow[1] = minePos[1];
             vecBelow[2] = minePos[2] - 2000.0;
 
-            new Float:vecMins[3];
+            float vecMins[3];
             GetEntPropVector(mine, Prop_Send, "m_vecMins", vecMins);
 
-            new Float:vecMaxs[3];
+            float vecMaxs[3];
             GetEntPropVector(mine, Prop_Send, "m_vecMaxs", vecMaxs);
 
             //TR_TraceRayFilter(minePos, vecBelow, MASK_PLAYERSOLID, RayType_EndPoint, TraceRayDontHitSelf, mine);
@@ -1007,19 +955,19 @@ public Action:MineSeek(Handle:timer, any:mineRef)
     return Plugin_Stop;
 }
 
-public bool:TraceRayDontHitSelf(entity, mask, any:data)
+public bool TraceRayDontHitSelf(int entity, int mask, any data)
 {
     return (entity != data); // Check if the TraceRay hit the itself.
 }
 
-public Native_ControlMines(Handle:plugin,numParams)
+public int Native_ControlMines(Handle plugin, int numParams)
 {
     g_NativeControl = GetNativeCell(1);
 }
 
-public Native_GiveMines(Handle:plugin,numParams)
+public int Native_GiveMines(Handle plugin, int numParams)
 {
-    new client = GetNativeCell(1);
+    int client = GetNativeCell(1);
     g_Remaining[client] = GetNativeCell(2);
     g_Limit[client] = GetNativeCell(3);
     g_Maximum[client] = GetNativeCell(4);
@@ -1028,27 +976,27 @@ public Native_GiveMines(Handle:plugin,numParams)
         g_Maximum[client] = GetConVarInt(g_FireminesMax);
 }
 
-public Native_TakeMines(Handle:plugin,numParams)
+public int Native_TakeMines(Handle plugin, int numParams)
 {
     if (numParams >= 1)
     {
-        new client = GetNativeCell(1);
+        int client = GetNativeCell(1);
         g_Remaining[client] = g_Limit[client] = g_Maximum[client] = 0;
     }
 }
 
-public Native_AddMines(Handle:plugin,numParams)
+public int Native_AddMines(Handle plugin, int numParams)
 {
-    new client = GetNativeCell(1);
+    int client = GetNativeCell(1);
     if (g_Limit[client] >= 0)
     {
         g_Remaining[client] += GetNativeCell(2);
     }
 }
 
-public Native_SubMines(Handle:plugin,numParams)
+public int Native_SubMines(Handle plugin, int numParams)
 {
-    new client = GetNativeCell(1);
+    int client = GetNativeCell(1);
     if (g_Limit[client] >= 0)
     {
         g_Remaining[client] -= GetNativeCell(2);
@@ -1057,19 +1005,19 @@ public Native_SubMines(Handle:plugin,numParams)
     }
 }
 
-public Native_HasMines(Handle:plugin,numParams)
+public int Native_HasMines(Handle plugin, int numParams)
 {
-    new client = GetNativeCell(1);
+    int client = GetNativeCell(1);
     return (GetNativeCell(2)) ? g_Limit[client] : g_Remaining[client];
 }
 
-public Native_SetMine(Handle:plugin,numParams)
+public int Native_SetMine(Handle plugin, int numParams)
 {
-    new bool:seeking = bool:GetNativeCell(2);
+    bool seeking = view_as<bool>(GetNativeCell(2));
     TF_DropFiremine(GetNativeCell(1), OnCommand, seeking);
 }
 
-public Native_CountMines(Handle:plugin,numParams)
+public int Native_CountMines(Handle plugin, int numParams)
 {
     return CountMines(GetNativeCell(1));
 }
