@@ -25,6 +25,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 #include <tf2_stocks>
 
 #include "tf2_player"
@@ -259,6 +260,13 @@ public OnGameFrame()
             }
         }
     }
+}
+
+void OnEntityDestroyed(int entity)
+{
+    g_FireminesRef[c] = INVALID_ENT_REFERENCE;
+    g_FireminesOwner[c] = 0;
+    g_FireminesTime[c] = 0;
 }
 
 public ConVarChange_IsFireminesOn(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -692,12 +700,18 @@ TF_SpawnFiremine(client, DropType:cmd, bool:seeking)
             TeleportEntity(Firemine, MinePos, NULL_VECTOR, NULL_VECTOR);
 
             DispatchKeyValue(Firemine, "OnBreak", "!self,Kill,,0,-1");
+            //HookEntityOutput("prop_physics_override", "OnBreak", RemoveMine);
             DispatchKeyValueFloat(Firemine, "ExplodeDamage", GetConVarFloat(g_FireminesDamage));
             DispatchKeyValueFloat(Firemine, "ExplodeRadius", GetConVarFloat(g_FireminesRadius));
 
             // we might handle this ourself now...
+            /*
             if (!GetConVarBool(g_FireminesType) && GetConVarBool(g_FriendlyFire))
+            {
                 DispatchKeyValue(Firemine, "OnHealthChanged", "!self,Break,,0,-1");
+                //SDKHook(Firemine, SDKHook_OnTakeDamage, callback)
+            }
+            */
 
             PrepareAndEmitSoundToAll(SOUND_B, Firemine, _, _, _, 0.75);
 
