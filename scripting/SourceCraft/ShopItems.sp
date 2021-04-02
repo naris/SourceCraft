@@ -239,16 +239,16 @@ public OnSourceCraftReady()
     shopItem[ITEM_MASK]             = CreateShopItem("mask",        10);
     shopItem[ITEM_NECKLACE]         = CreateShopItem("necklace",    15);
     shopItem[ITEM_JACKET]           = CreateShopItem("jacket",      10);
-    shopItem[ITEM_ANTIBIOTIC]       = CreateShopItem("antibiotic",  5,  0,  .max=10);
-    shopItem[ITEM_ANTIVENOM]        = CreateShopItem("antivenom",   30);
-    shopItem[ITEM_ANTIRAD]          = CreateShopItem("antirad",     30);
-    shopItem[ITEM_ANTIDOTE]         = CreateShopItem("antidote",    60);
-    shopItem[ITEM_RESTORATION]      = CreateShopItem("restoration", 75, 0,  .max=10);
+    shopItem[ITEM_ANTIBIOTIC]       = CreateShopItem("antibiotic",  5,  0,  .max=10, .use_pcrystals=true);
+    shopItem[ITEM_ANTIVENOM]        = CreateShopItem("antivenom",   30, .use_pcrystals=true);
+    shopItem[ITEM_ANTIRAD]          = CreateShopItem("antirad",     30, .use_pcrystals=true);
+    shopItem[ITEM_ANTIDOTE]         = CreateShopItem("antidote",    60, .use_pcrystals=true);
+    shopItem[ITEM_RESTORATION]      = CreateShopItem("restoration", 75, 0,  .max=10, .use_pcrystals=true);
     shopItem[ITEM_GOGGLES]          = CreateShopItem("goggles",     10);
     shopItem[ITEM_LUBE]             = CreateShopItem("lube",        30);
     shopItem[ITEM_ORB_FROST]        = CreateShopItem("orb",         40);
     shopItem[ITEM_ORB_FIRE]         = CreateShopItem("fire",        55);
-    shopItem[ITEM_SILVER]           = CreateShopItem("silver",      50);
+    shopItem[ITEM_SILVER]           = CreateShopItem("silver",      20, .use_pcrystals=true);
     shopItem[ITEM_HELM]             = CreateShopItem("helm",        15);
     shopItem[ITEM_PERIAPT]          = CreateShopItem("periapt",     40);
     shopItem[ITEM_TOME]             = CreateShopItem("tome",        50, 2,  .max=UNLIMITED);
@@ -261,13 +261,13 @@ public OnSourceCraftReady()
         shopItem[ITEM_AMMO]         = CreateShopItem("ammo",        80);
 
     shopItem[ITEM_SACK]             = CreateShopItem("sack",        65);
-    shopItem[ITEM_LOCKBOX]          = CreateShopItem("lockbox",     10);
+    shopItem[ITEM_LOCKBOX]          = CreateShopItem("lockbox",     10, .use_pcrystals=true);
     shopItem[ITEM_RING]             = CreateShopItem("ring+1",      15);
     shopItem[ITEM_RING3]            = CreateShopItem("ring+3",      35);
     shopItem[ITEM_RING5]            = CreateShopItem("ring+5",      55);
     shopItem[ITEM_MOLE]             = CreateShopItem("mole",        75);
-    shopItem[ITEM_MOLE_PROTECTION]  = CreateShopItem("protection",  15);
-    shopItem[ITEM_MOLE_REFLECTION]  = CreateShopItem("reflection",  35);
+    shopItem[ITEM_MOLE_PROTECTION]  = CreateShopItem("protection",  15, .use_pcrystals=true);
+    shopItem[ITEM_MOLE_REFLECTION]  = CreateShopItem("reflection",  35, .use_pcrystals=true);
     shopItem[ITEM_MOLE_RETENTION]   = CreateShopItem("retention",   15);
 
     if (IsNadesAvailable() || GameTypeIsCS() || GameType == dod)

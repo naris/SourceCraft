@@ -381,7 +381,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                         else if (CanInvokeUpgrade(client, raceID, summonHorseID, false))
                         {
                             int count = Team_GetClientCount(GetClientTeam(client) == 2 ? 3 : 2);
-                            int health = 200 + (g_HorsemannHealthFactor[horse_level] * count);
+                            int health = g_HorsemannHealthFactor[horse_level] * count;
                             if (health > g_HorsemannMaxHealth[horse_level])
                                 health = g_HorsemannMaxHealth[horse_level];
 
@@ -585,6 +585,9 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
                           const String:weapon[], bool:is_equipment, customkill,
                           bool:headshot, bool:backstab, bool:melee)
 {
+    LogMessage("raceID=%dvictim_index=%d,attacker_index=%d,attacker_race=%dassister_index=%d,assister_race=%d",
+               raceID, victim_index, attacker_index, attacker_race, assister_index, assister_race);
+
     if (m_CrippleTimer[victim_index] != INVALID_HANDLE)
     {
         ResetCripple(victim_index);
@@ -603,6 +606,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
     }
     else if (attacker_race == raceID)
     {
+        LogMessage("Attacker is Necromancer");
         if (IsValidClientAlive(attacker_index))
         {
             new Float:vec[3];
@@ -610,10 +614,16 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
             
             new num = GetRandomInt(0,sizeof(necroWav)-1);
             PrepareAndEmitAmbientSound(necroWav[num], vec, attacker_index);
+            LogMessage("Emit Necromancer sound %d", num);
+        }
+        else
+        {
+            LogMessage("Necromancer %d is invalid or dead", attacker_index);
         }
     }
     else if (assister_race == raceID)
     {
+        LogMessage("Assister is Necromancer");
         if (IsValidClientAlive(assister_index))
         {
             new Float:vec[3];
@@ -621,6 +631,11 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
             
             new num = GetRandomInt(0,sizeof(necroWav)-1);
             PrepareAndEmitAmbientSound(necroWav[num], vec, assister_index);
+            LogMessage("Emit Necromancer sound %d", num);
+        }
+        else
+        {
+            LogMessage("Necromancer %d is invalid or dead", assister_index);
         }
     }
 }
