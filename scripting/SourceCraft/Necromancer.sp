@@ -536,7 +536,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                                 }
                                 else if (CanInvokeUpgrade(client, raceID, frenzyID))
                                 {
-                                    PrepareAndEmitSoundToAll(frenzyWav, victim_index);
+                                    PrepareAndEmitSoundToAll(frenzyWav, client);
                                     SetEntityHealth(client, health - hurt);
 
                                     SetROF(client, 2.0/float(frenzy_level),
@@ -601,15 +601,26 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
         else if (m_ROFAvailable)
             SetROF(victim_index, 0.0, 0.0);
     }
-    else if (attacker_race == raceId)
+    else if (attacker_race == raceID)
     {
         if (IsValidClientAlive(attacker_index))
         {
             new Float:vec[3];
-            GetClientEyePosition(client, vec);
+            GetClientEyePosition(attacker_index, vec);
             
             new num = GetRandomInt(0,sizeof(necroWav)-1);
-            PrepareAndEmitAmbientSound(necroWav[num], vec, client);
+            PrepareAndEmitAmbientSound(necroWav[num], vec, attacker_index);
+        }
+    }
+    else if (assister_race == raceID)
+    {
+        if (IsValidClientAlive(assister_index))
+        {
+            new Float:vec[3];
+            GetClientEyePosition(assister_index, vec);
+            
+            new num = GetRandomInt(0,sizeof(necroWav)-1);
+            PrepareAndEmitAmbientSound(necroWav[num], vec, assister_index);
         }
     }
 }
