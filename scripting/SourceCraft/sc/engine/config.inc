@@ -481,7 +481,7 @@ Float:GetConfigFloat(const String:key[], Float:defvalue=0.0, fileId=MAIN,
         return g_fCrystalSellRate;
     else if (section[0] == '\0' && StrEqual(key, "crystal_buy_rate"))
         return g_fCrystalBuyRate;
-    else if (section[0] == '\0' && StrEqual(key, "xp_mulitplier"))
+    else if (section[0] == '\0' && StrEqual(key, "xp_multiplier"))
         return g_fXPMultiplier;
     else
     {
@@ -1291,7 +1291,7 @@ bool:ParseSettings()
         KvSetNum(g_SourceCraftConfigHandle, "upgrade_crystals_cost", g_iUpgradeCrystalsCost);
         KvSetNum(g_SourceCraftConfigHandle, "upgrade_vespene_cost", g_iUpgradeVespeneCost);
 
-        KvSetFloat(g_SourceCraftConfigHandle, "xp_mulitplier", g_fXPMultiplier);
+        KvSetFloat(g_SourceCraftConfigHandle, "xp_multiplier", g_fXPMultiplier);
 
         // Package options
         KvSetFloat(g_SourceCraftConfigHandle, "package_duration", g_fPackageDuration);
@@ -1348,7 +1348,7 @@ bool:ParseSettings()
         g_iUpgradeCrystalsCost=KvGetNum(g_SourceCraftConfigHandle, "upgrade_crystals_cost", g_iUpgradeCrystalsCost);
         g_iUpgradeVespeneCost=KvGetNum(g_SourceCraftConfigHandle, "upgrade_vespene_cost", g_iUpgradeVespeneCost);
 
-        g_iDropPCrystalsBias=KvGetFloat(g_SourceCraftConfigHandle, "xp_mulitplier", g_fXPMultiplier);
+        g_iDropPCrystalsBias=KvGetFloat(g_SourceCraftConfigHandle, "xp_multiplier", g_fXPMultiplier);
 
         // Package options
         g_fPackageDuration=KvGetFloat(g_SourceCraftConfigHandle, "package_duration", g_fPackageDuration);
