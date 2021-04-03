@@ -59,7 +59,7 @@ new const String:necroWav[][]   = { "sc/NecromancerReady1.mp3" ,
 new g_CrippleChance[]               = { 0, 20, 24, 28, 32, 36, 40, 44, 48 };
 new Float:g_SpeedLevels[]           = { -1.0, 1.05,  1.10,   1.16, 1.23  };
 new Float:g_VampiricAuraPercent[]   = { 0.0,  0.12,  0.18,   0.24, 0.30  };
-new g_HorsemannHealthFactor[]       = { 0,  25,  50, 100, 200,  250 };
+new g_HorsemannHealthFactor[]       = { 0,  30,  60, 125, 250,  300 };
 new g_HorsemannMaxHealth[]          = { 0, 400, 550, 700, 850, 1200 };
 
 new String:raiseWav[]="vo/trainyard/ba_backup.wav";
@@ -381,7 +381,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                         else if (CanInvokeUpgrade(client, raceID, summonHorseID, false))
                         {
                             int count = Team_GetClientCount(GetClientTeam(client) == 2 ? 3 : 2);
-                            int health = g_HorsemannHealthFactor[horse_level] * count;
+                            int health = 200 + (g_HorsemannHealthFactor[horse_level] * (count + 1));
                             if (health > g_HorsemannMaxHealth[horse_level])
                                 health = g_HorsemannMaxHealth[horse_level];
 

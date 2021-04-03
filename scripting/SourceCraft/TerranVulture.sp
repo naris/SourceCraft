@@ -439,9 +439,9 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                 new mine_level = GetUpgradeLevel(client,race,mineID);
                 if (mine_level > 0)
                 {
-                    if (m_FireminesAvailable)
+                    if (!pressed)
                     {
-                        if (!pressed)
+                        if (m_FireminesAvailable)
                         {
                             if (IsMole(client))
                             {
