@@ -108,6 +108,8 @@ new Float:g_fMvMEnergyRate              = 1.0;
 new Float:g_fCrystalSellRate            = 5.0;
 new Float:g_fCrystalBuyRate             = 1.0;
 
+new Float:g_fXPMultiplier               = 1.0;
+
 new g_iMaxDropXP                        = 500;
 new g_iDropXPBias                       = -50;
 new g_iMaxDropMoney                     = 500;
