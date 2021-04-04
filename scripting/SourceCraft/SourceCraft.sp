@@ -121,6 +121,8 @@ new g_iDropPCrystalsBias                = -10;
 new g_iMaxPackages                      = 50;
 new Float:g_fPackageDuration            = 30.0;
 
+Handle g_cvXPMultiplier                 = INVALID_HANDLE;
+
 new bool:g_IsInSpawn[MAXPLAYERS+1]      = { false, ... };
 new bool:g_FirstSpawn[MAXPLAYERS + 1]   = { true,  ... };
 
@@ -257,6 +259,8 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
     TraceInto("SourceCraft", "OnConfigsExecuted");
+
+    g_fXPMultiplier = GetConVarFloat(g_cvXPMultiplier);
 
     if (!g_bSourceCraftLoaded)
     {
