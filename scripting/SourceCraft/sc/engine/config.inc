@@ -1348,7 +1348,7 @@ bool:ParseSettings()
         g_iUpgradeCrystalsCost=KvGetNum(g_SourceCraftConfigHandle, "upgrade_crystals_cost", g_iUpgradeCrystalsCost);
         g_iUpgradeVespeneCost=KvGetNum(g_SourceCraftConfigHandle, "upgrade_vespene_cost", g_iUpgradeVespeneCost);
 
-        g_iDropPCrystalsBias=KvGetFloat(g_SourceCraftConfigHandle, "xp_multiplier", g_fXPMultiplier);
+        g_fXPMultiplier=KvGetFloat(g_SourceCraftConfigHandle, "xp_multiplier", g_fXPMultiplier);
 
         // Package options
         g_fPackageDuration=KvGetFloat(g_SourceCraftConfigHandle, "package_duration", g_fPackageDuration);

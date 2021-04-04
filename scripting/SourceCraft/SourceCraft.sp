@@ -206,7 +206,6 @@ public OnPluginStart()
 
     GetGameType();
 
-    InitCVars();
     InitHooks();
     InitHud();
 
@@ -250,6 +249,7 @@ public OnPluginStart()
 
     InitHelpCommands();
     InitCookies();
+    InitCVars();
     InitHint();
 
     PrintToServer("[SC] Plugin finished loading.\n-------------------------------------------------------------------------");

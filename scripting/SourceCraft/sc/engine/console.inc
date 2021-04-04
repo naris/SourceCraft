@@ -15,7 +15,9 @@ InitCVars()
 {
     CreateConVar("sc_version",SOURCECRAFT_VERSION,"SourceCraft version.",FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_UNLOGGED|FCVAR_DONTRECORD);
 
-    g_cvXPMultiplier = CreateConVar("sc_xp_multiplier", "1.0", "Value to multiply XP earned by everyone by");
+    char sc_xp_multiplier[64];
+    FloatToString(g_fXPMultiplier, sc_xp_multiplier, sizeof(sc_xp_multiplier));
+    g_cvXPMultiplier = CreateConVar("sc_xp_multiplier", sc_xp_multiplier, "Value to multiply XP earned by everyone by");
 
     RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_SOURCECRAFT,"Set a player's XP (for Admins)");
     RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_SOURCECRAFT,"Give a player XP (for Admins)");
