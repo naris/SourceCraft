@@ -468,6 +468,9 @@ GiveXP(client, amount, const String:phrase[], place=-1,
                        phrase, client);
             }
 
+            if (g_fXPMultiplier > 0.0 && g_fXPMultiplier != 1.0)
+                amount = RoundFloat(float(amount) * g_fXPMultiplier);
+
             new race=GetRace(client);
             new newxp=GetXP(client,race)+amount;
             SetXP(client,race,newxp);

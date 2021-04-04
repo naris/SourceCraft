@@ -15,6 +15,10 @@ InitCVars()
 {
     CreateConVar("sc_version",SOURCECRAFT_VERSION,"SourceCraft version.",FCVAR_REPLICATED|FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_UNLOGGED|FCVAR_DONTRECORD);
 
+    char sc_xp_multiplier[64];
+    FloatToString(g_fXPMultiplier, sc_xp_multiplier, sizeof(sc_xp_multiplier));
+    g_cvXPMultiplier = CreateConVar("sc_xp_multiplier", sc_xp_multiplier, "Value to multiply XP earned by everyone by");
+
     RegAdminCmd("sc_setxp",CMD_SetXP,ADMFLAG_SOURCECRAFT,"Set a player's XP (for Admins)");
     RegAdminCmd("sc_givexp",CMD_GiveXP,ADMFLAG_SOURCECRAFT,"Give a player XP (for Admins)");
     RegAdminCmd("sc_removexp",CMD_RemoveXP,ADMFLAG_SOURCECRAFT,"Remove some XP from a player (for Admins)");
@@ -35,6 +39,12 @@ InitCVars()
 
     RegAdminCmd("sc_admin",AdminMenu,ADMFLAG_SOURCECRAFT,"Brings up the SourceCraft admin panel. (for Admins)");
     RegAdminCmd("sc_fix_levels",CMD_FixLevels,ADMFLAG_SOURCECRAFT,"Re-Calculates the levels for all players in the database. (for Admins)");
+}
+
+public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+    if (convar == g_cvXPMultiplier)
+        g_fXPMultiplier = GetConVarFloat(g_cvXPMultiplier);
 }
 
 public Action:CMD_SetXP(client,args)

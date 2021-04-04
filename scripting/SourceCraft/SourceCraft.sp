@@ -108,6 +108,8 @@ new Float:g_fMvMEnergyRate              = 1.0;
 new Float:g_fCrystalSellRate            = 5.0;
 new Float:g_fCrystalBuyRate             = 1.0;
 
+new Float:g_fXPMultiplier               = 1.0;
+
 new g_iMaxDropXP                        = 500;
 new g_iDropXPBias                       = -50;
 new g_iMaxDropMoney                     = 500;
@@ -118,6 +120,8 @@ new g_iMaxDropPCrystals                 = 500;
 new g_iDropPCrystalsBias                = -10;
 new g_iMaxPackages                      = 50;
 new Float:g_fPackageDuration            = 30.0;
+
+Handle g_cvXPMultiplier                 = INVALID_HANDLE;
 
 new bool:g_IsInSpawn[MAXPLAYERS+1]      = { false, ... };
 new bool:g_FirstSpawn[MAXPLAYERS + 1]   = { true,  ... };
@@ -202,7 +206,6 @@ public OnPluginStart()
 
     GetGameType();
 
-    InitCVars();
     InitHooks();
     InitHud();
 
@@ -246,6 +249,7 @@ public OnPluginStart()
 
     InitHelpCommands();
     InitCookies();
+    InitCVars();
     InitHint();
 
     PrintToServer("[SC] Plugin finished loading.\n-------------------------------------------------------------------------");
@@ -255,6 +259,8 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
     TraceInto("SourceCraft", "OnConfigsExecuted");
+
+    g_fXPMultiplier = GetConVarFloat(g_cvXPMultiplier);
 
     if (!g_bSourceCraftLoaded)
     {
