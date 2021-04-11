@@ -587,7 +587,7 @@ Action ActivateMine(int caller, int activator, bool broken=false)
         if (owner == g_FireminesOwner[caller] && IsClientInGame(owner))
         {
             int team = GetConVarBool(g_FriendlyFire) ? 0 : GetEntProp(caller, Prop_Send, "m_iTeamNum");
-            if (team != GetClientTeam(activator))
+            if (team != GetClientTeam(activator) || activator == owner)
             {
                 ExplodeMine(caller, owner, team, broken);
                 return Plugin_Handled;
