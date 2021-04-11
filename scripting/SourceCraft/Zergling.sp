@@ -522,6 +522,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
         }
         else if (GetImmunity(attacker_index,Immunity_Silver))
         {
+            ImmunityInvoked(attacker_index, Immunity_Silver);
             PrepareAndEmitSoundToClient(victim_index,deniedWav);
             m_ReincarnationCount[victim_index] = 0;
 
@@ -545,6 +546,7 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
         }
         else if (assister_index > 0 && GetImmunity(assister_index,Immunity_Silver))
         {
+            ImmunityInvoked(assister_index, Immunity_Silver);
             PrepareAndEmitSoundToClient(victim_index,deniedWav);
             m_ReincarnationCount[victim_index] = 0;
 
