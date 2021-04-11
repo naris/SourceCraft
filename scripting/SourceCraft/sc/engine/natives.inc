@@ -6582,6 +6582,7 @@ InitNatives()
     CreateNative("GetConfigArray",Native_GetConfigArray);
     CreateNative("GetConfigFloatArray",Native_GetConfigFloatArray);
     CreateNative("LoadSourceCraftTranslations",Native_LoadSCTranslations);
+    CreateNative("ImmunityInvoked",Native_ImmunityInvoked);
     RegPluginLibrary("SourceCraft");
 }
 

@@ -2627,6 +2627,7 @@ public __pl_SourceCraft_SetNTVOptional()
 	MarkNativeAsOptional("GetConfigArray");
 	MarkNativeAsOptional("GetConfigFloatArray");
 	MarkNativeAsOptional("LoadSourceCraftTranslations");
+	MarkNativeAsOptional("ImmunityInvoked");
 }
 #endif
 
