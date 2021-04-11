@@ -587,8 +587,7 @@ Action ActivateMine(int caller, int activator, bool broken=false)
         if (owner == g_FireminesOwner[caller] && IsClientInGame(owner))
         {
             int team = GetConVarBool(g_FriendlyFire) ? 0 : GetEntProp(caller, Prop_Send, "m_iTeamNum");
-            //if (team != GetClientTeam(activator))
-            if (team != GetClientTeam(activator) || activator == owner) // <-- DEBUG
+            if (team != GetClientTeam(activator))
             {
                 ExplodeMine(caller, owner, team, broken);
                 return Plugin_Handled;
@@ -760,8 +759,8 @@ int TF_SpawnFiremine(int client, DropType cmd)
         MinePos[2] += 1;
 
         //int fireMine = CreateEntityByName("prop_physics_multiplayer");
-        //int fireMine = CreateEntityByName("prop_physics_override");
-        int fireMine = CreateEntityByName("prop_dynamic_override");
+        int fireMine = CreateEntityByName("prop_physics_override");
+        //int fireMine = CreateEntityByName("prop_dynamic_override"); // <-- This one no seekie!
         if (fireMine > 0 && IsValidEntity(fireMine))
         {
             // Ensure the mine model is precached
