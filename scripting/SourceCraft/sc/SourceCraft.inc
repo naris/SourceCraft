@@ -2086,6 +2086,24 @@ stock AdditionalTranslations(const String:file[])
 }
 
 /**
+ * Call to indicate that a player invoked an immunity (invokes OnImmunityInvoked)
+ *
+ * @param client:    The index of the player.
+ * @param immunity:  The immunity or immunities that were invoked.
+ * @noreturn
+ */
+native ImmunityInvoked(client, Immunity:immunity);
+
+/**
+ *
+ * Called when an Immunity is invoked (when ImmunityInvoked() is called)
+ * @param client:        The index of the client whose cooldown expired
+ * @param immunity       The immunity that was invoked
+ * @return The return value will be the result of the Forward.
+ */
+forward OnImmunityInvoked(client, Immunity:immunity);
+
+/**
  * Called when SourceCraft is ready.
  * @noreturn
  */

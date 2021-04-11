@@ -292,6 +292,22 @@
 	{
 		"en"		"Items/orboffire.gif"
 	}
+	"sankh"
+	{
+		"en"		"Silver Ankh"
+	}
+	"sankh_desc"
+	{
+		"en"		"Prevents your enemy from reincarnating when you kill him. Retained until it prevents a reincarnation."
+	}
+	"sankh_category"
+	{
+		"en"		"Combative Items"
+	}
+	"sankh_image"
+	{
+		"en"		"Items/hextechrevolver.png"
+	}
 	"silver"
 	{
 		"en"		"Silver Ammo"

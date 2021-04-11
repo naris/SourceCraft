@@ -35,6 +35,7 @@ new Handle:g_OnPlayerBuiltObject = INVALID_HANDLE;
 new Handle:g_OnCabinetUsedHandle = INVALID_HANDLE;
 new Handle:g_OnHealthUsedHandle = INVALID_HANDLE;
 new Handle:g_OnUltimateCommandHandle = INVALID_HANDLE;
+new Handle:g_OnImmunityInvokedHandle = INVALID_HANDLE;
 
 new bool:g_bDamageFromPlayerHurt = false;
 new bool:g_bSupressOnPlayerTakeDamage = false;
@@ -113,7 +114,7 @@ public Native_GetMode(Handle:plugin,numParams)
  *                   UnitType:type=GenericUnit, const String:parent[]="", Translation:translation=Translation_Auto,
  *                   const String:translation_file[]="", const String:name[]="", const String:switch_message[]="",
  *                   const String:pending_message[]="", const String:desc[]="", const String:image[]="");
- */         
+ */
 public Native_CreateRace(Handle:plugin,numParams)
 {
     decl String:short[SHORT_STRING_LENGTH];
@@ -6351,6 +6352,27 @@ public Native_LoadSCTranslations(Handle:plugin,numParams)
     LoadTranslations(file);
 }
 
+/**
+ * Invoke the OnImunityInvoked() forward.
+ * (to indicate that a player invoked an immunity)
+ *
+ * @param client:    The index of the player.
+ * @param immunity:  The immunity or immunities that were invoked.
+ * @return The return value will be the result of the Forward.
+ *
+ * native ImmunityInvoked(client, Immunity:immunity);
+ *
+ */
+public Native_ImmunityInvoked(Handle:plugin,numParams)
+{
+    new result;
+    Call_StartForward(g_OnImmunityInvokedHandle);
+    Call_PushCell(GetNativeCell(1));
+    Call_PushCell(GetNativeCell(2));
+    Call_Finish(result);
+    return result;
+}
+
 InitNatives()
 {
     CreateNative("IsSourceCraftLoaded",Native_IsSourceCraftLoaded);
@@ -6597,5 +6619,7 @@ InitForwards()
     g_OnCabinetUsedHandle = CreateGlobalForward("OnCabinetUsed", ET_Ignore,Param_Cell,Param_Cell);
     g_OnHealthUsedHandle = CreateGlobalForward("OnHealthUsed", ET_Ignore,Param_Cell,Param_Cell);
     g_OnCooldownExpiredHandle=CreateGlobalForward("OnCooldownExpired",ET_Ignore,Param_Cell,Param_Cell,Param_Cell,Param_Cell);
+
+    g_OnImmunityInvokedHandle=CreateGlobalForward("OnImmunityInvoked",ET_Ignore,Param_Cell,Param_Cell);
 }
 

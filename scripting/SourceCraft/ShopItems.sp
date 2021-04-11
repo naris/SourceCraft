@@ -90,12 +90,13 @@
 #define ITEM_FUEL            36 // Jetpack Fuel
 #define ITEM_JACKET          37 // Flack Jacket - Protects from explosions.
 #define ITEM_SILVER          38 // Silver Ammo - Prevents victims from reincarnating.
-#define ITEM_HELM            39 // Helm of the Black Legion - Protects from Headshots.
-#define ITEM_ENERGY10        40 // 10 Energy - Purchase 10 energy
-#define ITEM_ENERGY50        41 // 50 Energy - Purchase 50 energy
-#define ITEM_ENERGY100       42 // 100 Energy - Purchase 100 energy
-#define ITEM_ENERGY          43 // Energy - Convert all +crystals into energy.
-#define MAXITEMS             44
+#define ITEM_SILVER_ANKH     39 // Silver Ankh - Siler ammo that is retained on death - Prevents victims from reincarnating.
+#define ITEM_HELM            40 // Helm of the Black Legion - Protects from Headshots.
+#define ITEM_ENERGY10        41 // 10 Energy - Purchase 10 energy
+#define ITEM_ENERGY50        42 // 50 Energy - Purchase 50 energy
+#define ITEM_ENERGY100       43 // 100 Energy - Purchase 100 energy
+#define ITEM_ENERGY          44 // Energy - Convert all +crystals into energy.
+#define MAXITEMS             45
 
 new const String:maskSnd[]   = "sc/mask.mp3";
 new const String:bootsWav[]  = "sc/bootospeed.mp3";
@@ -123,6 +124,7 @@ new m_BootCount[MAXPLAYERS+1];
 new m_MoleHealth[MAXPLAYERS+1];
 new Float:m_SpawnLoc[MAXPLAYERS+1][3];
 new bool:m_UsedPeriapt[MAXPLAYERS+1];
+new bool:m_UsedSilver[MAXPLAYERS+1];
 new bool:m_IsMole[MAXPLAYERS+1];
 new Float:m_MaskTime[MAXPLAYERS+1];
 new Float:m_ClawTime[MAXPLAYERS+1];
@@ -249,6 +251,7 @@ public OnSourceCraftReady()
     shopItem[ITEM_ORB_FROST]        = CreateShopItem("orb",         40);
     shopItem[ITEM_ORB_FIRE]         = CreateShopItem("fire",        55);
     shopItem[ITEM_SILVER]           = CreateShopItem("silver",      20, .use_pcrystals=true);
+    shopItem[ITEM_SILVER_ANKH]      = CreateShopItem("sankh",       30);
     shopItem[ITEM_HELM]             = CreateShopItem("helm",        15);
     shopItem[ITEM_PERIAPT]          = CreateShopItem("periapt",     40);
     shopItem[ITEM_TOME]             = CreateShopItem("tome",        50, 2,  .max=UNLIMITED);
@@ -565,9 +568,11 @@ public OnItemPurchase(client,item)
         SetImmunity(client,Immunity_Theft,true);
         returnCode = Plugin_Handled;
     }
-    else if (item==shopItem[ITEM_SILVER])                                // Silver Ammo
+    else if (item==shopItem[ITEM_SILVER] ||                             // Silver Ammo
+             item==shopItem[ITEM_SILVER_ANKH])                          // or Silver Ankh
     {
         SetImmunity(client,Immunity_Silver,true);
+        m_UsedSilver[client]=false;
         returnCode = Plugin_Handled;
     }
     else if (item==shopItem[ITEM_PERIAPT] && IsPlayerAlive(client))      // Periapt of Health
@@ -842,8 +847,12 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
             if (GetOwnsItem(client,shopItem[ITEM_LOCKBOX]))                         // Lockbox
                 SetImmunity(client,Immunity_Theft,true);
 
-            if (GetOwnsItem(client,shopItem[ITEM_SILVER]))                          // Silver Ammo
+            if (GetOwnsItem(client,shopItem[ITEM_SILVER]) ||                        // Silver Ammo
+                GetOwnsItem(client,shopItem[ITEM_SILVER_ANKH]))                     // or Silver Ankh
+            {
                 SetImmunity(client,Immunity_Silver,true);
+                m_UsedSilver[client]=false;
+            }
 
             if (GetOwnsItem(client,shopItem[ITEM_ANTIVENOM]))                       // Antivenom
                 SetImmunity(client,Immunity_Poison,true);
@@ -1094,10 +1103,23 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
             SetImmunity(victim_index,Immunity_Explosion,false);
         }
 
+        if (GetOwnsItem(victim_index,shopItem[ITEM_SILVER_ANKH]))
+        {
+            if (m_UsedSilver[victim_index])
+            {
+                SetOwnsItem(victim_index,shopItem[ITEM_SILVER_ANKH],false);
+                SetImmunity(victim_index,Immunity_Silver,false);
+                m_UsedSilver[victim_index]=false;
+            }
+        }
+
         if (GetOwnsItem(victim_index,shopItem[ITEM_SILVER]))
         {
             SetOwnsItem(victim_index,shopItem[ITEM_SILVER],false);
-            SetImmunity(victim_index,Immunity_Silver,false);
+            m_UsedSilver[victim_index]=false;
+
+            if (!GetOwnsItem(victim_index,shopItem[ITEM_SILVER_ANKH]))
+                SetImmunity(victim_index,Immunity_Silver,false);
         }
 
         if (GetOwnsItem(victim_index,shopItem[ITEM_GOGGLES]))
@@ -1341,6 +1363,12 @@ public OnCabinetUsed(client,entity)
         if (health > old_health && old_health > 0)
             SetEntityHealth(client, old_health);
     }
+}
+
+public OnImmunityInvoked(client, Immunity:immunity)
+{
+    if ((immunity & Immunity_Silver) == Immunity_Silver)
+        m_UsedSilver[client] = true;
 }
 
 public Action:ResetHealth(Handle:timer,any:pack)
