@@ -68,8 +68,8 @@ new const String:sndPickup[]  = "items/gift_pickup.wav";
 new const String:sndPain[][]  = { "player/pl_pain5.wav", "player/pl_pain6.wav",
                                   "player/pl_pain7.wav", "player/pain.wav" };
 
-new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://http://sc.clanservers.com/sc/player/show/steamid/%s";
-new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://http://sc.clanservers.com/sc/";
+new String:g_InfoURL[LONG_STRING_LENGTH]     = "http://http://www.jigglysfunhouse.net/sc/player/show/steamid/%s";
+new String:g_InfoBaseURL[LONG_STRING_LENGTH] = "http://http://www.jigglysfunhouse.net/sc/";
 new String:g_UpdateURL[LONG_STRING_LENGTH]   = "https://bitbucket.org/sourcecraft/sourcecraft/commits/all";
 new String:g_WikiURL[LONG_STRING_LENGTH]     = "https://bitbucket.org/sourcecraft/sourcecraft/wiki/Home";
 new String:g_BugURL[LONG_STRING_LENGTH]      = "https://bitbucket.org/sourcecraft/sourcecraft/issues";
