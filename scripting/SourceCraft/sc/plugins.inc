@@ -18,6 +18,7 @@ stock bool:m_GravgunAvailable = false;
 stock bool:m_JetpackAvailable = false;
 stock bool:m_FireminesAvailable = false;
 stock bool:m_TripminesAvailable = false;
+stock bool:m_RollermineAvailable = false;
 stock bool:m_HGRSourceAvailable = false;
 stock bool:m_PiggybackAvailable = false;
 stock bool:m_FlamethrowerAvailable = false;
@@ -131,6 +132,17 @@ stock bool:IsTripminesAvailable(bool:force=false)
         m_TripminesAvailable = true;
     }
     return m_TripminesAvailable;
+}
+
+
+stock bool:IsRollermineAvailable(bool:force=false)
+{
+    if (!m_RollermineAvailable && (force || LibraryExists("rollermine")))
+    {
+        ControlRM(true);
+        m_RollermineAvailable = true;
+    }
+    return m_RollermineAvailable;
 }
 
 stock bool:IsJetpackAvailable(bool:force=false)

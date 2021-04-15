@@ -43,6 +43,7 @@ forward Action:OnSetRollermine(client);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
+public SharedPlugin __pl_rollermine = 
 {
 	name = "rollermine",
 	file = "rollermine.smx",
@@ -54,7 +55,7 @@ forward Action:OnSetRollermine(client);
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_firemines_SetNTVOptional()
+public __pl_rollermine_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlRM");
 	MarkNativeAsOptional("SetRollermine");

@@ -20,12 +20,14 @@
 #define REQUIRE_EXTENSIONS
 
 #undef REQUIRE_PLUGIN
+#include <lib/rollermine>
 #include <libtf2/sidewinder>
 #include "sc/MindControl"
 #define REQUIRE_PLUGIN
 
 #include "sc/SourceCraft"
 #include "sc/clienttimer"
+#include "sc/ShopItems"
 #include "sc/Detector"
 #include "sc/plugins"
 #include "sc/shields"
@@ -58,7 +60,7 @@ new Float:g_ScrabPercent[]      = { 0.0, 0.15, 0.30, 0.40, 0.50 };
 new Float:g_CloakingRange[]     = { 0.0, 150.0, 300.0, 350.0, 500.0 };
 new Float:g_DetectingRange[]    = { 0.0, 300.0, 450.0, 650.0, 800.0 };
 
-new raceID, scarabID, cloakID, sensorID, shieldsID, controlID;
+new raceID, scarabID, cloakID, sensorID, shieldsID, controlID, mineID;
 
 new bool:cfgAllowInvisibility;
 
@@ -145,6 +147,16 @@ public OnSourceCraftReady()
         LogMessage("Disabling Protoss Chimera:Mind Control due to MindControl is not available (or gametype != tf2)");
     }
 
+    //TODO: finish this & add translation
+    // Ultimate 2
+    mineID    = AddUpgrade(raceID, "phase_mine", 2, 1, .cost_crystals=30);
+
+    if (!IsRollermineAvailable())
+    {
+        SetUpgradeDisabled(raceID, mineID, true);
+        LogMessage("Disabling Protoss Chimera:Phase Mine due to rollermine is not available");
+    }
+
     // Set the Sidewinder available flag
     IsSidewinderAvailable();
 
@@ -181,7 +193,9 @@ public OnSourceCraftReady()
 
 public OnLibraryAdded(const String:name[])
 {
-    if (StrEqual(name, "MindControl"))
+    if (StrEqual(name, "rollermine"))
+        IsRollermineAvailable(true);
+    else if (StrEqual(name, "MindControl"))
         IsMindControlAvailable(true);
     else if (StrEqual(name, "sidewinder") && GetGameType() == tf2)
         IsSidewinderAvailable(true);
@@ -189,7 +203,9 @@ public OnLibraryAdded(const String:name[])
 
 public OnLibraryRemoved(const String:name[])
 {
-    if (StrEqual(name, "MindControl"))
+    if (StrEqual(name, "rollermine"))
+        m_RollermineAvailable = false;
+    else if (StrEqual(name, "MindControl"))
         m_MindControlAvailable = false;
     else if (StrEqual(name, "sidewinder"))
         m_SidewinderAvailable = false;
@@ -354,48 +370,87 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
 {
     if (pressed && race==raceID && IsValidClientAlive(client))
     {
-        new ult_level=GetUpgradeLevel(client,raceID,controlID);
-        if (ult_level > 0)
+        switch (arg)
         {
-            decl String:upgradeName[64];
-            GetUpgradeName(raceID, controlID, upgradeName, sizeof(upgradeName), client);
-
-            if (!m_MindControlAvailable)
+            case 2:
             {
-                PrepareAndEmitSoundToClient(client,deniedWav);
-                PrintHintText(client, "%t", "IsNotAvailable", upgradeName);
-                return;
-            }
-
-            if (GetRestriction(client,Restriction_NoUltimates) ||
-                GetRestriction(client,Restriction_Stunned))
-            {
-                PrepareAndEmitSoundToClient(client,deniedWav);
-                DisplayMessage(client, Display_Ultimate, "%t",
-                               "Prevented", upgradeName);
-            }
-            else if (CanInvokeUpgrade(client, raceID, controlID, false))
-            {
-                new builder;
-                new TFExtObjectType:type;
-                if (MindControl(client, g_MindControlRange[ult_level],
-                                g_MindControlChance[ult_level],
-                                builder, type, true))
+                new mine_level = GetUpgradeLevel(client,race,mineID);
+                if (mine_level > 0)
                 {
-                    if (IsValidClient(builder))
+                    if (m_RollermineAvailable)
                     {
-                        DisplayMessage(builder, Display_Enemy_Ultimate,
-                                       "%t", "HasControlled", client,
-                                       TF2_ObjectNames[type]);
+                        if (IsMole(client))
+                        {
+                            PrepareAndEmitSoundToClient(client,deniedWav);
 
-                        DisplayMessage(client, Display_Ultimate, "%t", 
-                                       "YouHaveControlled", builder,
-                                       TF2_ObjectNames[type]);
+                            decl String:upgradeName[64];
+                            GetUpgradeName(raceID, mineID, upgradeName, sizeof(upgradeName), client);
+                            DisplayMessage(client, Display_Ultimate, "%t", "NotAsMole", upgradeName);
+                        }
+                        else if (GetRestriction(client, Restriction_NoUltimates) ||
+                                 GetRestriction(client, Restriction_Stunned))
+                        {
+                            PrepareAndEmitSoundToClient(client,deniedWav);
+                            DisplayMessage(client, Display_Ultimate, "%t",
+                                            "PreventedFromPlantingMine");
+                        }
+                        else
+                            SetRollermine(client);
+                    }
+                    else
+                    {
+                        decl String:upgradeName[64];
+                        GetUpgradeName(raceID, mineID, upgradeName, sizeof(upgradeName), client);
+                        PrintHintText(client,"%t", "IsNotAvailable", upgradeName);
+                    }
+                }
+            }
+            default:
+            {
+                new ult_level=GetUpgradeLevel(client,raceID,controlID);
+                if (ult_level > 0)
+                {
+                    decl String:upgradeName[64];
+                    GetUpgradeName(raceID, controlID, upgradeName, sizeof(upgradeName), client);
 
+                    if (!m_MindControlAvailable)
+                    {
+                        PrepareAndEmitSoundToClient(client,deniedWav);
+                        PrintHintText(client, "%t", "IsNotAvailable", upgradeName);
+                        return;
                     }
 
-                    CreateCooldown(client, raceID, controlID);
-                    ChargeForUpgrade(client, raceID, controlID);
+                    if (GetRestriction(client,Restriction_NoUltimates) ||
+                        GetRestriction(client,Restriction_Stunned))
+                    {
+                        PrepareAndEmitSoundToClient(client,deniedWav);
+                        DisplayMessage(client, Display_Ultimate, "%t",
+                                    "Prevented", upgradeName);
+                    }
+                    else if (CanInvokeUpgrade(client, raceID, controlID, false))
+                    {
+                        new builder;
+                        new TFExtObjectType:type;
+                        if (MindControl(client, g_MindControlRange[ult_level],
+                                        g_MindControlChance[ult_level],
+                                        builder, type, true))
+                        {
+                            if (IsValidClient(builder))
+                            {
+                                DisplayMessage(builder, Display_Enemy_Ultimate,
+                                            "%t", "HasControlled", client,
+                                            TF2_ObjectNames[type]);
+
+                                DisplayMessage(client, Display_Ultimate, "%t", 
+                                            "YouHaveControlled", builder,
+                                            TF2_ObjectNames[type]);
+
+                            }
+
+                            CreateCooldown(client, raceID, controlID);
+                            ChargeForUpgrade(client, raceID, controlID);
+                        }
+                    }
                 }
             }
         }

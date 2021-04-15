@@ -89,4 +89,17 @@
 	{
 		"en"		"Upgrade/MindCont.png"
 	}
+
+	"chimera_phase_mine"
+	{
+		"en"		"Phase Mine"
+	}
+	"chimera_phase_mine_desc"
+	{
+		"en"		"Drops a phase mine, which is able to detect motion. Once the mine locates an enemy target it will persue the target and electrocute it.\nBind a key to s+ultimate2 to plant the mine.\nTo bind to m, type bind m +ultimate2 in console."
+	}
+	"chimera_phase_mine_image"
+	{
+		"en"		"Upgrade/PhaseMine_SC2_DevRend1.png"
+	}
 }
