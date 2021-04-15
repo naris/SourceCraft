@@ -68,16 +68,16 @@ native HasMines(client,bool:allowed=false);
  * Counts how many mines the player has active.
  *
  * @param index 	Client index
- * @return			none
+ * @return			firemine count
  */
 native CountMines(client);
 
 /**
- * Sets (Plants) a firemine.
+ * Sets (Plants) a firemine where the client is looking.
  *
  * @param index 	Client index
- * @param seeking 	Set true to have mine seek enemies.
- * @return			none
+ * @param seeking 	Set true to have the mine seek enemies.
+ * @return			entity
  */
 native SetMine(client, bool:seeking=false);
 
@@ -104,6 +104,7 @@ public SharedPlugin:__pl_firemines =
 public __pl_firemines_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlMines");
+	MarkNativeAsOptional("CountMines");
 	MarkNativeAsOptional("GiveMines");
 	MarkNativeAsOptional("TakeMines");
 	MarkNativeAsOptional("AddMines");

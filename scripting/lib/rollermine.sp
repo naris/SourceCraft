@@ -5,7 +5,13 @@
 #pragma newdecls required
 
 //#define DEBUG
-#define PLUGIN_VERSION	"1.4"
+#define PLUGIN_VERSION	"1.5"
+
+// settings for m_takedamage
+#define DAMAGE_NO               0
+#define DAMAGE_EVENTS_ONLY      1       // Call damage functions, but don't modify health
+#define DAMAGE_YES              2
+#define DAMAGE_AIM              3
 
 enum
 {
@@ -21,8 +27,19 @@ enum
 #define ROLLERMINE_MAX_ATTACK_DIST			4096
 #define ROLLERMINE_HOP_DELAY				2	// Don't allow hops faster than this, Doesn't actually do anything
 
+// Colors
+char g_strMineColor[6][16] = { "",            // 0:Unassigned / Default
+                               "",            // 1:Spectator
+                               "255 0 0",     // 2:Red  / Allies / Terrorists
+                               "0 0 255",     // 3:Blue / Axis   / Counter-Terrorists
+                               "",            // 4:No Team?
+                               ""             // 5:Boss?
+};
+
 int g_iShockIndex = -1;
 int g_iShockHaloIndex = -1;
+
+bool g_NativeControl = false;
 
 ConVar g_hRollerSpeed;
 ConVar g_hRollerForce;
@@ -30,6 +47,13 @@ ConVar g_hRollerDamage;
 ConVar g_hRollerStunDur;
 ConVar g_hRollerOpenThreshold;
 ConVar g_hRollerAttackDist;
+ConVar g_hRollerExplode;
+ConVar g_hRollerRadius;
+ConVar g_hMineColor[4];
+
+ConVar g_hFriendlyFire;
+
+GlobalForward g_fwdOnSetRollermine;
 
 public Plugin myinfo = 
 {
@@ -40,22 +64,58 @@ public Plugin myinfo =
 	url = ""
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	// Register Natives
+	CreateNative("ControlRM",Native_ControlRM);
+	CreateNative("SetRollermine",Native_SetRollermine);
+	CreateNative("SpawnRollerMine",Native_SpawnRollerMine);
+
+	// Register Forwards
+	g_fwdOnSetRollermine=CreateGlobalForward("OnSetRollermine",ET_Hook,Param_Cell);
+
+	RegPluginLibrary("rollermine");
+	return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
 	RegAdminCmd("sm_rollermine", Command_Rollermine, ADMFLAG_ROOT);
 	RegAdminCmd("sm_clearmines", Command_ClearMines, ADMFLAG_ROOT);
 	
-	g_hRollerSpeed = CreateConVar("tf2_rollermine_speed", "200", "Rollermine rotation speed");
-	g_hRollerForce = CreateConVar("tf2_rollermine_force", "5000", "Rollermine angular force");
-	g_hRollerDamage = CreateConVar("tf2_rollermine_damage", "35", "Rollermine shock damage");
-	g_hRollerStunDur = CreateConVar("tf2_rollermine_stunduration", "1.5", "Rollermine stun duration");
-	g_hRollerOpenThreshold = CreateConVar("tf2_rollermine_open_threshold", "256", "Rollermine open threshold");
-	g_hRollerAttackDist = CreateConVar("tf2_rollermine_max_attack_distance", "4096", "Rollermine max attack distance");
-	
+	g_hRollerSpeed = CreateConVar("rollermine_speed", "200", "Rollermine rotation speed");
+	g_hRollerForce = CreateConVar("rollermine_force", "5000", "Rollermine angular force");
+	g_hRollerDamage = CreateConVar("rollermine_damage", "35", "Rollermine shock damage");
+	g_hRollerStunDur = CreateConVar("rollermine_stunduration", "1.5", "Rollermine stun duration");
+	g_hRollerOpenThreshold = CreateConVar("rollermine_open_threshold", "256", "Rollermine open threshold");
+	g_hRollerAttackDist = CreateConVar("rollermine_max_attack_distance", "4096", "Rollermine max attack distance");
+	g_hRollerExplode = CreateConVar("rollermine_explode","160","Explosion damage of Rollermines", _, true, 0.0, true, 1000.0);
+	g_hRollerRadius = CreateConVar("rollermine_radius","250","Explosion radius of Rollermines", _, true, 0.0, true, 1000.0);
+
+	g_hMineColor[1] = CreateConVar("rollermine_color_1", g_strMineColor[1], "Mine Color (can include alpha) for team 1 (Spectators)");
+	g_hMineColor[2] = CreateConVar("rollermine_color_2", g_strMineColor[2], "Mine Color (can include alpha) for team 2 (Red  / Allies / Terrorists)");
+	g_hMineColor[3] = CreateConVar("rollermine_color_3", g_strMineColor[3], "Mine Color (can include alpha) for team 3 (Blue / Axis   / Counter-Terrorists)");
+
+	g_hFriendlyFire = FindConVar("mp_friendlyfire");
+
 	g_hRollerSpeed.AddChangeHook(OnSettingsChanged);
 	g_hRollerForce.AddChangeHook(OnSettingsChanged);
+
+	g_hMineColor[1].AddChangeHook(OnSettingsChanged);
+	g_hMineColor[2].AddChangeHook(OnSettingsChanged);
+	g_hMineColor[3].AddChangeHook(OnSettingsChanged);
 	
-	CreateConVar("tf2_rollermine_version", PLUGIN_VERSION, "Rollermine spawner version", FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
+	CreateConVar("rollermine_version", PLUGIN_VERSION, "Rollermine spawner version", FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
+
+	AutoExecConfig(true);
+}
+
+public void OnConfigsExecuted()
+{
+    // Get the color settings
+    g_hMineColor[1].GetString(g_strMineColor[1], sizeof(g_strMineColor[]));
+    g_hMineColor[2].GetString(g_strMineColor[2], sizeof(g_strMineColor[]));
+    g_hMineColor[3].GetString(g_strMineColor[3], sizeof(g_strMineColor[]));
 }
 
 public void OnPluginEnd()
@@ -136,24 +196,33 @@ public void OnEntityDestroyed(int entity)
 
 public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	int iEnt = -1;
-	while((iEnt = FindEntityByClassname(iEnt, "prop_physics_multiplayer")) != -1)
+    if (convar == g_hMineColor[1])
+        strcopy(g_strMineColor[1], sizeof(g_strMineColor[]), newValue);
+    else if (convar == g_hMineColor[2])
+        strcopy(g_strMineColor[2], sizeof(g_strMineColor[]), newValue);
+    else if (convar == g_hMineColor[3])
+        strcopy(g_strMineColor[3], sizeof(g_strMineColor[]), newValue);
+	else
 	{
-		if (IsValidEntity(iEnt))
+		int iEnt = -1;
+		while((iEnt = FindEntityByClassname(iEnt, "prop_physics_multiplayer")) != -1)
 		{
-			char strName[64];
-			GetEntPropString(iEnt, Prop_Data, "m_iName", strName, sizeof(strName));
-			
-			if(StrContains(strName, "RollerMine") != -1)
+			if (IsValidEntity(iEnt))
 			{
-				int iMotor = GetEntPropEnt(iEnt, Prop_Data, "m_hMoveChild");
-			
-				char strSpeed[16], strForce[16];
-				g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
-				g_hRollerForce.GetString(strForce, sizeof(strForce));
-			
-				DispatchKeyValue(iMotor, "force", strForce);
-				DispatchKeyValue(iMotor, "speed", strSpeed);
+				char strName[64];
+				GetEntPropString(iEnt, Prop_Data, "m_iName", strName, sizeof(strName));
+				
+				if(StrContains(strName, "RollerMine") != -1)
+				{
+					int iMotor = GetEntPropEnt(iEnt, Prop_Data, "m_hMoveChild");
+				
+					char strSpeed[16], strForce[16];
+					g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
+					g_hRollerForce.GetString(strForce, sizeof(strForce));
+				
+					DispatchKeyValue(iMotor, "force", strForce);
+					DispatchKeyValue(iMotor, "speed", strSpeed);
+				}
 			}
 		}
 	}
@@ -161,6 +230,15 @@ public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[]
 
 public Action Command_Rollermine(int client, int args)
 {
+	if (!g_NativeControl)
+		PlaceRollerMine(client);
+
+	return Plugin_Handled;
+}
+
+public int PlaceRollerMine(int client)
+{
+	int iEnt = 0;
 	if(client > 0 && client <= MaxClients && IsClientInGame(client))
 	{
 		float origin[3], angles[3], pos[3];
@@ -174,40 +252,91 @@ public Action Command_Rollermine(int client, int args)
 			TR_GetEndPosition(pos, trace);
 			pos[2] += 15.0;
 			
-			int iEnt = CreateEntityByName("prop_physics_multiplayer");
-			if(IsValidEntity(iEnt))
+			Action res = Plugin_Continue;
+			Call_StartForward(g_fwdOnSetRollermine);
+			Call_PushCell(client);
+			Call_Finish(res);
+			if (res != Plugin_Continue)
 			{
-				char strName[64];
-				Format(strName, sizeof(strName), "RollerMine%i", iEnt);
-				DispatchKeyValue(iEnt, "targetname", strName);
-				DispatchKeyValueVector(iEnt, "origin", pos);
-				DispatchKeyValue(iEnt, "model", "models/roller.mdl");
-				DispatchSpawn(iEnt);
-			
-				SDKHook(iEnt, SDKHook_SetTransmit, OnRollermineThink);
-				
-				char strSpeed[16], strForce[16];
-				g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
-				g_hRollerForce.GetString(strForce, sizeof(strForce));
-			
-				int iMotor = CreateEntityByName("phys_torque");
-				DispatchKeyValueVector(iMotor, "origin", pos);
-				DispatchKeyValue(iMotor, "attach1", strName);
-				DispatchKeyValue(iMotor, "force", strForce);
-				DispatchKeyValue(iMotor, "speed", strSpeed);
-				DispatchSpawn(iMotor);
-				
-				SetVariantString("!activator");
-				AcceptEntityInput(iMotor, "SetParent", iEnt);
-				
-				ActivateEntity(iMotor);
+				delete trace;
+				return 0;
 			}
+
+			iEnt = SpawnRollerMine(client, pos);
 		}
 		
 		delete trace;
 	}
+	return iEnt;
+}
 
-	return Plugin_Handled;
+public int SpawnRollerMine(int client, float pos[3])
+{
+	int iEnt = CreateEntityByName("prop_physics_multiplayer");
+	if (IsValidEntity(iEnt))
+	{
+		char strName[64];
+		Format(strName, sizeof(strName), "RollerMine%i", iEnt);
+		DispatchKeyValue(iEnt, "targetname", strName);
+		DispatchKeyValueVector(iEnt, "origin", pos);
+		DispatchKeyValue(iEnt, "model", "models/roller.mdl");
+		DispatchSpawn(iEnt);
+
+		int team = g_hFriendlyFire.BoolValue ? 0 : GetClientTeam(client);
+		SetMineColor(iEnt, team);
+
+		SetEntProp(iEnt, Prop_Send, "m_iTeamNum", team, 4);
+		SetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity", client);
+		SetEntPropEnt(iEnt, Prop_Data, "m_hLastAttacker", client);
+		SetEntPropEnt(iEnt, Prop_Data, "m_hPhysicsAttacker", client);
+
+		char strExplode[16];
+		g_hRollerExplode.GetString(strExplode, sizeof(strExplode));
+		DispatchKeyValue(iEnt, "ExplodeDamage", strExplode);
+
+		char strRadius[16];
+		g_hRollerRadius.GetString(strRadius, sizeof(strRadius));
+		DispatchKeyValue(iEnt, "ExplodeRadius", strRadius);
+
+		SDKHook(iEnt, SDKHook_SetTransmit, OnRollermineThink);
+		
+		char strSpeed[16], strForce[16];
+		g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
+		g_hRollerForce.GetString(strForce, sizeof(strForce));
+	
+		int iMotor = CreateEntityByName("phys_torque");
+		DispatchKeyValueVector(iMotor, "origin", pos);
+		DispatchKeyValue(iMotor, "attach1", strName);
+		DispatchKeyValue(iMotor, "force", strForce);
+		DispatchKeyValue(iMotor, "speed", strSpeed);
+		DispatchSpawn(iMotor);
+		
+		SetVariantString("!activator");
+		AcceptEntityInput(iMotor, "SetParent", iEnt);
+		
+		ActivateEntity(iMotor);
+	}
+
+	return iEnt;
+}
+
+void SetMineColor(int iEnt, int team)
+{
+    if (team > 0 && team < sizeof(g_strMineColor) && g_strMineColor[team][0] != '\0')
+    {
+        char color[4][4];
+        if (ExplodeString(g_strMineColor[team], " ", color, sizeof(color), sizeof(color[])) <= 3)
+            strcopy(color[3], sizeof(color[]), "255");
+
+        SetEntityRenderMode(iEnt, RENDER_TRANSCOLOR);
+        SetEntityRenderColor(iEnt, StringToInt(color[0]), StringToInt(color[1]),
+                                   StringToInt(color[2]), StringToInt(color[3]));
+    }
+    else
+    {
+        SetEntityRenderMode(iEnt, RENDER_NORMAL);
+        SetEntityRenderColor(iEnt, 255, 255, 255, 255);
+    }
 }
 
 //Yes i know, it's not ideal to use SetTransmit in place of think but timers are dumb and physics props don't think
@@ -225,8 +354,8 @@ public void OnRollermineThink(int iEnt, int client)
 			float flEntPos[3];
 			GetEntPropVector(iEnt, Prop_Data, "m_vecAbsOrigin", flEntPos);
 		
-		//	float flLastSeenPos[3];
-		//	GetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flLastSeenPos);
+			//float flLastSeenPos[3];
+			//GetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flLastSeenPos);
 		
 			int iTarget = Entity_GetClosestClient(iEnt);		
 			if(iTarget > 0 && iTarget <= MaxClients && IsClientInGame(iTarget))
@@ -235,7 +364,7 @@ public void OnRollermineThink(int iEnt, int client)
 				GetClientAbsOrigin(iTarget, flClientPos);
 				
 				//Set last seen position
-			//	SetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flClientPos);
+				//SetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flClientPos);
 				
 				float flDistance = GetVectorDistance(flClientPos, flEntPos);
 				if(flDistance <= g_hRollerOpenThreshold.FloatValue)
@@ -494,10 +623,13 @@ stock int Entity_GetClosestClient(int iEnt)
 	
 	int iBestTarget = -1;
 	float flBestLength = g_hRollerAttackDist.FloatValue;
-	
+
+	int team = GetEntProp(iEnt, Prop_Send, "m_iTeamNum", 4);
+
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if(IsClientInGame(i) && Entity_Cansee(iEnt, i) && IsPlayerAlive(i))
+		if(IsClientInGame(i) && Entity_Cansee(iEnt, i) && IsPlayerAlive(i) &&
+		   (team == 0 || GetClientTeam(i) != team))
 		{
 			float flPos2[3];
 			GetClientEyePosition(i, flPos2);
@@ -552,4 +684,22 @@ public bool TraceFilterSelf(int entity, int contentsMask, any iPumpking)
 		return false;
 	
 	return true;
+}
+
+
+public int Native_ControlRM(Handle plugin, int numParams)
+{
+    g_NativeControl = GetNativeCell(1);
+}
+
+public int Native_SetRollermine(Handle plugin, int numParams)
+{
+    PlaceRollerMine(GetNativeCell(1));
+}
+
+public int Native_SpawnRollerMine(Handle plugin, int numParams)
+{
+	float pos[3];
+	GetNativeArray(2, pos, sizeof(pos));
+	SpawnRollerMine(GetNativeCell(1), pos);
 }

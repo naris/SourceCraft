@@ -114,21 +114,22 @@ int g_FireminesOwner[MAXENTITIES];
 bool g_FiremineSeeking[MAXENTITIES];
 bool g_PlayerButtonDown[MAXPLAYERS+1];
 float g_PlayerPosition[MAXPLAYERS+1][3];
-Handle g_IsFireminesOn = INVALID_HANDLE;
-Handle g_FireminesAmmo = INVALID_HANDLE;
-Handle g_FireminesType = INVALID_HANDLE;
-Handle g_FireminesMobile = INVALID_HANDLE;
-Handle g_FireminesDamage = INVALID_HANDLE;
-Handle g_FireminesRadius = INVALID_HANDLE;
-Handle g_FireminesDetect = INVALID_HANDLE;
-Handle g_FireminesProximity = INVALID_HANDLE;
-Handle g_FireminesKeep = INVALID_HANDLE;
-Handle g_FireminesStay = INVALID_HANDLE;
-Handle g_FriendlyFire = INVALID_HANDLE;
-Handle g_FireminesActTime = INVALID_HANDLE;
-Handle g_FireminesLimit = INVALID_HANDLE;
-Handle g_FireminesMax = INVALID_HANDLE;
-Handle g_FiremineColor[4] = { INVALID_HANDLE, ... };
+
+ConVar g_IsFireminesOn;
+ConVar g_FireminesAmmo;
+ConVar g_FireminesType;
+ConVar g_FireminesMobile;
+ConVar g_FireminesDamage;
+ConVar g_FireminesRadius;
+ConVar g_FireminesDetect;
+ConVar g_FireminesProximity;
+ConVar g_FireminesKeep;
+ConVar g_FireminesStay;
+ConVar g_FriendlyFire;
+ConVar g_FireminesActTime;
+ConVar g_FireminesLimit;
+ConVar g_FireminesMax;
+ConVar g_FiremineColor[4];
 
 
 bool g_NativeControl = false;
@@ -138,12 +139,13 @@ int g_Remaining[MAXPLAYERS+1];  // how many mines player has this spawn
 bool g_ChangingClass[MAXPLAYERS+1];
 
 // forwards
-Handle fwdOnSetMine;
+GlobalForward fwdOnSetMine;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     // Register Natives
     CreateNative("ControlMines",Native_ControlMines);
+    CreateNative("CountMines",Native_CountMines);
     CreateNative("GiveMines",Native_GiveMines);
     CreateNative("TakeMines",Native_TakeMines);
     CreateNative("AddMines",Native_AddMines);
@@ -209,9 +211,9 @@ public void OnPluginStart()
 public void OnConfigsExecuted()
 {
     // Get the color settings
-    GetConVarString(g_FiremineColor[1], gMineColor[1], sizeof(gMineColor[]));
-    GetConVarString(g_FiremineColor[2], gMineColor[2], sizeof(gMineColor[]));
-    GetConVarString(g_FiremineColor[3], gMineColor[3], sizeof(gMineColor[]));
+    g_FiremineColor[1].GetString(gMineColor[1], sizeof(gMineColor[]));
+    g_FiremineColor[2].GetString(gMineColor[2], sizeof(gMineColor[]));
+    g_FiremineColor[3].GetString(gMineColor[3], sizeof(gMineColor[]));
 }
 
 public void OnMapStart()
@@ -256,18 +258,18 @@ public void OnClientPutInServer(int client)
         }
         else
         {
-            g_Maximum[client] = GetConVarInt(g_FireminesMax);
-            g_Remaining[client] = g_Limit[client] =  GetConVarInt(g_FireminesLimit);
+            g_Maximum[client] = g_FireminesMax.IntValue;
+            g_Remaining[client] = g_Limit[client] =  g_FireminesLimit.IntValue;
         }
     }
 
-    if(!g_NativeControl && GetConVarBool(g_IsFireminesOn))
+    if(!g_NativeControl && g_IsFireminesOn.IntValue)
         CreateTimer(45.0, Timer_Advert, client);
 }
 
 public void OnGameFrame()
 {
-    if (!g_NativeControl && GetConVarInt(g_IsFireminesOn) < 2)
+    if (!g_NativeControl && g_IsFireminesOn.IntValue < 2)
         return;
 
     for (int i = 1; i <= MaxClients; i++)
@@ -285,14 +287,14 @@ public void OnGameFrame()
                 if (StrEqual(classname, "CTFFlameThrower"))
                 {
                     TF_DropFiremine(i, WithFlameThrower,
-                                    GetConVarBool(g_FireminesMobile));
+                                    g_FireminesMobile.BoolValue);
                 }
             }
         }
     }
 }
 
-public void ConVarChange(Handle convar, const char[] oldValue, const char[] newValue)
+public void ConVarChange(ConVar convar, const char[] oldValue, const char[] newValue)
 {
     if (convar == g_IsFireminesOn)
     {
@@ -311,7 +313,7 @@ public void ConVarChange(Handle convar, const char[] oldValue, const char[] newV
 
 public Action Command_Firemine(int client, int args)
 {
-    if (!g_NativeControl && GetConVarInt(g_IsFireminesOn) < 2)
+    if (g_NativeControl || g_IsFireminesOn.IntValue < 2)
         return Plugin_Handled;
 
     DropType cmd;
@@ -345,7 +347,7 @@ public Action Timer_Advert(Handle timer, any client)
 {
     if (IsClientConnected(client) && IsClientInGame(client))
     {
-        switch (GetConVarInt(g_IsFireminesOn))
+        switch (g_IsFireminesOn.IntValue)
         {
             case 1:
                 PrintToChat(client, "\x01\x04[SM]\x01 %t", "OnDeath Firemines");
@@ -369,7 +371,7 @@ public Action Timer_Caching(Handle timer)
         }
     }
 
-    float keep = GetConVarFloat(g_FireminesKeep);
+    float keep = g_FireminesKeep.FloatValue;
     if (keep > 0)
     {
         RemoveMines(0, keep);
@@ -389,8 +391,8 @@ public Action Event_PlayerClass(Handle event, const char[] name, bool dontBroadc
 
     g_ChangingClass[client] = true;
 
-    int stay = GetConVarInt(g_FireminesStay);
-    float time = GetConVarFloat(g_FireminesActTime);
+    int stay = g_FireminesStay.IntValue;
+    float time = g_FireminesActTime.FloatValue;
     if (stay < 1 || time > 0.0)
     {
         RemoveMines(client, time, stay < 1);
@@ -425,7 +427,7 @@ public Action Event_PlayerSpawn(Handle event, const char[] name, bool dontBroadc
 
 public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
-    int fireminesOn = GetConVarInt(g_IsFireminesOn);
+    int fireminesOn = g_IsFireminesOn.IntValue;
     if (!g_NativeControl && fireminesOn < 1)
         return;
 
@@ -453,8 +455,8 @@ public Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadc
 
     g_ChangingClass[client] = false;
 
-    int stay = GetConVarInt(g_FireminesStay);
-    float time = GetConVarFloat(g_FireminesActTime);
+    int stay = g_FireminesStay.IntValue;
+    float time = g_FireminesActTime.FloatValue;
     if (stay < 1 || time > 0.0)
     {
         RemoveMines(client, time, stay < 1);
@@ -696,7 +698,7 @@ void SetSolidFlags(int fireMine, bool seeking)
 
 void SetMineColor(int fireMine, int team)
 {
-    if (team >= 0 && team < sizeof(gMineColor) && gMineColor[team][0] != '\0')
+    if (team > 0 && team < sizeof(gMineColor) && gMineColor[team][0] != '\0')
     {
         char color[4][4];
         if (ExplodeString(gMineColor[team], " ", color, sizeof(color), sizeof(color[])) <= 3)
@@ -704,7 +706,7 @@ void SetMineColor(int fireMine, int team)
 
         SetEntityRenderMode(fireMine, RENDER_TRANSCOLOR);
         SetEntityRenderColor(fireMine, StringToInt(color[0]), StringToInt(color[1]),
-                                        StringToInt(color[2]), StringToInt(color[3]));
+                                       StringToInt(color[2]), StringToInt(color[3]));
     }
     else
     {
