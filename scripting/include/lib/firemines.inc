@@ -16,7 +16,7 @@
  * @param plugin_only 	Set to 1 to assume complete control of the Firemines plugin.
  * @return		    	none
  */
-native ControlMines(bool:plugin_only=true);
+native void ControlMines(bool plugin_only=true);
 
 /**
  * Give a player one or more firemines to plant
@@ -27,7 +27,7 @@ native ControlMines(bool:plugin_only=true);
  * @param maximum   Set to number of firemines allowed to be active. (-1 is plugin default)
  * @return			none
  */
-native GiveMines(client,number=1,per_spawn=-1,maximum=-1);
+native void GiveMines(int client, int number=1, int per_spawn=-1, int maximum=-1);
 
 /**
  * Take a player's firemines away
@@ -35,7 +35,7 @@ native GiveMines(client,number=1,per_spawn=-1,maximum=-1);
  * @param index 	Client index
  * @return			none
  */
-native TakeMines(client);
+native void TakeMines(int client);
 
 /**
  * Adds or more firemines for the player to plant
@@ -44,7 +44,7 @@ native TakeMines(client);
  * @param number    Number of firemines to add.
  * @return			none
  */
-native AddMines(client,number=1);
+native void AddMines(int client, int number=1);
 
 /**
  * Subtracts or more firemines for the player to plant
@@ -53,7 +53,7 @@ native AddMines(client,number=1);
  * @param number    Number of firemines to subtract.
  * @return			none
  */
-native SubMines(client,number=1);
+native void SubMines(int client, int number=1);
 
 /**
  * Returns how many firemines a player has (or is allowed).
@@ -62,7 +62,7 @@ native SubMines(client,number=1);
  * @param allowed   Set to  true to return number allowed, otherwise
  * @return			returns number of remaining firemines.
  */
-native HasMines(client,bool:allowed=false);
+native int HasMines(int client, bool allowed=false);
 
 /**
  * Counts how many mines the player has active.
@@ -70,7 +70,7 @@ native HasMines(client,bool:allowed=false);
  * @param index 	Client index
  * @return			firemine count
  */
-native CountMines(client);
+native int CountMines(int client);
 
 /**
  * Sets (Plants) a firemine where the client is looking.
@@ -79,17 +79,17 @@ native CountMines(client);
  * @param seeking 	Set true to have the mine seek enemies.
  * @return			entity
  */
-native SetMine(client, bool:seeking=false);
+native int SetMine(int client, bool seeking=false);
 
 /**
  * Gets called when when a mine is set
  * @param client 	Client index of the player setting the mine
  */
-forward Action:OnSetMine(client);
+forward Action OnSetMine(int client);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
-public SharedPlugin:__pl_firemines = 
+public SharedPlugin __pl_firemines = 
 {
 	name = "firemines",
 	file = "firemines.smx",
@@ -101,7 +101,7 @@ public SharedPlugin:__pl_firemines =
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_firemines_SetNTVOptional()
+public void __pl_firemines_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlMines");
 	MarkNativeAsOptional("CountMines");

@@ -10,13 +10,21 @@
 #endif
 #define _rollermine_included
 
+// settings for damage (m_takedamage)
+#if !defined(DAMAGE_NO)
+#define DAMAGE_NO               0
+#define DAMAGE_EVENTS_ONLY      1       // Call damage functions, but don't modify health
+#define DAMAGE_YES              2
+#define DAMAGE_AIM              3
+#endif
+
 /**
  * Assume control of the rollermine plugin
  *
  * @param plugin_only 	Set to 1 to assume complete control of the rollermine plugin.
  * @return		    	none
  */
-native ControlRM(bool:plugin_only=true);
+native void ControlRM(bool plugin_only=true);
 
 /**
  * Sets (Plants) a rollermine where the client is looking.
@@ -24,7 +32,7 @@ native ControlRM(bool:plugin_only=true);
  * @param index 	Client index
  * @return			entity
  */
-native SetRollermine(client);
+native int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100);
 
 /**
  * Spawns a rollermine.
@@ -33,13 +41,29 @@ native SetRollermine(client);
  * @param pos    	Position to spawn the rollermine at.
  * @return			entity
  */
-native SpawnRollerMine(client);
+native int SpawnRollerMine(int client, float pos[3], int take_damage=DAMAGE_YES, int health=100);
+
+/**
+ * Counts how many mines the player has active.
+ *
+ * @param index 	Client index
+ * @return			firemine count
+ */
+native int CountRollermines(int client=0);
+
+/**
+ * Counts how many mines the player has active.
+ *
+ * @param index 	Client index
+ * @return			firemine count
+ */
+native int ExplodeRollermines(int client=0);
 
 /**
  * Gets called when when a rollermine is set
  * @param client 	Client index of the player setting the rollermine
  */
-forward Action:OnSetRollermine(client);
+forward Action OnSetRollermine(int client);
 
 /* DO NOT EDIT BELOW THIS LINE */
 
@@ -59,5 +83,8 @@ public __pl_rollermine_SetNTVOptional()
 {
 	MarkNativeAsOptional("ControlRM");
 	MarkNativeAsOptional("SetRollermine");
+	MarkNativeAsOptional("SpawnRollerMine");
+	MarkNativeAsOptional("CountRollermines");
+	MarkNativeAsOptional("ExplodeRollermines");
 }
 #endif

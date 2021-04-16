@@ -22,6 +22,13 @@ enum
 	STATE_STUNNED,
 };
 
+enum
+{
+	COUNT_MINES = 0,
+	BREAK_MINES,
+	KILL_MINES
+};
+
 #define ROLLERMINE_SE_CLEAR					0
 #define ROLLERMINE_SE_TAUNT					0x1
 
@@ -129,31 +136,11 @@ public void OnConfigsExecuted()
 
 public void OnPluginEnd()
 {
-	int iCount = 0;
-	
-	int index = -1;
-	while((index = FindEntityByClassname(index, "prop_physics_multiplayer")) != -1)
-	{
-		if (IsValidEntity(index))
-		{
-			char strName[64];
-			GetEntPropString(index, Prop_Data, "m_iName", strName, sizeof(strName));
-			
-			if(StrContains(strName, "RollerMine") != -1)
-			{
-				StopSound(index, SNDCHAN_AUTO, "npc/roller/mine/rmine_seek_loop2.wav");
-				StopSound(index, SNDCHAN_AUTO, "npc/roller/mine/rmine_moveslow_loop1.wav");
-				StopSound(index, SNDCHAN_AUTO, "npc/roller/mine/rmine_movefast_loop1.wav");
-			
-				AcceptEntityInput(index, "Kill");
-				
-				iCount++;
-			}
-		}
-	}
-	
 	#if defined DEBUG
-	PrintToChatAll("[SM] Removed %i Rollermines", iCount);
+		int iCount = CountMines(0, KILL_MINES);
+		PrintToChatAll("[SM] Removed %i Rollermines", iCount);
+	#else
+		CountMines(0, KILL_MINES);
 	#endif
 }
 
@@ -247,12 +234,7 @@ public void SpawnStartTouch(int spawn, int entity)
 		GetEntPropString(entity, Prop_Data, "m_iName", strName, sizeof(strName));
 		if(StrContains(strName, "RollerMine") != -1)
 		{
-			// If any mines enter spawn, Silence them
-			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_seek_loop2.wav");
-			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_moveslow_loop1.wav");
-			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_movefast_loop1.wav");
-		
-			// Then Dissolve them
+			// If any mines enter spawn, Dissolve them
 			int dissolver = CreateEntityByName("env_entity_dissolver");
 			if (dissolver>0)
 			{
@@ -261,19 +243,29 @@ public void SpawnStartTouch(int spawn, int entity)
 				AcceptEntityInput(dissolver, "Dissolve");
 				AcceptEntityInput(dissolver, "kill");
 			}
-			CreateTimer(0.2, KillEntity, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+
+			// Then kill them
+			CreateTimer(0.2, KillMine, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
 
-public Action KillEntity(Handle timer, any entRef)
+public Action KillMine(Handle timer, any entRef)
 {
     // Ensure the entity is the same 
     int entity = EntRefToEntIndex(entRef);
     if (entity > 0 && IsValidEntity(entity))
-		AcceptEntityInput(entity, "kill");
+		KillEntity(entity);
 
     return Plugin_Stop;
+}
+
+stock void KillEntity(int iEntity)
+{
+	if(!AcceptEntityInput(iEntity, "Kill"))
+	{
+		RemoveEdict(iEntity);
+	}
 }
 
 public Action Command_ClearMines(int client, int args)
@@ -287,12 +279,12 @@ public Action Command_ClearMines(int client, int args)
 public Action Command_Rollermine(int client, int args)
 {
 	if (!g_NativeControl)
-		PlaceRollerMine(client);
+		SetRollermine(client);
 
 	return Plugin_Handled;
 }
 
-public int PlaceRollerMine(int client)
+int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100)
 {
 	int iEnt = 0;
 	if(client > 0 && client <= MaxClients && IsClientInGame(client))
@@ -318,7 +310,7 @@ public int PlaceRollerMine(int client)
 				return 0;
 			}
 
-			iEnt = SpawnRollerMine(client, pos);
+			iEnt = SpawnRollerMine(client, pos, take_damage, health);
 		}
 		
 		delete trace;
@@ -326,11 +318,14 @@ public int PlaceRollerMine(int client)
 	return iEnt;
 }
 
-public int SpawnRollerMine(int client, float pos[3])
+int SpawnRollerMine(int client, float pos[3], int take_damage=DAMAGE_YES, int health=100)
+// TODO:                   int explode_damage=160, int explode_radius=250)
 {
-	if (IsEntLimitReached(100, .message="unable to create rollermine"))
+	if (IsEntLimitReached(100, .message="unable to create rollermine")
+	    || TR_PointOutsideWorld(pos))
 	{
 		// don't crash the server spawning too many of these
+		// or allow then to be spawned outside the world
 		return 0;
 	}
 	else
@@ -352,6 +347,10 @@ public int SpawnRollerMine(int client, float pos[3])
 			SetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity", client);
 			SetEntPropEnt(iEnt, Prop_Data, "m_hLastAttacker", client);
 			SetEntPropEnt(iEnt, Prop_Data, "m_hPhysicsAttacker", client);
+
+			SetEntProp(iEnt, Prop_Data, "m_iHealth", health);
+			SetEntProp(iEnt, Prop_Data, "m_takedamage", take_damage);
+			DispatchKeyValue(iEnt, "physdamagescale", "1.0");
 
 			DispatchKeyValue(iEnt, "OnBreak", "!self,Kill,,0,-1");
 
@@ -412,99 +411,85 @@ public void OnRollermineThink(int iEnt, int client)
 	//This bad code ensures that we don't think any more than we should
 	if(iThinkWhenClient > 0 && iThinkWhenClient <= MaxClients && IsClientInGame(iThinkWhenClient))
 	{
-		int iMotor = GetEntPropEnt(iEnt, Prop_Data, "m_hMoveChild");
-	
-		if(GetRollerState(iEnt) != STATE_STUNNED)
+		if (IsEntityOutsideWorld(iEnt))
 		{
-			float flEntPos[3];
-			GetEntPropVector(iEnt, Prop_Data, "m_vecAbsOrigin", flEntPos);
+			KillEntity(iEnt);
+		}
+		else
+		{
+			int iMotor = GetEntPropEnt(iEnt, Prop_Data, "m_hMoveChild");
 		
-			//float flLastSeenPos[3];
-			//GetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flLastSeenPos);
-		
-			int iTarget = Entity_GetClosestClient(iEnt);		
-			if(iTarget > 0 && iTarget <= MaxClients && IsClientInGame(iTarget))
+			if(GetRollerState(iEnt) != STATE_STUNNED)
 			{
-				float flClientPos[3];
-				GetClientAbsOrigin(iTarget, flClientPos);
-				
-				//Set last seen position
-				//SetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flClientPos);
-				
-				float flDistance = GetVectorDistance(flClientPos, flEntPos);
-				if(flDistance <= g_hRollerOpenThreshold.FloatValue)
+				float flEntPos[3];
+				GetEntPropVector(iEnt, Prop_Data, "m_vecAbsOrigin", flEntPos);
+			
+				//float flLastSeenPos[3];
+				//GetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flLastSeenPos);
+			
+				int iTarget = Entity_GetClosestClient(iEnt);		
+				if(iTarget > 0 && iTarget <= MaxClients && IsClientInGame(iTarget))
 				{
-					if(GetRollerState(iEnt) != STATE_OPEN)
+					float flClientPos[3];
+					GetClientAbsOrigin(iTarget, flClientPos);
+					
+					//Set last seen position
+					//SetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", flClientPos);
+					
+					float flDistance = GetVectorDistance(flClientPos, flEntPos);
+					if(flDistance <= g_hRollerOpenThreshold.FloatValue)
 					{
-						SetRollerState(iEnt, STATE_OPEN);
+						if(GetRollerState(iEnt) != STATE_OPEN)
+						{
+							SetRollerState(iEnt, STATE_OPEN);
+						}
 					}
-				}
-				else if(GetRollerState(iEnt) != STATE_CLOSED)
-				{
-					AcceptEntityInput(iMotor, "Deactivate");
-					SetRollerState(iEnt, STATE_CLOSED);
-				}
-				
-				if(flDistance <= 400.0 && !(GetRollerFlags(iEnt) & ROLLERMINE_SE_TAUNT))
-				{
-					EmitSoundToAll("npc/roller/mine/rmine_taunt1.wav", iEnt, _, _, _, _, GetRandomInt(90, 110));
-					
-					int iFlags = GetRollerFlags(iEnt) | ROLLERMINE_SE_TAUNT;
-					SetRollerFlags(iEnt, iFlags); 
-					
-					#if defined DEBUG
-					PrintToChatAll("TAUNT");
-					#endif
-				}
-				
-				if(flDistance <= 35.0)
-				{
-					EmitSoundToAll("npc/roller/mine/rmine_explode_shock1.wav", iEnt, _, _, _, _, GetRandomInt(100, 120));
-					
-					float impulse[3];
-					SubtractVectors(flEntPos, flClientPos, impulse);
-					impulse[2] = 0.0;
-					NormalizeVector(impulse, impulse);
-					impulse[2] = 0.75;
-					NormalizeVector(impulse, impulse);
-					ScaleVector(impulse, 600.0);
-		
-					TeleportEntity(iEnt, NULL_VECTOR, NULL_VECTOR, impulse);
-					
-					SDKHooks_TakeDamage(iTarget, iEnt, iEnt, g_hRollerDamage.FloatValue, DMG_SHOCK);
-					
-					float flStundDuration = g_hRollerStunDur.FloatValue;
-					if(flStundDuration > 0.0)
+					else if(GetRollerState(iEnt) != STATE_CLOSED)
 					{
-						SetRollerState(iEnt, STATE_STUNNED);
 						AcceptEntityInput(iMotor, "Deactivate");
-						
-						CreateTimer(flStundDuration, Timer_UnStun, EntIndexToEntRef(iEnt));
+						SetRollerState(iEnt, STATE_CLOSED);
 					}
-				}
-				
-				float flDirection[3];
-				MakeVectorFromPoints(flEntPos, flClientPos, flDirection);
-				flDirection[2] = 0.0;
-				
-				NormalizeVector(flDirection, flDirection);
-				
-				float flRight[3];
-				GetVectorVectors(flDirection, flRight, NULL_VECTOR);
-				
-				NegateVector(flRight);
-				
-				SetEntPropVector(iMotor, Prop_Data, "m_axis", flRight);
-		
-				AcceptEntityInput(iMotor, "Deactivate");
-				AcceptEntityInput(iMotor, "Activate");
-			}
-			else if(GetRollerState(iEnt) != STATE_IDLE)
-			{
-			/*	if(flLastSeenPos[0] != 0.0 && flLastSeenPos[1] != 0.0 && flLastSeenPos[2] != 0.0)
-				{	
+					
+					if(flDistance <= 400.0 && !(GetRollerFlags(iEnt) & ROLLERMINE_SE_TAUNT))
+					{
+						EmitSoundToAll("npc/roller/mine/rmine_taunt1.wav", iEnt, _, _, _, _, GetRandomInt(90, 110));
+						
+						int iFlags = GetRollerFlags(iEnt) | ROLLERMINE_SE_TAUNT;
+						SetRollerFlags(iEnt, iFlags); 
+						
+						#if defined DEBUG
+						PrintToChatAll("TAUNT");
+						#endif
+					}
+					
+					if(flDistance <= 35.0)
+					{
+						EmitSoundToAll("npc/roller/mine/rmine_explode_shock1.wav", iEnt, _, _, _, _, GetRandomInt(100, 120));
+						
+						float impulse[3];
+						SubtractVectors(flEntPos, flClientPos, impulse);
+						impulse[2] = 0.0;
+						NormalizeVector(impulse, impulse);
+						impulse[2] = 0.75;
+						NormalizeVector(impulse, impulse);
+						ScaleVector(impulse, 600.0);
+			
+						TeleportEntity(iEnt, NULL_VECTOR, NULL_VECTOR, impulse);
+						
+						SDKHooks_TakeDamage(iTarget, iEnt, iEnt, g_hRollerDamage.FloatValue, DMG_SHOCK);
+						
+						float flStundDuration = g_hRollerStunDur.FloatValue;
+						if(flStundDuration > 0.0)
+						{
+							SetRollerState(iEnt, STATE_STUNNED);
+							AcceptEntityInput(iMotor, "Deactivate");
+							
+							CreateTimer(flStundDuration, Timer_UnStun, EntIndexToEntRef(iEnt));
+						}
+					}
+					
 					float flDirection[3];
-					MakeVectorFromPoints(flEntPos, flLastSeenPos, flDirection);
+					MakeVectorFromPoints(flEntPos, flClientPos, flDirection);
 					flDirection[2] = 0.0;
 					
 					NormalizeVector(flDirection, flDirection);
@@ -518,34 +503,55 @@ public void OnRollermineThink(int iEnt, int client)
 			
 					AcceptEntityInput(iMotor, "Deactivate");
 					AcceptEntityInput(iMotor, "Activate");
-					
-					Handle hTrace = TR_TraceRayFilterEx(flEntPos, flLastSeenPos, MASK_SOLID, RayType_EndPoint, TraceFilterSelf, iEnt);
-					bool bSee = TR_DidHit(hTrace);
-					
-					PrintToServer("- [%.1f] %i", GetGameTime(), TR_GetEntityIndex(hTrace));
-					
-					delete hTrace;
-					
-					float flDistance = GetVectorDistance(flEntPos, flLastSeenPos);
-					
-					if(flDistance <= 50.0 || bSee)
-					{
-						PrintToChatAll("Stop snooping");
-						
-						SetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", view_as<float>({0.0, 0.0, 0.0}));
-					}
 				}
-				else
-				{*/
-				AcceptEntityInput(iMotor, "Deactivate");
+				else if(GetRollerState(iEnt) != STATE_IDLE)
+				{
+				/*	if(flLastSeenPos[0] != 0.0 && flLastSeenPos[1] != 0.0 && flLastSeenPos[2] != 0.0)
+					{	
+						float flDirection[3];
+						MakeVectorFromPoints(flEntPos, flLastSeenPos, flDirection);
+						flDirection[2] = 0.0;
+						
+						NormalizeVector(flDirection, flDirection);
+						
+						float flRight[3];
+						GetVectorVectors(flDirection, flRight, NULL_VECTOR);
+						
+						NegateVector(flRight);
+						
+						SetEntPropVector(iMotor, Prop_Data, "m_axis", flRight);
 				
-				SetRollerState(iEnt, STATE_IDLE);
-			//	}
+						AcceptEntityInput(iMotor, "Deactivate");
+						AcceptEntityInput(iMotor, "Activate");
+						
+						Handle hTrace = TR_TraceRayFilterEx(flEntPos, flLastSeenPos, MASK_SOLID, RayType_EndPoint, TraceFilterSelf, iEnt);
+						bool bSee = TR_DidHit(hTrace);
+						
+						PrintToServer("- [%.1f] %i", GetGameTime(), TR_GetEntityIndex(hTrace));
+						
+						delete hTrace;
+						
+						float flDistance = GetVectorDistance(flEntPos, flLastSeenPos);
+						
+						if(flDistance <= 50.0 || bSee)
+						{
+							PrintToChatAll("Stop snooping");
+							
+							SetEntPropVector(iEnt, Prop_Data, "m_vecVelocity", view_as<float>({0.0, 0.0, 0.0}));
+						}
+					}
+					else
+					{*/
+					AcceptEntityInput(iMotor, "Deactivate");
+					
+					SetRollerState(iEnt, STATE_IDLE);
+				//	}
+				}
 			}
-		}
-		else if(GetRollerState(iEnt) == STATE_STUNNED)
-		{
-			AcceptEntityInput(iMotor, "Deactivate");
+			else if(GetRollerState(iEnt) == STATE_STUNNED)
+			{
+				AcceptEntityInput(iMotor, "Deactivate");
+			}
 		}
 	}
 	else
@@ -690,12 +696,12 @@ stock int Entity_GetClosestClient(int iEnt)
 	float flBestLength = g_hRollerAttackDist.FloatValue;
 
 	int team = GetEntProp(iEnt, Prop_Send, "m_iTeamNum", 4);
-	int owner = GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity");
+	//int owner = GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity"); <-- DEBUG
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && Entity_Cansee(iEnt, i) && IsPlayerAlive(i) &&
-		   (team == 0 || GetClientTeam(i) != team || i == owner))
+		   (team == 0 || GetClientTeam(i) != team)) // || i == owner)) <-- DEBUG
 		{
 			float flPos2[3];
 			GetClientEyePosition(i, flPos2);
@@ -744,6 +750,19 @@ stock bool Entity_Cansee(int iEnt, int iClient)
 	return bSee;
 }
 
+stock bool IsEntityOutsideWorld(int iEntity)
+{
+	// TODO: replace with implementation using "OnOutOfWorld" output
+	float fPosition[3];
+	GetEntPropVector(iEntity, Prop_Data, "m_vecOrigin", fPosition);
+	
+	if (TR_PointOutsideWorld(fPosition)) {
+		return true;
+	}
+	
+	return false;
+}
+
 public bool TraceFilterSelf(int entity, int contentsMask, any iPumpking)
 {
 	if(entity == iPumpking || entity > MaxClients || (entity >= 1 && entity <= MaxClients))
@@ -752,6 +771,40 @@ public bool TraceFilterSelf(int entity, int contentsMask, any iPumpking)
 	return true;
 }
 
+stock int CountMines(int client=0, int action=COUNT_MINES)
+{
+	int iCount = 0;
+	
+	int index = -1;
+	while((index = FindEntityByClassname(index, "prop_physics_multiplayer")) != -1)
+	{
+		if (IsValidEntity(index))
+		{
+			char strName[64];
+			GetEntPropString(index, Prop_Data, "m_iName", strName, sizeof(strName));
+			
+			if(StrContains(strName, "RollerMine") != -1)
+			{
+				if (client == 0 || client == GetEntPropEnt(index, Prop_Send, "m_hOwnerEntity"))
+				{
+					iCount++;
+					switch (action)
+					{
+						case BREAK_MINES:
+						{
+							AcceptEntityInput(index, "Break", client, client);
+						}
+						case KILL_MINES:
+						{
+							KillEntity(index);
+						}
+					}
+				}
+			}
+		}
+	}
+	return iCount;
+}
 
 public int Native_ControlRM(Handle plugin, int numParams)
 {
@@ -760,13 +813,22 @@ public int Native_ControlRM(Handle plugin, int numParams)
 
 public int Native_SetRollermine(Handle plugin, int numParams)
 {
-    PlaceRollerMine(GetNativeCell(1));
+    SetRollermine(GetNativeCell(1), GetNativeCell(2), GetNativeCell(2));
 }
 
 public int Native_SpawnRollerMine(Handle plugin, int numParams)
 {
 	float pos[3];
 	GetNativeArray(2, pos, sizeof(pos));
-	SpawnRollerMine(GetNativeCell(1), pos);
+	SpawnRollerMine(GetNativeCell(1), pos, GetNativeCell(3), GetNativeCell(4));
 }
 
+public int Native_CountRollermines(Handle plugin, int numParams)
+{
+    return CountMines(GetNativeCell(1));
+}
+
+public int Native_ExplodeRollermines(Handle plugin, int numParams)
+{
+    return CountMines(GetNativeCell(1), BREAK_MINES);
+}
