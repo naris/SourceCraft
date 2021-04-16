@@ -1,6 +1,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <tf2_stocks>
+#include <entlimit>
 
 #pragma newdecls required
 
@@ -108,6 +109,14 @@ public void OnPluginStart()
 	CreateConVar("rollermine_version", PLUGIN_VERSION, "Rollermine spawner version", FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
 
 	AutoExecConfig(true);
+
+	//If we load after the map has started, the OnEntityCreated check wont be called
+	int iSpawn = -1;
+	while ((iSpawn = FindEntityByClassname(iSpawn, "func_respawnroom")) != -1)
+	{
+		// If plugin is loaded early, these won't be called because the func_respawnroom wont exist yet
+		SDKHook(iSpawn, SDKHook_StartTouch, SpawnStartTouch);
+	}
 }
 
 public void OnConfigsExecuted()
@@ -173,27 +182,6 @@ public void OnMapStart()
 	PrecacheSound("npc/roller/mine/rmine_explode_shock1.wav");
 }
 
-public Action Command_ClearMines(int client, int args)
-{
-	OnPluginEnd();
-	return Plugin_Handled;
-}
-
-public void OnEntityDestroyed(int entity)
-{
-	if(entity > MaxClients)
-	{
-		char strName[64];
-		GetEntPropString(entity, Prop_Data, "m_iName", strName, sizeof(strName));
-		if(StrContains(strName, "RollerMine") != -1)
-		{
-			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_seek_loop2.wav");
-			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_moveslow_loop1.wav");
-			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_movefast_loop1.wav");
-		}
-	}
-}
-
 public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
     if (convar == g_hMineColor[1])
@@ -226,6 +214,74 @@ public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[]
 			}
 		}
 	}
+}
+
+public void OnEntityCreated(int entity, const char [] classname)
+{
+	if (StrEqual(classname, "func_respawnroom", false))	// This is the earliest we can catch this
+	{
+		SDKHook(entity, SDKHook_StartTouch, SpawnStartTouch);
+	}
+}
+
+public void OnEntityDestroyed(int entity)
+{
+	if(entity > MaxClients)
+	{
+		char strName[64];
+		GetEntPropString(entity, Prop_Data, "m_iName", strName, sizeof(strName));
+		if(StrContains(strName, "RollerMine") != -1)
+		{
+			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_seek_loop2.wav");
+			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_moveslow_loop1.wav");
+			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_movefast_loop1.wav");
+		}
+	}
+}
+
+public void SpawnStartTouch(int spawn, int entity)
+{
+	if(entity > MaxClients)
+	{
+		char strName[64];
+		GetEntPropString(entity, Prop_Data, "m_iName", strName, sizeof(strName));
+		if(StrContains(strName, "RollerMine") != -1)
+		{
+			// If any mines enter spawn, Silence them
+			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_seek_loop2.wav");
+			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_moveslow_loop1.wav");
+			StopSound(entity, SNDCHAN_AUTO, "npc/roller/mine/rmine_movefast_loop1.wav");
+		
+			// Then Dissolve them
+			int dissolver = CreateEntityByName("env_entity_dissolver");
+			if (dissolver>0)
+			{
+				DispatchKeyValue(dissolver, "dissolvetype", "1");
+				DispatchKeyValue(dissolver, "target", strName);
+				AcceptEntityInput(dissolver, "Dissolve");
+				AcceptEntityInput(dissolver, "kill");
+			}
+			CreateTimer(0.2, KillEntity, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+		}
+	}
+}
+
+public Action KillEntity(Handle timer, any entRef)
+{
+    // Ensure the entity is the same 
+    int entity = EntRefToEntIndex(entRef);
+    if (entity > 0 && IsValidEntity(entity))
+		AcceptEntityInput(entity, "kill");
+
+    return Plugin_Stop;
+}
+
+public Action Command_ClearMines(int client, int args)
+{
+	if (!g_NativeControl)
+		OnPluginEnd();
+
+	return Plugin_Handled;
 }
 
 public Action Command_Rollermine(int client, int args)
@@ -272,52 +328,61 @@ public int PlaceRollerMine(int client)
 
 public int SpawnRollerMine(int client, float pos[3])
 {
-	int iEnt = CreateEntityByName("prop_physics_multiplayer");
-	if (IsValidEntity(iEnt))
+	if (IsEntLimitReached(100, .message="unable to create rollermine"))
 	{
-		char strName[64];
-		Format(strName, sizeof(strName), "RollerMine%i", iEnt);
-		DispatchKeyValue(iEnt, "targetname", strName);
-		DispatchKeyValueVector(iEnt, "origin", pos);
-		DispatchKeyValue(iEnt, "model", "models/roller.mdl");
-		DispatchSpawn(iEnt);
-
-		int team = g_hFriendlyFire.BoolValue ? 0 : GetClientTeam(client);
-		SetMineColor(iEnt, team);
-
-		SetEntProp(iEnt, Prop_Send, "m_iTeamNum", team, 4);
-		SetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity", client);
-		SetEntPropEnt(iEnt, Prop_Data, "m_hLastAttacker", client);
-		SetEntPropEnt(iEnt, Prop_Data, "m_hPhysicsAttacker", client);
-
-		char strExplode[16];
-		g_hRollerExplode.GetString(strExplode, sizeof(strExplode));
-		DispatchKeyValue(iEnt, "ExplodeDamage", strExplode);
-
-		char strRadius[16];
-		g_hRollerRadius.GetString(strRadius, sizeof(strRadius));
-		DispatchKeyValue(iEnt, "ExplodeRadius", strRadius);
-
-		SDKHook(iEnt, SDKHook_SetTransmit, OnRollermineThink);
-		
-		char strSpeed[16], strForce[16];
-		g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
-		g_hRollerForce.GetString(strForce, sizeof(strForce));
-	
-		int iMotor = CreateEntityByName("phys_torque");
-		DispatchKeyValueVector(iMotor, "origin", pos);
-		DispatchKeyValue(iMotor, "attach1", strName);
-		DispatchKeyValue(iMotor, "force", strForce);
-		DispatchKeyValue(iMotor, "speed", strSpeed);
-		DispatchSpawn(iMotor);
-		
-		SetVariantString("!activator");
-		AcceptEntityInput(iMotor, "SetParent", iEnt);
-		
-		ActivateEntity(iMotor);
+		// don't crash the server spawning too many of these
+		return 0;
 	}
+	else
+	{
+		int iEnt = CreateEntityByName("prop_physics_multiplayer");
+		if (IsValidEntity(iEnt))
+		{
+			char strName[64];
+			Format(strName, sizeof(strName), "RollerMine%i", iEnt);
+			DispatchKeyValue(iEnt, "targetname", strName);
+			DispatchKeyValueVector(iEnt, "origin", pos);
+			DispatchKeyValue(iEnt, "model", "models/roller.mdl");
+			DispatchSpawn(iEnt);
 
-	return iEnt;
+			int team = g_hFriendlyFire.BoolValue ? 0 : GetClientTeam(client);
+			SetMineColor(iEnt, team);
+
+			SetEntProp(iEnt, Prop_Send, "m_iTeamNum", team, 4);
+			SetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity", client);
+			SetEntPropEnt(iEnt, Prop_Data, "m_hLastAttacker", client);
+			SetEntPropEnt(iEnt, Prop_Data, "m_hPhysicsAttacker", client);
+
+			DispatchKeyValue(iEnt, "OnBreak", "!self,Kill,,0,-1");
+
+			char strExplode[16];
+			g_hRollerExplode.GetString(strExplode, sizeof(strExplode));
+			DispatchKeyValue(iEnt, "ExplodeDamage", strExplode);
+
+			char strRadius[16];
+			g_hRollerRadius.GetString(strRadius, sizeof(strRadius));
+			DispatchKeyValue(iEnt, "ExplodeRadius", strRadius);
+
+			SDKHook(iEnt, SDKHook_SetTransmit, OnRollermineThink);
+			
+			char strSpeed[16], strForce[16];
+			g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
+			g_hRollerForce.GetString(strForce, sizeof(strForce));
+		
+			int iMotor = CreateEntityByName("phys_torque");
+			DispatchKeyValueVector(iMotor, "origin", pos);
+			DispatchKeyValue(iMotor, "attach1", strName);
+			DispatchKeyValue(iMotor, "force", strForce);
+			DispatchKeyValue(iMotor, "speed", strSpeed);
+			DispatchSpawn(iMotor);
+			
+			SetVariantString("!activator");
+			AcceptEntityInput(iMotor, "SetParent", iEnt);
+			
+			ActivateEntity(iMotor);
+		}
+		return iEnt;
+	}
 }
 
 void SetMineColor(int iEnt, int team)
@@ -625,11 +690,12 @@ stock int Entity_GetClosestClient(int iEnt)
 	float flBestLength = g_hRollerAttackDist.FloatValue;
 
 	int team = GetEntProp(iEnt, Prop_Send, "m_iTeamNum", 4);
+	int owner = GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity");
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && Entity_Cansee(iEnt, i) && IsPlayerAlive(i) &&
-		   (team == 0 || GetClientTeam(i) != team))
+		   (team == 0 || GetClientTeam(i) != team || i == owner))
 		{
 			float flPos2[3];
 			GetClientEyePosition(i, flPos2);
@@ -703,3 +769,4 @@ public int Native_SpawnRollerMine(Handle plugin, int numParams)
 	GetNativeArray(2, pos, sizeof(pos));
 	SpawnRollerMine(GetNativeCell(1), pos);
 }
+
