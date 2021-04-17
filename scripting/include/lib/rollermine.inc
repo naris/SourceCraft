@@ -32,7 +32,9 @@ native void ControlRM(bool plugin_only=true);
  * @param index 	Client index
  * @return			entity
  */
-native int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100);
+native int SetRollermine(int client, int takeDamage=DAMAGE_YES, int health=100,
+						 float damageDelay=2.0, int explodeDamage=160,
+						 int explodeRadius=250, float lifetime=0.0);
 
 /**
  * Spawns a rollermine.
@@ -41,7 +43,10 @@ native int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100)
  * @param pos    	Position to spawn the rollermine at.
  * @return			entity
  */
-native int SpawnRollerMine(int client, float pos[3], int take_damage=DAMAGE_YES, int health=100);
+native int SpawnRollerMine(int client, float pos[3], int takeDamage=DAMAGE_YES,
+						   int health=100, float damageDelay=0.0,
+						   int explodeDamage=160, int explodeRadius=250,
+						   float lifetime=0.0);
 
 /**
  * Counts how many mines the player has active.

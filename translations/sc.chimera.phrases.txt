@@ -85,6 +85,14 @@
 	{
 		"en"		"Allows you to control an object from the opposite team."
 	}
+	"chimera_mind_control_invoke"
+	{
+		"en"		"Bind a key to \"+ultimate 1\" to mind control an object."
+	}
+	"chimera_mind_control_bind"
+	{
+		"en"		"To bind to f, type bind f \"+ultimate 1\" in console."
+	}
 	"chimera_mind_control_image"
 	{
 		"en"		"Upgrade/MindCont.png"
@@ -96,10 +104,39 @@
 	}
 	"chimera_phase_mine_desc"
 	{
-		"en"		"Drops a phase mine, which is able to detect motion. Once the mine locates an enemy target it will persue the target and electrocute it.\nBind a key to s+ultimate2 to plant the mine.\nTo bind to m, type bind m +ultimate2 in console."
+		"en"		"Drops a phase mine, which is able to detect motion. Once the mine locates an enemy target it will persue the target and electrocute it."
+	}
+	"chimera_phase_mine_invoke"
+	{
+		"en"		"Bind a key to \"+ultimate 2\" to plant the mine."
+	}
+	"chimera_phase_mine_bind"
+	{
+		"en"		"To bind to b, type bind b \"+ultimate 2\" in console."
 	}
 	"chimera_phase_mine_image"
 	{
 		"en"		"Upgrade/PhaseMine_SC2_DevRend1.png"
+	}
+
+	"chimera_phase_explode"
+	{
+		"en"		"Phase Explode"
+	}
+	"chimera_phase_explode_desc"
+	{
+		"en"		"Explode all the Phase Mines that have been deployed."
+	}
+	"chimera_phase_explode_invoke"
+	{
+		"en"		"Bind a key to \"+ultimate 3\" to explode the mines."
+	}
+	"chimera_phase_explode_bind"
+	{
+		"en"		"To bind to n, type bind n \"+ultimate 3\" in console."
+	}
+	"chimera_phase_explode_image"
+	{
+		"en"		"Upgrade/ZeratulMine.png"
 	}
 }

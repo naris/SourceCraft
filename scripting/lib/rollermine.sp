@@ -51,9 +51,12 @@ bool g_NativeControl = false;
 
 ConVar g_hRollerSpeed;
 ConVar g_hRollerForce;
+ConVar g_hRollerHealth;
 ConVar g_hRollerDamage;
 ConVar g_hRollerStunDur;
+ConVar g_hRollerTakeDamage;
 ConVar g_hRollerOpenThreshold;
+ConVar g_hRollerDamageDelay;
 ConVar g_hRollerAttackDist;
 ConVar g_hRollerExplode;
 ConVar g_hRollerRadius;
@@ -78,6 +81,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ControlRM",Native_ControlRM);
 	CreateNative("SetRollermine",Native_SetRollermine);
 	CreateNative("SpawnRollerMine",Native_SpawnRollerMine);
+	CreateNative("CountRollermines",Native_CountRollermines);
+	CreateNative("ExplodeRollermines",Native_ExplodeRollermines);
 
 	// Register Forwards
 	g_fwdOnSetRollermine=CreateGlobalForward("OnSetRollermine",ET_Hook,Param_Cell);
@@ -94,9 +99,12 @@ public void OnPluginStart()
 	g_hRollerSpeed = CreateConVar("rollermine_speed", "200", "Rollermine rotation speed");
 	g_hRollerForce = CreateConVar("rollermine_force", "5000", "Rollermine angular force");
 	g_hRollerDamage = CreateConVar("rollermine_damage", "35", "Rollermine shock damage");
+	g_hRollerHealth = CreateConVar("rollermine_health", "100", "Rollermine health");
 	g_hRollerStunDur = CreateConVar("rollermine_stunduration", "1.5", "Rollermine stun duration");
 	g_hRollerOpenThreshold = CreateConVar("rollermine_open_threshold", "256", "Rollermine open threshold");
+	g_hRollerDamageDelay = CreateConVar("rollermine_damage_delay", "2.0", "Rollermine damage delay (how long after spawning mine become vulnerable to damage)");
 	g_hRollerAttackDist = CreateConVar("rollermine_max_attack_distance", "4096", "Rollermine max attack distance");
+	g_hRollerTakeDamage = CreateConVar("rollermine_takedamage", "2", "Rollermine m_takedamage flag (0=NO, 1=EVENT_ONLY, 2=YES, 3=AIM)");
 	g_hRollerExplode = CreateConVar("rollermine_explode","160","Explosion damage of Rollermines", _, true, 0.0, true, 1000.0);
 	g_hRollerRadius = CreateConVar("rollermine_radius","250","Explosion radius of Rollermines", _, true, 0.0, true, 1000.0);
 
@@ -268,23 +276,10 @@ stock void KillEntity(int iEntity)
 	}
 }
 
-public Action Command_ClearMines(int client, int args)
-{
-	if (!g_NativeControl)
-		OnPluginEnd();
-
-	return Plugin_Handled;
-}
-
-public Action Command_Rollermine(int client, int args)
-{
-	if (!g_NativeControl)
-		SetRollermine(client);
-
-	return Plugin_Handled;
-}
-
-int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100)
+int SetRollermine(int client, int takeDamage=DAMAGE_YES,
+				  int health=100, float damageDelay=0.0,
+                  int explodeDamage=160, int explodeRadius=250,
+				  float lifetime=0.0)
 {
 	int iEnt = 0;
 	if(client > 0 && client <= MaxClients && IsClientInGame(client))
@@ -294,7 +289,6 @@ int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100)
 		GetClientEyeAngles(client, angles);
 		
 		Handle trace = TR_TraceRayFilterEx(origin, angles, MASK_SOLID, RayType_Infinite, TraceFilterSelf, client);
-		
 		if(TR_DidHit(trace))
 		{
 			TR_GetEndPosition(pos, trace);
@@ -310,7 +304,9 @@ int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100)
 				return 0;
 			}
 
-			iEnt = SpawnRollerMine(client, pos, take_damage, health);
+			iEnt = SpawnRollerMine(client, pos, takeDamage, health,
+								   damageDelay, explodeDamage,
+								   explodeRadius, lifetime);
 		}
 		
 		delete trace;
@@ -318,8 +314,11 @@ int SetRollermine(int client, int take_damage=DAMAGE_YES, int health=100)
 	return iEnt;
 }
 
-int SpawnRollerMine(int client, float pos[3], int take_damage=DAMAGE_YES, int health=100)
-// TODO:                   int explode_damage=160, int explode_radius=250)
+int SpawnRollerMine(int client, float pos[3],
+                    int takeDamage=DAMAGE_YES,
+					int health=100, float damageDelay=0.0,
+                    int explodeDamage=160, int explodeRadius=250,
+					float lifetime=0.0)
 {
 	if (IsEntLimitReached(100, .message="unable to create rollermine")
 	    || TR_PointOutsideWorld(pos))
@@ -348,26 +347,40 @@ int SpawnRollerMine(int client, float pos[3], int take_damage=DAMAGE_YES, int he
 			SetEntPropEnt(iEnt, Prop_Data, "m_hLastAttacker", client);
 			SetEntPropEnt(iEnt, Prop_Data, "m_hPhysicsAttacker", client);
 
-			SetEntProp(iEnt, Prop_Data, "m_iHealth", health);
-			SetEntProp(iEnt, Prop_Data, "m_takedamage", take_damage);
-			DispatchKeyValue(iEnt, "physdamagescale", "1.0");
+			if (health > 0.0)
+				SetEntProp(iEnt, Prop_Data, "m_iHealth", health);
+
+			if (explodeDamage > 0.0 && explodeRadius > 0.0)
+			{
+				char strExplode[16];
+				IntToString(explodeDamage, strExplode, sizeof(strExplode))
+				DispatchKeyValue(iEnt, "ExplodeDamage", strExplode);
+
+				char strRadius[16];
+				IntToString(explodeRadius, strRadius, sizeof(strRadius))
+				DispatchKeyValue(iEnt, "ExplodeRadius", strRadius);
+			}
+
+			if (damageDelay > 0.0)
+			{
+				DataPack damageInfo;
+				CreateDataTimer(damageDelay, DamageTimer, damageInfo);
+				damageInfo.WriteCell(EntIndexToEntRef(iEnt));
+				damageInfo.WriteCell(takeDamage);
+			}
+			else
+			{
+				SetMineDamage(iEnt, takeDamage);
+			}
 
 			DispatchKeyValue(iEnt, "OnBreak", "!self,Kill,,0,-1");
 
-			char strExplode[16];
-			g_hRollerExplode.GetString(strExplode, sizeof(strExplode));
-			DispatchKeyValue(iEnt, "ExplodeDamage", strExplode);
-
-			char strRadius[16];
-			g_hRollerRadius.GetString(strRadius, sizeof(strRadius));
-			DispatchKeyValue(iEnt, "ExplodeRadius", strRadius);
-
 			SDKHook(iEnt, SDKHook_SetTransmit, OnRollermineThink);
-			
+
 			char strSpeed[16], strForce[16];
 			g_hRollerSpeed.GetString(strSpeed, sizeof(strSpeed));
 			g_hRollerForce.GetString(strForce, sizeof(strForce));
-		
+
 			int iMotor = CreateEntityByName("phys_torque");
 			DispatchKeyValueVector(iMotor, "origin", pos);
 			DispatchKeyValue(iMotor, "attach1", strName);
@@ -379,9 +392,47 @@ int SpawnRollerMine(int client, float pos[3], int take_damage=DAMAGE_YES, int he
 			AcceptEntityInput(iMotor, "SetParent", iEnt);
 			
 			ActivateEntity(iMotor);
+
+			if (lifetime > 0.0)
+			{
+				CreateTimer(lifetime, ExpireTimer, lifetime);
+			}
 		}
 		return iEnt;
 	}
+}
+
+public Action DamageTimer(Handle timer, DataPack damageInfo)
+{
+	damageInfo.Reset()
+	int iEnt = EntRefToEntIndex(damageInfo.ReadCell());
+	if (iEnt > 0 && IsValidEntity(iEnt))
+	{
+		SetMineDamage(iEnt, damageInfo.ReadCell());
+	}
+	return Plugin_Stop;
+}
+
+public Action ExpireTimer(Handle timer, any entRef)
+{
+	int iEnt = EntRefToEntIndex(entRef);
+	if (iEnt > 0 && IsValidEntity(iEnt))
+	{
+		int owner = GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity");
+		if (owner == 0)
+			owner = iEnt;
+
+		AcceptEntityInput(iEnt, "Break", owner, owner);
+	}
+	return Plugin_Stop;
+}
+
+void SetMineDamage(int iEnt, int takeDamage)
+{
+	SetEntProp(iEnt, Prop_Data, "m_takedamage", takeDamage);
+
+	if (takeDamage != DAMAGE_NO)
+		DispatchKeyValue(iEnt, "physdamagescale", "1.0");
 }
 
 void SetMineColor(int iEnt, int team)
@@ -476,7 +527,9 @@ public void OnRollermineThink(int iEnt, int client)
 			
 						TeleportEntity(iEnt, NULL_VECTOR, NULL_VECTOR, impulse);
 						
-						SDKHooks_TakeDamage(iTarget, iEnt, iEnt, g_hRollerDamage.FloatValue, DMG_SHOCK);
+						int iOwner = GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity");
+						SDKHooks_TakeDamage(iTarget, iEnt, iOwner > 0 ? iOwner : iEnt,
+											g_hRollerDamage.FloatValue, DMG_SHOCK);
 						
 						float flStundDuration = g_hRollerStunDur.FloatValue;
 						if(flStundDuration > 0.0)
@@ -716,11 +769,6 @@ stock int Entity_GetClosestClient(int iEnt)
 		}
 	}
 	
-	if(iBestTarget > 0 && iBestTarget <= MaxClients && IsClientInGame(iBestTarget))
-	{
-		return iBestTarget;
-	}
-	
 	return iBestTarget;
 }
 
@@ -806,6 +854,28 @@ stock int CountMines(int client=0, int action=COUNT_MINES)
 	return iCount;
 }
 
+public Action Command_ClearMines(int client, int args)
+{
+	if (!g_NativeControl)
+		OnPluginEnd();
+
+	return Plugin_Handled;
+}
+
+public Action Command_Rollermine(int client, int args)
+{
+	if (!g_NativeControl)
+	{
+		SetRollermine(client, g_hRollerTakeDamage.IntValue,
+					  g_hRollerHealth.IntValue,
+					  g_hRollerDamageDelay.FloatValue,
+					  g_hRollerExplode.IntValue,
+					  g_hRollerRadius.IntValue);
+	}
+
+	return Plugin_Handled;
+}
+
 public int Native_ControlRM(Handle plugin, int numParams)
 {
     g_NativeControl = GetNativeCell(1);
@@ -813,14 +883,33 @@ public int Native_ControlRM(Handle plugin, int numParams)
 
 public int Native_SetRollermine(Handle plugin, int numParams)
 {
-    SetRollermine(GetNativeCell(1), GetNativeCell(2), GetNativeCell(2));
+	int   client        = GetNativeCell(1);
+	int   takeDamage    = GetNativeCell(2);
+	int   health        = GetNativeCell(3);
+	float damageDelay   = view_as<float>(GetNativeCell(4));
+	int   explodeDamage = GetNativeCell(5);
+	int   explodeRadius = GetNativeCell(6);
+	float lifetime      = view_as<float>(GetNativeCell(7));
+
+	SetRollermine(client, takeDamage, health, damageDelay,
+				  explodeDamage, explodeRadius, lifetime);
 }
 
 public int Native_SpawnRollerMine(Handle plugin, int numParams)
 {
+	int   client        = GetNativeCell(1);
+	int   takeDamage    = GetNativeCell(3);
+	int   health        = GetNativeCell(4);
+	float damageDelay   = view_as<float>(GetNativeCell(5));
+	int   explodeDamage = GetNativeCell(6);
+	int   explodeRadius = GetNativeCell(7);
+	float lifetime      = view_as<float>(GetNativeCell(8));
+
 	float pos[3];
 	GetNativeArray(2, pos, sizeof(pos));
-	SpawnRollerMine(GetNativeCell(1), pos, GetNativeCell(3), GetNativeCell(4));
+
+	SpawnRollerMine(client, pos, takeDamage, health, damageDelay,
+					explodeDamage, explodeRadius, lifetime);
 }
 
 public int Native_CountRollermines(Handle plugin, int numParams)

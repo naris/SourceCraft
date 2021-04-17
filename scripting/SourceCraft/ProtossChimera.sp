@@ -39,35 +39,41 @@
 #include "effect/SendEffects"
 #include "effect/FlashScreen"
 
-new const String:cloakWav[]     = "sc/pabfol01.wav";
-new const String:explodeWav[]   = "sc/PSaHit00.wav";
-new const String:unCloakWav[]   = "sc/PabCag00.wav";
-new const String:cloakReadyWav[] = "sc/pabRdy00.wav";
+char cloakWav[]       = "sc/pabfol01.wav";
+char explodeWav[]     = "sc/PSaHit00.wav";
+char unCloakWav[]     = "sc/PabCag00.wav";
+char cloakReadyWav[]  = "sc/pabRdy00.wav";
 
-new Float:g_InitialShields[]    = { 0.0, 0.15, 0.25, 0.20, 0.75 };
-new Float:g_ShieldsPercent[][2] = { {0.00, 0.00},
-                                    {0.00, 0.10},
-                                    {0.00, 0.30},
-                                    {0.10, 0.40},
-                                    {0.20, 0.50} };
+float g_InitialShields[]    = { 0.0, 0.15, 0.25, 0.20, 0.75 };
+float g_ShieldsPercent[][2] = { {0.00, 0.00},
+                                {0.00, 0.10},
+                                {0.00, 0.30},
+                                {0.10, 0.40},
+                                {0.20, 0.50} };
 
-new g_MindControlChance[]       = { 0, 30, 50, 70, 90 };
-new Float:g_MindControlRange[]  = { 0.0, 150.0, 300.0, 350.0, 500.0 };
+int g_MindControlChance[]   = { 0, 30, 50, 70, 90 };
+float g_MindControlRange[]  = { 0.0, 150.0, 300.0, 350.0, 500.0 };
 
-new g_ScrabChance[]             = { 0, 20, 40, 60, 90 };
-new Float:g_ScrabPercent[]      = { 0.0, 0.15, 0.30, 0.40, 0.50 };
+int g_ScrabChance[]         = { 0, 20, 40, 60, 90 };
+float g_ScrabPercent[]      = { 0.0, 0.15, 0.30, 0.40, 0.50 };
 
-new Float:g_CloakingRange[]     = { 0.0, 150.0, 300.0, 350.0, 500.0 };
-new Float:g_DetectingRange[]    = { 0.0, 300.0, 450.0, 650.0, 800.0 };
+float g_CloakingRange[]     = { 0.0, 150.0, 300.0, 350.0, 500.0 };
+float g_DetectingRange[]    = { 0.0, 300.0, 450.0, 650.0, 800.0 };
 
-new raceID, scarabID, cloakID, sensorID, shieldsID, controlID, mineID;
+int   g_mineHealth[]        = { 0,    35,    55,    75,   100   };
+float g_mineDelay[]         = { 0.0,   1.0,   3.0,   6.0,  10.0 };
+float g_mineLife[]          = { 0.0, 120.0, 300.0, 600.0,   0.0 };
+int   g_mineExplode[]       = { 0,    50,   120,   160,   200   };
+int   g_mineRadius[]        = { 0,    75,   150,   250,   400   };
 
-new bool:cfgAllowInvisibility;
+int raceID, scarabID, cloakID, sensorID, shieldsID, controlID, mineID, explodeID;
 
-new bool:m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
-new Float:m_ScarabAttackTime[MAXPLAYERS+1];
+bool cfgAllowInvisibility;
 
-public Plugin:myinfo = 
+bool m_Cloaked[MAXPLAYERS+1][MAXPLAYERS+1];
+float m_ScarabAttackTime[MAXPLAYERS+1];
+
+public Plugin myinfo = 
 {
     name = "SourceCraft Unit - Protoss Chimera",
     author = "-=|JFH|=-Naris",
@@ -76,7 +82,7 @@ public Plugin:myinfo =
     url = "http://jigglysfunhouse.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
     LoadTranslations("sc.common.phrases.txt");
     LoadTranslations("sc.chimera.phrases.txt");
@@ -118,7 +124,7 @@ public OnPluginStart()
         OnSourceCraftReady();
 }
 
-public OnSourceCraftReady()
+public int OnSourceCraftReady()
 {
     raceID    = CreateRace("chimera", 32, 0, 20, 45.0, 150.0, 2.0,
                            Protoss, Mechanical);
@@ -147,9 +153,11 @@ public OnSourceCraftReady()
         LogMessage("Disabling Protoss Chimera:Mind Control due to MindControl is not available (or gametype != tf2)");
     }
 
-    //TODO: finish this & add translation
     // Ultimate 2
     mineID    = AddUpgrade(raceID, "phase_mine", 2, 1, .cost_crystals=30);
+
+    // Ultimate 2
+    explodeID    = AddUpgrade(raceID, "phase_explode", 3, 1, .cost_crystals=30);
 
     if (!IsRollermineAvailable())
     {
@@ -191,7 +199,7 @@ public OnSourceCraftReady()
                         g_MindControlRange, raceID, controlID);
 }
 
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char [] name)
 {
     if (StrEqual(name, "rollermine"))
         IsRollermineAvailable(true);
@@ -201,7 +209,7 @@ public OnLibraryAdded(const String:name[])
         IsSidewinderAvailable(true);
 }
 
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char [] name)
 {
     if (StrEqual(name, "rollermine"))
         m_RollermineAvailable = false;
@@ -211,7 +219,7 @@ public OnLibraryRemoved(const String:name[])
         m_SidewinderAvailable = false;
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
     SetupExplosion();
     SetupBeamSprite();
@@ -225,28 +233,28 @@ public OnMapStart()
     SetupSound(cloakReadyWav);
 }
 
-public OnMapEnd()
+public void OnMapEnd()
 {
-    for (new index=1;index<=MaxClients;index++)
+    for (int index=1;index<=MaxClients;index++)
     {
         ResetClientTimer(index);
         ResetCloakingAndDetector(index);
     }
 }
 
-public OnPlayerAuthed(client)
+public int OnPlayerAuthed(int client)
 {
     m_ScarabAttackTime[client] = 0.0;
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
     KillClientTimer(client);
     ResetCloakedAndDetected(client);
     ResetCloakingAndDetector(client);
 }
 
-public Action:OnRaceDeselected(client,oldrace,newrace)
+public Action OnRaceDeselected(int client, int oldrace, int newrace)
 {
     if (oldrace == raceID)
     {
@@ -262,7 +270,7 @@ public Action:OnRaceDeselected(client,oldrace,newrace)
         return Plugin_Continue;
 }
 
-public Action:OnRaceSelected(client,oldrace,newrace)
+public Action OnRaceSelected(int client, int oldrace, int newrace)
 {
     if (newrace == raceID)
     {
@@ -294,7 +302,7 @@ public Action:OnRaceSelected(client,oldrace,newrace)
         return Plugin_Continue;
 }
 
-public OnUpgradeLevelChanged(client,race,upgrade,new_level)
+public int OnUpgradeLevelChanged(int client, int race, int upgrade, int new_level)
 {
     if (race == raceID && GetRace(client) == raceID)
     {
@@ -366,15 +374,48 @@ public OnUpgradeLevelChanged(client,race,upgrade,new_level)
     }
 }
 
-public OnUltimateCommand(client,race,bool:pressed,arg)
+public int OnUltimateCommand(int client, int race, bool pressed, int arg)
 {
     if (pressed && race==raceID && IsValidClientAlive(client))
     {
         switch (arg)
         {
+            case 3:
+            {
+                int explode_level = GetUpgradeLevel(client,race,explodeID);
+                if (explode_level > 0)
+                {
+                    if (m_RollermineAvailable)
+                    {
+                        if (IsMole(client))
+                        {
+                            PrepareAndEmitSoundToClient(client,deniedWav);
+
+                            decl String:upgradeName[64];
+                            GetUpgradeName(raceID, mineID, upgradeName, sizeof(upgradeName), client);
+                            DisplayMessage(client, Display_Ultimate, "%t", "NotAsMole", upgradeName);
+                        }
+                        else if (GetRestriction(client, Restriction_NoUltimates) ||
+                                 GetRestriction(client, Restriction_Stunned))
+                        {
+                            PrepareAndEmitSoundToClient(client,deniedWav);
+                            DisplayMessage(client, Display_Ultimate, "%t",
+                                            "PreventedFromPlantingMine");
+                        }
+                        else
+                            ExplodeRollermines(client);
+                    }
+                    else
+                    {
+                        decl String:upgradeName[64];
+                        GetUpgradeName(raceID, mineID, upgradeName, sizeof(upgradeName), client);
+                        PrintHintText(client,"%t", "IsNotAvailable", upgradeName);
+                    }
+                }
+            }
             case 2:
             {
-                new mine_level = GetUpgradeLevel(client,race,mineID);
+                int mine_level = GetUpgradeLevel(client,race,mineID);
                 if (mine_level > 0)
                 {
                     if (m_RollermineAvailable)
@@ -395,7 +436,14 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                                             "PreventedFromPlantingMine");
                         }
                         else
-                            SetRollermine(client);
+                        {
+                            int explode_level = GetUpgradeLevel(client,race,explodeID);
+                            SetRollermine(client, .health=g_mineHealth[mine_level],
+                                          .damageDelay=g_mineDelay[mine_level],
+                                          .explodeDamage=g_mineExplode[explode_level],
+                                          .explodeRadius=g_mineRadius[explode_level],
+                                          .lifetime=g_mineLife[mine_level]);
+                        }
                     }
                     else
                     {
@@ -407,7 +455,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
             }
             default:
             {
-                new ult_level=GetUpgradeLevel(client,raceID,controlID);
+                int ult_level=GetUpgradeLevel(client,raceID,controlID);
                 if (ult_level > 0)
                 {
                     decl String:upgradeName[64];
@@ -429,8 +477,8 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
                     }
                     else if (CanInvokeUpgrade(client, raceID, controlID, false))
                     {
-                        new builder;
-                        new TFExtObjectType:type;
+                        int builder;
+                        TFExtObjectType type;
                         if (MindControl(client, g_MindControlRange[ult_level],
                                         g_MindControlChance[ult_level],
                                         builder, type, true))
@@ -457,7 +505,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
     }
 }
 
-public OnPlayerSpawnEvent(Handle:event, client, race)
+public int OnPlayerSpawnEvent(Handle event, int client, int race)
 {
     SetVisibility(client, NormalVisibility);
 
@@ -484,8 +532,9 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
     }
 }
 
-public Action: OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
-                                 attacker_race, damage, absorbed, bool:from_sc)
+public Action OnPlayerHurtEvent(Handle event, int victim_index, int victim_race,
+                                int attacker_index, int attacker_race,
+                                int damage, int absorbed, bool from_sc)
 {
     if (!from_sc && attacker_index > 0 &&
         attacker_index != victim_index &&
@@ -498,9 +547,9 @@ public Action: OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attack
     return Plugin_Continue;
 }
 
-public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
-                                  assister_index, assister_race, damage,
-                                  absorbed)
+public Action OnPlayerAssistEvent(Handle:event, int victim_index, int victim_race,
+                                  int assister_index, int assister_race, int damage,
+                                  int absorbed)
 {
     if (assister_race == raceID)
     {
@@ -511,10 +560,12 @@ public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
     return Plugin_Continue;
 }
 
-public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_index,
-                          attacker_race, assister_index, assister_race, damage,
-                          const String:weapon[], bool:is_equipment, customkill,
-                          bool:headshot, bool:backstab, bool:melee)
+public int OnPlayerDeathEvent(Handle event, int victim_index, int victim_race,
+                              int attacker_index, int attacker_race,
+                              int assister_index, int assister_race,
+                              int damage, const char [] weapon,
+                              bool is_equipment, int customkill,
+                              bool headshot, bool backstab, bool melee)
 {
     if (victim_index)
     {
@@ -531,9 +582,9 @@ public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_inde
     }
 }
 
-public EventRoundOver(Handle:event,const String:name[],bool:dontBroadcast)
+public int EventRoundOver(Handle event, const char [] name, bool dontBroadcast)
 {
-    for (new index=1;index<=MaxClients;index++)
+    for (int index=1;index<=MaxClients;index++)
     {
         ResetCloakingAndDetector(index);
         if (m_MindControlAvailable)
@@ -541,9 +592,9 @@ public EventRoundOver(Handle:event,const String:name[],bool:dontBroadcast)
     }
 }
 
-bool:ScarabAttack(damage, victim_index, index)
+bool ScarabAttack(int damage, int victim_index, int index)
 {
-    new rs_level = GetUpgradeLevel(index,raceID,scarabID);
+    int rs_level = GetUpgradeLevel(index,raceID,scarabID);
     if (rs_level > 0)
     {
         if (!GetRestriction(index, Restriction_NoUpgrades) &&
@@ -553,20 +604,20 @@ bool:ScarabAttack(damage, victim_index, index)
             !GetImmunity(victim_index, Immunity_Upgrades) &&
             !IsInvulnerable(victim_index))
         {
-            new Float:lastTime = m_ScarabAttackTime[index];
-            new Float:interval = GetGameTime() - lastTime;
+            float lastTime = m_ScarabAttackTime[index];
+            float interval = GetGameTime() - lastTime;
             if (lastTime == 0.0 || interval > 0.25)
             {
                 if (GetRandomInt(1,100) <= g_ScrabChance[rs_level])
                 {
-                    new health_take = RoundToFloor(float(damage)*g_ScrabPercent[rs_level]);
+                    int health_take = RoundToFloor(float(damage)*g_ScrabPercent[rs_level]);
                     if (health_take > 0)
                     {
                         if (CanInvokeUpgrade(index, raceID, scarabID, .notify=false))
                         {
                             if (interval == 0.0 || interval >= 2.0)
                             {
-                                new Float:Origin[3];
+                                float Origin[3];
                                 GetEntityAbsOrigin(victim_index, Origin);
                                 Origin[2] += 5;
 
@@ -591,35 +642,35 @@ bool:ScarabAttack(damage, victim_index, index)
     return false;
 }
 
-public Action:CloakingAndDetector(Handle:timer, any:userid)
+public Action CloakingAndDetector(Handle timer, any userid)
 {
-    new client = GetClientOfUserId(userid);
+    int client = GetClientOfUserId(userid);
     if (IsValidClientAlive(client))
     {
         if (GetRace(client) == raceID)
         {
-            new bool:restricted = (GetRestriction(client, Restriction_NoUpgrades) ||
-                                   GetRestriction(client, Restriction_Stunned));
+            bool restricted = (GetRestriction(client, Restriction_NoUpgrades) ||
+                               GetRestriction(client, Restriction_Stunned));
 
-            new cloaking_level=GetUpgradeLevel(client,raceID,cloakID);
-            new detecting_level=GetUpgradeLevel(client,raceID,sensorID);
+            int cloaking_level=GetUpgradeLevel(client,raceID,cloakID);
+            int detecting_level=GetUpgradeLevel(client,raceID,sensorID);
             if (cloaking_level > 0 || detecting_level > 0)
             {
-                new Float:cloaking_range = g_CloakingRange[cloaking_level];
-                new Float:detecting_range = g_DetectingRange[detecting_level];
+                float cloaking_range = g_CloakingRange[cloaking_level];
+                float detecting_range = g_DetectingRange[detecting_level];
 
-                new Float:indexLoc[3];
-                new Float:clientLoc[3];
+                float indexLoc[3];
+                float clientLoc[3];
                 GetClientAbsOrigin(client, clientLoc);
                 clientLoc[2] += 50.0; // Adjust trace position to the middle of the person instead of the feet.
 
-                new count=0;
-                new alt_count=0;
-                new list[MaxClients+1];
-                new alt_list[MaxClients+1];
-                new team = GetClientTeam(client);
-                new bool:isSpyCloaked = TF2_IsPlayerCloaked(client);
-                for (new index=1;index<=MaxClients;index++)
+                int count=0;
+                int alt_count=0;
+                int[] list = new int[MaxClients+1];
+                int[] alt_list = new int[MaxClients+1];
+                int team = GetClientTeam(client);
+                bool isSpyCloaked = TF2_IsPlayerCloaked(client);
+                for (int index=1;index<=MaxClients;index++)
                 {
                     if (index != client && IsValidClient(index))
                     {
@@ -635,7 +686,7 @@ public Action:CloakingAndDetector(Handle:timer, any:userid)
                                     list[count++] = index;
                             }
 
-                            new bool:cloak;
+                            bool cloak;
                             if (cfgAllowInvisibility && !restricted && !isSpyCloaked &&
                                 cloaking_level > 0 && IsPlayerAlive(index) &&
                                 GetRace(index) != raceID) // Don't cloak other arbiters!
@@ -685,7 +736,7 @@ public Action:CloakingAndDetector(Handle:timer, any:userid)
                         }
                         else
                         {
-                            new bool:detect;
+                            bool detect;
                             if (!restricted && detecting_level > 0 && IsPlayerAlive(index))
                             {
                                 GetClientAbsOrigin(index, indexLoc);
@@ -697,11 +748,11 @@ public Action:CloakingAndDetector(Handle:timer, any:userid)
 
                             if (detect)
                             {
-                                decl String:upgradeName[64];
+                                char upgradeName[64];
                                 GetUpgradeName(raceID, sensorID, upgradeName,
                                                sizeof(upgradeName), index);
 
-                                new bool:uncloaked = false;
+                                bool uncloaked = false;
                                 if (GetGameType() == tf2 &&
                                     !GetImmunity(index,Immunity_Uncloaking) &&
                                     TF2_GetPlayerClass(index) == TFClass_Spy)
@@ -709,7 +760,7 @@ public Action:CloakingAndDetector(Handle:timer, any:userid)
                                     //TF2_RemovePlayerDisguise(index);
                                     TF2_RemoveCondition(client,TFCond_Cloaked);
 
-                                    new Float:cloakMeter = TF2_GetCloakMeter(index);
+                                    float cloakMeter = TF2_GetCloakMeter(index);
                                     if (cloakMeter > 0.0 && cloakMeter <= 100.0)
                                         TF2_SetCloakMeter(index, 0.0);
 
@@ -768,8 +819,8 @@ public Action:CloakingAndDetector(Handle:timer, any:userid)
 
                 clientLoc[2] -= 50.0; // Adjust position back to the feet.
 
-                static const detectColor[4] = {202, 225, 255, 255};
-                static const cloakColor[4] = {92, 92, 92, 255};
+                static const int detectColor[4] = {202, 225, 255, 255};
+                static const int cloakColor[4] = {92, 92, 92, 255};
 
                 if (count > 0)
                 {
@@ -810,9 +861,9 @@ public Action:CloakingAndDetector(Handle:timer, any:userid)
     return Plugin_Continue;
 }
 
-ResetCloakingAndDetector(client)
+void ResetCloakingAndDetector(int client)
 {
-    for (new index=1;index<=MaxClients;index++)
+    for (int index=1;index<=MaxClients;index++)
     {
         if (m_Cloaked[client][index])
         {
@@ -841,7 +892,7 @@ ResetCloakingAndDetector(client)
     }
 }
 
-ResetCloakedAndDetected(index)
+void ResetCloakedAndDetected(int index)
 {
     SetVisibility(index, NormalVisibility);
     SetOverrideVisiblity(index, -1);
@@ -852,7 +903,7 @@ ResetCloakedAndDetected(index)
         SidewinderCloakClient(index, false);
     }
 
-    for (new client=1;client<=MaxClients;client++)
+    for (int client=1;client<=MaxClients;client++)
     {
         if (m_Cloaked[client][index])
         {
