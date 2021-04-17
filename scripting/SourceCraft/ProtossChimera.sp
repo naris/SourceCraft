@@ -63,8 +63,8 @@ float g_DetectingRange[]    = { 0.0, 300.0, 450.0, 650.0, 800.0 };
 int   g_mineHealth[]        = { 0,    35,    55,    75,   100   };
 float g_mineDelay[]         = { 0.0,   1.0,   3.0,   6.0,  10.0 };
 float g_mineLife[]          = { 0.0, 120.0, 300.0, 600.0,   0.0 };
-int   g_mineExplode[]       = { 0,    50,   120,   160,   200   };
-int   g_mineRadius[]        = { 0,    75,   150,   250,   400   };
+int   g_mineExplode[]       = { 0,    50,    75,   100,   120   };
+int   g_mineRadius[]        = { 0,    75,   150,   225,   300   };
 
 int raceID, scarabID, cloakID, sensorID, shieldsID, controlID, mineID, explodeID;
 
