@@ -26,6 +26,7 @@ enum
 {
 	COUNT_MINES = 0,
 	BREAK_MINES,
+	DISSOLVE_MINES,
 	KILL_MINES
 };
 
@@ -211,6 +212,25 @@ public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[]
 	}
 }
 
+public Action Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast)
+{
+    CountMines(0, KILL_MINES);
+}
+
+public void OnClientDisconnect(int client)
+{
+    CountMines(client, DISSOLVE_MINES);
+}
+
+public Action Event_PlayerTeam(Handle event, const char[] name, bool dontBroadcast)
+{
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (client != 0)
+    {
+		CountMines(client, DISSOLVE_MINES);
+    }
+}
+
 public void OnEntityCreated(int entity, const char [] classname)
 {
 	if (StrEqual(classname, "func_respawnroom", false))	// This is the earliest we can catch this
@@ -242,20 +262,23 @@ public void SpawnStartTouch(int spawn, int entity)
 		GetEntPropString(entity, Prop_Data, "m_iName", strName, sizeof(strName));
 		if(StrContains(strName, "RollerMine") != -1)
 		{
-			// If any mines enter spawn, Dissolve them
-			int dissolver = CreateEntityByName("env_entity_dissolver");
-			if (dissolver>0)
-			{
-				DispatchKeyValue(dissolver, "dissolvetype", "1");
-				DispatchKeyValue(dissolver, "target", strName);
-				AcceptEntityInput(dissolver, "Dissolve");
-				AcceptEntityInput(dissolver, "kill");
-			}
-
-			// Then kill them
-			CreateTimer(0.2, KillMine, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
+			DissolveMine(entity, strName);
 		}
 	}
+}
+
+void DissolveMine(int entity, const char [] strName)
+{
+	int dissolver = CreateEntityByName("env_entity_dissolver");
+	if (dissolver > 0)
+	{
+		DispatchKeyValue(dissolver, "dissolvetype", "1");
+		DispatchKeyValue(dissolver, "target", strName);
+		AcceptEntityInput(dissolver, "Dissolve");
+		AcceptEntityInput(dissolver, "kill");
+	}
+
+	CreateTimer(0.2, KillMine, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action KillMine(Handle timer, any entRef)
@@ -842,6 +865,10 @@ stock int CountMines(int client=0, int action=COUNT_MINES)
 						{
 							AcceptEntityInput(index, "Break", client, client);
 						}
+						case DISSOLVE_MINES:
+						{
+							DissolveMine(index, strName);
+						}
 						case KILL_MINES:
 						{
 							KillEntity(index);
@@ -914,7 +941,7 @@ public int Native_SpawnRollerMine(Handle plugin, int numParams)
 
 public int Native_CountRollermines(Handle plugin, int numParams)
 {
-    return CountMines(GetNativeCell(1));
+    return CountMines(GetNativeCell(1), COUNT_MINES);
 }
 
 public int Native_ExplodeRollermines(Handle plugin, int numParams)

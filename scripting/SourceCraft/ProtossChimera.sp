@@ -65,6 +65,7 @@ float g_mineDelay[]         = { 0.0,   1.0,   3.0,   6.0,  10.0 };
 float g_mineLife[]          = { 0.0, 120.0, 300.0, 600.0,   0.0 };
 int   g_mineExplode[]       = { 0,    50,    75,   100,   120   };
 int   g_mineRadius[]        = { 0,    75,   150,   225,   300   };
+int   g_mineLimit[]         = { 0,     2,     5,    10,    20   };
 
 int raceID, scarabID, cloakID, sensorID, shieldsID, controlID, mineID, explodeID;
 
@@ -156,8 +157,8 @@ public int OnSourceCraftReady()
     // Ultimate 2
     mineID    = AddUpgrade(raceID, "phase_mine", 2, 1, .cost_crystals=30);
 
-    // Ultimate 2
-    explodeID    = AddUpgrade(raceID, "phase_explode", 3, 1, .cost_crystals=30);
+    // Ultimate 3
+    explodeID = AddUpgrade(raceID, "phase_explode", 3, 1, .cost_crystals=30);
 
     if (!IsRollermineAvailable())
     {
@@ -403,7 +404,12 @@ public int OnUltimateCommand(int client, int race, bool pressed, int arg)
                                             "PreventedFromPlantingMine");
                         }
                         else
-                            ExplodeRollermines(client);
+                        {
+                            if (!ExplodeRollermines(client))
+                            {
+                                PrepareAndEmitSoundToClient(client,deniedWav);
+                            }
+                        }
                     }
                     else
                     {
@@ -438,11 +444,14 @@ public int OnUltimateCommand(int client, int race, bool pressed, int arg)
                         else
                         {
                             int explode_level = GetUpgradeLevel(client,race,explodeID);
-                            SetRollermine(client, .health=g_mineHealth[mine_level],
-                                          .damageDelay=g_mineDelay[mine_level],
-                                          .explodeDamage=g_mineExplode[explode_level],
-                                          .explodeRadius=g_mineRadius[explode_level],
-                                          .lifetime=g_mineLife[mine_level]);
+                            if (!SetRollermine(client, .health=g_mineHealth[mine_level],
+                                               .damageDelay=g_mineDelay[mine_level],
+                                               .explodeDamage=g_mineExplode[explode_level],
+                                               .explodeRadius=g_mineRadius[explode_level],
+                                               .lifetime=g_mineLife[mine_level]))
+                            {
+                                PrepareAndEmitSoundToClient(client,deniedWav);
+                            }
                         }
                     }
                     else
@@ -590,6 +599,31 @@ public int EventRoundOver(Handle event, const char [] name, bool dontBroadcast)
         if (m_MindControlAvailable)
             ResetMindControlledObjects(index, true);
     }
+}
+
+public Action OnSetRollermine(int client)
+{
+    if (IsValidClientAlive(client) && GetRace(client) == raceID)
+    {
+        if (!GetRestriction(client, Restriction_NoUpgrades) ||
+            !GetRestriction(client, Restriction_Stunned))
+        {
+            int mine_level = GetUpgradeLevel(client,raceID,mineID);
+            if (CountRollermines(client) < g_mineLimit[mine_level])
+                return Plugin_Continue;
+            else
+            {
+                PrepareAndEmitSoundToClient(client,deniedWav);
+            }
+        }
+        else
+        {
+            PrepareAndEmitSoundToClient(client,deniedWav);
+            DisplayMessage(client, Display_Ultimate, "%t",
+                            "PreventedFromPlantingMine");
+        }
+    }
+    return Plugin_Stop;
 }
 
 bool ScarabAttack(int damage, int victim_index, int index)
