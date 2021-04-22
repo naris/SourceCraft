@@ -42,46 +42,49 @@
 #include "effect/HaloSprite"
 #include "effect/SendEffects"
 
-new const String:fartWav[][]    = { "sc/fart.wav",
-                                    "sc/fart3.wav",
-                                    "sc/poot.mp3" };
+char fartWav[][]            = { "sc/fart.wav",
+                                "sc/fart3.wav",
+                                "sc/poot.mp3" };
 
-new g_DrainChance[][]           = { {  0,  0 },
-                                    { 15, 25 },
-                                    { 25, 40 },
-                                    { 40, 60 },
-                                    { 60, 80 }};
+int g_DrainChance[][]       = { {  0,  0 },
+                                { 15, 25 },
+                                { 25, 40 },
+                                { 40, 60 },
+                                { 60, 80 } };
 
-new g_SiphonChance[][]          = { {  0,  0 },
-                                    { 15, 25 },
-                                    { 25, 40 },
-                                    { 40, 60 },
-                                    { 60, 80 }};
+int g_SiphonChance[][]      = { {  0,  0 },
+                                { 15, 25 },
+                                { 25, 40 },
+                                { 40, 60 },
+                                { 60, 80 } };
 
-new g_PickPocketChance[][]      = { {  0,  0 },
-                                    { 15, 25 },
-                                    { 25, 40 },
-                                    { 40, 60 },
-                                    { 60, 80 }};
+int g_PickPocketChance[][]  = { {  0,  0 },
+                                { 15, 25 },
+                                { 25, 40 },
+                                { 40, 60 },
+                                { 60, 80 } };
 
-new g_FrescaChance[]            = { 5, 15, 25, 35, 45 };
+int g_FrescaChance[]        = { 5, 15, 25, 35, 45 };
 
-new g_HallucinateChance[]       = { 0, 15, 25, 35, 50 };
+int g_HallucinateChance[]   = { 0, 15, 25, 35, 50 };
 
-new g_JetpackFuel[]             = { 0, 40, 50, 70, 90 };
-new Float:g_JetpackRefuelTime[] = { 0.0, 45.0, 35.0, 25.0, 15.0 };
+int g_JetpackFuel[]         = { 0, 40, 50, 70, 90 };
+float g_JetpackRefuelTime[] = { 0.0, 45.0, 35.0, 25.0, 15.0 };
 
 
-new raceID, drainID, siphonID, pickPocketID, hallucinationID, frescaID, fartID, snatchID, jetpackID, nippleID;
+int raceID, drainID, siphonID, pickPocketID, hallucinationID, frescaID, fartID, snatchID, jetpackID, nippleID;
 
-new Float:gDrainTime[MAXPLAYERS+1];
-new Float:gSiphonTime[MAXPLAYERS+1];
-new Float:gPickPocketTime[MAXPLAYERS+1];
+float gDrainTime[MAXPLAYERS+1];
+float gSiphonTime[MAXPLAYERS+1];
+float gPickPocketTime[MAXPLAYERS+1];
 
-new bool:m_SnatchActive[MAXPLAYERS+1];
-new bool:m_IsNipple[MAXPLAYERS+1];
+bool m_SnatchActive[MAXPLAYERS+1];
+bool m_IsNipple[MAXPLAYERS+1];
 
-public Plugin:myinfo = 
+int m_SnatchedXP[MAXPLAYERS+1][MAXPLAYERS+1];
+int m_SnatchedLevels[MAXPLAYERS+1][MAXPLAYERS+1];
+
+public Plugin myinfo = 
 {
     name = "SourceCraft Race - Titty Hunter",
     author = "Naris",
@@ -90,17 +93,63 @@ public Plugin:myinfo =
     url = "http://www.jigglysfunhouse.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
     LoadTranslations("sc.common.phrases.txt");
     LoadTranslations("sc.hallucinate.phrases.txt");
     LoadTranslations("sc.titty_hunter.phrases.txt");
 
+    if (GetGameType() == tf2)
+    {
+        if(!HookEventEx("teamplay_round_win",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_win event.");
+
+        if(!HookEventEx("teamplay_round_stalemate",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_round_stalemate event.");
+
+        if(!HookEventEx("teamplay_overtime_end",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_overtime_end event.");
+
+        if(!HookEventEx("teamplay_win_panel",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_win_panel event.");
+
+        if(!HookEventEx("teamplay_game_over",RoundEndEvent, EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_game_over event.");
+
+        if (!HookEventEx("arena_win_panel",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Could not hook the arena_win_panel event.");
+
+        if (!HookEvent("teamplay_suddendeath_end",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the teamplay_suddendeath_end event.");
+
+        if (!HookEvent("mvm_wave_complete",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the mvm_wave_complete event.");
+
+        if (!HookEvent("mvm_wave_failed",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the mvm_wave_failed event.");
+    }
+    else if (GameTypeIsCS())
+    {
+        if (!HookEvent("cs_win_panel_round",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the cs_win_panel_round event.");
+
+        if (!HookEvent("cs_win_panel_match",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the cs_win_panel_match event.");
+    }
+    else if (GameType == dod)
+    {
+        if (!HookEvent("dod_round_win",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the dod_round_start event.");
+
+        if (!HookEvent("dod_game_over",RoundEndEvent,EventHookMode_PostNoCopy))
+            SetFailState("Couldn't hook the dod_game_over event.");
+    }
+
     if (IsSourceCraftLoaded())
         OnSourceCraftReady();
 }
 
-public OnSourceCraftReady()
+public int OnSourceCraftReady()
 {
     raceID          = CreateRace("titty_hunter", -1, -1, 36, .energy_limit=1000.0,
                                  .faction=UndeadScourge, .type=Undead, .parent="farter");
@@ -151,32 +200,32 @@ public OnSourceCraftReady()
     GetConfigFloatArray("refuel_time", g_JetpackRefuelTime, sizeof(g_JetpackRefuelTime),
                         g_JetpackRefuelTime, raceID, jetpackID);
 
-    for (new level=0; level < sizeof(g_DrainChance); level++)
+    for (int level=0; level < sizeof(g_DrainChance); level++)
     {
-        decl String:key[32];
+        char key[32];
         Format(key, sizeof(key), "chance_level_%d", level);
         GetConfigArray(key, g_DrainChance[level], sizeof(g_DrainChance[]),
                        g_DrainChance[level], raceID, drainID);
     }
 
-    for (new level=0; level < sizeof(g_SiphonChance); level++)
+    for (int level=0; level < sizeof(g_SiphonChance); level++)
     {
-        decl String:key[32];
+        char key[32];
         Format(key, sizeof(key), "chance_level_%d", level);
         GetConfigArray(key, g_SiphonChance[level], sizeof(g_SiphonChance[]),
                        g_SiphonChance[level], raceID, siphonID);
     }
 
-    for (new level=0; level < sizeof(g_PickPocketChance); level++)
+    for (int level=0; level < sizeof(g_PickPocketChance); level++)
     {
-        decl String:key[32];
+        char key[32];
         Format(key, sizeof(key), "chance_level_%d", level);
         GetConfigArray(key, g_PickPocketChance[level], sizeof(g_PickPocketChance[]),
                        g_PickPocketChance[level], raceID, pickPocketID);
     }
 }
 
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char[] name)
 {
     if (StrEqual(name, "jetpack"))
         IsJetpackAvailable(true);
@@ -184,7 +233,7 @@ public OnLibraryAdded(const String:name[])
         IsSidewinderAvailable(true);
 }
 
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char[] name)
 {
     if (StrEqual(name, "jetpack"))
         m_JetpackAvailable = false;
@@ -192,7 +241,7 @@ public OnLibraryRemoved(const String:name[])
         m_SidewinderAvailable = false;
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
     SetupLightning();
     SetupHaloSprite();
@@ -201,29 +250,41 @@ public OnMapStart()
     SetupErrorSound();
     SetupDeniedSound();
 
-    for (new i = 0; i < sizeof(fartWav); i++)
+    for (int i = 0; i < sizeof(fartWav); i++)
         SetupSound(fartWav[i]);
 }
 
-public OnPlayerAuthed(client)
+public int OnPlayerAuthed(int client)
 {
     gDrainTime[client] = 0.0;
     gSiphonTime[client] = 0.0;
     gPickPocketTime[client] = 0.0;
-}
 
-public OnClientDisconnect(client)
-{
     m_SnatchActive[client] = false;
+    for (int index = 0; index < MAXPLAYERS+1; index++)
+    {
+        m_SnatchedXP[client][index] = 0;
+        m_SnatchedLevels[client][index] = 0;
+    }
 }
 
-public Action:OnRaceDeselected(client,oldrace,newrace)
+public void OnClientDisconnect(int client)
 {
+    gDrainTime[client] = 0.0;
+    gSiphonTime[client] = 0.0;
+    gPickPocketTime[client] = 0.0;
+
+    m_SnatchActive[client] = false;
+    Release(client);
+}
+
+public Action OnRaceDeselected(int client, int oldrace, int newrace)
+{
+    TraceInto("TheHunter", "OnRaceDeselected", "client=%d, oldrace=%d, newrace=%d", \
+                client, oldrace, newrace);
+
     if (oldrace == raceID)
     {
-        TraceInto("TheHunter", "OnRaceDeselected", "client=%d, oldrace=%d, newrace=%d", \
-                  client, oldrace, newrace);
-
         m_SnatchActive[client] = false;
 
         SetupSidewinder(client, -1, false);
@@ -232,7 +293,7 @@ public Action:OnRaceDeselected(client,oldrace,newrace)
         if (m_JetpackAvailable)
             TakeJetpack(client);
 
-        new maxCrystals = GetMaxCrystals();
+        int maxCrystals = GetMaxCrystals();
         if (GetCrystals(client) > maxCrystals)
         {
             SetCrystals(client, maxCrystals);
@@ -240,12 +301,18 @@ public Action:OnRaceDeselected(client,oldrace,newrace)
                            "CrystalsReduced", maxCrystals);
         }
 
-        TraceReturn();
+        Release(client);
     }
+    else
+    {
+        Recover(client);
+    }
+
+    TraceReturn();
     return Plugin_Continue;
 }
 
-public Action:OnRaceSelected(client,oldrace,newrace)
+public Action OnRaceSelected(int client, int oldrace, int newrace)
 {
     if (newrace == raceID)
     {
@@ -253,7 +320,7 @@ public Action:OnRaceSelected(client,oldrace,newrace)
                   client, oldrace, newrace);
 
         //Set Hunter Color
-        new r,g,b;
+        int r,g,b;
         if (TFTeam:GetClientTeam(client) == TFTeam_Red)
         { r = 255; g = 255; b = 64; }
         else
@@ -269,10 +336,10 @@ public Action:OnRaceSelected(client,oldrace,newrace)
         gPickPocketTime[client] = 0.0;
         m_SnatchActive[client] = false;
 
-        new jetpack_level=GetUpgradeLevel(client,raceID,jetpackID);
+        int jetpack_level=GetUpgradeLevel(client,raceID,jetpackID);
         SetupJetpack(client, jetpack_level);
 
-        new nipple_level=GetUpgradeLevel(client,raceID,nippleID);
+        int nipple_level=GetUpgradeLevel(client,raceID,nippleID);
         SetupSidewinder(client, nipple_level, false);
 
         TraceReturn();
@@ -282,7 +349,7 @@ public Action:OnRaceSelected(client,oldrace,newrace)
         return Plugin_Continue;
 }
 
-public OnUpgradeLevelChanged(client,race,upgrade,new_level)
+public int OnUpgradeLevelChanged(int client, int race, int upgrade, int new_level)
 {
     if (race == raceID && GetRace(client) == raceID)
     {
@@ -293,7 +360,7 @@ public OnUpgradeLevelChanged(client,race,upgrade,new_level)
     }
 }
 
-public OnUltimateCommand(client,race,bool:pressed,arg)
+public int OnUltimateCommand(int client, int race, bool pressed, int arg)
 {
     if (race==raceID && IsValidClientAlive(client))
     {
@@ -311,7 +378,7 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
             {
                 if (pressed)
                 {
-                    new nipple_level=GetUpgradeLevel(client,race,nippleID);
+                    int nipple_level=GetUpgradeLevel(client,race,nippleID);
                     if (nipple_level > 0)
                         TheNipple(client, nipple_level);
                     else if (GetUpgradeLevel(client,race,snatchID))
@@ -322,12 +389,12 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
             {
                 if (pressed)
                 {
-                    new fart_level = GetUpgradeLevel(client,race,fartID);
+                    int fart_level = GetUpgradeLevel(client,race,fartID);
                     if (fart_level > 0)
                         Fart(client,fart_level);
                     else
                     {
-                        new nipple_level=GetUpgradeLevel(client,race,nippleID);
+                        int nipple_level=GetUpgradeLevel(client,race,nippleID);
                         if (nipple_level > 0)
                             TheNipple(client, nipple_level);
                         else if (GetUpgradeLevel(client,race,snatchID))
@@ -337,17 +404,17 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
             }
             default: // Jetpack
             {
-                new jetpack_level = GetUpgradeLevel(client,race,jetpackID);
+                int jetpack_level = GetUpgradeLevel(client,race,jetpackID);
                 if (jetpack_level > 0)
                     Jetpack(client, pressed);
                 else if (pressed)
                 {
-                    new fart_level = GetUpgradeLevel(client,race,fartID);
+                    int fart_level = GetUpgradeLevel(client,race,fartID);
                     if (fart_level > 0)
                         Fart(client,fart_level);
                     else
                     {
-                        new nipple_level=GetUpgradeLevel(client,race,nippleID);
+                        int nipple_level=GetUpgradeLevel(client,race,nippleID);
                         if (nipple_level > 0)
                             TheNipple(client, nipple_level);
                         else if (pressed && GetUpgradeLevel(client,race,snatchID))
@@ -362,7 +429,16 @@ public OnUltimateCommand(client,race,bool:pressed,arg)
 }
 
 // Events
-public OnPlayerSpawnEvent(Handle:event, client, race)
+public void RoundEndEvent(Handle event,const char[] name,bool dontBroadcast)
+{
+    for (int index=1;index<=MaxClients;index++)
+    {
+        Release(index);
+        Recover(index);
+    }
+}
+
+public int OnPlayerSpawnEvent(Handle event, int client, int race)
 {
     if (race == raceID)
     {
@@ -372,7 +448,7 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
         m_SnatchActive[client] = false;
 
         //Set Hunter Color
-        new r,g,b;
+        int r,g,b;
         if (TFTeam:GetClientTeam(client) == TFTeam_Red)
         { r = 255; g = 255; b = 64; }
         else
@@ -383,20 +459,21 @@ public OnPlayerSpawnEvent(Handle:event, client, race)
                       .fx=RENDERFX_GLOWSHELL,
                       .r=r, .g=g, .b=b);
 
-        new jetpack_level=GetUpgradeLevel(client,raceID,jetpackID);
+        int jetpack_level=GetUpgradeLevel(client,raceID,jetpackID);
         SetupJetpack(client, jetpack_level);
 
-        new nipple_level=GetUpgradeLevel(client,raceID,nippleID);
+        int nipple_level=GetUpgradeLevel(client,raceID,nippleID);
         SetupSidewinder(client, nipple_level, false);
 
         TraceReturn();
     }
 }
 
-public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacker_index,
-                                attacker_race, damage, absorbed, bool:from_sc)
+public Action OnPlayerHurtEvent(Handle event, int victim_index, int victim_race,
+                                int attacker_index, int attacker_race, int damage,
+                                int absorbed, bool from_sc)
 {
-    new bool:handled=false;
+    bool handled=false;
 
     if (!from_sc && attacker_index > 0 &&
         attacker_index != victim_index &&
@@ -407,7 +484,7 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
             SnatchLevel(victim_index, attacker_index);
         else
         {
-            new fresca_level=GetUpgradeLevel(attacker_index, raceID, frescaID);
+            int fresca_level=GetUpgradeLevel(attacker_index, raceID, frescaID);
             if (GetRandomInt(1,100)<=g_FrescaChance[fresca_level])
             {
                 if (!GetRestriction(attacker_index, Restriction_NoUpgrades) &&
@@ -429,8 +506,8 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
 
             if (!handled)
             {
-                new Float:halluc_amount = GetUpgradeEnergy(raceID,hallucinationID);
-                new halluc_level = GetUpgradeLevel(attacker_index,raceID,hallucinationID);
+                float halluc_amount = GetUpgradeEnergy(raceID,hallucinationID);
+                int halluc_level = GetUpgradeLevel(attacker_index,raceID,hallucinationID);
                 Hallucinate(victim_index, attacker_index, halluc_level, halluc_amount,
                             g_HallucinateChance);
 
@@ -445,11 +522,11 @@ public Action:OnPlayerHurtEvent(Handle:event, victim_index, victim_race, attacke
 }
 
 
-public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
-                                  assister_index, assister_race, damage,
-                                  absorbed)
+public Action OnPlayerAssistEvent(Handle event, int victim_index, int victim_race,
+                                  int assister_index, int assister_race, int damage,
+                                  int absorbed)
 {
-    new bool:handled=false;
+    bool handled=false;
 
     if (assister_race == raceID)
     {
@@ -457,7 +534,7 @@ public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
             SnatchLevel(victim_index, assister_index);
         else
         {
-            new fresca_level=GetUpgradeLevel(assister_index, raceID, frescaID);
+            int fresca_level=GetUpgradeLevel(assister_index, raceID, frescaID);
             if (GetRandomInt(1,100)<=g_FrescaChance[fresca_level])
             {
                 if (!GetRestriction(assister_index, Restriction_NoUpgrades) &&
@@ -484,8 +561,8 @@ public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
                 Siphon(event, victim_index, assister_index);
                 PickPocket(event, victim_index, assister_index);
 
-                new Float:halluc_amount = GetUpgradeEnergy(raceID,hallucinationID);
-                new halluc_level = GetUpgradeLevel(assister_index,raceID,hallucinationID);
+                float halluc_amount = GetUpgradeEnergy(raceID,hallucinationID);
+                int halluc_level = GetUpgradeLevel(assister_index,raceID,hallucinationID);
                 Hallucinate(victim_index, assister_index, halluc_level, halluc_amount,
                             g_HallucinateChance);
             }
@@ -495,34 +572,37 @@ public Action:OnPlayerAssistEvent(Handle:event, victim_index, victim_race,
     return handled ? Plugin_Handled : Plugin_Continue;
 }
 
-public OnPlayerDeathEvent(Handle:event, victim_index, victim_race, attacker_index,
-                          attacker_race, assister_index, assister_race, damage,
-                          const String:weapon[], bool:is_equipment, customkill,
-                          bool:headshot, bool:backstab, bool:melee)
+public int OnPlayerDeathEvent(Handle event, int victim_index, int victim_race,
+                               int attacker_index, int attacker_race,
+                               int assister_index, int assister_race,
+                               int damage, const char[] weapon,
+                               bool is_equipment, int customkill,
+                               bool headshot, bool backstab, bool melee)
 {
     m_SnatchActive[victim_index] = false;
 
     if (victim_race == raceID)
     {
         SetupSidewinder(victim_index, -1, false);
+        Release(victim_index);
     }
 }
 
-Float:Drain(Handle:event,victim_index, index)
+float Drain(Handle event, int victim_index, int index)
 {
     TraceInto("TheHunter", "Drain", "index=%N(%d), victim_index=%N(%d), event=%x", \
               index, index, victim_index, victim_index, event);
 
-    new Float:plunder = 0.0;
-    new level = GetUpgradeLevel(index, raceID, drainID);
+    float plunder = 0.0;
+    int level = GetUpgradeLevel(index, raceID, drainID);
     if (level > 0 && !GetRestriction(index, Restriction_NoUpgrades) &&
         !GetRestriction(index, Restriction_Stunned))
     {
-        decl String:weapon[64];
-        new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-        new bool:is_melee=IsMelee(weapon, is_equipment,index,victim_index);
+        char weapon[64];
+        bool is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
+        bool is_melee=IsMelee(weapon, is_equipment,index,victim_index);
 
-        new Float:victim_energy=GetEnergy(victim_index);
+        float victim_energy=GetEnergy(victim_index);
         if (victim_energy > 0)
         {
             if ((gDrainTime[index] == 0.0 || GetGameTime() - gDrainTime[index] > 0.5)  &&
@@ -532,22 +612,22 @@ Float:Drain(Handle:event,victim_index, index)
                 !IsInvulnerable(victim_index) &&
                 CanInvokeUpgrade(index, raceID, drainID))
             {
-                new Float:percent=GetRandomFloat(0.0,is_melee ? 0.25 : 0.15);
+                float percent=GetRandomFloat(0.0,is_melee ? 0.25 : 0.15);
                 plunder = victim_energy * percent;
 
                 SetEnergy(victim_index,victim_energy-plunder);
                 SetEnergy(index,GetEnergy(index)+plunder);
                 gDrainTime[index] = GetGameTime();
 
-                new Float:indexLoc[3];
+                float indexLoc[3];
                 GetClientAbsOrigin(index, indexLoc);
                 indexLoc[2] += 50.0;
 
-                new Float:victimLoc[3];
+                float victimLoc[3];
                 GetClientAbsOrigin(victim_index, victimLoc);
                 victimLoc[2] += 50.0;
 
-                static const color[4] = { 100, 255, 255, 55 };
+                static const int color[4] = { 100, 255, 255, 55 };
                 TE_SetupBeamPoints(indexLoc, victimLoc, Lightning(), HaloSprite(),
                                    0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
                 TE_SendQEffectToAll(index, victim_index);
@@ -567,22 +647,22 @@ Float:Drain(Handle:event,victim_index, index)
     return plunder;
 }
 
-Siphon(Handle:event,victim_index, index)
+int Siphon(Handle event, int victim_index, int index)
 {
     TraceInto("TheHunter", "Siphon", "index=%N(%d), victim_index=%N(%d), event=%x", \
               index, index, victim_index, victim_index, event);
 
-    new plunder = 0;
-    new level = GetUpgradeLevel(index, raceID, siphonID);
+    int plunder = 0;
+    int level = GetUpgradeLevel(index, raceID, siphonID);
     if (level > 0 && !GetRestriction(index, Restriction_NoUpgrades) &&
         !GetRestriction(index, Restriction_Stunned))
     {
-        decl String:weapon[64];
-        new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-        new bool:is_melee=IsMelee(weapon, is_equipment,index,victim_index);
+        char weapon[64];
+        bool is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
+        bool is_melee=IsMelee(weapon, is_equipment,index,victim_index);
 
-        new gas = GetVespene(index);
-        new victim_gas = GetVespene(victim_index);
+        int gas = GetVespene(index);
+        int victim_gas = GetVespene(victim_index);
         if (victim_gas > 0 && gas < GetMaxVespene())
         {
             if ((gSiphonTime[index] == 0.0 || GetGameTime() - gSiphonTime[index] > 2.0 &&
@@ -592,22 +672,22 @@ Siphon(Handle:event,victim_index, index)
                 !IsInvulnerable(victim_index)) &&
                 CanInvokeUpgrade(index, raceID, siphonID))
             {
-                new Float:percent=GetRandomFloat(0.0,is_melee ? 0.15 : 0.05);
+                float percent=GetRandomFloat(0.0,is_melee ? 0.15 : 0.05);
                 plunder = RoundToCeil(float(victim_gas) * percent);
 
                 SetVespene(victim_index,victim_gas-plunder);
                 SetVespene(index,gas+plunder);
                 gSiphonTime[index] = GetGameTime();
 
-                new Float:indexLoc[3];
+                float indexLoc[3];
                 GetClientAbsOrigin(index, indexLoc);
                 indexLoc[2] += 50.0;
 
-                new Float:victimLoc[3];
+                float victimLoc[3];
                 GetClientAbsOrigin(victim_index, victimLoc);
                 victimLoc[2] += 50.0;
 
-                static const color[4] = { 100, 55, 255, 255 };
+                static const int color[4] = { 100, 55, 255, 255 };
                 TE_SetupBeamPoints(indexLoc, victimLoc, Lightning(), HaloSprite(),
                                    0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
                 TE_SendQEffectToAll(index, victim_index);
@@ -627,21 +707,21 @@ Siphon(Handle:event,victim_index, index)
     return plunder;
 }
 
-PickPocket(Handle:event,victim_index, index)
+int PickPocket(Handle event, int victim_index, int index)
 {
     TraceInto("TheHunter", "PickPocket", "index=%N(%d), victim_index=%N(%d), event=%x", \
               index, index, victim_index, victim_index, event);
 
-    new plunder = 0;
-    new level = GetUpgradeLevel(index, raceID, pickPocketID);
+    int plunder = 0;
+    int level = GetUpgradeLevel(index, raceID, pickPocketID);
     if (level > 0 && !GetRestriction(index, Restriction_NoUpgrades) &&
         !GetRestriction(index, Restriction_Stunned))
     {
-        decl String:weapon[64];
-        new bool:is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
-        new bool:is_melee=IsMelee(weapon, is_equipment,index,victim_index);
+        char weapon[64];
+        bool is_equipment=GetWeapon(event,index,weapon,sizeof(weapon));
+        bool is_melee=IsMelee(weapon, is_equipment,index,victim_index);
 
-        new victim_cash=GetCrystals(victim_index);
+        int victim_cash=GetCrystals(victim_index);
         if (victim_cash > 0)
         {
             if ((gPickPocketTime[index] == 0.0 || GetGameTime() - gPickPocketTime[index] > 0.5) &&
@@ -651,23 +731,23 @@ PickPocket(Handle:event,victim_index, index)
                 !IsInvulnerable(victim_index) &&
                 CanInvokeUpgrade(index, raceID, pickPocketID))
             {
-                new Float:percent=GetRandomFloat(0.0,is_melee ? 0.15 : 0.05);
-                new cash=GetCrystals(index);
+                float percent=GetRandomFloat(0.0,is_melee ? 0.15 : 0.05);
+                int cash=GetCrystals(index);
                 plunder = RoundToCeil(float(victim_cash) * percent);
 
                 SetCrystals(victim_index,victim_cash-plunder,false);
                 SetCrystals(index,cash+plunder,false);
                 gPickPocketTime[index] = GetGameTime();
 
-                new Float:indexLoc[3];
+                float indexLoc[3];
                 GetClientAbsOrigin(index, indexLoc);
                 indexLoc[2] += 50.0;
 
-                new Float:victimLoc[3];
+                float victimLoc[3];
                 GetClientAbsOrigin(victim_index, victimLoc);
                 victimLoc[2] += 50.0;
 
-                static const color[4] = { 100, 255, 55, 255 };
+                static const int color[4] = { 100, 255, 55, 255 };
                 TE_SetupBeamPoints(indexLoc, victimLoc, Lightning(), HaloSprite(),
                                    0, 50, 1.0, 3.0,6.0,50,50.0,color,255);
                 TE_SendQEffectToAll(index, victim_index);
@@ -687,7 +767,7 @@ PickPocket(Handle:event,victim_index, index)
     return plunder;
 }
 
-Jetpack(client, bool:pressed)
+void Jetpack(client, bool pressed)
 {
     if (m_JetpackAvailable)
     {
@@ -707,13 +787,13 @@ Jetpack(client, bool:pressed)
     }
     else if (pressed)
     {
-        decl String:upgradeName[64];
+        char upgradeName[64];
         GetUpgradeName(raceID, jetpackID, upgradeName, sizeof(upgradeName), client);
         PrintHintText(client,"%t", "IsNotAvailable", upgradeName);
     }
 }
 
-SetupJetpack(client, level)
+void SetupJetpack(int client, int level)
 {
     if (m_JetpackAvailable)
     {
@@ -734,19 +814,19 @@ SetupJetpack(client, level)
     }
 }
 
-Fart(client,fart_level)
+void Fart(int client, int fart_level)
 {
     if (IsEntLimitReached(.client=client,
                           .message="Unable to spawn anymore fart clouds"))
     {
-        decl String:upgradeName[64];
+        char upgradeName[64];
         GetUpgradeName(raceID, fartID, upgradeName, sizeof(upgradeName), client);
         DisplayMessage(client, Display_Ultimate, "%t", "NoEntitiesAvailable");
     }
     else if (GetRestriction(client,Restriction_NoUltimates) ||
              GetRestriction(client,Restriction_Stunned))
     {
-        decl String:upgradeName[64];
+        char upgradeName[64];
         GetUpgradeName(raceID, fartID, upgradeName, sizeof(upgradeName), client);
         DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
         PrepareAndEmitSoundToClient(client,deniedWav);
@@ -759,27 +839,27 @@ Fart(client,fart_level)
                 TF2_RemovePlayerDisguise(client);
         }
 
-        new Float:location[3];
+        float location[3];
         GetClientAbsOrigin(client, location);
 
-        new String:originData[64];
+        char originData[64];
         Format(originData, sizeof(originData), "%f %f %f", location[0], location[1], location[2]);
 
-        new String:damage[64];
+        char damage[64];
         Format(damage, sizeof(damage), "%i", ((fart_level+1)*12));
 
-        new String:radius[64];
+        char radius[64];
         Format(radius, sizeof(radius), "%i", ((fart_level+1)*100));
 
-        new String:team[64];
+        char team[64];
         Format(team, sizeof(team), "%i", GetClientTeam(client));
 
         // Don't Create the filter
         /*
-        new String:filter_name[128];
+        char filter_name[128];
         Format(filter_name, sizeof(filter_name), "FartFilter%i", client);
 
-        new filter = CreateEntityByName("filter_activator_tfteam");
+        int filter = CreateEntityByName("filter_activator_tfteam");
         if (filter && IsValidEntity(filter))
         {
             DispatchKeyValue(filter,"targetname", filter_name);
@@ -791,7 +871,7 @@ Fart(client,fart_level)
         */
 
         // Create the PointHurt
-        new pointHurt = CreateEntityByName("point_hurt");
+        int pointHurt = CreateEntityByName("point_hurt");
         if (pointHurt > 0 && IsValidEdict(pointHurt))
         {
             //DispatchKeyValue(pointHurt,"filtername", filter_name);
@@ -804,10 +884,10 @@ Fart(client,fart_level)
             AcceptEntityInput(pointHurt, "TurnOn");
 
             // Create the Gas Cloud
-            new String:gas_name[128];
+            char gas_name[128];
             Format(gas_name, sizeof(gas_name), "Fart%i", client);
 
-            new gascloud = CreateEntityByName("env_smokestack");
+            int gascloud = CreateEntityByName("env_smokestack");
             if (gascloud > 0 && IsValidEdict(gascloud))
             {
                 //DispatchKeyValue(pointHurt,"filtername", filter_name);
@@ -827,14 +907,14 @@ Fart(client,fart_level)
                 DispatchSpawn(gascloud);
                 AcceptEntityInput(gascloud, "TurnOn");
 
-                new Float:length = float((fart_level+1)*4);
+                float length = float((fart_level+1)*4);
                 if (length <= 8.0)
                     length = 8.0;
 
-                new snd = GetRandomInt(0,sizeof(fartWav)-1);
+                int snd = GetRandomInt(0,sizeof(fartWav)-1);
                 PrepareAndEmitSoundToAll(fartWav[snd], client);
 
-                new Handle:entitypack = CreateDataPack();
+                Handle entitypack = CreateDataPack();
                 CreateTimer(1.0, ActivateGas, entitypack);
                 CreateTimer(length, ClearGas, entitypack);
                 CreateTimer(length + 5.0, KillGas, entitypack);
@@ -855,54 +935,54 @@ Fart(client,fart_level)
     }
 }
 
-public Action:ActivateGas(Handle:timer, Handle:entitypack)
+public Action ActivateGas(Handle timer, Handle entitypack)
 {
     ResetPack(entitypack);
 
-    new gascloud = ReadPackCell(entitypack);
+    int gascloud = ReadPackCell(entitypack);
     if (gascloud > 0 && IsValidEntity(gascloud))
     {
-        new snd = GetRandomInt(0,sizeof(fartWav)-1);
+        int snd = GetRandomInt(0,sizeof(fartWav)-1);
         PrepareAndEmitSoundToAll(fartWav[snd], gascloud);
         AcceptEntityInput(gascloud, "TurnOn");
     }
 
-    new pointHurt = ReadPackCell(entitypack);
+    int pointHurt = ReadPackCell(entitypack);
     if (pointHurt > 0 && IsValidEntity(pointHurt))
     {
-        new snd = GetRandomInt(0,sizeof(fartWav)-1);
+        int snd = GetRandomInt(0,sizeof(fartWav)-1);
         PrepareAndEmitSoundToAll(fartWav[snd], pointHurt);
         AcceptEntityInput(pointHurt, "TurnOn");
     }
 }
 
-public Action:ClearGas(Handle:timer, Handle:entitypack)
+public Action ClearGas(Handle timer, Handle entitypack)
 {
     ResetPack(entitypack);
 
-    new gascloud = ReadPackCell(entitypack);
+    int gascloud = ReadPackCell(entitypack);
     if (gascloud > 0 && IsValidEntity(gascloud))
         AcceptEntityInput(gascloud, "TurnOff");
 
-    new pointHurt = ReadPackCell(entitypack);
+    int pointHurt = ReadPackCell(entitypack);
     if (pointHurt > 0 && IsValidEntity(pointHurt))
         AcceptEntityInput(pointHurt, "TurnOff");
 }
 
-public Action:KillGas(Handle:timer, Handle:entitypack)
+public Action KillGas(Handle timer, Handle entitypack)
 {
     ResetPack(entitypack);
 
-    new gascloud = ReadPackCell(entitypack);
+    int gascloud = ReadPackCell(entitypack);
     if (gascloud > 0 && IsValidEntity(gascloud))
         AcceptEntityInput(gascloud, "Kill");
 
-    new pointHurt = ReadPackCell(entitypack);
+    int pointHurt = ReadPackCell(entitypack);
     if (pointHurt > 0 && IsValidEntity(pointHurt))
         AcceptEntityInput(pointHurt, "Kill");
 
     /*
-    new filter = ReadPackCell(entitypack);
+    int filter = ReadPackCell(entitypack);
     if (filter > 0 && IsValidEntity(filter))
         AcceptEntityInput(filter, "Kill");
     */
@@ -910,7 +990,7 @@ public Action:KillGas(Handle:timer, Handle:entitypack)
     CloseHandle(entitypack);
 }
 
-TheNipple(client, level)
+TheNipple(int client, int level)
 {
     if (level > 0)
     {
@@ -923,7 +1003,7 @@ TheNipple(client, level)
         else if (GetRestriction(client,Restriction_NoUltimates) ||
                  GetRestriction(client,Restriction_Stunned))
         {
-            decl String:upgradeName[64];
+            char upgradeName[64];
             GetUpgradeName(raceID, nippleID, upgradeName, sizeof(upgradeName), client);
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
             PrepareAndEmitSoundToClient(client,deniedWav);
@@ -942,12 +1022,12 @@ TheNipple(client, level)
     }
 }
 
-public Action:EndNipple(Handle:timer,any:userid)
+public Action EndNipple(Handle timer, any userid)
 {
-    new client = GetClientOfUserId(userid);
+    int client = GetClientOfUserId(userid);
     if (client > 0)
     {
-        new bool:isHunter = (GetRace(client) == raceID);
+        bool isHunter = (GetRace(client) == raceID);
         if (isHunter && IsClientInGame(client) && IsPlayerAlive(client))
         {
             //PrepareAndEmitSoundToAll(seekerExpireWav,client);
@@ -955,20 +1035,20 @@ public Action:EndNipple(Handle:timer,any:userid)
             ClearHud(client, "%t", "NippleHud");
         }
 
-        new nipple_level=isHunter ? GetUpgradeLevel(client,raceID,nippleID) : 0;
+        int nipple_level=isHunter ? GetUpgradeLevel(client,raceID,nippleID) : 0;
         SetupSidewinder(client, nipple_level, false);
         CreateCooldown(client, raceID, nippleID);
     }
 }
 
-SetupSidewinder(client, level, bool:nipple)
+void SetupSidewinder(int client, int level, bool nipple)
 {
-    static const sentryCritChance[] = { 5, 10, 20, 35, 50 };
+    static const int sentryCritChance[] = { 5, 10, 20, 35, 50 };
 
     if (m_SidewinderAvailable)
     {
-        new trackCritChance = 0;
-        new SidewinderClientFlags:flags = CritSentryRockets;
+        int trackCritChance = 0;
+        SidewinderClientFlags flags = CritSentryRockets;
 
         if (nipple)
         {
@@ -999,7 +1079,7 @@ SetupSidewinder(client, level, bool:nipple)
     }
 }
 
-public Action:OnSidewinderSeek(client, target, projectile, bool:critical)
+public Action OnSidewinderSeek(int client, int target, int projectile, bool critical)
 {
     if (GetRace(client) == raceID)
     {
@@ -1008,7 +1088,7 @@ public Action:OnSidewinderSeek(client, target, projectile, bool:critical)
         {
             PrepareAndEmitSoundToClient(client,deniedWav);
 
-            decl String:nippleName[64];
+            char nippleName[64];
             Format(nippleName, sizeof(nippleName), "%T", "Nipple", client);
             DisplayMessage(client, Display_Ultimate, "%t", "Prevented", nippleName);
             return Plugin_Stop;
@@ -1018,12 +1098,12 @@ public Action:OnSidewinderSeek(client, target, projectile, bool:critical)
     return Plugin_Continue;
 }
 
-Snatch(client)
+void Snatch(int client)
 {
     if (GetRestriction(client,Restriction_NoUltimates) ||
         GetRestriction(client,Restriction_Stunned))
     {
-        decl String:upgradeName[64];
+        char upgradeName[64];
         GetUpgradeName(raceID, snatchID, upgradeName, sizeof(upgradeName), client);
         DisplayMessage(client, Display_Ultimate, "%t", "Prevented", upgradeName);
         PrepareAndEmitSoundToClient(client,deniedWav);
@@ -1036,24 +1116,24 @@ Snatch(client)
     }
 }
 
-SnatchLevel(victim, index)
+void SnatchLevel(int victim, int index)
 {
-    new snatch_level=GetUpgradeLevel(index,raceID,snatchID);
+    int snatch_level=GetUpgradeLevel(index,raceID,snatchID);
     if (snatch_level > 0)
     {
         if (!GetImmunity(victim,Immunity_Ultimates) &&
             !GetImmunity(victim,Immunity_Theft) &&
             !IsInvulnerable(victim))
         {
-            static const chance[5] = { 0, 20, 30, 40, 50 };
-            new level = GetLevel(index);
-            new victim_race = GetRace(victim);
-            new victim_level = GetLevel(victim);
-            new amt = (victim_level > level) ? GetRandomInt(snatch_level*100,snatch_level*1000) : 0;
+            static const int chance[5] = { 0, 20, 30, 40, 50 };
+            int level = GetLevel(index);
+            int victim_race = GetRace(victim);
+            int victim_level = GetLevel(victim);
+            int amt = (victim_level > level) ? GetRandomInt(snatch_level*100,snatch_level*1000) : 0;
             if (victim_level > 1 && GetRandomInt(0,100) < chance[snatch_level])
             {
-                new xp        = GetXP(index, raceID)       + amt;
-                new victim_xp = GetXP(victim, victim_race) - amt;
+                int xp        = GetXP(index, raceID)       + amt;
+                int victim_xp = GetXP(victim, victim_race) - amt;
                 if (victim_xp > 0 && amt > 0)
                 {
                     LogToGame("%N snatched %d experience from %N", index, amt, victim);
@@ -1066,6 +1146,7 @@ SnatchLevel(victim, index)
 
                     ResetXP(index, raceID, xp);
                     ResetXP(victim, victim_race, victim_xp);
+                    m_SnatchedXP[index][victim] += amt;
                 }
                 else
                 {
@@ -1079,12 +1160,13 @@ SnatchLevel(victim, index)
 
                     ResetLevel(index, raceID, level+1);
                     ResetLevel(victim, victim_race, victim_level-1);
+                    m_SnatchedLevels[index][victim]++;
                 }
             }
             else if (level > 1)
             {
-                new victim_xp   = GetXP(victim, victim_race) + amt;
-                new xp          = GetXP(index, raceID)       - amt;
+                int victim_xp   = GetXP(victim, victim_race) + amt;
+                int xp          = GetXP(index, raceID)       - amt;
                 if (xp > 0 && amt > 0)
                 {
                     LogToGame("%N lost %d experience to %N", index, amt, victim);
@@ -1095,6 +1177,7 @@ SnatchLevel(victim, index)
                     DisplayMessage(victim, Display_Injury, "%t",
                                    "SnatchMisfiredGainedXP", index, amt);
 
+                    m_SnatchedXP[index][victim] += amt;
                     ResetXP(index, raceID, xp);
                     ResetXP(victim, victim_race, victim_xp);
                 }
@@ -1108,13 +1191,14 @@ SnatchLevel(victim, index)
                     DisplayMessage(victim, Display_Injury, "%t",
                                    "SnatchMisfiredGainedLevel", index);
 
+                    m_SnatchedLevels[index][victim]++;
                     ResetLevel(index, raceID, level-1);
                     ResetLevel(victim, victim_race, victim_level+1);
                 }
             }
             else
             {
-                decl String:upgradeName[64];
+                char upgradeName[64];
                 GetUpgradeName(raceID, snatchID, upgradeName, sizeof(upgradeName), index);
                 PrintToChat(index, "%t", "NoEffect", upgradeName, victim);
             }
@@ -1122,6 +1206,85 @@ SnatchLevel(victim, index)
             m_SnatchActive[index]=false;
             CreateCooldown(index, raceID, snatchID);
             ClearHud(index, "%t", "SnatchHud");
+        }
+    }
+}
+
+void Release(int client)
+{
+    for (int index = 0; index < MAXPLAYERS+1; index++)
+    {
+        if (IsValidClient(index))
+        {
+            int amt = m_SnatchedXP[client][index];
+            if (amt != 0)
+            {
+                LogToGame("%N recovered %d experience from %N", index, amt, client);
+
+                DisplayMessage(client, Display_Damage, "%t",
+                                "ReleasedExperience", amt, index);
+
+                DisplayMessage(index, Display_Injury, "%t",
+                                "RecoveredExperience", client, amt);
+
+                ResetXP(client, -1, GetXP(index) - amt);
+                ResetXP(index, -1, GetXP(index) + amt);
+                m_SnatchedXP[client][index] = 0;
+            }
+
+            amt = m_SnatchedLevels[client][index];
+            if (amt != 0)
+            {
+                LogToGame("%N recovered %d level(s) from %N", index, amt, client);
+
+                DisplayMessage(client, Display_Damage, "%t",
+                                "ReleasedLevels", amt, index);
+
+                DisplayMessage(index, Display_Injury, "%t",
+                                "RecoveredLevels", amt, client);
+
+                ResetLevel(index, -1, GetLevel(index) + amt);
+                ResetLevel(client, -1, GetLevel(client) - amt);
+                m_SnatchedLevels[client][index] = 0;
+            }
+        }
+    }
+}
+
+void Recover(int index)
+{
+    for (int client = 0; client < MAXPLAYERS+1; client++)
+    {
+        int amt = m_SnatchedXP[client][index];
+        if (amt != 0)
+        {
+            LogToGame("%N recovered %d experience from %N", index, amt, client);
+
+            DisplayMessage(client, Display_Damage, "%t",
+                            "ReleasedExperience", amt, index);
+
+            DisplayMessage(index, Display_Injury, "%t",
+                            "RecoveredExperience", client, amt);
+
+            ResetXP(client, -1, GetXP(index) - amt);
+            ResetXP(index, -1, GetXP(index) + amt);
+            m_SnatchedXP[client][index] = 0;
+        }
+
+        amt = m_SnatchedLevels[client][index];
+        if (amt != 0)
+        {
+            LogToGame("%N recovered %d level(s) from %N", index, amt, client);
+
+            DisplayMessage(client, Display_Damage, "%t",
+                            "ReleasedLevels", amt, index);
+
+            DisplayMessage(index, Display_Injury, "%t",
+                            "RecoveredLevels", amt, client);
+
+            ResetLevel(index, -1, GetLevel(index) + amt);
+            ResetLevel(client, -1, GetLevel(client) - amt);
+            m_SnatchedLevels[client][index] = 0;
         }
     }
 }

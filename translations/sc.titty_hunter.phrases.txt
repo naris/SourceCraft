@@ -183,6 +183,17 @@
 		"en"		"{olive}{2}{default} {red}Snatched {2} Experience{default} from you!!"
 	}
 
+	"RecoveredExperience"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"You have {blue}Recovered{default} {2} Experience from {1}!"
+	}
+	"ReleasedExperience"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"You have {blue}Released{default} {2} Experience back to {1}!"
+	}
+
 	"YouHaveSnatchedALevel"
 	{
 		"#format"	"{1:N}"
@@ -192,6 +203,17 @@
 	{
 		"#format"	"{1:N}"
 		"en"		"{olive}{2}{default} {red}Snatched a Level{default} from you!!"
+	}
+
+	"ReleasedLevels"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"You have {blue}Released{default} {2} level(s) back to {olive}{2}{default}!"
+	}
+	"RecoveredLevels"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"You have {blue}Recovered{default} {2} level(s) from {olive}{2}{default}!"
 	}
 
 	"SnatchMisfiredLostXP"
