@@ -176,6 +176,8 @@ public void OnMapStart()
 	PrecacheSound("npc/roller/mine/rmine_moveslow_loop1.wav");
 	PrecacheSound("npc/roller/mine/rmine_taunt1.wav");
 	PrecacheSound("npc/roller/mine/rmine_explode_shock1.wav");
+
+	PrecacheSound("npc/roller/mine/rmine_tossed1.wav");
 }
 
 public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -415,6 +417,8 @@ int SpawnRollerMine(int client, float pos[3],
 			AcceptEntityInput(iMotor, "SetParent", iEnt);
 			
 			ActivateEntity(iMotor);
+
+			EmitSoundToAll("npc/roller/mine/rmine_tossed1.wav", iEnt);
 
 			if (lifetime > 0.0)
 			{
@@ -918,8 +922,8 @@ public int Native_SetRollermine(Handle plugin, int numParams)
 	int   explodeRadius = GetNativeCell(6);
 	float lifetime      = view_as<float>(GetNativeCell(7));
 
-	SetRollermine(client, takeDamage, health, damageDelay,
-				  explodeDamage, explodeRadius, lifetime);
+	return SetRollermine(client, takeDamage, health, damageDelay,
+				         explodeDamage, explodeRadius, lifetime);
 }
 
 public int Native_SpawnRollerMine(Handle plugin, int numParams)
@@ -935,8 +939,8 @@ public int Native_SpawnRollerMine(Handle plugin, int numParams)
 	float pos[3];
 	GetNativeArray(2, pos, sizeof(pos));
 
-	SpawnRollerMine(client, pos, takeDamage, health, damageDelay,
-					explodeDamage, explodeRadius, lifetime);
+	return SpawnRollerMine(client, pos, takeDamage, health, damageDelay,
+					       explodeDamage, explodeRadius, lifetime);
 }
 
 public int Native_CountRollermines(Handle plugin, int numParams)
